@@ -10,7 +10,7 @@ require (
 	github.com/go-kratos/kratos/v2 v2.8.2
 	github.com/goexts/generic v0.1.1
 	github.com/google/gnostic v0.7.0
-	github.com/origadmin/toolkits v0.1.2
+	github.com/origadmin/toolkits v0.1.3
 	github.com/origadmin/toolkits/codec v0.0.30
 	github.com/origadmin/toolkits/errors v0.0.11
 	google.golang.org/grpc v1.68.0
@@ -43,7 +43,6 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/origadmin/toolkits/idgen v0.0.22 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
 	github.com/shirou/gopsutil/v3 v3.23.6 // indirect
