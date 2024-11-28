@@ -2,11 +2,16 @@ syntax = "proto3";
 
 package pagination.v1;
 
-option go_package = "github.com/origadmin/runtime/gen/go/pagination/v1;paginationv1";
-
 import "google/protobuf/any.proto";
 import "google/protobuf/field_mask.proto";
 import "gnostic/openapi/v3/annotations.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/gen/go/pagination/v1;paginationv1";
+option java_multiple_files = true;
+option java_outer_classname = "PaginationProto";
+option java_package = "com.github.origadmin.runtime.pagination";
+option objc_class_prefix = "Pagination";
 
 // PageRequest common request
 message PageRequest {
