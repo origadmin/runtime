@@ -42,7 +42,10 @@ jobs:
       - name: Get latest release
         id: get_latest_release
         run: |
-          LATEST_RELEASE=$(curl -s -H "Authorization: token ${{ env.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
+          LATEST_RELEASE=$(curl -L \
+          -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+          -H "Authorization: token ${{ env.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
           echo "LATEST_RELEASE=$LATEST_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Determine next version
@@ -60,9 +63,10 @@ jobs:
         id: generate_changelog
         run: |
           LATEST_RELEASE=${{ steps.get_latest_release.outputs.LATEST_RELEASE }}
-          echo "LATEST_RELEASE=$LATEST_RELEASE" >> $GITHUB_OUTPUT
-          if [[ -z "$LATEST_RELEASE" ]]; then
-            # If there's no previous release, get only the current commit's log
+          echo "LATEST_RELEASE is $LATEST_RELEASE"
+          echo "# Changelog" > changelog.txt
+          if [[ -z "$LATEST_RELEASE" || "$LATEST_RELEASE" == "null" ]]; then
+            # If there's no previous release, get only the current commit log
             git config --global core.pager cat
             # git log --pretty=format:"* %s **by** @%an"
             git log --pretty=format:"* %s **by** @%an" >> changelog.txt
