@@ -87,17 +87,22 @@ init:
 .PHONY: deps
 # export protobuf dependencies to ./third_party
 deps:
-	@echo Exporting errors/errors.proto dependencies to ./third_party
-	buf export buf.build/kratos/apis -o $(THIRD_PARTY_PATH)
-	@echo Exporting googleapis/googleapis.proto dependencies to ./third_party
-	buf export buf.build/bufbuild/protovalidate -o $(THIRD_PARTY_PATH)
-	@echo Exporting rpcerr/rpcerr.proto dependencies to ./third_party
-	buf export buf.build/googleapis/googleapis -o $(THIRD_PARTY_PATH)
-	@echo Exporting wellknowntypes/wellknowntypes.proto dependencies to ./third_party
-	buf export buf.build/protocolbuffers/wellknowntypes -o $(THIRD_PARTY_PATH)
-	@echo Exporting validate/validate.proto dependencies to ./third_party , please use buf.build/bufbuild/protovalidate instead
-	buf export buf.build/envoyproxy/protoc-gen-validate -o $(THIRD_PARTY_PATH)
-	@echo Exporting google.golang.org/protobuf/protovalidate/protocolbuffers/go dependencies to ./third_party
+	@echo Exporting errors/errors.proto dependencies to $(THIRD_PARTY_PATH)
+	@buf export buf.build/kratos/apis -o $(THIRD_PARTY_PATH)
+
+	@echo Exporting googleapis/googleapis.proto dependencies to $(THIRD_PARTY_PATH)
+	@buf export buf.build/bufbuild/protovalidate -o $(THIRD_PARTY_PATH)
+
+	@echo Exporting rpcerr/rpcerr.proto dependencies to $(THIRD_PARTY_PATH)
+	@buf export buf.build/googleapis/googleapis -o $(THIRD_PARTY_PATH)
+
+	@echo Exporting wellknowntypes/wellknowntypes.proto dependencies to $(THIRD_PARTY_PATH)
+	@buf export buf.build/protocolbuffers/wellknowntypes -o $(THIRD_PARTY_PATH)
+
+	@echo Exporting validate/validate.proto dependencies to $(THIRD_PARTY_PATH), please use buf.build/bufbuild/protovalidate instead
+	@buf export buf.build/envoyproxy/protoc-gen-validate -o $(THIRD_PARTY_PATH)
+
+	@echo Exporting google.golang.org/protobuf/protovalidate/protocolbuffers/go dependencies to $(THIRD_PARTY_PATH)
 	buf export buf.build/gnostic/gnostic -o $(THIRD_PARTY_PATH)
 
 

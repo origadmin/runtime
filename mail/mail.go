@@ -8,6 +8,8 @@ package mail
 import (
 	"sync"
 
+	"github.com/origadmin/toolkits/mail"
+
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
