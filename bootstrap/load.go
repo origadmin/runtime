@@ -8,11 +8,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/origadmin/toolkits/codec"
+	"github.com/origadmin/toolkits/errors"
+
 	"github.com/origadmin/runtime"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/toolkits/codec"
-
-	"github.com/origadmin/toolkits/errors"
 )
 
 // loadSource loads the config file from the given path

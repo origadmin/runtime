@@ -8,8 +8,9 @@ package data
 import (
 	"database/sql"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/errors"
+
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
 const (

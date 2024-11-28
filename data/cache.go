@@ -6,10 +6,10 @@
 package data
 
 import (
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/errors"
-	"gith
 	"github.com/origadmin/toolkits/storage/cache"
+
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
 const (
