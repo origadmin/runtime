@@ -23,19 +23,19 @@ message PageRequest {
       default: {number: 1}
     }
   ];
+  // The page_token is the query parameter for set the page token.
+  string page_token = 2 [
+    json_name = "page_token",
+    (gnostic.openapi.v3.property) = {
+      description: "paging token"
+    }
+  ];
   // The number of lines per page
-  optional int32 page_size = 2 [
+  optional int32 page_size = 3 [
     json_name = "page_size",
     (gnostic.openapi.v3.property) = {
       description: "The number of lines per page",
       default: {number: 15}
-    }
-  ];
-  // The page_token is the query parameter for set the page token.
-  string page_token = 3 [
-    json_name = "page_token",
-    (gnostic.openapi.v3.property) = {
-      description: "paging token"
     }
   ];
   // The only_count is the query parameter for set only to query the total number
@@ -53,18 +53,18 @@ message PageRequest {
     }
   ];
   // sort condition
-  repeated string order_by = 6 [
+  string order_by = 6 [
     json_name = "order_by",
     (gnostic.openapi.v3.property) = {
       description: "sort condition, field name followed by 'asc' (ascending) or 'desc' (descending)",
-      example: {yaml: "{\"val1\", \"-val2\"}"}
+      example: {yaml : "id:asc"}
     }
   ];
   // Field mask
-  google.protobuf.FieldMask field_mask = 7 [
-    json_name = "field_mask",
+  google.protobuf.FieldMask update_mask = 7 [
+    json_name = "update_mask",
     (gnostic.openapi.v3.property) = {
-      description: "Field mask, if empty, select all fields.",
+      description: "It is used to Update the request message, which is used to perform a partial update to the resource. This mask is related to the resource, not the request message.",
       example: {yaml : "id,name,age"}
     }
   ];
