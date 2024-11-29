@@ -63,6 +63,7 @@ func decodeFile(path string, cfg any) error {
 
 // decodeDir loads the config file from the given directory
 func decodeDir(path string, cfg any) error {
+	found := false
 	// Walk through the directory and load each file
 	err := filepath.WalkDir(path, func(walkpath string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -77,10 +78,14 @@ func decodeDir(path string, cfg any) error {
 		if err := decodeFile(walkpath, cfg); err != nil {
 			return err
 		}
+		found = true
 		return nil
 	})
 	if err != nil {
 		return errors.Wrap(err, "load config error")
+	}
+	if !found {
+		return errors.New("no config file found in " + path)
 	}
 	return nil
 }
