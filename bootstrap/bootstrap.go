@@ -107,3 +107,13 @@ func New(dir, path string) *Bootstrap {
 		Flags:      DefaultFlags(),
 	}
 }
+
+func WithFlags(name string, version string) *Bootstrap {
+	return &Bootstrap{
+		WorkDir:    DefaultWorkDir,
+		ConfigPath: DefaultConfigPath,
+		Env:        DefaultEnv,
+		Daemon:     false,
+		Flags:      NewFlags(name, version),
+	}
+}

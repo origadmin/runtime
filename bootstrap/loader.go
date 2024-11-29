@@ -15,46 +15,45 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
-// loadSource loads the config file from the given path
-func loadSource(si os.FileInfo, path string) (*configv1.SourceConfig, error) {
+type decoder = func(string, any) error
+
+// loadSourceConfig loads the config file from the given path
+func loadSourceConfig(si os.FileInfo, path string) (*configv1.SourceConfig, error) {
 	// Check if the file or directory exists
 	if si == nil {
 		return nil, errors.New("load config file target is not exist")
 	}
 	var cfg configv1.SourceConfig
-	err := loadCustomize(si, path, &cfg)
+	err := loadCustomizeConfig(si, path, &cfg)
 	if err != nil {
 		return nil, err
 	}
 	return &cfg, nil
 }
 
-// loadCustomize loads the user config file from the given path
-func loadCustomize(si os.FileInfo, path string, cfg any) error {
+// loadCustomizeConfig loads the user config file from the given path
+func loadCustomizeConfig(si os.FileInfo, path string, cfg any) error {
 	// Check if the path is a directory
+	dec := decodeFile
 	if si.IsDir() {
-		err := loadDir(path, cfg)
-		if err != nil {
-			return err
-		}
-		return nil
+		dec = decodeDir
 	}
-	// Get the file type from the extension
-	typo := codec.TypeFromExt(filepath.Ext(path))
-	// Check if the file type is unknown
-	if typo == codec.UNKNOWN {
-		return errors.New("unknown file type: " + path)
-	}
-	// Load the config file
-	err := loadFile(path, cfg)
+	err := dec(path, cfg)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// loadFile loads the config file from the given path
-func loadFile(path string, cfg any) error {
+// decodeFile loads the config file from the given path
+func decodeFile(path string, cfg any) error {
+	// Get the file type from the extension
+	typo := codec.TypeFromPath(path)
+	// Check if the file type is unknown
+	if typo == codec.UNKNOWN {
+		return errors.New("unknown file type: " + path)
+	}
+
 	// Decode the file into the config struct
 	if err := codec.DecodeFromFile(path, &cfg); err != nil {
 		return errors.Wrapf(err, "failed to parse config file %s", path)
@@ -62,8 +61,8 @@ func loadFile(path string, cfg any) error {
 	return nil
 }
 
-// loadDir loads the config file from the given directory
-func loadDir(path string, cfg any) error {
+// decodeDir loads the config file from the given directory
+func decodeDir(path string, cfg any) error {
 	// Walk through the directory and load each file
 	err := filepath.WalkDir(path, func(walkpath string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -73,16 +72,10 @@ func loadDir(path string, cfg any) error {
 		if d.IsDir() {
 			return nil
 		}
-		// Get the file type from the extension
-		typo := codec.TypeFromString(filepath.Ext(walkpath))
-		// Check if the file type is unknown
-		if typo == codec.UNKNOWN {
-			return nil
-		}
 
 		// Decode the file into the config struct
-		if err := codec.DecodeFromFile(walkpath, &cfg); err != nil {
-			return errors.Wrapf(err, "failed to parse config file %s", walkpath)
+		if err := decodeFile(walkpath, cfg); err != nil {
+			return err
 		}
 		return nil
 	})
@@ -104,7 +97,7 @@ func LoadSourceConfig(bootstrap *Bootstrap) (*configv1.SourceConfig, error) {
 	}
 
 	// Load the config file
-	return loadSource(stat, path)
+	return loadSourceConfig(stat, path)
 }
 
 // LoadSourceConfigFromPath loads the config file from the given path
@@ -115,7 +108,7 @@ func LoadSourceConfigFromPath(path string) (*configv1.SourceConfig, error) {
 		return nil, errors.Wrap(err, "load config stat error")
 	}
 	// Load the config file
-	return loadSource(stat, path)
+	return loadSourceConfig(stat, path)
 }
 
 // LoadRemoteConfig loads the config file from the given path
@@ -131,7 +124,10 @@ func LoadRemoteConfig(bootstrap *Bootstrap, v any) error {
 	if err := config.Load(); err != nil {
 		return err
 	}
-	return config.Scan(v)
+	if err := config.Scan(v); err != nil {
+		return err
+	}
+	return nil
 }
 
 // LoadLocalConfig loads the config file from the given path
@@ -151,5 +147,5 @@ func LoadLocalConfig(bs *Bootstrap, v any) error {
 		return errors.Wrap(err, "load config stat error")
 	}
 
-	return loadCustomize(stat, path, v)
+	return loadCustomizeConfig(stat, path, v)
 }
