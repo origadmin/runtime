@@ -34,11 +34,11 @@ func loadSourceConfig(si os.FileInfo, path string) (*configv1.SourceConfig, erro
 // loadCustomizeConfig loads the user config file from the given path
 func loadCustomizeConfig(si os.FileInfo, path string, cfg any) error {
 	// Check if the path is a directory
-	dec := decodeFile
+	decode := decodeFile
 	if si.IsDir() {
-		dec = decodeDir
+		decode = decodeDir
 	}
-	err := dec(path, cfg)
+	err := decode(path, cfg)
 	if err != nil {
 		return err
 	}
@@ -47,15 +47,8 @@ func loadCustomizeConfig(si os.FileInfo, path string, cfg any) error {
 
 // decodeFile loads the config file from the given path
 func decodeFile(path string, cfg any) error {
-	// Get the file type from the extension
-	typo := codec.TypeFromPath(path)
-	// Check if the file type is unknown
-	if typo == codec.UNKNOWN {
-		return errors.New("unknown file type: " + path)
-	}
-
 	// Decode the file into the config struct
-	if err := codec.DecodeFromFile(path, &cfg); err != nil {
+	if err := codec.DecodeFromFile(path, cfg); err != nil {
 		return errors.Wrapf(err, "failed to parse config file %s", path)
 	}
 	return nil
@@ -105,8 +98,8 @@ func LoadSourceConfig(bootstrap *Bootstrap) (*configv1.SourceConfig, error) {
 	return loadSourceConfig(stat, path)
 }
 
-// LoadSourceConfigFromPath loads the config file from the given path
-func LoadSourceConfigFromPath(path string) (*configv1.SourceConfig, error) {
+// LoadPathSourceConfig loads the config file from the given path
+func LoadPathSourceConfig(path string) (*configv1.SourceConfig, error) {
 	// Get the file info from the path
 	stat, err := os.Stat(path)
 	if err != nil {
