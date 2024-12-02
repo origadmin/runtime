@@ -24,7 +24,6 @@ const defaultTimeout = 5 * time.Second
 
 // NewClient Creating an HTTP client instance.
 func NewClient(ctx context.Context, service *configv1.Service, opts ...config.ServiceSetting) (*transhttp.Client, error) {
-
 	option := settings.Apply(&config.ServiceOption{}, opts)
 	var ms []middleware.Middleware
 	ms = middleware.NewClient(service.GetMiddleware())

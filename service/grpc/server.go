@@ -39,7 +39,7 @@ func NewServer(cfg *configv1.Service, opts ...config.ServiceSetting) *transgrpc.
 		if serviceGrpc.Timeout != nil {
 			options = append(options, transgrpc.Timeout(serviceGrpc.Timeout.AsDuration()))
 		}
-		if cfg.Endpoint {
+		if cfg.DynamicEndpoint {
 			var endpoint *url.URL
 			var err error
 
@@ -57,6 +57,11 @@ func NewServer(cfg *configv1.Service, opts ...config.ServiceSetting) *transgrpc.
 			} else {
 				// Record errors for easy debugging
 				// log.Printf("Failed to get or parse endpoint: %v", err)
+			}
+		} else {
+			endpoint, err := url.Parse(serviceGrpc.Endpoint)
+			if err == nil {
+				options = append(options, transgrpc.Endpoint(endpoint))
 			}
 		}
 	}

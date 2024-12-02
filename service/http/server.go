@@ -39,7 +39,7 @@ func NewServer(cfg *configv1.Service, opts ...config.ServiceSetting) *transhttp.
 		if serviceHttp.Timeout != nil {
 			options = append(options, transhttp.Timeout(serviceHttp.Timeout.AsDuration()))
 		}
-		if cfg.Endpoint {
+		if cfg.DynamicEndpoint {
 			var endpoint *url.URL
 			var err error
 
@@ -57,6 +57,11 @@ func NewServer(cfg *configv1.Service, opts ...config.ServiceSetting) *transhttp.
 			} else {
 				// Record errors for easy debugging
 				// log.Printf("Failed to get or parse endpoint: %v", err)
+			}
+		} else {
+			endpoint, err := url.Parse(serviceHttp.Endpoint)
+			if err == nil {
+				options = append(options, transhttp.Endpoint(endpoint))
 			}
 		}
 	}
