@@ -52,7 +52,7 @@ option objc_class_prefix = "Config";
 message UserMetric {
 
     // Timestamp: indicates the time of indicator data
-    int64 timestamp = 1;
+    int32 timestamp = 1;
     // Indicator name
     string name = 2;
     // Indicator value
@@ -117,7 +117,7 @@ message Middleware {
             string addr = 1 [json_name = "addr"];
             string username = 2 [json_name = "username"];
             string password = 3 [json_name = "password"];
-            int64 db = 4 [json_name = "db"];
+            int32 db = 4 [json_name = "db"];
         }
         message Memory {
             google.protobuf.Duration expiration = 1 [json_name = "expiration"];
@@ -127,15 +127,15 @@ message Middleware {
         // rate limiter name, supported: bbr, memory, redis.
         string name = 1 [json_name = "name", (buf.validate.field).string = {in: ["bbr", "memory", "redis"]}];
         // The number of seconds in a rate limit window
-        int64 period = 2 [json_name = "period"];
+        int32 period = 2 [json_name = "period"];
         // The number of requests allowed in a window of time
-        int64 x_ratelimit_limit = 5 [json_name = "x_ratelimit_limit"];
+        int32 x_ratelimit_limit = 5 [json_name = "x_ratelimit_limit"];
         // The number of requests that can still be made in the current window of time
-        int64 x_ratelimit_remaining = 6 [json_name = "x_ratelimit_remaining"];
+        int32 x_ratelimit_remaining = 6 [json_name = "x_ratelimit_remaining"];
         // The number of seconds until the current rate limit window completely resets
-        int64 x_ratelimit_reset = 7 [json_name = "x_ratelimit_reset"];
+        int32 x_ratelimit_reset = 7 [json_name = "x_ratelimit_reset"];
         // When rate limited, the number of seconds to wait before another request will be accepted
-        int64 retry_after = 8 [json_name = "retry_after"];
+        int32 retry_after = 8 [json_name = "retry_after"];
 
         Memory memory = 101 [json_name = "memory"];
         Redis redis = 102 [json_name = "redis"];

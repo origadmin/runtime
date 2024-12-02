@@ -203,9 +203,7 @@ func (m *PageResponse) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Success
-
-	// no validation rules for Total
+	// no validation rules for TotalSize
 
 	if all {
 		switch v := interface{}(m.GetData()).(type) {

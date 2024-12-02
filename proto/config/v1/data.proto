@@ -157,7 +157,7 @@ message Data {
             (gnostic.openapi.v3.property) = {
                 description: "synchronous write or not",
             }];
-        int64 value_log_file_size = 3 [
+        int32 value_log_file_size = 3 [
             json_name = "value_log_file_size",
             (gnostic.openapi.v3.property) = {
                 description: "value log file size",

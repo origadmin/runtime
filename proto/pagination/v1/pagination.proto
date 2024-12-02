@@ -72,35 +72,29 @@ message PageRequest {
 
 // PageResponse general result
 message PageResponse {
-  bool success = 1 [
-    json_name = "success",
-    (gnostic.openapi.v3.property) = {
-      description: "success"
-    }
-  ];
   // The total number of items in the list.
-  int32 total = 2 [
-    json_name = "total",
+  int32 total_size = 1 [
+    json_name = "total_size",
     (gnostic.openapi.v3.property) = {
       description: "total number"
     }
   ];
   // The paging data
-  google.protobuf.Any data = 3 [
+  google.protobuf.Any data = 2 [
     json_name = "data",
     (gnostic.openapi.v3.property) = {
       description: "data"
     }
   ];
   // The current page number.
-  optional int32 current = 4 [
+  optional int32 current = 3 [
     json_name = "current",
     (gnostic.openapi.v3.property) = {
       description: "current page number"
     }
   ];
   // The maximum number of items to return.
-  optional int32 page_size = 5 [
+  optional int32 page_size = 4 [
     json_name = "page_size",
     (gnostic.openapi.v3.property) = {
       description: "maximum number of items to return"
@@ -108,7 +102,7 @@ message PageResponse {
   ];
   // Token to retrieve the next page of results, or empty if there are no
   // more results in the list.
-  string next_page_token = 6 [
+  string next_page_token = 5 [
     json_name = "next_page_token",
     (gnostic.openapi.v3.property) = {
       description: "token to retrieve the next page of results, or empty if there are no more results in the list"
@@ -116,7 +110,7 @@ message PageResponse {
   ];
   // Additional information about this response.
   // content to be added without destroying the current data format
-  google.protobuf.Any extra = 7 [
+  google.protobuf.Any extra = 6 [
     json_name = "extra",
     (gnostic.openapi.v3.property) = {
       description: "additional information about this response"
