@@ -58,7 +58,7 @@ func (m *Service) validate(all bool) error {
 
 	// no validation rules for Name
 
-	// no validation rules for Endpoint
+	// no validation rules for DynamicEndpoint
 
 	if all {
 		switch v := interface{}(m.GetGrpc()).(type) {
