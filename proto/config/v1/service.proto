@@ -70,7 +70,7 @@ message Service {
 
   // Service name for service discovery
   string name = 1 [json_name = "name"];
-  bool endpoint = 2 [json_name = "endpoint"];
+  bool dynamic_endpoint = 2 [json_name = "dynamic_endpoint"];
 
   GRPC grpc = 10 [json_name = "grpc"];
   HTTP http = 20 [json_name = "http"];

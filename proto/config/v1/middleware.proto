@@ -4,6 +4,7 @@ package config.v1;
 
 import "buf/validate/validate.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/gen/go/config/v1;configv1";
@@ -52,7 +53,7 @@ option objc_class_prefix = "Config";
 message UserMetric {
 
     // Timestamp: indicates the time of indicator data
-    int32 timestamp = 1;
+    google.protobuf.Timestamp timestamp = 1;
     // Indicator name
     string name = 2;
     // Indicator value
