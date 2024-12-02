@@ -27,6 +27,17 @@ type (
 )
 
 type (
+	// GRPCServerOption define the gRPC server options
+	GRPCServerOption = transgrpc.ServerOption
+	// HTTPServerOption define the HTTP server options
+	HTTPServerOption = transhttp.ServerOption
+	// GRPCClientOption define the gRPC client options
+	GRPCClientOption = transgrpc.ClientOption
+	// HTTPClientOption define the HTTP client options
+	HTTPClientOption = transhttp.ClientOption
+)
+
+type (
 	// RegisterGRPCServer register a gRPC server
 	RegisterGRPCServer = func(s *GRPCServer)
 	// RegisterHTTPServer register a HTTP server

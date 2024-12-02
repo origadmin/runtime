@@ -3,7 +3,7 @@
  */
 
 // Package selector implements the functions, types, and interfaces for the module.
-package selector
+package service
 
 import (
 	"sync"
@@ -20,11 +20,12 @@ import (
 )
 
 var (
-	once = &sync.Once{}
+	once    sync.Once
+	builder selector.Builder
 )
 
-func WithHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error) {
-	var options transhttp.ClientOption
+func WithHTTP(cfg *configv1.Service_Selector) (HTTPClientOption, error) {
+	var options HTTPClientOption
 	if cfg.GetVersion() != "" {
 		v := filter.Version(cfg.Version)
 		options = transhttp.WithNodeFilter(v)
@@ -34,8 +35,8 @@ func WithHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error) {
 	return options, nil
 }
 
-func WithGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error) {
-	var options transgrpc.ClientOption
+func WithGRPC(cfg *configv1.Service_Selector) (GRPCClientOption, error) {
+	var options GRPCClientOption
 	if cfg.GetVersion() != "" {
 		v := filter.Version(cfg.Version)
 		options = transgrpc.WithNodeFilter(v)
@@ -47,20 +48,25 @@ func WithGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error) {
 
 // SetGlobalSelector sets the global selector.
 func SetGlobalSelector(selectorType string) {
-	var builder selector.Builder
+	if builder != nil {
+		return
+	}
+	var b selector.Builder
 	switch selectorType {
 	case "random":
-		builder = random.NewBuilder()
+		b = random.NewBuilder()
 	case "wrr":
-		builder = wrr.NewBuilder()
+		b = wrr.NewBuilder()
 	case "p2c":
-		builder = p2c.NewBuilder()
+		b = p2c.NewBuilder()
 	default:
 		return
 	}
-	if builder != nil {
-		once.Do(func() {
+	once.Do(func() {
+		if b != nil {
+			builder = b
+			// Set global selector
 			selector.SetGlobalSelector(builder)
-		})
-	}
+		}
+	})
 }
