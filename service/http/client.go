@@ -17,7 +17,6 @@ import (
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/middleware"
-	"github.com/origadmin/runtime/service/selector"
 )
 
 const defaultTimeout = 5 * time.Second
@@ -51,9 +50,12 @@ func NewClient(ctx context.Context, service *configv1.Service, opts ...config.Se
 		)
 	}
 
-	if option, err := selector.WithHTTP(service.GetSelector()); err == nil {
-		options = append(options, option)
+	if selector := option.Selector; selector != nil {
+		if option, err := selector.HTTP(service.GetSelector()); err == nil {
+			options = append(options, option)
+		}
 	}
+
 	conn, err := transhttp.NewClient(ctx, options...)
 
 	if err != nil {

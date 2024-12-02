@@ -16,6 +16,7 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
+	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
@@ -23,6 +24,19 @@ var (
 	once    sync.Once
 	builder selector.Builder
 )
+
+// DefaultSelectorOptionBuilder is the default instance of the service builder.
+var DefaultSelectorOptionBuilder = &selectorOption{}
+
+type selectorOption struct{}
+
+func (s selectorOption) GRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error) {
+	return WithGRPC(cfg)
+}
+
+func (s selectorOption) HTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error) {
+	return WithHTTP(cfg)
+}
 
 func WithHTTP(cfg *configv1.Service_Selector) (HTTPClientOption, error) {
 	var options HTTPClientOption
@@ -70,3 +84,5 @@ func SetGlobalSelector(selectorType string) {
 		}
 	})
 }
+
+var _ config.SelectorOption = selectorOption{}
