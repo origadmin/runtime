@@ -13,12 +13,12 @@ import (
 	"github.com/origadmin/runtime/service/http"
 )
 
+// DefaultServiceBuilder is the default instance of the service builder.
+var DefaultServiceBuilder = &serviceBuilder{}
+
 // ServiceBuilder is a struct that implements the service builder interface.
 // It provides methods for creating new gRPC and HTTP servers and clients.
 type serviceBuilder struct{}
-
-// DefaultServiceBuilder is the default instance of the service builder.
-var DefaultServiceBuilder = &serviceBuilder{}
 
 // NewGRPCServer creates a new gRPC server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
