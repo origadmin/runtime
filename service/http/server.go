@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package grpc implements the functions, types, and interfaces for the module.
-package grpc
+// Package http implements the functions, types, and interfaces for the module.
+package http
 
 import (
 	"net/url"

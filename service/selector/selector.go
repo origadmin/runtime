@@ -23,7 +23,7 @@ var (
 	once = &sync.Once{}
 )
 
-func NewHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error) {
+func WithHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error) {
 	var options transhttp.ClientOption
 	if cfg.GetVersion() != "" {
 		v := filter.Version(cfg.Version)
@@ -34,7 +34,7 @@ func NewHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error) {
 	return options, nil
 }
 
-func NewGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error) {
+func WithGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error) {
 	var options transgrpc.ClientOption
 	if cfg.GetVersion() != "" {
 		v := filter.Version(cfg.Version)

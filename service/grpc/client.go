@@ -52,7 +52,7 @@ func NewClient(ctx context.Context, service *configv1.Service, opts ...config.Se
 		)
 	}
 
-	if option, err := selector.NewGRPC(service.GetSelector()); err == nil {
+	if option, err := selector.WithGRPC(service.GetSelector()); err == nil {
 		options = append(options, option)
 	}
 	conn, err := transgrpc.DialInsecure(ctx, options...)

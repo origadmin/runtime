@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package grpc implements the functions, types, and interfaces for the module.
-package grpc
+// Package http implements the functions, types, and interfaces for the module.
+package http
 
 import (
 	"time"
@@ -51,7 +51,7 @@ func NewClient(ctx context.Context, service *configv1.Service, opts ...config.Se
 		)
 	}
 
-	if option, err := selector.NewHTTP(service.GetSelector()); err == nil {
+	if option, err := selector.WithHTTP(service.GetSelector()); err == nil {
 		options = append(options, option)
 	}
 	conn, err := transhttp.NewClient(ctx, options...)
