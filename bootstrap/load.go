@@ -8,10 +8,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/goexts/generic/settings"
 	"github.com/origadmin/toolkits/codec"
 	"github.com/origadmin/toolkits/errors"
 
 	"github.com/origadmin/runtime"
+	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
@@ -110,12 +112,13 @@ func LoadPathSourceConfig(path string) (*configv1.SourceConfig, error) {
 }
 
 // LoadRemoteConfig loads the config file from the given path
-func LoadRemoteConfig(bootstrap *Bootstrap, v any) error {
+func LoadRemoteConfig(bootstrap *Bootstrap, v any, ss ...config.RuntimeConfigSetting) error {
 	sourceConfig, err := LoadSourceConfig(bootstrap)
 	if err != nil {
 		return err
 	}
-	config, err := runtime.NewConfig(sourceConfig)
+	rc := settings.Apply(config.NewRuntimeConfig(), ss)
+	config, err := runtime.NewConfig(sourceConfig, rc)
 	if err != nil {
 		return err
 	}

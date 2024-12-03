@@ -6,8 +6,6 @@
 package runtime
 
 import (
-	"github.com/goexts/generic/settings"
-
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/middleware"
@@ -22,9 +20,9 @@ type (
 	// MiddlewareBuilders middleware builders for runtime
 	MiddlewareBuilders interface {
 		// NewMiddlewaresClient build middleware
-		NewMiddlewaresClient([]middleware.Middleware, *configv1.Customize, ...config.RuntimeConfigSetting) []middleware.Middleware
+		NewMiddlewaresClient([]middleware.Middleware, *configv1.Customize, *config.RuntimeConfig) []middleware.Middleware
 		// NewMiddlewaresServer build middleware
-		NewMiddlewaresServer([]middleware.Middleware, *configv1.Customize, ...config.RuntimeConfigSetting) []middleware.Middleware
+		NewMiddlewaresServer([]middleware.Middleware, *configv1.Customize, *config.RuntimeConfig) []middleware.Middleware
 		// NewMiddlewareClient build middleware
 		NewMiddlewareClient(string, *configv1.Customize_Config, *config.RuntimeConfig) (middleware.Middleware, error)
 		// NewMiddlewareServer build middleware
@@ -61,9 +59,8 @@ func (b *builder) NewMiddlewareServer(name string, config *configv1.Customize_Co
 	return nil, ErrNotFound
 }
 
-func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
+func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1.Customize, rc *config.RuntimeConfig) []middleware.Middleware {
 	configs := config.GetTypeConfigs(cc, middleware.Type)
-	runtimeConfig := settings.Apply(&config.RuntimeConfig{}, ss)
 	var mbs []*middlewareBuilderWrap
 	b.middlewareMux.RLock()
 	for name := range configs {
@@ -77,16 +74,15 @@ func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1
 	}
 	b.middlewareMux.RUnlock()
 	for _, mb := range mbs {
-		if m, err := mb.NewClient(runtimeConfig); err == nil {
+		if m, err := mb.NewClient(rc); err == nil {
 			mms = append(mms, m)
 		}
 	}
 	return mms
 }
 
-func (b *builder) NewMiddlewaresServer(mms []middleware.Middleware, cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
+func (b *builder) NewMiddlewaresServer(mms []middleware.Middleware, cc *configv1.Customize, rc *config.RuntimeConfig) []middleware.Middleware {
 	configs := config.GetTypeConfigs(cc, middleware.Type)
-	runtimeConfig := settings.Apply(&config.RuntimeConfig{}, ss)
 	var mbs []*middlewareBuilderWrap
 	b.middlewareMux.RLock()
 	for name := range configs {
@@ -100,7 +96,7 @@ func (b *builder) NewMiddlewaresServer(mms []middleware.Middleware, cc *configv1
 	}
 	b.middlewareMux.RUnlock()
 	for _, mb := range mbs {
-		if m, err := mb.NewServer(runtimeConfig); err == nil {
+		if m, err := mb.NewServer(rc); err == nil {
 			mms = append(mms, m)
 		}
 	}

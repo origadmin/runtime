@@ -20,14 +20,14 @@ type (
 	Cache = cache.Cache
 )
 
-func OpenCache(cfg *configv1.Data) (Cache, error) {
+func OpenCache(cfg *configv1.Data_Cache) (Cache, error) {
 	if cfg == nil {
 		return nil, ErrCacheConfigNil
 	}
 
-	if c := cfg.GetCache().GetMemory(); c != nil {
-
-	}
+	//if c := cfg.GetCache().GetMemory(); c != nil {
+	//
+	//}
 
 	return nil, errors.String("cache: unknown cache type")
 }

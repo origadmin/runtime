@@ -21,6 +21,8 @@ type RuntimeConfig struct {
 	customize *CustomizeOption
 }
 
+var DefaultRuntimeConfig = NewRuntimeConfig()
+
 func (r RuntimeConfig) Source() *SourceOption {
 	return r.source
 }

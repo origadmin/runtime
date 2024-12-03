@@ -23,49 +23,49 @@ type (
 	}
 	// ServiceBuilder is an interface that defines a method for creating a new service.
 	ServiceBuilder interface {
-		NewGRPCServer(cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*service.GRPCServer, error)
-		NewHTTPServer(cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*service.HTTPServer, error)
-		NewGRPCClient(ctx context.Context, cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*service.GRPCClient, error)
-		NewHTTPClient(ctx context.Context, cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*service.HTTPClient, error)
+		NewGRPCServer(*configv1.Service, *config.RuntimeConfig) (*service.GRPCServer, error)
+		NewHTTPServer(*configv1.Service, *config.RuntimeConfig) (*service.HTTPServer, error)
+		NewGRPCClient(context.Context, *configv1.Service, *config.RuntimeConfig) (*service.GRPCClient, error)
+		NewHTTPClient(context.Context, *configv1.Service, *config.RuntimeConfig) (*service.HTTPClient, error)
 	}
 )
 
 // NewGRPCServer creates a new gRPC server based on the given ServiceConfig.
-func (b *builder) NewGRPCServer(cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*transgrpc.Server, error) {
+func (b *builder) NewGRPCServer(cfg *configv1.Service, rc *config.RuntimeConfig) (*transgrpc.Server, error) {
 	b.serviceMux.RLock()
 	defer b.serviceMux.RUnlock()
 	if serviceBuilder, ok := b.services[cfg.Name]; ok {
-		return serviceBuilder.NewGRPCServer(cfg, opts...)
+		return serviceBuilder.NewGRPCServer(cfg, rc)
 	}
 	return nil, ErrNotFound
 }
 
 // NewHTTPServer creates a new HTTP server based on the given ServiceConfig.
-func (b *builder) NewHTTPServer(cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*transhttp.Server, error) {
+func (b *builder) NewHTTPServer(cfg *configv1.Service, rc *config.RuntimeConfig) (*transhttp.Server, error) {
 	b.serviceMux.RLock()
 	defer b.serviceMux.RUnlock()
 	if serviceBuilder, ok := b.services[cfg.Name]; ok {
-		return serviceBuilder.NewHTTPServer(cfg, opts...)
+		return serviceBuilder.NewHTTPServer(cfg, rc)
 	}
 	return nil, ErrNotFound
 }
 
 // NewGRPCClient creates a new gRPC client based on the given ServiceConfig.
-func (b *builder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*grpc.ClientConn, error) {
+func (b *builder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, rc *config.RuntimeConfig) (*grpc.ClientConn, error) {
 	b.serviceMux.RLock()
 	defer b.serviceMux.RUnlock()
 	if serviceBuilder, ok := b.services[cfg.Name]; ok {
-		return serviceBuilder.NewGRPCClient(ctx, cfg, opts...)
+		return serviceBuilder.NewGRPCClient(ctx, cfg, rc)
 	}
 	return nil, ErrNotFound
 }
 
 // NewHTTPClient creates a new HTTP client based on the given ServiceConfig.
-func (b *builder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, opts ...config.RuntimeConfigSetting) (*transhttp.Client, error) {
+func (b *builder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, rc *config.RuntimeConfig) (*transhttp.Client, error) {
 	b.serviceMux.RLock()
 	defer b.serviceMux.RUnlock()
 	if serviceBuilder, ok := b.services[cfg.Name]; ok {
-		return serviceBuilder.NewHTTPClient(ctx, cfg, opts...)
+		return serviceBuilder.NewHTTPClient(ctx, cfg, rc)
 	}
 	return nil, ErrNotFound
 }

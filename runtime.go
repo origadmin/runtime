@@ -52,8 +52,11 @@ func Global() Builder {
 }
 
 // NewConfig creates a new Selector using the registered ConfigBuilder.
-func NewConfig(cfg *configv1.SourceConfig, ss ...config.RuntimeConfigSetting) (config.Config, error) {
-	return build.NewConfig(cfg, ss...)
+func NewConfig(cfg *configv1.SourceConfig, rc *config.RuntimeConfig) (config.Config, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.NewConfig(cfg, rc)
 }
 
 // RegisterConfig registers a ConfigBuilder with the builder.
@@ -67,8 +70,11 @@ func RegisterConfigFunc(name string, buildFunc ConfigBuildFunc) {
 }
 
 // SyncConfig synchronizes the given configuration with the given value.
-func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.RuntimeConfigSetting) error {
-	return build.SyncConfig(cfg, v, ss...)
+func SyncConfig(cfg *configv1.SourceConfig, v any, rc *config.RuntimeConfig) error {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.SyncConfig(cfg, v, rc)
 }
 
 func RegisterConfigSync(name string, syncFunc ConfigSyncFunc) {
@@ -76,13 +82,19 @@ func RegisterConfigSync(name string, syncFunc ConfigSyncFunc) {
 }
 
 // NewDiscovery creates a new Discovery using the registered RegistryBuilder.
-func NewDiscovery(cfg *configv1.Registry, ss ...config.RuntimeConfigSetting) (registry.Discovery, error) {
-	return build.NewDiscovery(cfg, ss...)
+func NewDiscovery(cfg *configv1.Registry, rc *config.RuntimeConfig) (registry.Discovery, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.NewDiscovery(cfg, rc)
 }
 
 // NewRegistrar creates a new Registrar using the registered RegistryBuilder.
-func NewRegistrar(cfg *configv1.Registry, ss ...config.RuntimeConfigSetting) (registry.Registrar, error) {
-	return build.NewRegistrar(cfg, ss...)
+func NewRegistrar(cfg *configv1.Registry, rc *config.RuntimeConfig) (registry.Registrar, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.NewRegistrar(cfg, rc)
 }
 
 // RegisterRegistry registers a RegistryBuilder with the builder.
@@ -91,23 +103,35 @@ func RegisterRegistry(name string, registryBuilder RegistryBuilder) {
 }
 
 // NewMiddlewareClient creates a new Middleware with the builder.
-func NewMiddlewareClient(name string, cm *configv1.Customize_Config, runtimeConfig *config.RuntimeConfig) (middleware.Middleware, error) {
-	return build.NewMiddlewareClient(name, cm, runtimeConfig)
+func NewMiddlewareClient(name string, cm *configv1.Customize_Config, rc *config.RuntimeConfig) (middleware.Middleware, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.NewMiddlewareClient(name, cm, rc)
 }
 
 // NewMiddlewareServer creates a new Middleware with the builder.
-func NewMiddlewareServer(name string, cm *configv1.Customize_Config, runtimeConfig *config.RuntimeConfig) (middleware.Middleware, error) {
-	return build.NewMiddlewareServer(name, cm, runtimeConfig)
+func NewMiddlewareServer(name string, cm *configv1.Customize_Config, rc *config.RuntimeConfig) (middleware.Middleware, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.NewMiddlewareServer(name, cm, rc)
 }
 
 // NewMiddlewaresClient creates a new Middleware with the builder.
-func NewMiddlewaresClient(cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
-	return build.NewMiddlewaresClient(nil, cc, ss...)
+func NewMiddlewaresClient(cc *configv1.Customize, rc *config.RuntimeConfig) []middleware.Middleware {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.NewMiddlewaresClient(nil, cc, rc)
 }
 
 // NewMiddlewaresServer creates a new Middleware with the builder.
-func NewMiddlewaresServer(cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
-	return build.NewMiddlewaresServer(nil, cc, ss...)
+func NewMiddlewaresServer(cc *configv1.Customize, rc *config.RuntimeConfig) []middleware.Middleware {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	return build.NewMiddlewaresServer(nil, cc, rc)
 }
 
 // RegisterMiddleware registers a MiddlewareBuilder with the builder.
@@ -116,27 +140,39 @@ func RegisterMiddleware(name string, middlewareBuilder MiddlewareBuilder) {
 }
 
 // NewHTTPServiceServer creates a new HTTP server using the provided configuration
-func NewHTTPServiceServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.HTTPServer, error) {
+func NewHTTPServiceServer(cfg *configv1.Service, rc *config.RuntimeConfig) (*service.HTTPServer, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
 	// Call the build.NewHTTPServer function with the provided configuration
-	return build.NewHTTPServer(cfg, ss...)
+	return build.NewHTTPServer(cfg, rc)
 }
 
 // NewHTTPServiceClient creates a new HTTP client using the provided context and configuration
-func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.HTTPClient, error) {
+func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, rc *config.RuntimeConfig) (*service.HTTPClient, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
 	// Call the build.NewHTTPClient function with the provided context and configuration
-	return build.NewHTTPClient(ctx, cfg, ss...)
+	return build.NewHTTPClient(ctx, cfg, rc)
 }
 
 // NewGRPCServiceServer creates a new GRPC server using the provided configuration
-func NewGRPCServiceServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.GRPCServer, error) {
+func NewGRPCServiceServer(cfg *configv1.Service, rc *config.RuntimeConfig) (*service.GRPCServer, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
 	// Call the build.NewGRPCServer function with the provided configuration
-	return build.NewGRPCServer(cfg, ss...)
+	return build.NewGRPCServer(cfg, rc)
 }
 
 // NewGRPCServiceClient creates a new GRPC client using the provided context and configuration
-func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.GRPCClient, error) {
+func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, rc *config.RuntimeConfig) (*service.GRPCClient, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
 	// Call the build.NewGRPCClient function with the provided context and configuration
-	return build.NewGRPCClient(ctx, cfg, ss...)
+	return build.NewGRPCClient(ctx, cfg, rc)
 }
 
 // RegisterService registers a service builder with the provided name
