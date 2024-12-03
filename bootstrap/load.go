@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/goexts/generic/settings"
 	"github.com/origadmin/toolkits/codec"
 	"github.com/origadmin/toolkits/errors"
 
@@ -117,8 +116,7 @@ func LoadRemoteConfig(bootstrap *Bootstrap, v any, ss ...config.RuntimeConfigSet
 	if err != nil {
 		return err
 	}
-	rc := settings.Apply(config.NewRuntimeConfig(), ss)
-	config, err := runtime.NewConfig(sourceConfig, rc)
+	config, err := runtime.NewConfig(sourceConfig, ss...)
 	if err != nil {
 		return err
 	}
