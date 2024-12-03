@@ -26,6 +26,7 @@ message LoggerHookMessage {
     string error = 4 [json_name = "error"];
     map<string, string> fields = 5 [json_name = "fields"];
 }
+
 // Logger
 message Logger {
     // Logger file
@@ -39,6 +40,7 @@ message Logger {
         string max_backups = 7 [json_name = "max_backups"];
     }
 
+    // Dev logger
     message DevLogger {
         uint32 max_slice = 1 [json_name = "max_slice"];
         bool sort_keys = 2 [json_name = "sort_keys"];
@@ -52,7 +54,7 @@ message Logger {
         bool formatter = 10 [json_name = "formatter"];
     }
 
-
+    // Disable logger
     bool disabled = 1 [json_name = "disabled"];
     // Enable dev logger output
     bool develop = 2 [json_name = "develop"];
