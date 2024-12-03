@@ -13,7 +13,7 @@ import (
 
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/validate"
+	"github.com/origadmin/runtime/middleware/validate"
 )
 
 func Validate(ms []Middleware, ok bool, validator *configv1.Middleware_Validator) []Middleware {

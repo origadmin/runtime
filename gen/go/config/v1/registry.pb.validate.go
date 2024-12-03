@@ -478,7 +478,7 @@ func (m *Registry_Custom) validate(all bool) error {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, Registry_CustomValidationError{
-					field:  "Selector",
+					field:  "Config",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -486,7 +486,7 @@ func (m *Registry_Custom) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, Registry_CustomValidationError{
-					field:  "Selector",
+					field:  "Config",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -495,7 +495,7 @@ func (m *Registry_Custom) validate(all bool) error {
 	} else if v, ok := interface{}(m.GetConfig()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return Registry_CustomValidationError{
-				field:  "Selector",
+				field:  "Config",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

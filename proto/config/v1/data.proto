@@ -9,7 +9,7 @@ import "gnostic/openapi/v3/annotations.proto";
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/gen/go/config/v1;configv1";
 option java_multiple_files = true;
-option java_outer_classname = "CorsProto";
+option java_outer_classname = "DataProto";
 option java_package = "com.github.origadmin.runtime.config";
 option objc_class_prefix = "Config";
 
@@ -242,6 +242,10 @@ message Data {
             (gnostic.openapi.v3.property) = {
                 description: "cache driver name",
             }];
+        string name = 2 [json_name = "name",
+            (gnostic.openapi.v3.property) = {
+                description: "cache name",
+            }];
         // Memcached
         Memcached memcached = 10 [json_name = "memcached",
             (gnostic.openapi.v3.property) = {
@@ -266,20 +270,20 @@ message Data {
     }
 
     // Database
-    Database database = 1 [
-        json_name = "database",
+    repeated Database databases = 1 [
+        json_name = "databases",
         (gnostic.openapi.v3.property) = {
             description: "database configuration",
         }];
     // Cache
-    Cache cache = 2 [
-        json_name = "cache",
+    repeated Cache caches = 2 [
+        json_name = "caches",
         (gnostic.openapi.v3.property) = {
             description: "cache configuration",
         }];
     // Storage
-    Storage storage = 3 [
-        json_name = "storage",
+    repeated Storage storages = 3 [
+        json_name = "storages",
         (gnostic.openapi.v3.property) = {
             description: "storage configuration",
         }];

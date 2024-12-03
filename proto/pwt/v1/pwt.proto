@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package pwt.v1;
+
+import "google/protobuf/duration.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/gen/go/pwt/v1;pwtv1";
+option java_multiple_files = true;
+option java_outer_classname = "PWTProto";
+option java_package = "com.github.origadmin.runtime.pwt";
+option objc_class_prefix = "PWT";
+
+
+// PWT is a web token that can be used to authenticate a user with protobuf services.
+message PWT {
+  google.protobuf.Duration expiration_time = 1 [json_name = "expiration_time"];
+  google.protobuf.Duration issued_at = 2 [json_name = "issued_at"];
+  google.protobuf.Duration not_before = 3 [json_name = "not_before"];
+  string issuer = 4 [json_name = "issuer"];
+  repeated string audience = 5 [json_name = "audience"];
+  string subject = 6 [json_name = "subject"];
+  string jwt_id = 7 [json_name = "jwt_id"];
+  string client_id = 8 [json_name = "client_id"];
+  string client_secret = 9 [json_name = "client_secret"];
+}

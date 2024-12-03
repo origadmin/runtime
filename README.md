@@ -7,14 +7,22 @@ configuration.
 
 ### Available Packages
 
-- **[proto](proto)**: For compatibility with other languages, the interface is defined using proto files and implemented
-  using gRPC. All proto definition files used by the Runtime are placed in 'proto' directory.
+- **[bootstrap](bootstrap)**: The bootstrap package contains Configuration file reading and writing, initialization
+  variable declaration, etc
 - **[config](config)**: The files in this directory define the basic configuration of the service runtime, as well as
   the loading of the run configuration.
+- **[context](context)**: The context directory defines the context interface and the context implementation.
+- **[data](data)**: The data directory defines the data interface, caching, database, and other storage implementation.
+- **[gen](gen)**: The protobuf directory contains the definition of the protobuf protocol.
+- **[proto](proto)**: For compatibility with other languages, the interface is defined using proto files and implemented
+  using gRPC. All proto definition files used by the Runtime are placed in 'proto' directory.
+- **[mail](mail)**: The mail directory defines the email interface and the email implementation.
+- **[middleware](middleware)**: The middleware directory defines the middleware interface and the middleware
+- 
 - **[registry](registry)**: This directory defines an alias for 'kratos/v2/registry', primarily for backward
   compatibility and for placing import error paths.
-- **[transport](transport)**: The current directory currently defines only the transport implementation of gins, which
-  is not complete. You can use [protoc-gen-go-gins](../cmd/protoc-gen-go-gins) generates the relevant code.
+- **[service](service)**: The service directory contains the definition of the service interface, which is used to
+  define the interface of the service and the implementation of the service.
 
 ## Getting Started
 
