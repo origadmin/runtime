@@ -44,47 +44,43 @@ type RuntimeConfigSetting = func(config *RuntimeConfig)
 
 // WithSourceOption is a function that returns a RuntimeConfigSetting.
 // This function sets the Source field of the RuntimeConfig.
-func WithSourceOption(source *SourceOption, ss ...SourceOptionSetting) RuntimeConfigSetting {
-	if source == nil {
-		source = new(SourceOption)
-	}
-	source = settings.Apply(source, ss)
+func WithSourceOption(ss ...SourceOptionSetting) RuntimeConfigSetting {
 	return func(config *RuntimeConfig) {
-		config.source = source
+		if config.source == nil {
+			config.source = new(SourceOption)
+		}
+		config.source = settings.Apply(config.source, ss)
 	}
 }
 
 // WithServiceOption is a function that returns a RuntimeConfigSetting.
 // This function sets the Service field of the RuntimeConfig.
-func WithServiceOption(service *ServiceOption, ss ...ServiceOptionSetting) RuntimeConfigSetting {
-	if service == nil {
-		service = new(ServiceOption)
-	}
-	service = settings.Apply(service, ss)
+func WithServiceOption(ss ...ServiceOptionSetting) RuntimeConfigSetting {
 	return func(config *RuntimeConfig) {
-		config.service = service
+		if config.service == nil {
+			config.service = new(ServiceOption)
+		}
+		config.service = settings.Apply(config.service, ss)
 	}
 }
 
 // WithSelectorOption is a function that returns a RuntimeConfigSetting.
 // This function sets the Selector field of the RuntimeConfig.
-func WithSelectorOption(selector *SelectorOption, ss ...SelectorOptionSetting) RuntimeConfigSetting {
-	if selector == nil {
-		selector = new(SelectorOption)
-	}
-	selector = settings.Apply(selector, ss)
+func WithSelectorOption(ss ...SelectorOptionSetting) RuntimeConfigSetting {
 	return func(config *RuntimeConfig) {
-		config.selector = selector
+		if config.selector == nil {
+			config.selector = new(SelectorOption)
+		}
+		config.selector = settings.Apply(config.selector, ss)
 	}
 }
 
-func WithCustomizeOption(customize *CustomizeOption, ss ...CustomizeOptionSetting) RuntimeConfigSetting {
-	if customize == nil {
-		customize = new(CustomizeOption)
-	}
-	customize = settings.Apply(customize, ss)
+func WithCustomizeOption(ss ...CustomizeOptionSetting) RuntimeConfigSetting {
 	return func(config *RuntimeConfig) {
-		config.customize = customize
+		if config.customize == nil {
+			config.customize = new(CustomizeOption)
+		}
+		config.customize = settings.Apply(config.customize, ss)
 	}
 }
 
