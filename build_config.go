@@ -46,7 +46,7 @@ func (fn ConfigBuildFunc) NewConfig(cfg *configv1.SourceConfig, rc *config.Runti
 func (b *builder) NewConfig(cfg *configv1.SourceConfig, rc *config.RuntimeConfig) (config.Config, error) {
 	b.configMux.RLock()
 	defer b.configMux.RUnlock()
-	configBuilder, ok := b.configs[cfg.Type]
+	configBuilder, ok := b.builders[cfg.Type]
 	if !ok {
 		return nil, ErrNotFound
 	}
@@ -78,7 +78,7 @@ func (b *builder) SyncConfig(cfg *configv1.SourceConfig, v any, rc *config.Runti
 func (b *builder) RegisterConfigBuilder(name string, configBuilder ConfigBuilder) {
 	b.configMux.Lock()
 	defer b.configMux.Unlock()
-	b.configs[name] = configBuilder
+	b.builders[name] = configBuilder
 }
 
 // RegisterConfigFunc registers a new ConfigBuilder with the given name and function.
