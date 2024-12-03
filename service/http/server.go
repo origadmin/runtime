@@ -18,10 +18,10 @@ import (
 )
 
 // NewServer Create an HTTP server instance.
-func NewServer(cfg *configv1.Service, opts ...config.ServiceSetting) *transhttp.Server {
+func NewServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) *transhttp.Server {
 	var options []transhttp.ServerOption
 
-	option := settings.Apply(&config.ServiceOption{}, opts)
+	option := settings.Apply(&config.RuntimeConfig{}, ss).Service()
 	var ms []middleware.Middleware
 	ms = middleware.NewServer(cfg.GetMiddleware())
 	if option.Middlewares != nil {

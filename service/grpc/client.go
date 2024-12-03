@@ -18,17 +18,20 @@ import (
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/middleware"
+	"github.com/origadmin/runtime/service/selector"
 )
 
 const defaultTimeout = 5 * time.Second
 
 // NewClient Creating a GRPC client instance
-func NewClient(ctx context.Context, service *configv1.Service, opts ...config.ServiceSetting) (*grpc.ClientConn, error) {
-	option := settings.Apply(&config.ServiceOption{}, opts)
+func NewClient(ctx context.Context, service *configv1.Service, ss ...config.RuntimeConfigSetting) (*grpc.ClientConn, error) {
+	option := settings.Apply(&config.RuntimeConfig{}, ss)
+	serviceOption := option.Service()
+	selectorOption := option.Selector()
 	var ms []middleware.Middleware
 	ms = middleware.NewClient(service.GetMiddleware())
-	if option.Middlewares != nil {
-		ms = append(ms, option.Middlewares...)
+	if serviceOption.Middlewares != nil {
+		ms = append(ms, serviceOption.Middlewares...)
 	}
 
 	timeout := defaultTimeout
@@ -43,22 +46,22 @@ func NewClient(ctx context.Context, service *configv1.Service, opts ...config.Se
 		transgrpc.WithMiddleware(ms...),
 	}
 
-	if option.Discovery != nil {
+	if serviceOption.Discovery != nil {
 		endpoint := helpers.ServiceDiscoveryName(service.GetName())
-		options = append(options,
-			transgrpc.WithEndpoint(endpoint),
-			transgrpc.WithDiscovery(option.Discovery),
-		)
+		options = append(options, transgrpc.WithEndpoint(endpoint),
+			transgrpc.WithDiscovery(serviceOption.Discovery))
 	}
 
-	if selector := option.Selector; selector != nil {
-		if option, err := selector.GRPC(service.GetSelector()); err == nil {
+	if selectorOption.GRPC == nil {
+		selectorOption.GRPC = selector.DefaultGRPC
+	}
+	if serviceSelector := service.GetSelector(); serviceSelector != nil {
+		if option, err := selectorOption.GRPC(serviceSelector); err == nil && option != nil {
 			options = append(options, option)
 		}
 	}
 
 	conn, err := transgrpc.DialInsecure(ctx, options...)
-
 	if err != nil {
 		return nil, errors.Errorf("dial grpc client [%s] failed: %s", service.GetName(), err.Error())
 	}

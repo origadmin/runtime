@@ -186,14 +186,14 @@ func file_config_v1_customize_proto_rawDescGZIP() []byte {
 var file_config_v1_customize_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_config_v1_customize_proto_goTypes = []any{
 	(*Customize)(nil),        // 0: config.v1.Customize
-	(*Customize_Config)(nil), // 1: config.v1.Customize.Config
+	(*Customize_Config)(nil), // 1: config.v1.Customize.Selector
 	nil,                      // 2: config.v1.Customize.ConfigsEntry
 	(*anypb.Any)(nil),        // 3: google.protobuf.Any
 }
 var file_config_v1_customize_proto_depIdxs = []int32{
 	2, // 0: config.v1.Customize.configs:type_name -> config.v1.Customize.ConfigsEntry
-	3, // 1: config.v1.Customize.Config.value:type_name -> google.protobuf.Any
-	1, // 2: config.v1.Customize.ConfigsEntry.value:type_name -> config.v1.Customize.Config
+	3, // 1: config.v1.Customize.Selector.value:type_name -> google.protobuf.Any
+	1, // 2: config.v1.Customize.ConfigsEntry.value:type_name -> config.v1.Customize.Selector
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

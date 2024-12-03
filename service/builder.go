@@ -22,28 +22,28 @@ type serviceBuilder struct{}
 
 // NewGRPCServer creates a new gRPC server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (s serviceBuilder) NewGRPCServer(cfg *configv1.Service, opts ...config.ServiceSetting) (*GRPCServer, error) {
+func (s serviceBuilder) NewGRPCServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*GRPCServer, error) {
 	// Create a new gRPC server using the provided configuration and options.
-	return grpc.NewServer(cfg, opts...), nil
+	return grpc.NewServer(cfg, ss...), nil
 }
 
 // NewHTTPServer creates a new HTTP server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (s serviceBuilder) NewHTTPServer(cfg *configv1.Service, opts ...config.ServiceSetting) (*HTTPServer, error) {
+func (s serviceBuilder) NewHTTPServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*HTTPServer, error) {
 	// Create a new HTTP server using the provided configuration and options.
-	return http.NewServer(cfg, opts...), nil
+	return http.NewServer(cfg, ss...), nil
 }
 
 // NewGRPCClient creates a new gRPC client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (s serviceBuilder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, opts ...config.ServiceSetting) (*GRPCClient, error) {
+func (s serviceBuilder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*GRPCClient, error) {
 	// Create a new gRPC client using the provided context, configuration, and options.
-	return grpc.NewClient(ctx, cfg, opts...)
+	return grpc.NewClient(ctx, cfg, ss...)
 }
 
 // NewHTTPClient creates a new HTTP client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (s serviceBuilder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, opts ...config.ServiceSetting) (*HTTPClient, error) {
+func (s serviceBuilder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*HTTPClient, error) {
 	// Create a new HTTP client using the provided context, configuration, and options.
-	return http.NewClient(ctx, cfg, opts...)
+	return http.NewClient(ctx, cfg, ss...)
 }

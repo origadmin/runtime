@@ -7,7 +7,7 @@ package bootstrap
 
 // Define types from kratos config package
 //type (
-//	Config   = kratosconfig.Config
+//	Selector   = kratosconfig.Selector
 //	Decoder  = kratosconfig.Decoder
 //	KeyValue = kratosconfig.KeyValue
 //	Merge    = kratosconfig.Merge
@@ -26,7 +26,7 @@ package bootstrap
 //)
 //
 //// NewConfig returns a new config instance
-//func NewConfig(opts ...Option) Config {
+//func NewConfig(opts ...Option) Selector {
 //	return kratosconfig.New(opts...)
 //}
 //

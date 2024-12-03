@@ -6,7 +6,9 @@
 package runtime
 
 import (
-	"github.com/origadmin/runtime/customize"
+	"github.com/goexts/generic/settings"
+
+	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/middleware"
 )
@@ -14,53 +16,54 @@ import (
 type (
 	// registryBuildRegistry is an interface that defines a method for registering a RegistryBuilder.
 	middlewareBuildRegistry interface {
-		RegisterMiddlewareBuilder(name string, registryBuilder MiddlewareBuilder)
+		RegisterMiddlewareBuilder(string, MiddlewareBuilder)
 	}
 
 	// MiddlewareBuilders middleware builders for runtime
 	MiddlewareBuilders interface {
 		// NewMiddlewaresClient build middleware
-		NewMiddlewaresClient([]middleware.Middleware, *configv1.Customize) []middleware.Middleware
+		NewMiddlewaresClient([]middleware.Middleware, *configv1.Customize, ...config.RuntimeConfigSetting) []middleware.Middleware
 		// NewMiddlewaresServer build middleware
-		NewMiddlewaresServer([]middleware.Middleware, *configv1.Customize) []middleware.Middleware
+		NewMiddlewaresServer([]middleware.Middleware, *configv1.Customize, ...config.RuntimeConfigSetting) []middleware.Middleware
 		// NewMiddlewareClient build middleware
-		NewMiddlewareClient(name string, config *configv1.Customize_Config) (middleware.Middleware, error)
+		NewMiddlewareClient(string, *configv1.Customize_Config, *config.RuntimeConfig) (middleware.Middleware, error)
 		// NewMiddlewareServer build middleware
-		NewMiddlewareServer(name string, config *configv1.Customize_Config) (middleware.Middleware, error)
+		NewMiddlewareServer(string, *configv1.Customize_Config, *config.RuntimeConfig) (middleware.Middleware, error)
 	}
 
 	// MiddlewareBuilder middleware builder interface
 	MiddlewareBuilder interface {
 		// NewMiddlewareClient build middleware
-		NewMiddlewareClient(config *configv1.Customize_Config) (middleware.Middleware, error)
+		NewMiddlewareClient(*configv1.Customize_Config, *config.RuntimeConfig) (middleware.Middleware, error)
 		// NewMiddlewareServer build middleware
-		NewMiddlewareServer(config *configv1.Customize_Config) (middleware.Middleware, error)
+		NewMiddlewareServer(*configv1.Customize_Config, *config.RuntimeConfig) (middleware.Middleware, error)
 	}
 
 	// MiddlewareBuildFunc is an interface that defines methods for creating middleware.
-	MiddlewareBuildFunc = func(*configv1.Customize_Config) (middleware.Middleware, error)
+	MiddlewareBuildFunc = func(*configv1.Customize_Config, *config.RuntimeConfig) (middleware.Middleware, error)
 )
 
-func (b *builder) NewMiddlewareClient(name string, config *configv1.Customize_Config) (middleware.Middleware, error) {
+func (b *builder) NewMiddlewareClient(name string, config *configv1.Customize_Config, runtimeConfig *config.RuntimeConfig) (middleware.Middleware, error) {
 	b.middlewareMux.RLock()
 	defer b.middlewareMux.RUnlock()
 	if builder, ok := b.middlewares[name]; ok {
-		return builder.NewMiddlewareClient(config)
+		return builder.NewMiddlewareClient(config, runtimeConfig)
 	}
 	return nil, ErrNotFound
 }
 
-func (b *builder) NewMiddlewareServer(name string, config *configv1.Customize_Config) (middleware.Middleware, error) {
+func (b *builder) NewMiddlewareServer(name string, config *configv1.Customize_Config, runtimeConfig *config.RuntimeConfig) (middleware.Middleware, error) {
 	b.middlewareMux.RLock()
 	defer b.middlewareMux.RUnlock()
 	if builder, ok := b.middlewares[name]; ok {
-		return builder.NewMiddlewareServer(config)
+		return builder.NewMiddlewareServer(config, runtimeConfig)
 	}
 	return nil, ErrNotFound
 }
 
-func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1.Customize) []middleware.Middleware {
-	configs := customize.GetTypeConfigs(cc, middleware.Type)
+func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
+	configs := config.GetTypeConfigs(cc, middleware.Type)
+	runtimeConfig := settings.Apply(&config.RuntimeConfig{}, ss)
 	var mbs []*middlewareBuilderWrap
 	b.middlewareMux.RLock()
 	for name := range configs {
@@ -74,15 +77,16 @@ func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1
 	}
 	b.middlewareMux.RUnlock()
 	for _, mb := range mbs {
-		if m, err := mb.NewClient(); err == nil {
+		if m, err := mb.NewClient(runtimeConfig); err == nil {
 			mms = append(mms, m)
 		}
 	}
 	return mms
 }
 
-func (b *builder) NewMiddlewaresServer(mms []middleware.Middleware, cc *configv1.Customize) []middleware.Middleware {
-	configs := customize.GetTypeConfigs(cc, middleware.Type)
+func (b *builder) NewMiddlewaresServer(mms []middleware.Middleware, cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
+	configs := config.GetTypeConfigs(cc, middleware.Type)
+	runtimeConfig := settings.Apply(&config.RuntimeConfig{}, ss)
 	var mbs []*middlewareBuilderWrap
 	b.middlewareMux.RLock()
 	for name := range configs {
@@ -96,7 +100,7 @@ func (b *builder) NewMiddlewaresServer(mms []middleware.Middleware, cc *configv1
 	}
 	b.middlewareMux.RUnlock()
 	for _, mb := range mbs {
-		if m, err := mb.NewServer(); err == nil {
+		if m, err := mb.NewServer(runtimeConfig); err == nil {
 			mms = append(mms, m)
 		}
 	}
@@ -116,10 +120,10 @@ type middlewareBuilderWrap struct {
 	Builder MiddlewareBuilder
 }
 
-func (m middlewareBuilderWrap) NewClient() (middleware.Middleware, error) {
-	return m.Builder.NewMiddlewareClient(m.Config)
+func (m middlewareBuilderWrap) NewClient(runtimeConfig *config.RuntimeConfig) (middleware.Middleware, error) {
+	return m.Builder.NewMiddlewareClient(m.Config, runtimeConfig)
 }
 
-func (m middlewareBuilderWrap) NewServer() (middleware.Middleware, error) {
-	return m.Builder.NewMiddlewareServer(m.Config)
+func (m middlewareBuilderWrap) NewServer(runtimeConfig *config.RuntimeConfig) (middleware.Middleware, error) {
+	return m.Builder.NewMiddlewareServer(m.Config, runtimeConfig)
 }
