@@ -13,7 +13,7 @@ option objc_class_prefix = "PWT";
 
 
 // PWT is a web token that can be used to authenticate a user with protobuf services.
-message PWT {
+message Token {
   google.protobuf.Duration expiration_time = 1 [json_name = "expiration_time"];
   google.protobuf.Duration issued_at = 2 [json_name = "issued_at"];
   google.protobuf.Duration not_before = 3 [json_name = "not_before"];
