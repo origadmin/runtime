@@ -22,7 +22,7 @@ type serviceBuilder struct{}
 
 // NewGRPCServer creates a new gRPC server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (s serviceBuilder) NewGRPCServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*GRPCServer, error) {
+func (s serviceBuilder) NewGRPCServer(cfg *configv1.Service, rc *config.RuntimeConfig) (*GRPCServer, error) {
 	// Create a new gRPC server using the provided configuration and options.
 	return grpc.NewServer(cfg, ss...), nil
 }

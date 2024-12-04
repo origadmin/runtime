@@ -9,7 +9,6 @@ import (
 	"time"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/goexts/generic/settings"
 	"github.com/origadmin/toolkits/errors"
 	"github.com/origadmin/toolkits/helpers"
 	"google.golang.org/grpc"
@@ -24,10 +23,12 @@ import (
 const defaultTimeout = 5 * time.Second
 
 // NewClient Creating a GRPC client instance
-func NewClient(ctx context.Context, service *configv1.Service, ss ...config.RuntimeConfigSetting) (*grpc.ClientConn, error) {
-	option := settings.Apply(&config.RuntimeConfig{}, ss)
-	serviceOption := option.Service()
-	selectorOption := option.Selector()
+func NewClient(ctx context.Context, service *configv1.Service, rc *config.RuntimeConfig) (*grpc.ClientConn, error) {
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
+	serviceOption := rc.Service()
+	selectorOption := rc.Selector()
 	var ms []middleware.Middleware
 	ms = middleware.NewClient(service.GetMiddleware())
 	if serviceOption.Middlewares != nil {

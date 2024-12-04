@@ -9,7 +9,6 @@ import (
 	"net/url"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/goexts/generic/settings"
 	"github.com/origadmin/toolkits/helpers"
 
 	"github.com/origadmin/runtime/config"
@@ -18,14 +17,17 @@ import (
 )
 
 // NewServer Create a GRPC server instance
-func NewServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) *transgrpc.Server {
+func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transgrpc.Server {
 	var options []transgrpc.ServerOption
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
 
-	option := settings.Apply(&config.RuntimeConfig{}, ss).Service()
 	var ms []middleware.Middleware
 	ms = middleware.NewServer(cfg.GetMiddleware())
-	if option.Middlewares != nil {
-		ms = append(ms, option.Middlewares...)
+	service := rc.Service()
+	if service.Middlewares != nil {
+		ms = append(ms, service.Middlewares...)
 	}
 	options = append(options, transgrpc.Middleware(ms...))
 
@@ -44,8 +46,8 @@ func NewServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) *transg
 			var err error
 
 			// Obtain an endpoint using the custom EndpointURL function or the default service discovery method
-			if option.EndpointURL != nil {
-				endpoint, err = option.EndpointURL(serviceGrpc.Endpoint, "grpc", cfg.Host, serviceGrpc.Addr)
+			if service.EndpointURL != nil {
+				endpoint, err = service.EndpointURL(serviceGrpc.Endpoint, "grpc", cfg.Host, serviceGrpc.Addr)
 			} else {
 				endpointStr := helpers.ServiceDiscoveryEndpoint(serviceGrpc.Endpoint, "grpc", cfg.Host, serviceGrpc.Addr)
 				endpoint, err = url.Parse(endpointStr)

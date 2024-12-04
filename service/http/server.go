@@ -9,7 +9,6 @@ import (
 	"net/url"
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/goexts/generic/settings"
 	"github.com/origadmin/toolkits/helpers"
 
 	"github.com/origadmin/runtime/config"
@@ -18,14 +17,17 @@ import (
 )
 
 // NewServer Create an HTTP server instance.
-func NewServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) *transhttp.Server {
+func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transhttp.Server {
 	var options []transhttp.ServerOption
 
-	option := settings.Apply(&config.RuntimeConfig{}, ss).Service()
+	if rc == nil {
+		rc = config.DefaultRuntimeConfig
+	}
 	var ms []middleware.Middleware
 	ms = middleware.NewServer(cfg.GetMiddleware())
-	if option.Middlewares != nil {
-		ms = append(ms, option.Middlewares...)
+	service := rc.Service()
+	if service.Middlewares != nil {
+		ms = append(ms, service.Middlewares...)
 	}
 	options = append(options, transhttp.Middleware(ms...))
 
@@ -44,8 +46,8 @@ func NewServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) *transh
 			var err error
 
 			// Obtain an endpoint using the custom EndpointURL function or the default service discovery method
-			if option.EndpointURL != nil {
-				endpoint, err = option.EndpointURL(serviceHttp.Endpoint, "http", cfg.Host, serviceHttp.Addr)
+			if service.EndpointURL != nil {
+				endpoint, err = service.EndpointURL(serviceHttp.Endpoint, "http", cfg.Host, serviceHttp.Addr)
 			} else {
 				endpointStr := helpers.ServiceDiscoveryEndpoint(serviceHttp.Endpoint, "http", cfg.Host, serviceHttp.Addr)
 				endpoint, err = url.Parse(endpointStr)
