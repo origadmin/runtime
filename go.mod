@@ -11,7 +11,7 @@ require (
 	github.com/goexts/generic v0.1.1
 	github.com/google/gnostic v0.7.0
 	github.com/origadmin/toolkits v0.1.5
-	github.com/origadmin/toolkits/codec v0.0.33
+	github.com/origadmin/toolkits/codec v0.0.34
 	github.com/origadmin/toolkits/errors v0.0.15
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.2
@@ -26,6 +26,7 @@ require (
 	github.com/bytedance/sonic/loader v0.2.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-kratos/aegis v0.2.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
