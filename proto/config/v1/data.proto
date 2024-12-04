@@ -270,19 +270,19 @@ message Data {
     }
 
     // Database
-    repeated Database database = 1 [
+    Database database = 1 [
         json_name = "database",
         (gnostic.openapi.v3.property) = {
             description: "database configuration",
         }];
     // Cache
-    repeated Cache cache = 2 [
+    Cache cache = 2 [
         json_name = "cache",
         (gnostic.openapi.v3.property) = {
             description: "cache configuration",
         }];
     // Storage
-    repeated Storage storage = 3 [
+    Storage storage = 3 [
         json_name = "storage",
         (gnostic.openapi.v3.property) = {
             description: "storage configuration",

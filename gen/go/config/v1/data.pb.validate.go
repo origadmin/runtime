@@ -56,106 +56,91 @@ func (m *Data) validate(all bool) error {
 
 	var errors []error
 
-	for idx, item := range m.GetDatabase() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Database[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Database[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return DataValidationError{
-					field:  fmt.Sprintf("Database[%v]", idx),
+	if all {
+		switch v := interface{}(m.GetDatabase()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DataValidationError{
+					field:  "Database",
 					reason: "embedded message failed validation",
 					cause:  err,
-				}
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DataValidationError{
+					field:  "Database",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
 			}
 		}
-
+	} else if v, ok := interface{}(m.GetDatabase()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DataValidationError{
+				field:  "Database",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
-	for idx, item := range m.GetCache() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Cache[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Cache[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return DataValidationError{
-					field:  fmt.Sprintf("Cache[%v]", idx),
+	if all {
+		switch v := interface{}(m.GetCache()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DataValidationError{
+					field:  "Cache",
 					reason: "embedded message failed validation",
 					cause:  err,
-				}
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DataValidationError{
+					field:  "Cache",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
 			}
 		}
-
+	} else if v, ok := interface{}(m.GetCache()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DataValidationError{
+				field:  "Cache",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
-	for idx, item := range m.GetStorage() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Storage[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Storage[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return DataValidationError{
-					field:  fmt.Sprintf("Storage[%v]", idx),
+	if all {
+		switch v := interface{}(m.GetStorage()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DataValidationError{
+					field:  "Storage",
 					reason: "embedded message failed validation",
 					cause:  err,
-				}
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DataValidationError{
+					field:  "Storage",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
 			}
 		}
-
+	} else if v, ok := interface{}(m.GetStorage()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DataValidationError{
+				field:  "Storage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	if len(errors) > 0 {
