@@ -6,14 +6,12 @@
 package config
 
 import (
-	"net/url"
-
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
 )
 
 type (
-	EndpointURLFunc = func(endpoint string, scheme string, host string, addr string) (*url.URL, error)
+	EndpointURLFunc = func(scheme string, host string, addr string) (string, error)
 )
 
 // ServiceOption represents a set of configuration options for a service.

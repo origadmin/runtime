@@ -48,7 +48,7 @@ func NewClient(ctx context.Context, service *configv1.Service, rc *config.Runtim
 	}
 
 	if serviceOption.Discovery != nil {
-		endpoint := helpers.ServiceDiscoveryName(service.GetName())
+		endpoint := helpers.ServiceName(service.GetName())
 		options = append(options, transgrpc.WithEndpoint(endpoint),
 			transgrpc.WithDiscovery(serviceOption.Discovery))
 	}
