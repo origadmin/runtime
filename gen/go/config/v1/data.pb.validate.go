@@ -56,7 +56,7 @@ func (m *Data) validate(all bool) error {
 
 	var errors []error
 
-	for idx, item := range m.GetDatabases() {
+	for idx, item := range m.GetDatabase() {
 		_, _ = idx, item
 
 		if all {
@@ -64,7 +64,7 @@ func (m *Data) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Databases[%v]", idx),
+						field:  fmt.Sprintf("Database[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -72,7 +72,7 @@ func (m *Data) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Databases[%v]", idx),
+						field:  fmt.Sprintf("Database[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -81,7 +81,7 @@ func (m *Data) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return DataValidationError{
-					field:  fmt.Sprintf("Databases[%v]", idx),
+					field:  fmt.Sprintf("Database[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -90,7 +90,7 @@ func (m *Data) validate(all bool) error {
 
 	}
 
-	for idx, item := range m.GetCaches() {
+	for idx, item := range m.GetCache() {
 		_, _ = idx, item
 
 		if all {
@@ -98,7 +98,7 @@ func (m *Data) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Caches[%v]", idx),
+						field:  fmt.Sprintf("Cache[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -106,7 +106,7 @@ func (m *Data) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Caches[%v]", idx),
+						field:  fmt.Sprintf("Cache[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -115,7 +115,7 @@ func (m *Data) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return DataValidationError{
-					field:  fmt.Sprintf("Caches[%v]", idx),
+					field:  fmt.Sprintf("Cache[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -124,7 +124,7 @@ func (m *Data) validate(all bool) error {
 
 	}
 
-	for idx, item := range m.GetStorages() {
+	for idx, item := range m.GetStorage() {
 		_, _ = idx, item
 
 		if all {
@@ -132,7 +132,7 @@ func (m *Data) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Storages[%v]", idx),
+						field:  fmt.Sprintf("Storage[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -140,7 +140,7 @@ func (m *Data) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  fmt.Sprintf("Storages[%v]", idx),
+						field:  fmt.Sprintf("Storage[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -149,7 +149,7 @@ func (m *Data) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return DataValidationError{
-					field:  fmt.Sprintf("Storages[%v]", idx),
+					field:  fmt.Sprintf("Storage[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
