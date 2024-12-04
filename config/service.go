@@ -16,6 +16,8 @@ type (
 
 // ServiceOption represents a set of configuration options for a service.
 type ServiceOption struct {
+	// ServiceName is the name of the service.
+	ServiceName string
 	// Discovery is an interface for discovering service instances.
 	Discovery registry.Discovery
 	// Middlewares is a list of middleware functions to be applied to the service.
@@ -28,10 +30,12 @@ type ServiceOption struct {
 type ServiceOptionSetting = func(option *ServiceOption)
 
 // WithServiceDiscovery returns a ServiceSetting that sets the Discovery field of a ServiceOption.
-func WithServiceDiscovery(discovery registry.Discovery) ServiceOptionSetting {
+func WithServiceDiscovery(serviceName string, discovery registry.Discovery) ServiceOptionSetting {
 	return func(config *ServiceOption) {
 		// Set the Discovery field of the ServiceOption.
 		config.Discovery = discovery
+		// Set the ServiceName field of the ServiceOption.
+		config.ServiceName = serviceName
 	}
 }
 
