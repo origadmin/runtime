@@ -163,6 +163,7 @@ type Logger struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Disable logger
 	Disabled bool `protobuf:"varint,1,opt,name=disabled,proto3" json:"disabled,omitempty"`
 	// Enable dev logger output
 	Develop bool `protobuf:"varint,2,opt,name=develop,proto3" json:"develop,omitempty"`
@@ -396,6 +397,7 @@ func (x *Logger_File) GetMaxBackups() string {
 	return ""
 }
 
+// Dev logger
 type Logger_DevLogger struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

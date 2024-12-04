@@ -61,6 +61,8 @@ func (m *SourceConfig) validate(all bool) error {
 
 	// no validation rules for Name
 
+	// no validation rules for Env
+
 	// no validation rules for EnvArgs
 
 	if m.File != nil {
