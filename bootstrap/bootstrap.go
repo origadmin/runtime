@@ -2,6 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
+// Package bootstrap is a package that provides the bootstrap information for the service.
 package bootstrap
 
 import (
@@ -12,7 +13,7 @@ import (
 // Constants for default paths and environment
 const (
 	DefaultConfigPath = "configs/config.toml"
-	DefaultEnv        = "dev"
+	DefaultEnv        = "release"
 	DefaultWorkDir    = "."
 )
 
@@ -24,6 +25,10 @@ type Bootstrap struct {
 	Env        string
 	Daemon     bool
 }
+
+var (
+	buildEnv = DefaultEnv
+)
 
 // SetFlags sets the flags for the bootstrap
 func (b *Bootstrap) SetFlags(name, version string) {
