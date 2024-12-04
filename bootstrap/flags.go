@@ -5,6 +5,7 @@
 package bootstrap
 
 import (
+	"fmt"
 	"os"
 	"time"
 )
@@ -35,12 +36,19 @@ func DefaultFlags() Flags {
 
 // NewFlags returns a new set of flags for the service
 func NewFlags(name string, version string) Flags {
-	id, _ := os.Hostname()
 	return Flags{
-		ID:          id,
+		ID:          RandomTimeID(),
 		Version:     version,
 		ServiceName: name,
 		StartTime:   time.Now(),
 		Metadata:    make(map[string]string),
 	}
+}
+
+func RandomTimeID() string {
+	id, err := os.Hostname()
+	if err != nil {
+		id = "unknown"
+	}
+	return id + "." + fmt.Sprintf("%08d", time.Now().Unix()%(1<<32))
 }
