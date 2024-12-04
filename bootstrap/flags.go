@@ -25,7 +25,7 @@ type Flags struct {
 }
 
 var (
-	RuntimeNano = fmt.Sprintf("%08d", time.Now().UnixNano()%(1<<32))
+	RandomSuffix = fmt.Sprintf("%08d", time.Now().UnixNano()%(1<<32))
 )
 
 // ServiceID returns the ID of the service
@@ -41,7 +41,7 @@ func DefaultFlags() Flags {
 // NewFlags returns a new set of flags for the service
 func NewFlags(name string, version string) Flags {
 	return Flags{
-		ID:          RandomTimeID(),
+		ID:          RandomID(),
 		Version:     version,
 		ServiceName: name,
 		StartTime:   time.Now(),
@@ -49,10 +49,13 @@ func NewFlags(name string, version string) Flags {
 	}
 }
 
-func RandomTimeID() string {
+func RandomID() string {
 	id, err := os.Hostname()
 	if err != nil {
 		id = "unknown"
 	}
-	return id + "." + RuntimeNano
+	if RandomSuffix == "" {
+		return id
+	}
+	return id + "." + RandomSuffix
 }
