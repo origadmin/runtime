@@ -24,26 +24,26 @@ type serviceBuilder struct{}
 // It returns a pointer to the new server and an error if any.
 func (s serviceBuilder) NewGRPCServer(cfg *configv1.Service, rc *config.RuntimeConfig) (*GRPCServer, error) {
 	// Create a new gRPC server using the provided configuration and options.
-	return grpc.NewServer(cfg, ss...), nil
+	return grpc.NewServer(cfg, rc), nil
 }
 
 // NewHTTPServer creates a new HTTP server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (s serviceBuilder) NewHTTPServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*HTTPServer, error) {
+func (s serviceBuilder) NewHTTPServer(cfg *configv1.Service, rc *config.RuntimeConfig) (*HTTPServer, error) {
 	// Create a new HTTP server using the provided configuration and options.
-	return http.NewServer(cfg, ss...), nil
+	return http.NewServer(cfg, rc), nil
 }
 
 // NewGRPCClient creates a new gRPC client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (s serviceBuilder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*GRPCClient, error) {
+func (s serviceBuilder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, rc *config.RuntimeConfig) (*GRPCClient, error) {
 	// Create a new gRPC client using the provided context, configuration, and options.
-	return grpc.NewClient(ctx, cfg, ss...)
+	return grpc.NewClient(ctx, cfg, rc)
 }
 
 // NewHTTPClient creates a new HTTP client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (s serviceBuilder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*HTTPClient, error) {
+func (s serviceBuilder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, rc *config.RuntimeConfig) (*HTTPClient, error) {
 	// Create a new HTTP client using the provided context, configuration, and options.
-	return http.NewClient(ctx, cfg, ss...)
+	return http.NewClient(ctx, cfg, rc)
 }
