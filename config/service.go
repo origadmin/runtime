@@ -23,7 +23,7 @@ type ServiceOption struct {
 	// Middlewares is a list of middleware functions to be applied to the service.
 	Middlewares []middleware.Middleware
 	// EndpointURL is a function that generates a URL for a service endpoint.
-	EndpointURL func(endpoint string, scheme string, host string, addr string) (*url.URL, error)
+	EndpointURL func(scheme string, host string, addr string) (string, error)
 }
 
 // ServiceOptionSetting is a function that modifies a ServiceOption.

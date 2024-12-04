@@ -9,6 +9,10 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 )
 
+const (
+	EnvPrefix = "ORIGADMIN_SERVICE"
+)
+
 // Define types from kratos config package
 type (
 	Config   = kratosconfig.Config

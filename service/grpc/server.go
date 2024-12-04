@@ -9,11 +9,18 @@ import (
 	"net/url"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/origadmin/toolkits/env"
 	"github.com/origadmin/toolkits/helpers"
+	"github.com/origadmin/toolkits/net"
 
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
+)
+
+const (
+	Scheme = "grpc"
 )
 
 // NewServer Create a GRPC server instance
@@ -41,29 +48,32 @@ func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transgrpc.Serve
 		if serviceGrpc.Timeout != nil {
 			options = append(options, transgrpc.Timeout(serviceGrpc.Timeout.AsDuration()))
 		}
-		if cfg.DynamicEndpoint {
-			var endpoint *url.URL
+		if cfg.DynamicEndpoint && serviceGrpc.Endpoint == "" {
 			var err error
-
+			endpointParse := helpers.ServiceEndpoint
 			// Obtain an endpoint using the custom EndpointURL function or the default service discovery method
 			if service.EndpointURL != nil {
-				endpoint, err = service.EndpointURL(serviceGrpc.Endpoint, "grpc", cfg.Host, serviceGrpc.Addr)
-			} else {
-				endpointStr := helpers.ServiceDiscoveryEndpoint(serviceGrpc.Endpoint, "grpc", cfg.Host, serviceGrpc.Addr)
-				endpoint, err = url.Parse(endpointStr)
+				endpointParse = service.EndpointURL
 			}
 
+			host := env.Var(rc.Bootstrap().EnvPrefix, "host")
+			if cfg.Host != "" {
+				host = env.Var(rc.Bootstrap().EnvPrefix, cfg.Host)
+			}
+			endpointStr, err := endpointParse("http", net.HostAddr(host), serviceGrpc.Addr)
+			if err == nil {
+				serviceGrpc.Endpoint = endpointStr
+			}
+		}
+		if serviceGrpc.Endpoint != "" {
+			log.Infof("GRPC endpoint: %s", serviceGrpc.Endpoint)
+			endpoint, err := url.Parse(serviceGrpc.Endpoint)
 			// If there are no errors, add an endpoint to options
 			if err == nil {
 				options = append(options, transgrpc.Endpoint(endpoint))
 			} else {
 				// Record errors for easy debugging
 				// log.Printf("Failed to get or parse endpoint: %v", err)
-			}
-		} else {
-			endpoint, err := url.Parse(serviceGrpc.Endpoint)
-			if err == nil {
-				options = append(options, transgrpc.Endpoint(endpoint))
 			}
 		}
 	}

@@ -9,11 +9,18 @@ import (
 	"net/url"
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/origadmin/toolkits/env"
 	"github.com/origadmin/toolkits/helpers"
+	"github.com/origadmin/toolkits/net"
 
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
+)
+
+const (
+	Scheme = "http"
 )
 
 // NewServer Create an HTTP server instance.
@@ -41,29 +48,32 @@ func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transhttp.Serve
 		if serviceHttp.Timeout != nil {
 			options = append(options, transhttp.Timeout(serviceHttp.Timeout.AsDuration()))
 		}
-		if cfg.DynamicEndpoint {
-			var endpoint *url.URL
+		if cfg.DynamicEndpoint && serviceHttp.Endpoint == "" {
 			var err error
-
+			endpointParse := helpers.ServiceEndpoint
 			// Obtain an endpoint using the custom EndpointURL function or the default service discovery method
 			if service.EndpointURL != nil {
-				endpoint, err = service.EndpointURL(serviceHttp.Endpoint, "http", cfg.Host, serviceHttp.Addr)
-			} else {
-				endpointStr := helpers.ServiceDiscoveryEndpoint(serviceHttp.Endpoint, "http", cfg.Host, serviceHttp.Addr)
-				endpoint, err = url.Parse(endpointStr)
+				endpointParse = service.EndpointURL
 			}
 
+			host := env.Var(rc.Bootstrap().EnvPrefix, "host")
+			if cfg.Host != "" {
+				host = env.Var(rc.Bootstrap().EnvPrefix, cfg.Host)
+			}
+			endpointStr, err := endpointParse("http", net.HostAddr(host), serviceHttp.Addr)
+			if err == nil {
+				serviceHttp.Endpoint = endpointStr
+			}
+		}
+		if serviceHttp.Endpoint != "" {
+			log.Infof("HTTP endpoint: %s", serviceHttp.Endpoint)
+			endpoint, err := url.Parse(serviceHttp.Endpoint)
 			// If there are no errors, add an endpoint to options
 			if err == nil {
 				options = append(options, transhttp.Endpoint(endpoint))
 			} else {
 				// Record errors for easy debugging
 				// log.Printf("Failed to get or parse endpoint: %v", err)
-			}
-		} else {
-			endpoint, err := url.Parse(serviceHttp.Endpoint)
-			if err == nil {
-				options = append(options, transhttp.Endpoint(endpoint))
 			}
 		}
 	}

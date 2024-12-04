@@ -5,8 +5,6 @@
 // Package config implements the functions, types, and interfaces for the module.
 package config
 
-const Type = "config"
-
 type SourceOption struct {
 	Options []Option
 	Decoder Decoder

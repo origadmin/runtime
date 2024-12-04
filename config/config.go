@@ -11,6 +11,8 @@ import (
 
 // RuntimeConfig is a struct that holds the configuration for the runtime.
 type RuntimeConfig struct {
+	// Bootstrap is an option for configuring the bootstrap.
+	bootstrap *BootstrapOption
 	// Source is an option for configuring the source.
 	source *SourceOption
 	// Service is an option for configuring the service.
@@ -21,26 +23,41 @@ type RuntimeConfig struct {
 	customize *CustomizeOption
 }
 
+// RuntimeConfigSetting is a type alias for a function that takes a pointer to a RuntimeConfig and modifies it.
+type RuntimeConfigSetting = func(config *RuntimeConfig)
+
+// DefaultRuntimeConfig is a pre-initialized RuntimeConfig instance.
 var DefaultRuntimeConfig = NewRuntimeConfig()
 
+// Bootstrap returns the BootstrapOption associated with the RuntimeConfig.
+func (r RuntimeConfig) Bootstrap() *BootstrapOption {
+	// Return the bootstrap option.
+	return r.bootstrap
+}
+
+// Source returns the SourceOption associated with the RuntimeConfig.
 func (r RuntimeConfig) Source() *SourceOption {
+	// Return the source option.
 	return r.source
 }
 
+// Service returns the ServiceOption associated with the RuntimeConfig.
 func (r RuntimeConfig) Service() *ServiceOption {
+	// Return the service option.
 	return r.service
 }
 
+// Selector returns the SelectorOption associated with the RuntimeConfig.
 func (r RuntimeConfig) Selector() *SelectorOption {
+	// Return the selector option.
 	return r.selector
 }
 
+// Customize returns the CustomizeOption associated with the RuntimeConfig.
 func (r RuntimeConfig) Customize() *CustomizeOption {
+	// Return the customize option.
 	return r.customize
 }
-
-// RuntimeConfigSetting is a type alias for a function that takes a pointer to a RuntimeConfig and modifies it.
-type RuntimeConfigSetting = func(config *RuntimeConfig)
 
 // WithSourceOption is a function that returns a RuntimeConfigSetting.
 // This function sets the Source field of the RuntimeConfig.
@@ -88,6 +105,9 @@ func WithCustomizeOption(ss ...CustomizeOptionSetting) RuntimeConfigSetting {
 // It takes a variadic list of RuntimeConfigSettings and applies them to a new RuntimeConfig.
 func NewRuntimeConfig(ss ...RuntimeConfigSetting) *RuntimeConfig {
 	config := settings.Apply(&RuntimeConfig{
+		bootstrap: &BootstrapOption{
+			EnvPrefix: EnvPrefix,
+		},
 		source:    new(SourceOption),
 		service:   new(ServiceOption),
 		selector:  new(SelectorOption),
