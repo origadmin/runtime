@@ -24,9 +24,13 @@ type Flags struct {
 	Metadata    map[string]string
 }
 
+var (
+	RuntimeNano = fmt.Sprintf("%08d", time.Now().UnixNano()%(1<<32))
+)
+
 // ServiceID returns the ID of the service
 func (f Flags) ServiceID() string {
-	return f.ID + "." + f.ServiceName
+	return f.ServiceName + "." + f.ID
 }
 
 // DefaultFlags returns the default flags for the service
@@ -50,5 +54,5 @@ func RandomTimeID() string {
 	if err != nil {
 		id = "unknown"
 	}
-	return id + "." + fmt.Sprintf("%08d", time.Now().Unix()%(1<<32))
+	return id + "." + RuntimeNano
 }
