@@ -60,7 +60,7 @@ func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transgrpc.Serve
 			if cfg.Host != "" {
 				host = env.Var(rc.Bootstrap().EnvPrefix, cfg.Host)
 			}
-			endpointStr, err := endpointParse("http", net.HostAddr(host), serviceGrpc.Addr)
+			endpointStr, err := endpointParse("grpc", net.HostAddr(host), serviceGrpc.Addr)
 			if err == nil {
 				serviceGrpc.Endpoint = endpointStr
 			}
