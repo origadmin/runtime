@@ -10,8 +10,8 @@ option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/gen/go/pagination/v1;paginationv1";
 option java_multiple_files = true;
 option java_outer_classname = "PaginationProto";
-option java_package = "com.github.origadmin.runtime.pagination";
-option objc_class_prefix = "Pagination";
+option java_package = "com.github.origadmin.runtime.pagination.v1";
+option objc_class_prefix = "ORPA";
 
 // PageRequest common request
 message PageRequest {

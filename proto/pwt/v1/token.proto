@@ -9,7 +9,7 @@ option go_package = "github.com/origadmin/runtime/gen/go/pwt/v1;pwtv1";
 option java_multiple_files = true;
 option java_outer_classname = "PWTProto";
 option java_package = "com.github.origadmin.runtime.pwt";
-option objc_class_prefix = "PWT";
+option objc_class_prefix = "ORPW";
 
 
 // PWT is a web token that can be used to authenticate a user with protobuf services.
