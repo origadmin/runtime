@@ -11,12 +11,12 @@ option objc_class_prefix = "ORC";
 
 // Logger level
 enum LoggerLevel {
-    LEVEL_UNSPECIFIED = 0;
-    LEVEL_DEBUG = 1;
-    LEVEL_INFO = 2;
-    LEVEL_WARN = 3;
-    LEVEL_ERROR = 4;
-    LEVEL_FATAL = 5;
+    LOGGER_LEVEL_UNSPECIFIED = 0;
+    LOGGER_LEVEL_DEBUG = 1;
+    LOGGER_LEVEL_INFO = 2;
+    LOGGER_LEVEL_WARN = 3;
+    LOGGER_LEVEL_ERROR = 4;
+    LOGGER_LEVEL_FATAL = 5;
 }
 // Logger hook message
 message LoggerHookMessage {
