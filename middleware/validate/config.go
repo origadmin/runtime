@@ -8,10 +8,10 @@ package validate
 import "context"
 
 type Config struct {
-	version                 Version
-	failFast                bool
-	onValidationErrCallback OnValidationErrCallback
-	protoValidatorOptions   []ProtoValidatorOption
+	version          Version
+	failFast         bool
+	callback         OnValidationErrCallback
+	validatorOptions []ProtoValidatorOption
 }
 type ConfigSetting = func(*Config)
 
@@ -20,7 +20,7 @@ type OnValidationErrCallback func(ctx context.Context, err error)
 // WithOnValidationErrCallback registers function that will be invoked on validation error(s).
 func WithOnValidationErrCallback(onValidationErrCallback OnValidationErrCallback) ConfigSetting {
 	return func(o *Config) {
-		o.onValidationErrCallback = onValidationErrCallback
+		o.callback = onValidationErrCallback
 	}
 }
 
@@ -36,6 +36,6 @@ func WithFailFast(failFast bool) ConfigSetting {
 func WithV2ProtoValidatorOptions(opts ...ProtoValidatorOption) ConfigSetting {
 	return func(o *Config) {
 		o.version = V2
-		o.protoValidatorOptions = opts
+		o.validatorOptions = opts
 	}
 }

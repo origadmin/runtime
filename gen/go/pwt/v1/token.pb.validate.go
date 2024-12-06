@@ -56,102 +56,49 @@ func (m *Token) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetExpirationTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TokenValidationError{
-					field:  "ExpirationTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TokenValidationError{
-					field:  "ExpirationTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetExpirationTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TokenValidationError{
-				field:  "ExpirationTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetIssuedAt()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TokenValidationError{
-					field:  "IssuedAt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TokenValidationError{
-					field:  "IssuedAt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetIssuedAt()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TokenValidationError{
-				field:  "IssuedAt",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetNotBefore()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TokenValidationError{
-					field:  "NotBefore",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TokenValidationError{
-					field:  "NotBefore",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetNotBefore()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TokenValidationError{
-				field:  "NotBefore",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	// no validation rules for Issuer
-
-	// no validation rules for Subject
-
-	// no validation rules for JwtId
-
 	// no validation rules for ClientId
 
 	// no validation rules for ClientSecret
+
+	if utf8.RuneCountInString(m.GetToken()) < 1 {
+		err := TokenValidationError{
+			field:  "Token",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetClaims()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, TokenValidationError{
+					field:  "Claims",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, TokenValidationError{
+					field:  "Claims",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetClaims()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return TokenValidationError{
+				field:  "Claims",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if len(errors) > 0 {
 		return TokenMultiError(errors)
@@ -229,3 +176,232 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TokenValidationError{}
+
+// Validate checks the field values on Claims with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Claims) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Claims with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ClaimsMultiError, or nil if none found.
+func (m *Claims) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Claims) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetSub()) < 1 {
+		err := ClaimsValidationError{
+			field:  "Sub",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetIss()) < 1 {
+		err := ClaimsValidationError{
+			field:  "Iss",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetAud()) < 1 {
+		err := ClaimsValidationError{
+			field:  "Aud",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetExp()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ClaimsValidationError{
+					field:  "Exp",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ClaimsValidationError{
+					field:  "Exp",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetExp()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ClaimsValidationError{
+				field:  "Exp",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetNbf()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ClaimsValidationError{
+					field:  "Nbf",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ClaimsValidationError{
+					field:  "Nbf",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetNbf()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ClaimsValidationError{
+				field:  "Nbf",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetIat()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ClaimsValidationError{
+					field:  "Iat",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ClaimsValidationError{
+					field:  "Iat",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetIat()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ClaimsValidationError{
+				field:  "Iat",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if utf8.RuneCountInString(m.GetJti()) < 1 {
+		err := ClaimsValidationError{
+			field:  "Jti",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ClaimsMultiError(errors)
+	}
+
+	return nil
+}
+
+// ClaimsMultiError is an error wrapping multiple validation errors returned by
+// Claims.ValidateAll() if the designated constraints aren't met.
+type ClaimsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ClaimsMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ClaimsMultiError) AllErrors() []error { return m }
+
+// ClaimsValidationError is the validation error returned by Claims.Validate if
+// the designated constraints aren't met.
+type ClaimsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ClaimsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ClaimsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ClaimsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ClaimsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ClaimsValidationError) ErrorName() string { return "ClaimsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ClaimsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sClaims.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ClaimsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ClaimsValidationError{}

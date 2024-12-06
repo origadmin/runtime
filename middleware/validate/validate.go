@@ -43,9 +43,10 @@ func Server(ss ...ConfigSetting) (middleware.Middleware, error) {
 func buildValidator(cfg *Config) (Validator, error) {
 	switch cfg.version {
 	case V1:
-		return NewValidateV1(cfg.failFast, cfg.onValidationErrCallback), nil
+		return NewValidateV1(cfg.failFast, cfg.callback), nil
 	case V2:
-		return NewValidateV2(protovalidate.WithFailFast(cfg.failFast))
+		cfg.validatorOptions = append(cfg.validatorOptions, protovalidate.WithFailFast(cfg.failFast))
+		return NewValidateV2(cfg.validatorOptions...)
 	default:
 		return nil, fmt.Errorf("unsupported version: %d", cfg.version)
 	}

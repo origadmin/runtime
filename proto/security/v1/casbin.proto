@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package security.v1;
+
+import "validate/validate.proto";
+import "gnostic/openapi/v3/annotations.proto";
+
+option cc_enable_arenas = true;
+option csharp_namespace = "OrigAdmin.Runtime.Security.V1";
+option go_package = "github.com/origadmin/runtime/gen/go/security/v1;securityv1";
+option java_multiple_files = true;
+option java_outer_classname = "SecurityProto";
+option java_package = "com.github.origadmin.runtime.security.v1";
+option objc_class_prefix = "ORA";
+option php_namespace = "OrigAdmin\\Runtime\\Security\\V1";
+
+message CasbinPolicy {
+  string subject = 1 [
+    json_name = "subject",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The subject of the policy."}
+  ];
+  string object = 2 [
+    json_name = "object",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The object of the policy."}
+  ];
+  string action = 3 [
+    json_name = "action",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The action of the policy."}
+  ];
+  repeated string domain = 4 [
+    json_name = "domain",
+    (gnostic.openapi.v3.property) = {description: "The domains associated with the policy."}
+  ];
+}
