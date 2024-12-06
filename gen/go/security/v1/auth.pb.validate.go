@@ -266,6 +266,577 @@ var _ interface {
 	ErrorName() string
 } = BearerAuthValidationError{}
 
+// Validate checks the field values on DigestAuth with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *DigestAuth) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DigestAuth with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in DigestAuthMultiError, or
+// nil if none found.
+func (m *DigestAuth) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DigestAuth) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetUsername()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Username",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetRealm()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Realm",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetNonce()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Nonce",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetUri()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Uri",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetResponse()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Response",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetAlgorithm()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Algorithm",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetQop()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Qop",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetNc()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Nc",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetCnonce()) < 1 {
+		err := DigestAuthValidationError{
+			field:  "Cnonce",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DigestAuthMultiError(errors)
+	}
+
+	return nil
+}
+
+// DigestAuthMultiError is an error wrapping multiple validation errors
+// returned by DigestAuth.ValidateAll() if the designated constraints aren't met.
+type DigestAuthMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DigestAuthMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DigestAuthMultiError) AllErrors() []error { return m }
+
+// DigestAuthValidationError is the validation error returned by
+// DigestAuth.Validate if the designated constraints aren't met.
+type DigestAuthValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DigestAuthValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DigestAuthValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DigestAuthValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DigestAuthValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DigestAuthValidationError) ErrorName() string { return "DigestAuthValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DigestAuthValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDigestAuth.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DigestAuthValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DigestAuthValidationError{}
+
+// Validate checks the field values on OAuth2Auth with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *OAuth2Auth) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on OAuth2Auth with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in OAuth2AuthMultiError, or
+// nil if none found.
+func (m *OAuth2Auth) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *OAuth2Auth) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetAccessToken()) < 1 {
+		err := OAuth2AuthValidationError{
+			field:  "AccessToken",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTokenType()) < 1 {
+		err := OAuth2AuthValidationError{
+			field:  "TokenType",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetExpiresIn() <= 0 {
+		err := OAuth2AuthValidationError{
+			field:  "ExpiresIn",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetRefreshToken()) < 1 {
+		err := OAuth2AuthValidationError{
+			field:  "RefreshToken",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(m.GetScope()) < 1 {
+		err := OAuth2AuthValidationError{
+			field:  "Scope",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return OAuth2AuthMultiError(errors)
+	}
+
+	return nil
+}
+
+// OAuth2AuthMultiError is an error wrapping multiple validation errors
+// returned by OAuth2Auth.ValidateAll() if the designated constraints aren't met.
+type OAuth2AuthMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m OAuth2AuthMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m OAuth2AuthMultiError) AllErrors() []error { return m }
+
+// OAuth2AuthValidationError is the validation error returned by
+// OAuth2Auth.Validate if the designated constraints aren't met.
+type OAuth2AuthValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e OAuth2AuthValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e OAuth2AuthValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e OAuth2AuthValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e OAuth2AuthValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e OAuth2AuthValidationError) ErrorName() string { return "OAuth2AuthValidationError" }
+
+// Error satisfies the builtin error interface
+func (e OAuth2AuthValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sOAuth2Auth.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = OAuth2AuthValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = OAuth2AuthValidationError{}
+
+// Validate checks the field values on ApiKeyAuth with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ApiKeyAuth) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ApiKeyAuth with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ApiKeyAuthMultiError, or
+// nil if none found.
+func (m *ApiKeyAuth) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ApiKeyAuth) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApiKey()) < 1 {
+		err := ApiKeyAuthValidationError{
+			field:  "ApiKey",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ApiKeyAuthMultiError(errors)
+	}
+
+	return nil
+}
+
+// ApiKeyAuthMultiError is an error wrapping multiple validation errors
+// returned by ApiKeyAuth.ValidateAll() if the designated constraints aren't met.
+type ApiKeyAuthMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ApiKeyAuthMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ApiKeyAuthMultiError) AllErrors() []error { return m }
+
+// ApiKeyAuthValidationError is the validation error returned by
+// ApiKeyAuth.Validate if the designated constraints aren't met.
+type ApiKeyAuthValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ApiKeyAuthValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ApiKeyAuthValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ApiKeyAuthValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ApiKeyAuthValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ApiKeyAuthValidationError) ErrorName() string { return "ApiKeyAuthValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ApiKeyAuthValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sApiKeyAuth.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ApiKeyAuthValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ApiKeyAuthValidationError{}
+
+// Validate checks the field values on JwtAuth with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *JwtAuth) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on JwtAuth with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in JwtAuthMultiError, or nil if none found.
+func (m *JwtAuth) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *JwtAuth) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetToken()) < 1 {
+		err := JwtAuthValidationError{
+			field:  "Token",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return JwtAuthMultiError(errors)
+	}
+
+	return nil
+}
+
+// JwtAuthMultiError is an error wrapping multiple validation errors returned
+// by JwtAuth.ValidateAll() if the designated constraints aren't met.
+type JwtAuthMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m JwtAuthMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m JwtAuthMultiError) AllErrors() []error { return m }
+
+// JwtAuthValidationError is the validation error returned by JwtAuth.Validate
+// if the designated constraints aren't met.
+type JwtAuthValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e JwtAuthValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e JwtAuthValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e JwtAuthValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e JwtAuthValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e JwtAuthValidationError) ErrorName() string { return "JwtAuthValidationError" }
+
+// Error satisfies the builtin error interface
+func (e JwtAuthValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sJwtAuth.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = JwtAuthValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = JwtAuthValidationError{}
+
 // Validate checks the field values on Authentication with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -288,10 +859,10 @@ func (m *Authentication) validate(all bool) error {
 
 	var errors []error
 
-	if _, ok := _Authentication_Type_InLookup[m.GetType()]; !ok {
+	if _, ok := Authentication_Type_name[int32(m.GetType())]; !ok {
 		err := AuthenticationValidationError{
 			field:  "Type",
-			reason: "value must be in list [basic bearer]",
+			reason: "value must be one of the defined enum values",
 		}
 		if !all {
 			return err
@@ -299,18 +870,7 @@ func (m *Authentication) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	switch v := m.Token.(type) {
-	case *Authentication_Basic:
-		if v == nil {
-			err := AuthenticationValidationError{
-				field:  "Token",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	if m.Basic != nil {
 
 		if all {
 			switch v := interface{}(m.GetBasic()).(type) {
@@ -341,17 +901,9 @@ func (m *Authentication) validate(all bool) error {
 			}
 		}
 
-	case *Authentication_Bearer:
-		if v == nil {
-			err := AuthenticationValidationError{
-				field:  "Token",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Bearer != nil {
 
 		if all {
 			switch v := interface{}(m.GetBearer()).(type) {
@@ -382,8 +934,138 @@ func (m *Authentication) validate(all bool) error {
 			}
 		}
 
-	default:
-		_ = v // ensures v is used
+	}
+
+	if m.Digest != nil {
+
+		if all {
+			switch v := interface{}(m.GetDigest()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "Digest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "Digest",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDigest()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthenticationValidationError{
+					field:  "Digest",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Oauth2 != nil {
+
+		if all {
+			switch v := interface{}(m.GetOauth2()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "Oauth2",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "Oauth2",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetOauth2()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthenticationValidationError{
+					field:  "Oauth2",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.ApiKey != nil {
+
+		if all {
+			switch v := interface{}(m.GetApiKey()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "ApiKey",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "ApiKey",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetApiKey()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthenticationValidationError{
+					field:  "ApiKey",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Jwt != nil {
+
+		if all {
+			switch v := interface{}(m.GetJwt()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "Jwt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthenticationValidationError{
+						field:  "Jwt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetJwt()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthenticationValidationError{
+					field:  "Jwt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -463,11 +1145,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AuthenticationValidationError{}
-
-var _Authentication_Type_InLookup = map[string]struct{}{
-	"basic":  {},
-	"bearer": {},
-}
 
 // Validate checks the field values on Authorization with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

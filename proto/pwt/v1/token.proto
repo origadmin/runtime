@@ -25,11 +25,25 @@ message Token {
     (gnostic.openapi.v3.property) = {description: "The client secret associated with the token."}
   ];
   string token = 10 [
-    json_name = "token",
+    json_name = "access_token",
     (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The web token used for authentication."}
+    (gnostic.openapi.v3.property) = {description: "The web access token used for authentication."}
   ];
-  Claims claims = 11 [
+  string refresh_token = 11 [
+    json_name = "refresh_token",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The refresh token used to obtain a new access token."}
+  ];
+  google.protobuf.Timestamp expiration_time = 12 [
+    json_name = "expiration_time",
+    (gnostic.openapi.v3.property) = {description: "The expiration time of the token."}
+  ];
+  string token_type = 13 [
+    json_name = "token_type",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The type of the token (e.g., Bearer)."}
+  ];
+  Claims claims = 14 [
     json_name = "claims",
     (gnostic.openapi.v3.property) = {description: "The claims embedded in the token."}
   ]; // Claims
@@ -46,9 +60,9 @@ message Claims {
     (validate.rules).string.min_len = 1,
     (gnostic.openapi.v3.property) = {description: "The issuer of the token."}
   ]; // Issuer
-  string aud = 3 [
+  repeated string aud = 3 [
     json_name = "aud",
-    (validate.rules).string.min_len = 1,
+    (validate.rules).repeated.min_items = 1,
     (gnostic.openapi.v3.property) = {description: "The audience for which the token is intended."}
   ]; // Audience
   google.protobuf.Timestamp exp = 4 [
@@ -72,4 +86,48 @@ message Claims {
     json_name = "roles",
     (gnostic.openapi.v3.property) = {description: "The custom roles associated with the token."}
   ]; // Custom roles
+}
+
+// Config contains configuration parameters for creating and validating a JWT.
+message Config {
+  string signing_method = 1 [
+    json_name = "signing_method",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The signing method used for the token (e.g., HS256, RS256)."}
+  ];
+  bytes key = 2 [
+    json_name = "key",
+    (validate.rules).bytes.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The key used for signing the token."}
+  ];
+  bytes key2 = 3 [
+    json_name = "key2",
+    (validate.rules).bytes.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The secondary key used for signing the token."}
+  ];
+  string keyfunc = 4 [
+    json_name = "keyfunc",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The function used to retrieve the key for validation."}
+  ];
+  google.protobuf.Duration token_lifetime = 5 [
+    json_name = "token_lifetime",
+    (validate.rules).duration.gt.seconds = 0,
+    (gnostic.openapi.v3.property) = {description: "The lifetime of the token."}
+  ];
+  string issuer = 6 [
+    json_name = "issuer",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The issuer of the token."}
+  ];
+  repeated string audience = 7 [
+    json_name = "audience",
+    (validate.rules).repeated.min_items = 1,
+    (gnostic.openapi.v3.property) = {description: "The audience for which the token is intended."}
+  ]; // Audience
+  string token_type = 8 [
+    json_name = "token_type",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The type of the token (e.g., Bearer)."}
+  ];
 }
