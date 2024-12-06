@@ -16,7 +16,6 @@ import (
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/middleware"
 )
 
 const (
@@ -25,19 +24,14 @@ const (
 
 // NewServer Create a GRPC server instance
 func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transgrpc.Server {
-	var options []transgrpc.ServerOption
 	if rc == nil {
 		rc = config.DefaultRuntimeConfig
 	}
 
-	var ms []middleware.Middleware
-	ms = middleware.NewServer(cfg.GetMiddleware())
 	service := rc.Service()
-	if service.Middlewares != nil {
-		ms = append(ms, service.Middlewares...)
+	options := []transgrpc.ServerOption{
+		transgrpc.Middleware(service.Middlewares...),
 	}
-	options = append(options, transgrpc.Middleware(ms...))
-
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.Network != "" {
 			options = append(options, transgrpc.Network(serviceGrpc.Network))

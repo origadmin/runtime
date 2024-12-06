@@ -15,7 +15,6 @@ import (
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/service/selector"
 )
 
@@ -26,13 +25,6 @@ func NewClient(ctx context.Context, service *configv1.Service, rc *config.Runtim
 	if rc == nil {
 		rc = config.DefaultRuntimeConfig
 	}
-	serviceOption := rc.Service()
-	selectorOption := rc.Selector()
-	var ms []middleware.Middleware
-	ms = middleware.NewClient(service.GetMiddleware())
-	if serviceOption.Middlewares != nil {
-		ms = append(ms, serviceOption.Middlewares...)
-	}
 
 	timeout := defaultTimeout
 	if serviceHttp := service.GetHttp(); serviceHttp != nil {
@@ -40,10 +32,10 @@ func NewClient(ctx context.Context, service *configv1.Service, rc *config.Runtim
 			timeout = serviceHttp.Timeout.AsDuration()
 		}
 	}
-
+	serviceOption := rc.Service()
 	options := []transhttp.ClientOption{
 		transhttp.WithTimeout(timeout),
-		transhttp.WithMiddleware(ms...),
+		transhttp.WithMiddleware(serviceOption.Middlewares...),
 	}
 
 	if serviceOption.Discovery != nil {
@@ -54,6 +46,7 @@ func NewClient(ctx context.Context, service *configv1.Service, rc *config.Runtim
 		)
 	}
 
+	selectorOption := rc.Selector()
 	if selectorOption.HTTP == nil {
 		selectorOption.HTTP = selector.DefaultHTTP
 	}

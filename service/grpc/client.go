@@ -16,7 +16,6 @@ import (
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/service/selector"
 )
 
@@ -27,13 +26,6 @@ func NewClient(ctx context.Context, service *configv1.Service, rc *config.Runtim
 	if rc == nil {
 		rc = config.DefaultRuntimeConfig
 	}
-	serviceOption := rc.Service()
-	selectorOption := rc.Selector()
-	var ms []middleware.Middleware
-	ms = middleware.NewClient(service.GetMiddleware())
-	if serviceOption.Middlewares != nil {
-		ms = append(ms, serviceOption.Middlewares...)
-	}
 
 	timeout := defaultTimeout
 	if serviceGrpc := service.GetGrpc(); serviceGrpc != nil {
@@ -41,18 +33,17 @@ func NewClient(ctx context.Context, service *configv1.Service, rc *config.Runtim
 			timeout = serviceGrpc.Timeout.AsDuration()
 		}
 	}
-
+	serviceOption := rc.Service()
 	options := []transgrpc.ClientOption{
 		transgrpc.WithTimeout(timeout),
-		transgrpc.WithMiddleware(ms...),
+		transgrpc.WithMiddleware(serviceOption.Middlewares...),
 	}
-
 	if serviceOption.Discovery != nil {
 		endpoint := helpers.ServiceName(serviceOption.ServiceName)
 		options = append(options, transgrpc.WithEndpoint(endpoint),
 			transgrpc.WithDiscovery(serviceOption.Discovery))
 	}
-
+	selectorOption := rc.Selector()
 	if selectorOption.GRPC == nil {
 		selectorOption.GRPC = selector.DefaultGRPC
 	}

@@ -16,7 +16,6 @@ import (
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/middleware"
 )
 
 const (
@@ -25,19 +24,14 @@ const (
 
 // NewServer Create an HTTP server instance.
 func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transhttp.Server {
-	var options []transhttp.ServerOption
-
 	if rc == nil {
 		rc = config.DefaultRuntimeConfig
 	}
-	var ms []middleware.Middleware
-	ms = middleware.NewServer(cfg.GetMiddleware())
-	service := rc.Service()
-	if service.Middlewares != nil {
-		ms = append(ms, service.Middlewares...)
-	}
-	options = append(options, transhttp.Middleware(ms...))
 
+	service := rc.Service()
+	options := []transhttp.ServerOption{
+		transhttp.Middleware(service.Middlewares...),
+	}
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
 		if serviceHttp.Network != "" {
 			options = append(options, transhttp.Network(serviceHttp.Network))
