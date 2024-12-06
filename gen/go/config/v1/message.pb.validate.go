@@ -56,7 +56,16 @@ func (m *Message) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	if _, ok := _Message_Type_InLookup[m.GetType()]; !ok {
+		err := MessageValidationError{
+			field:  "Type",
+			reason: "value must be in list [none mqtt kafka rabbitmq activemq nats nsq pulsar redis rocketmq]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Name
 
@@ -397,6 +406,19 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = MessageValidationError{}
+
+var _Message_Type_InLookup = map[string]struct{}{
+	"none":     {},
+	"mqtt":     {},
+	"kafka":    {},
+	"rabbitmq": {},
+	"activemq": {},
+	"nats":     {},
+	"nsq":      {},
+	"pulsar":   {},
+	"redis":    {},
+	"rocketmq": {},
+}
 
 // Validate checks the field values on Message_MQTT with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package config.v1;
 
-import "buf/validate/validate.proto";
+import "validate/validate.proto";
 import "google/protobuf/duration.proto";
 import "gnostic/openapi/v3/annotations.proto";
 
@@ -27,7 +27,7 @@ message Data {
         // Driver name: mysql, postgresql, mongodb, sqlite......
         string driver = 2 [
             json_name = "driver",
-            (buf.validate.field).string = {in: ["mssql", "mysql", "postgresql", "mongodb", "sqlite", "oracle", "sqlserver", "sqlite3"]}, (gnostic.openapi.v3.property) = {
+            (validate.rules).string = {in: ["mssql", "mysql", "postgresql", "mongodb", "sqlite", "oracle", "sqlserver", "sqlite3"]}, (gnostic.openapi.v3.property) = {
                 description: "database driver name",
             }];
         // Data source (DSN string)
@@ -164,7 +164,7 @@ message Data {
             }];
         uint32 log_level = 4 [
             json_name = "log_level",
-            (buf.validate.field).uint32 = {gte: 0, lte: 3},
+            (validate.rules).uint32 = {gte: 0, lte: 3},
             (gnostic.openapi.v3.property) = {
                 description: "log level",
             }];
@@ -194,7 +194,7 @@ message Data {
         // Type
         string type = 1 [
             json_name = "type",
-            (buf.validate.field).string = {
+            (validate.rules).string = {
                 in: ["none", "file", "redis", "mongo", "oss"],
             },
             (gnostic.openapi.v3.property) = {
@@ -236,7 +236,7 @@ message Data {
     message Cache {
         // Driver name: redis, memcached, etc.
         string driver = 1 [json_name = "driver",
-            (buf.validate.field).string = {
+            (validate.rules).string = {
                 in: ["none", "redis", "memcached", "memory"],
             },
             (gnostic.openapi.v3.property) = {

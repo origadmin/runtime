@@ -56,7 +56,16 @@ func (m *Task) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	if _, ok := _Task_Type_InLookup[m.GetType()]; !ok {
+		err := TaskValidationError{
+			field:  "Type",
+			reason: "value must be in list [none asynq machinery cron]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Name
 
@@ -223,6 +232,13 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = TaskValidationError{}
+
+var _Task_Type_InLookup = map[string]struct{}{
+	"none":      {},
+	"asynq":     {},
+	"machinery": {},
+	"cron":      {},
+}
 
 // Validate checks the field values on Task_Asynq with the rules defined in the
 // proto definition for this message. If any rules are violated, the first

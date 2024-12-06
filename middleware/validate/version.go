@@ -11,6 +11,8 @@ package validate
 type Version int
 
 const (
+	// V1 is the first version of the module, used github.com/envoyproxy/protoc-gen-validate
 	V1 Version = 1
+	// V2 is the second version of the module, used github.com/bufbuild/protovalidate-go
 	V2 Version = 2
 )

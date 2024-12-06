@@ -329,6 +329,35 @@ func (m *Middleware) validate(all bool) error {
 		}
 	}
 
+	if all {
+		switch v := interface{}(m.GetSecurity()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, MiddlewareValidationError{
+					field:  "Security",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, MiddlewareValidationError{
+					field:  "Security",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSecurity()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return MiddlewareValidationError{
+				field:  "Security",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return MiddlewareMultiError(errors)
 	}
@@ -428,7 +457,16 @@ func (m *Middleware_RateLimiter) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Name
+	if _, ok := _Middleware_RateLimiter_Name_InLookup[m.GetName()]; !ok {
+		err := Middleware_RateLimiterValidationError{
+			field:  "Name",
+			reason: "value must be in list [bbr memory redis]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Period
 
@@ -577,6 +615,12 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Middleware_RateLimiterValidationError{}
+
+var _Middleware_RateLimiter_Name_InLookup = map[string]struct{}{
+	"bbr":    {},
+	"memory": {},
+	"redis":  {},
+}
 
 // Validate checks the field values on Middleware_Metrics with the rules
 // defined in the proto definition for this message. If any rules are
@@ -842,7 +886,16 @@ func (m *Middleware_Validator) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Version
+	if val := m.GetVersion(); val <= 0 || val >= 3 {
+		err := Middleware_ValidatorValidationError{
+			field:  "Version",
+			reason: "value must be inside range (0, 3)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for FailFast
 

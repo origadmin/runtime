@@ -57,7 +57,16 @@ func (m *Registry) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	if _, ok := _Registry_Type_InLookup[m.GetType()]; !ok {
+		err := RegistryValidationError{
+			field:  "Type",
+			reason: "value must be in list [none consul etcd nacos apollo kubernetes polaris]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for ServiceName
 
@@ -205,6 +214,16 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RegistryValidationError{}
+
+var _Registry_Type_InLookup = map[string]struct{}{
+	"none":       {},
+	"consul":     {},
+	"etcd":       {},
+	"nacos":      {},
+	"apollo":     {},
+	"kubernetes": {},
+	"polaris":    {},
+}
 
 // Validate checks the field values on Registry_Consul with the rules defined
 // in the proto definition for this message. If any rules are violated, the

@@ -57,9 +57,27 @@ func (m *BasicAuth) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Username
+	if utf8.RuneCountInString(m.GetUsername()) < 1 {
+		err := BasicAuthValidationError{
+			field:  "Username",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Password
+	if utf8.RuneCountInString(m.GetPassword()) < 1 {
+		err := BasicAuthValidationError{
+			field:  "Password",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return BasicAuthMultiError(errors)
@@ -160,7 +178,16 @@ func (m *BearerAuth) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Token
+	if utf8.RuneCountInString(m.GetToken()) < 1 {
+		err := BearerAuthValidationError{
+			field:  "Token",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return BearerAuthMultiError(errors)
@@ -260,7 +287,16 @@ func (m *AuthN) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	if _, ok := _AuthN_Type_InLookup[m.GetType()]; !ok {
+		err := AuthNValidationError{
+			field:  "Type",
+			reason: "value must be in list [basic bearer]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	switch v := m.Auth.(type) {
 	case *AuthN_Basic:
@@ -426,6 +462,11 @@ var _ interface {
 	ErrorName() string
 } = AuthNValidationError{}
 
+var _AuthN_Type_InLookup = map[string]struct{}{
+	"basic":  {},
+	"bearer": {},
+}
+
 // Validate checks the field values on AuthZ with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -451,7 +492,16 @@ func (m *AuthZ) validate(all bool) error {
 
 	// no validation rules for Id
 
-	// no validation rules for User
+	if _, ok := _AuthZ_User_InLookup[m.GetUser()]; !ok {
+		err := AuthZValidationError{
+			field:  "User",
+			reason: "value must be in list [admin user guest]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Username
 
@@ -560,3 +610,9 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AuthZValidationError{}
+
+var _AuthZ_User_InLookup = map[string]struct{}{
+	"admin": {},
+	"user":  {},
+	"guest": {},
+}

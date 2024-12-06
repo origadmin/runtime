@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package config.v1;
 
-import "buf/validate/validate.proto";
+import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/gen/go/config/v1;configv1";
@@ -36,7 +36,10 @@ message SourceConfig {
     repeated string endpoints = 1 [json_name = "endpoints"];
   }
 
-  string type = 1 [(buf.validate.field).string = {in: ["none", "file", "consul", "etcd", "nacos", "apollo", "kubernetes", "polaris"]}];  // Type
+  string type = 1 [
+    json_name = "type",
+    (validate.rules).string = {in: ["none", "file", "consul", "etcd", "nacos", "apollo", "kubernetes", "polaris"]}
+  ];  // Type
   // name
   string name = 2 [json_name = "name"];
   // set the supported file format, if not set, all formats are supported

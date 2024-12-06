@@ -9,30 +9,44 @@ import (
 	"fmt"
 
 	"github.com/bufbuild/protovalidate-go"
-	"google.golang.org/protobuf/proto"
+	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/goexts/generic/settings"
+
+	"github.com/origadmin/runtime/context"
 )
 
-// Validator is an interface for validating protobuf messages.
 type Validator interface {
-	Validate(message proto.Message) error
+	Validate(ctx context.Context, req interface{}) error
 }
 
-// validate is a struct that implements the Validator interface.
-type validate struct {
-	v *protovalidate.Validator
-}
-
-// Validate validates a protobuf message.
-func (v validate) Validate(message proto.Message) error {
-	return v.Validate(message)
-}
-
-// NewValidate creates a new Validator.
-func NewValidate(opts ...ProtoValidatorOption) (Validator, error) {
-	v, err := NewProtoValidate(opts...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize validator: %w", err)
+// Server is a validator middleware.
+func Server(ss ...ConfigSetting) (middleware.Middleware, error) {
+	cfg := settings.Apply(&Config{
+		version:  V1,
+		failFast: true,
+	}, ss)
+	v, err := buildValidator(cfg)
+	if v == nil {
+		return nil, err
 	}
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
+			if err = v.Validate(ctx, req); err != nil {
+				return nil, errors.BadRequest("VALIDATOR", err.Error()).WithCause(err)
+			}
+			return handler(ctx, req)
+		}
+	}, nil
+}
 
-	return v, nil
+func buildValidator(cfg *Config) (Validator, error) {
+	switch cfg.version {
+	case V1:
+		return NewValidateV1(cfg.failFast, cfg.onValidationErrCallback), nil
+	case V2:
+		return NewValidateV2(protovalidate.WithFailFast(cfg.failFast))
+	default:
+		return nil, fmt.Errorf("unsupported version: %d", cfg.version)
+	}
 }

@@ -22,10 +22,10 @@ modules:
 #      use:
 #        - FILE
 deps:
-  #  - buf.build/envoyproxy/protoc-gen-validate
+  - buf.build/envoyproxy/protoc-gen-validate
   #  - buf.build/kratos/apis
   #  - buf.build/googleapis/googleapis
   #  - buf.build/origadmin/rpcerr
   #  - buf.build/origadmin/entgen
-  - buf.build/bufbuild/protovalidate
+  #  - buf.build/bufbuild/protovalidate
   - buf.build/gnostic/gnostic

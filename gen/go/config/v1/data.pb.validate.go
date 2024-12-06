@@ -244,7 +244,16 @@ func (m *Data_Database) validate(all bool) error {
 
 	// no validation rules for Debug
 
-	// no validation rules for Driver
+	if _, ok := _Data_Database_Driver_InLookup[m.GetDriver()]; !ok {
+		err := Data_DatabaseValidationError{
+			field:  "Driver",
+			reason: "value must be in list [mssql mysql postgresql mongodb sqlite oracle sqlserver sqlite3]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Source
 
@@ -393,6 +402,17 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Data_DatabaseValidationError{}
+
+var _Data_Database_Driver_InLookup = map[string]struct{}{
+	"mssql":      {},
+	"mysql":      {},
+	"postgresql": {},
+	"mongodb":    {},
+	"sqlite":     {},
+	"oracle":     {},
+	"sqlserver":  {},
+	"sqlite3":    {},
+}
 
 // Validate checks the field values on Data_Redis with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -914,7 +934,16 @@ func (m *Data_BadgerDS) validate(all bool) error {
 
 	// no validation rules for ValueLogFileSize
 
-	// no validation rules for LogLevel
+	if val := m.GetLogLevel(); val < 0 || val > 3 {
+		err := Data_BadgerDSValidationError{
+			field:  "LogLevel",
+			reason: "value must be inside range [0, 3]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return Data_BadgerDSMultiError(errors)
@@ -1315,7 +1344,16 @@ func (m *Data_Storage) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	if _, ok := _Data_Storage_Type_InLookup[m.GetType()]; !ok {
+		err := Data_StorageValidationError{
+			field:  "Type",
+			reason: "value must be in list [none file redis mongo oss]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if all {
 		switch v := interface{}(m.GetFile()).(type) {
@@ -1539,6 +1577,14 @@ var _ interface {
 	ErrorName() string
 } = Data_StorageValidationError{}
 
+var _Data_Storage_Type_InLookup = map[string]struct{}{
+	"none":  {},
+	"file":  {},
+	"redis": {},
+	"mongo": {},
+	"oss":   {},
+}
+
 // Validate checks the field values on Data_Cache with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -1561,7 +1607,16 @@ func (m *Data_Cache) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Driver
+	if _, ok := _Data_Cache_Driver_InLookup[m.GetDriver()]; !ok {
+		err := Data_CacheValidationError{
+			field:  "Driver",
+			reason: "value must be in list [none redis memcached memory]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Name
 
@@ -1757,3 +1812,10 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Data_CacheValidationError{}
+
+var _Data_Cache_Driver_InLookup = map[string]struct{}{
+	"none":      {},
+	"redis":     {},
+	"memcached": {},
+	"memory":    {},
+}

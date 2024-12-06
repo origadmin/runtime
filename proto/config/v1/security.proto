@@ -15,11 +15,11 @@ option objc_class_prefix = "ORC";
 message Security {
 
   // Casbin middleware config
-  message Casbin {
+  message CasbinConfig {
     // Disable middleware
     bool disabled = 1 [json_name = "disabled"];
     // Direct release paths
-    repeated string direct_release_paths = 2 [json_name = "direct_release_paths"];
+    repeated string public_paths = 2 [json_name = "public_paths"];
     // Policy file
     string policy_file = 3 [json_name = "policy_file"];
     // Model file
@@ -27,11 +27,11 @@ message Security {
   }
 
   // Authorization middleware config
-  message JSONWebToken {
+  message JWTConfig {
     // Disable middleware
     bool disabled = 1 [json_name = "disabled"];
     // Direct release paths
-    repeated string direct_release_paths = 2 [json_name = "direct_release_paths"];
+    repeated string public_paths = 2 [json_name = "public_paths"];
     // Signing method
     string signing_method = 3 [json_name = "signing_method"];
     // Signing key
@@ -47,9 +47,9 @@ message Security {
   }
 
   // Direct release paths
-  repeated string direct_release_paths = 1 [json_name = "direct_release_paths"];
+  repeated string public_paths = 1 [json_name = "public_paths"];
   // JWT config for authorization
-  JSONWebToken jwt = 10 [json_name = "jwt"];
+  JWTConfig jwt = 10 [json_name = "jwt"];
   // Casbin config for authorization
-  Casbin casbin = 11 [json_name = "casbin"];
+  CasbinConfig casbin = 11 [json_name = "casbin"];
 }

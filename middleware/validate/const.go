@@ -19,7 +19,7 @@ type (
 	CompilationError = protovalidate.CompilationError
 	// RuntimeError is an error that occurs during runtime.
 	RuntimeError = protovalidate.RuntimeError
-	// ProtoValidator is a validator for protobuf messages.
+	// ProtoValidator is a v1Validator for protobuf messages.
 	ProtoValidator = protovalidate.Validator
 	// ProtoValidatorOption is an option for the ProtoValidator.
 	ProtoValidatorOption = protovalidate.ValidatorOption
@@ -44,10 +44,10 @@ func WithUTC(use bool) ProtoValidatorOption {
 	return protovalidate.WithUTC(use)
 }
 
-// WithFailFast sets the fail fast option.
-func WithFailFast(failFast bool) ProtoValidatorOption {
-	return protovalidate.WithFailFast(failFast)
-}
+//// WithFailFast sets the fail fast option.
+//func WithFailFast(failFast bool) ProtoValidatorOption {
+//	return protovalidate.WithFailFast(failFast)
+//}
 
 // WithMessages sets the messages to validate.
 func WithMessages(messages ...proto.Message) ProtoValidatorOption {

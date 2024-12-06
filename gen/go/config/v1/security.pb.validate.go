@@ -192,22 +192,22 @@ var _ interface {
 	ErrorName() string
 } = SecurityValidationError{}
 
-// Validate checks the field values on Security_Casbin with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *Security_Casbin) Validate() error {
+// Validate checks the field values on Security_CasbinConfig with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Security_CasbinConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Security_Casbin with the rules
+// ValidateAll checks the field values on Security_CasbinConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// Security_CasbinMultiError, or nil if none found.
-func (m *Security_Casbin) ValidateAll() error {
+// Security_CasbinConfigMultiError, or nil if none found.
+func (m *Security_CasbinConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Security_Casbin) validate(all bool) error {
+func (m *Security_CasbinConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -221,19 +221,19 @@ func (m *Security_Casbin) validate(all bool) error {
 	// no validation rules for ModelFile
 
 	if len(errors) > 0 {
-		return Security_CasbinMultiError(errors)
+		return Security_CasbinConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// Security_CasbinMultiError is an error wrapping multiple validation errors
-// returned by Security_Casbin.ValidateAll() if the designated constraints
-// aren't met.
-type Security_CasbinMultiError []error
+// Security_CasbinConfigMultiError is an error wrapping multiple validation
+// errors returned by Security_CasbinConfig.ValidateAll() if the designated
+// constraints aren't met.
+type Security_CasbinConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Security_CasbinMultiError) Error() string {
+func (m Security_CasbinConfigMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -242,11 +242,11 @@ func (m Security_CasbinMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Security_CasbinMultiError) AllErrors() []error { return m }
+func (m Security_CasbinConfigMultiError) AllErrors() []error { return m }
 
-// Security_CasbinValidationError is the validation error returned by
-// Security_Casbin.Validate if the designated constraints aren't met.
-type Security_CasbinValidationError struct {
+// Security_CasbinConfigValidationError is the validation error returned by
+// Security_CasbinConfig.Validate if the designated constraints aren't met.
+type Security_CasbinConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -254,22 +254,24 @@ type Security_CasbinValidationError struct {
 }
 
 // Field function returns field value.
-func (e Security_CasbinValidationError) Field() string { return e.field }
+func (e Security_CasbinConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Security_CasbinValidationError) Reason() string { return e.reason }
+func (e Security_CasbinConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Security_CasbinValidationError) Cause() error { return e.cause }
+func (e Security_CasbinConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Security_CasbinValidationError) Key() bool { return e.key }
+func (e Security_CasbinConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Security_CasbinValidationError) ErrorName() string { return "Security_CasbinValidationError" }
+func (e Security_CasbinConfigValidationError) ErrorName() string {
+	return "Security_CasbinConfigValidationError"
+}
 
 // Error satisfies the builtin error interface
-func (e Security_CasbinValidationError) Error() string {
+func (e Security_CasbinConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -281,14 +283,14 @@ func (e Security_CasbinValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSecurity_Casbin.%s: %s%s",
+		"invalid %sSecurity_CasbinConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Security_CasbinValidationError{}
+var _ error = Security_CasbinConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -296,24 +298,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Security_CasbinValidationError{}
+} = Security_CasbinConfigValidationError{}
 
-// Validate checks the field values on Security_JSONWebToken with the rules
+// Validate checks the field values on Security_JWTConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *Security_JSONWebToken) Validate() error {
+func (m *Security_JWTConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Security_JSONWebToken with the rules
+// ValidateAll checks the field values on Security_JWTConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// Security_JSONWebTokenMultiError, or nil if none found.
-func (m *Security_JSONWebToken) ValidateAll() error {
+// Security_JWTConfigMultiError, or nil if none found.
+func (m *Security_JWTConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Security_JSONWebToken) validate(all bool) error {
+func (m *Security_JWTConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -332,7 +334,7 @@ func (m *Security_JSONWebToken) validate(all bool) error {
 		switch v := interface{}(m.GetExpireTime()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Security_JSONWebTokenValidationError{
+				errors = append(errors, Security_JWTConfigValidationError{
 					field:  "ExpireTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -340,7 +342,7 @@ func (m *Security_JSONWebToken) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, Security_JSONWebTokenValidationError{
+				errors = append(errors, Security_JWTConfigValidationError{
 					field:  "ExpireTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -349,7 +351,7 @@ func (m *Security_JSONWebToken) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetExpireTime()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return Security_JSONWebTokenValidationError{
+			return Security_JWTConfigValidationError{
 				field:  "ExpireTime",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -361,7 +363,7 @@ func (m *Security_JSONWebToken) validate(all bool) error {
 		switch v := interface{}(m.GetRefreshTime()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Security_JSONWebTokenValidationError{
+				errors = append(errors, Security_JWTConfigValidationError{
 					field:  "RefreshTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -369,7 +371,7 @@ func (m *Security_JSONWebToken) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, Security_JSONWebTokenValidationError{
+				errors = append(errors, Security_JWTConfigValidationError{
 					field:  "RefreshTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -378,7 +380,7 @@ func (m *Security_JSONWebToken) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetRefreshTime()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return Security_JSONWebTokenValidationError{
+			return Security_JWTConfigValidationError{
 				field:  "RefreshTime",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -389,19 +391,19 @@ func (m *Security_JSONWebToken) validate(all bool) error {
 	// no validation rules for CacheName
 
 	if len(errors) > 0 {
-		return Security_JSONWebTokenMultiError(errors)
+		return Security_JWTConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// Security_JSONWebTokenMultiError is an error wrapping multiple validation
-// errors returned by Security_JSONWebToken.ValidateAll() if the designated
-// constraints aren't met.
-type Security_JSONWebTokenMultiError []error
+// Security_JWTConfigMultiError is an error wrapping multiple validation errors
+// returned by Security_JWTConfig.ValidateAll() if the designated constraints
+// aren't met.
+type Security_JWTConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Security_JSONWebTokenMultiError) Error() string {
+func (m Security_JWTConfigMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -410,11 +412,11 @@ func (m Security_JSONWebTokenMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Security_JSONWebTokenMultiError) AllErrors() []error { return m }
+func (m Security_JWTConfigMultiError) AllErrors() []error { return m }
 
-// Security_JSONWebTokenValidationError is the validation error returned by
-// Security_JSONWebToken.Validate if the designated constraints aren't met.
-type Security_JSONWebTokenValidationError struct {
+// Security_JWTConfigValidationError is the validation error returned by
+// Security_JWTConfig.Validate if the designated constraints aren't met.
+type Security_JWTConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -422,24 +424,24 @@ type Security_JSONWebTokenValidationError struct {
 }
 
 // Field function returns field value.
-func (e Security_JSONWebTokenValidationError) Field() string { return e.field }
+func (e Security_JWTConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Security_JSONWebTokenValidationError) Reason() string { return e.reason }
+func (e Security_JWTConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Security_JSONWebTokenValidationError) Cause() error { return e.cause }
+func (e Security_JWTConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Security_JSONWebTokenValidationError) Key() bool { return e.key }
+func (e Security_JWTConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Security_JSONWebTokenValidationError) ErrorName() string {
-	return "Security_JSONWebTokenValidationError"
+func (e Security_JWTConfigValidationError) ErrorName() string {
+	return "Security_JWTConfigValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e Security_JSONWebTokenValidationError) Error() string {
+func (e Security_JWTConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -451,14 +453,14 @@ func (e Security_JSONWebTokenValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSecurity_JSONWebToken.%s: %s%s",
+		"invalid %sSecurity_JWTConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Security_JSONWebTokenValidationError{}
+var _ error = Security_JWTConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -466,4 +468,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Security_JSONWebTokenValidationError{}
+} = Security_JWTConfigValidationError{}

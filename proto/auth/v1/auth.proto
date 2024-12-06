@@ -3,7 +3,7 @@ syntax = "proto3";
 package auth.v1;
 
 import "google/protobuf/timestamp.proto";
-import "buf/validate/validate.proto";
+import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option csharp_namespace = "OrigAdmin.Runtime.Auth.V1";
@@ -16,16 +16,16 @@ option php_namespace = "OrigAdmin\\Runtime\\Auth\\V1";
 
 
 message BasicAuth {
-  string username = 1 [json_name = "username"];
-  string password = 2 [json_name = "password"];
+  string username = 1 [json_name = "username", (validate.rules).string.min_len = 1];
+  string password = 2 [json_name = "password", (validate.rules).string.min_len = 1];
 }
 
 message BearerAuth {
-  string token = 1 [json_name = "token"];
+  string token = 1 [json_name = "token", (validate.rules).string.min_len = 1];
 }
 
 message AuthN {
-  string type = 1 [json_name = "type", (buf.validate.field).string = {in: ["basic", "bearer"]}] ;
+  string type = 1 [json_name = "type", (validate.rules).string = {in: ["basic", "bearer"]}] ;
   oneof auth {
     BasicAuth basic = 10;
     BearerAuth bearer = 11;
@@ -35,7 +35,7 @@ message AuthN {
 message AuthZ {
   bool root = 1 [json_name = "root"];
   string id = 2 [json_name = "id"];
-  string user =3 [json_name = "user", (buf.validate.field).string = {in: ["admin", "user", "guest"]}];
+  string user = 3 [json_name = "user", (validate.rules).string = {in: ["admin", "user", "guest"]}];
   string username = 4 [json_name = "username"];
   repeated string roles = 5 [json_name = "roles"];  // Roles;
   google.protobuf.Timestamp timestamp = 6 [json_name = "timestamp"];

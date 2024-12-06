@@ -57,7 +57,16 @@ func (m *SourceConfig) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	if _, ok := _SourceConfig_Type_InLookup[m.GetType()]; !ok {
+		err := SourceConfigValidationError{
+			field:  "Type",
+			reason: "value must be in list [none file consul etcd nacos apollo kubernetes polaris]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Name
 
@@ -240,6 +249,17 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SourceConfigValidationError{}
+
+var _SourceConfig_Type_InLookup = map[string]struct{}{
+	"none":       {},
+	"file":       {},
+	"consul":     {},
+	"etcd":       {},
+	"nacos":      {},
+	"apollo":     {},
+	"kubernetes": {},
+	"polaris":    {},
+}
 
 // Validate checks the field values on SourceConfig_File with the rules defined
 // in the proto definition for this message. If any rules are violated, the
