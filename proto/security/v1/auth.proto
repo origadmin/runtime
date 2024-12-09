@@ -128,7 +128,7 @@ message JwtAuth {
   ];
 }
 
-message Authentication {
+message AuthN {
   enum Type {
     TYPE_UNSPECIFIED = 0;// default value not specified
     TYPE_BASIC = 1;                           // Basic authentication
@@ -171,7 +171,7 @@ message Authentication {
   ];
 }
 
-message Authorization {
+message AuthZ {
   bool root = 1 [
     json_name = "root",
     (gnostic.openapi.v3.property) = {description: "Indicates if the user has root privileges."}
