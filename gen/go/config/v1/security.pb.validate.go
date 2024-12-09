@@ -324,7 +324,7 @@ func (m *Security_JWTConfig) validate(all bool) error {
 
 	// no validation rules for Disabled
 
-	// no validation rules for SigningMethod
+	// no validation rules for Algorithm
 
 	// no validation rules for SigningKey
 

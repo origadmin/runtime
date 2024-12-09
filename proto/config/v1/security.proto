@@ -32,8 +32,8 @@ message Security {
     bool disabled = 1 [json_name = "disabled"];
     // Direct release paths
     repeated string public_paths = 2 [json_name = "public_paths"];
-    // Signing method
-    string signing_method = 3 [json_name = "signing_method"];
+    // Algorithm used to sign the token
+    string algorithm = 3 [json_name = "algorithm"];
     // Signing key
     string signing_key = 4 [json_name = "signing_key"];
     // Old signing key

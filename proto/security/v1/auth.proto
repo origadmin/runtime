@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package security.v1;
 
+import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
 import "gnostic/openapi/v3/annotations.proto";
@@ -138,6 +139,7 @@ message AuthN {
     TYPE_API_KEY = 5;                         // API Key authentication
     TYPE_JWT = 6;                             // JWT authentication
     // you can add more types as needed
+    TYPE_AUTH_ADDITIONAL = 7;
   }
   Type type = 1 [
     json_name = "type",
@@ -169,6 +171,10 @@ message AuthN {
     json_name = "jwt",
     (gnostic.openapi.v3.property) = {description: "The JWT authentication details."}
   ];
+  optional google.protobuf.Any additional = 16[
+    json_name = "additional",
+    (gnostic.openapi.v3.property) = {description: "Additional properties for the authentication."}
+  ];
 }
 
 message AuthZ {
@@ -197,4 +203,43 @@ message AuthZ {
     json_name = "timestamp",
     (gnostic.openapi.v3.property) = {description: "The timestamp of the authorization."}
   ];
+}
+
+message Claims {
+  string sub = 1 [
+    json_name = "sub",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The subject of the token."}
+  ]; // Subject
+  string iss = 2 [
+    json_name = "iss",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The issuer of the token."}
+  ]; // Issuer
+  repeated string aud = 3 [
+    json_name = "aud",
+    (validate.rules).repeated.min_items = 1,
+    (gnostic.openapi.v3.property) = {description: "The audience for which the token is intended."}
+  ]; // Audience
+  google.protobuf.Timestamp exp = 4 [
+    json_name = "exp",
+    (gnostic.openapi.v3.property) = {description: "The expiration time of the token."}
+  ]; // Expiration Time
+  google.protobuf.Timestamp nbf = 5 [
+    json_name = "nbf",
+    (gnostic.openapi.v3.property) = {description: "The time before which the token must not be accepted."}
+  ]; // Not Before
+  google.protobuf.Timestamp iat = 6 [
+    json_name = "iat",
+    (gnostic.openapi.v3.property) = {description: "The time at which the token was issued."}
+  ]; // Issued At
+  string jti = 7 [
+    json_name = "jti",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The unique identifier for the token."}
+  ]; // JWT ID
+  map<string, bool> scopes = 8 [
+    json_name = "scopes",
+    (gnostic.openapi.v3.property) = {description: "The scopes associated with the token."}
+  ]; // Scopes
 }

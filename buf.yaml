@@ -23,7 +23,7 @@ modules:
 #        - FILE
 deps:
   - buf.build/envoyproxy/protoc-gen-validate
-  #  - buf.build/kratos/apis
+  - buf.build/kratos/apis
   #  - buf.build/googleapis/googleapis
   #  - buf.build/origadmin/rpcerr
   #  - buf.build/origadmin/entgen

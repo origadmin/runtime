@@ -6,13 +6,24 @@
 package middleware
 
 import (
+	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/middleware/security"
 )
 
-func SecurityClient(middlewares []Middleware, cfg *configv1.Security) []Middleware {
+type ContextType int
+
+const (
+	ContextTypeGrpc = iota
+	ContextTypeMetaData
+)
+
+func SecurityClient(middlewares []Middleware, cfg *configv1.Security, option *config.MiddlewareOption) []Middleware {
+	security.NewClient()
 	return middlewares
 }
 
-func SecurityServer(middlewares []Middleware, cfg *configv1.Security) []Middleware {
+func SecurityServer(middlewares []Middleware, cfg *configv1.Security, option *config.MiddlewareOption) []Middleware {
+
 	return middlewares
 }
