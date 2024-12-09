@@ -380,6 +380,8 @@ func (m *Claims) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for Scopes
+
 	if len(errors) > 0 {
 		return ClaimsMultiError(errors)
 	}

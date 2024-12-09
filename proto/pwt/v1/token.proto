@@ -82,10 +82,10 @@ message Claims {
     (validate.rules).string.min_len = 1,
     (gnostic.openapi.v3.property) = {description: "The unique identifier for the token."}
   ]; // JWT ID
-  repeated string roles = 8 [
-    json_name = "roles",
-    (gnostic.openapi.v3.property) = {description: "The custom roles associated with the token."}
-  ]; // Custom roles
+  map<string, bool> scopes = 8 [
+    json_name = "scopes",
+    (gnostic.openapi.v3.property) = {description: "The scopes associated with the token."}
+  ]; // Scopes
 }
 
 // Config contains configuration parameters for creating and validating a JWT.

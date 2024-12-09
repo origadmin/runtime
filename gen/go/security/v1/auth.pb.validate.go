@@ -837,30 +837,29 @@ var _ interface {
 	ErrorName() string
 } = JwtAuthValidationError{}
 
-// Validate checks the field values on Authentication with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
+// Validate checks the field values on AuthN with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *Authentication) Validate() error {
+func (m *AuthN) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Authentication with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in AuthenticationMultiError,
-// or nil if none found.
-func (m *Authentication) ValidateAll() error {
+// ValidateAll checks the field values on AuthN with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in AuthNMultiError, or nil if none found.
+func (m *AuthN) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Authentication) validate(all bool) error {
+func (m *AuthN) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if _, ok := Authentication_Type_name[int32(m.GetType())]; !ok {
-		err := AuthenticationValidationError{
+	if _, ok := AuthN_Type_name[int32(m.GetType())]; !ok {
+		err := AuthNValidationError{
 			field:  "Type",
 			reason: "value must be one of the defined enum values",
 		}
@@ -876,7 +875,7 @@ func (m *Authentication) validate(all bool) error {
 			switch v := interface{}(m.GetBasic()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Basic",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -884,7 +883,7 @@ func (m *Authentication) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Basic",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -893,7 +892,7 @@ func (m *Authentication) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(m.GetBasic()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return AuthenticationValidationError{
+				return AuthNValidationError{
 					field:  "Basic",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -909,7 +908,7 @@ func (m *Authentication) validate(all bool) error {
 			switch v := interface{}(m.GetBearer()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Bearer",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -917,7 +916,7 @@ func (m *Authentication) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Bearer",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -926,7 +925,7 @@ func (m *Authentication) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(m.GetBearer()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return AuthenticationValidationError{
+				return AuthNValidationError{
 					field:  "Bearer",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -942,7 +941,7 @@ func (m *Authentication) validate(all bool) error {
 			switch v := interface{}(m.GetDigest()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Digest",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -950,7 +949,7 @@ func (m *Authentication) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Digest",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -959,7 +958,7 @@ func (m *Authentication) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(m.GetDigest()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return AuthenticationValidationError{
+				return AuthNValidationError{
 					field:  "Digest",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -975,7 +974,7 @@ func (m *Authentication) validate(all bool) error {
 			switch v := interface{}(m.GetOauth2()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Oauth2",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -983,7 +982,7 @@ func (m *Authentication) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Oauth2",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -992,7 +991,7 @@ func (m *Authentication) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(m.GetOauth2()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return AuthenticationValidationError{
+				return AuthNValidationError{
 					field:  "Oauth2",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1008,7 +1007,7 @@ func (m *Authentication) validate(all bool) error {
 			switch v := interface{}(m.GetApiKey()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "ApiKey",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1016,7 +1015,7 @@ func (m *Authentication) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "ApiKey",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1025,7 +1024,7 @@ func (m *Authentication) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(m.GetApiKey()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return AuthenticationValidationError{
+				return AuthNValidationError{
 					field:  "ApiKey",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1041,7 +1040,7 @@ func (m *Authentication) validate(all bool) error {
 			switch v := interface{}(m.GetJwt()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Jwt",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1049,7 +1048,7 @@ func (m *Authentication) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, AuthenticationValidationError{
+					errors = append(errors, AuthNValidationError{
 						field:  "Jwt",
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -1058,7 +1057,7 @@ func (m *Authentication) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(m.GetJwt()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return AuthenticationValidationError{
+				return AuthNValidationError{
 					field:  "Jwt",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1069,19 +1068,18 @@ func (m *Authentication) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return AuthenticationMultiError(errors)
+		return AuthNMultiError(errors)
 	}
 
 	return nil
 }
 
-// AuthenticationMultiError is an error wrapping multiple validation errors
-// returned by Authentication.ValidateAll() if the designated constraints
-// aren't met.
-type AuthenticationMultiError []error
+// AuthNMultiError is an error wrapping multiple validation errors returned by
+// AuthN.ValidateAll() if the designated constraints aren't met.
+type AuthNMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m AuthenticationMultiError) Error() string {
+func (m AuthNMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1090,11 +1088,11 @@ func (m AuthenticationMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m AuthenticationMultiError) AllErrors() []error { return m }
+func (m AuthNMultiError) AllErrors() []error { return m }
 
-// AuthenticationValidationError is the validation error returned by
-// Authentication.Validate if the designated constraints aren't met.
-type AuthenticationValidationError struct {
+// AuthNValidationError is the validation error returned by AuthN.Validate if
+// the designated constraints aren't met.
+type AuthNValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1102,22 +1100,22 @@ type AuthenticationValidationError struct {
 }
 
 // Field function returns field value.
-func (e AuthenticationValidationError) Field() string { return e.field }
+func (e AuthNValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e AuthenticationValidationError) Reason() string { return e.reason }
+func (e AuthNValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e AuthenticationValidationError) Cause() error { return e.cause }
+func (e AuthNValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e AuthenticationValidationError) Key() bool { return e.key }
+func (e AuthNValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e AuthenticationValidationError) ErrorName() string { return "AuthenticationValidationError" }
+func (e AuthNValidationError) ErrorName() string { return "AuthNValidationError" }
 
 // Error satisfies the builtin error interface
-func (e AuthenticationValidationError) Error() string {
+func (e AuthNValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1129,14 +1127,14 @@ func (e AuthenticationValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sAuthentication.%s: %s%s",
+		"invalid %sAuthN.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = AuthenticationValidationError{}
+var _ error = AuthNValidationError{}
 
 var _ interface {
 	Field() string
@@ -1144,24 +1142,23 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = AuthenticationValidationError{}
+} = AuthNValidationError{}
 
-// Validate checks the field values on Authorization with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
+// Validate checks the field values on AuthZ with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *Authorization) Validate() error {
+func (m *AuthZ) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Authorization with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in AuthorizationMultiError, or
-// nil if none found.
-func (m *Authorization) ValidateAll() error {
+// ValidateAll checks the field values on AuthZ with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in AuthZMultiError, or nil if none found.
+func (m *AuthZ) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Authorization) validate(all bool) error {
+func (m *AuthZ) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -1172,8 +1169,8 @@ func (m *Authorization) validate(all bool) error {
 
 	// no validation rules for Id
 
-	if _, ok := _Authorization_UserType_InLookup[m.GetUserType()]; !ok {
-		err := AuthorizationValidationError{
+	if _, ok := _AuthZ_UserType_InLookup[m.GetUserType()]; !ok {
+		err := AuthZValidationError{
 			field:  "UserType",
 			reason: "value must be in list [admin user guest]",
 		}
@@ -1189,7 +1186,7 @@ func (m *Authorization) validate(all bool) error {
 		switch v := interface{}(m.GetTimestamp()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AuthorizationValidationError{
+				errors = append(errors, AuthZValidationError{
 					field:  "Timestamp",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1197,7 +1194,7 @@ func (m *Authorization) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, AuthorizationValidationError{
+				errors = append(errors, AuthZValidationError{
 					field:  "Timestamp",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -1206,7 +1203,7 @@ func (m *Authorization) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetTimestamp()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return AuthorizationValidationError{
+			return AuthZValidationError{
 				field:  "Timestamp",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -1215,19 +1212,18 @@ func (m *Authorization) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return AuthorizationMultiError(errors)
+		return AuthZMultiError(errors)
 	}
 
 	return nil
 }
 
-// AuthorizationMultiError is an error wrapping multiple validation errors
-// returned by Authorization.ValidateAll() if the designated constraints
-// aren't met.
-type AuthorizationMultiError []error
+// AuthZMultiError is an error wrapping multiple validation errors returned by
+// AuthZ.ValidateAll() if the designated constraints aren't met.
+type AuthZMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m AuthorizationMultiError) Error() string {
+func (m AuthZMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1236,11 +1232,11 @@ func (m AuthorizationMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m AuthorizationMultiError) AllErrors() []error { return m }
+func (m AuthZMultiError) AllErrors() []error { return m }
 
-// AuthorizationValidationError is the validation error returned by
-// Authorization.Validate if the designated constraints aren't met.
-type AuthorizationValidationError struct {
+// AuthZValidationError is the validation error returned by AuthZ.Validate if
+// the designated constraints aren't met.
+type AuthZValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1248,22 +1244,22 @@ type AuthorizationValidationError struct {
 }
 
 // Field function returns field value.
-func (e AuthorizationValidationError) Field() string { return e.field }
+func (e AuthZValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e AuthorizationValidationError) Reason() string { return e.reason }
+func (e AuthZValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e AuthorizationValidationError) Cause() error { return e.cause }
+func (e AuthZValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e AuthorizationValidationError) Key() bool { return e.key }
+func (e AuthZValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e AuthorizationValidationError) ErrorName() string { return "AuthorizationValidationError" }
+func (e AuthZValidationError) ErrorName() string { return "AuthZValidationError" }
 
 // Error satisfies the builtin error interface
-func (e AuthorizationValidationError) Error() string {
+func (e AuthZValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1275,14 +1271,14 @@ func (e AuthorizationValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sAuthorization.%s: %s%s",
+		"invalid %sAuthZ.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = AuthorizationValidationError{}
+var _ error = AuthZValidationError{}
 
 var _ interface {
 	Field() string
@@ -1290,9 +1286,9 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = AuthorizationValidationError{}
+} = AuthZValidationError{}
 
-var _Authorization_UserType_InLookup = map[string]struct{}{
+var _AuthZ_UserType_InLookup = map[string]struct{}{
 	"admin": {},
 	"user":  {},
 	"guest": {},
