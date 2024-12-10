@@ -94,10 +94,10 @@ message UploadResponse {
       description: "file size",
     }
   ];
-  uint32 status = 5 [
-    json_name = "status",
+  string fail_reason = 5 [
+    json_name = "fail_reason",
     (gnostic.openapi.v3.property) = {
-      description: "file status",
+      description: "file failed reason message info",
     }
   ];
 }
