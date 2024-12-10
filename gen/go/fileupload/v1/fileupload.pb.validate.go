@@ -70,13 +70,15 @@ func (m *FileHeader) validate(all bool) error {
 
 	// no validation rules for Size
 
-	// no validation rules for ModTime
+	// no validation rules for ModTimeString
 
-	// no validation rules for ModTimeUnix
+	// no validation rules for ModTime
 
 	// no validation rules for ContentType
 
 	// no validation rules for Header
+
+	// no validation rules for IsDir
 
 	if len(errors) > 0 {
 		return FileHeaderMultiError(errors)
@@ -176,6 +178,8 @@ func (m *UploadRequest) validate(all bool) error {
 	}
 
 	var errors []error
+
+	// no validation rules for IsHeader
 
 	// no validation rules for Data
 

@@ -8,13 +8,15 @@ package jwt
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/goexts/generic/settings"
 	jwtv5 "github.com/golang-jwt/jwt/v5"
 	"github.com/origadmin/toolkits/security"
+	"github.com/origadmin/toolkits/storage/cache"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/middleware/security/helper"
+	"github.com/origadmin/runtime/middleware/security/internal/helper"
 )
 
 var _ security.Authenticator = (*Authenticator)(nil)
@@ -22,17 +24,32 @@ var _ security.Authenticator = (*Authenticator)(nil)
 type Option struct {
 	signingMethod jwtv5.SigningMethod
 	keyFunc       func(*jwtv5.Token) (any, error)
+	schemeType    security.Scheme
 }
 
 type Setting = func(*Option)
 
 type Authenticator struct {
-	option   *Option
-	ExtraKey string
+	option    *Option
+	ExtraKeys []string
+	cache     security.TokenCacheService
 }
 
-func (jwt *Authenticator) AuthenticateToken(tokenString string) (security.Claims, error) {
-	jwtToken, err := jwt.parseToken(tokenString)
+func (obj *Authenticator) schemeString() string {
+	return obj.option.schemeType.String()
+}
+
+func (obj *Authenticator) AuthenticateToken(ctx context.Context, tokenStr string) (security.Claims, error) {
+	if obj.cache != nil {
+		ok, err := obj.cache.Validate(ctx, tokenStr)
+		switch {
+		case err != nil:
+			return nil, ErrInvalidToken
+		case !ok:
+			return nil, ErrTokenNotFound
+		}
+	}
+	jwtToken, err := obj.parseToken(tokenStr)
 
 	if jwtToken == nil {
 		return nil, ErrInvalidToken
@@ -55,7 +72,7 @@ func (jwt *Authenticator) AuthenticateToken(tokenString string) (security.Claims
 		return nil, ErrInvalidToken
 	}
 
-	if jwtToken.Method != jwt.option.signingMethod {
+	if jwtToken.Method != obj.option.signingMethod {
 		return nil, ErrUnsupportedSigningMethod
 	}
 
@@ -63,77 +80,88 @@ func (jwt *Authenticator) AuthenticateToken(tokenString string) (security.Claims
 		return nil, ErrInvalidClaims
 	}
 
-	authClaims, err := ToClaims(jwtToken.Claims, jwt.ExtraKey)
+	securityClaims, err := ToClaims(jwtToken.Claims, obj.ExtraKeys...)
 	if err != nil {
 		return nil, err
 	}
-
-	return authClaims, nil
+	return securityClaims, nil
 }
 
-func (jwt *Authenticator) AuthenticateTokenContext(ctx context.Context, contextType security.ContextType) (security.Claims, error) {
-	tokenString := helper.FromMD(ctx, "bearer")
-	if tokenString == "" {
+func (obj *Authenticator) AuthenticateTokenContext(ctx context.Context, tokenType security.TokenType) (security.Claims, error) {
+	tokenStr, err := helper.FromTokenTypeContext(ctx, tokenType, obj.schemeString())
+	if err != nil || tokenStr == "" {
 		return nil, ErrInvalidToken
 	}
-
-	return jwt.AuthenticateToken(tokenString)
+	return obj.AuthenticateToken(ctx, tokenStr)
 }
 
-func (jwt *Authenticator) Authenticate(ctx context.Context, tokenString string) (bool, error) {
-	token, err := jwt.AuthenticateToken(tokenString)
+func (obj *Authenticator) Authenticate(ctx context.Context, tokenStr string) (bool, error) {
+	_, err := obj.AuthenticateToken(ctx, tokenStr)
 	if err != nil {
 		return false, err
 	}
-	// TODO: check token
-	_ = token
 	return true, nil
 }
 
-func (jwt *Authenticator) AuthenticateContext(ctx context.Context, contextType security.ContextType, tokenString string) (bool, error) {
-	return jwt.Authenticate(ctx, tokenString)
+func (obj *Authenticator) AuthenticateContext(ctx context.Context, tokenType security.TokenType) (bool, error) {
+	tokenStr, err := helper.FromTokenTypeContext(ctx, tokenType, obj.schemeString())
+	if err != nil || tokenStr == "" {
+		return false, ErrInvalidToken
+	}
+	return obj.Authenticate(ctx, tokenStr)
 }
 
-func (jwt *Authenticator) CreateToken(claims security.Claims) (string, error) {
-	jwtToken := jwtv5.NewWithClaims(jwt.option.signingMethod, ClaimsToJwtClaims(claims))
+func (obj *Authenticator) CreateToken(ctx context.Context, claims security.Claims) (string, error) {
+	jwtToken := jwtv5.NewWithClaims(obj.option.signingMethod, ClaimsToJwtClaims(claims))
 
-	strToken, err := jwt.generateToken(jwtToken)
-	if err != nil {
+	tokenStr, err := obj.generateToken(jwtToken)
+	if err != nil || tokenStr == "" {
 		return "", err
 	}
-
-	return strToken, nil
+	exp := time.Duration(claims.GetExpiration().UnixMilli())
+	if obj.cache != nil {
+		if err := obj.cache.Store(ctx, tokenStr, exp); err != nil {
+			return tokenStr, err
+		}
+	}
+	return tokenStr, nil
 }
 
-func (jwt *Authenticator) CreateTokenContext(ctx context.Context, contextType security.ContextType, claims security.Claims) (context.Context, error) {
-	strToken, err := jwt.CreateToken(claims)
+func (obj *Authenticator) CreateTokenContext(ctx context.Context, tokenType security.TokenType, claims security.Claims) (context.Context, error) {
+	tokenStr, err := obj.CreateToken(ctx, claims)
 	if err != nil {
 		return ctx, err
 	}
-
-	//ctx = utils.MDWithAuth(ctx, utils.BearerWord, strToken, contextType)
-	_ = strToken
+	ctx = helper.WithTokenTypeContext(ctx, tokenType, obj.schemeString(), tokenStr)
 	return ctx, nil
 }
 
-func (jwt *Authenticator) DestroyToken(ctx context.Context, s string) error {
-	//TODO implement me
-	panic("implement me")
+func (obj *Authenticator) DestroyToken(ctx context.Context, tokenStr string) error {
+	if obj.cache != nil {
+		err := obj.cache.Remove(ctx, tokenStr)
+		if err != nil && !errors.Is(err, cache.ErrNotFound) {
+			return err
+		}
+	}
+	return nil
 }
 
-func (jwt *Authenticator) DestroyTokenContext(ctx context.Context, contextType security.ContextType, s string) error {
-	//TODO implement me
-	panic("implement me")
+func (obj *Authenticator) DestroyTokenContext(ctx context.Context, token security.TokenType) error {
+	tokenStr, err := helper.FromTokenTypeContext(ctx, token, obj.schemeString())
+	if err != nil || tokenStr == "" {
+		return ErrInvalidToken
+	}
+	return obj.DestroyToken(ctx, tokenStr)
 }
 
-func NewAuthenticator(security *configv1.Security, ss ...Setting) (security.Authenticator, error) {
-	config := security.GetJwt()
+func NewAuthenticator(cfg *configv1.Security, ss ...Setting) (security.Authenticator, error) {
+	config := cfg.GetAuthn().GetJwt()
 	if config == nil {
-		return nil, errors.New("security config is empty")
+		return nil, errors.New("cfg config is empty")
 	}
 	option := settings.Apply(&Option{}, ss)
 	if option.signingMethod == nil {
-		option.signingMethod = GetSigningMethodFromAlg(config.GetAlgorithm())
+		option.signingMethod = GetSigningMethodFromAlg(config.Algorithm)
 	}
 	if config.SigningKey == "" {
 		return nil, errors.New("signing key is empty")
@@ -144,6 +172,7 @@ func NewAuthenticator(security *configv1.Security, ss ...Setting) (security.Auth
 
 	auth := &Authenticator{
 		option: option,
+		cache:  nil,
 	}
 	return auth, nil
 }
@@ -194,105 +223,27 @@ func GetSigningMethodFromAlg(algorithm string) jwtv5.SigningMethod {
 	}
 }
 
-//// Authenticate authenticates the token string and returns the claims.
-//func (jwt *Authenticator) Authenticate(ctx context.Context, contextType security.ContextType) (security.Claims, error) {
-//	tokenString := helper.FromMD(ctx, utils.BearerWord, contextType)
-//	if err != nil {
-//		return nil, ErrMissingBearerToken
-//	}
-//
-//	return jwt.AuthenticateToken(tokenString)
-//}
-//
-//// AuthenticateToken authenticates the token string and returns the claims.
-//func (jwt *Authenticator) AuthenticateToken(tokenString string) (security.Claims, error) {
-//	jwtToken, err := jwt.parseToken(tokenString)
-//
-//	if jwtToken == nil {
-//		return nil, ErrInvalidToken
-//	}
-//
-//	if err != nil {
-//		switch {
-//		case errors.Is(err, jwtv5.ErrTokenMalformed):
-//			return nil, ErrInvalidToken
-//		case errors.Is(err, jwtv5.ErrTokenSignatureInvalid):
-//			return nil, ErrSignTokenFailed
-//		case errors.Is(err, jwtv5.ErrTokenExpired) || errors.Is(err, jwtv5.ErrTokenNotValidYet):
-//			return nil, ErrTokenExpired
-//		default:
-//			return nil, ErrInvalidToken
-//		}
-//	}
-//
-//	if !jwtToken.Valid {
-//		return nil, ErrInvalidToken
-//	}
-//	if jwtToken.Method != jwt.option.signingMethod {
-//		return nil, ErrUnsupportedSigningMethod
-//	}
-//	if jwtToken.Claims == nil {
-//		return nil, ErrInvalidClaims
-//	}
-//
-//	claims, ok := jwtToken.Claims.(jwtv5.MapClaims)
-//	if !ok {
-//		return nil, ErrInvalidClaims
-//	}
-//
-//	authClaims, err := utils.MapClaimsToAuthClaims(claims)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return authClaims, nil
-//}
-//
-//// CreateIdentityWithContext creates a signed token string from the claims and sets it to the context.
-//func (jwt *Authenticator) CreateIdentityWithContext(ctx context.Context, contextType security.ContextType, claims security.Claims) (context.Context, error) {
-//	strToken, err := jwt.CreateIdentity(claims)
-//	if err != nil {
-//		return ctx, err
-//	}
-//
-//	ctx = utils.MDWithAuth(ctx, utils.BearerWord, strToken, contextType)
-//
-//	return ctx, nil
-//}
-//
-//// CreateIdentity creates a signed token string from the claims.
-//func (jwt *Authenticator) CreateIdentity(claims security.Claims) (string, error) {
-//	jwtToken := jwtv5.NewWithClaims(jwt.option.signingMethod, utils.AuthClaimsToJwtClaims(claims))
-//
-//	strToken, err := jwt.generateToken(jwtToken)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	return strToken, nil
-//}
-
-func (jwt *Authenticator) Close() {}
+func (obj *Authenticator) Close() {}
 
 // parseToken parses the token string and returns the token.
-func (jwt *Authenticator) parseToken(token string) (*jwtv5.Token, error) {
-	if jwt.option.keyFunc == nil {
+func (obj *Authenticator) parseToken(token string) (*jwtv5.Token, error) {
+	if obj.option.keyFunc == nil {
 		return nil, ErrMissingKeyFunc
 	}
-	if jwt.ExtraKey != "" {
-		return jwtv5.ParseWithClaims(token, &jwtv5.RegisteredClaims{}, jwt.option.keyFunc)
+	if obj.ExtraKeys == nil {
+		return jwtv5.ParseWithClaims(token, &jwtv5.RegisteredClaims{}, obj.option.keyFunc)
 	}
 
-	return jwtv5.Parse(token, jwt.option.keyFunc)
+	return jwtv5.Parse(token, obj.option.keyFunc)
 }
 
 // generateToken generates a signed token string from the token.
-func (jwt *Authenticator) generateToken(jwtToken *jwtv5.Token) (string, error) {
-	if jwt.option.keyFunc == nil {
+func (obj *Authenticator) generateToken(jwtToken *jwtv5.Token) (string, error) {
+	if obj.option.keyFunc == nil {
 		return "", ErrMissingKeyFunc
 	}
 
-	key, err := jwt.option.keyFunc(jwtToken)
+	key, err := obj.option.keyFunc(jwtToken)
 	if err != nil {
 		return "", ErrGetKeyFailed
 	}

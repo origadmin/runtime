@@ -13,11 +13,13 @@ import (
 
 	"github.com/origadmin/runtime/context"
 	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
-	"github.com/origadmin/runtime/middleware/security/helper"
+	"github.com/origadmin/runtime/middleware/security/internal/helper"
 )
 
 const (
-	reason string = "FORBIDDEN"
+	reason          string = "FORBIDDEN"
+	StringBoolTrue         = "true"
+	StringBoolFalse        = "false"
 )
 
 var (
@@ -38,35 +40,6 @@ func PolicyFromContext(ctx context.Context) security.Policy {
 
 func NewPolicyContext(ctx context.Context, claims security.Policy) context.Context {
 	return context.WithValue(ctx, securityCtx{}, claims)
-}
-
-type claimCtx struct{}
-
-func ClaimsFromContext(ctx context.Context) security.Claims {
-	if claims, ok := ctx.Value(claimCtx{}).(security.Claims); ok {
-		return claims
-	}
-	return nil
-}
-
-func NewClaimsContext(ctx context.Context, claims security.Claims) context.Context {
-	return context.WithValue(ctx, claimCtx{}, claims)
-}
-
-type skipCtx struct{}
-
-func NewSkipContext(ctx context.Context) context.Context {
-	if SkipFromContext(ctx) {
-		return ctx
-	}
-	return context.WithValue(ctx, skipCtx{}, true)
-}
-
-func SkipFromContext(ctx context.Context) bool {
-	if _, ok := ctx.Value(skipCtx{}).(bool); ok {
-		return true
-	}
-	return false
 }
 
 func mergePublic(public []string, paths ...string) []string {
@@ -109,25 +82,10 @@ func IsSkipped(ctx context.Context, key string) bool {
 	if SkipFromContext(ctx) {
 		return true
 	}
-	if md, ok := metadata.FromServerContext(ctx); ok {
-		if md.Get(key) == "true" || md.Get(key) == "1" {
-			return true
-		}
+	if md, ok := metadata.FromServerContext(ctx); ok && md.Get(key) == StringBoolTrue {
+		return true
 	}
 	return false
-}
-
-func WithSkipContextClient(ctx context.Context, key string) context.Context {
-	return metadata.AppendToClientContext(ctx, key, "true")
-}
-
-func WithSkipContextServer(ctx context.Context, key string) context.Context {
-	md, ok := metadata.FromServerContext(ctx)
-	if ok {
-		md.Set(key, "true")
-		return metadata.NewServerContext(NewSkipContext(ctx), md)
-	}
-	return ctx
 }
 
 func tokenParser(ctx context.Context, fns []func(ctx context.Context) string) string {

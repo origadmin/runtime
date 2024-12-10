@@ -95,16 +95,16 @@ func ErrorAuthErrorReasonInvalidExpiration(format string, args ...interface{}) *
 	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_EXPIRATION.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonUnauthenticated(err error) bool {
+func IsAuthErrorReasonTokenNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_UNAUTHENTICATED.String() && e.Code == 500
+	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_TOKEN_NOT_FOUND.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonUnauthenticated(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_UNAUTHENTICATED.String(), fmt.Sprintf(format, args...))
+func ErrorAuthErrorReasonTokenNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_TOKEN_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
 func IsAuthErrorReasonBearerTokenMissing(err error) bool {
@@ -201,4 +201,16 @@ func IsAuthErrorReasonInvalidAtHash(err error) bool {
 
 func ErrorAuthErrorReasonInvalidAtHash(format string, args ...interface{}) *errors.Error {
 	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_AT_HASH.String(), fmt.Sprintf(format, args...))
+}
+
+func IsAuthErrorReasonUnauthenticated(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_UNAUTHENTICATED.String() && e.Code == 500
+}
+
+func ErrorAuthErrorReasonUnauthenticated(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_UNAUTHENTICATED.String(), fmt.Sprintf(format, args...))
 }

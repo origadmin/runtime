@@ -31,14 +31,14 @@ message FileHeader {
       description: "file size",
     }
   ];
-  string mod_time = 4 [
-    json_name = "mod_time",
+  string mod_time_string = 4 [
+    json_name = "mod_time_string",
     (gnostic.openapi.v3.property) = {
-      description: "file mod time",
+      description: "file mod time string",
     }
   ];
-  uint32 mod_time_unix = 5 [
-    json_name = "mod_time_unix",
+  uint32 mod_time = 5 [
+    json_name = "mod_time",
     (gnostic.openapi.v3.property) = {
       description: "file mod time unix",
     }
@@ -55,11 +55,23 @@ message FileHeader {
       description: "file header",
     }
   ];
+  bool is_dir = 7 [
+    json_name = "is_dir",
+    (gnostic.openapi.v3.property) = {
+      description: "file is dir",
+    }
+  ];
 }
 
 // UploadRequest file block information
 message UploadRequest {
-  bytes data = 1 [
+  bool is_header = 1 [
+    json_name = "is_header",
+    (gnostic.openapi.v3.property) = {
+      description: "file header",
+    }
+  ];
+  bytes data = 2 [
     json_name = "data",
     (gnostic.openapi.v3.property) = {
       description: "file data",

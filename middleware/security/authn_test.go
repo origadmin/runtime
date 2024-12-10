@@ -155,15 +155,15 @@ func TestServer(t *testing.T) {
 
 			authenticator, err := jwt.NewAuthenticator(
 				&configv1.Security{
-					Jwt: &configv1.Security_JWTConfig{
-						Disabled:      false,
-						PublicPaths:   nil,
-						Algorithm:     test.alg,
-						SigningKey:    testKey,
-						OldSigningKey: "",
-						ExpireTime:    nil,
-						RefreshTime:   nil,
-						CacheName:     "",
+					Authn: &configv1.AuthNConfig{
+						Jwt: &configv1.AuthNConfig_JWTConfig{
+							Algorithm:     test.alg,
+							SigningKey:    testKey,
+							OldSigningKey: "",
+							ExpireTime:    nil,
+							RefreshTime:   nil,
+							CacheName:     "",
+						},
 					},
 				},
 				//jwt.WithKey([]byte(testKey)),
@@ -211,15 +211,15 @@ func TestClient(t *testing.T) {
 
 			authenticator, err := jwt.NewAuthenticator(
 				&configv1.Security{
-					Jwt: &configv1.Security_JWTConfig{
-						Disabled:      false,
-						PublicPaths:   nil,
-						Algorithm:     "HS256",
-						SigningKey:    testKey,
-						OldSigningKey: "",
-						ExpireTime:    nil,
-						RefreshTime:   nil,
-						CacheName:     "",
+					Authn: &configv1.AuthNConfig{
+						Jwt: &configv1.AuthNConfig_JWTConfig{
+							Algorithm:     "HS256",
+							SigningKey:    testKey,
+							OldSigningKey: "",
+							ExpireTime:    nil,
+							RefreshTime:   nil,
+							CacheName:     "",
+						},
 					},
 				},
 			)

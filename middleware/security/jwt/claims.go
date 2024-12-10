@@ -7,7 +7,6 @@ package jwt
 
 import (
 	"bytes"
-	"maps"
 	"strings"
 	"time"
 
@@ -20,6 +19,7 @@ import (
 
 var (
 	ErrInvalidToken             = securityv1.ErrorAuthErrorReasonBearerTokenMissing("invalid bearer token")
+	ErrTokenNotFound            = securityv1.ErrorAuthErrorReasonTokenNotFound("token not found")
 	ErrTokenMalformed           = securityv1.ErrorAuthErrorReasonBearerTokenMissing("token malformed")
 	ErrTokenSignatureInvalid    = securityv1.ErrorAuthErrorReasonSignTokenFailed("token signature invalid")
 	ErrTokenExpired             = securityv1.ErrorAuthErrorReasonTokenExpired("token expired")
@@ -80,18 +80,23 @@ func (s *SecurityClaims) GetScopes() map[string]bool {
 }
 
 func ClaimsToJwtClaims(raw security.Claims) jwtv5.Claims {
-	Claims := jwtv5.MapClaims{
+	mapClaims := jwtv5.MapClaims{
 		"sub": raw.GetSubject(),
 	}
 
 	if iss := raw.GetIssuer(); iss != "" {
-		Claims["iss"] = raw.GetIssuer()
+		mapClaims["iss"] = raw.GetIssuer()
 	}
 	if aud := raw.GetAudience(); len(aud) > 0 {
-		Claims["aud"] = aud
+		mapClaims["aud"] = aud
 	}
 	if exp := raw.GetExpiration(); !exp.IsZero() {
-		Claims["exp"] = exp
+		mapClaims["exp"] = exp
+	}
+
+	extras := raw.GetExtra()
+	for key, val := range extras {
+		mapClaims[key] = val
 	}
 
 	var buffer bytes.Buffer
@@ -106,42 +111,42 @@ func ClaimsToJwtClaims(raw security.Claims) jwtv5.Claims {
 	}
 	str := buffer.String()
 	if len(str) > 0 {
-		Claims["scope"] = buffer.String()
+		mapClaims["scope"] = buffer.String()
 	}
 
-	return Claims
+	return mapClaims
 }
 
-func MapToClaims(rawClaims jwtv5.MapClaims, extraKey string) (security.Claims, error) {
-	//Claims := security.Claims{
+func MapToClaims(rawClaims jwtv5.MapClaims, extraKeys ...string) (security.Claims, error) {
+	//claims := security.claims{
 	//	Scopes: make(ScopeSet),
 	//}
-	Claims := &securityv1.Claims{
+	claims := &securityv1.Claims{
 		Scopes: make(map[string]bool),
 	}
 
 	// optional Subject
 	if subjectClaim, err := rawClaims.GetSubject(); err == nil {
-		Claims.Sub = subjectClaim
+		claims.Sub = subjectClaim
 	} else {
 		return nil, ErrInvalidSubject
 	}
 	// optional Issuer
 	if issuerClaim, err := rawClaims.GetIssuer(); err == nil {
-		Claims.Iss = issuerClaim
+		claims.Iss = issuerClaim
 	} else {
 		return nil, ErrInvalidIssuer
 	}
 	// optional Audience
 	if audienceClaim, err := rawClaims.GetAudience(); err == nil {
-		Claims.Aud = append(Claims.Aud, audienceClaim...)
+		claims.Aud = append(claims.Aud, audienceClaim...)
 	} else {
 		return nil, ErrInvalidAudience
 	}
 	// optional Expiration
 	if expClaim, err := rawClaims.GetExpirationTime(); err == nil {
 		if expClaim != nil {
-			Claims.Exp = timestamppb.New(expClaim.Time)
+			claims.Exp = timestamppb.New(expClaim.Time)
 		}
 	} else {
 		return nil, ErrInvalidExpiration
@@ -151,21 +156,23 @@ func MapToClaims(rawClaims jwtv5.MapClaims, extraKey string) (security.Claims, e
 		if scope, ok := scopeKey.(string); ok {
 			scopes := strings.Split(scope, " ")
 			for _, s := range scopes {
-				Claims.Scopes[s] = true
+				claims.Scopes[s] = true
 			}
 		}
 	}
 
-	extra := make(map[string]string)
-	if extraVal, ok := rawClaims[extraKey]; ok {
-		if extras, ok := extraVal.(map[string]string); ok {
-			extra = maps.Clone(extras)
+	extras := make(map[string]string)
+	for _, key := range extraKeys {
+		if keyVal, ok := rawClaims[key]; ok {
+			if extraVal, ok := keyVal.(string); ok {
+				extras[key] = extraVal
+			}
 		}
 	}
 
 	return &SecurityClaims{
-		Claims: Claims,
-		Extra:  extra,
+		Claims: claims,
+		Extra:  extras,
 	}, nil
 }
 
@@ -215,12 +222,12 @@ func RegisteredToClaims(rawClaims *jwtv5.RegisteredClaims) (security.Claims, err
 	}, nil
 }
 
-func ToClaims(rawClaims jwtv5.Claims, extraKey string) (security.Claims, error) {
+func ToClaims(rawClaims jwtv5.Claims, extraKeys ...string) (security.Claims, error) {
 	if Claims, ok := rawClaims.(*jwtv5.RegisteredClaims); ok {
 		return RegisteredToClaims(Claims)
 	}
 	if Claims, ok := rawClaims.(jwtv5.MapClaims); ok {
-		return MapToClaims(Claims, extraKey)
+		return MapToClaims(Claims, extraKeys...)
 	}
 	return nil, ErrInvalidClaims
 }

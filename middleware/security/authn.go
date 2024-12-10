@@ -12,6 +12,7 @@ import (
 	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/context"
+	"github.com/origadmin/runtime/middleware/empty"
 )
 
 const (
@@ -25,7 +26,7 @@ const (
 func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
 	option := settings.Apply(&ConfigOption{}, ss)
 	if option == nil || option.Authorizer == nil {
-		return nil
+		return empty.Empty()
 	}
 	if option.SecurityTokenKey == "" {
 		option.SecurityTokenKey = MetadataSecurityTokenKey
@@ -69,7 +70,7 @@ func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
 func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
 	option := settings.Apply(&ConfigOption{}, ss)
 	if option == nil || option.Authenticator == nil {
-		return nil
+		return empty.Empty()
 	}
 	if option.SecurityTokenKey == "" {
 		option.SecurityTokenKey = MetadataSecurityTokenKey
@@ -90,7 +91,7 @@ func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
 				return nil, ErrMissingToken
 			}
 
-			claims, err := option.Authenticator.AuthenticateToken(token)
+			claims, err := option.Authenticator.AuthenticateToken(ctx, token)
 			if err != nil {
 				return nil, err
 			}
