@@ -57,64 +57,6 @@ func (m *Security) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetJwt()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, SecurityValidationError{
-					field:  "Jwt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, SecurityValidationError{
-					field:  "Jwt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetJwt()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return SecurityValidationError{
-				field:  "Jwt",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetCasbin()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, SecurityValidationError{
-					field:  "Casbin",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, SecurityValidationError{
-					field:  "Casbin",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCasbin()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return SecurityValidationError{
-				field:  "Casbin",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
 	if len(errors) > 0 {
 		return SecurityMultiError(errors)
 	}
@@ -192,22 +134,22 @@ var _ interface {
 	ErrorName() string
 } = SecurityValidationError{}
 
-// Validate checks the field values on Security_CasbinConfig with the rules
+// Validate checks the field values on Security_AuthNConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *Security_CasbinConfig) Validate() error {
+func (m *Security_AuthNConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Security_CasbinConfig with the rules
+// ValidateAll checks the field values on Security_AuthNConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// Security_CasbinConfigMultiError, or nil if none found.
-func (m *Security_CasbinConfig) ValidateAll() error {
+// Security_AuthNConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Security_CasbinConfig) validate(all bool) error {
+func (m *Security_AuthNConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -216,24 +158,118 @@ func (m *Security_CasbinConfig) validate(all bool) error {
 
 	// no validation rules for Disabled
 
-	// no validation rules for PolicyFile
+	if _, ok := _Security_AuthNConfig_Type_InLookup[m.GetType()]; !ok {
+		err := Security_AuthNConfigValidationError{
+			field:  "Type",
+			reason: "value must be in list [noop jwt oidc pre_shared_key basic_auth oauth2 ldap x509 saml api_key]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for ModelFile
+	if all {
+		switch v := interface{}(m.GetJwt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Security_AuthNConfigValidationError{
+					field:  "Jwt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Security_AuthNConfigValidationError{
+					field:  "Jwt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetJwt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Security_AuthNConfigValidationError{
+				field:  "Jwt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetOidc()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Security_AuthNConfigValidationError{
+					field:  "Oidc",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Security_AuthNConfigValidationError{
+					field:  "Oidc",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOidc()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Security_AuthNConfigValidationError{
+				field:  "Oidc",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetPreSharedKey()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Security_AuthNConfigValidationError{
+					field:  "PreSharedKey",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Security_AuthNConfigValidationError{
+					field:  "PreSharedKey",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPreSharedKey()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Security_AuthNConfigValidationError{
+				field:  "PreSharedKey",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if len(errors) > 0 {
-		return Security_CasbinConfigMultiError(errors)
+		return Security_AuthNConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// Security_CasbinConfigMultiError is an error wrapping multiple validation
-// errors returned by Security_CasbinConfig.ValidateAll() if the designated
+// Security_AuthNConfigMultiError is an error wrapping multiple validation
+// errors returned by Security_AuthNConfig.ValidateAll() if the designated
 // constraints aren't met.
-type Security_CasbinConfigMultiError []error
+type Security_AuthNConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Security_CasbinConfigMultiError) Error() string {
+func (m Security_AuthNConfigMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -242,11 +278,11 @@ func (m Security_CasbinConfigMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Security_CasbinConfigMultiError) AllErrors() []error { return m }
+func (m Security_AuthNConfigMultiError) AllErrors() []error { return m }
 
-// Security_CasbinConfigValidationError is the validation error returned by
-// Security_CasbinConfig.Validate if the designated constraints aren't met.
-type Security_CasbinConfigValidationError struct {
+// Security_AuthNConfigValidationError is the validation error returned by
+// Security_AuthNConfig.Validate if the designated constraints aren't met.
+type Security_AuthNConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -254,24 +290,24 @@ type Security_CasbinConfigValidationError struct {
 }
 
 // Field function returns field value.
-func (e Security_CasbinConfigValidationError) Field() string { return e.field }
+func (e Security_AuthNConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Security_CasbinConfigValidationError) Reason() string { return e.reason }
+func (e Security_AuthNConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Security_CasbinConfigValidationError) Cause() error { return e.cause }
+func (e Security_AuthNConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Security_CasbinConfigValidationError) Key() bool { return e.key }
+func (e Security_AuthNConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Security_CasbinConfigValidationError) ErrorName() string {
-	return "Security_CasbinConfigValidationError"
+func (e Security_AuthNConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfigValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e Security_CasbinConfigValidationError) Error() string {
+func (e Security_AuthNConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -283,14 +319,14 @@ func (e Security_CasbinConfigValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSecurity_CasbinConfig.%s: %s%s",
+		"invalid %sSecurity_AuthNConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Security_CasbinConfigValidationError{}
+var _ error = Security_AuthNConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -298,24 +334,37 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Security_CasbinConfigValidationError{}
+} = Security_AuthNConfigValidationError{}
 
-// Validate checks the field values on Security_JWTConfig with the rules
+var _Security_AuthNConfig_Type_InLookup = map[string]struct{}{
+	"noop":           {},
+	"jwt":            {},
+	"oidc":           {},
+	"pre_shared_key": {},
+	"basic_auth":     {},
+	"oauth2":         {},
+	"ldap":           {},
+	"x509":           {},
+	"saml":           {},
+	"api_key":        {},
+}
+
+// Validate checks the field values on Security_AuthZConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *Security_JWTConfig) Validate() error {
+func (m *Security_AuthZConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Security_JWTConfig with the rules
+// ValidateAll checks the field values on Security_AuthZConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// Security_JWTConfigMultiError, or nil if none found.
-func (m *Security_JWTConfig) ValidateAll() error {
+// Security_AuthZConfigMultiError, or nil if none found.
+func (m *Security_AuthZConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Security_JWTConfig) validate(all bool) error {
+func (m *Security_AuthZConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -323,6 +372,213 @@ func (m *Security_JWTConfig) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Disabled
+
+	if _, ok := _Security_AuthZConfig_Type_InLookup[m.GetType()]; !ok {
+		err := Security_AuthZConfigValidationError{
+			field:  "Type",
+			reason: "value must be in list [noop casbin opa zanzibar]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetCasbin()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Security_AuthZConfigValidationError{
+					field:  "Casbin",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Security_AuthZConfigValidationError{
+					field:  "Casbin",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCasbin()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Security_AuthZConfigValidationError{
+				field:  "Casbin",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetOpa()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Security_AuthZConfigValidationError{
+					field:  "Opa",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Security_AuthZConfigValidationError{
+					field:  "Opa",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOpa()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Security_AuthZConfigValidationError{
+				field:  "Opa",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetZanzibar()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Security_AuthZConfigValidationError{
+					field:  "Zanzibar",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Security_AuthZConfigValidationError{
+					field:  "Zanzibar",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetZanzibar()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Security_AuthZConfigValidationError{
+				field:  "Zanzibar",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return Security_AuthZConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthZConfigMultiError is an error wrapping multiple validation
+// errors returned by Security_AuthZConfig.ValidateAll() if the designated
+// constraints aren't met.
+type Security_AuthZConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthZConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthZConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthZConfigValidationError is the validation error returned by
+// Security_AuthZConfig.Validate if the designated constraints aren't met.
+type Security_AuthZConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthZConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthZConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthZConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthZConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthZConfigValidationError) ErrorName() string {
+	return "Security_AuthZConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthZConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthZConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthZConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthZConfigValidationError{}
+
+var _Security_AuthZConfig_Type_InLookup = map[string]struct{}{
+	"noop":     {},
+	"casbin":   {},
+	"opa":      {},
+	"zanzibar": {},
+}
+
+// Validate checks the field values on Security_AuthNConfig_JWTConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Security_AuthNConfig_JWTConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_JWTConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_JWTConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_JWTConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_JWTConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
 
 	// no validation rules for Algorithm
 
@@ -334,7 +590,7 @@ func (m *Security_JWTConfig) validate(all bool) error {
 		switch v := interface{}(m.GetExpireTime()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Security_JWTConfigValidationError{
+				errors = append(errors, Security_AuthNConfig_JWTConfigValidationError{
 					field:  "ExpireTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -342,7 +598,7 @@ func (m *Security_JWTConfig) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, Security_JWTConfigValidationError{
+				errors = append(errors, Security_AuthNConfig_JWTConfigValidationError{
 					field:  "ExpireTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -351,7 +607,7 @@ func (m *Security_JWTConfig) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetExpireTime()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return Security_JWTConfigValidationError{
+			return Security_AuthNConfig_JWTConfigValidationError{
 				field:  "ExpireTime",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -363,7 +619,7 @@ func (m *Security_JWTConfig) validate(all bool) error {
 		switch v := interface{}(m.GetRefreshTime()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Security_JWTConfigValidationError{
+				errors = append(errors, Security_AuthNConfig_JWTConfigValidationError{
 					field:  "RefreshTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -371,7 +627,7 @@ func (m *Security_JWTConfig) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, Security_JWTConfigValidationError{
+				errors = append(errors, Security_AuthNConfig_JWTConfigValidationError{
 					field:  "RefreshTime",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -380,7 +636,7 @@ func (m *Security_JWTConfig) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetRefreshTime()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return Security_JWTConfigValidationError{
+			return Security_AuthNConfig_JWTConfigValidationError{
 				field:  "RefreshTime",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -391,19 +647,19 @@ func (m *Security_JWTConfig) validate(all bool) error {
 	// no validation rules for CacheName
 
 	if len(errors) > 0 {
-		return Security_JWTConfigMultiError(errors)
+		return Security_AuthNConfig_JWTConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// Security_JWTConfigMultiError is an error wrapping multiple validation errors
-// returned by Security_JWTConfig.ValidateAll() if the designated constraints
-// aren't met.
-type Security_JWTConfigMultiError []error
+// Security_AuthNConfig_JWTConfigMultiError is an error wrapping multiple
+// validation errors returned by Security_AuthNConfig_JWTConfig.ValidateAll()
+// if the designated constraints aren't met.
+type Security_AuthNConfig_JWTConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Security_JWTConfigMultiError) Error() string {
+func (m Security_AuthNConfig_JWTConfigMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -412,11 +668,12 @@ func (m Security_JWTConfigMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Security_JWTConfigMultiError) AllErrors() []error { return m }
+func (m Security_AuthNConfig_JWTConfigMultiError) AllErrors() []error { return m }
 
-// Security_JWTConfigValidationError is the validation error returned by
-// Security_JWTConfig.Validate if the designated constraints aren't met.
-type Security_JWTConfigValidationError struct {
+// Security_AuthNConfig_JWTConfigValidationError is the validation error
+// returned by Security_AuthNConfig_JWTConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_JWTConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -424,24 +681,24 @@ type Security_JWTConfigValidationError struct {
 }
 
 // Field function returns field value.
-func (e Security_JWTConfigValidationError) Field() string { return e.field }
+func (e Security_AuthNConfig_JWTConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Security_JWTConfigValidationError) Reason() string { return e.reason }
+func (e Security_AuthNConfig_JWTConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Security_JWTConfigValidationError) Cause() error { return e.cause }
+func (e Security_AuthNConfig_JWTConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Security_JWTConfigValidationError) Key() bool { return e.key }
+func (e Security_AuthNConfig_JWTConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Security_JWTConfigValidationError) ErrorName() string {
-	return "Security_JWTConfigValidationError"
+func (e Security_AuthNConfig_JWTConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_JWTConfigValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e Security_JWTConfigValidationError) Error() string {
+func (e Security_AuthNConfig_JWTConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -453,14 +710,14 @@ func (e Security_JWTConfigValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sSecurity_JWTConfig.%s: %s%s",
+		"invalid %sSecurity_AuthNConfig_JWTConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Security_JWTConfigValidationError{}
+var _ error = Security_AuthNConfig_JWTConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -468,4 +725,1176 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Security_JWTConfigValidationError{}
+} = Security_AuthNConfig_JWTConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_OIDCConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Security_AuthNConfig_OIDCConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_OIDCConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_OIDCConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_OIDCConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_OIDCConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for IssuerUrl
+
+	// no validation rules for Audience
+
+	// no validation rules for Algorithm
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_OIDCConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_OIDCConfigMultiError is an error wrapping multiple
+// validation errors returned by Security_AuthNConfig_OIDCConfig.ValidateAll()
+// if the designated constraints aren't met.
+type Security_AuthNConfig_OIDCConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_OIDCConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_OIDCConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_OIDCConfigValidationError is the validation error
+// returned by Security_AuthNConfig_OIDCConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_OIDCConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_OIDCConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_OIDCConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_OIDCConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_OIDCConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_OIDCConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_OIDCConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_OIDCConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_OIDCConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_OIDCConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_OIDCConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_PreSharedKeyConfig
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *Security_AuthNConfig_PreSharedKeyConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// Security_AuthNConfig_PreSharedKeyConfig with the rules defined in the proto
+// definition for this message. If any rules are violated, the result is a
+// list of violation errors wrapped in
+// Security_AuthNConfig_PreSharedKeyConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_PreSharedKeyConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_PreSharedKeyConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_PreSharedKeyConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_PreSharedKeyConfigMultiError is an error wrapping
+// multiple validation errors returned by
+// Security_AuthNConfig_PreSharedKeyConfig.ValidateAll() if the designated
+// constraints aren't met.
+type Security_AuthNConfig_PreSharedKeyConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_PreSharedKeyConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_PreSharedKeyConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_PreSharedKeyConfigValidationError is the validation
+// error returned by Security_AuthNConfig_PreSharedKeyConfig.Validate if the
+// designated constraints aren't met.
+type Security_AuthNConfig_PreSharedKeyConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_PreSharedKeyConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_PreSharedKeyConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_PreSharedKeyConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_PreSharedKeyConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_PreSharedKeyConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_PreSharedKeyConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_PreSharedKeyConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_PreSharedKeyConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_PreSharedKeyConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_PreSharedKeyConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_BasicAuthConfig
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *Security_AuthNConfig_BasicAuthConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_BasicAuthConfig
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_BasicAuthConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_BasicAuthConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_BasicAuthConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_BasicAuthConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_BasicAuthConfigMultiError is an error wrapping multiple
+// validation errors returned by
+// Security_AuthNConfig_BasicAuthConfig.ValidateAll() if the designated
+// constraints aren't met.
+type Security_AuthNConfig_BasicAuthConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_BasicAuthConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_BasicAuthConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_BasicAuthConfigValidationError is the validation error
+// returned by Security_AuthNConfig_BasicAuthConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_BasicAuthConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_BasicAuthConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_BasicAuthConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_BasicAuthConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_BasicAuthConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_BasicAuthConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_BasicAuthConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_BasicAuthConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_BasicAuthConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_BasicAuthConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_BasicAuthConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_OAuth2Config with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *Security_AuthNConfig_OAuth2Config) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_OAuth2Config
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_OAuth2ConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_OAuth2Config) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_OAuth2Config) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_OAuth2ConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_OAuth2ConfigMultiError is an error wrapping multiple
+// validation errors returned by
+// Security_AuthNConfig_OAuth2Config.ValidateAll() if the designated
+// constraints aren't met.
+type Security_AuthNConfig_OAuth2ConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_OAuth2ConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_OAuth2ConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_OAuth2ConfigValidationError is the validation error
+// returned by Security_AuthNConfig_OAuth2Config.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_OAuth2ConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_OAuth2ConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_OAuth2ConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_OAuth2ConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_OAuth2ConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_OAuth2ConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_OAuth2ConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_OAuth2ConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_OAuth2Config.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_OAuth2ConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_OAuth2ConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_LdapConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Security_AuthNConfig_LdapConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_LdapConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_LdapConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_LdapConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_LdapConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_LdapConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_LdapConfigMultiError is an error wrapping multiple
+// validation errors returned by Security_AuthNConfig_LdapConfig.ValidateAll()
+// if the designated constraints aren't met.
+type Security_AuthNConfig_LdapConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_LdapConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_LdapConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_LdapConfigValidationError is the validation error
+// returned by Security_AuthNConfig_LdapConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_LdapConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_LdapConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_LdapConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_LdapConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_LdapConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_LdapConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_LdapConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_LdapConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_LdapConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_LdapConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_LdapConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_X509Config with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Security_AuthNConfig_X509Config) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_X509Config with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_X509ConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_X509Config) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_X509Config) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_X509ConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_X509ConfigMultiError is an error wrapping multiple
+// validation errors returned by Security_AuthNConfig_X509Config.ValidateAll()
+// if the designated constraints aren't met.
+type Security_AuthNConfig_X509ConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_X509ConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_X509ConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_X509ConfigValidationError is the validation error
+// returned by Security_AuthNConfig_X509Config.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_X509ConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_X509ConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_X509ConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_X509ConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_X509ConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_X509ConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_X509ConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_X509ConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_X509Config.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_X509ConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_X509ConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_SamlConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Security_AuthNConfig_SamlConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_SamlConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_SamlConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_SamlConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_SamlConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_SamlConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_SamlConfigMultiError is an error wrapping multiple
+// validation errors returned by Security_AuthNConfig_SamlConfig.ValidateAll()
+// if the designated constraints aren't met.
+type Security_AuthNConfig_SamlConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_SamlConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_SamlConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_SamlConfigValidationError is the validation error
+// returned by Security_AuthNConfig_SamlConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_SamlConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_SamlConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_SamlConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_SamlConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_SamlConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_SamlConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_SamlConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_SamlConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_SamlConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_SamlConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_SamlConfigValidationError{}
+
+// Validate checks the field values on Security_AuthNConfig_ApiKeyConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *Security_AuthNConfig_ApiKeyConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthNConfig_ApiKeyConfig
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// Security_AuthNConfig_ApiKeyConfigMultiError, or nil if none found.
+func (m *Security_AuthNConfig_ApiKeyConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthNConfig_ApiKeyConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return Security_AuthNConfig_ApiKeyConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthNConfig_ApiKeyConfigMultiError is an error wrapping multiple
+// validation errors returned by
+// Security_AuthNConfig_ApiKeyConfig.ValidateAll() if the designated
+// constraints aren't met.
+type Security_AuthNConfig_ApiKeyConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthNConfig_ApiKeyConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthNConfig_ApiKeyConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthNConfig_ApiKeyConfigValidationError is the validation error
+// returned by Security_AuthNConfig_ApiKeyConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthNConfig_ApiKeyConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthNConfig_ApiKeyConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthNConfig_ApiKeyConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthNConfig_ApiKeyConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthNConfig_ApiKeyConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthNConfig_ApiKeyConfigValidationError) ErrorName() string {
+	return "Security_AuthNConfig_ApiKeyConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthNConfig_ApiKeyConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthNConfig_ApiKeyConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthNConfig_ApiKeyConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthNConfig_ApiKeyConfigValidationError{}
+
+// Validate checks the field values on Security_AuthZConfig_CasbinConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *Security_AuthZConfig_CasbinConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthZConfig_CasbinConfig
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// Security_AuthZConfig_CasbinConfigMultiError, or nil if none found.
+func (m *Security_AuthZConfig_CasbinConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthZConfig_CasbinConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PolicyFile
+
+	// no validation rules for ModelFile
+
+	if len(errors) > 0 {
+		return Security_AuthZConfig_CasbinConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthZConfig_CasbinConfigMultiError is an error wrapping multiple
+// validation errors returned by
+// Security_AuthZConfig_CasbinConfig.ValidateAll() if the designated
+// constraints aren't met.
+type Security_AuthZConfig_CasbinConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthZConfig_CasbinConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthZConfig_CasbinConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthZConfig_CasbinConfigValidationError is the validation error
+// returned by Security_AuthZConfig_CasbinConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthZConfig_CasbinConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthZConfig_CasbinConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthZConfig_CasbinConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthZConfig_CasbinConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthZConfig_CasbinConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthZConfig_CasbinConfigValidationError) ErrorName() string {
+	return "Security_AuthZConfig_CasbinConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthZConfig_CasbinConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthZConfig_CasbinConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthZConfig_CasbinConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthZConfig_CasbinConfigValidationError{}
+
+// Validate checks the field values on Security_AuthZConfig_OpaConfig with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Security_AuthZConfig_OpaConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthZConfig_OpaConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// Security_AuthZConfig_OpaConfigMultiError, or nil if none found.
+func (m *Security_AuthZConfig_OpaConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthZConfig_OpaConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PolicyFile
+
+	// no validation rules for DataFile
+
+	// no validation rules for ServerUrl
+
+	// no validation rules for RegoFile
+
+	if len(errors) > 0 {
+		return Security_AuthZConfig_OpaConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthZConfig_OpaConfigMultiError is an error wrapping multiple
+// validation errors returned by Security_AuthZConfig_OpaConfig.ValidateAll()
+// if the designated constraints aren't met.
+type Security_AuthZConfig_OpaConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthZConfig_OpaConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthZConfig_OpaConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthZConfig_OpaConfigValidationError is the validation error
+// returned by Security_AuthZConfig_OpaConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthZConfig_OpaConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthZConfig_OpaConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthZConfig_OpaConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthZConfig_OpaConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthZConfig_OpaConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthZConfig_OpaConfigValidationError) ErrorName() string {
+	return "Security_AuthZConfig_OpaConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthZConfig_OpaConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthZConfig_OpaConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthZConfig_OpaConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthZConfig_OpaConfigValidationError{}
+
+// Validate checks the field values on Security_AuthZConfig_ZanzibarConfig with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *Security_AuthZConfig_ZanzibarConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Security_AuthZConfig_ZanzibarConfig
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// Security_AuthZConfig_ZanzibarConfigMultiError, or nil if none found.
+func (m *Security_AuthZConfig_ZanzibarConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Security_AuthZConfig_ZanzibarConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ApiEndpoint
+
+	// no validation rules for Namespace
+
+	// no validation rules for ReadConsistency
+
+	// no validation rules for WriteConsistency
+
+	if len(errors) > 0 {
+		return Security_AuthZConfig_ZanzibarConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// Security_AuthZConfig_ZanzibarConfigMultiError is an error wrapping multiple
+// validation errors returned by
+// Security_AuthZConfig_ZanzibarConfig.ValidateAll() if the designated
+// constraints aren't met.
+type Security_AuthZConfig_ZanzibarConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Security_AuthZConfig_ZanzibarConfigMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Security_AuthZConfig_ZanzibarConfigMultiError) AllErrors() []error { return m }
+
+// Security_AuthZConfig_ZanzibarConfigValidationError is the validation error
+// returned by Security_AuthZConfig_ZanzibarConfig.Validate if the designated
+// constraints aren't met.
+type Security_AuthZConfig_ZanzibarConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Security_AuthZConfig_ZanzibarConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Security_AuthZConfig_ZanzibarConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Security_AuthZConfig_ZanzibarConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Security_AuthZConfig_ZanzibarConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Security_AuthZConfig_ZanzibarConfigValidationError) ErrorName() string {
+	return "Security_AuthZConfig_ZanzibarConfigValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Security_AuthZConfig_ZanzibarConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSecurity_AuthZConfig_ZanzibarConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Security_AuthZConfig_ZanzibarConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Security_AuthZConfig_ZanzibarConfigValidationError{}

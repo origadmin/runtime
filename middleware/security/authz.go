@@ -7,14 +7,14 @@ package security
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
 // NewAuthZServer returns a new server middleware.
-func NewAuthZServer(cfg *configv1.Security, option *config.MiddlewareOption) middleware.Middleware {
+func NewAuthZServer(ss ...ConfigOptionSetting) middleware.Middleware {
+	option := settings.Apply(&ConfigOption{}, ss)
 	if option == nil || option.Authorizer == nil {
 		return nil
 	}

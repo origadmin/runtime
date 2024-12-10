@@ -19,11 +19,11 @@ import (
 )
 
 // ContextWithToken .
-func ContextWithToken(ctx context.Context, expectedScheme string, tokenStr string, ctxType security.ContextType) context.Context {
+func ContextWithToken(ctx context.Context, expectedScheme string, tokenStr string, ctxType security.TokenType) context.Context {
 	switch ctxType {
-	case "context":
+	case security.ContextTypeContext:
 		return injectTokenToGrpcContext(ctx, expectedScheme, tokenStr)
-	case "metadata":
+	case security.ContextTypeHeader:
 		return injectTokenToKratosContext(ctx, expectedScheme, tokenStr)
 	default:
 		return injectTokenToGrpcContext(ctx, expectedScheme, tokenStr)
@@ -31,7 +31,7 @@ func ContextWithToken(ctx context.Context, expectedScheme string, tokenStr strin
 }
 
 // TokenFromContext .
-func TokenFromContext(ctx context.Context, expectedScheme string, ctxType security.ContextType) (string, error) {
+func TokenFromContext(ctx context.Context, expectedScheme string, ctxType security.TokenType) (string, error) {
 	val := extractTokenFromContext(ctx, ctxType)
 	if val == "" {
 		return "", status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+expectedScheme)
@@ -64,11 +64,11 @@ func extractTokenFromKratosContext(ctx context.Context) string {
 	return ""
 }
 
-func extractTokenFromContext(ctx context.Context, ctxType security.ContextType) string {
+func extractTokenFromContext(ctx context.Context, ctxType security.TokenType) string {
 	switch ctxType {
-	case "context":
+	case security.ContextTypeContext:
 		return extractTokenFromGrpcContext(ctx)
-	case "metadata":
+	case security.ContextTypeHeader:
 		return extractTokenFromKratosContext(ctx)
 	default:
 		return extractTokenFromGrpcContext(ctx)

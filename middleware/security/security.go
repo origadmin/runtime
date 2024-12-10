@@ -21,9 +21,6 @@ const (
 )
 
 var (
-	//ErrUnauthorized  = errors.Forbidden(reason, "unauthorized access")
-	//ErrMissingClaims = errors.Forbidden(reason, "missing authz claims")
-	//ErrInvalidClaims = errors.Forbidden(reason, "invalid authz claims")
 	ErrInvalidToken  = securityv1.ErrorAuthErrorReasonBearerTokenMissing("bearer token missing")
 	ErrInvalidClaims = securityv1.ErrorAuthErrorReasonInvalidClaims("invalid bearer token")
 	ErrMissingToken  = securityv1.ErrorAuthErrorReasonBearerTokenMissing("bearer token missing")

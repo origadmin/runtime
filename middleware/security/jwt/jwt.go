@@ -144,7 +144,6 @@ func NewAuthenticator(security *configv1.Security, ss ...Setting) (security.Auth
 
 	auth := &Authenticator{
 		option: option,
-		//Claims: &SecurityClaims{},
 	}
 	return auth, nil
 }

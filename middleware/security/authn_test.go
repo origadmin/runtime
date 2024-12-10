@@ -10,9 +10,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goexts/generic/settings"
 	"github.com/origadmin/toolkits/security"
-	"github.com/origadmin/toolkits/security/authenticate"
 	"github.com/stretchr/testify/assert"
 
 	jwtv5 "github.com/golang-jwt/jwt/v5"
@@ -20,7 +18,6 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/transport"
 
-	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
 	"github.com/origadmin/runtime/middleware/security/jwt"
@@ -57,7 +54,7 @@ func (hc headerCarrier) Keys() []string {
 
 func newTokenHeader(headerKey string, token string) *headerCarrier {
 	header := &headerCarrier{}
-	header.Set(headerKey, fmt.Sprintf("%s %s", authenticate.AuthSchemeBearer.String(), token))
+	header.Set(headerKey, fmt.Sprintf("%s %s", security.SchemeBearer.String(), token))
 	return header
 }
 
@@ -173,12 +170,10 @@ func TestServer(t *testing.T) {
 				//jwt.WithSigningMethod(test.alg),
 			)
 			assert.Nil(t, err)
-			option := settings.ApplyOr(&config.MiddlewareOption{},
-				config.WithMiddlewareAuthenticator(authenticator),
-				config.WithMiddlewareSkipper(),
-			)
-			server := NewAuthNServer(option)(next)
-			ctx := WithSkipContextServer(test.ctx, option.SecuritySkipKey)
+			server := NewAuthNServer(
+				WithAuthenticator(authenticator),
+				WithSkipper())(next)
+			ctx := WithSkipContextServer(test.ctx, MetadataSecuritySkipKey)
 			_, err2 := server(ctx, test.name)
 			if !errors.Is(test.exceptErr, err2) {
 				t.Errorf("except error %v, but got %v", test.exceptErr, err2)
@@ -238,8 +233,7 @@ func TestClient(t *testing.T) {
 			}
 			principal.Scopes["local:admin:user_name"] = true
 			principal.Scopes["tenant:admin:user_name"] = true
-			option := settings.ApplyOr(&config.MiddlewareOption{}, config.WithMiddlewareAuthenticator(authenticator))
-			client := NewAuthNClient(option)(next)
+			client := NewAuthNClient(WithAuthenticator(authenticator))(next)
 			header := newTokenHeader(HeaderAuthorize, generateJwtKey(testKey, "fly"))
 			ctx := transport.NewClientContext(context.Background(), &Transport{reqHeader: header})
 			_, err2 := client(ctx, "ok")

@@ -9,12 +9,12 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/go-kratos/kratos/v2 v2.8.2
 	github.com/goexts/generic v0.1.1
-	github.com/golang-jwt/jwt/v5 v5.1.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/gnostic v0.7.0
-	github.com/origadmin/toolkits v0.1.8
-	github.com/origadmin/toolkits/codec v0.0.36
-	github.com/origadmin/toolkits/errors v0.0.19
-	github.com/stretchr/testify v1.9.0
+	github.com/origadmin/toolkits v0.1.9
+	github.com/origadmin/toolkits/codec v0.0.38
+	github.com/origadmin/toolkits/errors v0.0.20
+	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.68.1
 	google.golang.org/protobuf v1.35.2
 )
@@ -66,8 +66,8 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241206012308-a4fef0638583 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241206012308-a4fef0638583 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20241209162323-e6fa225c2576 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241209162323-e6fa225c2576 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

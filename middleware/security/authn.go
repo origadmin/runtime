@@ -9,8 +9,8 @@ import (
 	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
 )
 
@@ -22,7 +22,11 @@ const (
 )
 
 // NewAuthNClient is a client authenticator middleware.
-func NewAuthNClient(option *config.MiddlewareOption) middleware.Middleware {
+func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
+	option := settings.Apply(&ConfigOption{}, ss)
+	if option == nil || option.Authorizer == nil {
+		return nil
+	}
 	if option.SecurityTokenKey == "" {
 		option.SecurityTokenKey = MetadataSecurityTokenKey
 	}
@@ -62,7 +66,8 @@ func NewAuthNClient(option *config.MiddlewareOption) middleware.Middleware {
 }
 
 // NewAuthNServer is a server authenticator middleware.
-func NewAuthNServer(option *config.MiddlewareOption) middleware.Middleware {
+func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
+	option := settings.Apply(&ConfigOption{}, ss)
 	if option == nil || option.Authenticator == nil {
 		return nil
 	}
