@@ -12,7 +12,8 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/gnostic v0.7.0
-	github.com/origadmin/toolkits v0.1.14
+	github.com/google/uuid v1.6.0
+	github.com/origadmin/toolkits v0.1.13
 	github.com/origadmin/toolkits/codec v0.0.42
 	github.com/origadmin/toolkits/errors v0.0.24
 	github.com/stretchr/testify v1.10.0
@@ -39,7 +40,6 @@ require (
 	github.com/go-playground/form/v4 v4.2.1 // indirect
 	github.com/google/cel-go v0.22.1 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
