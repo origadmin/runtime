@@ -739,7 +739,7 @@ func (x *Data_Storage) GetOss() *Data_Oss {
 	return nil
 }
 
-// c
+// Cache
 type Data_Cache struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1095,12 +1095,12 @@ var file_config_v1_data_proto_goTypes = []any{
 	(*Data_Oss)(nil),            // 7: config.v1.Data.Oss
 	(*Data_Mongo)(nil),          // 8: config.v1.Data.Mongo
 	(*Data_Storage)(nil),        // 9: config.v1.Data.Storage
-	(*Data_Cache)(nil),          // 10: config.v1.Data.c
+	(*Data_Cache)(nil),          // 10: config.v1.Data.Cache
 	(*durationpb.Duration)(nil), // 11: google.protobuf.Duration
 }
 var file_config_v1_data_proto_depIdxs = []int32{
 	1,  // 0: config.v1.Data.database:type_name -> config.v1.Data.Database
-	10, // 1: config.v1.Data.cache:type_name -> config.v1.Data.c
+	10, // 1: config.v1.Data.cache:type_name -> config.v1.Data.Cache
 	9,  // 2: config.v1.Data.storage:type_name -> config.v1.Data.Storage
 	11, // 3: config.v1.Data.Database.connection_max_lifetime:type_name -> google.protobuf.Duration
 	11, // 4: config.v1.Data.Database.connection_max_idle_time:type_name -> google.protobuf.Duration
@@ -1115,10 +1115,10 @@ var file_config_v1_data_proto_depIdxs = []int32{
 	5,  // 13: config.v1.Data.Storage.badger:type_name -> config.v1.Data.BadgerDS
 	8,  // 14: config.v1.Data.Storage.mongo:type_name -> config.v1.Data.Mongo
 	7,  // 15: config.v1.Data.Storage.oss:type_name -> config.v1.Data.Oss
-	3,  // 16: config.v1.Data.c.memcached:type_name -> config.v1.Data.Memcached
-	4,  // 17: config.v1.Data.c.memory:type_name -> config.v1.Data.Memory
-	2,  // 18: config.v1.Data.c.redis:type_name -> config.v1.Data.Redis
-	5,  // 19: config.v1.Data.c.badger:type_name -> config.v1.Data.BadgerDS
+	3,  // 16: config.v1.Data.Cache.memcached:type_name -> config.v1.Data.Memcached
+	4,  // 17: config.v1.Data.Cache.memory:type_name -> config.v1.Data.Memory
+	2,  // 18: config.v1.Data.Cache.redis:type_name -> config.v1.Data.Redis
+	5,  // 19: config.v1.Data.Cache.badger:type_name -> config.v1.Data.BadgerDS
 	20, // [20:20] is the sub-list for method output_type
 	20, // [20:20] is the sub-list for method input_type
 	20, // [20:20] is the sub-list for extension type_name

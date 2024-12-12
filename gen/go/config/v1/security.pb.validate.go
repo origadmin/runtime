@@ -1842,7 +1842,7 @@ func (m *AuthZConfig_ZanzibarConfig) validate(all bool) error {
 
 	// no validation rules for ApiEndpoint
 
-	// no validation rules for namespace
+	// no validation rules for Namespace
 
 	// no validation rules for ReadConsistency
 

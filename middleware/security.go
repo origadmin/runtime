@@ -8,7 +8,6 @@ package middleware
 import (
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/middleware/security"
 )
 
 type ContextType int
@@ -18,12 +17,11 @@ const (
 	ContextTypeMetaData
 )
 
-func SecurityClient(middlewares []Middleware, cfg *configv1.Security, option *config.MiddlewareOption) []Middleware {
-	security.NewClient()
+func SecurityClient(middlewares []Middleware, cfg *configv1.Security, option *config.RuntimeConfig) []Middleware {
 	return middlewares
 }
 
-func SecurityServer(middlewares []Middleware, cfg *configv1.Security, option *config.MiddlewareOption) []Middleware {
+func SecurityServer(middlewares []Middleware, cfg *configv1.Security, option *config.RuntimeConfig) []Middleware {
 
 	return middlewares
 }

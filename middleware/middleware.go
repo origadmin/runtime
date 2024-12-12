@@ -25,7 +25,7 @@ func Chain(m ...Middleware) Middleware {
 }
 
 // NewClient creates a new client with the given configuration
-func NewClient(cfg *configv1.Middleware, option *config.MiddlewareOption) []Middleware {
+func NewClient(cfg *configv1.Middleware, runtimeConfig *config.RuntimeConfig) []Middleware {
 	// Create an empty slice of Middleware
 	var middlewares []Middleware
 
@@ -36,7 +36,7 @@ func NewClient(cfg *configv1.Middleware, option *config.MiddlewareOption) []Midd
 	// Add the Recovery middleware to the slice
 	middlewares = Recovery(middlewares, cfg.EnableRecovery)
 	// Add the SecurityClient middleware to the slice
-	middlewares = SecurityClient(middlewares, cfg.Security, option)
+	middlewares = SecurityClient(middlewares, cfg.Security, runtimeConfig)
 	// Add the MetadataClient middleware to the slice
 	middlewares = MetadataClient(middlewares, cfg.EnableMetadata, cfg.Metadata)
 	// Add the TracingClient middleware to the slice
@@ -48,7 +48,7 @@ func NewClient(cfg *configv1.Middleware, option *config.MiddlewareOption) []Midd
 }
 
 // NewServer creates a new server with the given configuration
-func NewServer(cfg *configv1.Middleware, option *config.MiddlewareOption) []Middleware {
+func NewServer(cfg *configv1.Middleware, runtimeConfig *config.RuntimeConfig) []Middleware {
 	// Create an empty slice of Middleware
 	var middlewares []Middleware
 
@@ -61,7 +61,7 @@ func NewServer(cfg *configv1.Middleware, option *config.MiddlewareOption) []Midd
 	// Add the ValidateServer middleware to the slice
 	middlewares = ValidateServer(middlewares, cfg.EnableValidate, cfg.Validator)
 	// Add the SecurityServer middleware to the slice
-	middlewares = SecurityServer(middlewares, cfg.Security, option)
+	middlewares = SecurityServer(middlewares, cfg.Security, runtimeConfig)
 	// Add the TracingServer middleware to the slice
 	middlewares = TracingServer(middlewares, cfg.EnableTracing)
 	// Add the MetadataServer middleware to the slice

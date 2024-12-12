@@ -285,7 +285,7 @@ type AuthNConfig_JWTConfig struct {
 	ExpireTime *durationpb.Duration `protobuf:"bytes,6,opt,name=expire_time,proto3" json:"expire_time,omitempty"`
 	// Token refresh time
 	RefreshTime *durationpb.Duration `protobuf:"bytes,7,opt,name=refresh_time,proto3" json:"refresh_time,omitempty"`
-	// c config name from cache service
+	// Cache config name from cache service
 	CacheName string `protobuf:"bytes,8,opt,name=cache_name,proto3" json:"cache_name,omitempty"`
 }
 

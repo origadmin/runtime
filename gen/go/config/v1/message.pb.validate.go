@@ -1285,7 +1285,7 @@ func (m *Message_RocketMQ) validate(all bool) error {
 
 	// no validation rules for SecurityToken
 
-	// no validation rules for namespace
+	// no validation rules for Namespace
 
 	// no validation rules for InstanceName
 

@@ -19,24 +19,18 @@ import (
 	"github.com/origadmin/runtime/middleware/security/internal/helper"
 )
 
-var _ security.Authenticator = (*Authenticator)(nil)
+type Setting = func(*Authenticator)
 
-type Option struct {
+type Authenticator struct {
 	signingMethod jwtv5.SigningMethod
 	keyFunc       func(*jwtv5.Token) (any, error)
 	schemeType    security.Scheme
-}
-
-type Setting = func(*Option)
-
-type Authenticator struct {
-	option    *Option
-	ExtraKeys []string
-	cache     security.TokenCacheService
+	cache         security.TokenCacheService
+	extraKeys     []string
 }
 
 func (obj *Authenticator) schemeString() string {
-	return obj.option.schemeType.String()
+	return obj.schemeType.String()
 }
 
 func (obj *Authenticator) AuthenticateToken(ctx context.Context, tokenStr string) (security.Claims, error) {
@@ -72,7 +66,7 @@ func (obj *Authenticator) AuthenticateToken(ctx context.Context, tokenStr string
 		return nil, ErrInvalidToken
 	}
 
-	if jwtToken.Method != obj.option.signingMethod {
+	if jwtToken.Method != obj.signingMethod {
 		return nil, ErrUnsupportedSigningMethod
 	}
 
@@ -80,7 +74,7 @@ func (obj *Authenticator) AuthenticateToken(ctx context.Context, tokenStr string
 		return nil, ErrInvalidClaims
 	}
 
-	securityClaims, err := ToClaims(jwtToken.Claims, obj.ExtraKeys...)
+	securityClaims, err := ToClaims(jwtToken.Claims, obj.extraKeys...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +106,7 @@ func (obj *Authenticator) AuthenticateContext(ctx context.Context, tokenType sec
 }
 
 func (obj *Authenticator) CreateToken(ctx context.Context, claims security.Claims) (string, error) {
-	jwtToken := jwtv5.NewWithClaims(obj.option.signingMethod, ClaimsToJwtClaims(claims))
+	jwtToken := jwtv5.NewWithClaims(obj.signingMethod, ClaimsToJwtClaims(claims))
 
 	tokenStr, err := obj.generateToken(jwtToken)
 	if err != nil || tokenStr == "" {
@@ -159,20 +153,15 @@ func NewAuthenticator(cfg *configv1.Security, ss ...Setting) (security.Authentic
 	if config == nil {
 		return nil, errors.New("cfg config is empty")
 	}
-	option := settings.Apply(&Option{}, ss)
-	if option.signingMethod == nil {
-		option.signingMethod = GetSigningMethodFromAlg(config.Algorithm)
+	auth := settings.Apply(&Authenticator{}, ss)
+	if auth.signingMethod == nil {
+		auth.signingMethod = GetSigningMethodFromAlg(config.Algorithm)
 	}
 	if config.SigningKey == "" {
 		return nil, errors.New("signing key is empty")
 	}
-	if option.keyFunc == nil {
-		option.keyFunc = GetKeyFuncWithAlg(config.Algorithm, config.SigningKey)
-	}
-
-	auth := &Authenticator{
-		option: option,
-		cache:  nil,
+	if auth.keyFunc == nil {
+		auth.keyFunc = GetKeyFuncWithAlg(config.Algorithm, config.SigningKey)
 	}
 	return auth, nil
 }
@@ -223,27 +212,32 @@ func GetSigningMethodFromAlg(algorithm string) jwtv5.SigningMethod {
 	}
 }
 
-func (obj *Authenticator) Close() {}
+func (obj *Authenticator) Close(ctx context.Context) error {
+	if obj.cache != nil {
+		return obj.cache.Close(ctx)
+	}
+	return nil
+}
 
 // parseToken parses the token string and returns the token.
 func (obj *Authenticator) parseToken(token string) (*jwtv5.Token, error) {
-	if obj.option.keyFunc == nil {
+	if obj.keyFunc == nil {
 		return nil, ErrMissingKeyFunc
 	}
-	if obj.ExtraKeys == nil {
-		return jwtv5.ParseWithClaims(token, &jwtv5.RegisteredClaims{}, obj.option.keyFunc)
+	if obj.extraKeys == nil {
+		return jwtv5.ParseWithClaims(token, &jwtv5.RegisteredClaims{}, obj.keyFunc)
 	}
 
-	return jwtv5.Parse(token, obj.option.keyFunc)
+	return jwtv5.Parse(token, obj.keyFunc)
 }
 
 // generateToken generates a signed token string from the token.
 func (obj *Authenticator) generateToken(jwtToken *jwtv5.Token) (string, error) {
-	if obj.option.keyFunc == nil {
+	if obj.keyFunc == nil {
 		return "", ErrMissingKeyFunc
 	}
 
-	key, err := obj.option.keyFunc(jwtToken)
+	key, err := obj.keyFunc(jwtToken)
 	if err != nil {
 		return "", ErrGetKeyFailed
 	}
@@ -255,3 +249,5 @@ func (obj *Authenticator) generateToken(jwtToken *jwtv5.Token) (string, error) {
 
 	return strToken, nil
 }
+
+var _ security.Authenticator = (*Authenticator)(nil)
