@@ -10,12 +10,12 @@ import (
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/transport"
-	"github.com/origadmin/toolkits/security"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	"github.com/origadmin/runtime/context"
+	"github.com/origadmin/toolkits/security"
 )
 
 // WithTokenTypeContext .

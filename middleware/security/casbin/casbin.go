@@ -51,7 +51,7 @@ func NewAuthorizer(cfg *configv1.Security, ss ...Setting) (security.Authorizer, 
 	auth := settings.Apply(&Authorizer{
 		policy: NewAdapter(),
 		//projects:                  engine.Projects{},
-		//wildcardItem:              "*",
+		wildcardItem: "*",
 		//authorizedProjectsMatcher: "g(r.sub, p.sub, p.dom) && (keyMatch(r.dom, p.dom) || p.dom == '*')",
 	}, ss)
 

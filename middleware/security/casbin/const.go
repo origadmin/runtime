@@ -5,6 +5,9 @@
 package casbin
 
 import (
+	casbinmodel "github.com/casbin/casbin/v2/model"
+	"github.com/casbin/casbin/v2/persist"
+
 	"github.com/origadmin/runtime/middleware/security/internal/model"
 	"github.com/origadmin/runtime/middleware/security/internal/policy"
 )
@@ -15,4 +18,34 @@ func DefaultModel() string {
 
 func DefaultPolicy() []byte {
 	return policy.MustPolicy("keymatch_with_rbac_in_domain.csv")
+}
+
+func WithModel(model casbinmodel.Model) Setting {
+	return func(s *Authorizer) {
+		s.model = model
+	}
+}
+
+func WithStringModel(str string) Setting {
+	return func(s *Authorizer) {
+		s.model, _ = casbinmodel.NewModelFromString(str)
+	}
+}
+
+func WithFileModel(path string) Setting {
+	return func(s *Authorizer) {
+		s.model, _ = casbinmodel.NewModelFromFile(path)
+	}
+}
+
+func WithNameModel(name string) Setting {
+	return func(s *Authorizer) {
+		s.model, _ = casbinmodel.NewModelFromString(model.MustModel(name))
+	}
+}
+
+func WithPolicyAdapter(policy persist.Adapter) Setting {
+	return func(s *Authorizer) {
+		s.policy = policy
+	}
 }
