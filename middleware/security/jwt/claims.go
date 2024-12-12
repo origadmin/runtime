@@ -11,10 +11,10 @@ import (
 	"time"
 
 	jwtv5 "github.com/golang-jwt/jwt/v5"
-	"github.com/origadmin/toolkits/security"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
+	"github.com/origadmin/toolkits/security"
 )
 
 var (

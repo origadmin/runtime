@@ -6,6 +6,7 @@ toolchain go1.23.2
 
 require (
 	github.com/bufbuild/protovalidate-go v0.7.3
+	github.com/casbin/casbin/v2 v2.102.0
 	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/go-kratos/kratos/v2 v2.8.2
 	github.com/goexts/generic v0.1.1
@@ -17,6 +18,7 @@ require (
 	github.com/origadmin/toolkits/codec v0.0.42
 	github.com/origadmin/toolkits/errors v0.0.24
 	github.com/stretchr/testify v1.10.0
+	github.com/tx7do/kratos-authz v1.0.2
 	google.golang.org/grpc v1.68.1
 	google.golang.org/protobuf v1.35.2
 )
@@ -27,8 +29,10 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/bytedance/sonic v1.12.5 // indirect
 	github.com/bytedance/sonic/loader v0.2.1 // indirect
+	github.com/casbin/govaluate v1.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

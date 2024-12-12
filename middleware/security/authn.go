@@ -13,6 +13,7 @@ import (
 
 	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/middleware/empty"
+	"github.com/origadmin/toolkits/security"
 )
 
 const (
@@ -80,6 +81,43 @@ func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
 	}
 
 	tokenParser := defaultTokenParser(FromMetaData(option.SecurityTokenKey), FromTransportServer("Authorization", "Bearer"))
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			if IsSkipped(ctx, option.SecuritySkipKey) {
+				return handler(NewSkipContext(ctx), req)
+			}
+			var err error
+			token := tokenParser(ctx)
+			if token == "" {
+				return nil, ErrMissingToken
+			}
+
+			claims, err := option.Authenticator.AuthenticateToken(ctx, token)
+			if err != nil {
+				return nil, err
+			}
+
+			// set claims to context, so that the next middleware can get it
+			ctx = NewClaimsContext(ctx, claims)
+			return handler(ctx, req)
+		}
+	}
+}
+
+// NewAuthN is a server authenticator middleware.
+func NewAuthN(ss ...ConfigOptionSetting) middleware.Middleware {
+	option := settings.Apply(&ConfigOption{}, ss)
+	if option == nil || option.Authenticator == nil {
+		return empty.Empty()
+	}
+	if option.SecurityTokenKey == "" {
+		option.SecurityTokenKey = MetadataSecurityTokenKey
+	}
+	if option.SecuritySkipKey == "" {
+		option.SecuritySkipKey = MetadataSecuritySkipKey
+	}
+
+	tokenParser := defaultTokenParser(FromMetaData(option.SecurityTokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if IsSkipped(ctx, option.SecuritySkipKey) {

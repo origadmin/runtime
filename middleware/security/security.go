@@ -31,14 +31,14 @@ var (
 
 type securityCtx struct{}
 
-func PolicyFromContext(ctx context.Context) security.Policy {
-	if policy, ok := ctx.Value(securityCtx{}).(security.Policy); ok {
+func PolicyFromContext(ctx context.Context) security.UserClaims {
+	if policy, ok := ctx.Value(securityCtx{}).(security.UserClaims); ok {
 		return policy
 	}
 	return nil
 }
 
-func NewPolicyContext(ctx context.Context, claims security.Policy) context.Context {
+func NewPolicyContext(ctx context.Context, claims security.UserClaims) context.Context {
 	return context.WithValue(ctx, securityCtx{}, claims)
 }
 
