@@ -39,7 +39,7 @@ func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
 	if option.Skipper == nil {
 		option.Skipper = defaultSkipper(option.PublicPaths...)
 	}
-	tokenParser := defaultTokenParser(FromTransportClient("Authorization", "Bearer"))
+	tokenParser := defaultTokenParser(FromTransportClient(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if option.Skipper != nil {
@@ -80,7 +80,7 @@ func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
 		option.SecuritySkipKey = MetadataSecuritySkipKey
 	}
 
-	tokenParser := defaultTokenParser(FromMetaData(option.SecurityTokenKey), FromTransportServer("Authorization", "Bearer"))
+	tokenParser := defaultTokenParser(FromMetaData(option.SecurityTokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if option.Skipper != nil {
