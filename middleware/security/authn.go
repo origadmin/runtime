@@ -83,15 +83,20 @@ func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
 	tokenParser := defaultTokenParser(FromMetaData(option.SecurityTokenKey), FromTransportServer("Authorization", "Bearer"))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
-			if IsSkipped(ctx, option.SecuritySkipKey) {
-				return handler(NewSkipContext(ctx), req)
+			if option.Skipper != nil {
+				if tr, ok := transport.FromClientContext(ctx); ok {
+					if option.Skipper(tr.Operation()) {
+						ctx := WithSkipContextClient(NewSkipContext(ctx), option.SecuritySkipKey)
+						return handler(ctx, req)
+					}
+				}
 			}
-			var err error
+
 			token := tokenParser(ctx)
 			if token == "" {
 				return nil, ErrMissingToken
 			}
-
+			var err error
 			claims, err := option.Authenticator.AuthenticateToken(ctx, token)
 			if err != nil {
 				return nil, err
