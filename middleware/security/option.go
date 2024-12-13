@@ -23,6 +23,7 @@ type Option struct {
 	SkipKey       string
 	PublicPaths   []string
 	TokenParser   func(ctx context.Context) string
+	Parser        security.UserClaimsParser
 	Skipper       func(string) bool
 }
 
@@ -42,6 +43,14 @@ func (o *Option) WithConfig(cfg *configv1.Security) *Option {
 	o.PublicPaths = paths
 	return o
 }
+
+func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) security.UserClaims {
+	return nil
+}
+
+//func (o *Option) ParserUserInfo(ctx context.Context, claims security.Claims) (security.UserClaims, error) {
+//	return o.Parser(ctx, claims.GetSubject())
+//}
 
 func WithAuthenticator(authenticator security.Authenticator) OptionSetting {
 	return func(opt *Option) {

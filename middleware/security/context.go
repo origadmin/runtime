@@ -28,6 +28,19 @@ func SkipFromContext(ctx context.Context) bool {
 	return false
 }
 
+type tokenCtx struct{}
+
+func TokenFromContext(ctx context.Context) string {
+	if token, ok := ctx.Value(tokenCtx{}).(string); ok {
+		return token
+	}
+	return ""
+}
+
+func NewTokenContext(ctx context.Context, token string) context.Context {
+	return context.WithValue(ctx, tokenCtx{}, token)
+}
+
 type claimCtx struct{}
 
 func ClaimsFromContext(ctx context.Context) security.Claims {
@@ -39,6 +52,30 @@ func ClaimsFromContext(ctx context.Context) security.Claims {
 
 func NewClaimsContext(ctx context.Context, claims security.Claims) context.Context {
 	return context.WithValue(ctx, claimCtx{}, claims)
+}
+
+type userClaimsCtx struct{}
+
+func UserClaimsFromContext(ctx context.Context) security.UserClaims {
+	if claims, ok := ctx.Value(userClaimsCtx{}).(security.UserClaims); ok {
+		return claims
+	}
+	return nil
+}
+
+func NewUserClaimsContext(ctx context.Context, claims security.UserClaims) context.Context {
+	return context.WithValue(ctx, userClaimsCtx{}, claims)
+}
+
+func UserClaimsFromMetaData(ctx context.Context, key string) string {
+	if meta, ok := metadata.FromServerContext(ctx); ok {
+		return meta.Get(key)
+	}
+	return ""
+}
+
+func UserClaimsToMetaData(ctx context.Context, key string, value string) context.Context {
+	return metadata.AppendToClientContext(ctx, key, value)
 }
 
 func WithSkipContextClient(ctx context.Context, key string) context.Context {

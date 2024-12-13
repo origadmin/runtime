@@ -13,6 +13,47 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
+// NewAuthZClient returns a new server middleware.
+func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+	option := settings.ApplyDefaultsOrZero(ss...)
+	if option.Authorizer == nil {
+		return nil, ErrorCreateOptionNil
+	}
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			if IsSkipped(ctx, option.SkipKey) {
+				return handler(NewSkipContext(ctx), req)
+			}
+
+			claims := ClaimsFromContext(ctx)
+			if claims == nil {
+				return nil, ErrMissingToken
+			}
+			userClaims := option.ParserUserClaims(ctx, claims)
+
+			if userClaims.GetSubject() == "" || userClaims.GetAction() == "" || userClaims.GetObject() == "" {
+				return nil, ErrInvalidClaims
+			}
+
+			//var project []string
+			//if domains := claims.GetDomain(); domains != nil {
+			//	project = domains
+			//}
+			// todo add domain project
+
+			//allowed, err = option.Authorizer.Authorized(ctx, userClaims)
+			//if err != nil {
+			//	return nil, err
+			//}
+			//if !allowed {
+			//	return nil, ErrInvalidAuth
+			//}
+
+			return handler(ctx, req)
+		}
+	}, nil
+}
+
 // NewAuthZServer returns a new server middleware.
 func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	option := settings.ApplyDefaultsOrZero(ss...)

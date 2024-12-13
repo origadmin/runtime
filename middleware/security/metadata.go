@@ -37,25 +37,25 @@ func injectTokenMetadataContext(ctx context.Context, scheme string, token string
 	return ctx
 }
 
-// WithTokenTypeContext .
-func WithTokenTypeContext(ctx context.Context, tokenType security.TokenType, scheme string, token string) context.Context {
+// TokenToTypeContext .
+func TokenToTypeContext(ctx context.Context, tokenType security.TokenType, scheme string, token string) context.Context {
 	switch tokenType {
 	case security.ContextTypeMetadata:
 		return injectTokenMetadataContext(ctx, scheme, token)
 	case security.ContextTypeHeader:
 		return injectTokenTransportContext(ctx, scheme, token)
+	case security.ContextTypeContext:
+		return NewTokenContext(ctx, formatToken(scheme, token))
 	default:
 		return injectTokenMetadataContext(ctx, scheme, token)
 	}
 }
 
 func extractTokenMetadataContext(ctx context.Context) string {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		// Use pairs to create a new one.
-		md = metadata.Pairs()
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		return md.Get(security.HeaderAuthorize)[0]
 	}
-	return md.Get(security.HeaderAuthorize)[0]
+	return ""
 }
 
 func extractTokenTransportContext(ctx context.Context) string {
@@ -71,13 +71,15 @@ func extractTokenFromContext(ctx context.Context, tokenType security.TokenType) 
 		return extractTokenMetadataContext(ctx)
 	case security.ContextTypeHeader:
 		return extractTokenTransportContext(ctx)
+	case security.ContextTypeContext:
+		return TokenFromContext(ctx)
 	default:
 		return extractTokenMetadataContext(ctx)
 	}
 }
 
-// FromTokenTypeContext .
-func FromTokenTypeContext(ctx context.Context, tokenType security.TokenType, scheme string) (string, error) {
+// TokenFromTypeContext .
+func TokenFromTypeContext(ctx context.Context, tokenType security.TokenType, scheme string) (string, error) {
 	val := extractTokenFromContext(ctx, tokenType)
 	if val == "" {
 		return "", status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+scheme)
@@ -93,6 +95,14 @@ func FromTokenTypeContext(ctx context.Context, tokenType security.TokenType, sch
 	}
 
 	return splits[1], nil
+}
+
+func ClaimFromTokenTypeContext(ctx context.Context, tokenType security.TokenType) (security.Claims, error) {
+	switch tokenType {
+	case security.ContextTypeContext:
+		return ClaimsFromContext(ctx), nil
+	}
+	return nil, status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+string(tokenType))
 }
 
 func formatToken(scheme string, tokenStr string) string {

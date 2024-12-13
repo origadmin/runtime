@@ -28,19 +28,6 @@ var (
 	ErrInvalidAuth   = securityv1.ErrorAuthErrorReasonUnauthenticated("unauthenticated")
 )
 
-type userClaimsCtx struct{}
-
-func UserClaimsFromContext(ctx context.Context) security.UserClaims {
-	if claims, ok := ctx.Value(userClaimsCtx{}).(security.UserClaims); ok {
-		return claims
-	}
-	return nil
-}
-
-func NewUserClaimsContext(ctx context.Context, claims security.UserClaims) context.Context {
-	return context.WithValue(ctx, userClaimsCtx{}, claims)
-}
-
 func mergePublic(public []string, paths ...string) []string {
 	// Create a map to track unique paths
 	pathMap := make(map[string]bool)
