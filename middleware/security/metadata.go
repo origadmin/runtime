@@ -21,7 +21,7 @@ import (
 // WithTokenTypeContext .
 func WithTokenTypeContext(ctx context.Context, tokenType security.TokenType, scheme string, token string) context.Context {
 	switch tokenType {
-	case security.ContentTypeMetadata:
+	case security.ContextTypeMetadata:
 		return injectTokenMetadataContext(ctx, scheme, token)
 	case security.ContextTypeHeader:
 		return injectTokenTransportContext(ctx, scheme, token)
@@ -67,7 +67,7 @@ func extractTokenTransportContext(ctx context.Context) string {
 
 func extractTokenFromContext(ctx context.Context, tokenType security.TokenType) string {
 	switch tokenType {
-	case security.ContentTypeMetadata:
+	case security.ContextTypeMetadata:
 		return extractTokenMetadataContext(ctx)
 	case security.ContextTypeHeader:
 		return extractTokenTransportContext(ctx)
