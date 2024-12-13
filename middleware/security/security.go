@@ -12,7 +12,6 @@ import (
 
 	"github.com/origadmin/runtime/context"
 	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
-	"github.com/origadmin/runtime/middleware/security/internal/helper"
 	"github.com/origadmin/toolkits/security"
 )
 
@@ -99,7 +98,7 @@ func tokenParser(ctx context.Context, fns []func(ctx context.Context) string) st
 
 func FromMetaData(key string) func(ctx context.Context) string {
 	return func(ctx context.Context) string {
-		return helper.FromMD(ctx, key)
+		return FromMD(ctx, key)
 	}
 }
 
@@ -137,4 +136,11 @@ func FromTransportServer(authorize string, scheme string) func(ctx context.Conte
 		}
 		return ""
 	}
+}
+
+func FromMD(ctx context.Context, key string) string {
+	if md, ok := metadata.FromServerContext(ctx); ok {
+		return md.Get(key)
+	}
+	return ""
 }

@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package helper implements the functions, types, and interfaces for the module.
-package helper
+// Package security implements the functions, types, and interfaces for the module.
+package security
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ import (
 // WithTokenTypeContext .
 func WithTokenTypeContext(ctx context.Context, tokenType security.TokenType, scheme string, token string) context.Context {
 	switch tokenType {
-	case security.ContextTypeContext:
+	case security.ContentTypeMetadata:
 		return injectTokenMetadataContext(ctx, scheme, token)
 	case security.ContextTypeHeader:
 		return injectTokenTransportContext(ctx, scheme, token)
@@ -52,6 +52,7 @@ func FromTokenTypeContext(ctx context.Context, tokenType security.TokenType, sch
 func extractTokenMetadataContext(ctx context.Context) string {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
+		// Use pairs to create a new one.
 		md = metadata.Pairs()
 	}
 	return md.Get(security.HeaderAuthorize)[0]
@@ -66,7 +67,7 @@ func extractTokenTransportContext(ctx context.Context) string {
 
 func extractTokenFromContext(ctx context.Context, tokenType security.TokenType) string {
 	switch tokenType {
-	case security.ContextTypeContext:
+	case security.ContentTypeMetadata:
 		return extractTokenMetadataContext(ctx)
 	case security.ContextTypeHeader:
 		return extractTokenTransportContext(ctx)
@@ -91,6 +92,7 @@ func injectTokenTransportContext(ctx context.Context, scheme string, token strin
 func injectTokenMetadataContext(ctx context.Context, scheme string, token string) context.Context {
 	md, ok := metadata.FromOutgoingContext(ctx)
 	if !ok {
+		// Use pairs to create a new one.
 		md = metadata.Pairs()
 	}
 	md.Set(security.HeaderAuthorize, formatToken(scheme, token))
