@@ -14,7 +14,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/origadmin/toolkits v0.1.13
+	github.com/origadmin/toolkits v0.1.14
 	github.com/origadmin/toolkits/codec v0.0.42
 	github.com/origadmin/toolkits/errors v0.0.24
 	github.com/stretchr/testify v1.10.0
