@@ -6,7 +6,6 @@
 package security
 
 import (
-	"github.com/go-kratos/kratos/v2/metadata"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/settings"
@@ -39,7 +38,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 	if option.Skipper == nil {
 		option.Skipper = defaultSkipper(paths...)
 	}
-	tokenParser := defaultTokenParser(FromTransportClient(security.HeaderAuthorize, security.SchemeBearer.String()))
+	//tokenParser := defaultTokenParser(FromTransportClient(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if option.Skipper != nil {
@@ -51,17 +50,15 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				}
 			}
 
-			token := tokenParser(ctx)
-			if token == "" {
-				return nil, ErrMissingToken
+			claims, err := option.Authenticator.AuthenticateContext(ctx, security.ContextTypeHeader)
+			if err != nil {
+				return nil, err
 			}
-			ctx = metadata.AppendToClientContext(ctx, option.TokenKey, token)
-			//claims, err := option.Authenticator.AuthenticateToken(token)
-			//if err != nil {
-			//	log.Errorf("authenticator middleware create token failed: %s", err.Error())
-			//}
 
-			//ctx = NewClaimsContext(ctx, claims)
+			ctx, err = option.Authenticator.CreateTokenContext(ctx, security.ContextTypeMetadata, claims)
+			if err != nil {
+				return nil, err
+			}
 			return handler(ctx, req)
 		}
 	}, nil
@@ -74,7 +71,6 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 		return nil, ErrorCreateOptionNil
 	}
 
-	tokenParser := defaultTokenParser(FromMetaData(option.TokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if option.Skipper != nil {
@@ -86,12 +82,8 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				}
 			}
 
-			token := tokenParser(ctx)
-			if token == "" {
-				return nil, ErrMissingToken
-			}
 			var err error
-			claims, err := option.Authenticator.AuthenticateToken(ctx, token)
+			claims, err := option.Authenticator.AuthenticateContext(ctx, security.ContextTypeMetadata)
 			if err != nil {
 				return nil, err
 			}
@@ -127,7 +119,7 @@ func NewAuthN(option *Option) (middleware.Middleware, error) {
 				return nil, ErrMissingToken
 			}
 
-			claims, err := option.Authenticator.AuthenticateToken(ctx, token)
+			claims, err := option.Authenticator.Authenticate(ctx, token)
 			if err != nil {
 				return nil, err
 			}
