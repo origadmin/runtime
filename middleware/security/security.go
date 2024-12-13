@@ -96,12 +96,6 @@ func tokenParser(ctx context.Context, fns []func(ctx context.Context) string) st
 	return ""
 }
 
-func FromMetaData(key string) func(ctx context.Context) string {
-	return func(ctx context.Context) string {
-		return FromMD(ctx, key)
-	}
-}
-
 func defaultTokenParser(outer ...func(ctx context.Context) string) func(ctx context.Context) string {
 	fns := []func(ctx context.Context) string{
 		security.FromToken,
@@ -138,9 +132,15 @@ func FromTransportServer(authorize string, scheme string) func(ctx context.Conte
 	}
 }
 
-func FromMD(ctx context.Context, key string) string {
+func FromMetaDataKey(ctx context.Context, key string) string {
 	if md, ok := metadata.FromServerContext(ctx); ok {
 		return md.Get(key)
 	}
 	return ""
+}
+
+func FromMetaData(key string) func(ctx context.Context) string {
+	return func(ctx context.Context) string {
+		return FromMetaDataKey(ctx, key)
+	}
 }
