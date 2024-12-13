@@ -18,6 +18,25 @@ import (
 	"github.com/origadmin/toolkits/security"
 )
 
+func injectTokenTransportContext(ctx context.Context, scheme string, token string) context.Context {
+	if header, ok := transport.FromClientContext(ctx); ok {
+		header.RequestHeader().Set(security.HeaderAuthorize, formatToken(scheme, token))
+	} else {
+		//log.Error("authn token injection failure in kratos context")
+	}
+	return ctx
+}
+
+func injectTokenMetadataContext(ctx context.Context, scheme string, token string) context.Context {
+	md, ok := metadata.FromOutgoingContext(ctx)
+	if !ok {
+		// Use pairs to create a new one.
+		md = metadata.Pairs()
+	}
+	md.Set(security.HeaderAuthorize, formatToken(scheme, token))
+	return ctx
+}
+
 // WithTokenTypeContext .
 func WithTokenTypeContext(ctx context.Context, tokenType security.TokenType, scheme string, token string) context.Context {
 	switch tokenType {
@@ -28,25 +47,6 @@ func WithTokenTypeContext(ctx context.Context, tokenType security.TokenType, sch
 	default:
 		return injectTokenMetadataContext(ctx, scheme, token)
 	}
-}
-
-// FromTokenTypeContext .
-func FromTokenTypeContext(ctx context.Context, tokenType security.TokenType, scheme string) (string, error) {
-	val := extractTokenFromContext(ctx, tokenType)
-	if val == "" {
-		return "", status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+scheme)
-	}
-
-	splits := strings.SplitN(val, " ", 2)
-	if len(splits) < 2 {
-		return "", status.Errorf(codes.Unauthenticated, "Bad authorization string")
-	}
-
-	if !strings.EqualFold(splits[0], scheme) {
-		return "", status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+scheme)
-	}
-
-	return splits[1], nil
 }
 
 func extractTokenMetadataContext(ctx context.Context) string {
@@ -76,25 +76,25 @@ func extractTokenFromContext(ctx context.Context, tokenType security.TokenType) 
 	}
 }
 
+// FromTokenTypeContext .
+func FromTokenTypeContext(ctx context.Context, tokenType security.TokenType, scheme string) (string, error) {
+	val := extractTokenFromContext(ctx, tokenType)
+	if val == "" {
+		return "", status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+scheme)
+	}
+
+	splits := strings.SplitN(val, " ", 2)
+	if len(splits) < 2 {
+		return "", status.Errorf(codes.Unauthenticated, "Bad authorization string")
+	}
+
+	if !strings.EqualFold(splits[0], scheme) {
+		return "", status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+scheme)
+	}
+
+	return splits[1], nil
+}
+
 func formatToken(scheme string, tokenStr string) string {
 	return fmt.Sprintf("%s %s", scheme, tokenStr)
-}
-
-func injectTokenTransportContext(ctx context.Context, scheme string, token string) context.Context {
-	if header, ok := transport.FromClientContext(ctx); ok {
-		header.RequestHeader().Set(security.HeaderAuthorize, formatToken(scheme, token))
-	} else {
-		//log.Error("authn token injection failure in kratos context")
-	}
-	return ctx
-}
-
-func injectTokenMetadataContext(ctx context.Context, scheme string, token string) context.Context {
-	md, ok := metadata.FromOutgoingContext(ctx)
-	if !ok {
-		// Use pairs to create a new one.
-		md = metadata.Pairs()
-	}
-	md.Set(security.HeaderAuthorize, formatToken(scheme, token))
-	return ctx
 }
