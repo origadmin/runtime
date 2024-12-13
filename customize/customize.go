@@ -2,24 +2,24 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package config implements the functions, types, and interfaces for the module.
-package config
+// Package customize implements the functions, types, and interfaces for the module.
+package customize
 
 import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
-// CustomizeOption is a struct that holds a value.
-type CustomizeOption struct {
+// Config is a struct that holds a value.
+type Config struct {
 	Customize *configv1.Customize
 }
 
-// CustomizeOptionSetting is a function that sets a value on a Setting.
-type CustomizeOptionSetting = func(option *CustomizeOption)
+// ConfigSetting is a function that sets a value on a Setting.
+type ConfigSetting = func(config *Config)
 
 // WithCustomizeConfig sets the customize config.
-func WithCustomizeConfig(customize *configv1.Customize) CustomizeOptionSetting {
-	return func(option *CustomizeOption) {
+func WithCustomizeConfig(customize *configv1.Customize) ConfigSetting {
+	return func(option *Config) {
 		option.Customize = customize
 	}
 }
