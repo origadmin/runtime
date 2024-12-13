@@ -7,8 +7,8 @@ package middleware
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
@@ -25,18 +25,18 @@ func Chain(m ...Middleware) Middleware {
 }
 
 // NewClient creates a new client with the given configuration
-func NewClient(cfg *configv1.Middleware, runtimeConfig *config.RuntimeConfig) []Middleware {
+func NewClient(cfg *configv1.Middleware, ss ...OptionSetting) []Middleware {
 	// Create an empty slice of Middleware
 	var middlewares []Middleware
-
 	// If the configuration is nil, return the empty slice
 	if cfg == nil {
 		return middlewares
 	}
+	bootstrap := settings.Apply(&Option{}, ss)
 	// Add the Recovery middleware to the slice
 	middlewares = Recovery(middlewares, cfg.EnableRecovery)
 	// Add the SecurityClient middleware to the slice
-	middlewares = SecurityClient(middlewares, cfg.Security, runtimeConfig)
+	middlewares = SecurityClient(middlewares, cfg.Security, bootstrap.SecurityOptions()...)
 	// Add the MetadataClient middleware to the slice
 	middlewares = MetadataClient(middlewares, cfg.EnableMetadata, cfg.Metadata)
 	// Add the TracingClient middleware to the slice
@@ -48,7 +48,8 @@ func NewClient(cfg *configv1.Middleware, runtimeConfig *config.RuntimeConfig) []
 }
 
 // NewServer creates a new server with the given configuration
-func NewServer(cfg *configv1.Middleware, runtimeConfig *config.RuntimeConfig) []Middleware {
+func NewServer(cfg *configv1.Middleware, ss ...OptionSetting) []Middleware {
+	bootstrap := settings.Apply(&Option{}, ss)
 	// Create an empty slice of Middleware
 	var middlewares []Middleware
 
@@ -61,7 +62,7 @@ func NewServer(cfg *configv1.Middleware, runtimeConfig *config.RuntimeConfig) []
 	// Add the ValidateServer middleware to the slice
 	middlewares = ValidateServer(middlewares, cfg.EnableValidate, cfg.Validator)
 	// Add the SecurityServer middleware to the slice
-	middlewares = SecurityServer(middlewares, cfg.Security, runtimeConfig)
+	middlewares = SecurityServer(middlewares, cfg.Security, bootstrap.SecurityOptions()...)
 	// Add the TracingServer middleware to the slice
 	middlewares = TracingServer(middlewares, cfg.EnableTracing)
 	// Add the MetadataServer middleware to the slice

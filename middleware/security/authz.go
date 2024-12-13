@@ -10,18 +10,18 @@ import (
 	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/context"
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
 // NewAuthZServer returns a new server middleware.
-func NewAuthZServer(ss ...ConfigOptionSetting) middleware.Middleware {
-	option := settings.Apply(&ConfigOption{}, ss)
-	if option == nil || option.Authorizer == nil {
-		return nil
+func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+	option := settings.ApplyDefaultsOrZero(ss...)
+	if option.Authorizer == nil {
+		return nil, ErrorCreateOptionNil
 	}
-
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
-			if IsSkipped(ctx, option.SecuritySkipKey) {
+			if IsSkipped(ctx, option.SkipKey) {
 				return handler(NewSkipContext(ctx), req)
 			}
 			var (
@@ -29,22 +29,22 @@ func NewAuthZServer(ss ...ConfigOptionSetting) middleware.Middleware {
 				err     error
 			)
 
-			policy := PolicyFromContext(ctx)
-			if policy == nil {
+			claims := UserClaimsFromContext(ctx)
+			if claims == nil {
 				return nil, ErrMissingToken
 			}
 
-			if policy.GetSubject() == "" || policy.GetAction() == "" || policy.GetObject() == "" {
+			if claims.GetSubject() == "" || claims.GetAction() == "" || claims.GetObject() == "" {
 				return nil, ErrInvalidClaims
 			}
 
 			//var project []string
-			//if domains := policy.GetDomain(); domains != nil {
+			//if domains := claims.GetDomain(); domains != nil {
 			//	project = domains
 			//}
 			// todo add domain project
 
-			allowed, err = option.Authorizer.Authorized(ctx, policy)
+			allowed, err = option.Authorizer.Authorized(ctx, claims)
 			if err != nil {
 				return nil, err
 			}
@@ -54,5 +54,5 @@ func NewAuthZServer(ss ...ConfigOptionSetting) middleware.Middleware {
 
 			return handler(ctx, req)
 		}
-	}
+	}, nil
 }

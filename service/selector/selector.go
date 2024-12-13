@@ -17,6 +17,7 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/toolkits/errors"
 )
 
 var (
@@ -66,6 +67,19 @@ func DefaultGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error)
 
 	// Return the client option and no error
 	return options, nil
+}
+
+func NewFilter(cfg *configv1.Service_Selector) (selector.NodeFilter, error) {
+	// Check if the version is specified in the configuration
+	if cfg.GetVersion() != "" {
+		// Create a version filter based on the configuration version
+		// Set the global selector with the provided builder
+		SetGlobalSelector(cfg.GetBuilder())
+		// Return the version filter and no error
+		return filter.Version(cfg.Version), nil
+	}
+	// Return the node filter and no error
+	return nil, errors.New("version is nil")
 }
 
 // SetGlobalSelector sets the global selector.

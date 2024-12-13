@@ -33,7 +33,7 @@ type Builder interface {
 // build is a global variable that holds an instance of the builder struct.
 var (
 	once  = &sync.Once{}
-	build = &builder{config: config.DefaultRuntimeConfig}
+	build = &builder{}
 )
 
 // ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
@@ -52,9 +52,8 @@ func Global() Builder {
 }
 
 // NewConfig creates a new Selector using the registered ConfigBuilder.
-func NewConfig(cfg *configv1.SourceConfig, ss ...config.RuntimeConfigSetting) (config.Config, error) {
-	build.ApplyConfig(ss...)
-	return build.NewConfig(cfg, build.Config())
+func NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.Config, error) {
+	return build.NewConfig(cfg, ss...)
 }
 
 // RegisterConfig registers a ConfigBuilder with the builder.
@@ -68,25 +67,22 @@ func RegisterConfigFunc(name string, buildFunc ConfigBuildFunc) {
 }
 
 // SyncConfig synchronizes the given configuration with the given value.
-func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.RuntimeConfigSetting) error {
-	build.ApplyConfig(ss...)
-	return build.SyncConfig(cfg, v, build.Config())
+func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.SourceOptionSetting) error {
+	return build.SyncConfig(cfg, v, ss...)
 }
 
 func RegisterConfigSync(name string, syncFunc ConfigSyncFunc) {
 	build.RegisterConfigSync(name, syncFunc)
 }
 
-// NewDiscovery creates a new Discovery using the registered RegistryBuilder.
-func NewDiscovery(cfg *configv1.Registry, ss ...config.RuntimeConfigSetting) (registry.Discovery, error) {
-	build.ApplyConfig(ss...)
-	return build.NewDiscovery(cfg, build.Config())
+// NewDiscovery creates a new discovery using the registered RegistryBuilder.
+func NewDiscovery(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Discovery, error) {
+	return build.NewDiscovery(cfg, ss...)
 }
 
 // NewRegistrar creates a new Registrar using the registered RegistryBuilder.
-func NewRegistrar(cfg *configv1.Registry, ss ...config.RuntimeConfigSetting) (registry.Registrar, error) {
-	build.ApplyConfig(ss...)
-	return build.NewRegistrar(cfg, build.Config())
+func NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Registrar, error) {
+	return build.NewRegistrar(cfg, ss...)
 }
 
 // RegisterRegistry registers a RegistryBuilder with the builder.
@@ -95,27 +91,23 @@ func RegisterRegistry(name string, registryBuilder RegistryBuilder) {
 }
 
 // NewMiddlewareClient creates a new Middleware with the builder.
-func NewMiddlewareClient(name string, cm *configv1.Customize_Config, ss ...config.RuntimeConfigSetting) (middleware.Middleware, error) {
-	build.ApplyConfig(ss...)
-	return build.NewMiddlewareClient(name, cm, build.Config())
+func NewMiddlewareClient(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+	return build.NewMiddlewareClient(name, cm, ss...)
 }
 
 // NewMiddlewareServer creates a new Middleware with the builder.
-func NewMiddlewareServer(name string, cm *configv1.Customize_Config, ss ...config.RuntimeConfigSetting) (middleware.Middleware, error) {
-	build.ApplyConfig(ss...)
-	return build.NewMiddlewareServer(name, cm, build.Config())
+func NewMiddlewareServer(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+	return build.NewMiddlewareServer(name, cm, ss...)
 }
 
 // NewMiddlewaresClient creates a new Middleware with the builder.
-func NewMiddlewaresClient(cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
-	build.ApplyConfig(ss...)
-	return build.NewMiddlewaresClient(nil, cc, build.Config())
+func NewMiddlewaresClient(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.Middleware {
+	return build.NewMiddlewaresClient(nil, cc, ss...)
 }
 
 // NewMiddlewaresServer creates a new Middleware with the builder.
-func NewMiddlewaresServer(cc *configv1.Customize, ss ...config.RuntimeConfigSetting) []middleware.Middleware {
-	build.ApplyConfig(ss...)
-	return build.NewMiddlewaresServer(nil, cc, build.Config())
+func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.Middleware {
+	return build.NewMiddlewaresServer(nil, cc, ss...)
 }
 
 // RegisterMiddleware registers a MiddlewareBuilder with the builder.
@@ -124,31 +116,27 @@ func RegisterMiddleware(name string, middlewareBuilder MiddlewareBuilder) {
 }
 
 // NewHTTPServiceServer creates a new HTTP server using the provided configuration
-func NewHTTPServiceServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.HTTPServer, error) {
-	build.ApplyConfig(ss...)
+func NewHTTPServiceServer(cfg *configv1.Service, ss ...service.OptionSetting) (*service.HTTPServer, error) {
 	// Call the build.NewHTTPServer function with the provided configuration
-	return build.NewHTTPServer(cfg, build.Config())
+	return build.NewHTTPServer(cfg, ss...)
 }
 
 // NewHTTPServiceClient creates a new HTTP client using the provided context and configuration
-func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.HTTPClient, error) {
-	build.ApplyConfig(ss...)
+func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.OptionSetting) (*service.HTTPClient, error) {
 	// Call the build.NewHTTPClient function with the provided context and configuration
-	return build.NewHTTPClient(ctx, cfg, build.Config())
+	return build.NewHTTPClient(ctx, cfg, ss...)
 }
 
 // NewGRPCServiceServer creates a new GRPC server using the provided configuration
-func NewGRPCServiceServer(cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.GRPCServer, error) {
-	build.ApplyConfig(ss...)
+func NewGRPCServiceServer(cfg *configv1.Service, ss ...service.OptionSetting) (*service.GRPCServer, error) {
 	// Call the build.NewGRPCServer function with the provided configuration
-	return build.NewGRPCServer(cfg, build.Config())
+	return build.NewGRPCServer(cfg, ss...)
 }
 
 // NewGRPCServiceClient creates a new GRPC client using the provided context and configuration
-func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...config.RuntimeConfigSetting) (*service.GRPCClient, error) {
-	build.ApplyConfig(ss...)
+func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.OptionSetting) (*service.GRPCClient, error) {
 	// Call the build.NewGRPCClient function with the provided context and configuration
-	return build.NewGRPCClient(ctx, cfg, build.Config())
+	return build.NewGRPCClient(ctx, cfg, ss...)
 }
 
 // RegisterService registers a service builder with the provided name
@@ -158,9 +146,8 @@ func RegisterService(name string, serviceBuilder ServiceBuilder) {
 }
 
 // New creates a new Builder.
-func New(ss ...config.RuntimeConfigSetting) Builder {
-	c := config.NewRuntimeConfig(ss...)
-	b := newBuilder(c)
+func New() Builder {
+	b := newBuilder()
 	b.init()
 	return b
 }

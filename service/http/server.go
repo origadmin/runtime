@@ -9,28 +9,30 @@ import (
 	"net/url"
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/origadmin/toolkits/env"
-	"github.com/origadmin/toolkits/helpers"
-	"github.com/origadmin/toolkits/net"
+	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/toolkits/env"
+	"github.com/origadmin/toolkits/errors"
+	"github.com/origadmin/toolkits/helpers"
+	"github.com/origadmin/toolkits/net"
 )
 
 const (
-	Scheme = "http"
+	Scheme   = "http"
+	HostName = "ORIGADMIN_RUNTIME_SERVICE_HTTP_HOST"
 )
 
 // NewServer Create an HTTP server instance.
-func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transhttp.Server {
-	if rc == nil {
-		rc = config.DefaultRuntimeConfig
+func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, error) {
+	if cfg == nil {
+		//bootstrap = config.DefaultRuntimeConfig
+		return nil, errors.New("service config is nil")
 	}
-
-	service := rc.Service()
+	option := settings.ApplyDefaultsOrZero(ss...)
 	options := []transhttp.ServerOption{
-		transhttp.Middleware(service.Middlewares...),
+		transhttp.Middleware(option.Middlewares...),
 	}
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
 		if serviceHttp.Network != "" {
@@ -45,16 +47,19 @@ func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transhttp.Serve
 		if cfg.DynamicEndpoint && serviceHttp.Endpoint == "" {
 			var err error
 			endpointParse := helpers.ServiceEndpoint
-			// Obtain an endpoint using the custom EndpointURL function or the default service discovery method
-			if service.EndpointURL != nil {
-				endpointParse = service.EndpointURL
+			// Obtain an endpoint using the custom endpointURL function or the default service discovery method
+			endpointParse = option.EndpointFunc
+
+			host := env.Var(HostName)
+			if cfg.HostName != "" {
+				host = env.Var(cfg.HostName)
+			}
+			hostIP := cfg.HostIp
+			if hostIP == "" {
+				hostIP = net.HostAddr(host)
 			}
 
-			host := env.Var(rc.Bootstrap().EnvPrefix, "host")
-			if cfg.Host != "" {
-				host = env.Var(rc.Bootstrap().EnvPrefix, cfg.Host)
-			}
-			endpointStr, err := endpointParse("http", net.HostAddr(host), serviceHttp.Addr)
+			endpointStr, err := endpointParse("http", hostIP, serviceHttp.Addr)
 			if err == nil {
 				serviceHttp.Endpoint = endpointStr
 			}
@@ -73,5 +78,5 @@ func NewServer(cfg *configv1.Service, rc *config.RuntimeConfig) *transhttp.Serve
 	}
 
 	srv := transhttp.NewServer(options...)
-	return srv
+	return srv, nil
 }

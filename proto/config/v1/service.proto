@@ -83,5 +83,6 @@ message Service {
   config.v1.Middleware middleware = 400 [json_name = "middleware"];
   Selector selector = 500 [json_name = "selector"];
 
-  string host = 99 [json_name = "host"];
+  string host_name = 50 [json_name = "host_name"];
+  string host_ip =51 [json_name = "host_ip"];
 }

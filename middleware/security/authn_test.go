@@ -10,8 +10,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/origadmin/toolkits/security"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/origadmin/toolkits/security"
 
 	jwtv5 "github.com/golang-jwt/jwt/v5"
 
@@ -20,7 +21,7 @@ import (
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
-	"github.com/origadmin/runtime/middleware/security/jwt"
+	"github.com/origadmin/runtime/middleware/security/authn/jwt"
 )
 
 const (
@@ -152,29 +153,28 @@ func TestServer(t *testing.T) {
 				t.Log(testToken)
 				return "reply", nil
 			}
-
-			authenticator, err := jwt.NewAuthenticator(
-				&configv1.Security{
-					Authn: &configv1.AuthNConfig{
-						Jwt: &configv1.AuthNConfig_JWTConfig{
-							Algorithm:     test.alg,
-							SigningKey:    testKey,
-							OldSigningKey: "",
-							ExpireTime:    nil,
-							RefreshTime:   nil,
-							CacheName:     "",
-						},
+			cfg := &configv1.Security{
+				Authn: &configv1.AuthNConfig{
+					Jwt: &configv1.AuthNConfig_JWTConfig{
+						Algorithm:     test.alg,
+						SigningKey:    testKey,
+						OldSigningKey: "",
+						ExpireTime:    nil,
+						RefreshTime:   nil,
+						CacheName:     "",
 					},
 				},
-				//jwt.WithKey([]byte(testKey)),
-				//jwt.WithSigningMethod(test.alg),
-			)
+			}
+			authenticator, err := jwt.NewAuthenticator(cfg)//jwt.WithKey([]byte(testKey)),
+			//jwt.WithSigningMethod(test.alg),
+
 			assert.Nil(t, err)
-			server := NewAuthNServer(
+			server, _ := NewAuthNServer(cfg,
 				WithAuthenticator(authenticator),
-				WithSkipper())(next)
+				WithSkipper())
+			handle := server(next)
 			ctx := WithSkipContextServer(test.ctx, MetadataSecuritySkipKey)
-			_, err2 := server(ctx, test.name)
+			_, err2 := handle(ctx, test.name)
 			if !errors.Is(test.exceptErr, err2) {
 				t.Errorf("except error %v, but got %v", test.exceptErr, err2)
 			}
@@ -208,21 +208,19 @@ func TestClient(t *testing.T) {
 				}
 				return "reply", nil
 			}
-
-			authenticator, err := jwt.NewAuthenticator(
-				&configv1.Security{
-					Authn: &configv1.AuthNConfig{
-						Jwt: &configv1.AuthNConfig_JWTConfig{
-							Algorithm:     "HS256",
-							SigningKey:    testKey,
-							OldSigningKey: "",
-							ExpireTime:    nil,
-							RefreshTime:   nil,
-							CacheName:     "",
-						},
+			cfg := &configv1.Security{
+				Authn: &configv1.AuthNConfig{
+					Jwt: &configv1.AuthNConfig_JWTConfig{
+						Algorithm:     "HS256",
+						SigningKey:    testKey,
+						OldSigningKey: "",
+						ExpireTime:    nil,
+						RefreshTime:   nil,
+						CacheName:     "",
 					},
 				},
-			)
+			}
+			authenticator, err := jwt.NewAuthenticator(cfg)
 			assert.Nil(t, err)
 
 			principal := jwt.SecurityClaims{
@@ -233,10 +231,11 @@ func TestClient(t *testing.T) {
 			}
 			principal.Scopes["local:admin:user_name"] = true
 			principal.Scopes["tenant:admin:user_name"] = true
-			client := NewAuthNClient(WithAuthenticator(authenticator))(next)
+			client, _ := NewAuthNClient(cfg, WithAuthenticator(authenticator))
 			header := newTokenHeader(HeaderAuthorize, generateJwtKey(testKey, "fly"))
 			ctx := transport.NewClientContext(context.Background(), &Transport{reqHeader: header})
-			_, err2 := client(ctx, "ok")
+			handle := client(next)
+			_, err2 := handle(ctx, "ok")
 			if !errors.Is(test.expectError, err2) {
 				t.Errorf("except error %v, but got %v", test.expectError, err2)
 			}

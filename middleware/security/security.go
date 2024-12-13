@@ -29,17 +29,17 @@ var (
 	ErrInvalidAuth   = securityv1.ErrorAuthErrorReasonUnauthenticated("unauthenticated")
 )
 
-type securityCtx struct{}
+type userClaimsCtx struct{}
 
-func PolicyFromContext(ctx context.Context) security.UserClaims {
-	if policy, ok := ctx.Value(securityCtx{}).(security.UserClaims); ok {
-		return policy
+func UserClaimsFromContext(ctx context.Context) security.UserClaims {
+	if claims, ok := ctx.Value(userClaimsCtx{}).(security.UserClaims); ok {
+		return claims
 	}
 	return nil
 }
 
-func NewPolicyContext(ctx context.Context, claims security.UserClaims) context.Context {
-	return context.WithValue(ctx, securityCtx{}, claims)
+func NewUserClaimsContext(ctx context.Context, claims security.UserClaims) context.Context {
+	return context.WithValue(ctx, userClaimsCtx{}, claims)
 }
 
 func mergePublic(public []string, paths ...string) []string {

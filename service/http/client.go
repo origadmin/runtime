@@ -9,11 +9,10 @@ import (
 	"time"
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/service/selector"
 	"github.com/origadmin/toolkits/errors"
 	"github.com/origadmin/toolkits/helpers"
 )
@@ -21,44 +20,40 @@ import (
 const defaultTimeout = 5 * time.Second
 
 // NewClient Creating an HTTP client instance.
-func NewClient(ctx context.Context, service *configv1.Service, rc *config.RuntimeConfig) (*transhttp.Client, error) {
-	if rc == nil {
-		rc = config.DefaultRuntimeConfig
+func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Client, error) {
+	if cfg == nil {
+		//bootstrap = config.DefaultRuntimeConfig
+		return nil, errors.New("service config is nil")
 	}
-
+	option := settings.ApplyDefaultsOrZero(ss...)
 	timeout := defaultTimeout
-	if serviceHttp := service.GetHttp(); serviceHttp != nil {
+	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
 		if serviceHttp.Timeout != nil {
 			timeout = serviceHttp.Timeout.AsDuration()
 		}
 	}
-	serviceOption := rc.Service()
 	options := []transhttp.ClientOption{
 		transhttp.WithTimeout(timeout),
-		transhttp.WithMiddleware(serviceOption.Middlewares...),
+		transhttp.WithMiddleware(option.Middlewares...),
 	}
 
-	if serviceOption.Discovery != nil {
-		endpoint := helpers.ServiceName(serviceOption.ServiceName)
+	if option.Discovery != nil {
+		endpoint := helpers.ServiceName(option.ServiceName)
 		options = append(options,
 			transhttp.WithEndpoint(endpoint),
-			transhttp.WithDiscovery(serviceOption.Discovery),
+			transhttp.WithDiscovery(option.Discovery),
 		)
 	}
 
-	selectorOption := rc.Selector()
-	if selectorOption.HTTP == nil {
-		selectorOption.HTTP = selector.DefaultHTTP
-	}
-	if serviceSelector := service.GetSelector(); serviceSelector != nil {
-		if option, err := selectorOption.HTTP(serviceSelector); err == nil && option != nil {
-			options = append(options, option)
+	if serviceSelector := cfg.GetSelector(); serviceSelector != nil {
+		if len(option.NodeFilters) > 0 {
+			options = append(options, transhttp.WithNodeFilter(option.NodeFilters...))
 		}
 	}
 
 	conn, err := transhttp.NewClient(ctx, options...)
 	if err != nil {
-		return nil, errors.Errorf("dial http client [%s] failed: %s", service.GetName(), err.Error())
+		return nil, errors.Errorf("dial http client [%s] failed: %s", cfg.GetName(), err.Error())
 	}
 
 	return conn, nil

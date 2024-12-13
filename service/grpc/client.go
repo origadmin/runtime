@@ -9,53 +9,48 @@ import (
 	"time"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/origadmin/toolkits/errors"
-	"github.com/origadmin/toolkits/helpers"
+	"github.com/goexts/generic/settings"
 	"google.golang.org/grpc"
 
-	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/service/selector"
+	"github.com/origadmin/toolkits/errors"
+	"github.com/origadmin/toolkits/helpers"
 )
 
 const defaultTimeout = 5 * time.Second
 
 // NewClient Creating a GRPC client instance
-func NewClient(ctx context.Context, service *configv1.Service, rc *config.RuntimeConfig) (*grpc.ClientConn, error) {
-	if rc == nil {
-		rc = config.DefaultRuntimeConfig
+func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) (*grpc.ClientConn, error) {
+	if cfg == nil {
+		//bootstrap = config.DefaultRuntimeConfig
+		return nil, errors.New("service config is nil")
 	}
-
+	option := settings.ApplyDefaultsOrZero(ss...)
 	timeout := defaultTimeout
-	if serviceGrpc := service.GetGrpc(); serviceGrpc != nil {
+	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.Timeout != nil {
 			timeout = serviceGrpc.Timeout.AsDuration()
 		}
 	}
-	serviceOption := rc.Service()
 	options := []transgrpc.ClientOption{
 		transgrpc.WithTimeout(timeout),
-		transgrpc.WithMiddleware(serviceOption.Middlewares...),
+		transgrpc.WithMiddleware(option.Middlewares...),
 	}
-	if serviceOption.Discovery != nil {
-		endpoint := helpers.ServiceName(serviceOption.ServiceName)
+	if option.Discovery != nil {
+		endpoint := helpers.ServiceName(option.ServiceName)
 		options = append(options, transgrpc.WithEndpoint(endpoint),
-			transgrpc.WithDiscovery(serviceOption.Discovery))
+			transgrpc.WithDiscovery(option.Discovery))
 	}
-	selectorOption := rc.Selector()
-	if selectorOption.GRPC == nil {
-		selectorOption.GRPC = selector.DefaultGRPC
-	}
-	if serviceSelector := service.GetSelector(); serviceSelector != nil {
-		if option, err := selectorOption.GRPC(serviceSelector); err == nil && option != nil {
-			options = append(options, option)
+	if serviceSelector := cfg.GetSelector(); serviceSelector != nil {
+		if len(option.NodeFilters) > 0 {
+			options = append(options, transgrpc.WithNodeFilter(option.NodeFilters...))
 		}
 	}
 
 	conn, err := transgrpc.DialInsecure(ctx, options...)
 	if err != nil {
-		return nil, errors.Errorf("dial grpc client [%s] failed: %s", service.GetName(), err.Error())
+		return nil, errors.Errorf("dial grpc client [%s] failed: %s", cfg.GetName(), err.Error())
 	}
 
 	return conn, nil

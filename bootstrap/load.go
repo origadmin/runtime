@@ -116,14 +116,14 @@ func LoadRemoteConfig(bootstrap *Bootstrap, v any, ss ...config.SourceOptionSett
 	if err != nil {
 		return err
 	}
-	config, err := runtime.NewConfig(sourceConfig, config.WithSourceOption())
+	runtimeConfig, err := runtime.NewConfig(sourceConfig, ss...)
 	if err != nil {
 		return err
 	}
-	if err := config.Load(); err != nil {
+	if err := runtimeConfig.Load(); err != nil {
 		return err
 	}
-	if err := config.Scan(v); err != nil {
+	if err := runtimeConfig.Scan(v); err != nil {
 		return err
 	}
 	return nil

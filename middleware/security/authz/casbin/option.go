@@ -12,6 +12,9 @@ import (
 	"github.com/origadmin/runtime/middleware/security/internal/policy"
 )
 
+// Setting is a function type for setting the Authenticator.
+type Setting = func(*Authorizer)
+
 func DefaultModel() string {
 	return model.DefaultRestfullWithRoleModel
 }

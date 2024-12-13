@@ -14,6 +14,9 @@ import (
 	"github.com/origadmin/toolkits/security"
 )
 
+// Setting is a function type for setting the Authenticator.
+type Setting = func(*Authenticator)
+
 // GetKeyFunc returns a function that retrieves the key for a given token.
 // The returned function takes a jwtv5.Token as an argument and returns the key as a string.
 func GetKeyFunc(key string) func(token *jwtv5.Token) (any, error) {

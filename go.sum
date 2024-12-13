@@ -724,6 +724,10 @@ github.com/go-playground/form/v4 v4.2.1/go.mod h1:q1a2BY+AQUUzhl6xA/6hBetay6dEIh
 github.com/goccy/go-json v0.9.11/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/goexts/generic v0.1.1 h1:dg5aPYVoH9MzdfRLngOVwb6Ws7dR6q1/BJeoVm3fO9k=
 github.com/goexts/generic v0.1.1/go.mod h1:j/ZjWHYt+If6VjeHWvDhYKdoP+gAiAKpm0cu3yvKmfo=
+github.com/goexts/generic v0.1.2 h1:Ox75RHX+G6B3v8klHq8ZQJ2plyNrBwfppvs1eGMZxwE=
+github.com/goexts/generic v0.1.2/go.mod h1:j/ZjWHYt+If6VjeHWvDhYKdoP+gAiAKpm0cu3yvKmfo=
+github.com/goexts/generic v0.1.4 h1:D3ILOBFwcNrPK019n5mYBnTIzhyXTAelKulLgScthxU=
+github.com/goexts/generic v0.1.4/go.mod h1:j/ZjWHYt+If6VjeHWvDhYKdoP+gAiAKpm0cu3yvKmfo=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
 github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69NZV8Q=
 github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=
@@ -958,8 +962,6 @@ github.com/tklauser/numcpus v0.9.0 h1:lmyCHtANi8aRUgkckBgoDk1nHCux3n2cgkJLXdQGPD
 github.com/tklauser/numcpus v0.9.0/go.mod h1:SN6Nq1O3VychhC1npsWostA+oW+VOQTxZrS604NSRyI=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
-github.com/tx7do/kratos-authz v1.0.2 h1:AkkCCPGd8WwIcVHL0oJhUv1mRpbeSQRVIF+A2p1epHg=
-github.com/tx7do/kratos-authz v1.0.2/go.mod h1:MZxuNahrvEgE/lafhy8MMgfHhkz2K/s56r+D0bnDrIU=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
 github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415/go.mod h1:GwrjFmJcFw6At/Gs6z4yjiIwzuJ1/+UwLxMQDVQXShQ=
 github.com/xeipuuv/gojsonschema v1.2.0/go.mod h1:anYRn/JVcOK2ZgGU+IjEV4nwlhoK5sQluxsYJ78Id3Y=

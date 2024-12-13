@@ -234,7 +234,8 @@ func main() {
 			Version: "",
 			Builder: "",
 		},
-		Host: "",
+		HostName: "",
+		HostIp:   "",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -244,6 +245,9 @@ func main() {
 	// Register the HTTP processor
 	http.HandleFunc("/upload", bridgeUploader.ServeHTTP)
 	// Start the HTTP server
-	http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }

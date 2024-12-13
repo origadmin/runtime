@@ -12,7 +12,8 @@ import (
 	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/runtime/middleware/empty"
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/toolkits/errors"
 	"github.com/origadmin/toolkits/security"
 )
 
@@ -23,21 +24,20 @@ const (
 	MetadataSecuritySkipKey  = "x-metadata-security-skip-key"
 )
 
+const (
+	ErrorCreateOptionNil = errors.String("authenticator middleware create failed: option is nil")
+)
+
 // NewAuthNClient is a client authenticator middleware.
-func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
-	option := settings.Apply(&ConfigOption{}, ss)
-	if option == nil || option.Authorizer == nil {
-		return empty.Empty()
-	}
-	if option.SecurityTokenKey == "" {
-		option.SecurityTokenKey = MetadataSecurityTokenKey
-	}
-	if option.SecuritySkipKey == "" {
-		option.SecuritySkipKey = MetadataSecuritySkipKey
+func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+	option := settings.ApplyDefaultsOrZero(ss...)
+	if option.Authenticator == nil {
+		return nil, ErrorCreateOptionNil
 	}
 
+	paths := append(cfg.GetPublicPaths(), cfg.GetAuthn().GetPublicPaths()...)
 	if option.Skipper == nil {
-		option.Skipper = defaultSkipper(option.PublicPaths...)
+		option.Skipper = defaultSkipper(paths...)
 	}
 	tokenParser := defaultTokenParser(FromTransportClient(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
@@ -45,7 +45,7 @@ func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
 			if option.Skipper != nil {
 				if tr, ok := transport.FromClientContext(ctx); ok {
 					if option.Skipper(tr.Operation()) {
-						ctx := WithSkipContextClient(NewSkipContext(ctx), option.SecuritySkipKey)
+						ctx := WithSkipContextClient(NewSkipContext(ctx), option.SkipKey)
 						return handler(ctx, req)
 					}
 				}
@@ -55,7 +55,7 @@ func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
 			if token == "" {
 				return nil, ErrMissingToken
 			}
-			ctx = metadata.AppendToClientContext(ctx, option.SecurityTokenKey, token)
+			ctx = metadata.AppendToClientContext(ctx, option.TokenKey, token)
 			//claims, err := option.Authenticator.AuthenticateToken(token)
 			//if err != nil {
 			//	log.Errorf("authenticator middleware create token failed: %s", err.Error())
@@ -64,29 +64,23 @@ func NewAuthNClient(ss ...ConfigOptionSetting) middleware.Middleware {
 			//ctx = NewClaimsContext(ctx, claims)
 			return handler(ctx, req)
 		}
-	}
+	}, nil
 }
 
 // NewAuthNServer is a server authenticator middleware.
-func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
-	option := settings.Apply(&ConfigOption{}, ss)
-	if option == nil || option.Authenticator == nil {
-		return empty.Empty()
-	}
-	if option.SecurityTokenKey == "" {
-		option.SecurityTokenKey = MetadataSecurityTokenKey
-	}
-	if option.SecuritySkipKey == "" {
-		option.SecuritySkipKey = MetadataSecuritySkipKey
+func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+	option := settings.ApplyDefaultsOrZero(ss...)
+	if option.Authenticator == nil {
+		return nil, ErrorCreateOptionNil
 	}
 
-	tokenParser := defaultTokenParser(FromMetaData(option.SecurityTokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
+	tokenParser := defaultTokenParser(FromMetaData(option.TokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if option.Skipper != nil {
 				if tr, ok := transport.FromClientContext(ctx); ok {
 					if option.Skipper(tr.Operation()) {
-						ctx := WithSkipContextClient(NewSkipContext(ctx), option.SecuritySkipKey)
+						ctx := WithSkipContextClient(NewSkipContext(ctx), option.SkipKey)
 						return handler(ctx, req)
 					}
 				}
@@ -106,26 +100,25 @@ func NewAuthNServer(ss ...ConfigOptionSetting) middleware.Middleware {
 			ctx = NewClaimsContext(ctx, claims)
 			return handler(ctx, req)
 		}
-	}
+	}, nil
 }
 
 // NewAuthN is a server authenticator middleware.
-func NewAuthN(ss ...ConfigOptionSetting) middleware.Middleware {
-	option := settings.Apply(&ConfigOption{}, ss)
+func NewAuthN(option *Option) (middleware.Middleware, error) {
 	if option == nil || option.Authenticator == nil {
-		return empty.Empty()
+		return nil, ErrorCreateOptionNil
 	}
-	if option.SecurityTokenKey == "" {
-		option.SecurityTokenKey = MetadataSecurityTokenKey
+	if option.TokenKey == "" {
+		option.TokenKey = MetadataSecurityTokenKey
 	}
-	if option.SecuritySkipKey == "" {
-		option.SecuritySkipKey = MetadataSecuritySkipKey
+	if option.SkipKey == "" {
+		option.SkipKey = MetadataSecuritySkipKey
 	}
 
-	tokenParser := defaultTokenParser(FromMetaData(option.SecurityTokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
+	tokenParser := defaultTokenParser(FromMetaData(option.TokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
-			if IsSkipped(ctx, option.SecuritySkipKey) {
+			if IsSkipped(ctx, option.SkipKey) {
 				return handler(NewSkipContext(ctx), req)
 			}
 			var err error
@@ -143,5 +136,5 @@ func NewAuthN(ss ...ConfigOptionSetting) middleware.Middleware {
 			ctx = NewClaimsContext(ctx, claims)
 			return handler(ctx, req)
 		}
-	}
+	}, nil
 }

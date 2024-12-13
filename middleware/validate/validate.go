@@ -21,8 +21,8 @@ type Validator interface {
 }
 
 // Server is a validator middleware.
-func Server(ss ...ConfigSetting) (middleware.Middleware, error) {
-	cfg := settings.Apply(&Config{
+func Server(ss ...OptionSetting) (middleware.Middleware, error) {
+	cfg := settings.Apply(&Option{
 		version:  V1,
 		failFast: true,
 	}, ss)
@@ -40,7 +40,7 @@ func Server(ss ...ConfigSetting) (middleware.Middleware, error) {
 	}, nil
 }
 
-func buildValidator(cfg *Config) (Validator, error) {
+func buildValidator(cfg *Option) (Validator, error) {
 	switch cfg.version {
 	case V1:
 		return NewValidateV1(cfg.failFast, cfg.callback), nil

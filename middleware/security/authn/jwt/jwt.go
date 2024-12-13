@@ -19,9 +19,6 @@ import (
 	"github.com/origadmin/toolkits/storage/cache"
 )
 
-// Setting is a function type for setting the Authenticator.
-type Setting = func(*Authenticator)
-
 // Authenticator is a struct that implements the Authenticator interface.
 type Authenticator struct {
 	// signingMethod is the signing method for the token.
@@ -238,6 +235,40 @@ func (obj *Authenticator) generateToken(jwtToken *jwtv5.Token) (string, error) {
 	return strToken, nil
 }
 
+func (obj *Authenticator) ApplyDefaults() error {
+	//// If the signing key is empty, return an error.
+	//signingKey := config.SigningKey
+	//if signingKey == "" {
+	//	return nil, errors.New("signing key is empty")
+	//}
+	//
+	//// Get the signing method and key function from the signing key.
+	//signingMethod, keyFunc, err := getSigningMethodAndKeyFunc(config.Algorithm, config.SigningKey)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	return nil
+}
+
+func (obj *Authenticator) WithConfig(config *configv1.AuthNConfig_JWTConfig) error {
+	// If the signing key is empty, return an error.
+	signingKey := config.SigningKey
+	if signingKey == "" {
+		return errors.New("signing key is empty")
+	}
+
+	// Get the signing method and key function from the signing key.
+	signingMethod, keyFunc, err := getSigningMethodAndKeyFunc(config.Algorithm, config.SigningKey)
+	if err != nil {
+		return err
+	}
+	// Set the signing method and key function.
+	obj.signingMethod = signingMethod
+	obj.keyFunc = keyFunc
+	return nil
+}
+
 // NewAuthenticator creates a new Authenticator.
 func NewAuthenticator(cfg *configv1.Security, ss ...Setting) (security.Authenticator, error) {
 	// Get the JWT config from the security config.
@@ -245,24 +276,14 @@ func NewAuthenticator(cfg *configv1.Security, ss ...Setting) (security.Authentic
 	if config == nil {
 		return nil, errors.New("authenticator jwt config is empty")
 	}
-	// If the signing key is empty, return an error.
-	signingKey := config.SigningKey
-	if signingKey == "" {
-		return nil, errors.New("signing key is empty")
-	}
-
-	// Get the signing method and key function from the signing key.
-	signingMethod, keyFunc, err := getSigningMethodAndKeyFunc(config.Algorithm, config.SigningKey)
+	auth := &Authenticator{}
+	err := auth.WithConfig(config)
 	if err != nil {
 		return nil, err
 	}
-
 	// Apply the settings to the Authenticator.
-	auth := settings.Apply(&Authenticator{
-		signingMethod: signingMethod,
-		keyFunc:       keyFunc,
-	}, ss)
-	return auth, nil
+	//auth := settings.ApplyDefaults(ss...)
+	return settings.ApplyErrorDefaults(auth, ss)
 }
 
 var _ security.Authenticator = (*Authenticator)(nil)

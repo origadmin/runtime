@@ -32,7 +32,7 @@ func ValidateServer(ms []Middleware, ok bool, validator *configv1.Middleware_Val
 	if !ok {
 		return ms
 	}
-	opts := []validate.ConfigSetting{
+	opts := []validate.OptionSetting{
 		validate.WithFailFast(validator.GetFailFast()),
 	}
 	if validate.Version(validator.Version) == validate.V2 {

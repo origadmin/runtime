@@ -16,9 +16,6 @@ import (
 	"github.com/origadmin/toolkits/security"
 )
 
-// Setting is a function type for setting the Authenticator.
-type Setting = func(*Authorizer)
-
 // Authorizer is a struct that implements the Authorizer interface.
 type Authorizer struct {
 	model        model.Model
@@ -27,7 +24,7 @@ type Authorizer struct {
 	wildcardItem string
 }
 
-func (auth Authorizer) Authorized(ctx context.Context, claims security.UserClaims) (bool, error) {
+func (auth *Authorizer) Authorized(ctx context.Context, claims security.UserClaims) (bool, error) {
 	domain := claims.GetDomain()
 	if len(domain) == 0 {
 		domain = auth.wildcardItem
@@ -43,30 +40,46 @@ func (auth Authorizer) Authorized(ctx context.Context, claims security.UserClaim
 	return false, nil
 }
 
+func (auth *Authorizer) ApplyDefaults() error {
+	if auth.policy == nil {
+		auth.policy = NewAdapter()
+	}
+	if auth.wildcardItem == "" {
+		auth.wildcardItem = "*"
+	}
+	if auth.model == nil {
+		auth.model, _ = model.NewModelFromString(DefaultModel())
+		//if err != nil {
+		//	return err
+		//}
+	}
+	if auth.enforcer == nil {
+		auth.enforcer, _ = casbin.NewSyncedEnforcer(auth.model, auth.policy)
+		//if err!= nil {
+		//	return err
+		//}
+	}
+	return nil
+}
+
+func (auth *Authorizer) WithConfig(config *configv1.AuthZConfig_CasbinConfig) error {
+	var err error
+	if config.ModelFile != "" {
+		auth.model, err = model.NewModelFromFile(config.ModelFile)
+	}
+	return err
+}
+
 func NewAuthorizer(cfg *configv1.Security, ss ...Setting) (security.Authorizer, error) {
 	config := cfg.GetAuthz().GetCasbin()
 	if config == nil {
 		return nil, errors.New("authorizer casbin config is empty")
 	}
-	auth := settings.Apply(&Authorizer{
-		policy: NewAdapter(),
-		//projects:                  engine.Projects{},
-		wildcardItem: "*",
-		//authorizedProjectsMatcher: "g(r.sub, p.sub, p.dom) && (keyMatch(r.dom, p.dom) || p.dom == '*')",
-	}, ss)
-
 	var err error
-	if auth.model == nil {
-		auth.model, err = model.NewModelFromString(DefaultModel())
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	auth.enforcer, err = casbin.NewSyncedEnforcer(auth.model, auth.policy)
+	auth := &Authorizer{}
+	err = auth.WithConfig(config)
 	if err != nil {
 		return nil, err
 	}
-
-	return auth, nil
+	return settings.ApplyErrorDefaults(auth, ss)
 }
