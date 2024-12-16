@@ -114,16 +114,16 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				err     error
 			)
 
-			if option.Parser == nil {
-				return nil, ErrMissingClaims
-			}
 			claims := ClaimsFromContext(ctx)
 			if claims == nil {
 				return nil, ErrMissingToken
 			}
-			userClaims, err := option.Parser.Parse(ctx, claims.GetSubject())
+			if option.Parser == nil {
+				return nil, ErrMissingClaims
+			}
+			userClaims, err := option.Parser(ctx, claims.GetSubject())
 			if claims == nil {
-				return nil, ErrMissingToken
+				return nil, ErrMissingClaims
 			}
 
 			if userClaims.GetSubject() == "" || userClaims.GetAction() == "" || userClaims.GetObject() == "" {
