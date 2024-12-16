@@ -96,23 +96,19 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 }
 
 // NewAuthN is a server authenticator middleware.
-func NewAuthN(option *Option) (middleware.Middleware, error) {
+func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+	option := settings.ApplyDefaultsOrZero(ss...)
 	if option == nil || option.Authenticator == nil {
 		return nil, ErrorCreateOptionNil
 	}
-	if option.TokenKey == "" {
-		option.TokenKey = MetadataSecurityTokenKey
-	}
-	if option.SkipKey == "" {
-		option.SkipKey = MetadataSecuritySkipKey
-	}
 
-	tokenParser := defaultTokenParser(FromMetaData(option.TokenKey), FromTransportServer(security.HeaderAuthorize, security.SchemeBearer.String()))
+	tokenParser := defaultTokenParser(option.TokenParser, FromTransportServer(option.HeaderAuthorize, option.Scheme))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if IsSkipped(ctx, option.SkipKey) {
-				return handler(NewSkipContext(ctx), req)
+				return handler(ctx, req)
 			}
+
 			var err error
 			token := tokenParser(ctx)
 			if token == "" {

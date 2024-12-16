@@ -108,3 +108,29 @@ func ClaimFromTokenTypeContext(ctx context.Context, tokenType security.TokenType
 func formatToken(scheme string, tokenStr string) string {
 	return fmt.Sprintf("%s %s", scheme, tokenStr)
 }
+
+func FromTransportClient(authorize string, scheme string) func(ctx context.Context) string {
+	return func(ctx context.Context) string {
+		if tr, ok := transport.FromClientContext(ctx); ok {
+			token := tr.RequestHeader().Get(authorize)
+			splits := strings.SplitN(token, " ", 2)
+			if len(splits) > 1 && strings.EqualFold(splits[0], scheme) {
+				return splits[1]
+			}
+		}
+		return ""
+	}
+}
+
+func FromTransportServer(authorize string, scheme string) func(ctx context.Context) string {
+	return func(ctx context.Context) string {
+		if tr, ok := transport.FromServerContext(ctx); ok {
+			token := tr.RequestHeader().Get(authorize)
+			splits := strings.SplitN(token, " ", 2)
+			if len(splits) > 1 && strings.EqualFold(splits[0], scheme) {
+				return splits[1]
+			}
+		}
+		return ""
+	}
+}

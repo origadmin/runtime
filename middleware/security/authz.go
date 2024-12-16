@@ -97,3 +97,53 @@ func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 		}
 	}, nil
 }
+
+// NewAuthZ returns a new server middleware.
+func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+	option := settings.ApplyDefaultsOrZero(ss...)
+	if option.Authorizer == nil {
+		return nil, ErrorCreateOptionNil
+	}
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			if IsSkipped(ctx, option.SkipKey) {
+				return handler(ctx, req)
+			}
+			var (
+				allowed bool
+				err     error
+			)
+
+			if option.Parser == nil {
+				return nil, ErrMissingClaims
+			}
+			claims := ClaimsFromContext(ctx)
+			if claims == nil {
+				return nil, ErrMissingToken
+			}
+			userClaims, err := option.Parser.Parse(ctx, claims.GetSubject())
+			if claims == nil {
+				return nil, ErrMissingToken
+			}
+
+			if userClaims.GetSubject() == "" || userClaims.GetAction() == "" || userClaims.GetObject() == "" {
+				return nil, ErrInvalidClaims
+			}
+
+			//var project []string
+			//if domains := claims.GetDomain(); domains != nil {
+			//	project = domains
+			//}
+			// todo add domain project
+			allowed, err = option.Authorizer.Authorized(ctx, userClaims)
+			if err != nil {
+				return nil, err
+			}
+			if !allowed {
+				return nil, ErrInvalidAuth
+			}
+
+			return handler(ctx, req)
+		}
+	}, nil
+}

@@ -9,20 +9,20 @@ import (
 )
 
 type Option struct {
-	security []security.OptionSetting
+	securities []security.OptionSetting
 }
 
 type OptionSetting = func(*Option)
 
-func (o Option) SecurityOptions() []security.OptionSetting {
-	return o.security
+func (o Option) Securities() []security.OptionSetting {
+	return o.securities
 }
 
 func WithSecurityOptions(ss ...security.OptionSetting) OptionSetting {
 	return func(option *Option) {
-		if option.security == nil {
-			option.security = ss
+		if option.securities == nil {
+			option.securities = ss
 		}
-		option.security = append(option.security, ss...)
+		option.securities = append(option.securities, ss...)
 	}
 }

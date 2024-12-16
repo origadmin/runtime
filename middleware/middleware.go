@@ -32,24 +32,26 @@ func NewClient(cfg *configv1.Middleware, ss ...OptionSetting) []Middleware {
 	if cfg == nil {
 		return middlewares
 	}
-	bootstrap := settings.Apply(&Option{}, ss)
+	option := settings.Apply(&Option{}, ss)
 	// Add the Recovery middleware to the slice
 	middlewares = Recovery(middlewares, cfg.EnableRecovery)
 	// Add the SecurityClient middleware to the slice
-	middlewares = SecurityClient(middlewares, cfg.Security, bootstrap.SecurityOptions()...)
+	middlewares = SecurityClient(middlewares, cfg.Security, option.Securities()...)
 	// Add the MetadataClient middleware to the slice
 	middlewares = MetadataClient(middlewares, cfg.EnableMetadata, cfg.Metadata)
 	// Add the TracingClient middleware to the slice
 	middlewares = TracingClient(middlewares, cfg.EnableTracing)
 	// Add the CircuitBreakerClient middleware to the slice
 	middlewares = CircuitBreakerClient(middlewares, cfg.EnableCircuitBreaker)
+	// Add the Security middleware to the slice
+	middlewares = Security(middlewares, cfg.Security, option.Securities()...)
 	// Return the slice of middlewares
 	return middlewares
 }
 
 // NewServer creates a new server with the given configuration
 func NewServer(cfg *configv1.Middleware, ss ...OptionSetting) []Middleware {
-	bootstrap := settings.Apply(&Option{}, ss)
+	option := settings.Apply(&Option{}, ss)
 	// Create an empty slice of Middleware
 	var middlewares []Middleware
 
@@ -62,7 +64,7 @@ func NewServer(cfg *configv1.Middleware, ss ...OptionSetting) []Middleware {
 	// Add the ValidateServer middleware to the slice
 	middlewares = ValidateServer(middlewares, cfg.EnableValidate, cfg.Validator)
 	// Add the SecurityServer middleware to the slice
-	middlewares = SecurityServer(middlewares, cfg.Security, bootstrap.SecurityOptions()...)
+	middlewares = SecurityServer(middlewares, cfg.Security, option.Securities()...)
 	// Add the TracingServer middleware to the slice
 	middlewares = TracingServer(middlewares, cfg.EnableTracing)
 	// Add the MetadataServer middleware to the slice

@@ -5,10 +5,7 @@
 package security
 
 import (
-	"strings"
-
 	"github.com/go-kratos/kratos/v2/metadata"
-	"github.com/go-kratos/kratos/v2/transport"
 
 	"github.com/origadmin/runtime/context"
 	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
@@ -24,6 +21,7 @@ const (
 var (
 	ErrInvalidToken  = securityv1.ErrorAuthErrorReasonBearerTokenMissing("bearer token missing")
 	ErrInvalidClaims = securityv1.ErrorAuthErrorReasonInvalidClaims("invalid bearer token")
+	ErrMissingClaims = securityv1.ErrorAuthErrorReasonInvalidClaims("missing scheme")
 	ErrMissingToken  = securityv1.ErrorAuthErrorReasonBearerTokenMissing("bearer token missing")
 	ErrInvalidAuth   = securityv1.ErrorAuthErrorReasonUnauthenticated("unauthenticated")
 )
@@ -92,33 +90,6 @@ func defaultTokenParser(outer ...func(ctx context.Context) string) func(ctx cont
 		return tokenParser(ctx, fns)
 	}
 }
-
-func FromTransportClient(authorize string, scheme string) func(ctx context.Context) string {
-	return func(ctx context.Context) string {
-		if tr, ok := transport.FromClientContext(ctx); ok {
-			token := tr.RequestHeader().Get(authorize)
-			splits := strings.SplitN(token, " ", 2)
-			if len(splits) > 1 && strings.EqualFold(splits[0], scheme) {
-				return splits[1]
-			}
-		}
-		return ""
-	}
-}
-
-func FromTransportServer(authorize string, scheme string) func(ctx context.Context) string {
-	return func(ctx context.Context) string {
-		if tr, ok := transport.FromServerContext(ctx); ok {
-			token := tr.RequestHeader().Get(authorize)
-			splits := strings.SplitN(token, " ", 2)
-			if len(splits) > 1 && strings.EqualFold(splits[0], scheme) {
-				return splits[1]
-			}
-		}
-		return ""
-	}
-}
-
 func FromMetaDataKey(ctx context.Context, key string) string {
 	if md, ok := metadata.FromServerContext(ctx); ok {
 		return md.Get(key)

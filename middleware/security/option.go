@@ -16,15 +16,17 @@ type TokenParser func(context.Context, string) (security.Claims, error)
 type ResponseWriter func(context.Context, security.Claims) (string, error)
 
 type Option struct {
-	Authorizer    security.Authorizer
-	Authenticator security.Authenticator
-	Serializer    security.Serializer
-	TokenKey      string
-	SkipKey       string
-	PublicPaths   []string
-	TokenParser   func(ctx context.Context) string
-	Parser        security.UserClaimsParser
-	Skipper       func(string) bool
+	Authorizer      security.Authorizer
+	Authenticator   security.Authenticator
+	Serializer      security.Serializer
+	TokenKey        string
+	Scheme          string
+	HeaderAuthorize string
+	SkipKey         string
+	PublicPaths     []string
+	TokenParser     func(ctx context.Context) string
+	Parser          security.UserClaimsParser
+	Skipper         func(string) bool
 }
 
 type OptionSetting = func(option *Option)
@@ -35,6 +37,12 @@ func (o *Option) ApplyDefaults() {
 	}
 	if o.SkipKey == "" {
 		o.SkipKey = MetadataSecuritySkipKey
+	}
+	if o.HeaderAuthorize == "" {
+		o.HeaderAuthorize = security.HeaderAuthorize
+	}
+	if o.Scheme == "" {
+		o.Scheme = security.SchemeBearer.String()
 	}
 }
 func (o *Option) WithConfig(cfg *configv1.Security) *Option {
