@@ -890,6 +890,8 @@ github.com/origadmin/toolkits/codec v0.0.44 h1:ExEScXEis4gGc3LIx+sm7e/04+fiAsUf8
 github.com/origadmin/toolkits/codec v0.0.44/go.mod h1:KouXvcRysdeDe6syxc3XL3two0yIIsk47bjZy6bhOoo=
 github.com/origadmin/toolkits/codec v0.0.48 h1:KytkzIekTU+KaeqssSTfu1F/Mqmwy1pQ3qgTQV2bGuo=
 github.com/origadmin/toolkits/codec v0.0.48/go.mod h1:KouXvcRysdeDe6syxc3XL3two0yIIsk47bjZy6bhOoo=
+github.com/origadmin/toolkits/codec v0.0.49 h1:WXUpi+24EYjTYEoHiIfaW0PrEPVvz5xh2gWGFz86V/I=
+github.com/origadmin/toolkits/codec v0.0.49/go.mod h1:KouXvcRysdeDe6syxc3XL3two0yIIsk47bjZy6bhOoo=
 github.com/origadmin/toolkits/errors v0.0.26 h1:xHfZBu1D8y7SEPciRr/bPyplytsd6nt1OnRssPb/dxM=
 github.com/origadmin/toolkits/errors v0.0.26/go.mod h1:6DM+lY0GU/UWobF66Fh/zeLJl3zF6Ll9+8ujHjSCwFQ=
 github.com/origadmin/toolkits/errors v0.0.30 h1:Jc1eQYZmysG2yotpk952d/u6ltxz7ujYxhm85DMA79g=

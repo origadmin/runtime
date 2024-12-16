@@ -102,7 +102,7 @@ func ClaimFromTokenTypeContext(ctx context.Context, tokenType security.TokenType
 	case security.ContextTypeContext:
 		return ClaimsFromContext(ctx), nil
 	}
-	return nil, status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+string(tokenType))
+	return nil, status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+tokenType.String())
 }
 
 func formatToken(scheme string, tokenStr string) string {
