@@ -39,10 +39,10 @@ message Token {
     json_name = "expiration_time",
     (gnostic.openapi.v3.property) = {description: "The expiration time of the token."}
   ];
-  string token_type = 13 [
-    json_name = "token_type",
+  string scheme_type = 13 [
+    json_name = "scheme_type",
     (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The type of the token (e.g., Bearer)."}
+    (gnostic.openapi.v3.property) = {description: "The type of the token scheme (e.g., Bearer)."}
   ];
   security.v1.Claims claims = 14 [
     json_name = "claims",

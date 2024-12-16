@@ -3,7 +3,7 @@ syntax = "proto3";
 package security.v1;
 
 import "validate/validate.proto";
-import "security/v1/claims.proto";
+import "security/v1/auth.proto";
 import "gnostic/openapi/v3/annotations.proto";
 
 option cc_enable_arenas = true;

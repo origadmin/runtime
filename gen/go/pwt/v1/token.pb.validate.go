@@ -111,9 +111,9 @@ func (m *Token) validate(all bool) error {
 		}
 	}
 
-	if utf8.RuneCountInString(m.GetTokenType()) < 1 {
+	if utf8.RuneCountInString(m.GetSchemeType()) < 1 {
 		err := TokenValidationError{
-			field:  "TokenType",
+			field:  "SchemeType",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
