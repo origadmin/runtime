@@ -14,7 +14,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/origadmin/toolkits v0.1.19
 	github.com/origadmin/toolkits/codec v0.0.49
-	github.com/origadmin/toolkits/errors v0.0.30
+	github.com/origadmin/toolkits/errors v0.0.31
 	google.golang.org/grpc v1.69.0
 	google.golang.org/protobuf v1.35.2
 )
