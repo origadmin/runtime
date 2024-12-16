@@ -21,7 +21,7 @@ import (
 
 const (
 	Scheme   = "grpc"
-	HostName = "ORIGADMIN_RUNTIME_SERVICE_GRPC_HOST"
+	hostName = "ORIGADMIN_SERVICE_HOST"
 )
 
 // NewServer Create a GRPC server instance
@@ -52,9 +52,11 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 				endpointParse = option.EndpointFunc
 			}
 
-			host := env.Var(HostName)
+			var host string
 			if cfg.HostName != "" {
 				host = env.Var(cfg.HostName)
+			} else {
+				host = env.Var(hostName)
 			}
 			hostIP := cfg.HostIp
 			if hostIP == "" {
