@@ -12,9 +12,9 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/origadmin/toolkits v0.1.17
-	github.com/origadmin/toolkits/codec v0.0.44
-	github.com/origadmin/toolkits/errors v0.0.26
+	github.com/origadmin/toolkits v0.1.19
+	github.com/origadmin/toolkits/codec v0.0.48
+	github.com/origadmin/toolkits/errors v0.0.30
 	google.golang.org/grpc v1.69.0
 	google.golang.org/protobuf v1.35.2
 )
@@ -25,7 +25,7 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
-	github.com/bytedance/sonic v1.12.5 // indirect
+	github.com/bytedance/sonic v1.12.6 // indirect
 	github.com/bytedance/sonic/loader v0.2.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
@@ -59,7 +59,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.33.0 // indirect
 	go.opentelemetry.io/otel/trace v1.33.0 // indirect
 	golang.org/x/arch v0.12.0 // indirect
-	golang.org/x/exp v0.0.0-20241210194714-1829a127f884 // indirect
+	golang.org/x/exp v0.0.0-20241215155358-4a5509556b9e // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
