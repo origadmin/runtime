@@ -66,17 +66,15 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 			log.Debugf("Resolving host IP: %s", host)
 			endpointStr, err := endpointParse("http", hostIP, serviceHttp.Addr)
 			if err == nil {
-				log.Debugf("Generated endpoint: %s", endpointStr)
 				serviceHttp.Endpoint = endpointStr
 			} else {
 				log.Errorf("Failed to generate endpoint: %v", err)
 			}
 		}
-		log.Infof("HTTP endpoint: %s", serviceHttp.Endpoint)
+		log.Debugf("HTTP endpoint: %s", serviceHttp.Endpoint)
 		if serviceHttp.Endpoint != "" {
 			endpoint, err := url.Parse(serviceHttp.Endpoint)
 			if err == nil {
-				log.Debugf("Parsed endpoint: %+v", endpoint)
 				options = append(options, transhttp.Endpoint(endpoint))
 			} else {
 				log.Errorf("Failed to parse endpoint: %v", err)

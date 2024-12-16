@@ -71,11 +71,10 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 				log.Errorf("Failed to generate endpoint: %v", err)
 			}
 		}
-		log.Infof("GRPC endpoint: %s", serviceGrpc.Endpoint)
+		log.Debugf("GRPC endpoint: %s", serviceGrpc.Endpoint)
 		if serviceGrpc.Endpoint != "" {
 			endpoint, err := url.Parse(serviceGrpc.Endpoint)
 			if err == nil {
-				log.Debugf("Parsed endpoint: %+v", endpoint)
 				options = append(options, transgrpc.Endpoint(endpoint))
 			} else {
 				log.Errorf("Failed to parse endpoint: %v", err)
