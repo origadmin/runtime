@@ -14,6 +14,7 @@ import (
 
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/toolkits/errors"
 	"github.com/origadmin/toolkits/helpers"
 )
@@ -39,7 +40,9 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 	}
 	if option.Discovery != nil {
 		endpoint := helpers.ServiceName(option.ServiceName)
-		options = append(options, transgrpc.WithEndpoint(endpoint),
+		log.Debugf("grpc service [%s] discovery endpoint [%s]", option.ServiceName, endpoint)
+		options = append(options,
+			transgrpc.WithEndpoint(endpoint),
 			transgrpc.WithDiscovery(option.Discovery))
 	}
 	if serviceSelector := cfg.GetSelector(); serviceSelector != nil {

@@ -10,6 +10,7 @@ import (
 	middlewareMetadata "github.com/go-kratos/kratos/v2/middleware/metadata"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/log"
 )
 
 func MetadataClient(ms []Middleware, ok bool, cmm *configv1.Middleware_Metadata) []Middleware {
@@ -28,6 +29,7 @@ func MetadataClient(ms []Middleware, ok bool, cmm *configv1.Middleware_Metadata)
 		}
 		options = append(options, middlewareMetadata.WithConstants(data))
 	}
+	log.Debug("[Middleware] Metadata client middleware enabled")
 	return append(ms, middlewareMetadata.Client(options...))
 }
 
@@ -47,5 +49,6 @@ func MetadataServer(ms []Middleware, ok bool, cmm *configv1.Middleware_Metadata)
 		}
 		options = append(options, middlewareMetadata.WithConstants(data))
 	}
+	log.Debug("[Middleware] Metadata server middleware enabled")
 	return append(ms, middlewareMetadata.Server(options...))
 }

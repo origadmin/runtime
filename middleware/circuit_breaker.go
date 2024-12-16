@@ -7,11 +7,14 @@ package middleware
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware/circuitbreaker"
+
+	"github.com/origadmin/runtime/log"
 )
 
 func CircuitBreakerClient(ms []Middleware, ok bool) []Middleware {
 	if !ok {
 		return ms
 	}
+	log.Debug("[Middleware] CircuitBreaker client middleware enabled")
 	return append(ms, circuitbreaker.Client())
 }

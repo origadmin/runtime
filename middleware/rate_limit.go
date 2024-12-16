@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/log"
 )
 
 func RateLimitServer(ms []Middleware, cfg *configv1.Middleware_RateLimiter) []Middleware {
@@ -27,5 +28,6 @@ func RateLimitServer(ms []Middleware, cfg *configv1.Middleware_RateLimiter) []Mi
 	default:
 		// do nothing
 	}
+	log.Debugf("[Middleware] Rate limit server middleware enabled with %v", cfg.GetName())
 	return append(ms, ratelimit.Server(options...))
 }

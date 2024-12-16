@@ -6,6 +6,8 @@
 package middleware
 
 import (
+	"github.com/go-kratos/kratos/v2/log"
+
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/middleware/security"
 )
@@ -26,6 +28,7 @@ func SecurityClient(middlewares []Middleware, cfg *configv1.Security, ss ...secu
 	if err != nil {
 		return middlewares
 	}
+	log.Debug("[Middleware] Security client middleware enabled")
 	return append(middlewares, middleware)
 }
 
@@ -38,6 +41,7 @@ func SecurityServer(middlewares []Middleware, cfg *configv1.Security, ss ...secu
 	if err != nil {
 		return middlewares
 	}
+	log.Debug("[Middleware] Security server middleware enabled")
 	return append(middlewares, middleware)
 }
 
@@ -58,6 +62,7 @@ func Security(middlewares []Middleware, cfg *configv1.Security, ss ...security.O
 	if err != nil {
 		return middlewares
 	}
+	log.Debug("[Middleware] Security middleware enabled,skipper, authN and authZ enabled")
 	middlewares = SkipperClient(middlewares, cfg, ss...)
 	return append(middlewares, authN, authZ)
 }
