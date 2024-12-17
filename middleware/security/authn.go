@@ -18,10 +18,8 @@ import (
 )
 
 const (
-	MetadataAuthZ            = "x-metadata-security-authz"
-	MetadataAuthN            = "x-metadata-security-authn"
-	MetadataSecurityTokenKey = "x-metadata-security-token-key"
-	MetadataSecuritySkipKey  = "x-metadata-security-skip-key"
+	MetadataAuthZ = "x-metadata-security-authz"
+	MetadataAuthN = "x-metadata-security-authn"
 )
 
 const (
