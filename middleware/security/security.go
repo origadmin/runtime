@@ -85,7 +85,12 @@ func defaultTokenParser(outer ...func(ctx context.Context) string) func(ctx cont
 	fns := []func(ctx context.Context) string{
 		security.FromToken,
 	}
-	fns = append(fns, outer...)
+	for i := range outer {
+		if outer[i] == nil {
+			continue
+		}
+		fns = append(fns, outer[i])
+	}
 	return func(ctx context.Context) string {
 		return tokenParser(ctx, fns)
 	}
