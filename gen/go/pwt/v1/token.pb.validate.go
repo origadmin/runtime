@@ -58,11 +58,20 @@ func (m *Token) validate(all bool) error {
 
 	// no validation rules for ClientId
 
-	// no validation rules for ClientSecret
-
-	if utf8.RuneCountInString(m.GetToken()) < 1 {
+	if utf8.RuneCountInString(m.GetUserId()) < 1 {
 		err := TokenValidationError{
-			field:  "Token",
+			field:  "UserId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetAccessToken()) < 1 {
+		err := TokenValidationError{
+			field:  "AccessToken",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -109,17 +118,6 @@ func (m *Token) validate(all bool) error {
 				cause:  err,
 			}
 		}
-	}
-
-	if utf8.RuneCountInString(m.GetSchemeType()) < 1 {
-		err := TokenValidationError{
-			field:  "SchemeType",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	if all {

@@ -17,15 +17,16 @@ option objc_class_prefix = "ORPW";
 
 // PWT is a web token that can be used to authenticate a user with protobuf services.
 message Token {
-  string client_id = 8 [
+  string client_id = 1 [
     json_name = "client_id",
     (gnostic.openapi.v3.property) = {description: "The client ID associated with the token."}
   ];
-  string client_secret = 9 [
-    json_name = "client_secret",
-    (gnostic.openapi.v3.property) = {description: "The client secret associated with the token."}
+  string user_id = 2 [
+    json_name = "user_id",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The ID of the user associated with the token."}
   ];
-  string token = 10 [
+  string access_token = 10 [
     json_name = "access_token",
     (validate.rules).string.min_len = 1,
     (gnostic.openapi.v3.property) = {description: "The web access token used for authentication."}
@@ -39,12 +40,7 @@ message Token {
     json_name = "expiration_time",
     (gnostic.openapi.v3.property) = {description: "The expiration time of the token."}
   ];
-  string scheme_type = 13 [
-    json_name = "scheme_type",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The type of the token scheme (e.g., Bearer)."}
-  ];
-  security.v1.Claims claims = 14 [
+  security.v1.Claims claims = 20 [
     json_name = "claims",
     (gnostic.openapi.v3.property) = {description: "The claims embedded in the token."}
   ]; // Claims
