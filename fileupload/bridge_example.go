@@ -147,7 +147,7 @@ func main() {
 				Addr: "",
 			},
 		},
-		Middleware: &configv1.Middleware{
+		Middlewares: &configv1.Middleware{
 			EnableLogging:        false,
 			EnableRecovery:       false,
 			EnableTracing:        false,
