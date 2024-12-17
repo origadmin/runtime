@@ -81,7 +81,7 @@ func tokenParser(ctx context.Context, fns []func(ctx context.Context) string) st
 	return ""
 }
 
-func defaultTokenParser(outer ...func(ctx context.Context) string) func(ctx context.Context) string {
+func aggregateTokenParsers(outer ...func(ctx context.Context) string) func(ctx context.Context) string {
 	fns := []func(ctx context.Context) string{
 		security.FromToken,
 	}
