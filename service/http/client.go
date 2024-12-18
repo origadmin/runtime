@@ -33,7 +33,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 			timeout = serviceHttp.Timeout.AsDuration()
 		}
 	}
-	options := []transhttp.ClientOption{
+	clientOptions := []transhttp.ClientOption{
 		transhttp.WithTimeout(timeout),
 		transhttp.WithMiddleware(option.Middlewares...),
 	}
@@ -41,7 +41,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 	if option.Discovery != nil {
 		endpoint := helpers.ServiceName(option.ServiceName)
 		log.Debugf("http service [%s] discovery endpoint [%s]", option.ServiceName, endpoint)
-		options = append(options,
+		clientOptions = append(clientOptions,
 			transhttp.WithEndpoint(endpoint),
 			transhttp.WithDiscovery(option.Discovery),
 		)
@@ -49,11 +49,11 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 
 	if serviceSelector := cfg.GetSelector(); serviceSelector != nil {
 		if len(option.NodeFilters) > 0 {
-			options = append(options, transhttp.WithNodeFilter(option.NodeFilters...))
+			clientOptions = append(clientOptions, transhttp.WithNodeFilter(option.NodeFilters...))
 		}
 	}
 
-	conn, err := transhttp.NewClient(ctx, options...)
+	conn, err := transhttp.NewClient(ctx, clientOptions...)
 	if err != nil {
 		return nil, errors.Errorf("dial http client [%s] failed: %s", cfg.GetName(), err.Error())
 	}

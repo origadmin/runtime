@@ -31,18 +31,18 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 		return nil, errors.New("service config is nil")
 	}
 	option := settings.ApplyDefaultsOrZero(ss...)
-	options := []transgrpc.ServerOption{
+	serverOptions := []transgrpc.ServerOption{
 		transgrpc.Middleware(option.Middlewares...),
 	}
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.Network != "" {
-			options = append(options, transgrpc.Network(serviceGrpc.Network))
+			serverOptions = append(serverOptions, transgrpc.Network(serviceGrpc.Network))
 		}
 		if serviceGrpc.Addr != "" {
-			options = append(options, transgrpc.Address(serviceGrpc.Addr))
+			serverOptions = append(serverOptions, transgrpc.Address(serviceGrpc.Addr))
 		}
 		if serviceGrpc.Timeout != nil {
-			options = append(options, transgrpc.Timeout(serviceGrpc.Timeout.AsDuration()))
+			serverOptions = append(serverOptions, transgrpc.Timeout(serviceGrpc.Timeout.AsDuration()))
 		}
 		if cfg.DynamicEndpoint && serviceGrpc.Endpoint == "" {
 			log.Debugf("Dynamic endpoint is enabled and endpoint is empty, generating endpoint")
@@ -75,13 +75,13 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 		if serviceGrpc.Endpoint != "" {
 			endpoint, err := url.Parse(serviceGrpc.Endpoint)
 			if err == nil {
-				options = append(options, transgrpc.Endpoint(endpoint))
+				serverOptions = append(serverOptions, transgrpc.Endpoint(endpoint))
 			} else {
 				log.Errorf("Failed to parse endpoint: %v", err)
 			}
 		}
 	}
 
-	srv := transgrpc.NewServer(options...)
+	srv := transgrpc.NewServer(serverOptions...)
 	return srv, nil
 }

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/origadmin/runtime/context"
+	"github.com/origadmin/runtime/log"
 )
 
 // v2Validator is an interface for validating protobuf messages.
@@ -30,9 +31,16 @@ func (v validateV2) ValidateV2(message proto.Message) error {
 }
 
 func (v validateV2) Validate(ctx context.Context, req any) error {
+	log.Debugf("validateV2 Validate called with request: %+v", req)
 	if message, ok := req.(proto.Message); ok {
-		return v.v.Validate(message)
+		log.Debugf("validateV2 Validate: request is a proto.Message")
+		err := v.v.Validate(message)
+		if err != nil {
+			log.Warnf("validateV2 Validate: validation failed: %v", err)
+		}
+		return err
 	}
+	log.Debugf("validateV2 Validate: request is not a proto.Message")
 	return nil
 }
 

@@ -8,12 +8,9 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/selector"
-
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
 type Option struct {
-	Config       *configv1.Service
 	ServiceName  string
 	Discovery    registry.Discovery
 	NodeFilters  []selector.NodeFilter
@@ -26,5 +23,23 @@ type OptionSetting = func(o *Option)
 func WithNodeFilter(filters ...selector.NodeFilter) OptionSetting {
 	return func(o *Option) {
 		o.NodeFilters = append(o.NodeFilters, filters...)
+	}
+}
+func WithDiscovery(serviceName string, discovery registry.Discovery) OptionSetting {
+	return func(o *Option) {
+		o.ServiceName = serviceName
+		o.Discovery = discovery
+	}
+}
+
+func WithMiddlewares(middlewares ...middleware.Middleware) OptionSetting {
+	return func(o *Option) {
+		o.Middlewares = append(o.Middlewares, middlewares...)
+	}
+}
+
+func WithEndpointFunc(endpointFunc func(scheme string, host string, addr string) (string, error)) OptionSetting {
+	return func(o *Option) {
+		o.EndpointFunc = endpointFunc
 	}
 }

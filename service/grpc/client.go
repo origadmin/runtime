@@ -34,24 +34,24 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 			timeout = serviceGrpc.Timeout.AsDuration()
 		}
 	}
-	options := []transgrpc.ClientOption{
+	clientOptions := []transgrpc.ClientOption{
 		transgrpc.WithTimeout(timeout),
 		transgrpc.WithMiddleware(option.Middlewares...),
 	}
 	if option.Discovery != nil {
 		endpoint := helpers.ServiceName(option.ServiceName)
 		log.Debugf("grpc service [%s] discovery endpoint [%s]", option.ServiceName, endpoint)
-		options = append(options,
+		clientOptions = append(clientOptions,
 			transgrpc.WithEndpoint(endpoint),
 			transgrpc.WithDiscovery(option.Discovery))
 	}
 	if serviceSelector := cfg.GetSelector(); serviceSelector != nil {
 		if len(option.NodeFilters) > 0 {
-			options = append(options, transgrpc.WithNodeFilter(option.NodeFilters...))
+			clientOptions = append(clientOptions, transgrpc.WithNodeFilter(option.NodeFilters...))
 		}
 	}
 
-	conn, err := transgrpc.DialInsecure(ctx, options...)
+	conn, err := transgrpc.DialInsecure(ctx, clientOptions...)
 	if err != nil {
 		return nil, errors.Errorf("dial grpc client [%s] failed: %s", cfg.GetName(), err.Error())
 	}

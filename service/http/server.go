@@ -32,18 +32,18 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 		return nil, errors.New("service config is nil")
 	}
 	option := settings.ApplyDefaultsOrZero(ss...)
-	options := []transhttp.ServerOption{
+	serverOptions := []transhttp.ServerOption{
 		transhttp.Middleware(option.Middlewares...),
 	}
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
 		if serviceHttp.Network != "" {
-			options = append(options, transhttp.Network(serviceHttp.Network))
+			serverOptions = append(serverOptions, transhttp.Network(serviceHttp.Network))
 		}
 		if serviceHttp.Addr != "" {
-			options = append(options, transhttp.Address(serviceHttp.Addr))
+			serverOptions = append(serverOptions, transhttp.Address(serviceHttp.Addr))
 		}
 		if serviceHttp.Timeout != nil {
-			options = append(options, transhttp.Timeout(serviceHttp.Timeout.AsDuration()))
+			serverOptions = append(serverOptions, transhttp.Timeout(serviceHttp.Timeout.AsDuration()))
 		}
 		if cfg.DynamicEndpoint && serviceHttp.Endpoint == "" {
 			log.Debugf("Generating endpoint using custom endpointURL function or default service discovery method")
@@ -75,13 +75,13 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 		if serviceHttp.Endpoint != "" {
 			endpoint, err := url.Parse(serviceHttp.Endpoint)
 			if err == nil {
-				options = append(options, transhttp.Endpoint(endpoint))
+				serverOptions = append(serverOptions, transhttp.Endpoint(endpoint))
 			} else {
 				log.Errorf("Failed to parse endpoint: %v", err)
 			}
 		}
 	}
 
-	srv := transhttp.NewServer(options...)
+	srv := transhttp.NewServer(serverOptions...)
 	return srv, nil
 }
