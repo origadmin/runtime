@@ -292,10 +292,6 @@ func (m *Service) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for HostName
-
-	// no validation rules for HostIp
-
 	if len(errors) > 0 {
 		return ServiceMultiError(errors)
 	}

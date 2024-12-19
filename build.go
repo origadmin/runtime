@@ -18,14 +18,13 @@ import (
 
 // builder is a struct that holds a map of ConfigBuilders and a map of RegistryBuilders.
 type builder struct {
-	configMux     sync.RWMutex
-	configs       map[string]ConfigBuilder
-	syncMux       sync.RWMutex
-	syncs         map[string]ConfigSyncer
-	registryMux   sync.RWMutex
-	registries    map[string]RegistryBuilder
-	serviceMux    sync.RWMutex
-	services      map[string]ServiceBuilder
+	configMux   sync.RWMutex
+	configs     map[string]ConfigBuilder
+	syncMux     sync.RWMutex
+	syncs       map[string]ConfigSyncer
+	registryMux sync.RWMutex
+	registry.Builder
+	*service.Service
 	middlewareMux sync.RWMutex
 	middlewares   map[string]MiddlewareBuilder
 }
@@ -40,8 +39,8 @@ func init() {
 func (b *builder) init() {
 	b.configs = make(map[string]ConfigBuilder)
 	b.syncs = make(map[string]ConfigSyncer)
-	b.registries = make(map[string]RegistryBuilder)
-	b.services = make(map[string]ServiceBuilder)
+	b.Builder = registry.New()
+	b.Service = service.New()
 	b.middlewares = make(map[string]MiddlewareBuilder)
 }
 
@@ -90,8 +89,8 @@ func NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registr
 }
 
 // RegisterRegistry registers a RegistryBuilder with the builder.
-func RegisterRegistry(name string, registryBuilder RegistryBuilder) {
-	build.RegisterRegistryBuilder(name, registryBuilder)
+func RegisterRegistry(name string, factory registry.Factory) {
+	build.RegisterRegistryBuilder(name, factory)
 }
 
 // NewMiddlewareClient creates a new Middleware with the builder.
@@ -144,13 +143,13 @@ func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...serv
 }
 
 // RegisterService registers a service builder with the provided name
-func RegisterService(name string, serviceBuilder ServiceBuilder) {
+func RegisterService(name string, serviceBuilder service.Builder) {
 	// Call the build.RegisterServiceBuilder function with the provided name and service builder
-	build.RegisterServiceBuilder(name, serviceBuilder)
+	build.Service.RegisterServiceBuilder(name, serviceBuilder)
 }
 
-// New creates a new Builder.
-func New() Builder {
+// NewBuilder creates a new Builder.
+func NewBuilder() Builder {
 	b := newBuilder()
 	b.init()
 	return b

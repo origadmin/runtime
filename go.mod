@@ -13,7 +13,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/origadmin/toolkits v0.1.21
+	github.com/origadmin/toolkits v0.1.22
 	github.com/origadmin/toolkits/codec v0.0.51
 	github.com/origadmin/toolkits/errors v0.0.33
 	google.golang.org/grpc v1.69.2

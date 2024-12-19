@@ -6,6 +6,7 @@
 package service
 
 import (
+	"errors"
 	"time"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
@@ -46,4 +47,8 @@ type (
 	RegisterGRPCClient = func(c *GRPCClient)
 	// RegisterHTTPClient register a HTTP client
 	RegisterHTTPClient = func(c *HTTPClient)
+)
+
+var (
+	ErrServiceNotFound = errors.New("service not found")
 )

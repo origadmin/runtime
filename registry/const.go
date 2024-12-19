@@ -6,13 +6,19 @@
 package registry
 
 import (
+	"errors"
+
 	"github.com/go-kratos/kratos/v2/registry"
 )
 
-// This is only alias type for registry
+// This is only alias type for wrapped
 type (
 	Watcher         = registry.Watcher
 	ServiceInstance = registry.ServiceInstance
 	Discovery       = registry.Discovery
 	Registrar       = registry.Registrar
+)
+
+var (
+	ErrRegistryNotFound = errors.New("registry not found")
 )

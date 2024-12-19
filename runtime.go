@@ -9,14 +9,20 @@ import (
 	"sync"
 
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
+	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/toolkits/errors"
+)
+
+const (
+	DefaultEnvPrefix = "ORIGADMIN_RUNTIME_SERVICE"
 )
 
 type Builder interface {
 	ConfigBuilder
 	RegistryBuilder
-	ServiceBuilder
+	service.Builder
 	MiddlewareBuilders
 
 	configBuildRegistry
@@ -35,6 +41,18 @@ var (
 var ErrNotFound = errors.String("not found")
 
 type Runtime struct {
-	Config   config.Config
-	Registry registry.Registry
+	EnvPrefix  string
+	Config     config.Config
+	Registry   registry.Registry
+	Middleware middleware.Middleware
+	Service    service.Service
+}
+
+func New(prefix string) Runtime {
+	if prefix == "" {
+		prefix = DefaultEnvPrefix
+	}
+	return Runtime{
+		EnvPrefix: prefix,
+	}
 }

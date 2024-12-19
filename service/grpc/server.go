@@ -21,7 +21,7 @@ import (
 
 const (
 	Scheme   = "grpc"
-	hostName = "ORIGADMIN_SERVICE_HOST"
+	hostName = "HOST"
 )
 
 // NewServer Create a GRPC server instance
