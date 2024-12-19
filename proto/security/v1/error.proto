@@ -36,4 +36,3 @@ enum AuthErrorReason {
 
   AUTH_ERROR_REASON_UNAUTHENTICATED = 1500;
 }
-

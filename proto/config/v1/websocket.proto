@@ -12,9 +12,9 @@ option java_package = "com.github.origadmin.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
 message WebSocket {
-    string network = 1 [json_name = "network"];
-    string addr = 2 [json_name = "addr"];
-    string path = 3 [json_name = "path"];
-    string codec = 4 [json_name = "codec"];
-    google.protobuf.Duration timeout = 5 [json_name = "timeout"];
+  string network = 1 [json_name = "network"];
+  string addr = 2 [json_name = "addr"];
+  string path = 3 [json_name = "path"];
+  string codec = 4 [json_name = "codec"];
+  google.protobuf.Duration timeout = 5 [json_name = "timeout"];
 }

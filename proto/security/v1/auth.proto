@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package security.v1;
 
+import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
-import "gnostic/openapi/v3/annotations.proto";
 
 option cc_enable_arenas = true;
 option csharp_namespace = "OrigAdmin.Runtime.Security.V1";
@@ -131,13 +131,13 @@ message JwtAuth {
 
 message AuthN {
   enum Type {
-    TYPE_UNSPECIFIED = 0;// default value not specified
-    TYPE_BASIC = 1;                           // Basic authentication
-    TYPE_BEARER = 2;                          // Bearer authentication
-    TYPE_DIGEST = 3;                          // Digest authentication
-    TYPE_OAUTH2 = 4;                          // OAuth2 authentication
-    TYPE_API_KEY = 5;                         // API Key authentication
-    TYPE_JWT = 6;                             // JWT authentication
+    TYPE_UNSPECIFIED = 0; // default value not specified
+    TYPE_BASIC = 1; // Basic authentication
+    TYPE_BEARER = 2; // Bearer authentication
+    TYPE_DIGEST = 3; // Digest authentication
+    TYPE_OAUTH2 = 4; // OAuth2 authentication
+    TYPE_API_KEY = 5; // API Key authentication
+    TYPE_JWT = 6; // JWT authentication
     // you can add more types as needed
     TYPE_AUTH_ADDITIONAL = 7;
   }
@@ -171,7 +171,7 @@ message AuthN {
     json_name = "jwt",
     (gnostic.openapi.v3.property) = {description: "The JWT authentication details."}
   ];
-  optional google.protobuf.Any additional = 16[
+  optional google.protobuf.Any additional = 16 [
     json_name = "additional",
     (gnostic.openapi.v3.property) = {description: "Additional properties for the authentication."}
   ];
@@ -188,7 +188,13 @@ message AuthZ {
   ];
   string user_type = 3 [
     json_name = "user_type",
-    (validate.rules).string = {in: ["admin", "user", "guest"]},
+    (validate.rules).string = {
+      in: [
+        "admin",
+        "user",
+        "guest"
+      ]
+    },
     (gnostic.openapi.v3.property) = {description: "The type of user, either 'admin', 'user', or 'guest'."}
   ];
   string username = 4 [

@@ -9,7 +9,6 @@ option java_outer_classname = "TlsConfigProto";
 option java_package = "com.github.origadmin.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
-
 // TLSConfig
 message TLSConfig {
   message File {

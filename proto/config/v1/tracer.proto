@@ -11,8 +11,8 @@ option objc_class_prefix = "ORC";
 
 // Trace config.
 message Trace {
-    // name of trace service
-    string name = 2 [json_name = "name"];
-    // endpoint is the endpoint of trace service
-    string endpoint = 3 [json_name = "endpoint"];
+  // name of trace service
+  string name = 2 [json_name = "name"];
+  // endpoint is the endpoint of trace service
+  string endpoint = 3 [json_name = "endpoint"];
 }

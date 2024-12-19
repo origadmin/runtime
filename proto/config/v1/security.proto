@@ -84,7 +84,18 @@ message AuthNConfig {
   string type = 3 [
     json_name = "type",
     (validate.rules).string = {
-      in: ["noop", "jwt", "oidc", "pre_shared_key", "basic_auth", "oauth2", "ldap", "x509", "saml", "api_key"]
+      in: [
+        "noop",
+        "jwt",
+        "oidc",
+        "pre_shared_key",
+        "basic_auth",
+        "oauth2",
+        "ldap",
+        "x509",
+        "saml",
+        "api_key"
+      ]
     }
   ];
   // JWT config for authorization
@@ -133,7 +144,12 @@ message AuthZConfig {
   string type = 3 [
     json_name = "type",
     (validate.rules).string = {
-      in: ["noop", "casbin", "opa", "zanzibar"]
+      in: [
+        "noop",
+        "casbin",
+        "opa",
+        "zanzibar"
+      ]
     }
   ];
   // Casbin config for authorization

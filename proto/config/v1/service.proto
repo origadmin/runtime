@@ -3,10 +3,10 @@ syntax = "proto3";
 package config.v1;
 
 import "config/v1/message.proto";
-import "config/v1/middleware.proto";
 import "config/v1/task.proto";
 import "config/v1/websocket.proto";
 import "google/protobuf/duration.proto";
+import "middleware/v1/middleware.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/gen/go/config/v1;configv1";
@@ -16,7 +16,6 @@ option java_package = "com.github.origadmin.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
 message Service {
-
   // GINS
   message GINS {
     string network = 1 [json_name = "network"];
@@ -80,9 +79,9 @@ message Service {
   config.v1.Message message = 200 [json_name = "message"];
   config.v1.Task task = 300 [json_name = "task"];
 
-  config.v1.Middleware middlewares = 400 [json_name = "middlewares"];
+  middleware.v1.Middleware middlewares = 400 [json_name = "middlewares"];
   Selector selector = 500 [json_name = "selector"];
 
   string host_name = 50 [json_name = "host_name"];
-  string host_ip =51 [json_name = "host_ip"];
+  string host_ip = 51 [json_name = "host_ip"];
 }
