@@ -9,29 +9,23 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	middlewareValidate "github.com/go-kratos/kratos/v2/middleware/validate"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	validatorv1 "github.com/origadmin/runtime/gen/go/middleware/validator/v1"
 	"github.com/origadmin/runtime/middleware/validate"
 )
 
 // Validate is a middleware validator.
 // Deprecated: use ValidateServer
-func Validate(ms []Middleware, ok bool, validator *configv1.Middleware_Validator) []Middleware {
-	if !ok {
-		return ms
-	}
+func Validate(ms []Middleware, validator *validatorv1.Validator) []Middleware {
 	switch validate.Version(validator.Version) {
 	case validate.V1:
 		return append(ms, validateMiddlewareV1(validator))
 	case validate.V2:
-		return ValidateServer(ms, ok, validator)
+		return ValidateServer(ms, validator)
 	}
 	return ms
 }
 
-func ValidateServer(ms []Middleware, ok bool, validator *configv1.Middleware_Validator) []Middleware {
-	if !ok {
-		return ms
-	}
+func ValidateServer(ms []Middleware, validator *validatorv1.Validator) []Middleware {
 	opts := []validate.OptionSetting{
 		validate.WithFailFast(validator.GetFailFast()),
 	}
@@ -44,6 +38,6 @@ func ValidateServer(ms []Middleware, ok bool, validator *configv1.Middleware_Val
 	return ms
 }
 
-func validateMiddlewareV1(_ *configv1.Middleware_Validator) middleware.Middleware {
+func validateMiddlewareV1(_ *validatorv1.Validator) middleware.Middleware {
 	return middlewareValidate.Validator()
 }

@@ -8,7 +8,7 @@ require (
 	github.com/bufbuild/protovalidate-go v0.8.0
 	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/go-kratos/kratos/v2 v2.8.2
-	github.com/goexts/generic v0.1.4
+	github.com/goexts/generic v0.1.5
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0

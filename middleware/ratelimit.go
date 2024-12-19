@@ -8,11 +8,11 @@ package middleware
 import (
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	ratelimiterv1 "github.com/origadmin/runtime/gen/go/middleware/ratelimiter/v1"
 	"github.com/origadmin/runtime/log"
 )
 
-func RateLimitServer(ms []Middleware, cfg *configv1.Middleware_RateLimiter) []Middleware {
+func RateLimitServer(ms []Middleware, cfg *ratelimiterv1.RateLimiter) []Middleware {
 	if cfg == nil {
 		return ms
 	}

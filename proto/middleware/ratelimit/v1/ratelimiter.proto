@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-package middleware.ratelimiter.v1;
+package middleware.ratelimit.v1;
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
-option go_package = "github.com/origadmin/runtime/gen/go/middleware/ratelimiter/v1;ratelimiterv1";
+option go_package = "github.com/origadmin/runtime/gen/go/middleware/ratelimit/v1;ratelimitv1";
 option java_multiple_files = true;
-option java_outer_classname = "RateLimiterProto";
-option java_package = "com.github.origadmin.runtime.middleware.ratelimiter.v1";
+option java_outer_classname = "RateLimitProto";
+option java_package = "com.github.origadmin.runtime.middleware.ratelimit.v1";
 option objc_class_prefix = "OMM";
-option php_namespace = "OrigAdmin\\Runtime\\Middleware\\RateLimiter\\V1";
+option php_namespace = "OrigAdmin\\Runtime\\Middleware\\RateLimit\\V1";
 
 // Rate limiter
 message RateLimiter {
@@ -26,9 +26,9 @@ message RateLimiter {
     google.protobuf.Duration expiration = 1 [json_name = "expiration"];
     google.protobuf.Duration cleanup_interval = 2 [json_name = "cleanup_interval"];
   }
-
+  bool enabled = 1 [json_name = "enabled"];
   // rate limiter name, supported: bbr, memory, redis.
-  string name = 1 [
+  string name = 2 [
     json_name = "name",
     (validate.rules).string = {
       in: [
@@ -39,7 +39,8 @@ message RateLimiter {
     }
   ];
   // The number of seconds in a rate limit window
-  int32 period = 2 [json_name = "period"];
+  int32 period = 3 [json_name = "period"];
+
   // The number of requests allowed in a window of time
   int32 x_ratelimit_limit = 5 [json_name = "x_ratelimit_limit"];
   // The number of requests that can still be made in the current window of time

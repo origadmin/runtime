@@ -5,11 +5,14 @@
 package middleware
 
 import (
+	"github.com/go-kratos/kratos/v2/log"
+
 	"github.com/origadmin/runtime/middleware/security"
 )
 
 type Option struct {
 	securities []security.OptionSetting
+	Logger     log.Logger
 }
 
 type OptionSetting = func(*Option)

@@ -42,6 +42,7 @@ message UserMetric {
 
 // Metrics
 message Metrics {
+  bool enabled = 1 [json_name = "enabled"];
   // System-generated timestamp for the metrics report
   // int64 report_timestamp = 1 [json_name = "report_timestamp"];
   // System-generated unique identifier for the metrics report

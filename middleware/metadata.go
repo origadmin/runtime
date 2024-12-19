@@ -9,24 +9,18 @@ import (
 	"github.com/go-kratos/kratos/v2/metadata"
 	middlewareMetadata "github.com/go-kratos/kratos/v2/middleware/metadata"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/log"
 )
 
-func MetadataClient(ms []Middleware, ok bool, cmm *configv1.Middleware_Metadata) []Middleware {
-	if !ok {
-		log.Debug("[MetadataClient] Middleware is not enabled")
-		return ms
-	}
-
+func MetadataClient(ms []Middleware, cfg *middlewarev1.Middleware_Metadata) []Middleware {
 	log.Debug("[MetadataClient] Middleware is enabled")
-
 	var options []middlewareMetadata.Option
-	if prefix := cmm.GetPrefix(); prefix != "" {
+	if prefix := cfg.GetPrefix(); prefix != "" {
 		log.Debug("[MetadataClient] Propagated prefix: ", prefix)
 		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefix))
 	}
-	if metaSource := cmm.GetData(); len(metaSource) > 0 {
+	if metaSource := cfg.GetData(); len(metaSource) > 0 {
 		log.Debug("[MetadataClient] Metadata source: ", metaSource)
 		data := make(metadata.Metadata, len(metaSource))
 		for k, v := range metaSource {
@@ -39,20 +33,15 @@ func MetadataClient(ms []Middleware, ok bool, cmm *configv1.Middleware_Metadata)
 	return append(ms, middlewareMetadata.Client(options...))
 }
 
-func MetadataServer(ms []Middleware, ok bool, cmm *configv1.Middleware_Metadata) []Middleware {
-	if !ok {
-		log.Debug("[MetadataServer] Middleware is not enabled")
-		return ms
-	}
-
+func MetadataServer(ms []Middleware, cfg *middlewarev1.Middleware_Metadata) []Middleware {
 	log.Debug("[MetadataServer] Middleware is enabled")
 
 	var options []middlewareMetadata.Option
-	if prefix := cmm.GetPrefix(); prefix != "" {
+	if prefix := cfg.GetPrefix(); prefix != "" {
 		log.Debug("[MetadataServer] Propagated prefix: ", prefix)
 		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefix))
 	}
-	if metaSource := cmm.GetData(); len(metaSource) > 0 {
+	if metaSource := cfg.GetData(); len(metaSource) > 0 {
 		log.Debug("[MetadataServer] Metadata source: ", metaSource)
 		data := metadata.Metadata{}
 		for k, v := range metaSource {

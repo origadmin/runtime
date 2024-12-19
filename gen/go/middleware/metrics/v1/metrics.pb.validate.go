@@ -200,6 +200,8 @@ func (m *Metrics) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Enabled
+
 	for idx, item := range m.GetUserMetrics() {
 		_, _ = idx, item
 

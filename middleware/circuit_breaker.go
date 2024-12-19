@@ -11,10 +11,7 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func CircuitBreakerClient(ms []Middleware, ok bool) []Middleware {
-	if !ok {
-		return ms
-	}
+func CircuitBreakerClient(ms []Middleware) []Middleware {
 	log.Debug("[Middleware] CircuitBreaker client middleware enabled")
 	return append(ms, circuitbreaker.Client())
 }

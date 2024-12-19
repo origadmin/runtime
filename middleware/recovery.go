@@ -11,10 +11,7 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func Recovery(ms []Middleware, ok bool) []Middleware {
-	if ok {
-		log.Infof("[Middleware] Recovery: %v", ok)
-		ms = append(ms, recovery.Recovery())
-	}
-	return ms
+func Recovery(ms []Middleware) []Middleware {
+	log.Infof("[Middleware] Recovery middleware enabled")
+	return append(ms, recovery.Recovery())
 }

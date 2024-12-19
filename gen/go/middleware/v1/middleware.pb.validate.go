@@ -57,46 +57,13 @@ func (m *Middleware) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for EnableLogging
+	// no validation rules for Logging
 
-	// no validation rules for EnableRecovery
+	// no validation rules for Recovery
 
-	// no validation rules for EnableTracing
+	// no validation rules for Tracing
 
-	// no validation rules for EnableValidate
-
-	// no validation rules for EnableCircuitBreaker
-
-	// no validation rules for EnableMetadata
-
-	if all {
-		switch v := interface{}(m.GetRateLimiter()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "RateLimiter",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "RateLimiter",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRateLimiter()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "RateLimiter",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for CircuitBreaker
 
 	if all {
 		switch v := interface{}(m.GetMetadata()).(type) {
@@ -121,6 +88,35 @@ func (m *Middleware) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return MiddlewareValidationError{
 				field:  "Metadata",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetRateLimiter()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, MiddlewareValidationError{
+					field:  "RateLimiter",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, MiddlewareValidationError{
+					field:  "RateLimiter",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetRateLimiter()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return MiddlewareValidationError{
+				field:  "RateLimiter",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -179,6 +175,35 @@ func (m *Middleware) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return MiddlewareValidationError{
 				field:  "Validator",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetJwt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, MiddlewareValidationError{
+					field:  "Jwt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, MiddlewareValidationError{
+					field:  "Jwt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetJwt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return MiddlewareValidationError{
+				field:  "Jwt",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -283,6 +308,8 @@ func (m *Middleware_Metadata) validate(all bool) error {
 	}
 
 	var errors []error
+
+	// no validation rules for Enabled
 
 	// no validation rules for Prefix
 
