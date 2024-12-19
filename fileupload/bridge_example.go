@@ -9,6 +9,10 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	metricsv1 "github.com/origadmin/runtime/gen/go/middleware/metrics/v1"
+	ratelimitv1 "github.com/origadmin/runtime/gen/go/middleware/ratelimit/v1"
+	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	validatorv1 "github.com/origadmin/runtime/gen/go/middleware/validator/v1"
 	"github.com/origadmin/toolkits/fileupload"
 )
 
@@ -147,95 +151,48 @@ func main() {
 				Addr: "",
 			},
 		},
-		Middlewares: &configv1.Middleware{
-			EnableLogging:        false,
-			EnableRecovery:       false,
-			EnableTracing:        false,
-			EnableValidate:       false,
-			EnableCircuitBreaker: false,
-			EnableMetadata:       false,
-			RateLimiter: &configv1.Middleware_RateLimiter{
+		Middlewares: &middlewarev1.Middleware{
+			Logging:        true,
+			Recovery:       true,
+			Tracing:        true,
+			CircuitBreaker: true,
+			Metadata: &middlewarev1.Middleware_Metadata{
+				Prefix: "",
+				Data:   nil,
+			},
+			RateLimiter: &ratelimitv1.RateLimiter{
 				Name:                "",
 				Period:              0,
 				XRatelimitLimit:     0,
 				XRatelimitRemaining: 0,
 				XRatelimitReset:     0,
 				RetryAfter:          0,
-				Memory: &configv1.Middleware_RateLimiter_Memory{
+				Memory: &ratelimitv1.RateLimiter_Memory{
 					Expiration:      durationpb.New(3 * time.Minute),
 					CleanupInterval: durationpb.New(3 * time.Minute),
 				},
-				Redis: &configv1.Middleware_RateLimiter_Redis{
+				Redis: &ratelimitv1.RateLimiter_Redis{
 					Addr:     "",
 					Username: "",
 					Password: "",
 					Db:       0,
 				},
 			},
-			Metadata: &configv1.Middleware_Metadata{
-				Prefix: "",
-				Data:   nil,
-			},
-			Metrics: &configv1.Middleware_Metrics{
+			Metrics: &metricsv1.Metrics{
 				SupportedMetrics: nil,
 				UserMetrics:      nil,
 			},
-			Validator: &configv1.Middleware_Validator{
+			Validator: &validatorv1.Validator{
 				Version:  0,
 				FailFast: false,
 			},
-			Security: &configv1.Security{
-				PublicPaths: nil,
-				Authz: &configv1.AuthZConfig{
-					Disabled:    false,
-					PublicPaths: nil,
-					Type:        "",
-					Casbin: &configv1.AuthZConfig_CasbinConfig{
-						PolicyFile: "",
-						ModelFile:  "",
-					},
-					Opa: &configv1.AuthZConfig_OpaConfig{
-						PolicyFile: "",
-						DataFile:   "",
-						ServerUrl:  "",
-						RegoFile:   "",
-					},
-					Zanzibar: &configv1.AuthZConfig_ZanzibarConfig{
-						ApiEndpoint:      "",
-						Namespace:        "",
-						ReadConsistency:  "",
-						WriteConsistency: "",
-					},
-				},
-				Authn: &configv1.AuthNConfig{
-					Disabled:    false,
-					PublicPaths: nil,
-					Type:        "",
-					Jwt: &configv1.AuthNConfig_JWTConfig{
-						Algorithm:     "",
-						SigningKey:    "",
-						OldSigningKey: "",
-						ExpireTime:    durationpb.New(3 * time.Minute),
-						RefreshTime:   durationpb.New(3 * time.Minute),
-						CacheName:     "",
-					},
-					Oidc: &configv1.AuthNConfig_OIDCConfig{
-						IssuerUrl: "",
-						Audience:  "",
-						Algorithm: "",
-					},
-					PreSharedKey: &configv1.AuthNConfig_PreSharedKeyConfig{
-						SecretKeys: nil,
-					},
-				},
-			},
+			Jwt:      nil,
+			Selector: nil,
 		},
 		Selector: &configv1.Service_Selector{
 			Version: "",
 			Builder: "",
 		},
-		HostName: "",
-		HostIp:   "",
 	})
 	if err != nil {
 		log.Fatal(err)

@@ -17,12 +17,13 @@ import (
 )
 
 type (
-	// ServiceBuildRegistry is an interface that defines a method for registering a service builder.
-	serviceBuildRegistry interface {
-		RegisterServiceBuilder(name string, builder Builder)
-	}
-	// Builder is an interface that defines a method for creating a new service.
+	// Builder is an interface that defines a method for registering a service builder.
 	Builder interface {
+		Factory
+		RegisterServiceBuilder(name string, factory Factory)
+	}
+	// Factory is an interface that defines a method for creating a new service.
+	Factory interface {
 		NewGRPCServer(*configv1.Service, ...OptionSetting) (*GRPCServer, error)
 		NewHTTPServer(*configv1.Service, ...OptionSetting) (*HTTPServer, error)
 		NewGRPCClient(context.Context, *configv1.Service, ...OptionSetting) (*GRPCClient, error)
@@ -31,13 +32,13 @@ type (
 )
 type Service struct {
 	serviceMux sync.RWMutex
-	services   map[string]Builder
+	services   map[string]Factory
 }
 
-func (s *Service) RegisterServiceBuilder(name string, builder Builder) {
+func (s *Service) RegisterServiceBuilder(name string, factory Factory) {
 	s.serviceMux.Lock()
 	defer s.serviceMux.Unlock()
-	s.services[name] = builder
+	s.services[name] = factory
 }
 
 // NewGRPCServer creates a new gRPC server based on the given ServiceConfig.
@@ -80,8 +81,8 @@ func (s *Service) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss .
 	return nil, ErrServiceNotFound
 }
 
-func New() *Service {
+func New() Builder {
 	return &Service{
-		services: make(map[string]Builder),
+		services: make(map[string]Factory),
 	}
 }

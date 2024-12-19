@@ -54,12 +54,10 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 			}
 
 			var host string
-			if cfg.HostName != "" {
-				host = env.Var(cfg.HostName)
-			} else {
-				host = env.Var(hostName)
+			if option.Prefix != "" {
+				host = env.Var(option.Prefix, hostName)
 			}
-			hostIP := cfg.HostIp
+			hostIP := option.HostIp
 			if hostIP == "" {
 				hostIP = net.HostAddr(host)
 			}

@@ -124,7 +124,7 @@ func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			}
 			if !allowed {
 				log.Errorf("NewAuthZServer: authorization denied")
-				return nil, ErrInvalidAuth
+				return nil, ErrInvalidAuthentication
 			}
 
 			log.Debugf("NewAuthZServer: returning handler with context %+v and request %+v", ctx, req)
@@ -190,7 +190,7 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 			}
 			if !allowed {
 				log.Errorf("NewAuthZ: authorization denied")
-				return nil, ErrInvalidAuth
+				return nil, ErrInvalidAuthorization
 			}
 
 			log.Debugf("NewAuthZ: authorization successful, proceeding with request")

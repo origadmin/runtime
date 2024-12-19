@@ -24,7 +24,7 @@ type (
 	// ConfigBuilder is an interface that defines a method for creating a new config.
 	ConfigBuilder interface {
 		// NewConfig creates a new config using the given SourceConfig and a list of Options.
-		NewConfig(*configv1.SourceConfig, ...config.SourceOptionSetting) (config.Config, error)
+		NewConfig(*configv1.SourceConfig, ...config.SourceOptionSetting) (config.SourceConfig, error)
 	}
 
 	// ConfigSyncer is an interface that defines a method for synchronizing a config.
@@ -34,16 +34,16 @@ type (
 )
 
 // ConfigBuildFunc is a function type that takes a SourceConfig and a list of Options and returns a Selector and an error.
-type ConfigBuildFunc func(*configv1.SourceConfig, ...config.SourceOptionSetting) (config.Config, error)
+type ConfigBuildFunc func(*configv1.SourceConfig, ...config.SourceOptionSetting) (config.SourceConfig, error)
 
 // NewConfig is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn ConfigBuildFunc) NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.Config, error) {
+func (fn ConfigBuildFunc) NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.SourceConfig, error) {
 	// Call the function with the given SourceConfig and a list of Options.
 	return fn(cfg, ss...)
 }
 
 // NewConfig creates a new Selector object based on the given SourceConfig and options.
-func (b *builder) NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.Config, error) {
+func (b *builder) NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.SourceConfig, error) {
 	b.configMux.RLock()
 	defer b.configMux.RUnlock()
 	configBuilder, ok := b.configs[cfg.Type]

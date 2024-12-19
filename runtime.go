@@ -21,13 +21,11 @@ const (
 
 type Builder interface {
 	ConfigBuilder
-	RegistryBuilder
+	registry.Builder
 	service.Builder
 	MiddlewareBuilders
 
 	configBuildRegistry
-	registryBuildRegistry
-	serviceBuildRegistry
 	middlewareBuildRegistry
 }
 

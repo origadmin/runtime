@@ -13,6 +13,7 @@ type (
 
 	// Builder is an interface that defines a method for registering a RegistryBuilder.
 	Builder interface {
+		Factory
 		RegisterRegistryBuilder(string, Factory)
 	}
 

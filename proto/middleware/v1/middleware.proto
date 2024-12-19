@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package middleware.v1;
 
-import "config/v1/security.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 import "middleware/jwt/v1/jwt.proto";

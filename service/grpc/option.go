@@ -11,6 +11,8 @@ import (
 )
 
 type Option struct {
+	Prefix       string
+	HostIp       string
 	ServiceName  string
 	Discovery    registry.Discovery
 	NodeFilters  []selector.NodeFilter
@@ -41,5 +43,16 @@ func WithMiddlewares(middlewares ...middleware.Middleware) OptionSetting {
 func WithEndpointFunc(endpointFunc func(scheme string, host string, addr string) (string, error)) OptionSetting {
 	return func(o *Option) {
 		o.EndpointFunc = endpointFunc
+	}
+}
+func WithPrefix(prefix string) OptionSetting {
+	return func(o *Option) {
+		o.Prefix = prefix
+	}
+}
+
+func WithHostIp(hostIp string) OptionSetting {
+	return func(o *Option) {
+		o.HostIp = hostIp
 	}
 }

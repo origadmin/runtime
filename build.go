@@ -18,15 +18,35 @@ import (
 
 // builder is a struct that holds a map of ConfigBuilders and a map of RegistryBuilders.
 type builder struct {
-	configMux   sync.RWMutex
-	configs     map[string]ConfigBuilder
-	syncMux     sync.RWMutex
-	syncs       map[string]ConfigSyncer
-	registryMux sync.RWMutex
-	registry.Builder
-	*service.Service
-	middlewareMux sync.RWMutex
-	middlewares   map[string]MiddlewareBuilder
+	configMux       sync.RWMutex
+	configs         map[string]ConfigBuilder
+	syncMux         sync.RWMutex
+	syncs           map[string]ConfigSyncer
+	registryMux     sync.RWMutex
+	RegistryBuilder registry.Builder
+	ServiceBuilder  service.Builder
+	middlewareMux   sync.RWMutex
+	middlewares     map[string]MiddlewareBuilder
+}
+
+func (b *builder) NewGRPCServer(c *configv1.Service, setting ...service.OptionSetting) (*service.GRPCServer, error) {
+	return b.ServiceBuilder.NewGRPCServer(c, setting...)
+}
+
+func (b *builder) NewHTTPServer(c *configv1.Service, setting ...service.OptionSetting) (*service.HTTPServer, error) {
+	return b.ServiceBuilder.NewHTTPServer(c, setting...)
+}
+
+func (b *builder) NewGRPCClient(c context.Context, c2 *configv1.Service, setting ...service.OptionSetting) (*service.GRPCClient, error) {
+	return b.ServiceBuilder.NewGRPCClient(c, c2, setting...)
+}
+
+func (b *builder) NewHTTPClient(c context.Context, c2 *configv1.Service, setting ...service.OptionSetting) (*service.HTTPClient, error) {
+	return b.ServiceBuilder.NewHTTPClient(c, c2, setting...)
+}
+
+func (b *builder) RegisterServiceBuilder(name string, factory service.Factory) {
+	b.ServiceBuilder.RegisterServiceBuilder(name, factory)
 }
 
 // init initializes the builder struct.
@@ -39,8 +59,8 @@ func init() {
 func (b *builder) init() {
 	b.configs = make(map[string]ConfigBuilder)
 	b.syncs = make(map[string]ConfigSyncer)
-	b.Builder = registry.New()
-	b.Service = service.New()
+	b.RegistryBuilder = registry.New()
+	b.ServiceBuilder = service.New()
 	b.middlewares = make(map[string]MiddlewareBuilder)
 }
 
@@ -55,7 +75,7 @@ func Global() Builder {
 }
 
 // NewConfig creates a new Selector using the registered ConfigBuilder.
-func NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.Config, error) {
+func NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.SourceConfig, error) {
 	return build.NewConfig(cfg, ss...)
 }
 
@@ -145,7 +165,7 @@ func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...serv
 // RegisterService registers a service builder with the provided name
 func RegisterService(name string, serviceBuilder service.Builder) {
 	// Call the build.RegisterServiceBuilder function with the provided name and service builder
-	build.Service.RegisterServiceBuilder(name, serviceBuilder)
+	build.ServiceBuilder.RegisterServiceBuilder(name, serviceBuilder)
 }
 
 // NewBuilder creates a new Builder.

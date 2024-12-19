@@ -12,17 +12,17 @@ import (
 
 // NewRegistrar creates a new Registrar object based on the given RegistryConfig.
 func (b *builder) NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Registrar, error) {
-	return b.Builder.NewRegistrar(cfg, ss...)
+	return b.RegistryBuilder.NewRegistrar(cfg, ss...)
 }
 
 // NewDiscovery creates a new discovery object based on the given RegistryConfig.
 func (b *builder) NewDiscovery(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Discovery, error) {
-	return b.Builder.NewDiscovery(cfg, ss...)
+	return b.RegistryBuilder.NewDiscovery(cfg, ss...)
 }
 
 // RegisterRegistryBuilder registers a new RegistryBuilder with the given name.
 func (b *builder) RegisterRegistryBuilder(name string, factory registry.Factory) {
-	b.Builder.RegisterRegistryBuilder(name, factory)
+	b.RegistryBuilder.RegisterRegistryBuilder(name, factory)
 }
 
 // RegisterRegistryFunc registers a new RegistryBuilder with the given name and functions.

@@ -19,11 +19,12 @@ const (
 )
 
 var (
-	ErrInvalidToken  = securityv1.ErrorAuthErrorReasonBearerTokenMissing("bearer token missing")
-	ErrInvalidClaims = securityv1.ErrorAuthErrorReasonInvalidClaims("invalid bearer token")
-	ErrMissingClaims = securityv1.ErrorAuthErrorReasonInvalidClaims("missing scheme")
-	ErrMissingToken  = securityv1.ErrorAuthErrorReasonBearerTokenMissing("bearer token missing")
-	ErrInvalidAuth   = securityv1.ErrorAuthErrorReasonUnauthenticated("unauthenticated")
+	ErrInvalidToken          = securityv1.ErrorSecurityErrorReasonBearerTokenMissing("bearer token missing")
+	ErrInvalidClaims         = securityv1.ErrorSecurityErrorReasonInvalidClaims("invalid bearer token")
+	ErrMissingClaims         = securityv1.ErrorSecurityErrorReasonInvalidClaims("missing scheme")
+	ErrMissingToken          = securityv1.ErrorSecurityErrorReasonBearerTokenMissing("bearer token missing")
+	ErrInvalidAuthentication = securityv1.ErrorSecurityErrorReasonInvalidAuthentication("unauthenticated")
+	ErrInvalidAuthorization  = securityv1.ErrorSecurityErrorReasonInvalidAuthorization("unauthorized")
 )
 
 func mergePublic(public []string, paths ...string) []string {

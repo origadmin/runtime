@@ -21,7 +21,7 @@ import (
 
 const (
 	Scheme   = "http"
-	hostName = "ORIGADMIN_SERVICE_HOST"
+	hostName = "HOST"
 )
 
 // NewServer Create an HTTP server instance.
@@ -54,12 +54,10 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 				endpointParse = option.EndpointFunc
 			}
 			var host string
-			if cfg.HostName != "" {
-				host = env.Var(cfg.HostName)
-			} else {
-				host = env.Var(hostName)
+			if option.Prefix != "" {
+				host = env.Var(option.Prefix, hostName)
 			}
-			hostIP := cfg.HostIp
+			hostIP := option.HostIp
 			if hostIP == "" {
 				hostIP = net.HostAddr(host)
 			}
