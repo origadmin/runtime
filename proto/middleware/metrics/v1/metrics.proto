@@ -10,6 +10,7 @@ option java_multiple_files = true;
 option java_outer_classname = "CircuitBreakerProto";
 option java_package = "com.github.origadmin.runtime.middleware.metrics.v1";
 option objc_class_prefix = "OMM";
+option php_namespace = "OrigAdmin\\Runtime\\Middleware\\Metric\\V1";
 
 message UserMetric {
   // Timestamp: indicates the time of indicator data

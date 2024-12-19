@@ -11,206 +11,234 @@ import (
 // is compatible with the kratos package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
-func IsAuthErrorReasonUnspecified(err error) bool {
+func IsSecurityErrorReasonUnspecified(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_UNSPECIFIED.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_UNSPECIFIED.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonUnspecified(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_UNSPECIFIED.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonUnspecified(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_UNSPECIFIED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonInvalidClaims(err error) bool {
+// authentication starts at 1000, and ends at 1999
+func IsSecurityErrorReasonInvalidAuthentication(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_INVALID_CLAIMS.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUTHENTICATION.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonInvalidClaims(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_CLAIMS.String(), fmt.Sprintf(format, args...))
+// authentication starts at 1000, and ends at 1999
+func ErrorSecurityErrorReasonInvalidAuthentication(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUTHENTICATION.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonInvalidBearerToken(err error) bool {
+func IsSecurityErrorReasonInvalidClaims(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_INVALID_BEARER_TOKEN.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_CLAIMS.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonInvalidBearerToken(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_BEARER_TOKEN.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonInvalidClaims(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_CLAIMS.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonInvalidSubject(err error) bool {
+func IsSecurityErrorReasonInvalidBearerToken(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_INVALID_SUBJECT.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_BEARER_TOKEN.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonInvalidSubject(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_SUBJECT.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonInvalidBearerToken(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_BEARER_TOKEN.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonInvalidAudience(err error) bool {
+func IsSecurityErrorReasonInvalidSubject(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_INVALID_AUDIENCE.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_SUBJECT.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonInvalidAudience(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_AUDIENCE.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonInvalidSubject(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_SUBJECT.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonInvalidIssuer(err error) bool {
+func IsSecurityErrorReasonInvalidAudience(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_INVALID_ISSUER.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUDIENCE.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonInvalidIssuer(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_ISSUER.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonInvalidAudience(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUDIENCE.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonInvalidExpiration(err error) bool {
+func IsSecurityErrorReasonInvalidIssuer(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_INVALID_EXPIRATION.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_ISSUER.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonInvalidExpiration(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_EXPIRATION.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonInvalidIssuer(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_ISSUER.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonTokenNotFound(err error) bool {
+func IsSecurityErrorReasonInvalidExpiration(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_TOKEN_NOT_FOUND.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_EXPIRATION.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonTokenNotFound(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_TOKEN_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonInvalidExpiration(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_EXPIRATION.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonBearerTokenMissing(err error) bool {
+func IsSecurityErrorReasonTokenNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_BEARER_TOKEN_MISSING.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_TOKEN_NOT_FOUND.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonBearerTokenMissing(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_BEARER_TOKEN_MISSING.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonTokenNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_TOKEN_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonTokenExpired(err error) bool {
+func IsSecurityErrorReasonBearerTokenMissing(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_TOKEN_EXPIRED.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_BEARER_TOKEN_MISSING.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonTokenExpired(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_TOKEN_EXPIRED.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonBearerTokenMissing(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_BEARER_TOKEN_MISSING.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonUnsupportedSigningMethod(err error) bool {
+func IsSecurityErrorReasonTokenExpired(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_TOKEN_EXPIRED.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonUnsupportedSigningMethod(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonTokenExpired(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_TOKEN_EXPIRED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonMissingKeyFunc(err error) bool {
+func IsSecurityErrorReasonUnsupportedSigningMethod(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_MISSING_KEY_FUNC.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonMissingKeyFunc(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_MISSING_KEY_FUNC.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonUnsupportedSigningMethod(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonSignTokenFailed(err error) bool {
+func IsSecurityErrorReasonMissingKeyFunc(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_SIGN_TOKEN_FAILED.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_MISSING_KEY_FUNC.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonSignTokenFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_SIGN_TOKEN_FAILED.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonMissingKeyFunc(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_MISSING_KEY_FUNC.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonGetKeyFailed(err error) bool {
+func IsSecurityErrorReasonSignTokenFailed(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_GET_KEY_FAILED.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_SIGN_TOKEN_FAILED.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonGetKeyFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_GET_KEY_FAILED.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonSignTokenFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_SIGN_TOKEN_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonNoAtHash(err error) bool {
+func IsSecurityErrorReasonGetKeyFailed(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_NO_AT_HASH.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_GET_KEY_FAILED.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonNoAtHash(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_NO_AT_HASH.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonGetKeyFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_GET_KEY_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonInvalidAtHash(err error) bool {
+// authorization starts at 2000, and ends at 2999
+func IsSecurityErrorReasonInvalidAuthorization(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_INVALID_AT_HASH.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUTHORIZATION.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonInvalidAtHash(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_INVALID_AT_HASH.String(), fmt.Sprintf(format, args...))
+// authorization starts at 2000, and ends at 2999
+func ErrorSecurityErrorReasonInvalidAuthorization(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUTHORIZATION.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAuthErrorReasonUnauthenticated(err error) bool {
+func IsSecurityErrorReasonNoAtHash(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == AuthErrorReason_AUTH_ERROR_REASON_UNAUTHENTICATED.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_NO_AT_HASH.String() && e.Code == 500
 }
 
-func ErrorAuthErrorReasonUnauthenticated(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, AuthErrorReason_AUTH_ERROR_REASON_UNAUTHENTICATED.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonNoAtHash(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_NO_AT_HASH.String(), fmt.Sprintf(format, args...))
+}
+
+func IsSecurityErrorReasonInvalidAtHash(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AT_HASH.String() && e.Code == 500
+}
+
+func ErrorSecurityErrorReasonInvalidAtHash(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AT_HASH.String(), fmt.Sprintf(format, args...))
+}
+
+func IsSecurityErrorReasonUnsecurityenticated(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_UNSECURITYENTICATED.String() && e.Code == 500
+}
+
+func ErrorSecurityErrorReasonUnsecurityenticated(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_UNSECURITYENTICATED.String(), fmt.Sprintf(format, args...))
 }

@@ -12,6 +12,7 @@ option java_multiple_files = true;
 option java_outer_classname = "RateLimiterProto";
 option java_package = "com.github.origadmin.runtime.middleware.ratelimiter.v1";
 option objc_class_prefix = "OMM";
+option php_namespace = "OrigAdmin\\Runtime\\Middleware\\RateLimiter\\V1";
 
 // Rate limiter
 message RateLimiter {

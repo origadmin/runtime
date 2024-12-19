@@ -91,6 +91,11 @@ func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				log.Errorf("NewAuthZServer: claims are nil")
 				return nil, ErrMissingToken
 			}
+			if claims.IsRoot() {
+				log.Errorf("NewAuthZServer: claims are root, skipping authorization")
+				return handler(ctx, req)
+			}
+
 			log.Debugf("NewAuthZServer: claims are not nil, proceeding with authorization")
 			if claims.GetSubject() == "" || claims.GetAction() == "" || claims.GetObject() == "" {
 				log.Errorf("NewAuthZServer: invalid claims")

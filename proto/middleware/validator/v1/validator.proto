@@ -11,6 +11,7 @@ option java_multiple_files = true;
 option java_outer_classname = "ValidatorProto";
 option java_package = "com.github.origadmin.runtime.middleware.validator.v1";
 option objc_class_prefix = "OMV";
+option php_namespace = "OrigAdmin\\Runtime\\Middleware\\Validator\\V1";
 
 message Validator {
   int32 version = 1 [

@@ -5,6 +5,10 @@
 The current go package defines the general configuration of the service runtime, as well as the loading of the runtime
 configuration.
 
+The `Runtime` controls the resources required when a project is started, including configuration files, logs,
+monitoring,
+caches, and databases.
+
 ### Available Packages
 
 - **[bootstrap](bootstrap)**: The bootstrap package contains Configuration file reading and writing, initialization
@@ -18,7 +22,7 @@ configuration.
   using gRPC. All proto definition files used by the Runtime are placed in 'proto' directory.
 - **[mail](mail)**: The mail directory defines the email interface and the email implementation.
 - **[middleware](middleware)**: The middleware directory defines the middleware interface and the middleware
-- 
+-
 - **[registry](registry)**: This directory defines an alias for 'kratos/v2/registry', primarily for backward
   compatibility and for placing import error paths.
 - **[service](service)**: The service directory contains the definition of the service interface, which is used to
@@ -41,33 +45,33 @@ Replace `vX.Y.Z` with the desired version or `latest` to fetch the most recent r
 
 ```go
 import (
-    "github.com/origadmin/toolkit/runtime"
-    "github.com/origadmin/toolkit/runtime/config"
-    "github.com/origadmin/toolkit/runtime/registry"
+"github.com/origadmin/toolkit/runtime"
+"github.com/origadmin/toolkit/runtime/config"
+"github.com/origadmin/toolkit/runtime/registry"
 )
 
 // NewDiscovery creates a new discovery.
 func NewDiscovery(registryConfig *config.RegistryConfig) registry.Discovery {
-	if registryConfig == nil {
-		panic("no registry config")
-	}
-	discovery, err := runtime.NewDiscovery(registryConfig)
-	if err != nil {
-		panic(err)
-	}
-	return discovery
+if registryConfig == nil {
+panic("no registry config")
+}
+discovery, err := runtime.NewDiscovery(registryConfig)
+if err != nil {
+panic(err)
+}
+return discovery
 }
 
 // NewRegistrar creates a new registrar.
 func NewRegistrar(registryConfig *config.RegistryConfig) registry.Registrar {
-	if registryConfig == nil {
-        panic("no registry config")
-	}
-	registrar, err := runtime.NewRegistrar(registryConfig)
-	if err != nil {
-        panic(err)
-	}
-	return registrar
+if registryConfig == nil {
+panic("no registry config")
+}
+registrar, err := runtime.NewRegistrar(registryConfig)
+if err != nil {
+panic(err)
+}
+return registrar
 }
 
 ```

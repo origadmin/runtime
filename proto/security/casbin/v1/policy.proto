@@ -1,21 +1,20 @@
 syntax = "proto3";
 
-package security.v1;
+package security.casbin.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
-import "security/v1/auth.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
-option csharp_namespace = "OrigAdmin.Runtime.Security.V1";
-option go_package = "github.com/origadmin/runtime/gen/go/security/v1;securityv1";
+option csharp_namespace = "OrigAdmin.Runtime.Security.Casbin.V1";
+option go_package = "github.com/origadmin/runtime/gen/go/security/casbin/v1;casbinv1";
 option java_multiple_files = true;
-option java_outer_classname = "SecurityProto";
-option java_package = "com.github.origadmin.runtime.security.v1";
-option objc_class_prefix = "ORA";
-option php_namespace = "OrigAdmin\\Runtime\\Security\\V1";
+option java_outer_classname = "CasbinProto";
+option java_package = "com.github.origadmin.runtime.security.casbin.v1";
+option objc_class_prefix = "ORSC";
+option php_namespace = "OrigAdmin\\Runtime\\Security\\Casbin\\V1";
 
-message CasbinPolicy {
+message Policy {
   string subject = 1 [
     json_name = "subject",
     (validate.rules).string.min_len = 1,
@@ -34,10 +33,6 @@ message CasbinPolicy {
   repeated string domain = 4 [
     json_name = "domain",
     (gnostic.openapi.v3.property) = {description: "The domains associated with the policy."}
-  ];
-  security.v1.Claims claims = 5 [
-    json_name = "claims",
-    (gnostic.openapi.v3.property) = {description: "The claims associated with the policy."}
   ];
   map<string, string> extras = 6 [
     json_name = "extras",

@@ -5,6 +5,8 @@ package security.v1;
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
+import "security/casbin/v1/policy.proto";
+import "security/jwt/v1/token.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
@@ -13,7 +15,7 @@ option go_package = "github.com/origadmin/runtime/gen/go/security/v1;securityv1"
 option java_multiple_files = true;
 option java_outer_classname = "SecurityProto";
 option java_package = "com.github.origadmin.runtime.security.v1";
-option objc_class_prefix = "ORA";
+option objc_class_prefix = "ORS";
 option php_namespace = "OrigAdmin\\Runtime\\Security\\V1";
 
 message BasicAuth {
@@ -127,6 +129,14 @@ message JwtAuth {
     (validate.rules).string.min_len = 1,
     (gnostic.openapi.v3.property) = {description: "The JWT token for authentication."}
   ];
+  security.jwt.v1.Token jwt_token = 2 [
+    json_name = "jwt_token",
+    (gnostic.openapi.v3.property) = {description: "The JWT token data for authentication."}
+  ];
+  Claims claims = 20 [
+    json_name = "claims",
+    (gnostic.openapi.v3.property) = {description: "The claims embedded in the token."}
+  ]; // Claims
 }
 
 message AuthN {
@@ -139,7 +149,7 @@ message AuthN {
     TYPE_API_KEY = 5; // API Key authentication
     TYPE_JWT = 6; // JWT authentication
     // you can add more types as needed
-    TYPE_AUTH_ADDITIONAL = 7;
+    TYPE_USER_ADDITIONAL = 7;
   }
   Type type = 1 [
     json_name = "type",
@@ -177,6 +187,17 @@ message AuthN {
   ];
 }
 
+message CasbinAuth {
+  security.casbin.v1.Policy policy = 1 [
+    json_name = "policy",
+    (gnostic.openapi.v3.property) = {description: "The Casbin policy associated with the authorization."}
+  ];
+  Claims claims = 20 [
+    json_name = "claims",
+    (gnostic.openapi.v3.property) = {description: "The claims embedded in the token."}
+  ]; // Claims
+}
+
 message AuthZ {
   bool root = 1 [
     json_name = "root",
@@ -208,6 +229,10 @@ message AuthZ {
   google.protobuf.Timestamp timestamp = 6 [
     json_name = "timestamp",
     (gnostic.openapi.v3.property) = {description: "The timestamp of the authorization."}
+  ];
+  CasbinAuth casbin = 7 [
+    json_name = "casbin",
+    (gnostic.openapi.v3.property) = {description: "The Casbin authorization details."}
   ];
 }
 

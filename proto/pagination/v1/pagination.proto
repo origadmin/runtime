@@ -11,7 +11,8 @@ option go_package = "github.com/origadmin/runtime/gen/go/pagination/v1;paginatio
 option java_multiple_files = true;
 option java_outer_classname = "PaginationProto";
 option java_package = "com.github.origadmin.runtime.pagination.v1";
-option objc_class_prefix = "ORPA";
+option objc_class_prefix = "ORP";
+option php_namespace = "OrigAdmin\\Runtime\\Pagination\\V1";
 
 // PageRequest common request
 message PageRequest {
