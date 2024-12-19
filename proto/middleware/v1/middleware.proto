@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 import "middleware/jwt/v1/jwt.proto";
 import "middleware/metrics/v1/metrics.proto";
 import "middleware/ratelimit/v1/ratelimiter.proto";
+import "middleware/selector/v1/selector.proto";
 import "middleware/validator/v1/validator.proto";
 import "validate/validate.proto";
 
@@ -72,18 +73,19 @@ message Middleware {
   bool logging = 1 [json_name = "logging"];
   // Recovery switch
   bool recovery = 2 [json_name = "recovery"];
-//  // tracing switch
+  //  // tracing switch
   bool tracing = 3 [json_name = "tracing"];
   // Circuit breaker switch
   bool circuit_breaker = 4 [json_name = "circuit_breaker"];
-//  // Metadata switch
-//  bool enable_metadata = 6 [json_name = "enable_metadata"];
-//  // JWT switch
-//  bool enable_jwt = 7 [json_name = "jwt"];
+  //  // Metadata switch
+  //  bool enable_metadata = 6 [json_name = "enable_metadata"];
+  //  // JWT switch
+  //  bool enable_jwt = 7 [json_name = "jwt"];
 
   Metadata metadata = 100 [json_name = "metadata"];
   middleware.ratelimit.v1.RateLimiter rate_limiter = 101 [json_name = "rate_limiter"];
   middleware.metrics.v1.Metrics metrics = 102 [json_name = "metrics"];
   middleware.validator.v1.Validator validator = 103 [json_name = "validator"];
   middleware.jwt.v1.JWT jwt = 104 [json_name = "jwt"];
+  middleware.selector.v1.Selector selector = 105 [json_name = "selector"];
 }

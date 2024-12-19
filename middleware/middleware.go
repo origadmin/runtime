@@ -40,6 +40,7 @@ func NewClient(cfg *middlewarev1.Middleware, ss ...OptionSetting) []Middleware {
 	option := settings.Apply(&Option{
 		Logger: log.DefaultLogger,
 	}, ss)
+
 	if cfg.Logging {
 		// Add the LoggingClient middleware to the slice
 		middlewares = LoggingClient(middlewares, option.Logger)
@@ -62,6 +63,9 @@ func NewClient(cfg *middlewarev1.Middleware, ss ...OptionSetting) []Middleware {
 	}
 	if cfg.GetJwt().GetEnabled() {
 		middlewares = JwtClient(middlewares, cfg.GetJwt())
+	}
+	if cfg.GetSelector().GetEnabled() {
+		return SelectorClient(middlewares, cfg.GetSelector(), option.MatchFunc)
 	}
 	// Add the Security middleware to the slice
 	return middlewares
@@ -104,6 +108,9 @@ func NewServer(cfg *middlewarev1.Middleware, ss ...OptionSetting) []Middleware {
 	}
 	if cfg.GetJwt().GetEnabled() {
 		middlewares = JwtServer(middlewares, cfg.Jwt)
+	}
+	if cfg.GetSelector().GetEnabled() {
+		return SelectorServer(middlewares, cfg.GetSelector(), option.MatchFunc)
 	}
 	// Return the slice of middlewares
 	return middlewares

@@ -6,26 +6,12 @@ package middleware
 
 import (
 	"github.com/go-kratos/kratos/v2/log"
-
-	"github.com/origadmin/runtime/middleware/security"
+	"github.com/go-kratos/kratos/v2/middleware/selector"
 )
 
 type Option struct {
-	securities []security.OptionSetting
-	Logger     log.Logger
+	Logger    log.Logger
+	MatchFunc selector.MatchFunc
 }
 
 type OptionSetting = func(*Option)
-
-func (o Option) Securities() []security.OptionSetting {
-	return o.securities
-}
-
-func WithSecurityOptions(ss ...security.OptionSetting) OptionSetting {
-	return func(option *Option) {
-		if option.securities == nil {
-			option.securities = ss
-		}
-		option.securities = append(option.securities, ss...)
-	}
-}
