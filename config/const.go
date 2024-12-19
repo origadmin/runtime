@@ -15,17 +15,17 @@ const (
 
 // Define types from kratos config package
 type (
-	Config   = kratosconfig.Config
-	Decoder  = kratosconfig.Decoder
-	KeyValue = kratosconfig.KeyValue
-	Merge    = kratosconfig.Merge
-	Observer = kratosconfig.Observer
-	Option   = kratosconfig.Option
-	Reader   = kratosconfig.Reader
-	Resolver = kratosconfig.Resolver
-	Source   = kratosconfig.Source
-	Value    = kratosconfig.Value
-	Watcher  = kratosconfig.Watcher
+	Decoder      = kratosconfig.Decoder
+	KeyValue     = kratosconfig.KeyValue
+	Merge        = kratosconfig.Merge
+	Observer     = kratosconfig.Observer
+	Option       = kratosconfig.Option
+	Reader       = kratosconfig.Reader
+	Resolver     = kratosconfig.Resolver
+	Source       = kratosconfig.Source
+	SourceConfig = kratosconfig.Config
+	Value        = kratosconfig.Value
+	Watcher      = kratosconfig.Watcher
 )
 
 var (
@@ -34,7 +34,7 @@ var (
 )
 
 // New returns a new config instance
-func New(opts ...Option) Config {
+func New(opts ...Option) SourceConfig {
 	return kratosconfig.New(opts...)
 }
 
