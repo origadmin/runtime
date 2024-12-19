@@ -37,7 +37,11 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				return nil, ErrMissingToken
 			}
 			log.Debugf("NewAuthZClient: claims are not nil, proceeding with user claims parsing")
-			userClaims := option.ParserUserClaims(ctx, claims)
+			userClaims, err := option.ParserUserClaims(ctx, claims)
+			if err != nil {
+				log.Errorf("NewAuthZClient: error parsing user claims: %v", err)
+				return nil, err
+			}
 			if userClaims.IsRoot() {
 				log.Errorf("NewAuthZClient: claims are root, skipping authorization")
 				return handler(ctx, req)
