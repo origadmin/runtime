@@ -41,34 +41,35 @@ func NewClient(cfg *middlewarev1.Middleware, ss ...OptionSetting) []Middleware {
 		Logger: log.DefaultLogger,
 	}, ss)
 
+	f := MakeFilter(cfg.GetSelector().GetNames())
 	if cfg.Logging {
 		// Add the LoggingClient middleware to the slice
-		middlewares = LoggingClient(middlewares, option.Logger)
+		f = LoggingClient(f, option.Logger)
 	}
 	if cfg.Recovery {
 		// Add the Recovery middleware to the slice
-		middlewares = Recovery(middlewares)
+		f = Recovery(f)
 	}
 	if cfg.GetMetadata().GetEnabled() {
 		// Add the MetadataClient middleware to the slice
-		middlewares = MetadataClient(middlewares, cfg.GetMetadata())
+		f = MetadataClient(f, cfg.GetMetadata())
 	}
 	if cfg.Tracing {
 		// Add the TracingClient middleware to the slice
-		middlewares = TracingClient(middlewares)
+		f = TracingClient(f)
 	}
 	if cfg.CircuitBreaker {
 		// Add the CircuitBreakerClient middleware to the slice
-		middlewares = CircuitBreakerClient(middlewares)
+		f = CircuitBreakerClient(f)
 	}
 	if cfg.GetJwt().GetEnabled() {
-		middlewares = JwtClient(middlewares, cfg.GetJwt())
+		f = JwtClient(f, cfg.GetJwt())
 	}
 	if cfg.GetSelector().GetEnabled() {
-		return SelectorClient(middlewares, cfg.GetSelector(), option.MatchFunc)
+		return SelectorClient(f, cfg.GetSelector(), option.MatchFunc)
 	}
 	// Add the Security middleware to the slice
-	return middlewares
+	return f.All()
 }
 
 // NewServer creates a new server with the given configuration
@@ -83,35 +84,36 @@ func NewServer(cfg *middlewarev1.Middleware, ss ...OptionSetting) []Middleware {
 	option := settings.Apply(&Option{
 		Logger: log.DefaultLogger,
 	}, ss)
+	f := MakeFilter(cfg.GetSelector().GetNames())
 	if cfg.Logging {
-		middlewares = LoggingServer(middlewares, option.Logger)
+		f = LoggingServer(f, option.Logger)
 	}
 	if cfg.Recovery {
 		// Add the Recovery middleware to the slice
-		middlewares = Recovery(middlewares)
+		f = Recovery(f)
 	}
 	if cfg.GetValidator().GetEnabled() {
 		// Add the ValidateServer middleware to the slice
-		middlewares = ValidateServer(middlewares, cfg.Validator)
+		f = ValidateServer(f, cfg.Validator)
 	}
 	if cfg.Tracing {
 		// Add the TracingServer middleware to the slice
-		middlewares = TracingServer(middlewares)
+		f = TracingServer(f)
 	}
 	if cfg.GetMetadata().GetEnabled() {
 		// Add the MetadataServer middleware to the slice
-		middlewares = MetadataServer(middlewares, cfg.Metadata)
+		f = MetadataServer(f, cfg.Metadata)
 	}
 	if cfg.GetRateLimiter().GetEnabled() {
 		// Add the RateLimitServer middleware to the slice
-		middlewares = RateLimitServer(middlewares, cfg.RateLimiter)
+		f = RateLimitServer(f, cfg.RateLimiter)
 	}
 	if cfg.GetJwt().GetEnabled() {
-		middlewares = JwtServer(middlewares, cfg.Jwt)
+		f = JwtServer(f, cfg.Jwt)
 	}
 	if cfg.GetSelector().GetEnabled() {
-		return SelectorServer(middlewares, cfg.GetSelector(), option.MatchFunc)
+		return SelectorServer(f, cfg.GetSelector(), option.MatchFunc)
 	}
 	// Return the slice of middlewares
-	return middlewares
+	return f.All()
 }

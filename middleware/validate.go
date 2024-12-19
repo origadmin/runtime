@@ -15,17 +15,17 @@ import (
 
 // Validate is a middleware validator.
 // Deprecated: use ValidateServer
-func Validate(ms []Middleware, validator *validatorv1.Validator) []Middleware {
+func Validate(f Filter, validator *validatorv1.Validator) Filter {
 	switch validate.Version(validator.Version) {
 	case validate.V1:
-		return append(ms, validateMiddlewareV1(validator))
+		return f.Filter("Validate", validateMiddlewareV1(validator))
 	case validate.V2:
-		return ValidateServer(ms, validator)
+		return ValidateServer(f, validator)
 	}
-	return ms
+	return f
 }
 
-func ValidateServer(ms []Middleware, validator *validatorv1.Validator) []Middleware {
+func ValidateServer(f Filter, validator *validatorv1.Validator) Filter {
 	opts := []validate.OptionSetting{
 		validate.WithFailFast(validator.GetFailFast()),
 	}
@@ -33,9 +33,9 @@ func ValidateServer(ms []Middleware, validator *validatorv1.Validator) []Middlew
 		opts = append(opts, validate.WithV2ProtoValidatorOptions())
 	}
 	if m, err := validate.Server(opts...); err == nil {
-		ms = append(ms, m)
+		f.Filter("Validate", m)
 	}
-	return ms
+	return f
 }
 
 func validateMiddlewareV1(_ *validatorv1.Validator) middleware.Middleware {

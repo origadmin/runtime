@@ -11,8 +11,11 @@ import (
 	selectorv1 "github.com/origadmin/runtime/gen/go/middleware/selector/v1"
 )
 
-func SelectorClient(middlewares []Middleware, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []Middleware {
-	s := selector.Client(middlewares...)
+func SelectorClient(f Filter, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []Middleware {
+	s := selector.Client(f.Filtered()...)
+	if matchFunc != nil {
+		s.Match(matchFunc)
+	}
 	if path := cfg.GetPaths(); path != nil {
 		s.Path(path...)
 	}
@@ -22,14 +25,14 @@ func SelectorClient(middlewares []Middleware, cfg *selectorv1.Selector, matchFun
 	if regex := cfg.GetRegex(); regex != "" {
 		s.Regex(regex)
 	}
-	if matchFunc != nil {
-		s.Match(matchFunc)
-	}
-	return []Middleware{s.Build()}
+	return append([]Middleware{s.Build()}, f.All()...)
 }
 
-func SelectorServer(middlewares []Middleware, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []Middleware {
-	s := selector.Server(middlewares...)
+func SelectorServer(f Filter, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []Middleware {
+	s := selector.Server(f.Filtered()...)
+	if matchFunc != nil {
+		s.Match(matchFunc)
+	}
 	if path := cfg.GetPaths(); path != nil {
 		s.Path(path...)
 	}
@@ -39,8 +42,5 @@ func SelectorServer(middlewares []Middleware, cfg *selectorv1.Selector, matchFun
 	if regex := cfg.GetRegex(); regex != "" {
 		s.Regex(regex)
 	}
-	if matchFunc != nil {
-		s.Match(matchFunc)
-	}
-	return []Middleware{s.Build()}
+	return append([]Middleware{s.Build()}, f.All()...)
 }

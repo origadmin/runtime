@@ -11,7 +11,7 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func Recovery(ms []Middleware) []Middleware {
+func Recovery(f Filter) Filter {
 	log.Infof("[Middleware] Recovery middleware enabled")
-	return append(ms, recovery.Recovery())
+	return f.Filter("Recovery", recovery.Recovery())
 }

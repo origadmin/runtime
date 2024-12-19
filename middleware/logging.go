@@ -10,12 +10,12 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 )
 
-func LoggingServer(ms []Middleware, logger log.Logger) []Middleware {
+func LoggingServer(f Filter, logger log.Logger) Filter {
 	log.Debug("[Middleware] Logging server middleware enabled")
-	return append(ms, logging.Server(logger))
+	return f.Filter("Logging", logging.Server(logger))
 }
 
-func LoggingClient(ms []Middleware, logger log.Logger) []Middleware {
+func LoggingClient(f Filter, logger log.Logger) Filter {
 	log.Debug("[Middleware] Logging client middleware enabled")
-	return append(ms, logging.Client(logger))
+	return f.Filter("Logging", logging.Client(logger))
 }

@@ -11,12 +11,12 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func TracingClient(ms []Middleware) []Middleware {
+func TracingClient(f Filter) Filter {
 	log.Debug("[Middleware] Tracing client middleware enabled")
-	return append(ms, tracing.Client())
+	return f.Filter("Metadata", tracing.Client())
 }
 
-func TracingServer(ms []Middleware) []Middleware {
+func TracingServer(f Filter) Filter {
 	log.Debug("[Middleware] Tracing server middleware enabled")
-	return append(ms, tracing.Server())
+	return f.Filter("Metadata", tracing.Server())
 }
