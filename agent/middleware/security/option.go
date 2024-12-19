@@ -6,6 +6,8 @@
 package security
 
 import (
+	"errors"
+
 	"github.com/origadmin/toolkits/security"
 
 	"github.com/origadmin/runtime/context"
@@ -90,9 +92,11 @@ func WithTokenParser(parser func(ctx context.Context) string) OptionSetting {
 }
 
 // ParserUserClaims parses the user claims from the context.
-func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) security.UserClaims {
-	// TODO: implement parsing user claims
-	return nil
+func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) (security.UserClaims, error) {
+	if o.Parser == nil {
+		return nil, errors.New("user claims parser is nil")
+	}
+	return o.Parser(ctx, claims.GetSubject())
 }
 
 // WithAuthenticator sets the authenticator.

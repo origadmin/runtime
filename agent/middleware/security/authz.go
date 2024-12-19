@@ -38,6 +38,10 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			}
 			log.Debugf("NewAuthZClient: claims are not nil, proceeding with user claims parsing")
 			userClaims := option.ParserUserClaims(ctx, claims)
+			if userClaims.IsRoot() {
+				log.Errorf("NewAuthZClient: claims are root, skipping authorization")
+				return handler(ctx, req)
+			}
 
 			if userClaims.GetSubject() == "" || userClaims.GetAction() == "" || userClaims.GetObject() == "" {
 				log.Errorf("NewAuthZClient: invalid user claims")
