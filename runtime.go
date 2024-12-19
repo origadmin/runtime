@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/registry"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -34,5 +35,6 @@ var (
 var ErrNotFound = errors.String("not found")
 
 type Runtime struct {
-	config.Config
+	Config   config.Config
+	Registry registry.Registry
 }

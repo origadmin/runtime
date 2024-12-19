@@ -19,6 +19,10 @@ type (
 	Middleware = middleware.Middleware
 )
 
+//type Middleware struct {
+//
+//}
+
 // Chain returns a middleware that executes a chain of middleware.
 func Chain(m ...Middleware) Middleware {
 	return middleware.Chain(m...)
