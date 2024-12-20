@@ -5,10 +5,19 @@
 // Package config implements the functions, types, and interfaces for the module.
 package config
 
+import (
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+)
+
+type Configure interface {
+	FromConfig(cfg *configv1.SourceConfig) error
+}
+
 type Option struct {
 	SourceOptions []KOption
 	Decoder       KDecoder
 	Encoder       Encoder
+	Configure     Configure
 }
 
 // Encoder is a function that takes a value and returns a byte slice and an error.
@@ -21,5 +30,11 @@ type OptionSetting = func(s *Option)
 func WithOptions(options ...KOption) OptionSetting {
 	return func(option *Option) {
 		option.SourceOptions = options
+	}
+}
+
+func WithConfigure(cfg Configure) OptionSetting {
+	return func(option *Option) {
+		option.Configure = cfg
 	}
 }
