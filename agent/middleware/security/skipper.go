@@ -15,10 +15,10 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-// Skipper returns a middleware that skips certain operations based on the provided configuration.
+// SkipperServer returns a middleware that skips certain operations based on the provided configuration.
 // It takes a Security configuration and a variable number of OptionSettings.
 // If the Skipper is not configured, it returns nil and false.
-func Skipper(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, bool) {
+func SkipperServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, bool) {
 	log.Debugf("Skipper: creating middleware with config: %+v", cfg)
 	// Apply default settings to the options
 	option := settings.ApplyDefaultsOrZero(ss...)
@@ -39,7 +39,7 @@ func Skipper(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware
 			// If the Skipper is configured, check if the operation should be skipped
 			if option.Skipper != nil {
 				// Get the transport from the client context
-				if tr, ok := transport.FromClientContext(ctx); ok {
+				if tr, ok := transport.FromServerContext(ctx); ok {
 					log.Debugf("Skipper: got transport from client context: %+v", tr)
 					// todo: check the request method
 					// If the operation should be skipped, create a new skip context and call the next handler
