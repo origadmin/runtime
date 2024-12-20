@@ -24,7 +24,6 @@ type Builder interface {
 	registry.Builder
 	service.Builder
 	MiddlewareBuilders
-
 	middlewareBuildRegistry
 }
 
