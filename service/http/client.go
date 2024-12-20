@@ -37,7 +37,9 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 		transhttp.WithTimeout(timeout),
 		transhttp.WithMiddleware(option.Middlewares...),
 	}
-
+	if len(option.ClientOptions) > 0 {
+		clientOptions = append(clientOptions, option.ClientOptions...)
+	}
 	if option.Discovery != nil {
 		endpoint := helpers.ServiceName(option.ServiceName)
 		log.Debugf("http service [%s] discovery endpoint [%s]", option.ServiceName, endpoint)

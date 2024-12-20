@@ -35,6 +35,9 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 	serverOptions := []transgrpc.ServerOption{
 		transgrpc.Middleware(option.Middlewares...),
 	}
+	if len(option.ServerOptions) > 0 {
+		serverOptions = append(serverOptions, option.ServerOptions...)
+	}
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.Network != "" {
 			serverOptions = append(serverOptions, transgrpc.Network(serviceGrpc.Network))

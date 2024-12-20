@@ -8,16 +8,19 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/selector"
+	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
 type Option struct {
-	Prefix       string
-	HostIp       string
-	ServiceName  string
-	Discovery    registry.Discovery
-	NodeFilters  []selector.NodeFilter
-	Middlewares  []middleware.Middleware
-	EndpointFunc func(scheme string, host string, addr string) (string, error)
+	Prefix        string
+	HostIp        string
+	ServiceName   string
+	Discovery     registry.Discovery
+	NodeFilters   []selector.NodeFilter
+	Middlewares   []middleware.Middleware
+	EndpointFunc  func(scheme string, host string, addr string) (string, error)
+	ClientOptions []transgrpc.ClientOption
+	ServerOptions []transgrpc.ServerOption
 }
 
 type OptionSetting = func(o *Option)
@@ -54,5 +57,17 @@ func WithPrefix(prefix string) OptionSetting {
 func WithHostIp(hostIp string) OptionSetting {
 	return func(o *Option) {
 		o.HostIp = hostIp
+	}
+}
+
+func WithClientOptions(opts ...transgrpc.ClientOption) OptionSetting {
+	return func(o *Option) {
+		o.ClientOptions = append(o.ClientOptions, opts...)
+	}
+}
+
+func WithServerOptions(opts ...transgrpc.ServerOption) OptionSetting {
+	return func(o *Option) {
+		o.ServerOptions = append(o.ServerOptions, opts...)
 	}
 }

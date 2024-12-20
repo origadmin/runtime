@@ -36,6 +36,9 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 	serverOptions := []transhttp.ServerOption{
 		transhttp.Middleware(option.Middlewares...),
 	}
+	if len(option.ServerOptions) > 0 {
+		serverOptions = append(serverOptions, option.ServerOptions...)
+	}
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
 		if serviceHttp.Network != "" {
 			serverOptions = append(serverOptions, transhttp.Network(serviceHttp.Network))
