@@ -67,10 +67,10 @@ func (m *Config) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if len(m.GetKey()) < 1 {
+	if utf8.RuneCountInString(m.GetKey()) < 1 {
 		err := ConfigValidationError{
 			field:  "Key",
-			reason: "value length must be at least 1 bytes",
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err
@@ -78,10 +78,10 @@ func (m *Config) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if len(m.GetKey2()) < 1 {
+	if utf8.RuneCountInString(m.GetKey2()) < 1 {
 		err := ConfigValidationError{
 			field:  "Key2",
-			reason: "value length must be at least 1 bytes",
+			reason: "value length must be at least 1 runes",
 		}
 		if !all {
 			return err

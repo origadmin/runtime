@@ -267,63 +267,9 @@ func (m *Data_Database) validate(all bool) error {
 
 	// no validation rules for MaxOpenConnections
 
-	if all {
-		switch v := interface{}(m.GetConnectionMaxLifetime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_DatabaseValidationError{
-					field:  "ConnectionMaxLifetime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_DatabaseValidationError{
-					field:  "ConnectionMaxLifetime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetConnectionMaxLifetime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_DatabaseValidationError{
-				field:  "ConnectionMaxLifetime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for ConnectionMaxLifetime
 
-	if all {
-		switch v := interface{}(m.GetConnectionMaxIdleTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_DatabaseValidationError{
-					field:  "ConnectionMaxIdleTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_DatabaseValidationError{
-					field:  "ConnectionMaxIdleTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetConnectionMaxIdleTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_DatabaseValidationError{
-				field:  "ConnectionMaxIdleTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for ConnectionMaxIdleTime
 
 	if len(errors) > 0 {
 		return Data_DatabaseMultiError(errors)
@@ -444,92 +390,11 @@ func (m *Data_Redis) validate(all bool) error {
 
 	// no validation rules for Db
 
-	if all {
-		switch v := interface{}(m.GetDialTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_RedisValidationError{
-					field:  "DialTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_RedisValidationError{
-					field:  "DialTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_RedisValidationError{
-				field:  "DialTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for DialTimeout
 
-	if all {
-		switch v := interface{}(m.GetReadTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_RedisValidationError{
-					field:  "ReadTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_RedisValidationError{
-					field:  "ReadTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_RedisValidationError{
-				field:  "ReadTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for ReadTimeout
 
-	if all {
-		switch v := interface{}(m.GetWriteTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_RedisValidationError{
-					field:  "WriteTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_RedisValidationError{
-					field:  "WriteTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_RedisValidationError{
-				field:  "WriteTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for WriteTimeout
 
 	if len(errors) > 0 {
 		return Data_RedisMultiError(errors)
@@ -638,34 +503,7 @@ func (m *Data_Memcached) validate(all bool) error {
 
 	// no validation rules for MaxIdle
 
-	if all {
-		switch v := interface{}(m.GetTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_MemcachedValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_MemcachedValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_MemcachedValidationError{
-				field:  "Timeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Timeout
 
 	if len(errors) > 0 {
 		return Data_MemcachedMultiError(errors)
@@ -771,63 +609,9 @@ func (m *Data_Memory) validate(all bool) error {
 
 	// no validation rules for Capacity
 
-	if all {
-		switch v := interface{}(m.GetExpiration()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_MemoryValidationError{
-					field:  "Expiration",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_MemoryValidationError{
-					field:  "Expiration",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetExpiration()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_MemoryValidationError{
-				field:  "Expiration",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Expiration
 
-	if all {
-		switch v := interface{}(m.GetCleanupInterval()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Data_MemoryValidationError{
-					field:  "CleanupInterval",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Data_MemoryValidationError{
-					field:  "CleanupInterval",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCleanupInterval()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Data_MemoryValidationError{
-				field:  "CleanupInterval",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for CleanupInterval
 
 	if len(errors) > 0 {
 		return Data_MemoryMultiError(errors)

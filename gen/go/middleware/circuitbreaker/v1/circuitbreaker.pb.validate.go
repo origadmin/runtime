@@ -707,34 +707,7 @@ func (m *SuccessRatio) validate(all bool) error {
 
 	// no validation rules for Bucket
 
-	if all {
-		switch v := interface{}(m.GetWindow()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, SuccessRatioValidationError{
-					field:  "Window",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, SuccessRatioValidationError{
-					field:  "Window",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetWindow()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return SuccessRatioValidationError{
-				field:  "Window",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Window
 
 	if len(errors) > 0 {
 		return SuccessRatioMultiError(errors)

@@ -1430,34 +1430,7 @@ func (m *AuthZ) validate(all bool) error {
 
 	// no validation rules for Username
 
-	if all {
-		switch v := interface{}(m.GetTimestamp()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AuthZValidationError{
-					field:  "Timestamp",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, AuthZValidationError{
-					field:  "Timestamp",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimestamp()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AuthZValidationError{
-				field:  "Timestamp",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Timestamp
 
 	if all {
 		switch v := interface{}(m.GetCasbin()).(type) {
@@ -1625,92 +1598,11 @@ func (m *Claims) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if all {
-		switch v := interface{}(m.GetExp()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ClaimsValidationError{
-					field:  "Exp",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ClaimsValidationError{
-					field:  "Exp",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetExp()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ClaimsValidationError{
-				field:  "Exp",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Exp
 
-	if all {
-		switch v := interface{}(m.GetNbf()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ClaimsValidationError{
-					field:  "Nbf",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ClaimsValidationError{
-					field:  "Nbf",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetNbf()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ClaimsValidationError{
-				field:  "Nbf",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Nbf
 
-	if all {
-		switch v := interface{}(m.GetIat()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ClaimsValidationError{
-					field:  "Iat",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ClaimsValidationError{
-					field:  "Iat",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetIat()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ClaimsValidationError{
-				field:  "Iat",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Iat
 
 	if utf8.RuneCountInString(m.GetJti()) < 1 {
 		err := ClaimsValidationError{

@@ -60,34 +60,7 @@ func (m *Cors) validate(all bool) error {
 
 	// no validation rules for AllowCredentials
 
-	if all {
-		switch v := interface{}(m.GetMaxAge()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CorsValidationError{
-					field:  "MaxAge",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, CorsValidationError{
-					field:  "MaxAge",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMaxAge()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return CorsValidationError{
-				field:  "MaxAge",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for MaxAge
 
 	// no validation rules for AllowWildcard
 

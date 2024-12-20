@@ -404,168 +404,23 @@ func (m *Service_GINS) validate(all bool) error {
 	// no validation rules for Endpoint
 
 	if m.Timeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "Timeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "Timeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GINSValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for Timeout
 	}
 
 	if m.ShutdownTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetShutdownTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "ShutdownTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "ShutdownTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetShutdownTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GINSValidationError{
-					field:  "ShutdownTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for ShutdownTimeout
 	}
 
 	if m.ReadTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetReadTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "ReadTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "ReadTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GINSValidationError{
-					field:  "ReadTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for ReadTimeout
 	}
 
 	if m.WriteTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetWriteTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "WriteTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "WriteTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GINSValidationError{
-					field:  "WriteTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for WriteTimeout
 	}
 
 	if m.IdleTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetIdleTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "IdleTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GINSValidationError{
-						field:  "IdleTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetIdleTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GINSValidationError{
-					field:  "IdleTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for IdleTimeout
 	}
 
 	if len(errors) > 0 {
@@ -677,150 +532,15 @@ func (m *Service_HTTP) validate(all bool) error {
 
 	// no validation rules for KeyFile
 
-	if all {
-		switch v := interface{}(m.GetTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Service_HTTPValidationError{
-				field:  "Timeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Timeout
 
-	if all {
-		switch v := interface{}(m.GetShutdownTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "ShutdownTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "ShutdownTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetShutdownTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Service_HTTPValidationError{
-				field:  "ShutdownTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for ShutdownTimeout
 
-	if all {
-		switch v := interface{}(m.GetReadTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "ReadTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "ReadTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Service_HTTPValidationError{
-				field:  "ReadTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for ReadTimeout
 
-	if all {
-		switch v := interface{}(m.GetWriteTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "WriteTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "WriteTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Service_HTTPValidationError{
-				field:  "WriteTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for WriteTimeout
 
-	if all {
-		switch v := interface{}(m.GetIdleTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "IdleTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "IdleTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetIdleTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Service_HTTPValidationError{
-				field:  "IdleTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for IdleTimeout
 
 	// no validation rules for Endpoint
 
@@ -936,168 +656,23 @@ func (m *Service_GRPC) validate(all bool) error {
 	// no validation rules for Endpoint
 
 	if m.Timeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "Timeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "Timeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GRPCValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for Timeout
 	}
 
 	if m.ShutdownTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetShutdownTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "ShutdownTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "ShutdownTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetShutdownTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GRPCValidationError{
-					field:  "ShutdownTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for ShutdownTimeout
 	}
 
 	if m.ReadTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetReadTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "ReadTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "ReadTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetReadTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GRPCValidationError{
-					field:  "ReadTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for ReadTimeout
 	}
 
 	if m.WriteTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetWriteTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "WriteTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "WriteTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetWriteTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GRPCValidationError{
-					field:  "WriteTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for WriteTimeout
 	}
 
 	if m.IdleTimeout != nil {
-
-		if all {
-			switch v := interface{}(m.GetIdleTimeout()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "IdleTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, Service_GRPCValidationError{
-						field:  "IdleTimeout",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetIdleTimeout()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return Service_GRPCValidationError{
-					field:  "IdleTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for IdleTimeout
 	}
 
 	if len(errors) > 0 {

@@ -638,63 +638,9 @@ func (m *AuthNConfig_JWTConfig) validate(all bool) error {
 
 	// no validation rules for OldSigningKey
 
-	if all {
-		switch v := interface{}(m.GetExpireTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AuthNConfig_JWTConfigValidationError{
-					field:  "ExpireTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, AuthNConfig_JWTConfigValidationError{
-					field:  "ExpireTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetExpireTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AuthNConfig_JWTConfigValidationError{
-				field:  "ExpireTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for ExpireTime
 
-	if all {
-		switch v := interface{}(m.GetRefreshTime()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AuthNConfig_JWTConfigValidationError{
-					field:  "RefreshTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, AuthNConfig_JWTConfigValidationError{
-					field:  "RefreshTime",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRefreshTime()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AuthNConfig_JWTConfigValidationError{
-				field:  "RefreshTime",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for RefreshTime
 
 	// no validation rules for CacheName
 

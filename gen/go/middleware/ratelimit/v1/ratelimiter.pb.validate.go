@@ -353,63 +353,9 @@ func (m *RateLimiter_Memory) validate(all bool) error {
 
 	var errors []error
 
-	if all {
-		switch v := interface{}(m.GetExpiration()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, RateLimiter_MemoryValidationError{
-					field:  "Expiration",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, RateLimiter_MemoryValidationError{
-					field:  "Expiration",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetExpiration()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return RateLimiter_MemoryValidationError{
-				field:  "Expiration",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Expiration
 
-	if all {
-		switch v := interface{}(m.GetCleanupInterval()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, RateLimiter_MemoryValidationError{
-					field:  "CleanupInterval",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, RateLimiter_MemoryValidationError{
-					field:  "CleanupInterval",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCleanupInterval()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return RateLimiter_MemoryValidationError{
-				field:  "CleanupInterval",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for CleanupInterval
 
 	if len(errors) > 0 {
 		return RateLimiter_MemoryMultiError(errors)

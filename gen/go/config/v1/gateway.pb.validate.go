@@ -527,34 +527,7 @@ func (m *Endpoint) validate(all bool) error {
 
 	// no validation rules for Protocol
 
-	if all {
-		switch v := interface{}(m.GetTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, EndpointValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, EndpointValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return EndpointValidationError{
-				field:  "Timeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Timeout
 
 	for idx, item := range m.GetMiddlewares() {
 		_, _ = idx, item
@@ -1127,34 +1100,7 @@ func (m *Retry) validate(all bool) error {
 
 	// no validation rules for Attempts
 
-	if all {
-		switch v := interface{}(m.GetPerTryTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, RetryValidationError{
-					field:  "PerTryTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, RetryValidationError{
-					field:  "PerTryTimeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetPerTryTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return RetryValidationError{
-				field:  "PerTryTimeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for PerTryTimeout
 
 	for idx, item := range m.GetConditions() {
 		_, _ = idx, item

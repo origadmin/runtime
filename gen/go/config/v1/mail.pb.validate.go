@@ -72,34 +72,7 @@ func (m *Mail) validate(all bool) error {
 
 	// no validation rules for MaxRetries
 
-	if all {
-		switch v := interface{}(m.GetRetryInterval()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MailValidationError{
-					field:  "RetryInterval",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MailValidationError{
-					field:  "RetryInterval",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRetryInterval()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MailValidationError{
-				field:  "RetryInterval",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for RetryInterval
 
 	// no validation rules for Nickname
 
