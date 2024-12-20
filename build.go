@@ -18,11 +18,9 @@ import (
 
 // builder is a struct that holds a map of ConfigBuilders and a map of RegistryBuilders.
 type builder struct {
-	configMux       sync.RWMutex
-	configs         map[string]ConfigBuilder
 	syncMux         sync.RWMutex
-	syncs           map[string]ConfigSyncer
-	registryMux     sync.RWMutex
+	syncs           map[string]config.Syncer
+	ConfigBuilder   config.Builder
 	RegistryBuilder registry.Builder
 	ServiceBuilder  service.Builder
 	middlewareMux   sync.RWMutex
@@ -57,10 +55,11 @@ func init() {
 }
 
 func (b *builder) init() {
-	b.configs = make(map[string]ConfigBuilder)
-	b.syncs = make(map[string]ConfigSyncer)
-	b.RegistryBuilder = registry.New()
-	b.ServiceBuilder = service.New()
+
+	b.syncs = make(map[string]config.Syncer)
+	b.ConfigBuilder = config.NewBuilder()
+	b.RegistryBuilder = registry.NewBuilder()
+	b.ServiceBuilder = service.NewBuilder()
 	b.middlewares = make(map[string]MiddlewareBuilder)
 }
 
@@ -76,17 +75,17 @@ func Global() Builder {
 
 // NewConfig creates a new Selector using the registered ConfigBuilder.
 func NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.SourceConfig, error) {
-	return build.NewConfig(cfg, ss...)
+	return build.ConfigBuilder.NewConfig(cfg, ss...)
 }
 
 // RegisterConfig registers a ConfigBuilder with the builder.
-func RegisterConfig(name string, configBuilder ConfigBuilder) {
-	build.RegisterConfigBuilder(name, configBuilder)
+func RegisterConfig(name string, factory config.Factory) {
+	build.ConfigBuilder.RegisterConfigBuilder(name, factory)
 }
 
 // RegisterConfigFunc registers a ConfigBuilder with the builder.
-func RegisterConfigFunc(name string, buildFunc ConfigBuildFunc) {
-	build.RegisterConfigBuilder(name, buildFunc)
+func RegisterConfigFunc(name string, buildFunc config.BuildFunc) {
+	build.ConfigBuilder.RegisterConfigBuilder(name, buildFunc)
 }
 
 // SyncConfig synchronizes the given configuration with the given value.
@@ -163,9 +162,9 @@ func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...serv
 }
 
 // RegisterService registers a service builder with the provided name
-func RegisterService(name string, serviceBuilder service.Builder) {
+func RegisterService(name string, factory service.Factory) {
 	// Call the build.RegisterServiceBuilder function with the provided name and service builder
-	build.ServiceBuilder.RegisterServiceBuilder(name, serviceBuilder)
+	build.ServiceBuilder.RegisterServiceBuilder(name, factory)
 }
 
 // NewBuilder creates a new Builder.

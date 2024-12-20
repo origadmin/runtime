@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package service implements the functions, types, and interfaces for the module.
+// Package builder implements the functions, types, and interfaces for the module.
 package service
 
 import (
@@ -14,7 +14,7 @@ type (
 	EndpointFunc = func(scheme string, host string, addr string) (string, error)
 )
 
-// Option represents a set of configuration options for a service.
+// Option represents a set of configuration options for a builder.
 type Option struct {
 	http []http.OptionSetting
 	grpc []grpc.OptionSetting

@@ -9,7 +9,32 @@ import (
 	configenv "github.com/go-kratos/kratos/v2/config/env"
 	"github.com/go-kratos/kratos/v2/config/file"
 
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/env"
+)
+
+type (
+	// Builder is an interface that defines a method for registering a config builder.
+	Builder interface {
+		Factory
+		// RegisterConfigBuilder registers a config builder with the given name.
+		RegisterConfigBuilder(string, Factory)
+	}
+	// configSyncRegistry is an interface that defines a method for synchronizing a config.
+	configSyncRegistry interface {
+		SyncConfig(*configv1.SourceConfig, any) error
+	}
+
+	// Factory is an interface that defines a method for creating a new config.
+	Factory interface {
+		// NewConfig creates a new config using the given SourceConfig and a list of Options.
+		NewConfig(*configv1.SourceConfig, ...SourceOptionSetting) (SourceConfig, error)
+	}
+
+	// Syncer is an interface that defines a method for synchronizing a config.
+	Syncer interface {
+		SyncConfig(*configv1.SourceConfig, any, ...SourceOptionSetting) error
+	}
 )
 
 type EnvVars struct {
@@ -69,4 +94,10 @@ func (c *Config) GetEnv(key string) (string, bool) {
 
 func (c *Config) Setup(prefix string) error {
 	return c.envVars.Setup(prefix)
+}
+
+func NewBuilder() Builder {
+	return &builder{
+		factories: make(map[string]Factory),
+	}
 }

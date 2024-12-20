@@ -44,23 +44,23 @@ func (fn DiscoveryBuildFunc) NewDiscovery(cfg *configv1.Registry, ss ...OptionSe
 	return fn(cfg, ss...)
 }
 
-type factory struct {
-	builders map[string]Factory
+type builder struct {
+	factories map[string]Factory
 }
 
-func (f factory) RegisterRegistryBuilder(name string, factory Factory) {
-	f.builders[name] = factory
+func (f builder) RegisterRegistryBuilder(name string, factory Factory) {
+	f.factories[name] = factory
 }
 
-func (f factory) NewRegistrar(registry *configv1.Registry, setting ...OptionSetting) (Registrar, error) {
-	if r, ok := f.builders[registry.Type]; ok {
+func (f builder) NewRegistrar(registry *configv1.Registry, setting ...OptionSetting) (Registrar, error) {
+	if r, ok := f.factories[registry.Type]; ok {
 		return r.NewRegistrar(registry, setting...)
 	}
 	return nil, ErrRegistryNotFound
 }
 
-func (f factory) NewDiscovery(registry *configv1.Registry, setting ...OptionSetting) (Discovery, error) {
-	if r, ok := f.builders[registry.Type]; ok {
+func (f builder) NewDiscovery(registry *configv1.Registry, setting ...OptionSetting) (Discovery, error) {
+	if r, ok := f.factories[registry.Type]; ok {
 		return r.NewDiscovery(registry, setting...)
 	}
 	return nil, ErrRegistryNotFound
@@ -79,9 +79,9 @@ func WrapFactory(registrar RegistrarBuildFunc, discovery DiscoveryBuildFunc) Fac
 	}
 }
 
-func New() Builder {
-	return &factory{
-		builders: make(map[string]Factory),
+func NewBuilder() Builder {
+	return &builder{
+		factories: make(map[string]Factory),
 	}
 }
 
