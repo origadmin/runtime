@@ -78,27 +78,7 @@ func (m *Config) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetKey2()) < 1 {
-		err := ConfigValidationError{
-			field:  "Key2",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetKeyfunc()) < 1 {
-		err := ConfigValidationError{
-			field:  "Keyfunc",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Key2
 
 	if m.GetAccessTokenLifetime() <= 0 {
 		err := ConfigValidationError{
