@@ -27,6 +27,14 @@ type builder struct {
 	middlewares     map[string]MiddlewareBuilder
 }
 
+func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, setting ...config.SourceOptionSetting) (config.SourceConfig, error) {
+	return b.ConfigBuilder.NewConfig(sourceConfig, setting...)
+}
+
+func (b *builder) RegisterConfigBuilder(s string, factory config.Factory) {
+	b.ConfigBuilder.RegisterConfigBuilder(s, factory)
+}
+
 func (b *builder) NewGRPCServer(c *configv1.Service, setting ...service.OptionSetting) (*service.GRPCServer, error) {
 	return b.ServiceBuilder.NewGRPCServer(c, setting...)
 }

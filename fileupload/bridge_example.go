@@ -151,7 +151,7 @@ func main() {
 				Addr: "",
 			},
 		},
-		Middlewares: &middlewarev1.Middleware{
+		Middleware: &middlewarev1.Middleware{
 			Logging:        true,
 			Recovery:       true,
 			Tracing:        true,
