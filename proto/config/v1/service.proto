@@ -79,6 +79,6 @@ message Service {
   config.v1.Message message = 200 [json_name = "message"];
   config.v1.Task task = 300 [json_name = "task"];
 
-  middleware.v1.Middleware middlewares = 400 [json_name = "middlewares"];
+  middleware.v1.Middleware middleware = 400 [json_name = "middleware"];
   Selector selector = 500 [json_name = "selector"];
 }
