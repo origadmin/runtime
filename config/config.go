@@ -28,12 +28,12 @@ type (
 	// Factory is an interface that defines a method for creating a new config.
 	Factory interface {
 		// NewConfig creates a new config using the given SourceConfig and a list of Options.
-		NewConfig(*configv1.SourceConfig, ...SourceOptionSetting) (SourceConfig, error)
+		NewConfig(*configv1.SourceConfig, ...OptionSetting) (SourceConfig, error)
 	}
 
 	// Syncer is an interface that defines a method for synchronizing a config.
 	Syncer interface {
-		SyncConfig(*configv1.SourceConfig, any, ...SourceOptionSetting) error
+		SyncConfig(*configv1.SourceConfig, any, ...OptionSetting) error
 	}
 )
 

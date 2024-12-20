@@ -15,7 +15,7 @@ type (
 	KeyValue     = kratosconfig.KeyValue
 	Merge        = kratosconfig.Merge
 	Observer     = kratosconfig.Observer
-	Option       = kratosconfig.Option
+	SourceOption = kratosconfig.Option
 	Reader       = kratosconfig.Reader
 	Resolver     = kratosconfig.Resolver
 	Source       = kratosconfig.Source
