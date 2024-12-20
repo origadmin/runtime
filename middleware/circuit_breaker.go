@@ -12,6 +12,6 @@ import (
 )
 
 func CircuitBreakerClient(f Filter) Filter {
-	log.Debug("[Middleware] CircuitBreaker client middleware enabled")
+	log.Debug("[KMiddleware] CircuitBreaker client middleware enabled")
 	return f.Filter("CircuitBreaker", circuitbreaker.Client())
 }

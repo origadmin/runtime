@@ -20,28 +20,28 @@ type (
 	// MiddlewareBuilders middleware builders for runtime
 	MiddlewareBuilders interface {
 		// NewMiddlewaresClient build middleware
-		NewMiddlewaresClient([]middleware.Middleware, *configv1.Customize, ...middleware.OptionSetting) []middleware.Middleware
+		NewMiddlewaresClient([]middleware.KMiddleware, *configv1.Customize, ...middleware.OptionSetting) []middleware.KMiddleware
 		// NewMiddlewaresServer build middleware
-		NewMiddlewaresServer([]middleware.Middleware, *configv1.Customize, ...middleware.OptionSetting) []middleware.Middleware
+		NewMiddlewaresServer([]middleware.KMiddleware, *configv1.Customize, ...middleware.OptionSetting) []middleware.KMiddleware
 		// NewMiddlewareClient build middleware
-		NewMiddlewareClient(string, *configv1.Customize_Config, ...middleware.OptionSetting) (middleware.Middleware, error)
+		NewMiddlewareClient(string, *configv1.Customize_Config, ...middleware.OptionSetting) (middleware.KMiddleware, error)
 		// NewMiddlewareServer build middleware
-		NewMiddlewareServer(string, *configv1.Customize_Config, ...middleware.OptionSetting) (middleware.Middleware, error)
+		NewMiddlewareServer(string, *configv1.Customize_Config, ...middleware.OptionSetting) (middleware.KMiddleware, error)
 	}
 
 	// MiddlewareBuilder middleware builder interface
 	MiddlewareBuilder interface {
 		// NewMiddlewareClient build middleware
-		NewMiddlewareClient(*configv1.Customize_Config, ...middleware.OptionSetting) (middleware.Middleware, error)
+		NewMiddlewareClient(*configv1.Customize_Config, ...middleware.OptionSetting) (middleware.KMiddleware, error)
 		// NewMiddlewareServer build middleware
-		NewMiddlewareServer(*configv1.Customize_Config, ...middleware.OptionSetting) (middleware.Middleware, error)
+		NewMiddlewareServer(*configv1.Customize_Config, ...middleware.OptionSetting) (middleware.KMiddleware, error)
 	}
 
 	// MiddlewareBuildFunc is an interface that defines methods for creating middleware.
-	MiddlewareBuildFunc = func(*configv1.Customize_Config, ...middleware.OptionSetting) (middleware.Middleware, error)
+	MiddlewareBuildFunc = func(*configv1.Customize_Config, ...middleware.OptionSetting) (middleware.KMiddleware, error)
 )
 
-func (b *builder) NewMiddlewareClient(name string, config *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+func (b *builder) NewMiddlewareClient(name string, config *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
 	b.middlewareMux.RLock()
 	defer b.middlewareMux.RUnlock()
 	if builder, ok := b.middlewares[name]; ok {
@@ -50,7 +50,7 @@ func (b *builder) NewMiddlewareClient(name string, config *configv1.Customize_Co
 	return nil, ErrNotFound
 }
 
-func (b *builder) NewMiddlewareServer(name string, config *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+func (b *builder) NewMiddlewareServer(name string, config *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
 	b.middlewareMux.RLock()
 	defer b.middlewareMux.RUnlock()
 	if builder, ok := b.middlewares[name]; ok {
@@ -59,7 +59,7 @@ func (b *builder) NewMiddlewareServer(name string, config *configv1.Customize_Co
 	return nil, ErrNotFound
 }
 
-func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.Middleware {
+func (b *builder) NewMiddlewaresClient(mms []middleware.KMiddleware, cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.KMiddleware {
 	configs := customize.ConfigsFromType(cc, middleware.Type)
 	var mbs []*middlewareWrap
 	b.middlewareMux.RLock()
@@ -81,7 +81,7 @@ func (b *builder) NewMiddlewaresClient(mms []middleware.Middleware, cc *configv1
 	return mms
 }
 
-func (b *builder) NewMiddlewaresServer(mms []middleware.Middleware, cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.Middleware {
+func (b *builder) NewMiddlewaresServer(mms []middleware.KMiddleware, cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.KMiddleware {
 	configs := customize.ConfigsFromType(cc, middleware.Type)
 	var mbs []*middlewareWrap
 	b.middlewareMux.RLock()
@@ -116,10 +116,10 @@ type middlewareWrap struct {
 	Builder MiddlewareBuilder
 }
 
-func (m middlewareWrap) NewClient(ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+func (m middlewareWrap) NewClient(ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
 	return m.Builder.NewMiddlewareClient(m.Config, ss...)
 }
 
-func (m middlewareWrap) NewServer(ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+func (m middlewareWrap) NewServer(ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
 	return m.Builder.NewMiddlewareServer(m.Config, ss...)
 }

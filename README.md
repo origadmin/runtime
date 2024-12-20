@@ -9,6 +9,14 @@ The `Runtime` controls the resources required when a project is started, includi
 monitoring,
 caches, and databases.
 
+### Before You Start
+
+Before you start using the Runtime package, ensure that you have the following prerequisites:
+In order to prevent import conflicts caused by packages with the same name as `kratos`, packages with the same name in
+this database will import the export content from `kratos`.
+All type definitions will be prefixed with the `K` fixed prefix.
+Note: Only `type` declarations are prefixed, not functions.
+
 ### Available Packages
 
 - **[bootstrap](bootstrap)**: The bootstrap package contains Configuration file reading and writing, initialization

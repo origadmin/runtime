@@ -11,7 +11,7 @@ import (
 	selectorv1 "github.com/origadmin/runtime/gen/go/middleware/selector/v1"
 )
 
-func SelectorClient(f Filter, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []Middleware {
+func SelectorClient(f Filter, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []KMiddleware {
 	s := selector.Client(f.Filtered()...)
 	if matchFunc != nil {
 		s.Match(matchFunc)
@@ -25,10 +25,10 @@ func SelectorClient(f Filter, cfg *selectorv1.Selector, matchFunc selector.Match
 	if regex := cfg.GetRegex(); regex != "" {
 		s.Regex(regex)
 	}
-	return append([]Middleware{s.Build()}, f.All()...)
+	return append([]KMiddleware{s.Build()}, f.All()...)
 }
 
-func SelectorServer(f Filter, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []Middleware {
+func SelectorServer(f Filter, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) []KMiddleware {
 	s := selector.Server(f.Filtered()...)
 	if matchFunc != nil {
 		s.Match(matchFunc)
@@ -42,5 +42,5 @@ func SelectorServer(f Filter, cfg *selectorv1.Selector, matchFunc selector.Match
 	if regex := cfg.GetRegex(); regex != "" {
 		s.Regex(regex)
 	}
-	return append([]Middleware{s.Build()}, f.All()...)
+	return append([]KMiddleware{s.Build()}, f.All()...)
 }

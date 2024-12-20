@@ -12,11 +12,11 @@ import (
 )
 
 func TracingClient(f Filter) Filter {
-	log.Debug("[Middleware] Tracing client middleware enabled")
+	log.Debug("[KMiddleware] Tracing client middleware enabled")
 	return f.Filter("Metadata", tracing.Client())
 }
 
 func TracingServer(f Filter) Filter {
-	log.Debug("[Middleware] Tracing server middleware enabled")
+	log.Debug("[KMiddleware] Tracing server middleware enabled")
 	return f.Filter("Metadata", tracing.Server())
 }

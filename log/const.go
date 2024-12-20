@@ -19,14 +19,14 @@ const (
 )
 
 type (
-	Logger         = log.Logger
-	Level          = log.Level
-	Valuer         = log.Valuer
-	FilterOption   = log.FilterOption
-	Filter         = log.Filter
-	Option         = log.Option
-	Helper         = log.Helper
-	WriterOptionFn = log.WriterOptionFn
+	KLogger         = log.Logger
+	KLevel          = log.Level
+	KValuer         = log.Valuer
+	KFilterOption   = log.FilterOption
+	KFilter         = log.Filter
+	KOption         = log.Option
+	KHelper         = log.Helper
+	KWriterOptionFn = log.WriterOptionFn
 )
 
 var (

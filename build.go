@@ -27,7 +27,7 @@ type builder struct {
 	middlewares     map[string]MiddlewareBuilder
 }
 
-func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, setting ...config.OptionSetting) (config.SourceConfig, error) {
+func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, setting ...config.OptionSetting) (config.KConfig, error) {
 	return b.ConfigBuilder.NewConfig(sourceConfig, setting...)
 }
 
@@ -82,7 +82,7 @@ func Global() Builder {
 }
 
 // NewConfig creates a new Selector using the registered ConfigBuilder.
-func NewConfig(cfg *configv1.SourceConfig, ss ...config.OptionSetting) (config.SourceConfig, error) {
+func NewConfig(cfg *configv1.SourceConfig, ss ...config.OptionSetting) (config.KConfig, error) {
 	return build.ConfigBuilder.NewConfig(cfg, ss...)
 }
 
@@ -106,12 +106,12 @@ func RegisterConfigSync(name string, syncFunc ConfigSyncFunc) {
 }
 
 // NewDiscovery creates a new discovery using the registered RegistryBuilder.
-func NewDiscovery(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Discovery, error) {
+func NewDiscovery(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.KDiscovery, error) {
 	return build.NewDiscovery(cfg, ss...)
 }
 
-// NewRegistrar creates a new Registrar using the registered RegistryBuilder.
-func NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Registrar, error) {
+// NewRegistrar creates a new KRegistrar using the registered RegistryBuilder.
+func NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.KRegistrar, error) {
 	return build.NewRegistrar(cfg, ss...)
 }
 
@@ -120,23 +120,23 @@ func RegisterRegistry(name string, factory registry.Factory) {
 	build.RegisterRegistryBuilder(name, factory)
 }
 
-// NewMiddlewareClient creates a new Middleware with the builder.
-func NewMiddlewareClient(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+// NewMiddlewareClient creates a new KMiddleware with the builder.
+func NewMiddlewareClient(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
 	return build.NewMiddlewareClient(name, cm, ss...)
 }
 
-// NewMiddlewareServer creates a new Middleware with the builder.
-func NewMiddlewareServer(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.Middleware, error) {
+// NewMiddlewareServer creates a new KMiddleware with the builder.
+func NewMiddlewareServer(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
 	return build.NewMiddlewareServer(name, cm, ss...)
 }
 
-// NewMiddlewaresClient creates a new Middleware with the builder.
-func NewMiddlewaresClient(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.Middleware {
+// NewMiddlewaresClient creates a new KMiddleware with the builder.
+func NewMiddlewaresClient(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.KMiddleware {
 	return build.NewMiddlewaresClient(nil, cc, ss...)
 }
 
-// NewMiddlewaresServer creates a new Middleware with the builder.
-func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.Middleware {
+// NewMiddlewaresServer creates a new KMiddleware with the builder.
+func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.KMiddleware {
 	return build.NewMiddlewaresServer(nil, cc, ss...)
 }
 

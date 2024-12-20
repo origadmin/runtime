@@ -10,6 +10,7 @@ import (
 
 	"github.com/origadmin/runtime/application"
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
 	"github.com/origadmin/runtime/service"
@@ -40,6 +41,7 @@ var ErrNotFound = errors.String("not found")
 type Runtime struct {
 	EnvPrefix   string
 	Application application.Application
+	Logging     log.Logging
 	Config      config.Config
 	Registry    registry.Registry
 	Middleware  middleware.Middleware

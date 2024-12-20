@@ -12,6 +12,6 @@ import (
 )
 
 func Recovery(f Filter) Filter {
-	log.Infof("[Middleware] Recovery middleware enabled")
+	log.Infof("[KMiddleware] Recovery middleware enabled")
 	return f.Filter("Recovery", recovery.Recovery())
 }

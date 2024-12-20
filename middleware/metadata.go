@@ -14,7 +14,7 @@ import (
 )
 
 func MetadataClient(f Filter, cfg *middlewarev1.Middleware_Metadata) Filter {
-	log.Debug("[MetadataClient] Middleware is enabled")
+	log.Debug("[MetadataClient] KMiddleware is enabled")
 	var options []middlewareMetadata.Option
 	if prefix := cfg.GetPrefix(); prefix != "" {
 		log.Debug("[MetadataClient] Propagated prefix: ", prefix)
@@ -33,7 +33,7 @@ func MetadataClient(f Filter, cfg *middlewarev1.Middleware_Metadata) Filter {
 }
 
 func MetadataServer(f Filter, cfg *middlewarev1.Middleware_Metadata) Filter {
-	log.Debug("[MetadataServer] Middleware is enabled")
+	log.Debug("[MetadataServer] KMiddleware is enabled")
 
 	var options []middlewareMetadata.Option
 	if prefix := cfg.GetPrefix(); prefix != "" {

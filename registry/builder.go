@@ -22,7 +22,7 @@ func (b *builder) RegisterRegistryBuilder(name string, factory Factory) {
 	b.factories[name] = factory
 }
 
-func (b *builder) NewRegistrar(registry *configv1.Registry, setting ...OptionSetting) (Registrar, error) {
+func (b *builder) NewRegistrar(registry *configv1.Registry, setting ...OptionSetting) (KRegistrar, error) {
 	b.factoryMux.RLock()
 	defer b.factoryMux.RUnlock()
 	if r, ok := b.factories[registry.Type]; ok {
@@ -31,7 +31,7 @@ func (b *builder) NewRegistrar(registry *configv1.Registry, setting ...OptionSet
 	return nil, ErrRegistryNotFound
 }
 
-func (b *builder) NewDiscovery(registry *configv1.Registry, setting ...OptionSetting) (Discovery, error) {
+func (b *builder) NewDiscovery(registry *configv1.Registry, setting ...OptionSetting) (KDiscovery, error) {
 	b.factoryMux.RLock()
 	defer b.factoryMux.RUnlock()
 	if r, ok := b.factories[registry.Type]; ok {

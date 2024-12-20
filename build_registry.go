@@ -10,13 +10,13 @@ import (
 	"github.com/origadmin/runtime/registry"
 )
 
-// NewRegistrar creates a new Registrar object based on the given RegistryConfig.
-func (b *builder) NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Registrar, error) {
+// NewRegistrar creates a new KRegistrar object based on the given RegistryConfig.
+func (b *builder) NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.KRegistrar, error) {
 	return b.RegistryBuilder.NewRegistrar(cfg, ss...)
 }
 
 // NewDiscovery creates a new discovery object based on the given RegistryConfig.
-func (b *builder) NewDiscovery(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.Discovery, error) {
+func (b *builder) NewDiscovery(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.KDiscovery, error) {
 	return b.RegistryBuilder.NewDiscovery(cfg, ss...)
 }
 

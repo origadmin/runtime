@@ -10,12 +10,12 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
-// ConfigSyncFunc is a function type that takes a SourceConfig and a list of Options and returns an error.
+// ConfigSyncFunc is a function type that takes a KConfig and a list of Options and returns an error.
 type ConfigSyncFunc func(*configv1.SourceConfig, any, ...config.OptionSetting) error
 
 // SyncConfig is a method that implements the ConfigSyncer interface for ConfigSyncFunc.
 func (fn ConfigSyncFunc) SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.OptionSetting) error {
-	// Call the function with the given SourceConfig and a list of Options.
+	// Call the function with the given KConfig and a list of Options.
 	return fn(cfg, v, ss...)
 }
 

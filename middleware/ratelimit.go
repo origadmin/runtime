@@ -28,6 +28,6 @@ func RateLimitServer(f Filter, cfg *ratelimitv1.RateLimiter) Filter {
 	default:
 		// do nothing
 	}
-	log.Debugf("[Middleware] Rate limit server middleware enabled with %v", cfg.GetName())
+	log.Debugf("[KMiddleware] Rate limit server middleware enabled with %v", cfg.GetName())
 	return f.Filter("RateLimit", ratelimit.Server(options...))
 }

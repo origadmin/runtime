@@ -11,11 +11,11 @@ import (
 )
 
 func LoggingServer(f Filter, logger log.Logger) Filter {
-	log.Debug("[Middleware] Logging server middleware enabled")
+	log.Debug("[KMiddleware] Logging server middleware enabled")
 	return f.Filter("Logging", logging.Server(logger))
 }
 
 func LoggingClient(f Filter, logger log.Logger) Filter {
-	log.Debug("[Middleware] Logging client middleware enabled")
+	log.Debug("[KMiddleware] Logging client middleware enabled")
 	return f.Filter("Logging", logging.Client(logger))
 }

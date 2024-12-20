@@ -13,10 +13,10 @@ import (
 
 // This is only alias type for wrapped
 type (
-	Watcher         = registry.Watcher
-	ServiceInstance = registry.ServiceInstance
-	Discovery       = registry.Discovery
-	Registrar       = registry.Registrar
+	KWatcher         = registry.Watcher
+	KServiceInstance = registry.ServiceInstance
+	KDiscovery       = registry.Discovery
+	KRegistrar       = registry.Registrar
 )
 
 var (

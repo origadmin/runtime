@@ -10,31 +10,31 @@ import (
 )
 
 type Filter interface {
-	Filter(key string, m Middleware) Filter
-	All() []Middleware
-	Filtered() []Middleware
+	Filter(key string, m KMiddleware) Filter
+	All() []KMiddleware
+	Filtered() []KMiddleware
 	Total() int
 }
 
 type filter struct {
 	keys     []string
-	filtered []Middleware
-	all      []Middleware
+	filtered []KMiddleware
+	all      []KMiddleware
 }
 
 func (f *filter) Total() int {
 	return len(f.all)
 }
 
-func (f *filter) All() []Middleware {
+func (f *filter) All() []KMiddleware {
 	return f.all
 }
 
-func (f *filter) Filtered() []Middleware {
+func (f *filter) Filtered() []KMiddleware {
 	return f.filtered
 }
 
-func (f *filter) Filter(key string, m Middleware) Filter {
+func (f *filter) Filter(key string, m KMiddleware) Filter {
 	f.all = append(f.all, m)
 	if len(f.keys) == 0 {
 		return f

@@ -27,8 +27,8 @@ type (
 
 	// Factory is an interface that defines a method for creating a new config.
 	Factory interface {
-		// NewConfig creates a new config using the given SourceConfig and a list of Options.
-		NewConfig(*configv1.SourceConfig, ...OptionSetting) (SourceConfig, error)
+		// NewConfig creates a new config using the given KConfig and a list of Options.
+		NewConfig(*configv1.SourceConfig, ...OptionSetting) (KConfig, error)
 	}
 
 	// Syncer is an interface that defines a method for synchronizing a config.
@@ -68,11 +68,11 @@ func (v *EnvVars) Get(key string) (string, bool) {
 type Config struct {
 	EnvPrefixes []string
 	envVars     EnvVars
-	source      SourceConfig
+	source      KConfig
 }
 
-func (c *Config) LoadFromFile(path string, opts ...SourceOption) error {
-	var sources = []Source{file.NewSource(path)}
+func (c *Config) LoadFromFile(path string, opts ...KOption) error {
+	var sources = []KSource{file.NewSource(path)}
 	if c.EnvPrefixes != nil {
 		sources = append(sources, configenv.NewSource(c.EnvPrefixes...))
 		opts = append(opts, WithSource(sources...))

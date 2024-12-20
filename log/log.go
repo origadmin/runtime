@@ -4,3 +4,6 @@
 
 // Package log implements the functions, types, and interfaces for the module.
 package log
+
+type Logging struct {
+}

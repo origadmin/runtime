@@ -17,7 +17,7 @@ type Option struct {
 	Service   *service.Option
 	Selector  *selector.Option
 	Customize *customize.Option
-	Source    config.SourceOption
+	Source    config.KOption
 }
 
 // OptionSetting is a function that takes a pointer to a Option struct and modifies it.
