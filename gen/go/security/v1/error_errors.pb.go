@@ -231,14 +231,14 @@ func ErrorSecurityErrorReasonInvalidAtHash(format string, args ...interface{}) *
 	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AT_HASH.String(), fmt.Sprintf(format, args...))
 }
 
-func IsSecurityErrorReasonUnsecurityenticated(err error) bool {
+func IsSecurityErrorReasonUnsecurityEnticated(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_UNSECURITYENTICATED.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_SECURITY_ERROR_REASON_UNSECURITY_ENTICATED.String() && e.Code == 500
 }
 
-func ErrorSecurityErrorReasonUnsecurityenticated(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_UNSECURITYENTICATED.String(), fmt.Sprintf(format, args...))
+func ErrorSecurityErrorReasonUnsecurityEnticated(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_SECURITY_ERROR_REASON_UNSECURITY_ENTICATED.String(), fmt.Sprintf(format, args...))
 }
