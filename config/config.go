@@ -71,13 +71,13 @@ type Config struct {
 	source      SourceConfig
 }
 
-func (c *Config) LoadFromFile(path string, opts ...Option) error {
+func (c *Config) LoadFromFile(path string, opts ...SourceOption) error {
 	var sources = []Source{file.NewSource(path)}
 	if c.EnvPrefixes != nil {
 		sources = append(sources, configenv.NewSource(c.EnvPrefixes...))
 		opts = append(opts, WithSource(sources...))
 	}
-	c.source = New(opts...)
+	c.source = NewSourceConfig(opts...)
 	return c.source.Load()
 }
 
