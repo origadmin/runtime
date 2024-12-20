@@ -56,84 +56,19 @@ func (m *Config) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetSigningMethod()) < 1 {
-		err := ConfigValidationError{
-			field:  "SigningMethod",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for SigningMethod
 
-	if utf8.RuneCountInString(m.GetKey()) < 1 {
-		err := ConfigValidationError{
-			field:  "Key",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Key
 
 	// no validation rules for Key2
 
-	if m.GetAccessTokenLifetime() <= 0 {
-		err := ConfigValidationError{
-			field:  "AccessTokenLifetime",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for AccessTokenLifetime
 
-	if m.GetRefreshTokenLifetime() <= 0 {
-		err := ConfigValidationError{
-			field:  "RefreshTokenLifetime",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for RefreshTokenLifetime
 
-	if utf8.RuneCountInString(m.GetIssuer()) < 1 {
-		err := ConfigValidationError{
-			field:  "Issuer",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Issuer
 
-	if len(m.GetAudience()) < 1 {
-		err := ConfigValidationError{
-			field:  "Audience",
-			reason: "value must contain at least 1 item(s)",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetTokenType()) < 1 {
-		err := ConfigValidationError{
-			field:  "TokenType",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for TokenType
 
 	if len(errors) > 0 {
 		return ConfigMultiError(errors)
