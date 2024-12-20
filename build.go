@@ -27,7 +27,7 @@ type builder struct {
 	middlewares     map[string]MiddlewareBuilder
 }
 
-func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, setting ...config.SourceOptionSetting) (config.SourceConfig, error) {
+func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, setting ...config.OptionSetting) (config.SourceConfig, error) {
 	return b.ConfigBuilder.NewConfig(sourceConfig, setting...)
 }
 
@@ -82,7 +82,7 @@ func Global() Builder {
 }
 
 // NewConfig creates a new Selector using the registered ConfigBuilder.
-func NewConfig(cfg *configv1.SourceConfig, ss ...config.SourceOptionSetting) (config.SourceConfig, error) {
+func NewConfig(cfg *configv1.SourceConfig, ss ...config.OptionSetting) (config.SourceConfig, error) {
 	return build.ConfigBuilder.NewConfig(cfg, ss...)
 }
 
@@ -97,7 +97,7 @@ func RegisterConfigFunc(name string, buildFunc config.BuildFunc) {
 }
 
 // SyncConfig synchronizes the given configuration with the given value.
-func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.SourceOptionSetting) error {
+func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.OptionSetting) error {
 	return build.SyncConfig(cfg, v, ss...)
 }
 

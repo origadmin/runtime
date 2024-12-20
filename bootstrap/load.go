@@ -111,7 +111,7 @@ func LoadPathSourceConfig(path string) (*configv1.SourceConfig, error) {
 }
 
 // LoadRemoteConfig loads the config file from the given path
-func LoadRemoteConfig(bootstrap *Bootstrap, v any, ss ...config.SourceOptionSetting) error {
+func LoadRemoteConfig(bootstrap *Bootstrap, v any, ss ...config.OptionSetting) error {
 	sourceConfig, err := LoadSourceConfig(bootstrap)
 	if err != nil {
 		return err

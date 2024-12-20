@@ -8,6 +8,7 @@ package runtime
 import (
 	"sync"
 
+	"github.com/origadmin/runtime/application"
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
@@ -37,18 +38,16 @@ var (
 var ErrNotFound = errors.String("not found")
 
 type Runtime struct {
-	EnvPrefix  string
-	Config     config.Config
-	Registry   registry.Registry
-	Middleware middleware.Middleware
-	Service    service.Service
+	EnvPrefix   string
+	Application application.Application
+	Config      config.Config
+	Registry    registry.Registry
+	Middleware  middleware.Middleware
+	Service     service.Service
 }
 
-func New(prefix string) Runtime {
-	if prefix == "" {
-		prefix = DefaultEnvPrefix
-	}
+func New() Runtime {
 	return Runtime{
-		EnvPrefix: prefix,
+		EnvPrefix: DefaultEnvPrefix,
 	}
 }
