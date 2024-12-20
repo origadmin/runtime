@@ -30,7 +30,6 @@ message Config {
   ];
   string key2 = 3 [
     json_name = "key2",
-    (validate.rules).string.min_len = 1,
     (gnostic.openapi.v3.property) = {description: "The secondary key used for signing the token."}
   ];
   string keyfunc = 4 [
