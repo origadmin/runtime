@@ -119,35 +119,6 @@ func (m *Service) validate(all bool) error {
 	}
 
 	if all {
-		switch v := interface{}(m.GetGins()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Gins",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Gins",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetGins()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ServiceValidationError{
-				field:  "Gins",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
 		switch v := interface{}(m.GetWebsocket()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
@@ -369,137 +340,6 @@ var _ interface {
 	ErrorName() string
 } = ServiceValidationError{}
 
-// Validate checks the field values on Service_GINS with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Service_GINS) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Service_GINS with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in Service_GINSMultiError, or
-// nil if none found.
-func (m *Service_GINS) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Service_GINS) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Network
-
-	// no validation rules for Addr
-
-	// no validation rules for UseTls
-
-	// no validation rules for CertFile
-
-	// no validation rules for KeyFile
-
-	// no validation rules for Endpoint
-
-	if m.Timeout != nil {
-		// no validation rules for Timeout
-	}
-
-	if m.ShutdownTimeout != nil {
-		// no validation rules for ShutdownTimeout
-	}
-
-	if m.ReadTimeout != nil {
-		// no validation rules for ReadTimeout
-	}
-
-	if m.WriteTimeout != nil {
-		// no validation rules for WriteTimeout
-	}
-
-	if m.IdleTimeout != nil {
-		// no validation rules for IdleTimeout
-	}
-
-	if len(errors) > 0 {
-		return Service_GINSMultiError(errors)
-	}
-
-	return nil
-}
-
-// Service_GINSMultiError is an error wrapping multiple validation errors
-// returned by Service_GINS.ValidateAll() if the designated constraints aren't met.
-type Service_GINSMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m Service_GINSMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m Service_GINSMultiError) AllErrors() []error { return m }
-
-// Service_GINSValidationError is the validation error returned by
-// Service_GINS.Validate if the designated constraints aren't met.
-type Service_GINSValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e Service_GINSValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e Service_GINSValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e Service_GINSValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e Service_GINSValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e Service_GINSValidationError) ErrorName() string { return "Service_GINSValidationError" }
-
-// Error satisfies the builtin error interface
-func (e Service_GINSValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sService_GINS.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = Service_GINSValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = Service_GINSValidationError{}
-
 // Validate checks the field values on Service_HTTP with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -653,27 +493,17 @@ func (m *Service_GRPC) validate(all bool) error {
 
 	// no validation rules for KeyFile
 
+	// no validation rules for Timeout
+
+	// no validation rules for ShutdownTimeout
+
+	// no validation rules for ReadTimeout
+
+	// no validation rules for WriteTimeout
+
+	// no validation rules for IdleTimeout
+
 	// no validation rules for Endpoint
-
-	if m.Timeout != nil {
-		// no validation rules for Timeout
-	}
-
-	if m.ShutdownTimeout != nil {
-		// no validation rules for ShutdownTimeout
-	}
-
-	if m.ReadTimeout != nil {
-		// no validation rules for ReadTimeout
-	}
-
-	if m.WriteTimeout != nil {
-		// no validation rules for WriteTimeout
-	}
-
-	if m.IdleTimeout != nil {
-		// no validation rules for IdleTimeout
-	}
 
 	if len(errors) > 0 {
 		return Service_GRPCMultiError(errors)

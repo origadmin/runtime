@@ -16,21 +16,6 @@ option java_package = "com.github.origadmin.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
 message Service {
-  // GINS
-  message GINS {
-    string network = 1 [json_name = "network"];
-    string addr = 2 [json_name = "addr"];
-    bool use_tls = 3 [json_name = "use_tls"];
-    string cert_file = 4 [json_name = "cert_file"];
-    string key_file = 5 [json_name = "key_file"];
-    optional int64 timeout = 6 [json_name = "timeout"];
-    optional int64 shutdown_timeout = 7 [json_name = "shutdown_timeout"];
-    optional int64 read_timeout = 8 [json_name = "read_timeout"];
-    optional int64 write_timeout = 9 [json_name = "write_timeout"];
-    optional int64 idle_timeout = 10 [json_name = "idle_timeout"];
-    string endpoint = 11 [json_name = "endpoint"];
-  }
-
   // HTTP
   message HTTP {
     string network = 1;
@@ -53,11 +38,11 @@ message Service {
     bool use_tls = 3 [json_name = "use_tls"];
     string cert_file = 4 [json_name = "cert_file"];
     string key_file = 5 [json_name = "key_file"];
-    optional int64 timeout = 6 [json_name = "timeout"];
-    optional int64 shutdown_timeout = 7 [json_name = "shutdown_timeout"];
-    optional int64 read_timeout = 8 [json_name = "read_timeout"];
-    optional int64 write_timeout = 9 [json_name = "write_timeout"];
-    optional int64 idle_timeout = 10 [json_name = "idle_timeout"];
+    int64 timeout = 6 [json_name = "timeout"];
+    int64 shutdown_timeout = 7 [json_name = "shutdown_timeout"];
+    int64 read_timeout = 8 [json_name = "read_timeout"];
+    int64 write_timeout = 9 [json_name = "write_timeout"];
+    int64 idle_timeout = 10 [json_name = "idle_timeout"];
     string endpoint = 11 [json_name = "endpoint"];
   }
 
@@ -73,7 +58,6 @@ message Service {
 
   GRPC grpc = 10 [json_name = "grpc"];
   HTTP http = 20 [json_name = "http"];
-  GINS gins = 30 [json_name = "gins"];
 
   config.v1.WebSocket websocket = 100 [json_name = "websocket"];
   config.v1.Message message = 200 [json_name = "message"];

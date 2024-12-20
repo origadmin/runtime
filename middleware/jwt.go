@@ -79,9 +79,9 @@ func getSigningMethod(sm string) jwt.SigningMethod {
 	}
 }
 
-func getKeyFunc(key []byte, method string) jwt.Keyfunc {
+func getKeyFunc(key string, method string) jwt.Keyfunc {
 	return func(token *jwt.Token) (interface{}, error) {
-		if key == nil {
+		if key == "" {
 			return nil, authjwt.ErrMissingKeyFunc
 		}
 		if token.Method.Alg() != method {
@@ -95,7 +95,7 @@ func getClaimsFunc(subject string, ctp string, cfg *secjwtv1.Config) func() jwt.
 	if subject == "" {
 		subject = "anonymous"
 	}
-	exp := cfg.GetAccessTokenLifetime().AsDuration()
+	exp := time.Duration(cfg.GetAccessTokenLifetime())
 	if exp == 0 {
 		exp = time.Hour
 	}

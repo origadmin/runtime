@@ -7,6 +7,7 @@ package grpc
 
 import (
 	"net/url"
+	"time"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/goexts/generic/settings"
@@ -41,8 +42,8 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 		if serviceGrpc.Addr != "" {
 			serverOptions = append(serverOptions, transgrpc.Address(serviceGrpc.Addr))
 		}
-		if serviceGrpc.Timeout != nil {
-			serverOptions = append(serverOptions, transgrpc.Timeout(serviceGrpc.Timeout.AsDuration()))
+		if serviceGrpc.Timeout != 0 {
+			serverOptions = append(serverOptions, transgrpc.Timeout(time.Duration(serviceGrpc.Timeout)))
 		}
 		if cfg.DynamicEndpoint && serviceGrpc.Endpoint == "" {
 			log.Debugf("Dynamic endpoint is enabled and endpoint is empty, generating endpoint")

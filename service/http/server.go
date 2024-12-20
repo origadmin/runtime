@@ -7,6 +7,7 @@ package http
 
 import (
 	"net/url"
+	"time"
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/goexts/generic/settings"
@@ -42,8 +43,8 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 		if serviceHttp.Addr != "" {
 			serverOptions = append(serverOptions, transhttp.Address(serviceHttp.Addr))
 		}
-		if serviceHttp.Timeout != nil {
-			serverOptions = append(serverOptions, transhttp.Timeout(serviceHttp.Timeout.AsDuration()))
+		if serviceHttp.Timeout != 0 {
+			serverOptions = append(serverOptions, transhttp.Timeout(time.Duration(serviceHttp.Timeout)))
 		}
 		if cfg.DynamicEndpoint && serviceHttp.Endpoint == "" {
 			log.Debugf("Generating endpoint using custom endpointURL function or default service discovery method")

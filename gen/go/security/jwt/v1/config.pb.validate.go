@@ -100,64 +100,26 @@ func (m *Config) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if d := m.GetAccessTokenLifetime(); d != nil {
-		dur, err := d.AsDuration(), d.CheckValid()
-		if err != nil {
-			err = ConfigValidationError{
-				field:  "AccessTokenLifetime",
-				reason: "value is not a valid duration",
-				cause:  err,
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		} else {
-
-			gt := time.Duration(0*time.Second + 0*time.Nanosecond)
-
-			if dur <= gt {
-				err := ConfigValidationError{
-					field:  "AccessTokenLifetime",
-					reason: "value must be greater than 0s",
-				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
-			}
-
+	if m.GetAccessTokenLifetime() <= 0 {
+		err := ConfigValidationError{
+			field:  "AccessTokenLifetime",
+			reason: "value must be greater than 0",
 		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
-	if d := m.GetRefreshTokenLifetime(); d != nil {
-		dur, err := d.AsDuration(), d.CheckValid()
-		if err != nil {
-			err = ConfigValidationError{
-				field:  "RefreshTokenLifetime",
-				reason: "value is not a valid duration",
-				cause:  err,
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		} else {
-
-			gt := time.Duration(0*time.Second + 0*time.Nanosecond)
-
-			if dur <= gt {
-				err := ConfigValidationError{
-					field:  "RefreshTokenLifetime",
-					reason: "value must be greater than 0s",
-				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
-			}
-
+	if m.GetRefreshTokenLifetime() <= 0 {
+		err := ConfigValidationError{
+			field:  "RefreshTokenLifetime",
+			reason: "value must be greater than 0",
 		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	if utf8.RuneCountInString(m.GetIssuer()) < 1 {

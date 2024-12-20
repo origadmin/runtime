@@ -40,12 +40,12 @@ message Config {
   ];
   int64 access_token_lifetime = 5 [
     json_name = "access_token_lifetime",
-    (validate.rules).duration.gt.seconds = 0,
+    (validate.rules).int64.gt = 0,
     (gnostic.openapi.v3.property) = {description: "The lifetime of the token."}
   ];
   int64 refresh_token_lifetime = 6 [
     json_name = "refresh_token_lifetime",
-    (validate.rules).duration.gt.seconds = 0,
+    (validate.rules).int64.gt = 0,
     (gnostic.openapi.v3.property) = {description: "The lifetime of the refresh token."}
   ];
   string issuer = 7 [

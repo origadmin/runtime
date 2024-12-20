@@ -29,8 +29,8 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 	option := settings.ApplyDefaultsOrZero(ss...)
 	timeout := defaultTimeout
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
-		if serviceHttp.Timeout != nil {
-			timeout = serviceHttp.Timeout.AsDuration()
+		if serviceHttp.Timeout != 0 {
+			timeout = time.Duration(serviceHttp.Timeout)
 		}
 	}
 	clientOptions := []transhttp.ClientOption{

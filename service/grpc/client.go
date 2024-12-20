@@ -30,8 +30,8 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) 
 	option := settings.ApplyDefaultsOrZero(ss...)
 	timeout := defaultTimeout
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
-		if serviceGrpc.Timeout != nil {
-			timeout = serviceGrpc.Timeout.AsDuration()
+		if serviceGrpc.Timeout != 0 {
+			timeout = time.Duration(serviceGrpc.Timeout)
 		}
 	}
 	clientOptions := []transgrpc.ClientOption{

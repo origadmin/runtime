@@ -7,6 +7,7 @@ package data
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/origadmin/toolkits/errors"
 
@@ -32,11 +33,11 @@ func OpenDB(database *configv1.Data_Database) (*sql.DB, error) {
 	if database.MaxIdleConnections > 0 {
 		db.SetMaxIdleConns(int(database.MaxIdleConnections))
 	}
-	if t := database.ConnectionMaxLifetime; t != nil && t.AsDuration() > 0 {
-		db.SetConnMaxLifetime(t.AsDuration())
+	if t := database.ConnectionMaxLifetime; t != 0 {
+		db.SetConnMaxLifetime(time.Duration(t))
 	}
-	if t := database.ConnectionMaxIdleTime; t != nil && t.AsDuration() > 0 {
-		db.SetConnMaxIdleTime(t.AsDuration())
+	if t := database.ConnectionMaxIdleTime; t != 0 {
+		db.SetConnMaxIdleTime(time.Duration(t))
 	}
 
 	return db, nil

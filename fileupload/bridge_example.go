@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"google.golang.org/protobuf/types/known/durationpb"
-
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	metricsv1 "github.com/origadmin/runtime/gen/go/middleware/metrics/v1"
 	ratelimitv1 "github.com/origadmin/runtime/gen/go/middleware/ratelimit/v1"
@@ -33,14 +31,14 @@ func main() {
 			UseTls:          false,
 			CertFile:        "",
 			KeyFile:         "",
-			Timeout:         durationpb.New(3 * time.Minute),
-			ShutdownTimeout: durationpb.New(3 * time.Minute),
+			Timeout:         int64(3 * time.Minute),
+			ShutdownTimeout: int64(3 * time.Minute),
 
-			ReadTimeout: durationpb.New(3 * time.Minute),
+			ReadTimeout: int64(3 * time.Minute),
 
-			WriteTimeout: durationpb.New(3 * time.Minute),
+			WriteTimeout: int64(3 * time.Minute),
 
-			IdleTimeout: durationpb.New(3 * time.Minute),
+			IdleTimeout: int64(3 * time.Minute),
 			Endpoint:    "",
 		},
 		Http: &configv1.Service_HTTP{
@@ -49,32 +47,14 @@ func main() {
 			UseTls:   false,
 			CertFile: "",
 			KeyFile:  "",
-			Timeout:  durationpb.New(3 * time.Minute),
+			Timeout:  int64(3 * time.Minute),
 
-			ShutdownTimeout: durationpb.New(3 * time.Minute),
+			ShutdownTimeout: int64(3 * time.Minute),
 
-			ReadTimeout: durationpb.New(3 * time.Minute),
+			ReadTimeout: int64(3 * time.Minute),
 
-			WriteTimeout: durationpb.New(3 * time.Minute),
-			IdleTimeout:  durationpb.New(3 * time.Minute),
-
-			Endpoint: "",
-		},
-		Gins: &configv1.Service_GINS{
-			Network:  "",
-			Addr:     "",
-			UseTls:   false,
-			CertFile: "",
-			KeyFile:  "",
-			Timeout:  durationpb.New(3 * time.Minute),
-
-			ShutdownTimeout: durationpb.New(3 * time.Minute),
-
-			ReadTimeout: durationpb.New(3 * time.Minute),
-
-			WriteTimeout: durationpb.New(3 * time.Minute),
-
-			IdleTimeout: durationpb.New(3 * time.Minute),
+			WriteTimeout: int64(3 * time.Minute),
+			IdleTimeout:  int64(3 * time.Minute),
 
 			Endpoint: "",
 		},
@@ -83,7 +63,7 @@ func main() {
 			Addr:    "",
 			Path:    "",
 			Codec:   "",
-			Timeout: durationpb.New(3 * time.Minute),
+			Timeout: int64(3 * time.Minute),
 		},
 		Message: &configv1.Message{
 			Type: "",
@@ -168,8 +148,8 @@ func main() {
 				XRatelimitReset:     0,
 				RetryAfter:          0,
 				Memory: &ratelimitv1.RateLimiter_Memory{
-					Expiration:      durationpb.New(3 * time.Minute),
-					CleanupInterval: durationpb.New(3 * time.Minute),
+					Expiration:      int64(3 * time.Minute),
+					CleanupInterval: int64(3 * time.Minute),
 				},
 				Redis: &ratelimitv1.RateLimiter_Redis{
 					Addr:     "",
