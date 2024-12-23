@@ -98,7 +98,13 @@ func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) (
 	if o.Parser == nil {
 		return nil, errors.New("user claims parser is nil")
 	}
-	return o.Parser(ctx, claims.GetSubject())
+	if claims == nil {
+		claims = ClaimsFromContext(ctx)
+	}
+	//if claims == nil {
+	//	return nil, errors.New("claims is nil")
+	//}
+	return o.Parser(ctx, claims)
 }
 
 // WithAuthenticator sets the authenticator.
