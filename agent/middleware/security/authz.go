@@ -168,7 +168,7 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				log.Errorf("NewAuthZ: parser is nil")
 				return nil, ErrMissingClaims
 			}
-			userClaims, err := option.Parser(ctx, claims.GetSubject())
+			userClaims, err := option.Parser(ctx)
 			if err != nil {
 				log.Errorf("NewAuthZ: error parsing user claims: %v", err)
 				return nil, err
@@ -180,11 +180,6 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				return nil, ErrInvalidClaims
 			}
 
-			//var project []string
-			//if domains := claims.GetDomain(); domains != nil {
-			//	project = domains
-			//}
-			// todo add domain project
 			log.Debugf("NewAuthZ: checking authorization for user claims %+v", userClaims)
 			allowed, err = option.Authorizer.Authorized(ctx, userClaims)
 			if err != nil {
