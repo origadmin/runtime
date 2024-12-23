@@ -51,6 +51,8 @@ type Option struct {
 	Parser security.UserClaimsParser
 	// Skipper is the function used to skip authentication.
 	Skipper func(string) bool
+	// IsRoot is the function used to check if the request is root.
+	IsRoot func(ctx context.Context, claims security.Claims) bool
 }
 
 // OptionSetting is a function that sets an option.

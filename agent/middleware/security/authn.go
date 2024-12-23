@@ -159,6 +159,9 @@ func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				log.Errorf("NewAuthN: authentication failed: %s", err.Error())
 				return nil, err
 			}
+			if option.IsRoot(ctx, claims) {
+				ctx = security.WithRootContext(ctx)
+			}
 
 			log.Debugf("NewAuthN: setting claims to context")
 			ctx = NewClaimsContext(ctx, claims)

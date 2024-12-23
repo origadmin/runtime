@@ -12,6 +12,7 @@ import (
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/toolkits/security"
 )
 
 // NewAuthZClient returns a new server middleware.
@@ -31,6 +32,11 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				return handler(NewSkipContext(ctx), req)
 			}
 
+			if security.ContextIsRoot(ctx) {
+				log.Debugf("NewAuthZClient: claims are root, skipping authorization")
+				return handler(ctx, req)
+			}
+
 			claims := ClaimsFromContext(ctx)
 			if claims == nil {
 				log.Errorf("NewAuthZClient: claims are nil")
@@ -41,10 +47,6 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			if err != nil {
 				log.Errorf("NewAuthZClient: error parsing user claims: %v", err)
 				return nil, err
-			}
-			if userClaims.IsRoot() {
-				log.Errorf("NewAuthZClient: claims are root, skipping authorization")
-				return handler(ctx, req)
 			}
 
 			if userClaims.GetSubject() == "" || userClaims.GetAction() == "" || userClaims.GetObject() == "" {
@@ -94,14 +96,15 @@ func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				err     error
 			)
 
+			if security.ContextIsRoot(ctx) {
+				log.Debugf("NewAuthZServer: claims are root, skipping authorization")
+				return handler(ctx, req)
+			}
+
 			claims := UserClaimsFromContext(ctx)
 			if claims == nil {
 				log.Errorf("NewAuthZServer: claims are nil")
 				return nil, ErrMissingToken
-			}
-			if claims.IsRoot() {
-				log.Errorf("NewAuthZServer: claims are root, skipping authorization")
-				return handler(ctx, req)
 			}
 
 			log.Debugf("NewAuthZServer: claims are not nil, proceeding with authorization")
