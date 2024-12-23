@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	ApiVersionV1   = "/api/v1"
 	DefaultPrefix  = "/api"
 	DefaultVersion = "v1"
 )
