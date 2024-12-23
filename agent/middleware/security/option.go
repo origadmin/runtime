@@ -16,9 +16,9 @@ import (
 
 const (
 	// MetadataSecurityTokenKey is the default token key.
-	MetadataSecurityTokenKey = "x-metadata-security-token-key"
+	MetadataSecurityTokenKey = "x-md-global-security-token-key"
 	// MetadataSecuritySkipKey is the default skip key.
-	MetadataSecuritySkipKey = "x-metadata-security-skip-key"
+	MetadataSecuritySkipKey = "x-md-global-security-skip-key"
 )
 
 // TokenParser is a function that parses a token from the context.
