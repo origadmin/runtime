@@ -11,9 +11,10 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func MetadataClient(selector Selector, cfg *middlewarev1.Middleware_Metadata) Selector {
+func MetadataClient(selector selector.Selector, cfg *middlewarev1.Middleware_Metadata) selector.Selector {
 	log.Debug("[MetadataClient] KMiddleware is enabled")
 	var options []middlewareMetadata.Option
 	if prefix := cfg.GetPrefix(); prefix != "" {
@@ -32,7 +33,7 @@ func MetadataClient(selector Selector, cfg *middlewarev1.Middleware_Metadata) Se
 	return selector.Append("Metadata", middlewareMetadata.Client(options...))
 }
 
-func MetadataServer(selector Selector, cfg *middlewarev1.Middleware_Metadata) Selector {
+func MetadataServer(selector selector.Selector, cfg *middlewarev1.Middleware_Metadata) selector.Selector {
 	log.Debug("[MetadataServer] KMiddleware is enabled")
 
 	var options []middlewareMetadata.Option

@@ -14,9 +14,10 @@ import (
 
 	jwtv1 "github.com/origadmin/runtime/gen/go/middleware/jwt/v1"
 	secjwtv1 "github.com/origadmin/runtime/gen/go/security/jwt/v1"
+	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func JwtServer(selector Selector, cfg *jwtv1.JWT) Selector {
+func JwtServer(selector selector.Selector, cfg *jwtv1.JWT) selector.Selector {
 	config := cfg.GetConfig()
 	if config == nil {
 		return selector
@@ -25,7 +26,7 @@ func JwtServer(selector Selector, cfg *jwtv1.JWT) Selector {
 	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
 	return selector.Append("Jwt", authjwt.Server(kf, opts...))
 }
-func JwtClient(selector Selector, cfg *jwtv1.JWT) Selector {
+func JwtClient(selector selector.Selector, cfg *jwtv1.JWT) selector.Selector {
 	config := cfg.GetConfig()
 	if config == nil {
 		return selector

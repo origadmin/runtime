@@ -10,9 +10,10 @@ import (
 
 	ratelimitv1 "github.com/origadmin/runtime/gen/go/middleware/ratelimit/v1"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func RateLimitServer(selector Selector, cfg *ratelimitv1.RateLimiter) Selector {
+func RateLimitServer(selector selector.Selector, cfg *ratelimitv1.RateLimiter) selector.Selector {
 	if cfg == nil {
 		return selector
 	}

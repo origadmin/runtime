@@ -9,9 +9,10 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/circuitbreaker"
 
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func CircuitBreakerClient(selector Selector) Selector {
+func CircuitBreakerClient(selector selector.Selector) selector.Selector {
 	log.Debug("[KMiddleware] CircuitBreaker client middleware enabled")
 	return selector.Append("CircuitBreaker", circuitbreaker.Client())
 }

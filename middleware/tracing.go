@@ -9,14 +9,15 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func TracingClient(selector Selector) Selector {
+func TracingClient(selector selector.Selector) selector.Selector {
 	log.Debug("[KMiddleware] Tracing client middleware enabled")
 	return selector.Append("Metadata", tracing.Client())
 }
 
-func TracingServer(selector Selector) Selector {
+func TracingServer(selector selector.Selector) selector.Selector {
 	log.Debug("[KMiddleware] Tracing server middleware enabled")
 	return selector.Append("Metadata", tracing.Server())
 }
