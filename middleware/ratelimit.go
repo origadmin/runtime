@@ -12,9 +12,9 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func RateLimitServer(f Filter, cfg *ratelimitv1.RateLimiter) Filter {
+func RateLimitServer(selector Selector, cfg *ratelimitv1.RateLimiter) Selector {
 	if cfg == nil {
-		return f
+		return selector
 	}
 	var options []ratelimit.Option
 	switch cfg.GetName() {
@@ -29,5 +29,5 @@ func RateLimitServer(f Filter, cfg *ratelimitv1.RateLimiter) Filter {
 		// do nothing
 	}
 	log.Debugf("[KMiddleware] Rate limit server middleware enabled with %v", cfg.GetName())
-	return f.Filter("RateLimit", ratelimit.Server(options...))
+	return selector.Append("RateLimit", ratelimit.Server(options...))
 }

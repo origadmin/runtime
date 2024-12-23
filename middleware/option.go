@@ -15,3 +15,15 @@ type Option struct {
 }
 
 type OptionSetting = func(*Option)
+
+func WithLogger(logger log.Logger) OptionSetting {
+	return func(o *Option) {
+		o.Logger = logger
+	}
+}
+
+func WithMatchFunc(matchFunc selector.MatchFunc) OptionSetting {
+	return func(o *Option) {
+		o.MatchFunc = matchFunc
+	}
+}

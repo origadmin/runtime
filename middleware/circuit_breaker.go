@@ -11,7 +11,7 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func CircuitBreakerClient(f Filter) Filter {
+func CircuitBreakerClient(selector Selector) Selector {
 	log.Debug("[KMiddleware] CircuitBreaker client middleware enabled")
-	return f.Filter("CircuitBreaker", circuitbreaker.Client())
+	return selector.Append("CircuitBreaker", circuitbreaker.Client())
 }

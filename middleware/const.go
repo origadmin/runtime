@@ -7,6 +7,7 @@ package middleware
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/selector"
 	"github.com/goexts/generic/settings"
 
 	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
@@ -19,10 +20,6 @@ type (
 	KHandler    = middleware.Handler
 	KMiddleware = middleware.Middleware
 )
-
-//type KMiddleware struct {
-//
-//}
 
 // Chain returns a middleware that executes a chain of middleware.
 func Chain(m ...KMiddleware) KMiddleware {
@@ -41,35 +38,35 @@ func NewClient(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware 
 		Logger: log.DefaultLogger,
 	}, ss)
 
-	f := MakeFilter(cfg.GetSelector().GetNames())
+	filter := WithSelector(cfg.GetSelector(), option.MatchFunc)
 	if cfg.Logging {
 		// Add the LoggingClient middleware to the slice
-		f = LoggingClient(f, option.Logger)
+		filter = LoggingClient(filter, option.Logger)
 	}
 	if cfg.Recovery {
 		// Add the Recovery middleware to the slice
-		f = Recovery(f)
+		filter = Recovery(filter)
 	}
 	if cfg.GetMetadata().GetEnabled() {
 		// Add the MetadataClient middleware to the slice
-		f = MetadataClient(f, cfg.GetMetadata())
+		filter = MetadataClient(filter, cfg.GetMetadata())
 	}
 	if cfg.Tracing {
 		// Add the TracingClient middleware to the slice
-		f = TracingClient(f)
+		filter = TracingClient(filter)
 	}
 	if cfg.CircuitBreaker {
 		// Add the CircuitBreakerClient middleware to the slice
-		f = CircuitBreakerClient(f)
+		filter = CircuitBreakerClient(filter)
 	}
 	if cfg.GetJwt().GetEnabled() {
-		f = JwtClient(f, cfg.GetJwt())
+		filter = JwtClient(filter, cfg.GetJwt())
 	}
-	if cfg.GetSelector().GetEnabled() {
-		return SelectorClient(f, cfg.GetSelector(), option.MatchFunc)
-	}
+	//if cfg.GetSelector().GetEnabled() {
+	//	return SelectorClient(filter, cfg.GetSelector(), option.MatchFunc)
+	//}
 	// Add the Security middleware to the slice
-	return f.All()
+	return filter.Build(cfg.Selector, selector.Client)
 }
 
 // NewServer creates a new server with the given configuration
@@ -84,36 +81,36 @@ func NewServer(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware 
 	option := settings.Apply(&Option{
 		Logger: log.DefaultLogger,
 	}, ss)
-	f := MakeFilter(cfg.GetSelector().GetNames())
+	filter := WithSelector(cfg.GetSelector(), option.MatchFunc)
 	if cfg.Logging {
-		f = LoggingServer(f, option.Logger)
+		filter = LoggingServer(filter, option.Logger)
 	}
 	if cfg.Recovery {
 		// Add the Recovery middleware to the slice
-		f = Recovery(f)
+		filter = Recovery(filter)
 	}
 	if cfg.GetValidator().GetEnabled() {
 		// Add the ValidateServer middleware to the slice
-		f = ValidateServer(f, cfg.Validator)
+		filter = ValidateServer(filter, cfg.Validator)
 	}
 	if cfg.Tracing {
 		// Add the TracingServer middleware to the slice
-		f = TracingServer(f)
+		filter = TracingServer(filter)
 	}
 	if cfg.GetMetadata().GetEnabled() {
 		// Add the MetadataServer middleware to the slice
-		f = MetadataServer(f, cfg.Metadata)
+		filter = MetadataServer(filter, cfg.Metadata)
 	}
 	if cfg.GetRateLimiter().GetEnabled() {
 		// Add the RateLimitServer middleware to the slice
-		f = RateLimitServer(f, cfg.RateLimiter)
+		filter = RateLimitServer(filter, cfg.RateLimiter)
 	}
 	if cfg.GetJwt().GetEnabled() {
-		f = JwtServer(f, cfg.Jwt)
+		filter = JwtServer(filter, cfg.Jwt)
 	}
-	if cfg.GetSelector().GetEnabled() {
-		return SelectorServer(f, cfg.GetSelector(), option.MatchFunc)
-	}
+	//if cfg.GetSelector().GetEnabled() {
+	//	return SelectorServer(filter, cfg.GetSelector(), option.MatchFunc)
+	//}
 	// Return the slice of middlewares
-	return f.All()
+	return filter.Build(cfg.Selector, selector.Server)
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func MetadataClient(f Filter, cfg *middlewarev1.Middleware_Metadata) Filter {
+func MetadataClient(selector Selector, cfg *middlewarev1.Middleware_Metadata) Selector {
 	log.Debug("[MetadataClient] KMiddleware is enabled")
 	var options []middlewareMetadata.Option
 	if prefix := cfg.GetPrefix(); prefix != "" {
@@ -29,10 +29,10 @@ func MetadataClient(f Filter, cfg *middlewarev1.Middleware_Metadata) Filter {
 		options = append(options, middlewareMetadata.WithConstants(data))
 	}
 	log.Debug("[MetadataClient] Metadata client middleware enabled")
-	return f.Filter("Metadata", middlewareMetadata.Client(options...))
+	return selector.Append("Metadata", middlewareMetadata.Client(options...))
 }
 
-func MetadataServer(f Filter, cfg *middlewarev1.Middleware_Metadata) Filter {
+func MetadataServer(selector Selector, cfg *middlewarev1.Middleware_Metadata) Selector {
 	log.Debug("[MetadataServer] KMiddleware is enabled")
 
 	var options []middlewareMetadata.Option
@@ -49,5 +49,5 @@ func MetadataServer(f Filter, cfg *middlewarev1.Middleware_Metadata) Filter {
 		options = append(options, middlewareMetadata.WithConstants(data))
 	}
 	log.Debug("[MetadataServer] Metadata server middleware enabled")
-	return f.Filter("Metadata", middlewareMetadata.Server(options...))
+	return selector.Append("Metadata", middlewareMetadata.Server(options...))
 }

@@ -11,12 +11,12 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func TracingClient(f Filter) Filter {
+func TracingClient(selector Selector) Selector {
 	log.Debug("[KMiddleware] Tracing client middleware enabled")
-	return f.Filter("Metadata", tracing.Client())
+	return selector.Append("Metadata", tracing.Client())
 }
 
-func TracingServer(f Filter) Filter {
+func TracingServer(selector Selector) Selector {
 	log.Debug("[KMiddleware] Tracing server middleware enabled")
-	return f.Filter("Metadata", tracing.Server())
+	return selector.Append("Metadata", tracing.Server())
 }

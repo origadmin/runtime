@@ -16,23 +16,23 @@ import (
 	secjwtv1 "github.com/origadmin/runtime/gen/go/security/jwt/v1"
 )
 
-func JwtServer(f Filter, cfg *jwtv1.JWT) Filter {
+func JwtServer(selector Selector, cfg *jwtv1.JWT) Selector {
 	config := cfg.GetConfig()
 	if config == nil {
-		return f
+		return selector
 	}
 	kf := getKeyFunc(config.Key, config.SigningMethod)
 	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
-	return f.Filter("Jwt", authjwt.Server(kf, opts...))
+	return selector.Append("Jwt", authjwt.Server(kf, opts...))
 }
-func JwtClient(f Filter, cfg *jwtv1.JWT) Filter {
+func JwtClient(selector Selector, cfg *jwtv1.JWT) Selector {
 	config := cfg.GetConfig()
 	if config == nil {
-		return f
+		return selector
 	}
 	kf := getKeyFunc(config.Key, config.SigningMethod)
 	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
-	return f.Filter("Jwt", authjwt.Client(kf, opts...))
+	return selector.Append("Jwt", authjwt.Client(kf, opts...))
 }
 
 func fromJwtConfig(cfg *secjwtv1.Config, subject string, ctp string, header map[string]string) []authjwt.Option {
