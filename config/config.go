@@ -66,12 +66,17 @@ func (v *EnvVars) Get(key string) (string, bool) {
 }
 
 type Config struct {
-	EnvPrefixes []string
 	envVars     EnvVars
 	source      KConfig
+	Path        string
+	EnvPrefixes []string
+	Builder     Builder
 }
 
 func (c *Config) LoadFromFile(path string, opts ...KOption) error {
+	if c.source != nil {
+		return nil
+	}
 	var sources = []KSource{file.NewSource(path)}
 	if c.EnvPrefixes != nil {
 		sources = append(sources, configenv.NewSource(c.EnvPrefixes...))
@@ -79,6 +84,26 @@ func (c *Config) LoadFromFile(path string, opts ...KOption) error {
 	}
 	c.source = NewSourceConfig(opts...)
 	return c.source.Load()
+}
+
+func (c *Config) LoadFromSource(cfg *configv1.SourceConfig, opts ...OptionSetting) error {
+	if c.source != nil {
+		return nil
+	}
+	config, err := c.Builder.NewConfig(cfg, opts...)
+	if err != nil {
+		return err
+	}
+	c.source = config
+	return c.source.Load()
+}
+
+func (c *Config) Scan(v any) error {
+	return c.source.Scan(v)
+}
+
+func (c *Config) Watch(key string, ob KObserver) error {
+	return c.source.Watch(key, ob)
 }
 
 func (c *Config) SetEnv(key, value string) {
