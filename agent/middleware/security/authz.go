@@ -168,7 +168,7 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				log.Errorf("NewAuthZ: parser is nil")
 				return nil, ErrMissingClaims
 			}
-			userClaims, err := option.Parser(ctx)
+			userClaims, err := option.Parser(ctx, claims)
 			if err != nil {
 				log.Errorf("NewAuthZ: error parsing user claims: %v", err)
 				return nil, err
