@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package builder implements the functions, types, and interfaces for the module.
+// Package service implements the functions, types, and interfaces for the module.
 package service
 
 import (
@@ -24,5 +24,18 @@ type (
 		NewHTTPClient(context.Context, *configv1.Service, ...OptionSetting) (*HTTPClient, error)
 	}
 )
+
+type HTTPRegister interface {
+	RegisterHTTPServer(context.Context, *HTTPServer)
+}
+
+type GRPCRegister interface {
+	RegisterGRPCServer(context.Context, *GRPCServer)
+}
+
+type Register interface {
+	GRPCRegister
+	HTTPRegister
+}
 
 type Service struct{}

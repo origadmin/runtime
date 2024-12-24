@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package builder implements the functions, types, and interfaces for the module.
+// Package service implements the functions, types, and interfaces for the module.
 package service
 
 import (
@@ -39,16 +39,16 @@ type (
 )
 
 type (
-	// RegisterGRPCServer register a gRPC server
-	RegisterGRPCServer = func(s *GRPCServer)
-	// RegisterHTTPServer register a HTTP server
-	RegisterHTTPServer = func(s *HTTPServer)
-	// RegisterGRPCClient register a gRPC client
-	RegisterGRPCClient = func(c *GRPCClient)
-	// RegisterHTTPClient register a HTTP client
-	RegisterHTTPClient = func(c *HTTPClient)
+	// RegisterGRPCServerFunc register a gRPC server
+	RegisterGRPCServerFunc = func(s *GRPCServer)
+	// RegisterHTTPServerFunc register a HTTP server
+	RegisterHTTPServerFunc = func(s *HTTPServer)
+	// RegisterGRPCClientFunc register a gRPC client
+	RegisterGRPCClientFunc = func(c *GRPCClient)
+	// RegisterHTTPClientFunc register a HTTP client
+	RegisterHTTPClientFunc = func(c *HTTPClient)
 )
 
 var (
-	ErrServiceNotFound = errors.New("builder not found")
+	ErrServiceNotFound = errors.New("service not found")
 )

@@ -157,7 +157,10 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				allowed bool
 				err     error
 			)
-
+			if security.ContextIsRoot(ctx) {
+				log.Debugf("NewAuthZServer: claims are root, skipping authorization")
+				return handler(ctx, req)
+			}
 			claims := ClaimsFromContext(ctx)
 			if claims == nil {
 				log.Errorf("NewAuthZ: claims are nil")
