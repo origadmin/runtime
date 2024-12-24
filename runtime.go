@@ -34,8 +34,12 @@ type Builder interface {
 
 // build is a global variable that holds an instance of the builder struct.
 var (
-	once  = &sync.Once{}
-	build = &builder{}
+	once    = &sync.Once{}
+	build   = &builder{}
+	runtime = &Runtime{
+		builder:   build,
+		EnvPrefix: DefaultEnvPrefix,
+	}
 )
 
 // ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
