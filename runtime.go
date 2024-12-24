@@ -43,6 +43,7 @@ var ErrNotFound = errors.String("not found")
 
 type Runtime struct {
 	once        sync.Once
+	builder     *builder
 	Debug       bool
 	EnvPrefix   string
 	WorkDir     string
@@ -95,8 +96,42 @@ func (r *Runtime) Build(rr registry.Registry, servers ...transport.Server) *krat
 		kratos.Registrar(rr),
 	)
 }
+
+func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.OptionSetting) (registry.KRegistrar, error) {
+	cfg, err := r.Config.Registry(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	return r.builder.NewRegistrar(cfg, ss...)
+}
+
+func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.OptionSetting) (registry.KDiscovery, error) {
+	cfg, err := r.Config.Registry(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	return r.builder.NewDiscovery(cfg, ss...)
+}
+
+func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.OptionSetting) (*service.GRPCServer, error) {
+	cfg, err := r.Config.Service(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	return r.builder.NewGRPCServer(cfg, ss...)
+}
+
+func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.OptionSetting) (*service.HTTPServer, error) {
+	cfg, err := r.Config.Service(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	return r.builder.NewHTTPServer(cfg, ss...)
+}
+
 func New() Runtime {
 	return Runtime{
+		builder:   build,
 		EnvPrefix: DefaultEnvPrefix,
 	}
 }

@@ -66,11 +66,14 @@ func (v *EnvVars) Get(key string) (string, bool) {
 }
 
 type Config struct {
+	cfg         any
 	envVars     EnvVars
 	source      KConfig
 	Path        string
 	EnvPrefixes []string
 	Builder     Builder
+	registry    func(source any, serviceName string) (*configv1.Registry, error)
+	service     func(source any, serviceName string) (*configv1.Service, error)
 }
 
 func (c *Config) LoadFromFile(path string, opts ...KOption) error {
@@ -90,6 +93,7 @@ func (c *Config) LoadFromSource(cfg *configv1.SourceConfig, opts ...OptionSettin
 	if c.source != nil {
 		return nil
 	}
+
 	config, err := c.Builder.NewConfig(cfg, opts...)
 	if err != nil {
 		return err
@@ -98,8 +102,13 @@ func (c *Config) LoadFromSource(cfg *configv1.SourceConfig, opts ...OptionSettin
 	return c.source.Load()
 }
 
-func (c *Config) Scan(v any) error {
-	return c.source.Scan(v)
+func (c *Config) Scan() error {
+	return c.source.Scan(c.cfg)
+}
+
+func (c *Config) Bind(cfg any) error {
+	c.cfg = cfg
+	return c.Scan()
 }
 
 func (c *Config) Watch(key string, ob KObserver) error {
@@ -119,6 +128,24 @@ func (c *Config) GetEnv(key string) (string, bool) {
 
 func (c *Config) Setup(prefix string) error {
 	return c.envVars.Setup(prefix)
+}
+
+func (c *Config) BindRegistry(fn func(source any, serviceName string) (*configv1.Registry, error)) {
+	c.registry = fn
+}
+
+func (c *Config) Registry(serviceName string) (*configv1.Registry, error) {
+	if c.registry != nil {
+		return c.registry(c.cfg, serviceName)
+	}
+	return nil, ErrNotFound
+}
+
+func (c *Config) Service(serviceName string) (*configv1.Service, error) {
+	if c.service != nil {
+		return c.service(c.cfg, serviceName)
+	}
+	return nil, ErrNotFound
 }
 
 func NewBuilder() Builder {
