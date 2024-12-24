@@ -43,3 +43,17 @@ func NewAgent(server *http.Server, grpcServer *grpc.Server) Agent {
 		HTTPAgent: NewHTTP(server),
 	}
 }
+
+func NewAgentWithGRPC(grpcServer *grpc.Server) Agent {
+	return &agent{
+		GRPCAgent: NewGRPC(grpcServer),
+		HTTPAgent: UnimplementedAgent,
+	}
+}
+
+func NewAgentWithHTTP(server *http.Server) Agent {
+	return &agent{
+		GRPCAgent: UnimplementedAgent,
+		HTTPAgent: NewHTTP(server),
+	}
+}
