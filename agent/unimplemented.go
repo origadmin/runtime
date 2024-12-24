@@ -6,7 +6,8 @@
 package agent
 
 import (
-	"github.com/go-kratos/kratos/v2/transport/http"
+	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"google.golang.org/grpc"
 )
 
@@ -18,15 +19,15 @@ func (u unimplementedAgent) URI() string {
 	return ""
 }
 
-func (u unimplementedAgent) HTTPServer() *http.Server {
+func (u unimplementedAgent) HTTPServer() *transhttp.Server {
 	return nil
 }
 
-func (u unimplementedAgent) Route() *http.Router {
+func (u unimplementedAgent) Route() *transhttp.Router {
 	return nil
 }
 
-func (u unimplementedAgent) Server() *grpc.Server {
+func (u unimplementedAgent) Server() *transgrpc.Server {
 	return nil
 }
 
