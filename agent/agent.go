@@ -51,10 +51,10 @@ type agent struct {
 }
 
 // NewAgent creates a new Agent instance that supports both HTTP and gRPC
-func NewAgent(server *transhttp.Server, grpcServer *transgrpc.Server) Agent {
+func NewAgent(httpServer *transhttp.Server, grpcServer *transgrpc.Server) Agent {
 	return &agent{
 		GRPCAgent: NewGRPC(grpcServer),
-		HTTPAgent: NewHTTP(server),
+		HTTPAgent: NewHTTP(httpServer),
 	}
 }
 
