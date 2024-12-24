@@ -6,24 +6,25 @@
 package agent
 
 import (
+	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 )
 
 type grpcAgent struct {
 	prefix  string
 	version string
-	server  *grpc.Server
+	server  *transgrpc.Server
 }
 
 func (g *grpcAgent) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
 	g.server.RegisterService(desc, impl)
 }
 
-func (g *grpcAgent) Server() *grpc.Server {
+func (g *grpcAgent) Server() *transgrpc.Server {
 	return g.server
 }
 
-func NewGRPC(server *grpc.Server) GRPCAgent {
+func NewGRPC(server *transgrpc.Server) GRPCAgent {
 	return &grpcAgent{
 		prefix:  DefaultPrefix,
 		version: DefaultVersion,

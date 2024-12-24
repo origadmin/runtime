@@ -6,7 +6,8 @@
 package agent
 
 import (
-	"github.com/go-kratos/kratos/v2/transport/http"
+	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"google.golang.org/grpc"
 )
 
@@ -30,15 +31,15 @@ type HTTPAgent interface {
 	// URI returns the URI of the HTTP service
 	URI() string
 	// HTTPServer returns an instance of the HTTP server
-	HTTPServer() *http.Server
+	HTTPServer() *transhttp.Server
 	// Route returns an instance of the HTTP router
-	Route() *http.Router
+	Route() *transhttp.Router
 }
 
 // GRPCAgent is an interface that defines the basic methods of a gRPC proxy
 type GRPCAgent interface {
 	// Server returns an instance of the gRPC server
-	Server() *grpc.Server
+	Server() *transgrpc.Server
 	// RegisterService registers a gRPC service
 	RegisterService(desc *grpc.ServiceDesc, impl interface{})
 }
@@ -50,7 +51,7 @@ type agent struct {
 }
 
 // NewAgent creates a new Agent instance that supports both HTTP and gRPC
-func NewAgent(server *http.Server, grpcServer *grpc.Server) Agent {
+func NewAgent(server *transhttp.Server, grpcServer *transgrpc.Server) Agent {
 	return &agent{
 		GRPCAgent: NewGRPC(grpcServer),
 		HTTPAgent: NewHTTP(server),
@@ -58,7 +59,7 @@ func NewAgent(server *http.Server, grpcServer *grpc.Server) Agent {
 }
 
 // NewAgentWithGRPC creates a new Agent instance that only supports gRPC
-func NewAgentWithGRPC(grpcServer *grpc.Server) Agent {
+func NewAgentWithGRPC(grpcServer *transgrpc.Server) Agent {
 	return &agent{
 		GRPCAgent: NewGRPC(grpcServer),
 		HTTPAgent: UnimplementedAgent,
@@ -66,7 +67,7 @@ func NewAgentWithGRPC(grpcServer *grpc.Server) Agent {
 }
 
 // NewAgentWithHTTP creates a new Agent instance that only supports HTTP
-func NewAgentWithHTTP(server *http.Server) Agent {
+func NewAgentWithHTTP(server *transhttp.Server) Agent {
 	return &agent{
 		GRPCAgent: UnimplementedAgent,
 		HTTPAgent: NewHTTP(server),
