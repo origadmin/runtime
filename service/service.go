@@ -25,17 +25,4 @@ type (
 	}
 )
 
-type HTTPRegister interface {
-	RegisterHTTPServer(context.Context, *HTTPServer)
-}
-
-type GRPCRegister interface {
-	RegisterGRPCServer(context.Context, *GRPCServer)
-}
-
-type Register interface {
-	GRPCRegister
-	HTTPRegister
-}
-
 type Service struct{}

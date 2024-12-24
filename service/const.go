@@ -6,6 +6,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -40,14 +41,27 @@ type (
 
 type (
 	// RegisterGRPCServerFunc register a gRPC server
-	RegisterGRPCServerFunc = func(s *GRPCServer)
+	RegisterGRPCServerFunc = func(context.Context, *GRPCServer)
 	// RegisterHTTPServerFunc register a HTTP server
-	RegisterHTTPServerFunc = func(s *HTTPServer)
+	RegisterHTTPServerFunc = func(context.Context, *HTTPServer)
 	// RegisterGRPCClientFunc register a gRPC client
-	RegisterGRPCClientFunc = func(c *GRPCClient)
+	RegisterGRPCClientFunc = func(context.Context, *GRPCClient)
 	// RegisterHTTPClientFunc register a HTTP client
-	RegisterHTTPClientFunc = func(c *HTTPClient)
+	RegisterHTTPClientFunc = func(context.Context, *HTTPClient)
 )
+
+type HTTPServerRegister interface {
+	HTTPServer(context.Context, *HTTPServer)
+}
+
+type GRPCServerRegister interface {
+	GRPCServer(context.Context, *GRPCServer)
+}
+
+type ServerRegister interface {
+	GRPCServerRegister
+	HTTPServerRegister
+}
 
 var (
 	ErrServiceNotFound = errors.New("service not found")

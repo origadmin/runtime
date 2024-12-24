@@ -6,9 +6,8 @@
 package agent
 
 import (
-	"fmt"
-
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -18,41 +17,29 @@ const (
 )
 
 type Agent interface {
+	HTTPAgent
+	GRPCAgent
+}
+
+type HTTPAgent interface {
 	URI() string
-	Server() *http.Server
+	HTTPServer() *http.Server
 	Route() *http.Router
 }
 
+type GRPCAgent interface {
+	Server() *grpc.Server
+	RegisterService(desc *grpc.ServiceDesc, impl interface{})
+}
+
 type agent struct {
-	prefix  string
-	version string
-	server  *http.Server
+	GRPCAgent
+	HTTPAgent
 }
 
-func (obj *agent) SetPrefix(prefix string) {
-	obj.prefix = prefix
-}
-
-func (obj *agent) SetVersion(version string) {
-	obj.version = version
-}
-
-func (obj *agent) Server() *http.Server {
-	return obj.server
-}
-
-func (obj *agent) Route() *http.Router {
-	return obj.server.Route(obj.URI())
-}
-
-func (obj *agent) URI() string {
-	return fmt.Sprintf("%s/%s", obj.prefix, obj.version)
-}
-
-func New(server *http.Server) Agent {
+func NewAgent(server *http.Server, grpcServer *grpc.Server) Agent {
 	return &agent{
-		prefix:  DefaultPrefix,
-		version: DefaultVersion,
-		server:  server,
+		GRPCAgent: NewGRPC(grpcServer),
+		HTTPAgent: NewHTTP(server),
 	}
 }
