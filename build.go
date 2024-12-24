@@ -56,11 +56,6 @@ func (b *builder) RegisterServiceBuilder(name string, factory service.Factory) {
 }
 
 // init initializes the builder struct.
-func init() {
-	once.Do(func() {
-		build.init()
-	})
-}
 
 func (b *builder) init() {
 
@@ -76,103 +71,98 @@ func newBuilder() *builder {
 	return b
 }
 
-// Global returns the global instance of the builder.
-func Global() Builder {
-	return build
-}
-
 // NewConfig creates a new Selector using the registered ConfigBuilder.
 func NewConfig(cfg *configv1.SourceConfig, ss ...config.OptionSetting) (config.KConfig, error) {
-	return build.ConfigBuilder.NewConfig(cfg, ss...)
+	return runtime.builder.ConfigBuilder.NewConfig(cfg, ss...)
 }
 
 // RegisterConfig registers a ConfigBuilder with the builder.
 func RegisterConfig(name string, factory config.Factory) {
-	build.ConfigBuilder.RegisterConfigBuilder(name, factory)
+	runtime.builder.ConfigBuilder.RegisterConfigBuilder(name, factory)
 }
 
 // RegisterConfigFunc registers a ConfigBuilder with the builder.
 func RegisterConfigFunc(name string, buildFunc config.BuildFunc) {
-	build.ConfigBuilder.RegisterConfigBuilder(name, buildFunc)
+	runtime.builder.ConfigBuilder.RegisterConfigBuilder(name, buildFunc)
 }
 
 // SyncConfig synchronizes the given configuration with the given value.
 func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.OptionSetting) error {
-	return build.SyncConfig(cfg, v, ss...)
+	return runtime.builder.SyncConfig(cfg, v, ss...)
 }
 
 func RegisterConfigSync(name string, syncFunc ConfigSyncFunc) {
-	build.RegisterConfigSync(name, syncFunc)
+	runtime.builder.RegisterConfigSync(name, syncFunc)
 }
 
 // NewDiscovery creates a new discovery using the registered RegistryBuilder.
 func NewDiscovery(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.KDiscovery, error) {
-	return build.NewDiscovery(cfg, ss...)
+	return runtime.builder.NewDiscovery(cfg, ss...)
 }
 
 // NewRegistrar creates a new KRegistrar using the registered RegistryBuilder.
 func NewRegistrar(cfg *configv1.Registry, ss ...registry.OptionSetting) (registry.KRegistrar, error) {
-	return build.NewRegistrar(cfg, ss...)
+	return runtime.builder.NewRegistrar(cfg, ss...)
 }
 
 // RegisterRegistry registers a RegistryBuilder with the builder.
 func RegisterRegistry(name string, factory registry.Factory) {
-	build.RegisterRegistryBuilder(name, factory)
+	runtime.builder.RegisterRegistryBuilder(name, factory)
 }
 
 // NewMiddlewareClient creates a new KMiddleware with the builder.
 func NewMiddlewareClient(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
-	return build.NewMiddlewareClient(name, cm, ss...)
+	return runtime.builder.NewMiddlewareClient(name, cm, ss...)
 }
 
 // NewMiddlewareServer creates a new KMiddleware with the builder.
 func NewMiddlewareServer(name string, cm *configv1.Customize_Config, ss ...middleware.OptionSetting) (middleware.KMiddleware, error) {
-	return build.NewMiddlewareServer(name, cm, ss...)
+	return runtime.builder.NewMiddlewareServer(name, cm, ss...)
 }
 
 // NewMiddlewaresClient creates a new KMiddleware with the builder.
 func NewMiddlewaresClient(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.KMiddleware {
-	return build.NewMiddlewaresClient(nil, cc, ss...)
+	return runtime.builder.NewMiddlewaresClient(nil, cc, ss...)
 }
 
 // NewMiddlewaresServer creates a new KMiddleware with the builder.
 func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.KMiddleware {
-	return build.NewMiddlewaresServer(nil, cc, ss...)
+	return runtime.builder.NewMiddlewaresServer(nil, cc, ss...)
 }
 
 // RegisterMiddleware registers a MiddlewareBuilder with the builder.
 func RegisterMiddleware(name string, middlewareBuilder MiddlewareBuilder) {
-	build.RegisterMiddlewareBuilder(name, middlewareBuilder)
+	runtime.builder.RegisterMiddlewareBuilder(name, middlewareBuilder)
 }
 
 // NewHTTPServiceServer creates a new HTTP server using the provided configuration
 func NewHTTPServiceServer(cfg *configv1.Service, ss ...service.OptionSetting) (*service.HTTPServer, error) {
-	// Call the build.NewHTTPServer function with the provided configuration
-	return build.NewHTTPServer(cfg, ss...)
+	// Call the runtime.builder.NewHTTPServer function with the provided configuration
+	return runtime.builder.NewHTTPServer(cfg, ss...)
 }
 
 // NewHTTPServiceClient creates a new HTTP client using the provided context and configuration
 func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.OptionSetting) (*service.HTTPClient, error) {
-	// Call the build.NewHTTPClient function with the provided context and configuration
-	return build.NewHTTPClient(ctx, cfg, ss...)
+	// Call the runtime.builder.NewHTTPClient function with the provided context and configuration
+	return runtime.builder.NewHTTPClient(ctx, cfg, ss...)
 }
 
 // NewGRPCServiceServer creates a new GRPC server using the provided configuration
 func NewGRPCServiceServer(cfg *configv1.Service, ss ...service.OptionSetting) (*service.GRPCServer, error) {
-	// Call the build.NewGRPCServer function with the provided configuration
-	return build.NewGRPCServer(cfg, ss...)
+	// Call the runtime.builder.NewGRPCServer function with the provided configuration
+	return runtime.builder.NewGRPCServer(cfg, ss...)
 }
 
 // NewGRPCServiceClient creates a new GRPC client using the provided context and configuration
 func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.OptionSetting) (*service.GRPCClient, error) {
-	// Call the build.NewGRPCClient function with the provided context and configuration
-	return build.NewGRPCClient(ctx, cfg, ss...)
+	// Call the runtime.builder.NewGRPCClient function with the provided context and configuration
+	return runtime.builder.NewGRPCClient(ctx, cfg, ss...)
 }
 
 // RegisterService registers a service builder with the provided name
 func RegisterService(name string, factory service.Factory) {
-	// Call the build.RegisterServiceBuilder function with the provided name and service builder
-	build.ServiceBuilder.RegisterServiceBuilder(name, factory)
+	// Call the runtime.builder.RegisterServiceBuilder function with the provided name and service builder
+	runtime.builder.ServiceBuilder.RegisterServiceBuilder(name, factory)
 }
 
 // NewBuilder creates a new Builder.

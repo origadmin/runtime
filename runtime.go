@@ -35,9 +35,8 @@ type Builder interface {
 // build is a global variable that holds an instance of the builder struct.
 var (
 	once    = &sync.Once{}
-	build   = &builder{}
 	runtime = &Runtime{
-		builder:   build,
+		builder:   &builder{},
 		EnvPrefix: DefaultEnvPrefix,
 	}
 )
@@ -132,10 +131,26 @@ func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.OptionSetti
 	}
 	return r.builder.NewHTTPServer(cfg, ss...)
 }
+func init() {
+	once.Do(func() {
+		runtime.builder.init()
+	})
+}
 
+// GlobalBuilder returns the global instance of the builder.
+func GlobalBuilder() Builder {
+	return runtime.builder
+}
+
+// Global returns the global instance of the Runtime struct.
+func Global() *Runtime {
+	return runtime
+}
+
+// New returns a new instance of the Runtime struct.
 func New() Runtime {
 	return Runtime{
-		builder:   build,
+		builder:   &builder{},
 		EnvPrefix: DefaultEnvPrefix,
 	}
 }
