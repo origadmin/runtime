@@ -23,7 +23,7 @@ func OpenDB(database *configv1.Data_Database) (*sql.DB, error) {
 		return nil, ErrDatabaseConfigNil
 	}
 
-	db, err := sql.Open(database.Driver, database.Source)
+	db, err := sql.Open(database.Dialect, database.Source)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +39,5 @@ func OpenDB(database *configv1.Data_Database) (*sql.DB, error) {
 	if t := database.ConnectionMaxIdleTime; t != 0 {
 		db.SetConnMaxIdleTime(time.Duration(t))
 	}
-
 	return db, nil
 }
