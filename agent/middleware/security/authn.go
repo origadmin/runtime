@@ -132,11 +132,7 @@ func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 	//	option.TokenParser,
 	//	FromTransportClient(option.HeaderAuthorize, option.Scheme),
 	//	FromTransportServer(option.HeaderAuthorize, option.Scheme))
-	if option.TokenParser == nil {
-		option.TokenParser = aggregateTokenParsers(
-			FromTransportClient(option.HeaderAuthorize, option.Scheme),
-			FromTransportServer(option.HeaderAuthorize, option.Scheme))
-	}
+
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			log.Debugf("NewAuthN: handling request: %+v", req)

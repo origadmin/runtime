@@ -76,6 +76,16 @@ func (o *Option) ApplyDefaults() {
 	if o.Scheme == "" {
 		o.Scheme = security.SchemeBearer.String()
 	}
+	if o.TokenParser == nil {
+		o.TokenParser = aggregateTokenParsers(
+			FromTransportClient(o.HeaderAuthorize, o.Scheme),
+			FromTransportServer(o.HeaderAuthorize, o.Scheme))
+	}
+	if o.IsRoot == nil {
+		o.IsRoot = func(ctx context.Context, claims security.Claims) bool {
+			return false
+		}
+	}
 }
 
 // WithConfig applies the configuration to the option.
