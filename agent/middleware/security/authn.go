@@ -122,17 +122,12 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	log.Debugf("NewAuthN: creating server authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	if option == nil || option.Authenticator == nil {
+	if option.Authenticator == nil {
 		log.Errorf("NewAuthN: option or authenticator is nil, returning error")
 		return nil, ErrorCreateOptionNil
 	}
 
 	log.Debugf("NewAuthN: applying defaults and creating token parser")
-	//tokenParsers := aggregateTokenParsers(
-	//	option.TokenParser,
-	//	FromTransportClient(option.HeaderAuthorize, option.Scheme),
-	//	FromTransportServer(option.HeaderAuthorize, option.Scheme))
-
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			log.Debugf("NewAuthN: handling request: %+v", req)
