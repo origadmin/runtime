@@ -9,6 +9,7 @@ import (
 	configenv "github.com/go-kratos/kratos/v2/config/env"
 	"github.com/go-kratos/kratos/v2/config/file"
 
+	"github.com/origadmin/runtime/config/internal/reflection"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/env"
 )
@@ -74,6 +75,15 @@ type Config struct {
 	Builder     Builder
 	registry    func(source any, serviceName string) (*configv1.Registry, error)
 	service     func(source any, serviceName string) (*configv1.Service, error)
+}
+
+func (c *Config) Init() {
+	c.registry = func(source any, serviceName string) (*configv1.Registry, error) {
+		return reflection.FieldPointByType[configv1.Registry](source)
+	}
+	c.service = func(source any, serviceName string) (*configv1.Service, error) {
+		return reflection.FieldPointByType[configv1.Service](source)
+	}
 }
 
 func (c *Config) LoadFromFile(path string, opts ...KOption) error {
