@@ -13,6 +13,29 @@ option java_outer_classname = "DataProto";
 option java_package = "com.github.origadmin.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
+message Migration {
+  bool enabled = 1 [
+    json_name = "enabled",
+    (gnostic.openapi.v3.property) = {description: "whether to enable migration"}
+  ];
+  string path = 2 [
+    json_name = "path",
+    (gnostic.openapi.v3.property) = {description: "migration path"}
+  ];
+  repeated string names = 3 [
+    json_name = "names",
+    (gnostic.openapi.v3.property) = {description: "migration name"}
+  ];
+  string version = 4 [
+    json_name = "version",
+    (gnostic.openapi.v3.property) = {description: "migration version"}
+  ];
+  string mode = 5 [
+    json_name = "mode",
+    (gnostic.openapi.v3.property) = {description: "migration mode"}
+  ];
+}
+
 // Data
 message Data {
   // Database
@@ -44,10 +67,10 @@ message Data {
       json_name = "source",
       (gnostic.openapi.v3.property) = {description: "data source dsn string"}
     ];
-    // Data migration switch
-    bool migrate = 10 [
-      json_name = "migrate",
-      (gnostic.openapi.v3.property) = {description: "data migration switch"}
+    // Data migration
+    Migration migration = 10 [
+      json_name = "migration",
+      (gnostic.openapi.v3.property) = {description: "data migration"}
     ];
     // Link tracking switch
     bool enable_trace = 12 [

@@ -35,6 +35,113 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on Migration with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Migration) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Migration with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in MigrationMultiError, or nil
+// if none found.
+func (m *Migration) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Migration) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enabled
+
+	// no validation rules for Path
+
+	// no validation rules for Version
+
+	// no validation rules for Mode
+
+	if len(errors) > 0 {
+		return MigrationMultiError(errors)
+	}
+
+	return nil
+}
+
+// MigrationMultiError is an error wrapping multiple validation errors returned
+// by Migration.ValidateAll() if the designated constraints aren't met.
+type MigrationMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MigrationMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MigrationMultiError) AllErrors() []error { return m }
+
+// MigrationValidationError is the validation error returned by
+// Migration.Validate if the designated constraints aren't met.
+type MigrationValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MigrationValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MigrationValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MigrationValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MigrationValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MigrationValidationError) ErrorName() string { return "MigrationValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MigrationValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMigration.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MigrationValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MigrationValidationError{}
+
 // Validate checks the field values on Data with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
 // encountered is returned, or nil if there are no violations.
@@ -257,7 +364,34 @@ func (m *Data_Database) validate(all bool) error {
 
 	// no validation rules for Source
 
-	// no validation rules for Migrate
+	if all {
+		switch v := interface{}(m.GetMigration()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Data_DatabaseValidationError{
+					field:  "Migration",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Data_DatabaseValidationError{
+					field:  "Migration",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMigration()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Data_DatabaseValidationError{
+				field:  "Migration",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	// no validation rules for EnableTrace
 
