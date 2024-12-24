@@ -22,9 +22,9 @@ message Data {
       json_name = "debug",
       (gnostic.openapi.v3.property) = {description: "whether to enable debug mode "}
     ];
-    // Driver name: mysql, postgresql, mongodb, sqlite......
-    string driver = 2 [
-      json_name = "driver",
+    // Dialect name: mysql, postgresql, mongodb, sqlite......
+    string dialect = 2 [
+      json_name = "dialect",
       (validate.rules).string = {
         in: [
           "mssql",

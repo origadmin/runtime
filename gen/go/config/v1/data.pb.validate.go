@@ -244,9 +244,9 @@ func (m *Data_Database) validate(all bool) error {
 
 	// no validation rules for Debug
 
-	if _, ok := _Data_Database_Driver_InLookup[m.GetDriver()]; !ok {
+	if _, ok := _Data_Database_Dialect_InLookup[m.GetDialect()]; !ok {
 		err := Data_DatabaseValidationError{
-			field:  "Driver",
+			field:  "Dialect",
 			reason: "value must be in list [mssql mysql postgresql mongodb sqlite oracle sqlserver sqlite3]",
 		}
 		if !all {
@@ -349,7 +349,7 @@ var _ interface {
 	ErrorName() string
 } = Data_DatabaseValidationError{}
 
-var _Data_Database_Driver_InLookup = map[string]struct{}{
+var _Data_Database_Dialect_InLookup = map[string]struct{}{
 	"mssql":      {},
 	"mysql":      {},
 	"postgresql": {},
