@@ -255,7 +255,7 @@ func (m *Data_Database) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Cfg
+	// no validation rules for Source
 
 	// no validation rules for Migrate
 
