@@ -61,6 +61,7 @@ type GRPCServerRegister interface {
 type ServerRegister interface {
 	GRPCServerRegister
 	HTTPServerRegister
+	Server(context.Context, *GRPCServer, *HTTPServer)
 }
 
 var (
