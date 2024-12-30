@@ -13,20 +13,20 @@ import (
 	"github.com/origadmin/toolkits/security"
 )
 
-type token struct {
+type tokenizer struct {
 	Scheme        security.Scheme
 	CacheStorage  security.CacheStorage
 	Authenticator security.Authenticator
 }
 
-func (obj *token) DestroyToken(ctx context.Context, tokenStr string) error {
+func (obj *tokenizer) DestroyToken(ctx context.Context, tokenStr string) error {
 	if obj.CacheStorage == nil {
 		return nil
 	}
 	return obj.CacheStorage.Remove(ctx, tokenStr)
 }
 
-func (obj *token) DestroyTokenContext(ctx context.Context, tokenType security.TokenType) error {
+func (obj *tokenizer) DestroyTokenContext(ctx context.Context, tokenType security.TokenType) error {
 	tokenStr, err := TokenFromTypeContext(ctx, tokenType, obj.schemeString())
 	if err != nil || tokenStr == "" {
 		return ErrInvalidToken
@@ -35,7 +35,7 @@ func (obj *token) DestroyTokenContext(ctx context.Context, tokenType security.To
 	return obj.DestroyToken(ctx, tokenStr)
 }
 
-func (obj *token) Close(ctx context.Context) error {
+func (obj *tokenizer) Close(ctx context.Context) error {
 	if obj.CacheStorage == nil {
 		return nil
 	}
@@ -43,12 +43,12 @@ func (obj *token) Close(ctx context.Context) error {
 }
 
 // CreateToken creates a token string from the claims.
-func (obj *token) CreateToken(ctx context.Context, claims security.Claims) (string, error) {
+func (obj *tokenizer) CreateToken(ctx context.Context, claims security.Claims) (string, error) {
 	return obj.Authenticator.CreateToken(ctx, claims)
 }
 
 // CreateTokenContext creates a token string from the claims and adds it to the context.
-func (obj *token) CreateTokenContext(ctx context.Context, tokenType security.TokenType, claims security.Claims) (context.Context, error) {
+func (obj *tokenizer) CreateTokenContext(ctx context.Context, tokenType security.TokenType, claims security.Claims) (context.Context, error) {
 	// Create the token string.
 	tokenStr, err := obj.Authenticator.CreateToken(ctx, claims)
 	if err != nil {
@@ -59,7 +59,7 @@ func (obj *token) CreateTokenContext(ctx context.Context, tokenType security.Tok
 	return ctx, nil
 }
 
-func (obj *token) CreateIdentityClaims(ctx context.Context, id string, refresh bool) (security.Claims, error) {
+func (obj *tokenizer) CreateIdentityClaims(ctx context.Context, id string, refresh bool) (security.Claims, error) {
 	claims, err := obj.Authenticator.CreateIdentityClaims(ctx, id, refresh)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (obj *token) CreateIdentityClaims(ctx context.Context, id string, refresh b
 	return claims, nil
 }
 
-func (obj *token) CreateIdentityClaimsContext(ctx context.Context, _ security.TokenType, id string) (context.Context, error) {
+func (obj *tokenizer) CreateIdentityClaimsContext(ctx context.Context, _ security.TokenType, id string) (context.Context, error) {
 	// Create the claims.
 	claims, err := obj.CreateIdentityClaims(ctx, id, false)
 	if err != nil {
@@ -79,7 +79,7 @@ func (obj *token) CreateIdentityClaimsContext(ctx context.Context, _ security.To
 	return ctx, nil
 }
 
-func (obj *token) Authenticate(ctx context.Context, tokenStr string) (security.Claims, error) {
+func (obj *tokenizer) Authenticate(ctx context.Context, tokenStr string) (security.Claims, error) {
 	log.Debugf("Authenticating token string: %s", tokenStr)
 	// If the token cache service is not nil, validate the token.
 	if obj.CacheStorage != nil {
@@ -98,7 +98,7 @@ func (obj *token) Authenticate(ctx context.Context, tokenStr string) (security.C
 	return obj.Authenticator.Authenticate(ctx, tokenStr)
 }
 
-func (obj *token) AuthenticateContext(ctx context.Context, tokenType security.TokenType) (security.Claims, error) {
+func (obj *tokenizer) AuthenticateContext(ctx context.Context, tokenType security.TokenType) (security.Claims, error) {
 	log.Debugf("Entering AuthenticateContext with tokenType: %s", tokenType)
 	// Get the token string from the context.
 	tokenStr, err := TokenFromTypeContext(ctx, tokenType, obj.schemeString())
@@ -122,11 +122,11 @@ func (obj *token) AuthenticateContext(ctx context.Context, tokenType security.To
 	return claims, err
 }
 
-func (obj *token) Verify(ctx context.Context, tokenStr string) (bool, error) {
+func (obj *tokenizer) Verify(ctx context.Context, tokenStr string) (bool, error) {
 	return obj.Authenticator.Verify(ctx, tokenStr)
 }
 
-func (obj *token) VerifyContext(ctx context.Context, tokenType security.TokenType) (bool, error) {
+func (obj *tokenizer) VerifyContext(ctx context.Context, tokenType security.TokenType) (bool, error) {
 	// Get the token string from the context.
 	tokenStr, err := TokenFromTypeContext(ctx, tokenType, obj.schemeString())
 	if err != nil || tokenStr == "" {
@@ -136,12 +136,12 @@ func (obj *token) VerifyContext(ctx context.Context, tokenType security.TokenTyp
 	return obj.Verify(ctx, tokenStr)
 }
 
-func (obj *token) schemeString() string {
+func (obj *tokenizer) schemeString() string {
 	return obj.Scheme.String()
 }
 
 func NewTokenizer(authenticator security.Authenticator, ss ...TokenizerSetting) security.Tokenizer {
-	t := settings.Apply(&token{
+	t := settings.Apply(&tokenizer{
 		Authenticator: authenticator,
 		CacheStorage:  security.NewCacheStorage(),
 		Scheme:        security.SchemeBearer,
@@ -149,4 +149,4 @@ func NewTokenizer(authenticator security.Authenticator, ss ...TokenizerSetting) 
 	return t
 }
 
-var _ security.Tokenizer = (*token)(nil)
+var _ security.Tokenizer = (*tokenizer)(nil)
