@@ -111,9 +111,6 @@ func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) (
 	if claims == nil {
 		claims = security.ClaimsFromContext(ctx)
 	}
-	//if claims == nil {
-	//	return nil, errors.New("claims is nil")
-	//}
 	return o.Parser(ctx, claims)
 }
 
@@ -159,16 +156,16 @@ func WithConfig(cfg *configv1.Security) OptionSetting {
 	}
 }
 
-type TokenizerSetting = func(tokenizer *token)
+type TokenizerSetting = func(tz *tokenizer)
 
 func WithCache(cache security.CacheStorage) TokenizerSetting {
-	return func(t *token) {
-		t.CacheStorage = cache
+	return func(tz *tokenizer) {
+		tz.CacheStorage = cache
 	}
 }
 
 func WithScheme(scheme security.Scheme) TokenizerSetting {
-	return func(t *token) {
-		t.Scheme = scheme
+	return func(tz *tokenizer) {
+		tz.Scheme = scheme
 	}
 }
