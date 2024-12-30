@@ -13,9 +13,9 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/origadmin/toolkits v0.1.24
-	github.com/origadmin/toolkits/codec v0.0.53
-	github.com/origadmin/toolkits/errors v0.0.35
+	github.com/origadmin/toolkits v0.2.1
+	github.com/origadmin/toolkits/codec v0.2.1
+	github.com/origadmin/toolkits/errors v0.2.1
 	google.golang.org/grpc v1.69.2
 	google.golang.org/protobuf v1.36.1
 )
