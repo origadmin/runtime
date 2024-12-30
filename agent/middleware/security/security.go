@@ -22,6 +22,7 @@ var (
 	ErrInvalidToken          = securityv1.ErrorSecurityErrorReasonBearerTokenMissing("bearer token missing")
 	ErrInvalidClaims         = securityv1.ErrorSecurityErrorReasonInvalidClaims("invalid bearer token")
 	ErrMissingClaims         = securityv1.ErrorSecurityErrorReasonInvalidClaims("missing scheme")
+	ErrTokenNotFound         = securityv1.ErrorSecurityErrorReasonTokenNotFound("token not found")
 	ErrMissingToken          = securityv1.ErrorSecurityErrorReasonBearerTokenMissing("bearer token missing")
 	ErrInvalidAuthentication = securityv1.ErrorSecurityErrorReasonInvalidAuthentication("unauthenticated")
 	ErrInvalidAuthorization  = securityv1.ErrorSecurityErrorReasonInvalidAuthorization("unauthorized")
@@ -84,7 +85,7 @@ func tokenParser(ctx context.Context, fns []func(ctx context.Context) string) st
 
 func aggregateTokenParsers(outer ...func(ctx context.Context) string) func(ctx context.Context) string {
 	fns := []func(ctx context.Context) string{
-		security.FromToken,
+		security.TokenFromContext,
 	}
 	for i := range outer {
 		if outer[i] == nil {

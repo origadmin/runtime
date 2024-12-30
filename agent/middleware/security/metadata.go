@@ -18,11 +18,16 @@ import (
 	"github.com/origadmin/toolkits/security"
 )
 
-func injectTokenTransportContext(ctx context.Context, scheme string, token string) context.Context {
+func injectServerTransportContext(ctx context.Context, scheme string, token string) context.Context {
+	if header, ok := transport.FromServerContext(ctx); ok {
+		header.RequestHeader().Set(security.HeaderAuthorize, formatToken(scheme, token))
+	}
+	return ctx
+}
+
+func injectClientTransportContext(ctx context.Context, scheme string, token string) context.Context {
 	if header, ok := transport.FromClientContext(ctx); ok {
 		header.RequestHeader().Set(security.HeaderAuthorize, formatToken(scheme, token))
-	} else {
-		//log.Error("authn token injection failure in kratos context")
 	}
 	return ctx
 }
@@ -42,10 +47,12 @@ func TokenToTypeContext(ctx context.Context, tokenType security.TokenType, schem
 	switch tokenType {
 	case security.ContextTypeMetadata:
 		return injectTokenMetadataContext(ctx, scheme, token)
-	case security.ContextTypeHeader:
-		return injectTokenTransportContext(ctx, scheme, token)
+	case security.ContextTypeServerHeader:
+		return injectServerTransportContext(ctx, scheme, token)
+	case security.ContextTypeClientHeader:
+		return injectClientTransportContext(ctx, scheme, token)
 	case security.ContextTypeContext:
-		return NewTokenContext(ctx, formatToken(scheme, token))
+		return security.NewTokenContext(ctx, formatToken(scheme, token))
 	default:
 		return injectTokenMetadataContext(ctx, scheme, token)
 	}
@@ -58,8 +65,15 @@ func extractTokenMetadataContext(ctx context.Context) string {
 	return ""
 }
 
-func extractTokenTransportContext(ctx context.Context) string {
+func extractServerTransportContext(ctx context.Context) string {
 	if header, ok := transport.FromServerContext(ctx); ok {
+		return header.RequestHeader().Get(security.HeaderAuthorize)
+	}
+	return ""
+}
+
+func extractClientTransportContext(ctx context.Context) string {
+	if header, ok := transport.FromClientContext(ctx); ok {
 		return header.RequestHeader().Get(security.HeaderAuthorize)
 	}
 	return ""
@@ -69,10 +83,12 @@ func extractTokenFromContext(ctx context.Context, tokenType security.TokenType) 
 	switch tokenType {
 	case security.ContextTypeMetadata:
 		return extractTokenMetadataContext(ctx)
-	case security.ContextTypeHeader:
-		return extractTokenTransportContext(ctx)
+	case security.ContextTypeServerHeader:
+		return extractServerTransportContext(ctx)
+	case security.ContextTypeClientHeader:
+		return extractClientTransportContext(ctx)
 	case security.ContextTypeContext:
-		return TokenFromContext(ctx)
+		return security.TokenFromContext(ctx)
 	default:
 		return extractTokenMetadataContext(ctx)
 	}
@@ -100,7 +116,7 @@ func TokenFromTypeContext(ctx context.Context, tokenType security.TokenType, sch
 func ClaimFromTokenTypeContext(ctx context.Context, tokenType security.TokenType) (security.Claims, error) {
 	switch tokenType {
 	case security.ContextTypeContext:
-		return ClaimsFromContext(ctx), nil
+		return security.ClaimsFromContext(ctx), nil
 	}
 	return nil, status.Errorf(codes.Unauthenticated, "Request unauthenticated with "+tokenType.String())
 }

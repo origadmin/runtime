@@ -31,8 +31,8 @@ type ResponseWriter func(context.Context, security.Claims) (string, error)
 type Option struct {
 	// Authorizer is the authorizer used to authorize the request.
 	Authorizer security.Authorizer
-	// Authenticator is the authenticator used to authenticate the request.
-	Authenticator security.Authenticator
+	// Tokenizer is the authenticator used to authenticate the request.
+	Tokenizer security.Tokenizer
 	// Serializer is the serializer used to serialize the claims.
 	Serializer security.Serializer
 	// TokenKey is the key used to store the token in the context.
@@ -109,7 +109,7 @@ func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) (
 		return nil, errors.New("user claims parser is nil")
 	}
 	if claims == nil {
-		claims = ClaimsFromContext(ctx)
+		claims = security.ClaimsFromContext(ctx)
 	}
 	//if claims == nil {
 	//	return nil, errors.New("claims is nil")
@@ -117,10 +117,10 @@ func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) (
 	return o.Parser(ctx, claims)
 }
 
-// WithAuthenticator sets the authenticator.
-func WithAuthenticator(authenticator security.Authenticator) OptionSetting {
+// WithTokenizer sets the token.
+func WithTokenizer(tokenizer security.Tokenizer) OptionSetting {
 	return func(opt *Option) {
-		opt.Authenticator = authenticator
+		opt.Tokenizer = tokenizer
 	}
 }
 
@@ -156,5 +156,19 @@ func WithSkipKey(key string) OptionSetting {
 func WithConfig(cfg *configv1.Security) OptionSetting {
 	return func(option *Option) {
 		option.WithConfig(cfg)
+	}
+}
+
+type TokenizerSetting = func(tokenizer *token)
+
+func WithCache(cache security.CacheStorage) TokenizerSetting {
+	return func(t *token) {
+		t.CacheStorage = cache
+	}
+}
+
+func WithScheme(scheme security.Scheme) TokenizerSetting {
+	return func(t *token) {
+		t.Scheme = scheme
 	}
 }

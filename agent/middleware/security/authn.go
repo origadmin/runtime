@@ -30,7 +30,7 @@ const (
 func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	log.Debugf("NewAuthNClient: creating client authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	if option.Authenticator == nil {
+	if option.Tokenizer == nil {
 		log.Errorf("NewAuthNClient: authenticator is nil, returning error")
 		return nil, ErrorCreateOptionNil
 	}
@@ -57,14 +57,14 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			}
 
 			log.Debugf("NewAuthNClient: authenticating context")
-			claims, err := option.Authenticator.AuthenticateContext(ctx, security.ContextTypeHeader)
+			claims, err := option.Tokenizer.AuthenticateContext(ctx, security.ContextTypeHeader)
 			if err != nil {
 				log.Errorf("NewAuthNClient: authentication failed: %s", err.Error())
 				return nil, err
 			}
 
 			log.Debugf("NewAuthNClient: creating token context")
-			ctx, err = option.Authenticator.CreateTokenContext(ctx, security.ContextTypeMetadata, claims)
+			ctx, err = option.Tokenizer.CreateTokenContext(ctx, security.ContextTypeMetadata, claims)
 			if err != nil {
 				log.Errorf("NewAuthNClient: creating token context failed: %s", err.Error())
 				return nil, err
@@ -79,7 +79,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	log.Debugf("NewAuthNServer: creating server authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	if option.Authenticator == nil {
+	if option.Tokenizer == nil {
 		log.Errorf("NewAuthNServer: authenticator is nil, returning error")
 		return nil, ErrorCreateOptionNil
 	}
@@ -104,7 +104,7 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 
 			log.Debugf("NewAuthNServer: authenticating context")
 			var err error
-			claims, err := option.Authenticator.AuthenticateContext(ctx, security.ContextTypeMetadata)
+			claims, err := option.Tokenizer.AuthenticateContext(ctx, security.ContextTypeMetadata)
 			if err != nil {
 				log.Errorf("NewAuthNServer: authentication failed: %s", err.Error())
 				return nil, err
@@ -122,7 +122,7 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	log.Debugf("NewAuthN: creating server authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	if option.Authenticator == nil {
+	if option.Tokenizer == nil {
 		log.Errorf("NewAuthN: option or authenticator is nil, returning error")
 		return nil, ErrorCreateOptionNil
 	}
@@ -145,7 +145,7 @@ func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 			}
 
 			log.Debugf("NewAuthN: authenticating token")
-			claims, err := option.Authenticator.Authenticate(ctx, token)
+			claims, err := option.Tokenizer.Authenticate(ctx, token)
 			if err != nil {
 				log.Errorf("NewAuthN: authentication failed: %s", err.Error())
 				return nil, err
