@@ -37,7 +37,7 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				return handler(ctx, req)
 			}
 
-			claims := ClaimsFromContext(ctx)
+			claims := security.ClaimsFromContext(ctx)
 			if claims == nil {
 				log.Errorf("NewAuthZClient: claims are nil")
 				return nil, ErrMissingToken
@@ -101,7 +101,7 @@ func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				return handler(ctx, req)
 			}
 
-			claims := UserClaimsFromContext(ctx)
+			claims := security.UserClaimsFromContext(ctx)
 			if claims == nil {
 				log.Errorf("NewAuthZServer: claims are nil")
 				return nil, ErrMissingToken
@@ -161,7 +161,7 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				log.Debugf("NewAuthZServer: claims are root, skipping authorization")
 				return handler(ctx, req)
 			}
-			claims := ClaimsFromContext(ctx)
+			claims := security.ClaimsFromContext(ctx)
 			if claims == nil {
 				log.Errorf("NewAuthZ: claims are nil")
 				return nil, ErrMissingToken

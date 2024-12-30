@@ -57,7 +57,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			}
 
 			log.Debugf("NewAuthNClient: authenticating context")
-			claims, err := option.Tokenizer.AuthenticateContext(ctx, security.ContextTypeHeader)
+			claims, err := option.Tokenizer.AuthenticateContext(ctx, security.ContextTypeServerHeader)
 			if err != nil {
 				log.Errorf("NewAuthNClient: authentication failed: %s", err.Error())
 				return nil, err
@@ -111,7 +111,7 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			}
 
 			log.Debugf("NewAuthNServer: setting claims to context")
-			ctx = NewClaimsContext(ctx, claims)
+			ctx = security.NewClaimsContext(ctx, claims)
 			log.Debugf("NewAuthNServer: calling next handler")
 			return handler(ctx, req)
 		}
@@ -155,7 +155,7 @@ func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 			}
 
 			log.Debugf("NewAuthN: setting claims to context")
-			ctx = NewClaimsContext(ctx, claims)
+			ctx = security.NewClaimsContext(ctx, claims)
 			log.Debugf("NewAuthN: calling next handler")
 			return handler(ctx, req)
 		}
