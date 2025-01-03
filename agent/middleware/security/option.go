@@ -32,7 +32,7 @@ type Option struct {
 	// Authorizer is the authorizer used to authorize the request.
 	Authorizer security.Authorizer
 	// Tokenizer is the authenticator used to authenticate the request.
-	Tokenizer security.Tokenizer
+	Authenticator security.Authenticator
 	// Serializer is the serializer used to serialize the claims.
 	Serializer security.Serializer
 	// TokenKey is the key used to store the token in the context.
@@ -47,8 +47,8 @@ type Option struct {
 	PublicPaths []string
 	// TokenParser is the parser used to parse the token from the context.
 	TokenParser func(ctx context.Context) string
-	// Parser is the parser used to parse the user claims.
-	Parser security.UserClaimsParser
+	// PolicyParser is the parser used to parse the user claims.
+	PolicyParser security.PolicyParser
 	// Skipper is the function used to skip authentication.
 	Skipper func(string) bool
 	// IsRoot is the function used to check if the request is root.
@@ -103,21 +103,21 @@ func WithTokenParser(parser func(ctx context.Context) string) OptionSetting {
 	}
 }
 
-// ParserUserClaims parses the user claims from the context.
-func (o *Option) ParserUserClaims(ctx context.Context, claims security.Claims) (security.UserClaims, error) {
-	if o.Parser == nil {
+// ParsePolicy parses the user claims from the context.
+func (o *Option) ParsePolicy(ctx context.Context, claims security.Claims) (security.Policy, error) {
+	if o.PolicyParser == nil {
 		return nil, errors.New("user claims parser is nil")
 	}
 	if claims == nil {
 		claims = security.ClaimsFromContext(ctx)
 	}
-	return o.Parser(ctx, claims)
+	return o.PolicyParser(ctx, claims)
 }
 
-// WithTokenizer sets the token.
-func WithTokenizer(tokenizer security.Tokenizer) OptionSetting {
+// WithAuthenticator sets the token.
+func WithAuthenticator(authenticator security.Authenticator) OptionSetting {
 	return func(opt *Option) {
-		opt.Tokenizer = tokenizer
+		opt.Authenticator = authenticator
 	}
 }
 
@@ -156,16 +156,16 @@ func WithConfig(cfg *configv1.Security) OptionSetting {
 	}
 }
 
-type TokenizerSetting = func(tz *tokenizer)
+type AuthNSetting = func(authenticator *Authenticator)
 
-func WithCache(cache security.CacheStorage) TokenizerSetting {
-	return func(tz *tokenizer) {
-		tz.CacheStorage = cache
+func WithCache(cache security.CacheStorage) AuthNSetting {
+	return func(authenticator *Authenticator) {
+		authenticator.Cache = cache
 	}
 }
 
-func WithScheme(scheme security.Scheme) TokenizerSetting {
-	return func(tz *tokenizer) {
-		tz.Scheme = scheme
+func WithScheme(scheme security.Scheme) AuthNSetting {
+	return func(authenticator *Authenticator) {
+		authenticator.Scheme = scheme
 	}
 }

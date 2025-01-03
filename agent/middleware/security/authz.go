@@ -7,6 +7,7 @@ package security
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/context"
@@ -43,13 +44,13 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				return nil, ErrMissingToken
 			}
 			log.Debugf("NewAuthZClient: claims are not nil, proceeding with user claims parsing")
-			userClaims, err := option.ParserUserClaims(ctx, claims)
+			policy, err := option.ParsePolicy(ctx, claims)
 			if err != nil {
 				log.Errorf("NewAuthZClient: error parsing user claims: %v", err)
 				return nil, err
 			}
 
-			if userClaims.GetSubject() == "" || userClaims.GetAction() == "" || userClaims.GetObject() == "" {
+			if policy.GetSubject() == "" || policy.GetAction() == "" || policy.GetObject() == "" {
 				log.Errorf("NewAuthZClient: invalid user claims")
 				return nil, ErrInvalidClaims
 			}
@@ -61,7 +62,7 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			//}
 			// todo add domain project
 
-			//allowed, err = option.Authorizer.Authorized(ctx, userClaims)
+			//allowed, err = option.Authorizer.Authorized(ctx, policy)
 			//if err != nil {
 			//	return nil, err
 			//}
@@ -97,30 +98,35 @@ func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 			)
 
 			if security.ContextIsRoot(ctx) {
-				log.Debugf("NewAuthZServer: claims are root, skipping authorization")
+				log.Debugf("NewAuthZServer: policy are root, skipping authorization")
 				return handler(ctx, req)
 			}
 
-			claims := security.UserClaimsFromContext(ctx)
-			if claims == nil {
-				log.Errorf("NewAuthZServer: claims are nil")
+			policy := security.PolicyFromContext(ctx)
+			if policy == nil {
+				log.Errorf("NewAuthZServer: policy are nil")
 				return nil, ErrMissingToken
 			}
 
-			log.Debugf("NewAuthZServer: claims are not nil, proceeding with authorization")
-			if claims.GetSubject() == "" || claims.GetAction() == "" || claims.GetObject() == "" {
-				log.Errorf("NewAuthZServer: invalid claims")
+			log.Debugf("NewAuthZServer: policy are not nil, proceeding with authorization")
+			if policy.GetSubject() == "" || policy.GetAction() == "" || policy.GetObject() == "" {
+				log.Errorf("NewAuthZServer: invalid policy")
 				return nil, ErrInvalidClaims
 			}
 
-			log.Debugf("NewAuthZServer: claims are valid, proceeding with authorization")
+			log.Debugf("NewAuthZServer: policy are valid, proceeding with authorization")
 			//var project []string
-			//if domains := claims.GetDomain(); domains != nil {
+			//if domains := policy.GetDomain(); domains != nil {
 			//	project = domains
 			//}
 			// todo add domain project
-
-			allowed, err = option.Authorizer.Authorized(ctx, claims)
+			tr, ok := transport.FromServerContext(ctx)
+			if !ok {
+				log.Errorf("NewAuthZServer: transport is nil")
+				return nil, ErrInvalidAuthentication
+			}
+			log.Debugf("Transport operation: %s, endpoint: %s, kind: %s", tr.Operation(), tr.Endpoint(), tr.Kind())
+			allowed, err = option.Authorizer.Authorized(ctx, policy, tr.Operation(), tr.Endpoint())
 			if err != nil {
 				log.Errorf("NewAuthZServer: authorization error %+v", err)
 				return nil, err
@@ -167,24 +173,28 @@ func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 				return nil, ErrMissingToken
 			}
 			log.Debugf("NewAuthZ: claims are not nil, subject: %s", claims.GetSubject())
-			if option.Parser == nil {
+			if option.PolicyParser == nil {
 				log.Errorf("NewAuthZ: parser is nil")
 				return nil, ErrMissingClaims
 			}
-			userClaims, err := option.ParserUserClaims(ctx, claims)
+			policy, err := option.ParsePolicy(ctx, claims)
 			if err != nil {
 				log.Errorf("NewAuthZ: error parsing user claims: %v", err)
 				return nil, err
 			}
-			log.Debugf("NewAuthZ: user claims: %+v", userClaims)
+			log.Debugf("NewAuthZ: user claims: %+v", policy)
 
-			if userClaims.GetSubject() == "" || userClaims.GetAction() == "" || userClaims.GetObject() == "" {
+			if policy.GetSubject() == "" || policy.GetAction() == "" || policy.GetObject() == "" {
 				log.Errorf("NewAuthZ: invalid user claims")
 				return nil, ErrInvalidClaims
 			}
-
-			log.Debugf("NewAuthZ: checking authorization for user claims %+v", userClaims)
-			allowed, err = option.Authorizer.Authorized(ctx, userClaims)
+			tr, ok := transport.FromServerContext(ctx)
+			if !ok {
+				log.Errorf("NewAuthZServer: transport is nil")
+				return nil, ErrInvalidAuthentication
+			}
+			log.Debugf("NewAuthZ: checking authorization for user claims %+v", policy)
+			allowed, err = option.Authorizer.Authorized(ctx, policy, tr.Operation(), tr.Endpoint())
 			if err != nil {
 				log.Errorf("NewAuthZ: authorization error: %v", err)
 				return nil, err

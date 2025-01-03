@@ -30,7 +30,7 @@ const (
 func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	log.Debugf("NewAuthNClient: creating client authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	if option.Tokenizer == nil {
+	if option.Authenticator == nil {
 		log.Errorf("NewAuthNClient: authenticator is nil, returning error")
 		return nil, ErrorCreateOptionNil
 	}
@@ -55,20 +55,19 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 					}
 				}
 			}
-
+			tokenStr, err := TokenFromTypeContext(ctx, security.ContextTypeServerHeader, option.Scheme)
+			if err != nil {
+				log.Errorf("NewAuthNClient: unable to get token from context: %s", err.Error())
+				return nil, err
+			}
 			log.Debugf("NewAuthNClient: authenticating context")
-			claims, err := option.Tokenizer.AuthenticateContext(ctx, security.ContextTypeServerHeader)
+			_, err = option.Authenticator.Authenticate(ctx, tokenStr)
 			if err != nil {
 				log.Errorf("NewAuthNClient: authentication failed: %s", err.Error())
 				return nil, err
 			}
-
 			log.Debugf("NewAuthNClient: creating token context")
-			ctx, err = option.Tokenizer.CreateTokenContext(ctx, security.ContextTypeMetadata, claims)
-			if err != nil {
-				log.Errorf("NewAuthNClient: creating token context failed: %s", err.Error())
-				return nil, err
-			}
+			ctx = TokenToTypeContext(ctx, security.ContextTypeMetadata, option.Scheme, tokenStr)
 			log.Debugf("NewAuthNClient: calling next handler")
 			return handler(ctx, req)
 		}
@@ -79,7 +78,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	log.Debugf("NewAuthNServer: creating server authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	if option.Tokenizer == nil {
+	if option.Authenticator == nil {
 		log.Errorf("NewAuthNServer: authenticator is nil, returning error")
 		return nil, ErrorCreateOptionNil
 	}
@@ -104,7 +103,7 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 
 			log.Debugf("NewAuthNServer: authenticating context")
 			var err error
-			claims, err := option.Tokenizer.AuthenticateContext(ctx, security.ContextTypeMetadata)
+			claims, err := option.Authenticator.AuthenticateContext(ctx, security.ContextTypeMetadata)
 			if err != nil {
 				log.Errorf("NewAuthNServer: authentication failed: %s", err.Error())
 				return nil, err
@@ -122,7 +121,7 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
 	log.Debugf("NewAuthN: creating server authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	if option.Tokenizer == nil {
+	if option.Authenticator == nil {
 		log.Errorf("NewAuthN: option or authenticator is nil, returning error")
 		return nil, ErrorCreateOptionNil
 	}
@@ -145,7 +144,7 @@ func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 			}
 
 			log.Debugf("NewAuthN: authenticating token")
-			claims, err := option.Tokenizer.Authenticate(ctx, token)
+			claims, err := option.Authenticator.Authenticate(ctx, token)
 			if err != nil {
 				log.Errorf("NewAuthN: authentication failed: %s", err.Error())
 				return nil, err
@@ -161,3 +160,47 @@ func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middlewar
 		}
 	}, nil
 }
+
+type Authenticator struct {
+	Tokenizer security.Tokenizer
+	Cache     security.CacheStorage
+	Scheme    security.Scheme
+}
+
+func (obj Authenticator) Authenticate(ctx context.Context, s string) (security.Claims, error) {
+	claims, err := obj.Tokenizer.ParseClaims(ctx, s)
+	if err != nil {
+		return nil, err
+	}
+	return claims, nil
+}
+
+func (obj Authenticator) AuthenticateContext(ctx context.Context, tokenType security.TokenType) (security.Claims, error) {
+	token, err := TokenFromTypeContext(ctx, tokenType, obj.Scheme.String())
+	if err != nil {
+		return nil, err
+	}
+	return obj.Authenticate(ctx, token)
+}
+
+func (obj Authenticator) DestroyToken(ctx context.Context, tokenStr string) error {
+	return obj.Cache.Remove(ctx, obj.key(security.TokenCacheAccess, tokenStr))
+}
+
+func (obj Authenticator) DestroyRefreshToken(ctx context.Context, tokenStr string) error {
+	return obj.Cache.Remove(ctx, obj.key(security.TokenCacheRefresh, tokenStr))
+}
+
+func (obj Authenticator) key(ns, token string) string {
+	return ns + ":" + token
+}
+
+func NewAuthenticator(tokenizer security.Tokenizer, ss ...AuthNSetting) security.Authenticator {
+	return settings.Apply(&Authenticator{
+		Tokenizer: tokenizer,
+		Cache:     security.NewCacheStorage(),
+		Scheme:    security.SchemeBearer,
+	}, ss)
+}
+
+var _ security.Authenticator = (*Authenticator)(nil)
