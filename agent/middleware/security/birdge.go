@@ -10,10 +10,13 @@ import (
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/toolkits/security"
 )
+
+type BridgeSetting = func(*Bridge)
 
 type Data interface {
 	QueryRoles(ctx context.Context, subject string) ([]string, error)
@@ -21,8 +24,8 @@ type Data interface {
 }
 
 type Bridge struct {
-	// TokenType is the type of the token.
-	TokenType security.TokenType
+	// TokenSource is the source of the token.
+	TokenSource security.TokenSource
 	// Scheme is the scheme used for the authorization header.
 	Scheme security.Scheme
 	// AuthenticationHeader is the header used for the authorization header.
@@ -73,7 +76,7 @@ func (obj Bridge) TokenParser(ctx context.Context) string {
 	return obj.TokenParser(ctx)
 }
 
-func (obj Bridge) Middleware() middleware.Middleware {
+func (obj Bridge) Build() middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			log.Debugf("NewAuthN: handling request: %+v", req)
@@ -112,15 +115,15 @@ func (obj Bridge) Middleware() middleware.Middleware {
 			}
 
 			log.Debugf("NewAuthN: setting claims to context")
-			ctx = obj.TokenTo(ctx, token)
+			ctx = obj.WithContext(ctx, token)
 			log.Debugf("NewAuthN: calling next handler")
 			return handler(ctx, req)
 		}
 	}
 }
 
-func (obj Bridge) TokenTo(ctx context.Context, token string) context.Context {
-	return TokenToTypeContext(ctx, obj.TokenType, obj.schemeString(), token)
+func (obj Bridge) WithContext(ctx context.Context, token string) context.Context {
+	return TokenToContext(ctx, obj.TokenSource, obj.schemeString(), token)
 }
 
 func (obj Bridge) PolicyParser(ctx context.Context, claims security.Claims) (security.Policy, error) {
@@ -142,10 +145,11 @@ func (obj Bridge) PolicyParser(ctx context.Context, claims security.Claims) (sec
 	}
 	return &policy, nil
 }
-func BridgeMiddleware(authenticator security.Authenticator, authorizer security.Authorizer) middleware.Middleware {
+func BridgeMiddleware(authenticator security.Authenticator, authorizer security.Authorizer, bss ...BridgeSetting) middleware.Middleware {
 	bridge := &Bridge{
 		Authenticator: authenticator,
 		Authorizer:    authorizer,
 	}
-	return bridge.Middleware()
+	bridge = settings.Apply(bridge, bss)
+	return bridge.Build()
 }

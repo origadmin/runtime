@@ -41,7 +41,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 		log.Debugf("NewAuthNClient: skipper is nil, setting default skipper")
 		option.Skipper = defaultSkipper(paths...)
 	}
-	//tokenParser := aggregateTokenParsers(FromTransportClient(security.HeaderAuthorize, security.SchemeBearer.String()))
+	//tokenParser := aggregateTokenParsers(TokenFromTransportClient(security.HeaderAuthorize, security.SchemeBearer.String()))
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			log.Debugf("NewAuthNClient: handling request: %+v", req)
@@ -55,7 +55,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 					}
 				}
 			}
-			tokenStr, err := TokenFromTypeContext(ctx, security.ContextTypeServerHeader, option.Scheme)
+			tokenStr, err := TokenFromContext(ctx, security.TokenSourceHeader, option.Scheme)
 			if err != nil {
 				log.Errorf("NewAuthNClient: unable to get token from context: %s", err.Error())
 				return nil, err
@@ -67,7 +67,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 				return nil, err
 			}
 			log.Debugf("NewAuthNClient: creating token context")
-			ctx = TokenToTypeContext(ctx, security.ContextTypeMetadata, option.Scheme, tokenStr)
+			ctx = TokenToContext(ctx, security.TokenSourceMetadata, option.Scheme, tokenStr)
 			log.Debugf("NewAuthNClient: calling next handler")
 			return handler(ctx, req)
 		}
@@ -103,7 +103,7 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 
 			log.Debugf("NewAuthNServer: authenticating context")
 			var err error
-			claims, err := option.Authenticator.AuthenticateContext(ctx, security.ContextTypeMetadata)
+			claims, err := option.Authenticator.AuthenticateContext(ctx, security.TokenSourceMetadata)
 			if err != nil {
 				log.Errorf("NewAuthNServer: authentication failed: %s", err.Error())
 				return nil, err
@@ -175,8 +175,8 @@ func (obj Authenticator) Authenticate(ctx context.Context, s string) (security.C
 	return claims, nil
 }
 
-func (obj Authenticator) AuthenticateContext(ctx context.Context, tokenType security.TokenType) (security.Claims, error) {
-	token, err := TokenFromTypeContext(ctx, tokenType, obj.Scheme.String())
+func (obj Authenticator) AuthenticateContext(ctx context.Context, tokenType security.TokenSource) (security.Claims, error) {
+	token, err := TokenFromContext(ctx, tokenType, obj.Scheme.String())
 	if err != nil {
 		return nil, err
 	}

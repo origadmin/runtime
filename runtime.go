@@ -78,7 +78,7 @@ func (r *Runtime) Load() error {
 		//	return
 		//}
 		//// todo: load middleware
-		//if err := r.Middleware.Load(); err != nil {
+		//if err := r.Build.Load(); err != nil {
 		//	rerr = errors.Wrap(err, "load middleware")
 		//	return
 		//}
