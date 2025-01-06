@@ -15,6 +15,9 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	ApiVersionV1 = "v1"
+)
 const DefaultTimeout = 5 * time.Second
 
 type (
