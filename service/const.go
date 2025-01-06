@@ -67,3 +67,14 @@ type ServerRegister interface {
 var (
 	ErrServiceNotFound = errors.New("service not found")
 )
+
+type httpCtx struct{}
+
+func NewHTTPContext(ctx context.Context, c transhttp.Context) context.Context {
+	return context.WithValue(ctx, httpCtx{}, c)
+}
+
+func FromHTTPServerContext(ctx context.Context) (transhttp.Context, bool) {
+	v, ok := ctx.Value(httpCtx{}).(transhttp.Context)
+	return v, ok
+}
