@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/log"
@@ -100,7 +101,7 @@ func (obj Bridge) Build() middleware.Middleware {
 				ctx = security.WithRootContext(ctx)
 			}
 
-			policy, err := obj.PolicyParser(ctx, claims)
+			policy, err := obj.PolicyParser(ctx, claims, "", "")
 			if err != nil {
 				return nil, err
 			}
@@ -126,7 +127,7 @@ func (obj Bridge) WithContext(ctx context.Context, token string) context.Context
 	return TokenToContext(ctx, obj.TokenSource, obj.schemeString(), token)
 }
 
-func (obj Bridge) PolicyParser(ctx context.Context, claims security.Claims) (security.Policy, error) {
+func (obj Bridge) PolicyParser(ctx context.Context, claims security.Claims, object, action string) (security.Policy, error) {
 	roles, err := obj.Data.QueryRoles(ctx, claims.GetSubject())
 	if err != nil {
 		return nil, err
@@ -135,13 +136,19 @@ func (obj Bridge) PolicyParser(ctx context.Context, claims security.Claims) (sec
 	if err != nil {
 		return nil, err
 	}
+	if object == "" && action == "" {
+		if req, ok := http.RequestFromServerContext(ctx); ok {
+			object = req.URL.Path
+			action = req.Method
+		}
+	}
 	policy := security.RegisteredPolicy{
-		Subject: claims.GetSubject(),
-		//Object:     claims.GetObject(),
-		//Action:     claims.GetAction(),
-		Domain:     claims.GetIssuer(),
-		Roles:      roles,
-		Permission: permissions,
+		Subject:     claims.GetSubject(),
+		Object:      object,
+		Action:      action,
+		Domain:      claims.GetIssuer(),
+		Roles:       roles,
+		Permissions: permissions,
 	}
 	return &policy, nil
 }
