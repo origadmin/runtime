@@ -6,6 +6,8 @@
 package agent
 
 import (
+	"context"
+
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"google.golang.org/grpc"
@@ -72,4 +74,15 @@ func NewAgentWithHTTP(server *transhttp.Server) Agent {
 		GRPCAgent: UnimplementedAgent,
 		HTTPAgent: NewHTTP(server),
 	}
+}
+
+type httpCtx struct{}
+
+func NewHTTPContext(ctx context.Context, c transhttp.Context) context.Context {
+	return context.WithValue(ctx, httpCtx{}, c)
+}
+
+func FromHTTPContext(ctx context.Context) (transhttp.Context, bool) {
+	v, ok := ctx.Value(httpCtx{}).(transhttp.Context)
+	return v, ok
 }
