@@ -27,35 +27,35 @@ func NewClient(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware 
 		Logger: log.DefaultLogger,
 	}, ss)
 
-	filter := Selector(cfg.GetSelector(), option.MatchFunc)
 	if cfg.Logging {
 		// Add the LoggingClient middleware to the slice
-		filter = LoggingClient(filter, option.Logger)
+		middlewares = LoggingClient(middlewares, option.Logger)
 	}
 	if cfg.Recovery {
 		// Add the Recovery middleware to the slice
-		filter = Recovery(filter)
+		middlewares = Recovery(middlewares)
 	}
 	if cfg.GetMetadata().GetEnabled() {
 		// Add the MetadataClient middleware to the slice
-		filter = MetadataClient(filter, cfg.GetMetadata())
+		middlewares = MetadataClient(middlewares, cfg.GetMetadata())
 	}
 	if cfg.Tracing {
 		// Add the TracingClient middleware to the slice
-		filter = TracingClient(filter)
+		middlewares = TracingClient(middlewares)
 	}
 	if cfg.CircuitBreaker {
 		// Add the CircuitBreakerClient middleware to the slice
-		filter = CircuitBreakerClient(filter)
+		middlewares = CircuitBreakerClient(middlewares)
 	}
 	if cfg.GetJwt().GetEnabled() {
-		filter = JwtClient(filter, cfg.GetJwt())
+		m, ok := JwtClient(cfg.GetJwt())
+		if ok && cfg.GetSelector().GetEnabled() {
+			m = SelectorClient(cfg.GetSelector(), option.MatchFunc, m)
+		}
+		middlewares = append(middlewares, m)
 	}
-	//if cfg.GetSelector().GetEnabled() {
-	//	return SelectorClient(filter, cfg.GetSelector(), option.MatchFunc)
-	//}
 	// Add the Security middleware to the slice
-	return filter.Build(cfg.Selector, false)
+	return middlewares
 }
 
 // NewServer creates a new server with the given configuration
@@ -71,36 +71,39 @@ func NewServer(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware 
 		Logger: log.DefaultLogger,
 	}, ss)
 
-	filter := Selector(cfg.GetSelector(), option.MatchFunc)
 	if cfg.Logging {
-		filter = LoggingServer(filter, option.Logger)
+		middlewares = LoggingServer(middlewares, option.Logger)
 	}
 	if cfg.Recovery {
 		// Add the Recovery middleware to the slice
-		filter = Recovery(filter)
+		middlewares = Recovery(middlewares)
 	}
 	if cfg.GetValidator().GetEnabled() {
 		// Add the ValidateServer middleware to the slice
-		filter = ValidateServer(filter, cfg.Validator)
+		middlewares = ValidateServer(middlewares, cfg.Validator)
 	}
 	if cfg.Tracing {
 		// Add the TracingServer middleware to the slice
-		filter = TracingServer(filter)
+		middlewares = TracingServer(middlewares)
 	}
 	if cfg.GetMetadata().GetEnabled() {
 		// Add the MetadataServer middleware to the slice
-		filter = MetadataServer(filter, cfg.Metadata)
+		middlewares = MetadataServer(middlewares, cfg.Metadata)
 	}
 	if cfg.GetRateLimiter().GetEnabled() {
 		// Add the RateLimitServer middleware to the slice
-		filter = RateLimitServer(filter, cfg.RateLimiter)
+		middlewares = RateLimitServer(middlewares, cfg.RateLimiter)
 	}
 	if cfg.GetJwt().GetEnabled() {
-		filter = JwtServer(filter, cfg.Jwt)
+		m, ok := JwtServer(cfg.Jwt)
+		if ok && cfg.GetSelector().GetEnabled() {
+			m = SelectorServer(cfg.GetSelector(), option.MatchFunc, m)
+		}
+		middlewares = append(middlewares, m)
 	}
 	//if cfg.GetSelector().GetEnabled() {
 	//	return SelectorServer(filter, cfg.GetSelector(), option.MatchFunc)
 	//}
 	// Return the slice of middlewares
-	return filter.Build(cfg.Selector, true)
+	return middlewares
 }

@@ -71,7 +71,7 @@ func newBuilder() *builder {
 	return b
 }
 
-// NewConfig creates a new Selector using the registered ConfigBuilder.
+// NewConfig creates a new SelectorServer using the registered ConfigBuilder.
 func NewConfig(cfg *configv1.SourceConfig, ss ...config.OptionSetting) (config.KConfig, error) {
 	return runtime.builder.ConfigBuilder.NewConfig(cfg, ss...)
 }

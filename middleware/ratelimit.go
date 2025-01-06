@@ -10,12 +10,11 @@ import (
 
 	ratelimitv1 "github.com/origadmin/runtime/gen/go/middleware/ratelimit/v1"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func RateLimitServer(selector selector.Selector, cfg *ratelimitv1.RateLimiter) selector.Selector {
+func RateLimitServer(ms []KMiddleware, cfg *ratelimitv1.RateLimiter) []KMiddleware {
 	if cfg == nil {
-		return selector
+		return ms
 	}
 	var options []ratelimit.Option
 	switch cfg.GetName() {
@@ -29,6 +28,6 @@ func RateLimitServer(selector selector.Selector, cfg *ratelimitv1.RateLimiter) s
 	default:
 		// do nothing
 	}
-	log.Debugf("[KMiddleware] Rate limit server middleware enabled with %v", cfg.GetName())
-	return selector.Append("RateLimit", ratelimit.Server(options...))
+	log.Debugf("[Middleware] Rate limit server middleware enabled with %v", cfg.GetName())
+	return append(ms, ratelimit.Server(options...))
 }

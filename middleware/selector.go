@@ -6,13 +6,37 @@
 package middleware
 
 import (
+	"github.com/go-kratos/kratos/v2/middleware/selector"
+
 	selectorv1 "github.com/origadmin/runtime/gen/go/middleware/selector/v1"
-	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func Selector(cfg *selectorv1.Selector, matchFunc selector.MatchFunc) selector.Selector {
+func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middleware KMiddleware) KMiddleware {
 	if cfg == nil || !cfg.Enabled {
-		return selector.Unfiltered()
+		return middleware
 	}
-	return selector.NewSelectorFilter(cfg.GetNames(), matchFunc)
+	return selectorBuilder(selector.Server(middleware), cfg, matchFunc)
+}
+
+func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middleware KMiddleware) KMiddleware {
+	if cfg == nil || !cfg.Enabled {
+		return middleware
+	}
+	return selectorBuilder(selector.Client(middleware), cfg, matchFunc)
+}
+
+func selectorBuilder(builder *selector.Builder, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) KMiddleware {
+	if matchFunc != nil {
+		builder.Match(matchFunc)
+	}
+	if path := cfg.GetPaths(); path != nil {
+		builder.Path(path...)
+	}
+	if prefixes := cfg.GetPrefixes(); prefixes != nil {
+		builder.Prefix(prefixes...)
+	}
+	if regex := cfg.GetRegex(); regex != "" {
+		builder.Regex(regex)
+	}
+	return builder.Match(matchFunc).Build()
 }

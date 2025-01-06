@@ -8,16 +8,14 @@ package middleware
 import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
-
-	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func LoggingServer(selector selector.Selector, logger log.Logger) selector.Selector {
-	log.Debug("[KMiddleware] Logging server middleware enabled")
-	return selector.Append("Logging", logging.Server(logger))
+func LoggingServer(ms []KMiddleware, logger log.Logger) []KMiddleware {
+	log.Debug("[Middleware] Logging server middleware enabled")
+	return append(ms, logging.Server(logger))
 }
 
-func LoggingClient(selector selector.Selector, logger log.Logger) selector.Selector {
-	log.Debug("[KMiddleware] Logging client middleware enabled")
-	return selector.Append("Logging", logging.Client(logger))
+func LoggingClient(ms []KMiddleware, logger log.Logger) []KMiddleware {
+	log.Debug("[Middleware] Logging client middleware enabled")
+	return append(ms, logging.Client(logger))
 }

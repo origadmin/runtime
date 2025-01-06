@@ -14,26 +14,25 @@ import (
 
 	jwtv1 "github.com/origadmin/runtime/gen/go/middleware/jwt/v1"
 	secjwtv1 "github.com/origadmin/runtime/gen/go/security/jwt/v1"
-	"github.com/origadmin/runtime/middleware/selector"
 )
 
-func JwtServer(selector selector.Selector, cfg *jwtv1.JWT) selector.Selector {
+func JwtServer(cfg *jwtv1.JWT) (KMiddleware, bool) {
 	config := cfg.GetConfig()
 	if config == nil {
-		return selector
+		return nil, false
 	}
 	kf := getKeyFunc(config.Key, config.SigningMethod)
 	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
-	return selector.Append("Jwt", authjwt.Server(kf, opts...))
+	return authjwt.Server(kf, opts...), true
 }
-func JwtClient(selector selector.Selector, cfg *jwtv1.JWT) selector.Selector {
+func JwtClient(cfg *jwtv1.JWT) (KMiddleware, bool) {
 	config := cfg.GetConfig()
 	if config == nil {
-		return selector
+		return nil, false
 	}
 	kf := getKeyFunc(config.Key, config.SigningMethod)
 	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
-	return selector.Append("Jwt", authjwt.Client(kf, opts...))
+	return authjwt.Client(kf, opts...), true
 }
 
 func fromJwtConfig(cfg *secjwtv1.Config, subject string, ctp string, header map[string]string) []authjwt.Option {
