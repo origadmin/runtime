@@ -15,17 +15,17 @@ func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, midd
 	if cfg == nil || !cfg.Enabled {
 		return middleware
 	}
-	return selectorBuilder(selector.Server(middleware), cfg, matchFunc)
+	return selectorBuilder(cfg, selector.Server(middleware), matchFunc)
 }
 
 func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middleware KMiddleware) KMiddleware {
 	if cfg == nil || !cfg.Enabled {
 		return middleware
 	}
-	return selectorBuilder(selector.Client(middleware), cfg, matchFunc)
+	return selectorBuilder(cfg, selector.Client(middleware), matchFunc)
 }
 
-func selectorBuilder(builder *selector.Builder, cfg *selectorv1.Selector, matchFunc selector.MatchFunc) KMiddleware {
+func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchFunc selector.MatchFunc) KMiddleware {
 	if matchFunc != nil {
 		builder.Match(matchFunc)
 	}
