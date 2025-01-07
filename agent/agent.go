@@ -81,6 +81,10 @@ func NewAgentWithHTTP(server *transhttp.Server) Agent {
 
 type httpCtx struct{}
 
+func NewHTTPContext(ctx context.Context, c transhttp.Context) context.Context {
+	return context.WithValue(ctx, httpCtx{}, c)
+}
+
 func HTTPContext(c transhttp.Context) context.Context {
 	return context.WithValue(c, httpCtx{}, c)
 }
