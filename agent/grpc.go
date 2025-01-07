@@ -16,12 +16,12 @@ type grpcAgent struct {
 	server  *transgrpc.Server
 }
 
-func (g *grpcAgent) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
-	g.server.RegisterService(desc, impl)
+func (obj *grpcAgent) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
+	obj.server.RegisterService(desc, impl)
 }
 
-func (g *grpcAgent) Server() *transgrpc.Server {
-	return g.server
+func (obj *grpcAgent) Server() *transgrpc.Server {
+	return obj.server
 }
 
 func NewGRPC(server *transgrpc.Server) GRPCAgent {

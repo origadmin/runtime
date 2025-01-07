@@ -82,6 +82,9 @@ func NewHTTPContext(ctx context.Context, c transhttp.Context) context.Context {
 	return context.WithValue(ctx, httpCtx{}, c)
 }
 
+func HTTPContext(ctx context.Context) context.Context {
+	return context.WithValue(context.Background(), httpCtx{}, ctx)
+}
 func FromHTTPContext(ctx context.Context) (transhttp.Context, bool) {
 	v, ok := ctx.Value(httpCtx{}).(transhttp.Context)
 	return v, ok
