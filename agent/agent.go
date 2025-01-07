@@ -82,7 +82,7 @@ func NewAgentWithHTTP(server *transhttp.Server) Agent {
 type httpCtx struct{}
 
 func HTTPContext(c transhttp.Context) context.Context {
-	return context.WithValue(context.Background(), httpCtx{}, c)
+	return context.WithValue(c, httpCtx{}, c)
 }
 func FromHTTPContext(ctx context.Context) transhttp.Context {
 	if cctx, ok := ctx.(transhttp.Context); ok {
