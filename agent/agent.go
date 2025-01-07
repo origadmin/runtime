@@ -7,11 +7,14 @@ package agent
 
 import (
 	"context"
+	"errors"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"google.golang.org/grpc"
 )
+
+var ErrContextNotFound = errors.New("http context not found")
 
 // ApiVersionV1 defines the version number of the API
 const ApiVersionV1 = "/api/v1"
