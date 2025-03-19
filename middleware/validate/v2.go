@@ -22,7 +22,7 @@ type v2Validator interface {
 
 // validate is a struct that implements the v2Validator interface.
 type validateV2 struct {
-	v *protovalidate.Validator
+	v protovalidate.Validator
 }
 
 // ValidateV2 validates a protobuf message.

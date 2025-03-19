@@ -45,7 +45,9 @@ func buildValidator(cfg *Option) (Validator, error) {
 	case V1:
 		return NewValidateV1(cfg.failFast, cfg.callback), nil
 	case V2:
-		cfg.validatorOptions = append(cfg.validatorOptions, protovalidate.WithFailFast(cfg.failFast))
+		if cfg.failFast {
+			cfg.validatorOptions = append(cfg.validatorOptions, protovalidate.WithFailFast())
+		}
 		return NewValidateV2(cfg.validatorOptions...)
 	default:
 		return nil, fmt.Errorf("unsupported version: %d", cfg.version)
