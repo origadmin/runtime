@@ -2,8 +2,6 @@ module github.com/origadmin/runtime
 
 go 1.23.1
 
-toolchain go1.23.2
-
 require (
 	github.com/bufbuild/protovalidate-go v0.9.2
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
