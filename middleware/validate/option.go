@@ -15,7 +15,9 @@ type Option struct {
 }
 type OptionSetting = func(*Option)
 
-type OnValidationErrCallback func(ctx context.Context, err error)
+// OnValidationErrCallback is a function that will be invoked on validation error(s).
+// It returns true if the error is handled and should be ignored, false otherwise.
+type OnValidationErrCallback func(ctx context.Context, err error) bool
 
 // WithOnValidationErrCallback registers function that will be invoked on validation error(s).
 func WithOnValidationErrCallback(onValidationErrCallback OnValidationErrCallback) OptionSetting {

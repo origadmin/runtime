@@ -38,26 +38,19 @@ func (v validateV1) Validate(ctx context.Context, req interface{}) (err error) {
 	log.Debugf("Validate called with request: %+v", req)
 	switch val := req.(type) {
 	case v1Validator:
-		log.Debugf("Validating v1 with Validator")
 		err = val.Validate(!v.failFast)
-		log.Debugf("Validator v1 returned error: %v", err)
 	case v1ValidatorLegacy:
-		log.Debugf("Validating v1 with Legacy")
 		err = val.Validate()
-		log.Debugf("ValidatorLegacy v1 returned error: %v", err)
 	case v1ValidatorAll:
-		log.Debugf("Validating v1 with ValidatorAll")
 		err = val.ValidateAll()
-		log.Debugf("ValidatorAll v1 returned error: %v", err)
 	default:
 		log.Warnf("Unknown validator type: %+v", req)
 		err = fmt.Errorf("unknown validator type: %+v", req)
 	}
 	if err != nil {
 		log.Errorf("Validation failed with error: %v", err)
-		if v.callback != nil {
-			log.Debugf("Calling callback with error: %v", err)
-			v.callback(ctx, err)
+		if v.callback != nil && v.callback(ctx, err) {
+			return nil
 		}
 		return err
 	}
