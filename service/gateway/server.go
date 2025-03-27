@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package http implements the functions, types, and interfaces for the module.
-package http
+// Package grpc implements the functions, types, and interfaces for the module.
+package grpc
 
 import (
 	"net/url"
@@ -20,15 +20,14 @@ import (
 )
 
 const (
-	Scheme   = "http"
+	Scheme   = "gateway"
 	hostName = "HOST"
 )
 
-// NewServer Create an HTTP server instance.
+// NewServer Create a GRPC server instance
 func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, error) {
-	log.Debugf("Creating new HTTP server with config: %+v", cfg)
+	log.Debugf("Creating new GRPC server instance with config: %+v", cfg)
 	if cfg == nil {
-		log.Errorf("Service config is nil")
 		return nil, errors.New("service config is nil")
 	}
 	option := settings.ApplyDefaultsOrZero(ss...)
@@ -55,7 +54,7 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 			}
 			dynamic, err := endpoint.GenerateDynamic(&endpoint.Option{
 				EnvVar:       hostEnv,
-				HostIP:       option.HostIp,
+				HostIP:       option.HostIP,
 				EndpointFunc: nil,
 			}, serviceHttp.Addr)
 			if err != nil {
@@ -63,11 +62,11 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 			}
 			serviceHttp.Endpoint = dynamic
 		}
-		log.Debugf("HTTP endpoint: %s", serviceHttp.Endpoint)
+		log.Debugf("GRPC endpoint: %s", serviceHttp.Endpoint)
 		if serviceHttp.Endpoint != "" {
-			parsedEndpoint, err := url.Parse(serviceHttp.Endpoint)
+			endpoint, err := url.Parse(serviceHttp.Endpoint)
 			if err == nil {
-				serverOptions = append(serverOptions, transhttp.Endpoint(parsedEndpoint))
+				serverOptions = append(serverOptions, transhttp.Endpoint(endpoint))
 			} else {
 				log.Errorf("Failed to parse endpoint: %v", err)
 			}

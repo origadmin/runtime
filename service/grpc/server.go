@@ -14,10 +14,9 @@ import (
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/service/endpoint"
 	"github.com/origadmin/toolkits/env"
 	"github.com/origadmin/toolkits/errors"
-	"github.com/origadmin/toolkits/helpers"
-	"github.com/origadmin/toolkits/net"
 )
 
 const (
@@ -49,35 +48,25 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 			serverOptions = append(serverOptions, transgrpc.Timeout(time.Duration(serviceGrpc.Timeout)))
 		}
 		if cfg.DynamicEndpoint && serviceGrpc.Endpoint == "" {
-			log.Debugf("Dynamic endpoint is enabled and endpoint is empty, generating endpoint")
-			var err error
-			endpointParse := helpers.ServiceEndpoint
-			// Obtain an endpoint using the custom endpointURL function or the default service discovery method
-			if option.EndpointFunc != nil {
-				endpointParse = option.EndpointFunc
-			}
-
-			var host string
+			hostEnv := hostName
 			if option.Prefix != "" {
-				host = env.Var(option.Prefix, hostName)
+				hostEnv = env.Var(option.Prefix, hostName)
 			}
-			hostIP := option.HostIp
-			if hostIP == "" {
-				hostIP = net.HostAddr(host)
+			dynamic, err := endpoint.GenerateDynamic(&endpoint.Option{
+				EnvVar:       hostEnv,
+				HostIP:       option.HostIp,
+				EndpointFunc: nil,
+			}, serviceGrpc.Addr)
+			if err != nil {
+				return nil, err
 			}
-			log.Debugf("Resolved host IP: %s", hostIP)
-			endpointStr, err := endpointParse("grpc", hostIP, serviceGrpc.Addr)
-			if err == nil {
-				serviceGrpc.Endpoint = endpointStr
-			} else {
-				log.Errorf("Failed to generate endpoint: %v", err)
-			}
+			serviceGrpc.Endpoint = dynamic
 		}
 		log.Debugf("GRPC endpoint: %s", serviceGrpc.Endpoint)
 		if serviceGrpc.Endpoint != "" {
-			endpoint, err := url.Parse(serviceGrpc.Endpoint)
+			parsedEndpoint, err := url.Parse(serviceGrpc.Endpoint)
 			if err == nil {
-				serverOptions = append(serverOptions, transgrpc.Endpoint(endpoint))
+				serverOptions = append(serverOptions, transgrpc.Endpoint(parsedEndpoint))
 			} else {
 				log.Errorf("Failed to parse endpoint: %v", err)
 			}
