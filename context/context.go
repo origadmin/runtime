@@ -10,11 +10,22 @@ import (
 )
 
 // WithContext returns a new context with the provided context.Context value.
-func WithContext(ctx Context) Context {
-	if ctx == nil {
+// It takes a variadic parameter of type Context and returns a Context.
+// If no contexts are provided, it returns a background context.
+// Otherwise, it returns the first context in the variadic parameter.
+//
+// Example usage:
+//
+//	ctx := context.WithContext(ctx1, ctx2, ctx3)
+//
+// or
+//
+//	ctx := context.WithContext()
+func WithContext(ctxs ...Context) Context {
+	if len(ctxs) == 0 {
 		return Background()
 	}
-	return ctx
+	return ctxs[0]
 }
 
 type traceCtx struct{}
