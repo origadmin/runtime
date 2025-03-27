@@ -64,9 +64,9 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 		}
 		log.Debugf("GRPC endpoint: %s", serviceHttp.Endpoint)
 		if serviceHttp.Endpoint != "" {
-			endpoint, err := url.Parse(serviceHttp.Endpoint)
+			parsedEndpoint, err := url.Parse(serviceHttp.Endpoint)
 			if err == nil {
-				serverOptions = append(serverOptions, transhttp.Endpoint(endpoint))
+				serverOptions = append(serverOptions, transhttp.Endpoint(parsedEndpoint))
 			} else {
 				log.Errorf("Failed to parse endpoint: %v", err)
 			}
