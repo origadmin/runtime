@@ -53,11 +53,12 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 			if option.Prefix != "" {
 				hostEnv = env.Var(option.Prefix, hostName)
 			}
-			dynamic, err := endpoint.GenerateDynamic(&endpoint.Option{
+			opts := &endpoint.Option{
 				EnvVar:       hostEnv,
 				HostIP:       option.HostIp,
 				EndpointFunc: nil,
-			}, serviceHttp.Addr)
+			}
+			dynamic, err := endpoint.GenerateDynamic(opts, "http", serviceHttp.Addr)
 			if err != nil {
 				return nil, err
 			}

@@ -52,11 +52,12 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 			if option.Prefix != "" {
 				hostEnv = env.Var(option.Prefix, hostName)
 			}
-			dynamic, err := endpoint.GenerateDynamic(&endpoint.Option{
+			opts := &endpoint.Option{
 				EnvVar:       hostEnv,
 				HostIP:       option.HostIp,
 				EndpointFunc: nil,
-			}, serviceGrpc.Addr)
+			}
+			dynamic, err := endpoint.GenerateDynamic(opts, "grpc", serviceGrpc.Addr)
 			if err != nil {
 				return nil, err
 			}

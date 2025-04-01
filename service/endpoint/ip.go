@@ -81,7 +81,7 @@ type Option struct {
 	EndpointFunc func(scheme string, host string, addr string) (string, error)
 }
 
-func GenerateDynamic(option *Option, addr string) (string, error) {
+func GenerateDynamic(option *Option, scheme, addr string) (string, error) {
 	endpointParse := ExtractIP
 	if option.EndpointFunc != nil {
 		endpointParse = option.EndpointFunc
@@ -91,5 +91,5 @@ func GenerateDynamic(option *Option, addr string) (string, error) {
 	if hostIP == "" {
 		hostIP = toolnet.HostAddr(toolnet.WithEnvVar(option.EnvVar))
 	}
-	return endpointParse("grpc", hostIP, addr)
+	return endpointParse(scheme, hostIP, addr)
 }
