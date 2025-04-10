@@ -16,7 +16,7 @@ func RateLimitServer(ms []KMiddleware, cfg *ratelimitv1.RateLimiter) []KMiddlewa
 	if cfg == nil {
 		return ms
 	}
-	var options []ratelimit.Option
+	var options []ratelimit.Options
 	switch cfg.GetName() {
 	case "redis":
 		// TODO:

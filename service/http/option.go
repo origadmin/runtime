@@ -11,63 +11,65 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
-type Option struct {
+type EndpointFunc = func(scheme string, host string, addr string) (string, error)
+
+type Options struct {
 	Prefix        string
 	HostIp        string
 	ServiceName   string
 	Discovery     registry.Discovery
 	NodeFilters   []selector.NodeFilter
 	Middlewares   []middleware.Middleware
-	EndpointFunc  func(scheme string, host string, addr string) (string, error)
+	EndpointFunc  EndpointFunc
 	ClientOptions []transhttp.ClientOption
 	ServerOptions []transhttp.ServerOption
 }
 
-type OptionSetting = func(o *Option)
+type Option = func(o *Options)
 
-func WithNodeFilter(filters ...selector.NodeFilter) OptionSetting {
-	return func(o *Option) {
+func WithNodeFilter(filters ...selector.NodeFilter) Option {
+	return func(o *Options) {
 		o.NodeFilters = append(o.NodeFilters, filters...)
 	}
 }
 
-func WithDiscovery(serviceName string, discovery registry.Discovery) OptionSetting {
-	return func(o *Option) {
+func WithDiscovery(serviceName string, discovery registry.Discovery) Option {
+	return func(o *Options) {
 		o.ServiceName = serviceName
 		o.Discovery = discovery
 	}
 }
-func WithMiddlewares(middlewares ...middleware.Middleware) OptionSetting {
-	return func(o *Option) {
+func WithMiddlewares(middlewares ...middleware.Middleware) Option {
+	return func(o *Options) {
 		o.Middlewares = append(o.Middlewares, middlewares...)
 	}
 }
 
-func WithEndpointFunc(endpointFunc func(scheme string, host string, addr string) (string, error)) OptionSetting {
-	return func(o *Option) {
+func WithEndpointFunc(endpointFunc EndpointFunc) Option {
+	return func(o *Options) {
 		o.EndpointFunc = endpointFunc
 	}
 }
 
-func WithPrefix(prefix string) OptionSetting {
-	return func(o *Option) {
+func WithPrefix(prefix string) Option {
+	return func(o *Options) {
 		o.Prefix = prefix
 	}
 }
 
-func WithHostIp(hostIp string) OptionSetting {
-	return func(o *Option) {
+func WithHostIp(hostIp string) Option {
+	return func(o *Options) {
 		o.HostIp = hostIp
 	}
 }
 
-func WithClientOptions(options ...transhttp.ClientOption) OptionSetting {
-	return func(o *Option) {
+func WithClientOptions(options ...transhttp.ClientOption) Option {
+	return func(o *Options) {
 		o.ClientOptions = append(o.ClientOptions, options...)
 	}
 }
-func WithServerOptions(options ...transhttp.ServerOption) OptionSetting {
-	return func(o *Option) {
+func WithServerOptions(options ...transhttp.ServerOption) Option {
+	return func(o *Options) {
 		o.ServerOptions = append(o.ServerOptions, options...)
 	}
 }

@@ -12,19 +12,19 @@ import (
 	"github.com/origadmin/runtime/service/selector"
 )
 
-type Option struct {
+type Options struct {
 	EnvPrefix string
-	Service   *service.Option
-	Selector  *selector.Option
-	Customize *customize.Option
+	Service   *service.Options
+	Selector  *selector.Options
+	Customize *customize.Options
 	Source    config.KOption
 }
 
-// OptionSetting is a function that takes a pointer to a Option struct and modifies it.
-type OptionSetting = func(option *Option)
+// Option is a function that takes a pointer to a Options struct and modifies it.
+type Option = func(option *Options)
 
-func WithEnvPrefix(prefix string) OptionSetting {
-	return func(s *Option) {
+func WithEnvPrefix(prefix string) Option {
+	return func(s *Options) {
 		s.EnvPrefix = prefix
 	}
 }

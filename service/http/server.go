@@ -25,7 +25,7 @@ const (
 )
 
 // NewServer Create an HTTP server instance.
-func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, error) {
+func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
 	log.Debugf("Creating new HTTP server with config: %+v", cfg)
 	if cfg == nil {
 		log.Errorf("Service config is nil")
@@ -53,12 +53,12 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 			if option.Prefix != "" {
 				hostEnv = env.Var(option.Prefix, hostName)
 			}
-			opts := &endpoint.Option{
+			opts := &endpoint.Options{
 				EnvVar:       hostEnv,
 				HostIP:       option.HostIp,
 				EndpointFunc: nil,
 			}
-			dynamic, err := endpoint.GenerateDynamic(opts, "http", serviceHttp.Addr)
+			dynamic, err := endpoint.GenerateDynamic(opts, Scheme, serviceHttp.Addr)
 			if err != nil {
 				return nil, err
 			}

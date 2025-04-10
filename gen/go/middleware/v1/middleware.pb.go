@@ -75,7 +75,7 @@ func (x *Middleware) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Build.ProtoReflect.Descriptor instead.
+// Deprecated: Use Middleware.ProtoReflect.Descriptor instead.
 func (*Middleware) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{0}
 }
@@ -309,9 +309,9 @@ func file_middleware_v1_middleware_proto_rawDescGZIP() []byte {
 
 var file_middleware_v1_middleware_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_middleware_v1_middleware_proto_goTypes = []any{
-	(*Middleware)(nil),          // 0: middleware.v1.Build
-	(*Middleware_Metadata)(nil), // 1: middleware.v1.Build.Metadata
-	nil,                         // 2: middleware.v1.Build.Metadata.DataEntry
+	(*Middleware)(nil),          // 0: middleware.v1.Middleware
+	(*Middleware_Metadata)(nil), // 1: middleware.v1.Middleware.Metadata
+	nil,                         // 2: middleware.v1.Middleware.Metadata.DataEntry
 	(*v1.RateLimiter)(nil),      // 3: middleware.ratelimit.v1.RateLimiter
 	(*v11.Metrics)(nil),         // 4: middleware.metrics.v1.Metrics
 	(*v12.Validator)(nil),       // 5: middleware.validator.v1.Validator
@@ -319,13 +319,13 @@ var file_middleware_v1_middleware_proto_goTypes = []any{
 	(*v14.Selector)(nil),        // 7: middleware.selector.v1.Selector
 }
 var file_middleware_v1_middleware_proto_depIdxs = []int32{
-	1, // 0: middleware.v1.Build.metadata:type_name -> middleware.v1.Build.Metadata
-	3, // 1: middleware.v1.Build.rate_limiter:type_name -> middleware.ratelimit.v1.RateLimiter
-	4, // 2: middleware.v1.Build.metrics:type_name -> middleware.metrics.v1.Metrics
-	5, // 3: middleware.v1.Build.validator:type_name -> middleware.validator.v1.Validator
-	6, // 4: middleware.v1.Build.jwt:type_name -> middleware.jwt.v1.JWT
-	7, // 5: middleware.v1.Build.selector:type_name -> middleware.selector.v1.Selector
-	2, // 6: middleware.v1.Build.Metadata.data:type_name -> middleware.v1.Build.Metadata.DataEntry
+	1, // 0: middleware.v1.Middleware.metadata:type_name -> middleware.v1.Middleware.Metadata
+	3, // 1: middleware.v1.Middleware.rate_limiter:type_name -> middleware.ratelimit.v1.RateLimiter
+	4, // 2: middleware.v1.Middleware.metrics:type_name -> middleware.metrics.v1.Metrics
+	5, // 3: middleware.v1.Middleware.validator:type_name -> middleware.validator.v1.Validator
+	6, // 4: middleware.v1.Middleware.jwt:type_name -> middleware.jwt.v1.JWT
+	7, // 5: middleware.v1.Middleware.selector:type_name -> middleware.selector.v1.Selector
+	2, // 6: middleware.v1.Middleware.Metadata.data:type_name -> middleware.v1.Middleware.Metadata.DataEntry
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type
 	7, // [7:7] is the sub-list for extension type_name

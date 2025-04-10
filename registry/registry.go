@@ -19,7 +19,7 @@ type (
 
 	// Factory is an interface that defines methods for creating a discovery and a KRegistrar.
 	Factory interface {
-		NewRegistrar(*configv1.Registry, ...OptionSetting) (KRegistrar, error)
+		NewRegistrar(*configv1.Registry, ...Option) (KRegistrar, error)
 		NewDiscovery(*configv1.Registry, ...OptionSetting) (KDiscovery, error)
 	}
 	Registry interface {

@@ -100,7 +100,7 @@ func (r *Runtime) Build(rr registry.Registry, servers ...transport.Server) *krat
 	)
 }
 
-func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.OptionSetting) (registry.KRegistrar, error) {
+func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.Option) (registry.KRegistrar, error) {
 	cfg, err := r.Config.Registry(serviceName)
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.OptionSetti
 	return r.builder.NewRegistrar(cfg, ss...)
 }
 
-func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.OptionSetting) (registry.KDiscovery, error) {
+func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.Option) (registry.KDiscovery, error) {
 	cfg, err := r.Config.Registry(serviceName)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.OptionSetti
 	return r.builder.NewDiscovery(cfg, ss...)
 }
 
-func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.OptionSetting) (*service.GRPCServer, error) {
+func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.GRPCOption) (*service.GRPCServer, error) {
 	cfg, err := r.Config.Service(serviceName)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.OptionSetti
 	return r.builder.NewGRPCServer(cfg, ss...)
 }
 
-func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.OptionSetting) (*service.HTTPServer, error) {
+func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.HTTPOption) (*service.HTTPServer, error) {
 	cfg, err := r.Config.Service(serviceName)
 	if err != nil {
 		return nil, err

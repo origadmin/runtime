@@ -29,16 +29,16 @@ func (b *builder) RegisterConfigFunc(name string, buildFunc BuildFunc) {
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
-type BuildFunc func(*configv1.SourceConfig, ...OptionSetting) (KConfig, error)
+type BuildFunc func(*configv1.SourceConfig, ...Option) (KConfig, error)
 
 // NewConfig is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn BuildFunc) NewConfig(cfg *configv1.SourceConfig, ss ...OptionSetting) (KConfig, error) {
+func (fn BuildFunc) NewConfig(cfg *configv1.SourceConfig, ss ...Option) (KConfig, error) {
 	// Call the function with the given KConfig and a list of Options.
 	return fn(cfg, ss...)
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (b *builder) NewConfig(cfg *configv1.SourceConfig, ss ...OptionSetting) (KConfig, error) {
+func (b *builder) NewConfig(cfg *configv1.SourceConfig, ss ...Option) (KConfig, error) {
 	b.factoryMux.RLock()
 	defer b.factoryMux.RUnlock()
 	configBuilder, ok := b.factories[cfg.Type]

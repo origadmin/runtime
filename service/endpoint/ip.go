@@ -75,7 +75,7 @@ func isValidIP(addr string) bool {
 	return ip.IsGlobalUnicast() && !ip.IsInterfaceLocalMulticast()
 }
 
-type Option struct {
+type Options struct {
 	EnvVar       string
 	HostIP       string
 	EndpointFunc func(scheme string, host string, addr string) (string, error)

@@ -8,17 +8,17 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
-// Option is a struct that holds a value.
-type Option struct {
+// Options is a struct that holds a value.
+type Options struct {
 	Customize *configv1.Customize
 }
 
-// OptionSetting is a function that sets a value on a Setting.
-type OptionSetting = func(config *Option)
+// Option is a function that sets a value on a Setting.
+type Option = func(config *Options)
 
 // WithCustomize sets the customize config.
-func WithCustomize(customize *configv1.Customize) OptionSetting {
-	return func(option *Option) {
+func WithCustomize(customize *configv1.Customize) Option {
+	return func(option *Options) {
 		option.Customize = customize
 	}
 }

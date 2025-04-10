@@ -210,7 +210,7 @@ func (m *Service) validate(all bool) error {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, ServiceValidationError{
-					field:  "Build",
+					field:  "Middleware",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -218,7 +218,7 @@ func (m *Service) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, ServiceValidationError{
-					field:  "Build",
+					field:  "Middleware",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -227,7 +227,7 @@ func (m *Service) validate(all bool) error {
 	} else if v, ok := interface{}(m.GetMiddleware()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ServiceValidationError{
-				field:  "Build",
+				field:  "Middleware",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

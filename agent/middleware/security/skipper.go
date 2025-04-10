@@ -18,7 +18,7 @@ import (
 // SkipperServer returns a middleware that skips certain operations based on the provided configuration.
 // It takes a Security configuration and a variable number of OptionSettings.
 // If the Skipper is not configured, it returns nil and false.
-func SkipperServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, bool) {
+func SkipperServer(cfg *configv1.Security, ss ...Option) (middleware.Middleware, bool) {
 	log.Debugf("Skipper: creating middleware with config: %+v", cfg)
 	// Apply default settings to the options
 	option := settings.ApplyDefaultsOrZero(ss...)

@@ -22,7 +22,7 @@ import (
 const defaultTimeout = 5 * time.Second
 
 // NewClient Creating a GRPC client instance
-func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) (*grpc.ClientConn, error) {
+func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*grpc.ClientConn, error) {
 	if cfg == nil {
 		//bootstrap = config.DefaultRuntimeConfig
 		return nil, errors.New("service config is nil")

@@ -17,7 +17,7 @@ import (
 )
 
 // NewAuthZClient returns a new server middleware.
-func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+func NewAuthZClient(cfg *configv1.Security, ss ...Option) (middleware.Middleware, error) {
 	log.Debugf("NewAuthZClient: creating new server middleware with config %+v and options %+v", cfg, ss)
 	option := settings.ApplyDefaultsOrZero(ss...)
 	if option.Authorizer == nil {
@@ -77,7 +77,7 @@ func NewAuthZClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 }
 
 // NewAuthZServer returns a new server middleware.
-func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+func NewAuthZServer(cfg *configv1.Security, ss ...Option) (middleware.Middleware, error) {
 	log.Debugf("NewAuthZServer: creating new server middleware with config %+v and options %+v", cfg, ss)
 	option := settings.ApplyDefaultsOrZero(ss...)
 	if option.Authorizer == nil {
@@ -143,7 +143,7 @@ func NewAuthZServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 }
 
 // NewAuthZ returns a new server middleware.
-func NewAuthZ(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+func NewAuthZ(cfg *configv1.Security, ss ...Option) (middleware.Middleware, error) {
 	log.Debugf("NewAuthZ: creating new server middleware with config %+v and options %+v", cfg, ss)
 	option := settings.ApplyDefaultsOrZero(ss...)
 	if option.Authorizer == nil {

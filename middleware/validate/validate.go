@@ -21,8 +21,8 @@ type Validator interface {
 }
 
 // Server is a validator middleware.
-func Server(ss ...OptionSetting) (middleware.Middleware, error) {
-	cfg := settings.Apply(&Option{
+func Server(ss ...Option) (middleware.Middleware, error) {
+	cfg := settings.Apply(&Options{
 		version:  V1,
 		failFast: true,
 	}, ss)

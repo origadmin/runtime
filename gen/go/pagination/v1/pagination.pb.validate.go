@@ -205,63 +205,85 @@ func (m *PageResponse) validate(all bool) error {
 
 	// no validation rules for TotalSize
 
-	if all {
-		switch v := interface{}(m.GetData()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, PageResponseValidationError{
-					field:  "Data",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PageResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PageResponseValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, PageResponseValidationError{
-					field:  "Data",
+				return PageResponseValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return PageResponseValidationError{
-				field:  "Data",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
 	}
 
 	// no validation rules for NextPageToken
 
-	if all {
-		switch v := interface{}(m.GetExtra()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, PageResponseValidationError{
-					field:  "Extra",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, PageResponseValidationError{
-					field:  "Extra",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
+	{
+		sorted_keys := make([]string, len(m.GetExtra()))
+		i := 0
+		for key := range m.GetExtra() {
+			sorted_keys[i] = key
+			i++
 		}
-	} else if v, ok := interface{}(m.GetExtra()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return PageResponseValidationError{
-				field:  "Extra",
-				reason: "embedded message failed validation",
-				cause:  err,
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetExtra()[key]
+			_ = val
+
+			// no validation rules for Extra[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, PageResponseValidationError{
+							field:  fmt.Sprintf("Extra[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, PageResponseValidationError{
+							field:  fmt.Sprintf("Extra[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return PageResponseValidationError{
+						field:  fmt.Sprintf("Extra[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
 			}
+
 		}
 	}
 

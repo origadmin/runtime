@@ -8,16 +8,16 @@ package agent
 import (
 	"fmt"
 
-	"github.com/go-kratos/kratos/v2/transport/http"
+	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
 type httpAgent struct {
 	prefix  string
 	version string
-	server  *http.Server
+	server  *transhttp.Server
 }
 
-func (obj *httpAgent) HTTPServer() *http.Server {
+func (obj *httpAgent) HTTPServer() *transhttp.Server {
 	return obj.server
 }
 
@@ -29,7 +29,7 @@ func (obj *httpAgent) SetVersion(version string) {
 	obj.version = version
 }
 
-func (obj *httpAgent) Route() *http.Router {
+func (obj *httpAgent) Route() *transhttp.Router {
 	return obj.server.Route(obj.URI())
 }
 
@@ -37,7 +37,7 @@ func (obj *httpAgent) URI() string {
 	return fmt.Sprintf("%s/%s", obj.prefix, obj.version)
 }
 
-func NewHTTP(server *http.Server) HTTPAgent {
+func NewHTTP(server *transhttp.Server) HTTPAgent {
 	return &httpAgent{
 		prefix:  DefaultPrefix,
 		version: DefaultVersion,

@@ -9,21 +9,21 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 )
 
-type Option struct {
+type Options struct {
 	Logger    log.Logger
 	MatchFunc selector.MatchFunc
 }
 
-type OptionSetting = func(*Option)
+type Option = func(*Options)
 
-func WithLogger(logger log.Logger) OptionSetting {
-	return func(o *Option) {
+func WithLogger(logger log.Logger) Option {
+	return func(o *Options) {
 		o.Logger = logger
 	}
 }
 
-func WithMatchFunc(matchFunc selector.MatchFunc) OptionSetting {
-	return func(o *Option) {
+func WithMatchFunc(matchFunc selector.MatchFunc) Option {
+	return func(o *Options) {
 		o.MatchFunc = matchFunc
 	}
 }

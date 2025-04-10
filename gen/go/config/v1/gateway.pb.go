@@ -448,7 +448,7 @@ func (x *Middleware) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Build.ProtoReflect.Descriptor instead.
+// Deprecated: Use Middleware.ProtoReflect.Descriptor instead.
 func (*Middleware) Descriptor() ([]byte, []int) {
 	return file_config_v1_gateway_proto_rawDescGZIP(), []int{4}
 }
@@ -962,7 +962,7 @@ var file_config_v1_gateway_proto_goTypes = []any{
 	(*TLS)(nil),             // 2: config.v1.TLS
 	(*PriorityConfig)(nil),  // 3: config.v1.PriorityConfig
 	(*Endpoint)(nil),        // 4: config.v1.Endpoint
-	(*Middleware)(nil),      // 5: config.v1.Build
+	(*Middleware)(nil),      // 5: config.v1.Middleware
 	(*Backend)(nil),         // 6: config.v1.Backend
 	(*HealthCheck)(nil),     // 7: config.v1.HealthCheck
 	(*Retry)(nil),           // 8: config.v1.Retry
@@ -975,15 +975,15 @@ var file_config_v1_gateway_proto_goTypes = []any{
 }
 var file_config_v1_gateway_proto_depIdxs = []int32{
 	4,  // 0: config.v1.Gateway.endpoints:type_name -> config.v1.Endpoint
-	5,  // 1: config.v1.Gateway.middlewares:type_name -> config.v1.Build
+	5,  // 1: config.v1.Gateway.middlewares:type_name -> config.v1.Middleware
 	10, // 2: config.v1.Gateway.tls_store:type_name -> config.v1.Gateway.TlsStoreEntry
 	4,  // 3: config.v1.PriorityConfig.endpoints:type_name -> config.v1.Endpoint
 	0,  // 4: config.v1.Endpoint.protocol:type_name -> config.v1.Protocol
-	5,  // 5: config.v1.Endpoint.middlewares:type_name -> config.v1.Build
+	5,  // 5: config.v1.Endpoint.middlewares:type_name -> config.v1.Middleware
 	6,  // 6: config.v1.Endpoint.backends:type_name -> config.v1.Backend
 	8,  // 7: config.v1.Endpoint.retry:type_name -> config.v1.Retry
 	11, // 8: config.v1.Endpoint.metadata:type_name -> config.v1.Endpoint.MetadataEntry
-	14, // 9: config.v1.Build.options:type_name -> google.protobuf.Any
+	14, // 9: config.v1.Middleware.options:type_name -> google.protobuf.Any
 	7,  // 10: config.v1.Backend.health_check:type_name -> config.v1.HealthCheck
 	12, // 11: config.v1.Backend.metadata:type_name -> config.v1.Backend.MetadataEntry
 	9,  // 12: config.v1.Retry.conditions:type_name -> config.v1.Condition

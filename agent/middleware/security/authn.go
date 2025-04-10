@@ -27,7 +27,7 @@ const (
 )
 
 // NewAuthNClient is a client authenticator middleware.
-func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+func NewAuthNClient(cfg *configv1.Security, ss ...Option) (middleware.Middleware, error) {
 	log.Debugf("NewAuthNClient: creating client authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
 	if option.Authenticator == nil {
@@ -75,7 +75,7 @@ func NewAuthNClient(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 }
 
 // NewAuthNServer is a server authenticator middleware.
-func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+func NewAuthNServer(cfg *configv1.Security, ss ...Option) (middleware.Middleware, error) {
 	log.Debugf("NewAuthNServer: creating server authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
 	if option.Authenticator == nil {
@@ -118,7 +118,7 @@ func NewAuthNServer(cfg *configv1.Security, ss ...OptionSetting) (middleware.Mid
 }
 
 // NewAuthN is a server authenticator middleware.
-func NewAuthN(cfg *configv1.Security, ss ...OptionSetting) (middleware.Middleware, error) {
+func NewAuthN(cfg *configv1.Security, ss ...Option) (middleware.Middleware, error) {
 	log.Debugf("NewAuthN: creating server authenticator middleware with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
 	if option.Authenticator == nil {

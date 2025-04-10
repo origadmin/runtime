@@ -16,14 +16,14 @@ type Middleware struct {
 }
 
 // NewClient creates a new client with the given configuration
-func NewClient(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware {
+func NewClient(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {
 	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
 	// If the configuration is nil, return the empty slice
 	if cfg == nil {
 		return middlewares
 	}
-	option := settings.Apply(&Option{
+	option := settings.Apply(&Options{
 		Logger: log.DefaultLogger,
 	}, ss)
 
@@ -59,7 +59,7 @@ func NewClient(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware 
 }
 
 // NewServer creates a new server with the given configuration
-func NewServer(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware {
+func NewServer(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {
 	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
 
@@ -67,7 +67,7 @@ func NewServer(cfg *middlewarev1.Middleware, ss ...OptionSetting) []KMiddleware 
 	if cfg == nil {
 		return middlewares
 	}
-	option := settings.Apply(&Option{
+	option := settings.Apply(&Options{
 		Logger: log.DefaultLogger,
 	}, ss)
 

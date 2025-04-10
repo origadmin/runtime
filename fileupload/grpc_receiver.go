@@ -14,8 +14,8 @@ import (
 )
 
 type grpcReceiver struct {
-	stream grpc.ServerStream
 	header *fileuploadv1.FileHeader
+	stream grpc.ServerStream
 	pr     *io.PipeReader
 	pw     *io.PipeWriter
 }

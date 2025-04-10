@@ -21,7 +21,7 @@ import (
 const defaultTimeout = 5 * time.Second
 
 // NewClient Creating an HTTP client instance.
-func NewClient(ctx context.Context, cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Client, error) {
+func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*transhttp.Client, error) {
 	if cfg == nil {
 		//bootstrap = config.DefaultRuntimeConfig
 		return nil, errors.New("service config is nil")

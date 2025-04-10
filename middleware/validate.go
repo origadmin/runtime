@@ -26,7 +26,7 @@ func Validate(ms []KMiddleware, validator *validatorv1.Validator) []KMiddleware 
 }
 
 func ValidateServer(ms []KMiddleware, validator *validatorv1.Validator) []KMiddleware {
-	opts := []validate.OptionSetting{
+	opts := []validate.Option{
 		validate.WithFailFast(validator.GetFailFast()),
 	}
 	if validate.Version(validator.Version) == validate.V2 {

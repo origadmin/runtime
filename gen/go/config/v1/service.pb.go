@@ -560,7 +560,7 @@ var file_config_v1_service_proto_goTypes = []any{
 	(*WebSocket)(nil),        // 4: config.v1.WebSocket
 	(*Message)(nil),          // 5: config.v1.Message
 	(*Task)(nil),             // 6: config.v1.Task
-	(*v1.Middleware)(nil),    // 7: middleware.v1.Build
+	(*v1.Middleware)(nil),    // 7: middleware.v1.Middleware
 }
 var file_config_v1_service_proto_depIdxs = []int32{
 	2, // 0: config.v1.Service.grpc:type_name -> config.v1.Service.GRPC
@@ -568,7 +568,7 @@ var file_config_v1_service_proto_depIdxs = []int32{
 	4, // 2: config.v1.Service.websocket:type_name -> config.v1.WebSocket
 	5, // 3: config.v1.Service.message:type_name -> config.v1.Message
 	6, // 4: config.v1.Service.task:type_name -> config.v1.Task
-	7, // 5: config.v1.Service.middleware:type_name -> middleware.v1.Build
+	7, // 5: config.v1.Service.middleware:type_name -> middleware.v1.Middleware
 	3, // 6: config.v1.Service.selector:type_name -> config.v1.Service.Selector
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type

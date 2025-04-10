@@ -15,7 +15,6 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/endpoint"
-	"github.com/origadmin/toolkits/env"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -25,7 +24,7 @@ const (
 )
 
 // NewServer Create a GRPC server instance
-func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, error) {
+func NewServer(cfg *configv1.Service, ss ...Option) (*transgrpc.Server, error) {
 	log.Debugf("Creating new GRPC server instance with config: %+v", cfg)
 	if cfg == nil {
 		return nil, errors.New("service config is nil")
@@ -48,16 +47,8 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transgrpc.Server, e
 			serverOptions = append(serverOptions, transgrpc.Timeout(time.Duration(serviceGrpc.Timeout)))
 		}
 		if cfg.DynamicEndpoint && serviceGrpc.Endpoint == "" {
-			hostEnv := hostName
-			if option.Prefix != "" {
-				hostEnv = env.Var(option.Prefix, hostName)
-			}
-			opts := &endpoint.Option{
-				EnvVar:       hostEnv,
-				HostIP:       option.HostIp,
-				EndpointFunc: nil,
-			}
-			dynamic, err := endpoint.GenerateDynamic(opts, "grpc", serviceGrpc.Addr)
+			ep := parseEndpointOption(option)
+			dynamic, err := endpoint.GenerateDynamic(ep, Scheme, serviceGrpc.Addr)
 			if err != nil {
 				return nil, err
 			}

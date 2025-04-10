@@ -22,13 +22,13 @@ type (
 	HTTPFunc = func(cfg *configv1.Service_Selector) (transhttp.ClientOption, error)
 )
 
-// Option represents a configuration option for a selector.
-type Option struct {
+// Options represents a configuration option for a selector.
+type Options struct {
 	// GRPC is a function that returns a gRPC client option.
 	GRPC GRPCFunc
 	// HTTP is a function that returns an HTTP client option.
 	HTTP HTTPFunc
 }
 
-// OptionSetting is a function type that sets a selector option.
-type OptionSetting = func(config *Option)
+// Option is a function type that sets a selector option.
+type Option = func(config *Options)

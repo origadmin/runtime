@@ -11,16 +11,16 @@ import (
 )
 
 // ConfigSyncFunc is a function type that takes a KConfig and a list of Options and returns an error.
-type ConfigSyncFunc func(*configv1.SourceConfig, any, ...config.OptionSetting) error
+type ConfigSyncFunc func(*configv1.SourceConfig, any, ...config.Option) error
 
 // SyncConfig is a method that implements the ConfigSyncer interface for ConfigSyncFunc.
-func (fn ConfigSyncFunc) SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.OptionSetting) error {
+func (fn ConfigSyncFunc) SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.Option) error {
 	// Call the function with the given KConfig and a list of Options.
 	return fn(cfg, v, ss...)
 }
 
 // SyncConfig is a method that implements the ConfigSyncer interface for ConfigSyncFunc.
-func (b *builder) SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.OptionSetting) error {
+func (b *builder) SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.Option) error {
 	b.syncMux.RLock()
 	defer b.syncMux.RUnlock()
 	configSyncer, ok := b.syncs[cfg.Type]

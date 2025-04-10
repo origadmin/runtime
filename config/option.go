@@ -13,7 +13,7 @@ type Configure interface {
 	FromConfig(cfg *configv1.SourceConfig) error
 }
 
-type Option struct {
+type Options struct {
 	SourceOptions []KOption
 	Decoder       KDecoder
 	Encoder       Encoder
@@ -23,18 +23,18 @@ type Option struct {
 // Encoder is a function that takes a value and returns a byte slice and an error.
 type Encoder func(v any) ([]byte, error)
 
-// OptionSetting is a function that takes a pointer to a KOption struct and modifies it.
-type OptionSetting = func(s *Option)
+// Option is a function that takes a pointer to a KOption struct and modifies it.
+type Option = func(s *Options)
 
 // WithOptions sets the options field of the KOption struct.
-func WithOptions(options ...KOption) OptionSetting {
-	return func(option *Option) {
+func WithOptions(options ...KOption) Option {
+	return func(option *Options) {
 		option.SourceOptions = options
 	}
 }
 
-func WithConfigure(cfg Configure) OptionSetting {
-	return func(option *Option) {
+func WithConfigure(cfg Configure) Option {
+	return func(option *Options) {
 		option.Configure = cfg
 	}
 }

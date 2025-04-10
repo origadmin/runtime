@@ -25,7 +25,7 @@ const (
 )
 
 // NewServer Create a GRPC server instance
-func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, error) {
+func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
 	log.Debugf("Creating new GRPC server instance with config: %+v", cfg)
 	if cfg == nil {
 		return nil, errors.New("service config is nil")
@@ -52,7 +52,7 @@ func NewServer(cfg *configv1.Service, ss ...OptionSetting) (*transhttp.Server, e
 			if option.Prefix != "" {
 				hostEnv = env.Var(option.Prefix, hostName)
 			}
-			opts := &endpoint.Option{
+			opts := &endpoint.Options{
 				EnvVar:       hostEnv,
 				HostIP:       option.HostIP,
 				EndpointFunc: nil,

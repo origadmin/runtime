@@ -9,65 +9,89 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/selector"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+
+	"github.com/origadmin/runtime/service/endpoint"
+	"github.com/origadmin/toolkits/env"
 )
 
-type Option struct {
+type EndpointFunc = func(scheme string, host string, addr string) (string, error)
+
+type Options struct {
 	Prefix        string
 	HostIp        string
 	ServiceName   string
 	Discovery     registry.Discovery
 	NodeFilters   []selector.NodeFilter
 	Middlewares   []middleware.Middleware
-	EndpointFunc  func(scheme string, host string, addr string) (string, error)
+	EndpointFunc  EndpointFunc
 	ClientOptions []transgrpc.ClientOption
 	ServerOptions []transgrpc.ServerOption
 }
 
-type OptionSetting = func(o *Option)
+type Option = func(o *Options)
 
-func WithNodeFilter(filters ...selector.NodeFilter) OptionSetting {
-	return func(o *Option) {
+func WithNodeFilter(filters ...selector.NodeFilter) Option {
+	return func(o *Options) {
 		o.NodeFilters = append(o.NodeFilters, filters...)
 	}
 }
-func WithDiscovery(serviceName string, discovery registry.Discovery) OptionSetting {
-	return func(o *Option) {
+func WithDiscovery(serviceName string, discovery registry.Discovery) Option {
+	return func(o *Options) {
 		o.ServiceName = serviceName
 		o.Discovery = discovery
 	}
 }
 
-func WithMiddlewares(middlewares ...middleware.Middleware) OptionSetting {
-	return func(o *Option) {
+func WithMiddlewares(middlewares ...middleware.Middleware) Option {
+	return func(o *Options) {
 		o.Middlewares = append(o.Middlewares, middlewares...)
 	}
 }
 
-func WithEndpointFunc(endpointFunc func(scheme string, host string, addr string) (string, error)) OptionSetting {
-	return func(o *Option) {
+func WithEndpointFunc(endpointFunc EndpointFunc) Option {
+	return func(o *Options) {
 		o.EndpointFunc = endpointFunc
 	}
 }
-func WithPrefix(prefix string) OptionSetting {
-	return func(o *Option) {
+func WithPrefix(prefix string) Option {
+	return func(o *Options) {
 		o.Prefix = prefix
 	}
 }
 
-func WithHostIp(hostIp string) OptionSetting {
-	return func(o *Option) {
+func WithHostIp(hostIp string) Option {
+	return func(o *Options) {
 		o.HostIp = hostIp
 	}
 }
 
-func WithClientOptions(opts ...transgrpc.ClientOption) OptionSetting {
-	return func(o *Option) {
+func WithClientOptions(opts ...transgrpc.ClientOption) Option {
+	return func(o *Options) {
 		o.ClientOptions = append(o.ClientOptions, opts...)
 	}
 }
 
-func WithServerOptions(opts ...transgrpc.ServerOption) OptionSetting {
-	return func(o *Option) {
+func WithServerOptions(opts ...transgrpc.ServerOption) Option {
+	return func(o *Options) {
 		o.ServerOptions = append(o.ServerOptions, opts...)
 	}
+}
+
+func parseEndpointOption(opt *Options) *endpoint.Options {
+	hostEnv := hostName
+	if opt == nil {
+		return &endpoint.Options{
+			EnvVar:       hostEnv,
+			EndpointFunc: endpoint.ExtractIP,
+		}
+	}
+	if opt.Prefix != "" {
+		hostEnv = env.Var(opt.Prefix, hostName)
+	}
+	ep := &endpoint.Options{
+		EnvVar:       hostEnv,
+		HostIP:       opt.HostIp,
+		EndpointFunc: opt.EndpointFunc,
+	}
+	return ep
 }

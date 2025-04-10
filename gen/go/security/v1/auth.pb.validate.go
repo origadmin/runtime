@@ -1415,7 +1415,7 @@ func (m *AuthZ) validate(all bool) error {
 
 	// no validation rules for Root
 
-	// no validation rules for ID
+	// no validation rules for Id
 
 	if _, ok := _AuthZ_UserType_InLookup[m.GetUserType()]; !ok {
 		err := AuthZValidationError{

@@ -6,20 +6,37 @@
 package registry
 
 import (
+	"time"
+
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
 type Configure interface {
-	FromConfig(cfg **configv1.Registry) error
+	Type() string
+	FromConfig(cfg *configv1.Registry) error
 }
-type Option struct {
+type Options struct {
 	Configure Configure
+	Timeout   time.Duration
+	Retries   int
 }
 
-type OptionSetting = func(o *Option)
+type Option = func(o *Options)
 
-func WithConfigure(cfg Configure) OptionSetting {
-	return func(o *Option) {
+func WithConfigure(cfg Configure) Option {
+	return func(o *Options) {
 		o.Configure = cfg
+	}
+}
+
+func WithTimeout(d time.Duration) Option {
+	return func(o *Options) {
+		o.Timeout = d
+	}
+}
+
+func WithRetries(n int) Option {
+	return func(o *Options) {
+		o.Retries = n
 	}
 }

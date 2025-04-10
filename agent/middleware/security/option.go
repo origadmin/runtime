@@ -28,7 +28,7 @@ type TokenParser func(context.Context, string) (security.Claims, error)
 type ResponseWriter func(context.Context, security.Claims) (string, error)
 
 // Option is a struct that contains the settings for the security middleware.
-type Option struct {
+type Options struct {
 	// Authorizer is the authorizer used to authorize the request.
 	Authorizer security.Authorizer
 	// Tokenizer is the authenticator used to authenticate the request.
@@ -55,11 +55,11 @@ type Option struct {
 	IsRoot func(ctx context.Context, claims security.Claims) bool
 }
 
-// OptionSetting is a function that sets an option.
-type OptionSetting = func(option *Option)
+// Option is a function that sets an option.
+type Option = func(option *Options)
 
 // ApplyDefaults applies the default settings to the option.
-func (o *Option) ApplyDefaults() {
+func (o *Options) ApplyDefaults() {
 	// Apply default token key if not set.
 	if o.TokenKey == "" {
 		o.TokenKey = MetadataSecurityTokenKey
@@ -89,7 +89,7 @@ func (o *Option) ApplyDefaults() {
 }
 
 // WithConfig applies the configuration to the option.
-func (o *Option) WithConfig(cfg *configv1.Security) *Option {
+func (o *Options) WithConfig(cfg *configv1.Security) *Options {
 	paths := cfg.GetPublicPaths()
 	paths = mergePublic(paths, o.PublicPaths...)
 	o.PublicPaths = paths
@@ -97,14 +97,14 @@ func (o *Option) WithConfig(cfg *configv1.Security) *Option {
 }
 
 // WithTokenParser sets the token parser.
-func WithTokenParser(parser func(ctx context.Context) string) OptionSetting {
-	return func(opt *Option) {
+func WithTokenParser(parser func(ctx context.Context) string) Option {
+	return func(opt *Options) {
 		opt.TokenParser = parser
 	}
 }
 
 // ParsePolicy parses the user claims from the context.
-func (o *Option) ParsePolicy(ctx context.Context, claims security.Claims) (security.Policy, error) {
+func (o *Options) ParsePolicy(ctx context.Context, claims security.Claims) (security.Policy, error) {
 	if o.PolicyParser == nil {
 		return nil, errors.New("user claims parser is nil")
 	}
@@ -115,43 +115,43 @@ func (o *Option) ParsePolicy(ctx context.Context, claims security.Claims) (secur
 }
 
 // WithAuthenticator sets the token.
-func WithAuthenticator(authenticator security.Authenticator) OptionSetting {
-	return func(opt *Option) {
+func WithAuthenticator(authenticator security.Authenticator) Option {
+	return func(opt *Options) {
 		opt.Authenticator = authenticator
 	}
 }
 
 // WithAuthorizer sets the authorizer.
-func WithAuthorizer(authorizer security.Authorizer) OptionSetting {
-	return func(opt *Option) {
+func WithAuthorizer(authorizer security.Authorizer) Option {
+	return func(opt *Options) {
 		opt.Authorizer = authorizer
 	}
 }
 
 // WithSkipper sets the public paths.
-func WithSkipper(paths ...string) OptionSetting {
-	return func(opt *Option) {
+func WithSkipper(paths ...string) Option {
+	return func(opt *Options) {
 		opt.PublicPaths = mergePublic(paths)
 	}
 }
 
 // WithTokenKey sets the token key.
-func WithTokenKey(key string) OptionSetting {
-	return func(opt *Option) {
+func WithTokenKey(key string) Option {
+	return func(opt *Options) {
 		opt.TokenKey = key
 	}
 }
 
 // WithSkipKey sets the skip key.
-func WithSkipKey(key string) OptionSetting {
-	return func(opt *Option) {
+func WithSkipKey(key string) Option {
+	return func(opt *Options) {
 		opt.SkipKey = key
 	}
 }
 
 // WithConfig sets the configuration.
-func WithConfig(cfg *configv1.Security) OptionSetting {
-	return func(option *Option) {
+func WithConfig(cfg *configv1.Security) Option {
+	return func(option *Options) {
 		option.WithConfig(cfg)
 	}
 }

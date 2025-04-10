@@ -18,10 +18,10 @@ type (
 	}
 	// Factory is an interface that defines a method for creating a new builder.
 	Factory interface {
-		NewGRPCServer(*configv1.Service, ...OptionSetting) (*GRPCServer, error)
-		NewHTTPServer(*configv1.Service, ...OptionSetting) (*HTTPServer, error)
-		NewGRPCClient(context.Context, *configv1.Service, ...OptionSetting) (*GRPCClient, error)
-		NewHTTPClient(context.Context, *configv1.Service, ...OptionSetting) (*HTTPClient, error)
+		NewGRPCServer(*configv1.Service, ...GRPCOption) (*GRPCServer, error)
+		NewHTTPServer(*configv1.Service, ...HTTPOption) (*HTTPServer, error)
+		NewGRPCClient(context.Context, *configv1.Service, ...GRPCOption) (*GRPCClient, error)
+		NewHTTPClient(context.Context, *configv1.Service, ...HTTPOption) (*HTTPClient, error)
 	}
 )
 
