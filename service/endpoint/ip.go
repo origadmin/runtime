@@ -81,7 +81,7 @@ type Options struct {
 	EndpointFunc func(scheme string, host string, addr string) (string, error)
 }
 
-func GenerateDynamic(option *Option, scheme, addr string) (string, error) {
+func GenerateDynamic(option *Options, scheme, addr string) (string, error) {
 	endpointParse := ExtractIP
 	if option.EndpointFunc != nil {
 		endpointParse = option.EndpointFunc

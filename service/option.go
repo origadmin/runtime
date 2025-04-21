@@ -17,7 +17,7 @@ type (
 )
 
 // HTTPOption is the type for HTTP option settings.
-type HTTPOption = http.Options
+type HTTPOption = http.Option
 
 // GRPCOption is the type for gRPC option settings.
-type GRPCOption = grpc.Options
+type GRPCOption = grpc.Option

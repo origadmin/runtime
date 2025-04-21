@@ -24,13 +24,13 @@ type factory struct{}
 
 // NewGRPCServer creates a new gRPC server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (f factory) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOptionSetting) (*GRPCServer, error) {
+func (f factory) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
 	if cfg.GetSelector() != nil {
 		filter, err := selector.NewFilter(cfg.GetSelector())
 		if err != nil {
 			return nil, err
 		}
-		ss = append([]GRPCOptionSetting{
+		ss = append([]GRPCOption{
 			grpc.WithNodeFilter(filter),
 		}, ss...)
 	}
@@ -40,7 +40,7 @@ func (f factory) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOptionSetting) (
 
 // NewHTTPServer creates a new HTTP server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (f factory) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOptionSetting) (*HTTPServer, error) {
+func (f factory) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
 	if cfg.GetSelector() != nil {
 		filter, err := selector.NewFilter(cfg.GetSelector())
 		if err != nil {
@@ -57,7 +57,7 @@ func (f factory) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOptionSetting) (
 
 // NewGRPCClient creates a new gRPC client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (f factory) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOptionSetting) (*GRPCClient,
+func (f factory) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOption) (*GRPCClient,
 	error) {
 	// Create a new gRPC client using the provided context, configuration, and options.
 	return grpc.NewClient(ctx, cfg, ss...)
@@ -65,7 +65,7 @@ func (f factory) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ..
 
 // NewHTTPClient creates a new HTTP client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (f factory) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOptionSetting) (*HTTPClient, error) {
+func (f factory) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOption) (*HTTPClient, error) {
 	// Create a new HTTP client using the provided context, configuration, and options.
 	return http.NewClient(ctx, cfg, ss...)
 }
@@ -82,7 +82,7 @@ func (s *builder) RegisterServiceBuilder(name string, factory Factory) {
 }
 
 // NewGRPCServer creates a new gRPC server based on the given ServiceConfig.
-func (s *builder) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOptionSetting) (*GRPCServer, error) {
+func (s *builder) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
 	s.factoryMux.RLock()
 	defer s.factoryMux.RUnlock()
 	if serviceBuilder, ok := s.factories[cfg.Name]; ok {
@@ -92,7 +92,7 @@ func (s *builder) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOptionSetting) 
 }
 
 // NewHTTPServer creates a new HTTP server based on the given ServiceConfig.
-func (s *builder) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOptionSetting) (*HTTPServer, error) {
+func (s *builder) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
 	s.factoryMux.RLock()
 	defer s.factoryMux.RUnlock()
 	if serviceBuilder, ok := s.factories[cfg.Name]; ok {
@@ -102,7 +102,7 @@ func (s *builder) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOptionSetting) 
 }
 
 // NewGRPCClient creates a new gRPC client based on the given ServiceConfig.
-func (s *builder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOptionSetting) (*GRPCClient, error) {
+func (s *builder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOption) (*GRPCClient, error) {
 	s.factoryMux.RLock()
 	defer s.factoryMux.RUnlock()
 	if serviceBuilder, ok := s.factories[cfg.Name]; ok {
@@ -112,7 +112,7 @@ func (s *builder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss .
 }
 
 // NewHTTPClient creates a new HTTP client based on the given ServiceConfig.
-func (s *builder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOptionSetting) (*HTTPClient, error) {
+func (s *builder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOption) (*HTTPClient, error) {
 	s.factoryMux.RLock()
 	defer s.factoryMux.RUnlock()
 	if serviceBuilder, ok := s.factories[cfg.Name]; ok {

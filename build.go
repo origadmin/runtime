@@ -35,19 +35,19 @@ func (b *builder) RegisterConfigBuilder(s string, factory config.Factory) {
 	b.ConfigBuilder.RegisterConfigBuilder(s, factory)
 }
 
-func (b *builder) NewGRPCServer(c *configv1.Service, setting ...service.Option) (*service.GRPCServer, error) {
+func (b *builder) NewGRPCServer(c *configv1.Service, setting ...service.GRPCOption) (*service.GRPCServer, error) {
 	return b.ServiceBuilder.NewGRPCServer(c, setting...)
 }
 
-func (b *builder) NewHTTPServer(c *configv1.Service, setting ...service.Option) (*service.HTTPServer, error) {
+func (b *builder) NewHTTPServer(c *configv1.Service, setting ...service.HTTPOption) (*service.HTTPServer, error) {
 	return b.ServiceBuilder.NewHTTPServer(c, setting...)
 }
 
-func (b *builder) NewGRPCClient(c context.Context, c2 *configv1.Service, setting ...service.Option) (*service.GRPCClient, error) {
+func (b *builder) NewGRPCClient(c context.Context, c2 *configv1.Service, setting ...service.GRPCOption) (*service.GRPCClient, error) {
 	return b.ServiceBuilder.NewGRPCClient(c, c2, setting...)
 }
 
-func (b *builder) NewHTTPClient(c context.Context, c2 *configv1.Service, setting ...service.Option) (*service.HTTPClient, error) {
+func (b *builder) NewHTTPClient(c context.Context, c2 *configv1.Service, setting ...service.HTTPOption) (*service.HTTPClient, error) {
 	return b.ServiceBuilder.NewHTTPClient(c, c2, setting...)
 }
 
@@ -126,7 +126,7 @@ func NewMiddlewaresClient(cc *configv1.Customize, ss ...middleware.Option) []mid
 }
 
 // NewMiddlewaresServer creates a new KMiddleware with the builder.
-func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.OptionSetting) []middleware.KMiddleware {
+func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.Option) []middleware.KMiddleware {
 	return runtime.builder.NewMiddlewaresServer(nil, cc, ss...)
 }
 
@@ -136,25 +136,25 @@ func RegisterMiddleware(name string, middlewareBuilder MiddlewareBuilder) {
 }
 
 // NewHTTPServiceServer creates a new HTTP server using the provided configuration
-func NewHTTPServiceServer(cfg *configv1.Service, ss ...service.OptionSetting) (*service.HTTPServer, error) {
+func NewHTTPServiceServer(cfg *configv1.Service, ss ...service.HTTPOption) (*service.HTTPServer, error) {
 	// Call the runtime.builder.NewHTTPServer function with the provided configuration
 	return runtime.builder.NewHTTPServer(cfg, ss...)
 }
 
 // NewHTTPServiceClient creates a new HTTP client using the provided context and configuration
-func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.OptionSetting) (*service.HTTPClient, error) {
+func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.HTTPOption) (*service.HTTPClient, error) {
 	// Call the runtime.builder.NewHTTPClient function with the provided context and configuration
 	return runtime.builder.NewHTTPClient(ctx, cfg, ss...)
 }
 
 // NewGRPCServiceServer creates a new GRPC server using the provided configuration
-func NewGRPCServiceServer(cfg *configv1.Service, ss ...service.OptionSetting) (*service.GRPCServer, error) {
+func NewGRPCServiceServer(cfg *configv1.Service, ss ...service.GRPCOption) (*service.GRPCServer, error) {
 	// Call the runtime.builder.NewGRPCServer function with the provided configuration
 	return runtime.builder.NewGRPCServer(cfg, ss...)
 }
 
 // NewGRPCServiceClient creates a new GRPC client using the provided context and configuration
-func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.OptionSetting) (*service.GRPCClient, error) {
+func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.GRPCOption) (*service.GRPCClient, error) {
 	// Call the runtime.builder.NewGRPCClient function with the provided context and configuration
 	return runtime.builder.NewGRPCClient(ctx, cfg, ss...)
 }

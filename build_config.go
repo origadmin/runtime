@@ -6,6 +6,7 @@
 package runtime
 
 import (
+	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
@@ -39,4 +40,23 @@ func (b *builder) RegisterConfigSyncer(name string, configSyncer config.Syncer) 
 // RegisterConfigSync registers a new ConfigSyncer with the given name.
 func (b *builder) RegisterConfigSync(name string, configSyncer ConfigSyncFunc) {
 	b.RegisterConfigSyncer(name, configSyncer)
+}
+
+// LoadRemoteConfig loads the config file from the given path
+func LoadRemoteConfig(bs *bootstrap.Bootstrap, v any, ss ...config.Option) error {
+	sourceConfig, err := bootstrap.LoadSourceConfig(bs)
+	if err != nil {
+		return err
+	}
+	runtimeConfig, err := NewConfig(sourceConfig, ss...)
+	if err != nil {
+		return err
+	}
+	if err := runtimeConfig.Load(); err != nil {
+		return err
+	}
+	if err := runtimeConfig.Scan(v); err != nil {
+		return err
+	}
+	return nil
 }

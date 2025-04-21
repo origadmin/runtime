@@ -8,13 +8,11 @@ package bootstrap
 import (
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/customize"
-	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/runtime/service/selector"
 )
 
 type Options struct {
 	EnvPrefix string
-	Service   *service.Options
 	Selector  *selector.Options
 	Customize *customize.Options
 	Source    config.KOption

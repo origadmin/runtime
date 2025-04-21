@@ -11,8 +11,6 @@ import (
 	"github.com/origadmin/toolkits/codec"
 	"github.com/origadmin/toolkits/errors"
 
-	"github.com/origadmin/runtime"
-	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
@@ -99,8 +97,8 @@ func LoadSourceConfig(bootstrap *Bootstrap) (*configv1.SourceConfig, error) {
 	return loadSourceConfig(stat, path)
 }
 
-// LoadPathSourceConfig loads the config file from the given path
-func LoadPathSourceConfig(path string) (*configv1.SourceConfig, error) {
+// LoadSourceConfigFromPath loads the config file from the given path
+func LoadSourceConfigFromPath(path string) (*configv1.SourceConfig, error) {
 	// Get the file info from the path
 	stat, err := os.Stat(path)
 	if err != nil {
@@ -108,25 +106,6 @@ func LoadPathSourceConfig(path string) (*configv1.SourceConfig, error) {
 	}
 	// Load the config file
 	return loadSourceConfig(stat, path)
-}
-
-// LoadRemoteConfig loads the config file from the given path
-func LoadRemoteConfig(bootstrap *Bootstrap, v any, ss ...config.Option) error {
-	sourceConfig, err := LoadSourceConfig(bootstrap)
-	if err != nil {
-		return err
-	}
-	runtimeConfig, err := runtime.NewConfig(sourceConfig, ss...)
-	if err != nil {
-		return err
-	}
-	if err := runtimeConfig.Load(); err != nil {
-		return err
-	}
-	if err := runtimeConfig.Scan(v); err != nil {
-		return err
-	}
-	return nil
 }
 
 // LoadLocalConfig loads the config file from the given path

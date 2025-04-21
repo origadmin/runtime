@@ -15,7 +15,7 @@ import (
 
 func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []KMiddleware {
 	log.Debug("[MetadataClient] KMiddleware is enabled")
-	var options []middlewareMetadata.Options
+	var options []middlewareMetadata.Option
 	if prefix := cfg.GetPrefix(); prefix != "" {
 		log.Debug("[MetadataClient] Propagated prefix: ", prefix)
 		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefix))

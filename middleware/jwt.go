@@ -35,7 +35,7 @@ func JwtClient(cfg *jwtv1.JWT) (KMiddleware, bool) {
 	return authjwt.Client(kf, opts...), true
 }
 
-func fromJwtConfig(cfg *secjwtv1.Config, subject string, ctp string, header map[string]string) []authjwt.Options {
+func fromJwtConfig(cfg *secjwtv1.Config, subject string, ctp string, header map[string]string) []authjwt.Option {
 	sm := getSigningMethod(cfg.SigningMethod)
 	jcf := getClaimsFunc(subject, ctp, cfg)
 	tkh := getTokenHeader(header)

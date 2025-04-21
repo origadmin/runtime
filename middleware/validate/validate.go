@@ -40,7 +40,7 @@ func Server(ss ...Option) (middleware.Middleware, error) {
 	}, nil
 }
 
-func buildValidator(cfg *Option) (Validator, error) {
+func buildValidator(cfg *Options) (Validator, error) {
 	switch cfg.version {
 	case V1:
 		return NewValidateV1(cfg.failFast, cfg.callback), nil
