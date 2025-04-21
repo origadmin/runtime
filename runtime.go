@@ -14,6 +14,7 @@ import (
 	"github.com/origadmin/runtime/application"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
@@ -62,12 +63,17 @@ type Runtime struct {
 func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
 	var rerr error
 	r.once.Do(func() {
+		sc := new(configv1.SourceConfig)
+		rerr = bootstrap.LoadLocalConfig(bs, sc)
+		if rerr != nil {
+			return
+		}
 		//// todo: add init and check before load
 		//// todo: load config
-		//if err := r.Config.Load(); err != nil {
-		//	rerr = errors.Wrap(err, "load config")
-		//	return
-		//}
+		if err := r.Config.LoadFromSource(sc); err != nil {
+			rerr = errors.Wrap(err, "load config")
+			return
+		}
 		//// todo: load registry
 		//if err := r.Registry.Load(); err != nil {
 		//	rerr = errors.Wrap(err, "load registry")
@@ -87,7 +93,7 @@ func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
 	return rerr
 }
 
-func (r *Runtime) Build(rr registry.Registry, servers ...transport.Server) *kratos.App {
+func (r *Runtime) Build(rr registry.Registry, ss ...transport.Server) *kratos.App {
 	// todo: add init and check before build
 
 	return kratos.New(
@@ -96,7 +102,7 @@ func (r *Runtime) Build(rr registry.Registry, servers ...transport.Server) *krat
 		kratos.Version(r.Application.Version),
 		kratos.Metadata(r.Application.Metadata),
 		kratos.Logger(r.Logging.Logger),
-		kratos.Server(servers...),
+		kratos.Server(ss...),
 		kratos.Registrar(rr),
 	)
 }
@@ -132,6 +138,7 @@ func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.HTTPOption)
 	}
 	return r.builder.NewHTTPServer(cfg, ss...)
 }
+
 func init() {
 	once.Do(func() {
 		runtime.builder.init()
@@ -151,7 +158,7 @@ func Global() *Runtime {
 // New returns a new instance of the Runtime struct.
 func New() Runtime {
 	return Runtime{
-		builder:   &builder{},
+		builder:   runtime.builder,
 		EnvPrefix: DefaultEnvPrefix,
 	}
 }

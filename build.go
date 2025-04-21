@@ -58,7 +58,6 @@ func (b *builder) RegisterServiceBuilder(name string, factory service.Factory) {
 // init initializes the builder struct.
 
 func (b *builder) init() {
-
 	b.syncs = make(map[string]config.Syncer)
 	b.ConfigBuilder = config.NewBuilder()
 	b.RegistryBuilder = registry.NewBuilder()
