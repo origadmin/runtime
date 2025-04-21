@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package grpc implements the functions, types, and interfaces for the module.
-package grpc
+// Package gateway implements the functions, types, and interfaces for the module.
+package gateway
 
 import (
 	"net/url"
@@ -24,9 +24,9 @@ const (
 	hostName = "HOST"
 )
 
-// NewServer Create a GRPC server instance
+// NewServer Create a GRPC serv instance
 func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
-	log.Debugf("Creating new GRPC server instance with config: %+v", cfg)
+	log.Debugf("Creating new GRPC serv instance with config: %+v", cfg)
 	if cfg == nil {
 		return nil, errors.New("service config is nil")
 	}

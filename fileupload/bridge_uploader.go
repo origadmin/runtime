@@ -6,13 +6,13 @@ import (
 	"github.com/origadmin/toolkits/fileupload"
 )
 
-// BridgeUploader 实现了HTTP到gRPC的桥接上传
+// BridgeUploader Implemented HTTP to gRPC bridge upload
 type BridgeUploader struct {
 	Builder *Builder
 	Service fileupload.Uploader
 }
 
-// NewBridgeUploader 创建一个新的桥接上传器
+// NewBridgeUploader Create a new bridge uploader
 func NewBridgeUploader(builder *Builder, service fileupload.Uploader) fileupload.BridgeUploader {
 	return &BridgeUploader{
 		Builder: builder,
@@ -20,7 +20,7 @@ func NewBridgeUploader(builder *Builder, service fileupload.Uploader) fileupload
 	}
 }
 
-// ServeHTTP 处理HTTP上传请求并转发到gRPC服务
+// ServeHTTP Processes HTTP upload requests and forwards them to the gRPC service
 func (b *BridgeUploader) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -65,5 +65,9 @@ func (b *BridgeUploader) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 8. Forward the gRPC response back to the HTTP client
-	httpReceiver.Finalize(ctx, resp)
+	errFin := httpReceiver.Finalize(ctx, resp)
+	if errFin != nil {
+		http.Error(w, errFin.Error(), http.StatusInternalServerError)
+		return
+	}
 }

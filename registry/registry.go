@@ -20,7 +20,7 @@ type (
 	// Factory is an interface that defines methods for creating a discovery and a KRegistrar.
 	Factory interface {
 		NewRegistrar(*configv1.Registry, ...Option) (KRegistrar, error)
-		NewDiscovery(*configv1.Registry, ...OptionSetting) (KDiscovery, error)
+		NewDiscovery(*configv1.Registry, ...Option) (KDiscovery, error)
 	}
 	Registry interface {
 		KRegistrar
@@ -29,18 +29,18 @@ type (
 )
 
 // RegistrarBuildFunc is a function type that takes a *config.RegistryConfig and returns a KRegistrar and an error.
-type RegistrarBuildFunc func(*configv1.Registry, ...OptionSetting) (KRegistrar, error)
+type RegistrarBuildFunc func(*configv1.Registry, ...Option) (KRegistrar, error)
 
 // NewRegistrar is a method that calls the RegistrarBuildFunc with the given config.
-func (fn RegistrarBuildFunc) NewRegistrar(cfg *configv1.Registry, ss ...OptionSetting) (KRegistrar, error) {
+func (fn RegistrarBuildFunc) NewRegistrar(cfg *configv1.Registry, ss ...Option) (KRegistrar, error) {
 	return fn(cfg, ss...)
 }
 
 // DiscoveryBuildFunc is a function type that takes a *config.RegistryConfig and returns a discovery and an error.
-type DiscoveryBuildFunc func(*configv1.Registry, ...OptionSetting) (KDiscovery, error)
+type DiscoveryBuildFunc func(*configv1.Registry, ...Option) (KDiscovery, error)
 
 // NewDiscovery is a method that calls the DiscoveryBuildFunc with the given config.
-func (fn DiscoveryBuildFunc) NewDiscovery(cfg *configv1.Registry, ss ...OptionSetting) (KDiscovery, error) {
+func (fn DiscoveryBuildFunc) NewDiscovery(cfg *configv1.Registry, ss ...Option) (KDiscovery, error) {
 	return fn(cfg, ss...)
 }
 

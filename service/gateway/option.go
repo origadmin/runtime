@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package grpc
+package gateway
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -47,19 +47,19 @@ func WithEndpointFunc(endpointFunc func(scheme string, host string, addr string)
 		o.EndpointFunc = endpointFunc
 	}
 }
-func WithPrefix(prefix string) OptionSetting {
+func WithPrefix(prefix string) Option {
 	return func(o *Options) {
 		o.Prefix = prefix
 	}
 }
 
-func WithHostIp(hostIp string) OptionSetting {
+func WithHostIp(hostIp string) Option {
 	return func(o *Options) {
 		o.HostIP = hostIp
 	}
 }
 
-func WithServerOptions(opts ...transhttp.ServerOption) OptionSetting {
+func WithServerOptions(opts ...transhttp.ServerOption) Option {
 	return func(o *Options) {
 		o.ServerOptions = append(o.ServerOptions, opts...)
 	}

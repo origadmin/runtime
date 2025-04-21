@@ -12,6 +12,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 
 	"github.com/origadmin/runtime/application"
+	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
@@ -58,7 +59,7 @@ type Runtime struct {
 	Service     service.Service
 }
 
-func (r *Runtime) Load() error {
+func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
 	var rerr error
 	r.once.Do(func() {
 		//// todo: add init and check before load
@@ -153,4 +154,16 @@ func New() Runtime {
 		builder:   &builder{},
 		EnvPrefix: DefaultEnvPrefix,
 	}
+}
+
+// Load uses the global Runtime instance to load configurations and other resources
+// with the default bootstrap settings. It returns an error if the loading process fails.
+func Load() error {
+	return runtime.Load(bootstrap.DefaultBootstrap())
+}
+
+// LoadWithBootstrap uses the global Runtime instance to load configurations and other resources
+// with the provided bootstrap settings. It returns an error if the loading process fails.
+func LoadWithBootstrap(bs *bootstrap.Bootstrap) error {
+	return runtime.Load(bs)
 }

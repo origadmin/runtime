@@ -34,7 +34,7 @@ type Builder struct {
 	timeout     time.Duration
 }
 
-func (b *Builder) Init(ss ...BuilderSetting) *Builder {
+func (b *Builder) Init(ss ...BuilderOption) *Builder {
 	oldBufSize := b.bufSize
 	settings.Apply(b, ss)
 	// Initialize the buffer pool
@@ -89,15 +89,15 @@ func (b *Builder) NewReceiver(r *http.Request, w http.ResponseWriter) fileupload
 	return newReceiver(b, r, w)
 }
 
-type BuilderSetting = func(builder *Builder)
+type BuilderOption = func(builder *Builder)
 
-func WithURI(uri string) BuilderSetting {
+func WithURI(uri string) BuilderOption {
 	return func(builder *Builder) {
 		builder.uri = uri
 	}
 }
 
-func WithHash(hash func(name string) string) BuilderSetting {
+func WithHash(hash func(name string) string) BuilderOption {
 	return func(builder *Builder) {
 		builder.hash = hash
 	}
@@ -121,7 +121,7 @@ func GenerateRandomHash() string {
 }
 
 // NewBuilder creates a new httpBuilder with the given options
-func NewBuilder(ss ...BuilderSetting) *Builder {
+func NewBuilder(ss ...BuilderOption) *Builder {
 	b := &Builder{
 		hash:    GenerateHash,
 		bufSize: bufSize, // default 32kb
@@ -130,19 +130,19 @@ func NewBuilder(ss ...BuilderSetting) *Builder {
 	return b.Init(ss...)
 }
 
-func WithBufferSize(size int) BuilderSetting {
+func WithBufferSize(size int) BuilderOption {
 	return func(builder *Builder) {
 		builder.bufSize = size
 	}
 }
 
-func WithServiceType(st fileupload.ServiceType) BuilderSetting {
+func WithServiceType(st fileupload.ServiceType) BuilderOption {
 	return func(builder *Builder) {
 		builder.serviceType = st
 	}
 }
 
-func WithTimeout(timeout time.Duration) BuilderSetting {
+func WithTimeout(timeout time.Duration) BuilderOption {
 	return func(builder *Builder) {
 		builder.timeout = timeout
 	}
