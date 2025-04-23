@@ -122,7 +122,7 @@ type AuthZConfig struct {
 
 	// Disable security middleware
 	Disabled bool `protobuf:"varint,1,opt,name=disabled,proto3" json:"disabled,omitempty"`
-	// Direct release paths
+	// Direct release paths, paths exempt from authorization
 	PublicPaths []string `protobuf:"bytes,2,rep,name=public_paths,proto3" json:"public_paths,omitempty"`
 	// Type of authorization noop, casbin, opa, etc
 	Type string `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`

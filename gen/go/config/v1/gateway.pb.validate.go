@@ -1000,6 +1000,10 @@ func (m *HealthCheck) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Type
+
+	// no validation rules for Endpoint
+
 	if len(errors) > 0 {
 		return HealthCheckMultiError(errors)
 	}
