@@ -9,7 +9,7 @@ import "validate/validate.proto";
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/gen/go/config/v1;configv1";
 option java_multiple_files = true;
-option java_outer_classname = "DataProto";
+option java_outer_classname = "StorageConfigProto";
 option java_package = "com.github.origadmin.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
@@ -37,7 +37,7 @@ message Migration {
 }
 
 // Data
-message Data {
+message StorageConfig { // 新名称更明确配置用途
   // Database
   message Database {
     // Debugging
@@ -124,14 +124,17 @@ message Data {
     ];
     int64 dial_timeout = 5 [
       json_name = "dial_timeout",
+      (validate.rules).int64.gte = 0,
       (gnostic.openapi.v3.property) = {description: "dial timeout"}
     ];
     int64 read_timeout = 6 [
       json_name = "read_timeout",
+      (validate.rules).int64.gte = 0,
       (gnostic.openapi.v3.property) = {description: "read timeout"}
     ];
     int64 write_timeout = 7 [
       json_name = "write_timeout",
+      (validate.rules).int64.gte = 0,
       (gnostic.openapi.v3.property) = {description: "write timeout"}
     ];
   }
@@ -152,10 +155,14 @@ message Data {
     ];
     int32 max_idle = 4 [
       json_name = "max_idle",
-      (gnostic.openapi.v3.property) = {description: "maximum number of idle connections"}
+      (gnostic.openapi.v3.property) = {
+        description: "maximum number of idle connections"
+        minimum: 1
+      }
     ];
     int64 timeout = 5 [
       json_name = "timeout",
+      (validate.rules).int64.gte = 0,
       (gnostic.openapi.v3.property) = {description: "overtime"}
     ];
   }
@@ -193,7 +200,11 @@ message Data {
       json_name = "value_log_file_size",
       (gnostic.openapi.v3.property) = {description: "value log file size"}
     ];
-    uint32 log_level = 4 [
+    bool in_memory = 4 [
+      json_name = "in_memory",
+      (gnostic.openapi.v3.property) = {description: "in memory or not"}
+    ];
+    uint32 log_level = 5 [
       json_name = "log_level",
       (validate.rules).uint32 = {
         gte: 0
@@ -212,10 +223,49 @@ message Data {
   }
 
   // OSS
-  message Oss {}
+  message Oss {
+    string endpoint = 1 [
+      json_name = "endpoint",
+      (gnostic.openapi.v3.property) = {description: "Storage service endpoint"}
+    ];
+    string access_key_id = 2 [json_name = "access_key_id"];
+    string access_key_secret = 3 [json_name = "access_key_secret"];
+    string bucket = 4 [json_name = "bucket"];
+    string region = 5 [json_name = "region"];
+    bool ssl = 6 [json_name = "ssl"];
+    int64 connect_timeout = 7 [
+      json_name = "connect_timeout",
+      (validate.rules).int64.gte = 0,
+      (gnostic.openapi.v3.property) = {description: "Connection timeout in milliseconds"}
+    ];
+    int64 read_timeout = 8 [
+      json_name = "read_timeout",
+      (validate.rules).int64.gte = 0,
+      (gnostic.openapi.v3.property) = {description: "Read timeout in milliseconds"}
+    ];
+  }
 
   // Mongo
-  message Mongo {}
+  message Mongo {
+    string uri = 1 [
+      json_name = "uri",
+      (gnostic.openapi.v3.property) = {description: "MongoDB connection URI"}
+    ];
+    string database = 2 [
+      json_name = "database",
+      (gnostic.openapi.v3.property) = {description: "Database name"}
+    ];
+    string username = 3 [json_name = "username"];
+    string password = 4 [json_name = "password"];
+    bool auth_source = 5 [json_name = "auth_source"];
+    int32 max_pool_size = 6 [json_name = "max_pool_size"];
+    int32 min_pool_size = 7 [json_name = "min_pool_size"];
+    int64 connect_timeout = 8 [
+      json_name = "connect_timeout",
+      (validate.rules).int64.gte = 0,
+      (gnostic.openapi.v3.property) = {description: "Connection timeout in milliseconds"}
+    ];
+  }
 
   // Storage
   message Storage {
