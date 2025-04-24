@@ -14,20 +14,22 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// SaveOption represents an option for saving configuration data.
-type SaveOption = func(*protojson.MarshalOptions)
+// MarshalOption represents an option for saving configuration data.
+type MarshalOption = func(*protojson.MarshalOptions)
 
 // SaveConfig saves the configuration data to the specified file path.
-func SaveConfig(path string, data any, opts ...SaveOption) error {
+func SaveConfig(path string, data any, opts ...MarshalOption) error {
 	var bytes []byte
 	var err error
 	if v, ok := data.(proto.Message); ok {
-		opt := settings.Apply(&protojson.MarshalOptions{
-			Indent: " ",
-		}, opts)
+		opt := &protojson.MarshalOptions{
+			Indent:            "  ",
+			EmitDefaultValues: true,
+		}
+		opt = settings.Apply(opt, opts)
 		bytes, err = opt.Marshal(v)
 	} else {
-		bytes, err = json.Marshal(data)
+		bytes, err = json.MarshalIndent(data, "", "  ")
 	}
 	if err != nil {
 		return err

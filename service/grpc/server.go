@@ -6,6 +6,7 @@
 package grpc
 
 import (
+	"crypto/tls"
 	"net/url"
 	"time"
 
@@ -24,12 +25,12 @@ const (
 )
 
 // NewServer Create a GRPC server instance
-func NewServer(cfg *configv1.Service, ss ...Option) (*transgrpc.Server, error) {
+func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, error) {
 	log.Debugf("Creating new GRPC server instance with config: %+v", cfg)
 	if cfg == nil {
 		return nil, errors.New("service config is nil")
 	}
-	option := settings.ApplyDefaultsOrZero(ss...)
+	option := settings.ApplyDefaultsOrZero(options...)
 	serverOptions := []transgrpc.ServerOption{
 		transgrpc.Middleware(option.Middlewares...),
 	}
@@ -37,6 +38,18 @@ func NewServer(cfg *configv1.Service, ss ...Option) (*transgrpc.Server, error) {
 		serverOptions = append(serverOptions, option.ServerOptions...)
 	}
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
+		if serviceGrpc.UseTls {
+			var tlsCfg *tls.Config
+			var err error
+
+			if tlsCfg, err = utils.LoadServerTlsConfig(cfg.Server.Grpc.Tls); err != nil {
+				panic(err)
+			}
+
+			if tlsCfg != nil {
+				options = append(options, kratosGrpc.TLSConfig(tlsCfg))
+			}
+		}
 		if serviceGrpc.Network != "" {
 			serverOptions = append(serverOptions, transgrpc.Network(serviceGrpc.Network))
 		}
@@ -44,7 +57,7 @@ func NewServer(cfg *configv1.Service, ss ...Option) (*transgrpc.Server, error) {
 			serverOptions = append(serverOptions, transgrpc.Address(serviceGrpc.Addr))
 		}
 		if serviceGrpc.Timeout != 0 {
-			serverOptions = append(serverOptions, transgrpc.Timeout(time.Duration(serviceGrpc.Timeout)))
+			serverOptions = append(serverOptions, transgrpc.Timeout(time.Duration(serviceGrpc.Timeout*1e6)))
 		}
 		if cfg.DynamicEndpoint && serviceGrpc.Endpoint == "" {
 			ep := parseEndpointOption(option)

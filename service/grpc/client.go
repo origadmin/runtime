@@ -22,16 +22,16 @@ import (
 const defaultTimeout = 5 * time.Second
 
 // NewClient Creating a GRPC client instance
-func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*grpc.ClientConn, error) {
+func NewClient(ctx context.Context, cfg *configv1.Service, options ...Option) (*grpc.ClientConn, error) {
 	if cfg == nil {
 		//bootstrap = config.DefaultRuntimeConfig
 		return nil, errors.New("service config is nil")
 	}
-	option := settings.ApplyDefaultsOrZero(ss...)
+	option := settings.ApplyDefaultsOrZero(options...)
 	timeout := defaultTimeout
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.Timeout != 0 {
-			timeout = time.Duration(serviceGrpc.Timeout)
+			timeout = time.Duration(serviceGrpc.Timeout * 1e6)
 		}
 	}
 	clientOptions := []transgrpc.ClientOption{

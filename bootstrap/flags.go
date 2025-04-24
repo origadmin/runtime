@@ -5,6 +5,7 @@
 package bootstrap
 
 import (
+	"crypto/rand"
 	"fmt"
 	"os"
 	"time"
@@ -54,8 +55,10 @@ func RandomID() string {
 	if err != nil {
 		id = "unknown"
 	}
-	if RandomSuffix == "" {
-		return id
+
+	b := make([]byte, 4)
+	if _, err := rand.Read(b); err == nil {
+		return fmt.Sprintf("%s.%x", id, b)
 	}
 	return id + "." + RandomSuffix
 }

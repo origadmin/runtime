@@ -37,7 +37,7 @@ type Builder interface {
 // build is a global variable that holds an instance of the builder struct.
 var (
 	once    = &sync.Once{}
-	runtime = &Runtime{
+	runtime = &Runtime[any]{
 		builder:   &builder{},
 		EnvPrefix: DefaultEnvPrefix,
 	}
@@ -46,7 +46,7 @@ var (
 // ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
 var ErrNotFound = errors.String("not found")
 
-type Runtime struct {
+type Runtime[T any] struct {
 	once        sync.Once
 	builder     *builder
 	Debug       bool
@@ -58,9 +58,10 @@ type Runtime struct {
 	Registry    registry.Registry
 	Middleware  middleware.Middleware
 	Service     service.Service
+	bootstrap   T
 }
 
-func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
+func (r *Runtime[T]) Load(bs *bootstrap.Bootstrap) error {
 	var rerr error
 	r.once.Do(func() {
 		sc := new(configv1.SourceConfig)
@@ -68,6 +69,7 @@ func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
 		if rerr != nil {
 			return
 		}
+
 		//// todo: add init and check before load
 		//// todo: load config
 		if err := r.Config.LoadFromSource(sc); err != nil {
@@ -93,7 +95,7 @@ func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
 	return rerr
 }
 
-func (r *Runtime) Build(rr registry.Registry, ss ...transport.Server) *kratos.App {
+func (r *Runtime[T]) Build(rr registry.Registry, ss ...transport.Server) *kratos.App {
 	// todo: add init and check before build
 
 	return kratos.New(
@@ -107,7 +109,7 @@ func (r *Runtime) Build(rr registry.Registry, ss ...transport.Server) *kratos.Ap
 	)
 }
 
-func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.Option) (registry.KRegistrar, error) {
+func (r *Runtime[T]) CreateRegistrar(serviceName string, ss ...registry.Option) (registry.KRegistrar, error) {
 	cfg, err := r.Config.Registry(serviceName)
 	if err != nil {
 		return nil, err
@@ -115,7 +117,7 @@ func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.Option) (re
 	return r.builder.NewRegistrar(cfg, ss...)
 }
 
-func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.Option) (registry.KDiscovery, error) {
+func (r *Runtime[T]) CreateDiscovery(serviceName string, ss ...registry.Option) (registry.KDiscovery, error) {
 	cfg, err := r.Config.Registry(serviceName)
 	if err != nil {
 		return nil, err
@@ -123,7 +125,7 @@ func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.Option) (re
 	return r.builder.NewDiscovery(cfg, ss...)
 }
 
-func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.GRPCOption) (*service.GRPCServer, error) {
+func (r *Runtime[T]) CreateGRPCServer(serviceName string, ss ...service.GRPCOption) (*service.GRPCServer, error) {
 	cfg, err := r.Config.Service(serviceName)
 	if err != nil {
 		return nil, err
@@ -131,7 +133,7 @@ func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.GRPCOption)
 	return r.builder.NewGRPCServer(cfg, ss...)
 }
 
-func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.HTTPOption) (*service.HTTPServer, error) {
+func (r *Runtime[T]) CreateHTTPServer(serviceName string, ss ...service.HTTPOption) (*service.HTTPServer, error) {
 	cfg, err := r.Config.Service(serviceName)
 	if err != nil {
 		return nil, err
@@ -151,13 +153,13 @@ func GlobalBuilder() Builder {
 }
 
 // Global returns the global instance of the Runtime struct.
-func Global() *Runtime {
+func Global() *Runtime[any] {
 	return runtime
 }
 
 // New returns a new instance of the Runtime struct.
-func New() Runtime {
-	return Runtime{
+func New[T any]() Runtime[T] {
+	return Runtime[T]{
 		builder:   runtime.builder,
 		EnvPrefix: DefaultEnvPrefix,
 	}

@@ -56,13 +56,11 @@ func decodeFile(path string, cfg any) error {
 // decodeDir loads the config file from the given directory
 func decodeDir(path string, cfg any) error {
 	found := false
-	// Walk through the directory and load each file
 	err := filepath.WalkDir(path, func(walkpath string, d os.DirEntry, err error) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to get config file %s", walkpath)
 		}
-		// Check if the path is a directory
-		if d.IsDir() {
+		if d.IsDir() || !isConfigFile(d.Name()) {
 			return nil
 		}
 
@@ -126,4 +124,9 @@ func LoadLocalConfig(bs *Bootstrap, v any) error {
 	}
 
 	return loadCustomizeConfig(stat, path, v)
+}
+
+func isConfigFile(name string) bool {
+	ext := filepath.Ext(name)
+	return ext == ".yaml" || ext == ".yml" || ext == ".json" || ext == ".toml"
 }

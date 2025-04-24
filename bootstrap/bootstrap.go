@@ -68,27 +68,30 @@ func (b *Bootstrap) Metadata() map[string]string {
 
 // WorkPath returns the work path
 func (b *Bootstrap) WorkPath() string {
-	// set workdir to current directory if not set
 	if b.WorkDir == "" {
 		b.WorkDir = DefaultWorkDir
 	}
-	// if the workdir is not absolute path, make it absolute
-	b.WorkDir, _ = filepath.Abs(b.WorkDir)
+	b.WorkDir = absPath(b.WorkDir)
 
-	// return the workdir, if the config path is empty
 	if b.ConfigPath == "" {
 		return b.WorkDir
 	}
 
-	// if the config path is absolute path, return it
-	if filepath.IsAbs(b.ConfigPath) {
-		return b.ConfigPath
+	configPath := b.ConfigPath
+	if !filepath.IsAbs(configPath) {
+		configPath = filepath.Join(b.WorkDir, configPath)
 	}
+	return absPath(configPath)
+}
 
-	// point the path to the `workdir path/config path`, and make it absolute
-	path := filepath.Join(b.WorkDir, b.ConfigPath)
-	path, _ = filepath.Abs(path)
-	return path
+func absPath(p string) string {
+	if filepath.IsAbs(p) {
+		return p
+	}
+	if abs, err := filepath.Abs(p); err == nil {
+		return abs
+	}
+	return p
 }
 
 // DefaultBootstrap returns a default bootstrap
