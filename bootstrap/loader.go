@@ -14,6 +14,11 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
+type Loader interface {
+	Load() (*configv1.SourceConfig, error)
+	Reload() error
+}
+
 type decoder = func(string, any) error
 
 // loadSourceConfig loads the config file from the given path
@@ -83,7 +88,7 @@ func decodeDir(path string, cfg any) error {
 // LoadSourceConfig loads the config file from the given path
 func LoadSourceConfig(bootstrap *Bootstrap) (*configv1.SourceConfig, error) {
 	// Get the path from the bootstrap
-	path := bootstrap.WorkPath()
+	path := bootstrap.ConfigFilePath()
 
 	// Get the file info from the path
 	stat, err := os.Stat(path)

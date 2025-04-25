@@ -18,15 +18,7 @@ import (
 	"github.com/origadmin/toolkits/errors"
 )
 
-type Option = func(*tls.Config)
-
-func WithInsecureSkipVerify() Option {
-	return func(c *tls.Config) {
-		c.InsecureSkipVerify = true
-	}
-}
-
-func NewServerTLSConfig(cfg *configv1.TLSConfig, opts ...Option) (*tls.Config, error) {
+func NewServerTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config, error) {
 	if cfg == nil {
 		return nil, nil
 	}
@@ -34,20 +26,20 @@ func NewServerTLSConfig(cfg *configv1.TLSConfig, opts ...Option) (*tls.Config, e
 	var err error
 	var tlsCfg *tls.Config
 	if cfg.File != nil {
-		if tlsCfg, err = NewServerTLSConfigWithFile(
+		if tlsCfg, err = NewServerTLSConfigFromFile(
 			cfg.File.GetKey(),
 			cfg.File.GetCert(),
 			cfg.File.GetCa(),
-			opts...,
+			options...,
 		); err != nil {
 			return nil, err
 		}
 	} else if cfg.Pem != nil {
-		if tlsCfg, err = NewServerTLSConfigWithPem(
+		if tlsCfg, err = NewServerTLSConfigFromPem(
 			cfg.Pem.GetKey(),
 			cfg.Pem.GetCert(),
 			cfg.Pem.GetCa(),
-			opts...,
+			options...,
 		); err != nil {
 			return nil, err
 		}
@@ -57,7 +49,7 @@ func NewServerTLSConfig(cfg *configv1.TLSConfig, opts ...Option) (*tls.Config, e
 	return tlsCfg, nil
 }
 
-func NewServerTLSConfigWithPem(key []byte, cert []byte, ca []byte, options ...Option) (*tls.Config, error) {
+func NewServerTLSConfigFromPem(key []byte, cert []byte, ca []byte, options ...Option) (*tls.Config, error) {
 	if len(key) == 0 || len(cert) == 0 {
 		return nil, fmt.Errorf("KeyPEMBlock and CertPEMBlock must both be present[key: %v, cert: %v]", key, cert)
 	}
@@ -86,7 +78,7 @@ func NewServerTLSConfigWithPem(key []byte, cert []byte, ca []byte, options ...Op
 	return cfg, nil
 }
 
-func NewServerTLSConfigWithFile(keyFile, certFile, caFile string, options ...Option) (*tls.Config, error) {
+func NewServerTLSConfigFromFile(keyFile, certFile, caFile string, options ...Option) (*tls.Config, error) {
 	if keyFile == "" || certFile == "" {
 		return nil, errors.Errorf("KeyFile and CertFile must both be present[key: %v, cert: %v]", keyFile, certFile)
 	}
@@ -115,7 +107,7 @@ func NewServerTLSConfigWithFile(keyFile, certFile, caFile string, options ...Opt
 	return cfg, nil
 }
 
-func NewClientTLSConfig(cfg *configv1.TLSConfig, opts ...Option) (*tls.Config, error) {
+func NewClientTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config, error) {
 	if cfg == nil {
 		return nil, nil
 	}
@@ -123,20 +115,20 @@ func NewClientTLSConfig(cfg *configv1.TLSConfig, opts ...Option) (*tls.Config, e
 	var err error
 	var tlsCfg *tls.Config
 	if cfg.File != nil {
-		if tlsCfg, err = NewClientTLSConfigWithFile(
+		if tlsCfg, err = NewClientTLSConfigFromFile(
 			cfg.File.GetKey(),
 			cfg.File.GetCert(),
 			cfg.File.GetCa(),
-			opts...,
+			options...,
 		); err != nil {
 			return nil, err
 		}
 	} else if cfg.Pem != nil {
-		if tlsCfg, err = NewClientTLSConfigWithPem(
+		if tlsCfg, err = NewClientTLSConfigFromPem(
 			cfg.Pem.GetKey(),
 			cfg.Pem.GetCert(),
 			cfg.Pem.GetCa(),
-			opts...,
+			options...,
 		); err != nil {
 			return nil, err
 		}
@@ -147,7 +139,7 @@ func NewClientTLSConfig(cfg *configv1.TLSConfig, opts ...Option) (*tls.Config, e
 	return tlsCfg, nil
 }
 
-func NewClientTLSConfigWithPem(key []byte, cert []byte, ca []byte, options ...Option) (*tls.Config, error) {
+func NewClientTLSConfigFromPem(key []byte, cert []byte, ca []byte, options ...Option) (*tls.Config, error) {
 	if len(key) == 0 || len(cert) == 0 {
 		return nil, errors.Errorf("KeyPEMBlock and CertPEMBlock must both be present[key: %v, cert: %v]", key, cert)
 	}
@@ -170,7 +162,7 @@ func NewClientTLSConfigWithPem(key []byte, cert []byte, ca []byte, options ...Op
 	return cfg, nil
 }
 
-func NewClientTLSConfigWithFile(key string, cert string, ca string, options ...Option) (*tls.Config, error) {
+func NewClientTLSConfigFromFile(key string, cert string, ca string, options ...Option) (*tls.Config, error) {
 	cfg := settings.Apply(&tls.Config{}, options)
 	if key == "" || cert == "" {
 		return cfg, nil

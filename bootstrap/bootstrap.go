@@ -8,6 +8,8 @@ package bootstrap
 import (
 	"path/filepath"
 	"time"
+
+	"github.com/origadmin/toolkits/errors"
 )
 
 // Constants for default paths and environment
@@ -19,69 +21,95 @@ const (
 
 // Bootstrap struct to hold bootstrap information
 type Bootstrap struct {
-	Flags      Flags
-	WorkDir    string
-	ConfigPath string
-	Env        string
-	Daemon     bool
+	daemon      bool
+	env         string
+	workDir     string
+	configPath  string
+	version     string
+	startTime   time.Time
+	metadata    map[string]string
+	serviceID   string
+	serviceName string
+}
+
+func (b *Bootstrap) Daemon() bool {
+	return b.daemon
+}
+
+func (b *Bootstrap) SetDaemon(daemon bool) {
+	b.daemon = daemon
+}
+
+func (b *Bootstrap) WorkDir() string {
+	return b.workDir
+}
+
+func (b *Bootstrap) SetWorkDir(workDir string) {
+	b.workDir = workDir
+}
+func (b *Bootstrap) ConfigPath() string {
+	return b.configPath
+}
+
+func (b *Bootstrap) ConfigFilePath() string {
+	if b.workDir == "" {
+		return absPath(b.configPath)
+	}
+	workDir := absPath(b.workDir)
+	if b.configPath == "" {
+		return workDir
+	}
+
+	configPath := b.ConfigPath()
+	if !filepath.IsAbs(configPath) {
+		configPath = filepath.Join(workDir, configPath)
+	}
+	return absPath(configPath)
+}
+
+func (b *Bootstrap) SetConfigPath(configPath string) {
+	b.configPath = configPath
+}
+
+func (b *Bootstrap) SetVersion(version string) {
+	b.version = version
+}
+
+func (b *Bootstrap) SetStartTime(startTime time.Time) {
+	b.startTime = startTime
+}
+
+func (b *Bootstrap) SetMetadata(metadata map[string]string) {
+	b.metadata = metadata
+}
+
+func (b *Bootstrap) SetServiceID(serviceID string) {
+	b.serviceID = serviceID
+}
+
+func (b *Bootstrap) SetServiceName(serviceName string) {
+	b.serviceName = serviceName
 }
 
 var (
 	buildEnv = DefaultEnv
 )
 
-// SetFlags sets the flags for the bootstrap
-func (b *Bootstrap) SetFlags(name, version string) {
-	b.Flags.Version = version
-	b.Flags.ServiceName = name
-}
-
-// ServiceID returns the service ID
-func (b *Bootstrap) ServiceID() string {
-	return b.Flags.ServiceID()
-}
-
-// ID returns the ID
-func (b *Bootstrap) ID() string {
-	return b.Flags.ID
-}
-
-// Version returns the version
-func (b *Bootstrap) Version() string {
-	return b.Flags.Version
-}
-
-// ServiceName returns the service name
-func (b *Bootstrap) ServiceName() string {
-	return b.Flags.ServiceName
-}
-
-// StartTime returns the start time
-func (b *Bootstrap) StartTime() time.Time {
-	return b.Flags.StartTime
-}
-
-// Metadata returns the metadata
-func (b *Bootstrap) Metadata() map[string]string {
-	return b.Flags.Metadata
-}
-
-// WorkPath returns the work path
-func (b *Bootstrap) WorkPath() string {
-	if b.WorkDir == "" {
-		b.WorkDir = DefaultWorkDir
+func (b *Bootstrap) SetEnv(env string) error {
+	if env != "debug" && env != "release" {
+		return errors.New("invalid env value")
 	}
-	b.WorkDir = absPath(b.WorkDir)
+	b.env = env
+	return nil
+}
 
-	if b.ConfigPath == "" {
-		return b.WorkDir
-	}
+func (b *Bootstrap) Env() string {
+	return b.env
+}
 
-	configPath := b.ConfigPath
-	if !filepath.IsAbs(configPath) {
-		configPath = filepath.Join(b.WorkDir, configPath)
-	}
-	return absPath(configPath)
+func (b *Bootstrap) SetServiceInfo(name, version string) {
+	b.serviceName = name
+	b.version = version
 }
 
 func absPath(p string) string {
@@ -94,34 +122,23 @@ func absPath(p string) string {
 	return p
 }
 
-// DefaultBootstrap returns a default bootstrap
-func DefaultBootstrap() *Bootstrap {
-	return &Bootstrap{
-		WorkDir:    DefaultWorkDir,
-		ConfigPath: DefaultConfigPath,
-		Env:        DefaultEnv,
-		Daemon:     false,
-		Flags:      DefaultFlags(),
-	}
-}
-
 // New returns a new bootstrap
-func New(dir, path string) *Bootstrap {
+func New() *Bootstrap {
 	return &Bootstrap{
-		WorkDir:    dir,
-		ConfigPath: path,
-		Env:        DefaultEnv,
-		Daemon:     false,
-		Flags:      DefaultFlags(),
+		//WorkDir:     DefaultWorkDir,
+		//ConfigPath:  DefaultConfigPath,
+		env:       buildEnv,
+		serviceID: RandomID(),
+		//version:     version,
+		//serviceName: name,
+		startTime: time.Now(),
+		metadata:  make(map[string]string),
 	}
 }
 
 func WithFlags(name string, version string) *Bootstrap {
-	return &Bootstrap{
-		WorkDir:    DefaultWorkDir,
-		ConfigPath: DefaultConfigPath,
-		Env:        DefaultEnv,
-		Daemon:     false,
-		Flags:      NewFlags(name, version),
-	}
+	bs := New()
+	bs.serviceName = name
+	bs.version = version
+	return bs
 }
