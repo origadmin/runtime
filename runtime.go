@@ -168,7 +168,7 @@ func New[T any]() Runtime[T] {
 // Load uses the global Runtime instance to load configurations and other resources
 // with the default bootstrap settings. It returns an error if the loading process fails.
 func Load() error {
-	return runtime.Load(bootstrap.DefaultBootstrap())
+	return runtime.Load(bootstrap.New())
 }
 
 // LoadWithBootstrap uses the global Runtime instance to load configurations and other resources

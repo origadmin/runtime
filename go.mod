@@ -3,11 +3,10 @@ module github.com/origadmin/runtime
 go 1.23.7
 
 require (
-	github.com/bufbuild/protovalidate-go v0.10.0
+	github.com/bufbuild/protovalidate-go v0.9.3
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/go-kratos/kratos/v2 v2.8.4
 	github.com/goexts/generic v0.2.6
-	github.com/gogo/protobuf v1.3.2
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0
