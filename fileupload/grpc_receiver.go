@@ -35,6 +35,9 @@ func NewGRPCReceiver(stream grpc.ServerStream) fileupload.Receiver {
 }
 
 func (r *grpcReceiver) GetFileHeader(ctx context.Context) (fileupload.FileHeader, error) {
+	if r.header != nil {
+		return r.header, nil
+	}
 	var req fileuploadv1.UploadRequest
 	err := r.stream.RecvMsg(&req)
 	if err != nil {
@@ -55,6 +58,10 @@ func (r *grpcReceiver) GetFileHeader(ctx context.Context) (fileupload.FileHeader
 }
 
 func (r *grpcReceiver) ReceiveFile(ctx context.Context) (io.ReadCloser, error) {
+	_, err := r.GetFileHeader(ctx)
+	if err != nil {
+		return nil, err
+	}
 	go func() {
 		defer r.pw.Close()
 
@@ -70,7 +77,7 @@ func (r *grpcReceiver) ReceiveFile(ctx context.Context) (io.ReadCloser, error) {
 			}
 
 			if req.IsHeader {
-				continue
+				r.pr.CloseWithError(errors.New("unexpected file header"))
 			}
 
 			if _, err := r.pw.Write(req.Data); err != nil {

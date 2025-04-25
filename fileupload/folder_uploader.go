@@ -25,25 +25,21 @@ func (f *FolderUploader) UploadFolder(ctx context.Context, path string) error {
 			return err
 		}
 
-		// 跳过目录本身
 		if info.IsDir() {
 			return nil
 		}
 
-		// 创建新的上传器
 		uploader := f.builder.NewUploader(ctx)
 		if err != nil {
 			return err
 		}
 
-		// 打开文件
 		file, err := os.Open(filePath)
 		if err != nil {
 			return err
 		}
 		defer file.Close()
 
-		// 设置文件头信息
 		relPath, _ := filepath.Rel(f.basePath, filePath)
 		header := &httpFileHeader{
 			Filename:    relPath,
@@ -53,7 +49,6 @@ func (f *FolderUploader) UploadFolder(ctx context.Context, path string) error {
 			IsDir:       info.IsDir(),
 		}
 
-		// 上传文件
 		if err := uploader.SetFileHeader(ctx, header); err != nil {
 			return err
 		}

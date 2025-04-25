@@ -176,14 +176,6 @@ func (r *HTTPReceiver) GetOffset(ctx context.Context) (int64, error) {
 }
 
 func newReceiver(builder *Builder, req *http.Request, resp http.ResponseWriter) *HTTPReceiver {
-	//b := settings.Apply(&uploadBuilder{
-	//	bufSize: bufSize,
-	//})
-	//b.bufPool = &sync.Pool{
-	//	New: func() interface{} {
-	//		return make([]byte, b.bufSize)
-	//	},
-	//}
 	// Read the file fileHeader from the request
 	var receiver HTTPReceiver
 	file, header, err := req.FormFile("file")

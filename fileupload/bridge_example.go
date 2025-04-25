@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	// Create a gRPC Builder
 	grpcBuilder := NewBuilder(
 		WithServiceType(fileupload.ServiceTypeGRPC),
@@ -25,8 +24,6 @@ func main() {
 			Network:         "",
 			Addr:            "",
 			UseTls:          false,
-			CertFile:        "",
-			KeyFile:         "",
 			Timeout:         int64(3 * time.Minute),
 			ShutdownTimeout: int64(3 * time.Minute),
 			ReadTimeout:     int64(3 * time.Minute),
@@ -38,8 +35,6 @@ func main() {
 			Network:         "",
 			Addr:            "",
 			UseTls:          false,
-			CertFile:        "",
-			KeyFile:         "",
 			Timeout:         int64(3 * time.Minute),
 			ShutdownTimeout: int64(3 * time.Minute),
 			ReadTimeout:     int64(3 * time.Minute),

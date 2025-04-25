@@ -2,10 +2,11 @@ package fileupload
 
 import (
 	"context"
+	"errors"
 	"io"
 
-	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/origadmin/runtime"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
@@ -17,8 +18,7 @@ type grpcUploader struct {
 	builder Builder
 	client  fileuploadv1.FileUploadServiceClient
 	stream  grpc.ClientStreamingClient[fileuploadv1.UploadRequest, fileuploadv1.UploadResponse]
-	header  []byte
-	buf     []byte
+	header  *fileuploadv1.FileHeader
 }
 
 func (u *grpcUploader) Resume(ctx context.Context, offset int64) error {
@@ -27,46 +27,40 @@ func (u *grpcUploader) Resume(ctx context.Context, offset int64) error {
 }
 
 func (u *grpcUploader) SetFileHeader(ctx context.Context, header fileupload.FileHeader) error {
-	//u.fileHeader = Header2GRPCHeader(fileHeader)
-
-	//// 初始化stream
-	//stream, err := u.client.Upload(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//u.stream = stream
+	if header == nil {
+		return errors.New("invalid file header")
+	}
+	if v, ok := header.(*fileuploadv1.FileHeader); ok {
+		u.header = v
+		return nil
+	}
 
 	//send fileHeader
-	var err error
-	u.header, err = proto.Marshal(&fileuploadv1.FileHeader{
+	u.header = &fileuploadv1.FileHeader{
 		Filename:    header.GetFilename(),
 		Size:        header.GetSize(),
 		ContentType: header.GetContentType(),
 		ModTime:     header.GetModTime(),
 		Header:      header.GetHeader(),
-	})
-
-	if err != nil {
-		return err
 	}
 	return nil
 }
 
 func (u *grpcUploader) UploadFile(ctx context.Context, rd io.Reader) error {
-	if len(u.header) > 0 {
-		if err := u.stream.Send(&fileuploadv1.UploadRequest{
-			IsHeader: true,
-			Data:     u.header,
-		}); err != nil {
-			return err
-		}
+	header, err := proto.Marshal(u.header)
+	if err != nil {
+		return err
 	}
-	if u.buf == nil {
-		u.buf = u.builder.NewBuffer()
+	if err := u.stream.Send(&fileuploadv1.UploadRequest{
+		IsHeader: true,
+		Data:     header,
+	}); err != nil {
+		return err
 	}
-
+	buf := u.builder.NewBuffer()
+	defer u.builder.Free(buf)
 	for {
-		n, err := rd.Read(u.buf)
+		n, err := rd.Read(buf)
 		if err == io.EOF {
 			break
 		}
@@ -76,7 +70,7 @@ func (u *grpcUploader) UploadFile(ctx context.Context, rd io.Reader) error {
 
 		if err := u.stream.Send(&fileuploadv1.UploadRequest{
 			IsHeader: false,
-			Data:     u.buf[:n],
+			Data:     buf[:n],
 		}); err != nil {
 			return err
 		}
