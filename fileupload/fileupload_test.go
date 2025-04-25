@@ -126,3 +126,7 @@ func TestUploaderDownloaderSequence(t *testing.T) {
 	}
 	t.Logf("Uploader successful: %+v", resp)
 }
+
+func TestMyGRPCService(t *testing.T) {
+
+}
