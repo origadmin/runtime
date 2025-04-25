@@ -368,9 +368,34 @@ func (m *Service_HTTP) validate(all bool) error {
 
 	// no validation rules for UseTls
 
-	// no validation rules for CertFile
-
-	// no validation rules for KeyFile
+	if all {
+		switch v := interface{}(m.GetTlsConfig()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Service_HTTPValidationError{
+					field:  "TlsConfig",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Service_HTTPValidationError{
+					field:  "TlsConfig",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTlsConfig()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Service_HTTPValidationError{
+				field:  "TlsConfig",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	// no validation rules for Timeout
 
@@ -489,9 +514,34 @@ func (m *Service_GRPC) validate(all bool) error {
 
 	// no validation rules for UseTls
 
-	// no validation rules for CertFile
-
-	// no validation rules for KeyFile
+	if all {
+		switch v := interface{}(m.GetTlsConfig()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, Service_GRPCValidationError{
+					field:  "TlsConfig",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, Service_GRPCValidationError{
+					field:  "TlsConfig",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTlsConfig()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return Service_GRPCValidationError{
+				field:  "TlsConfig",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	// no validation rules for Timeout
 

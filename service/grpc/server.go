@@ -6,7 +6,6 @@
 package grpc
 
 import (
-	"crypto/tls"
 	"net/url"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/endpoint"
+	"github.com/origadmin/runtime/service/tls"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -39,15 +39,12 @@ func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, err
 	}
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.UseTls {
-			var tlsCfg *tls.Config
-			var err error
-
-			if tlsCfg, err = utils.LoadServerTlsConfig(cfg.Server.Grpc.Tls); err != nil {
-				panic(err)
+			tlsConfig, err := tls.NewServerTLSConfig(serviceGrpc.GetTlsConfig())
+			if err != nil {
+				return nil, err
 			}
-
-			if tlsCfg != nil {
-				options = append(options, kratosGrpc.TLSConfig(tlsCfg))
+			if tlsConfig != nil {
+				serverOptions = append(serverOptions, transgrpc.TLSConfig(tlsConfig))
 			}
 		}
 		if serviceGrpc.Network != "" {

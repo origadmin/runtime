@@ -15,6 +15,7 @@ import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/endpoint"
+	"github.com/origadmin/runtime/service/tls"
 	"github.com/origadmin/toolkits/env"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -39,6 +40,15 @@ func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
 		serverOptions = append(serverOptions, option.ServerOptions...)
 	}
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
+		if serviceHttp.UseTls {
+			tlsConfig, err := tls.NewServerTLSConfig(serviceHttp.GetTlsConfig())
+			if err != nil {
+				return nil, err
+			}
+			if tlsConfig != nil {
+				serverOptions = append(serverOptions, transhttp.TLSConfig(tlsConfig))
+			}
+		}
 		if serviceHttp.Network != "" {
 			serverOptions = append(serverOptions, transhttp.Network(serviceHttp.Network))
 		}
