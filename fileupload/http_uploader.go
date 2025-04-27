@@ -8,10 +8,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/origadmin/runtime"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/fileupload"
+	fileuploadv1 "github.com/origadmin/toolkits/fileupload/gen/go/fileupload/v1"
 )
 
 type httpUploader struct {
@@ -23,91 +25,87 @@ type httpUploader struct {
 	uri     string
 	buf     []byte
 	offset  int64
+	taskId  string
 }
 
 func (u *httpUploader) SetFileHeader(ctx context.Context, header fileupload.FileHeader) error {
-	log.Printf("Setting file fileHeader: %+v", header)
-	u.header = header
-
-	// Create new request
-	req, err := http.NewRequestWithContext(ctx, "POST", u.uri, nil)
+	protoHeader := Header2GRPCHeader(header)
+	reqBody, err := json.Marshal(map[string]interface{}{
+		"file_header": protoHeader,
+	})
 	if err != nil {
-		log.Printf("Error creating new request: %v", err)
 		return err
 	}
-	// Set headers
-	req.Header.Set("Content-Type", header.GetContentType())
-	req.Header.Set("Content-Length", fmt.Sprintf("%d", header.GetSize()))
-	for k, v := range header.GetHeader() {
-		req.Header.Set(k, v)
-	}
 
-	u.request = req
-	log.Printf("File fileHeader set successfully")
+	req, err := http.NewRequestWithContext(ctx, "POST", u.uri+"/upload/create", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := u.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var respData fileuploadv1.CreateUploadTaskResponse
+	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
+		return err
+	}
+	u.taskId = respData.TaskId
 	return nil
 }
 
 func (u *httpUploader) UploadFile(ctx context.Context, rd io.Reader) error {
-	log.Printf("Uploading file...")
-	if u.request == nil {
-		log.Printf("Invalid request: request is nil")
-		return ErrInvalidRequest
-	}
-
-	// Set the resumable upload Range fileHeader
-	if u.offset > 0 {
-		u.request.Header.Set("Range", fmt.Sprintf("bytes=%d-", u.offset))
-		log.Printf("Setting Range fileHeader: bytes=%d-", u.offset)
-	}
-
-	u.request.Body = io.NopCloser(rd)
-	if u.buf == nil {
-		u.buf = u.builder.NewBuffer()
-		log.Printf("Allocated new buffer: %v", len(u.buf))
-	}
-
-	if u.client == nil {
-		u.client = &http.Client{
-			//Timeout: u.builder.Timeout(),
+	chunkSize := u.builder.ChunkSize()
+	var chunkNumber int32 = 0
+	var wg sync.WaitGroup
+	for {
+		chunk := make([]byte, chunkSize)
+		n, err := rd.Read(chunk)
+		if err == io.EOF {
+			break
 		}
-		log.Printf("Created new HTTP client: %+v", u.client)
+		if err != nil {
+			return err
+		}
+
+		wg.Add(1)
+		go func(data []byte, chunkNum int32) {
+			defer wg.Done()
+			reqBody := bytes.NewReader(data[:n])
+			req, _ := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/upload/%s/chunk", u.uri, u.taskId), reqBody)
+			req.Header.Set("Content-Type", "application/octet-stream")
+			req.Header.Set("Chunk-Number", fmt.Sprintf("%d", chunkNum))
+
+			_, err := u.client.Do(req)
+			if err != nil {
+				log.Printf("Chunk %d upload failed: %v", chunkNum, err)
+			}
+		}(chunk, chunkNumber)
+		chunkNumber++
 	}
-	//log.Printf("Uploading file with request: %+v", u.request)
-	resp, err := u.client.Do(u.request)
-	if err != nil {
-		log.Printf("Error uploading file: %v", err)
-		return err
-	}
-	log.Printf("Received response: %+v", resp.StatusCode)
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("Invalid response status code: %d", resp.StatusCode)
-		return ErrInvalidReceiverResponse
-	}
-	u.body = resp.Body
-	log.Printf("File uploaded successfully: %+v", resp)
+	wg.Wait()
 	return nil
 }
 
 func (u *httpUploader) Finalize(ctx context.Context) (fileupload.UploadResponse, error) {
-	if u.buf != nil {
-		log.Printf("Releasing buffer: %v", len(u.buf))
-		u.builder.Free(u.buf)
-		u.buf = nil
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/upload/%s/finalize", u.uri, u.taskId), nil)
+	if err != nil {
+		return nil, err
 	}
-	log.Printf("Finalizing upload...")
-	var resp httpFileResponse
-	if u.body == nil {
-		log.Printf("Invalid response: response is nil")
-		return &resp, ErrInvalidReceiverResponse
+	resp, err := u.client.Do(req)
+	if err != nil {
+		return nil, err
 	}
-	decoder := json.NewDecoder(u.body)
-	if err := decoder.Decode(&resp); err != nil {
-		log.Printf("Error decoding response: %v", err)
-		return &resp, err
+	defer resp.Body.Close()
+
+	var respData fileuploadv1.UploadResponse
+	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
+		return nil, err
 	}
-	defer u.body.Close()
-	log.Printf("Upload finalized successfully: %+v", resp)
-	return &resp, nil
+	return &respData, nil
 }
 
 func (u *httpUploader) Resume(ctx context.Context, offset int64) error {

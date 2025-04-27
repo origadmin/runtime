@@ -17,48 +17,31 @@ import (
 type grpcUploader struct {
 	builder Builder
 	client  fileuploadv1.FileUploadServiceClient
-	stream  grpc.ClientStreamingClient[fileuploadv1.UploadRequest, fileuploadv1.UploadResponse]
-	header  *fileuploadv1.FileHeader
-}
-
-func (u *grpcUploader) Resume(ctx context.Context, offset int64) error {
-	//TODO implement me
-	panic("implement me")
+	taskId  string
 }
 
 func (u *grpcUploader) SetFileHeader(ctx context.Context, header fileupload.FileHeader) error {
-	if header == nil {
-		return errors.New("invalid file header")
+	protoHeader := Header2GRPCHeader(header)
+	req := &fileuploadv1.CreateUploadTaskRequest{
+		FileHeader: protoHeader,
 	}
-	if v, ok := header.(*fileuploadv1.FileHeader); ok {
-		u.header = v
-		return nil
+	resp, err := u.client.CreateUploadTask(ctx, req)
+	if err != nil {
+		return err
 	}
-
-	//send fileHeader
-	u.header = &fileuploadv1.FileHeader{
-		Filename:    header.GetFilename(),
-		Size:        header.GetSize(),
-		ContentType: header.GetContentType(),
-		ModTime:     header.GetModTime(),
-		Header:      header.GetHeader(),
-	}
+	u.taskId = resp.GetTaskId()
 	return nil
 }
 
 func (u *grpcUploader) UploadFile(ctx context.Context, rd io.Reader) error {
-	header, err := proto.Marshal(u.header)
+	stream, err := u.client.UploadChunk(ctx)
 	if err != nil {
 		return err
 	}
-	if err := u.stream.Send(&fileuploadv1.UploadRequest{
-		IsHeader: true,
-		Data:     header,
-	}); err != nil {
-		return err
-	}
+	defer stream.CloseSend()
+
 	buf := u.builder.NewBuffer()
-	defer u.builder.Free(buf)
+	chunkNumber := int32(0)
 	for {
 		n, err := rd.Read(buf)
 		if err == io.EOF {
@@ -68,19 +51,23 @@ func (u *grpcUploader) UploadFile(ctx context.Context, rd io.Reader) error {
 			return err
 		}
 
-		if err := u.stream.Send(&fileuploadv1.UploadRequest{
-			IsHeader: false,
-			Data:     buf[:n],
+		if err := stream.Send(&fileuploadv1.UploadChunkRequest{
+			TaskId:      u.taskId,
+			ChunkNumber: chunkNumber,
+			Data:        buf[:n],
 		}); err != nil {
 			return err
 		}
+		chunkNumber++
 	}
-
 	return nil
 }
 
 func (u *grpcUploader) Finalize(ctx context.Context) (fileupload.UploadResponse, error) {
-	resp, err := u.stream.CloseAndRecv()
+	req := &fileuploadv1.FinalizeUploadRequest{
+		TaskId: u.taskId,
+	}
+	resp, err := u.client.FinalizeUpload(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -94,13 +81,8 @@ func NewGRPCUploader(ctx context.Context, service *configv1.Service) (fileupload
 	}
 
 	client := fileuploadv1.NewFileUploadServiceClient(clientService)
-	stream, err := client.Upload(ctx)
-	if err != nil {
-		return nil, err
-	}
 	return &grpcUploader{
-		client: client,
-		stream: stream,
+		builder: Builder{},
+		client:  client,
 	}, nil
-
 }
