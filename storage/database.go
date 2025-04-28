@@ -3,7 +3,7 @@
  */
 
 // Package database implements the functions, types, and interfaces for the module.
-package data
+package storage
 
 import (
 	"database/sql"
@@ -18,7 +18,7 @@ const (
 	ErrDatabaseConfigNil = errors.String("database: config is nil")
 )
 
-func OpenDB(database *configv1.Data_Database) (*sql.DB, error) {
+func OpenDatabase(database *configv1.Database) (*sql.DB, error) {
 	if database == nil {
 		return nil, ErrDatabaseConfigNil
 	}

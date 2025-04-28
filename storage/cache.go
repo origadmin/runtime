@@ -3,7 +3,7 @@
  */
 
 // Package data implements the functions, types, and interfaces for the module.
-package data
+package storage
 
 import (
 	"fmt"
