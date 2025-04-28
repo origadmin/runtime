@@ -13,8 +13,8 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/goexts/generic/settings"
 
+	"github.com/origadmin/runtime/interfaces/security"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/toolkits/security"
 )
 
 type BridgeSetting = func(*Bridge)

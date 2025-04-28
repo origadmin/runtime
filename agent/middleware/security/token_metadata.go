@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/toolkits/security"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 func injectTokenMetadataContext(ctx context.Context, scheme string, token string) context.Context {

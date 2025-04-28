@@ -12,9 +12,9 @@ import (
 
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/interfaces/security"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/toolkits/errors"
-	"github.com/origadmin/toolkits/security"
 )
 
 const (

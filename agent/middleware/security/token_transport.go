@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 
 	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/toolkits/security"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 func injectHeaderTransportContext(ctx context.Context, scheme string, token string) context.Context {

@@ -10,7 +10,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/origadmin/toolkits v0.3.2
+	github.com/origadmin/toolkits v0.3.14
 	github.com/origadmin/toolkits/codec v0.3.2
 	github.com/origadmin/toolkits/errors v0.3.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20250425173222-7b384671a197

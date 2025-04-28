@@ -9,7 +9,7 @@ import (
 
 	"github.com/origadmin/runtime/context"
 	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
-	"github.com/origadmin/toolkits/security"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 const (
