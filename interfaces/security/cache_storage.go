@@ -11,7 +11,7 @@ import (
 
 	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/toolkits/storage/cache"
+	"github.com/origadmin/runtime/interfaces/storage/cache"
 )
 
 const (

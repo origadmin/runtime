@@ -9,11 +9,9 @@ require (
 	github.com/goexts/generic v0.2.6
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/gnostic v0.7.0
-	github.com/google/uuid v1.6.0
 	github.com/origadmin/toolkits v0.3.14
-	github.com/origadmin/toolkits/codec v0.3.2
-	github.com/origadmin/toolkits/errors v0.3.2
-	google.golang.org/genproto/googleapis/api v0.0.0-20250425173222-7b384671a197
+	github.com/origadmin/toolkits/codec v0.3.14
+	github.com/origadmin/toolkits/errors v0.3.14
 	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
 )
@@ -36,6 +34,7 @@ require (
 	github.com/go-playground/form/v4 v4.2.2 // indirect
 	github.com/google/cel-go v0.25.0 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -63,6 +62,7 @@ require (
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250425173222-7b384671a197 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250425173222-7b384671a197 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

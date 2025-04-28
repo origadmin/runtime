@@ -882,10 +882,16 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/origadmin/toolkits v0.3.2 h1:FkiwSf4M2O3N6lk8w6KYhoXkAzuN07fLJJaNfRF4FxM=
 github.com/origadmin/toolkits v0.3.2/go.mod h1:v7MDIltiHjgl9854HDh7RfYQM399OsLH8FWhkPK1kbA=
+github.com/origadmin/toolkits v0.3.14 h1:jUWjIIKd+baOVzgQYq4AFnoulDXMVhSnoImlcvYC4ao=
+github.com/origadmin/toolkits v0.3.14/go.mod h1:v7MDIltiHjgl9854HDh7RfYQM399OsLH8FWhkPK1kbA=
 github.com/origadmin/toolkits/codec v0.3.2 h1:T5q3fqndTDfn2KefoQ1BAJl3HifT93CTDjL8pJH1e1I=
 github.com/origadmin/toolkits/codec v0.3.2/go.mod h1:AXDPSxxARgOh0l3+T1MnA3yDbYI5cydM9bx0jn2f9zg=
+github.com/origadmin/toolkits/codec v0.3.14 h1:JP7NG0nLW8LgG14PkwiulJmUEHk9qOFfU+cHcjj/sh4=
+github.com/origadmin/toolkits/codec v0.3.14/go.mod h1:XqlOlTxdD3lLDPmC82cZEVoiD4/r4QA3umKKRVrgGu4=
 github.com/origadmin/toolkits/errors v0.3.2 h1:DSbqGpMNrupugBBcjnCfjAwgw3fiuHkefZlRMJ5arl8=
 github.com/origadmin/toolkits/errors v0.3.2/go.mod h1:kqVUSV6sz+wiUeesrBxZ3oyUPrNl0alF0+jO0qehBvM=
+github.com/origadmin/toolkits/errors v0.3.14 h1:6w13SrBpHo86vejdeqB0vGrPQW0hMOIYIyJTkz68kwM=
+github.com/origadmin/toolkits/errors v0.3.14/go.mod h1:kqVUSV6sz+wiUeesrBxZ3oyUPrNl0alF0+jO0qehBvM=
 github.com/phpdave11/gofpdf v1.4.2/go.mod h1:zpO6xFn9yxo3YLyMvW8HcKWVdbNqgIfOOp2dXMnm1mY=
 github.com/phpdave11/gofpdi v1.0.12/go.mod h1:vBmVV0Do6hSBHC8uKUQ71JGW+ZGQq74llk/7bXwjDoI=
 github.com/phpdave11/gofpdi v1.0.13/go.mod h1:vBmVV0Do6hSBHC8uKUQ71JGW+ZGQq74llk/7bXwjDoI=

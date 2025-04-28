@@ -6,8 +6,10 @@
 package data
 
 import (
+	"fmt"
+
+	"github.com/origadmin/runtime/interfaces/storage/cache"
 	"github.com/origadmin/toolkits/errors"
-	"github.com/origadmin/toolkits/storage/cache"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
@@ -20,14 +22,11 @@ type (
 	Cache = cache.Cache
 )
 
-func OpenCache(cfg *configv1.Data_Cache) (Cache, error) {
+func OpenCache(cfg *configv1.Storage) (Cache, error) {
 	if cfg == nil {
 		return nil, ErrCacheConfigNil
 	}
-
-	//if c := cfg.GetCache().GetMemory(); c != nil {
-	//
-	//}
-
+	cacheCfg := cfg.GetCache()
+	fmt.Println(cacheCfg)
 	return nil, errors.String("cache: unknown cache type")
 }
