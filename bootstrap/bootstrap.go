@@ -32,25 +32,6 @@ type Bootstrap struct {
 	serviceName string
 }
 
-func (b *Bootstrap) Daemon() bool {
-	return b.daemon
-}
-
-func (b *Bootstrap) SetDaemon(daemon bool) {
-	b.daemon = daemon
-}
-
-func (b *Bootstrap) WorkDir() string {
-	return b.workDir
-}
-
-func (b *Bootstrap) SetWorkDir(workDir string) {
-	b.workDir = workDir
-}
-func (b *Bootstrap) ConfigPath() string {
-	return b.configPath
-}
-
 func (b *Bootstrap) ConfigFilePath() string {
 	if b.workDir == "" {
 		return absPath(b.configPath)
@@ -65,6 +46,46 @@ func (b *Bootstrap) ConfigFilePath() string {
 		configPath = filepath.Join(workDir, configPath)
 	}
 	return absPath(configPath)
+}
+
+func (b *Bootstrap) ConfigPath() string {
+	return b.configPath
+}
+
+func (b *Bootstrap) Version() string {
+	return b.version
+}
+
+func (b *Bootstrap) StartTime() time.Time {
+	return b.startTime
+}
+
+func (b *Bootstrap) Metadata() map[string]string {
+	return b.metadata
+}
+
+func (b *Bootstrap) ServiceID() string {
+	return b.serviceID
+}
+
+func (b *Bootstrap) ServiceName() string {
+	return b.serviceName
+}
+
+func (b *Bootstrap) Daemon() bool {
+	return b.daemon
+}
+
+func (b *Bootstrap) WorkDir() string {
+	return b.workDir
+}
+
+func (b *Bootstrap) SetWorkDir(workDir string) {
+	b.workDir = workDir
+}
+
+func (b *Bootstrap) SetDaemon(daemon bool) {
+	b.daemon = daemon
 }
 
 func (b *Bootstrap) SetConfigPath(configPath string) {
