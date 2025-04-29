@@ -8,5 +8,5 @@
 package bootstrap
 
 func init() {
-	buildEnv = "debug"
+	buildEnv = EnvDebug
 }

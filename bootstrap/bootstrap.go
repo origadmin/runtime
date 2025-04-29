@@ -14,8 +14,10 @@ import (
 
 // Constants for default paths and environment
 const (
+	EnvRelease        = "release"
+	EnvDebug          = "debug"
 	DefaultConfigPath = "configs/config.toml"
-	DefaultEnv        = "release"
+	defaultEnv        = EnvRelease
 	DefaultWorkDir    = "."
 )
 
@@ -72,6 +74,15 @@ func (b *Bootstrap) ServiceName() string {
 	return b.serviceName
 }
 
+func (b *Bootstrap) ServiceInfo() ServiceInfo {
+	return ServiceInfo{
+		ID:        b.serviceID,
+		Name:      b.serviceName,
+		StartTime: b.startTime,
+		Version:   b.version,
+	}
+}
+
 func (b *Bootstrap) Daemon() bool {
 	return b.daemon
 }
@@ -80,15 +91,20 @@ func (b *Bootstrap) WorkDir() string {
 	return b.workDir
 }
 
-func (b *Bootstrap) SetWorkDir(workDir string) {
-	b.workDir = workDir
-}
-
 func (b *Bootstrap) SetDaemon(daemon bool) {
 	b.daemon = daemon
 }
 
+func (b *Bootstrap) SetWorkDir(workDir string) {
+	b.workDir = workDir
+}
+
 func (b *Bootstrap) SetConfigPath(configPath string) {
+	b.configPath = configPath
+}
+
+func (b *Bootstrap) SetPath(dir, configPath string) {
+	b.workDir = dir
 	b.configPath = configPath
 }
 
@@ -113,15 +129,14 @@ func (b *Bootstrap) SetServiceName(serviceName string) {
 }
 
 var (
-	buildEnv = DefaultEnv
+	buildEnv = defaultEnv
 )
 
-func (b *Bootstrap) SetEnv(env string) error {
+func (b *Bootstrap) SetEnv(env string) {
 	if env != "debug" && env != "release" {
-		return errors.New("invalid env value")
+		panic(errors.New("env must be debug or release"))
 	}
 	b.env = env
-	return nil
 }
 
 func (b *Bootstrap) Env() string {
