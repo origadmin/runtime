@@ -6,9 +6,7 @@ package bootstrap
 
 import (
 	"os"
-	"path/filepath"
 
-	"github.com/origadmin/toolkits/codec"
 	"github.com/origadmin/toolkits/errors"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
@@ -22,13 +20,13 @@ type Loader interface {
 type decoder = func(string, any) error
 
 // loadSourceConfig loads the config file from the given path
-func loadSourceConfig(si os.FileInfo, path string) (*configv1.SourceConfig, error) {
+func loadSourceConfig(si os.FileInfo, path string, ignores []string) (*configv1.SourceConfig, error) {
 	// Check if the file or directory exists
 	if si == nil {
 		return nil, errors.New("load config file target is not exist")
 	}
 	var cfg configv1.SourceConfig
-	err := loadCustomizeConfig(si, path, &cfg)
+	err := loadCustomizeConfig(si, path, &cfg, ignores)
 	if err != nil {
 		return nil, err
 	}
@@ -36,51 +34,15 @@ func loadSourceConfig(si os.FileInfo, path string) (*configv1.SourceConfig, erro
 }
 
 // loadCustomizeConfig loads the user config file from the given path
-func loadCustomizeConfig(si os.FileInfo, path string, cfg any) error {
+func loadCustomizeConfig(si os.FileInfo, path string, cfg any, ignores []string) error {
 	// Check if the path is a directory
 	decode := decodeFile
 	if si.IsDir() {
 		decode = decodeDir
 	}
-	err := decode(path, cfg)
+	err := decode(path, cfg, ignores)
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-// decodeFile loads the config file from the given path
-func decodeFile(path string, cfg any) error {
-	// Decode the file into the config struct
-	if err := codec.DecodeFromFile(path, cfg); err != nil {
-		return errors.Wrapf(err, "failed to parse config file %s", path)
-	}
-	return nil
-}
-
-// decodeDir loads the config file from the given directory
-func decodeDir(path string, cfg any) error {
-	found := false
-	err := filepath.WalkDir(path, func(walkpath string, d os.DirEntry, err error) error {
-		if err != nil {
-			return errors.Wrapf(err, "failed to get config file %s", walkpath)
-		}
-		if d.IsDir() || !isConfigFile(d.Name()) {
-			return nil
-		}
-
-		// Decode the file into the config struct
-		if err := decodeFile(walkpath, cfg); err != nil {
-			return err
-		}
-		found = true
-		return nil
-	})
-	if err != nil {
-		return errors.Wrap(err, "load config error")
-	}
-	if !found {
-		return errors.New("no config file found in " + path)
 	}
 	return nil
 }
@@ -129,9 +91,4 @@ func LoadLocalConfig(bs *Bootstrap, v any) error {
 	}
 
 	return loadCustomizeConfig(stat, path, v)
-}
-
-func isConfigFile(name string) bool {
-	ext := filepath.Ext(name)
-	return ext == ".yaml" || ext == ".yml" || ext == ".json" || ext == ".toml"
 }
