@@ -143,6 +143,10 @@ func (b *Bootstrap) Env() string {
 	return b.env
 }
 
+func (b *Bootstrap) IsDebug() bool {
+	return b.env == EnvDebug
+}
+
 func (b *Bootstrap) SetServiceInfo(name, version string) {
 	b.serviceName = name
 	b.version = version
