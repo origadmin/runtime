@@ -28,16 +28,10 @@ func (e *envars) Load() (kv []*config.KeyValue, err error) {
 
 func loadEnviron(data, prefixes []string) []*config.KeyValue {
 	var ok bool
-	kv := make([]*config.KeyValue, 0)
-	prefix := ""
+	kvs := make([]*config.KeyValue, 0)
+	var k, v, prefix string
 	for _, datum := range data {
-		var k, v string
-		subs := strings.SplitN(datum, "=", 2) //nolint:mnd
-		k = subs[0]
-		if len(subs) > 1 {
-			v = subs[1]
-		}
-
+		k, v, _ = strings.Cut(datum, "=") //nolint:mnd
 		if len(prefixes) > 0 {
 			prefix, ok = matchPrefix(prefixes, k)
 			if !ok || len(prefix) == len(k) {
@@ -49,13 +43,13 @@ func loadEnviron(data, prefixes []string) []*config.KeyValue {
 		}
 
 		if len(k) > 0 {
-			kv = append(kv, &config.KeyValue{
+			kvs = append(kvs, &config.KeyValue{
 				Key:   k,
 				Value: []byte(v),
 			})
 		}
 	}
-	return kv
+	return kvs
 }
 
 func (e *envars) Watch() (config.Watcher, error) {
