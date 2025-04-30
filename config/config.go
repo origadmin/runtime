@@ -79,6 +79,7 @@ type Config struct {
 
 func (c *Config) Init() {
 	c.registry = func(source any, serviceName string) (*configv1.Registry, error) {
+
 		return reflection.FieldPointByType[configv1.Registry](source)
 	}
 	c.service = func(source any, serviceName string) (*configv1.Service, error) {

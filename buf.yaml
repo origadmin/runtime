@@ -2,7 +2,7 @@
 version: v2
 
 modules:
-  - path: proto
+  - path: proto/configs
     name: buf.build/origadmin/runtime
     lint:
       use:
@@ -24,7 +24,7 @@ modules:
 deps:
   - buf.build/envoyproxy/protoc-gen-validate
   - buf.build/kratos/apis
-  - buf.build/googleapis/googleapis
+  #  - buf.build/googleapis/googleapis
   #  - buf.build/origadmin/rpcerr
   #  - buf.build/origadmin/entgen
   #  - buf.build/bufbuild/protovalidate
