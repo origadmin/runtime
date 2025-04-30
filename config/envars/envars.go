@@ -16,9 +16,9 @@ type envars struct {
 	data []*config.KeyValue
 }
 
-func NewSource(conds ...string) config.Source {
+func NewSource(prefixes ...string) config.Source {
 	return &envars{
-		data: loadEnviron(os.Environ(), conds),
+		data: loadEnviron(os.Environ(), prefixes),
 	}
 }
 
@@ -26,19 +26,29 @@ func (e *envars) Load() (kv []*config.KeyValue, err error) {
 	return e.data, nil
 }
 
-func loadEnviron(data, conds []string) []*config.KeyValue {
-	var kv []*config.KeyValue
+func loadEnviron(data, prefixes []string) []*config.KeyValue {
 	var ok bool
-	for _, env := range data {
+	kv := make([]*config.KeyValue, 0)
+	prefix := ""
+	for _, datum := range data {
 		var k, v string
-		subs := strings.SplitN(env, "=", 2) //nolint:mnd
+		subs := strings.SplitN(datum, "=", 2) //nolint:mnd
 		k = subs[0]
 		if len(subs) > 1 {
 			v = subs[1]
 		}
 
-		k, ok = matchFold(conds, k)
-		if ok && len(k) != 0 {
+		if len(prefixes) > 0 {
+			prefix, ok = matchPrefix(prefixes, k)
+			if !ok || len(prefix) == len(k) {
+				continue
+			}
+			// trim prefix
+			k = strings.TrimPrefix(k, prefix)
+			k = strings.TrimPrefix(k, "_")
+		}
+
+		if len(k) > 0 {
 			kv = append(kv, &config.KeyValue{
 				Key:   k,
 				Value: []byte(v),
@@ -52,10 +62,10 @@ func (e *envars) Watch() (config.Watcher, error) {
 	return env.NewWatcher()
 }
 
-func matchFold(envs []string, data string) (string, bool) {
-	for _, env := range envs {
-		if strings.EqualFold(env, data) {
-			return data, true
+func matchPrefix(prefixes []string, v string) (string, bool) {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(v, prefix) {
+			return prefix, true
 		}
 	}
 	return "", false
