@@ -78,7 +78,7 @@ type MigrationMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m MigrationMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -233,7 +233,7 @@ type DatabaseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m DatabaseMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -383,7 +383,7 @@ type RedisMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RedisMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -501,7 +501,7 @@ type MemcachedMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m MemcachedMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -607,7 +607,7 @@ type MemoryMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m MemoryMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -725,7 +725,7 @@ type BadgerDSMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m BadgerDSMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -825,7 +825,7 @@ type FileMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m FileMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -957,7 +957,7 @@ type OssMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m OssMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1080,7 +1080,7 @@ type MongoMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m MongoMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1307,7 +1307,7 @@ type CacheMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m CacheMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1637,7 +1637,7 @@ type StorageMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m StorageMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

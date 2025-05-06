@@ -276,7 +276,7 @@ type ServiceMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ServiceMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -422,7 +422,7 @@ type Service_HTTPMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Service_HTTPMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -568,7 +568,7 @@ type Service_GRPCMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Service_GRPCMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -672,7 +672,7 @@ type Service_SelectorMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Service_SelectorMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

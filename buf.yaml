@@ -2,7 +2,7 @@
 version: v2
 
 modules:
-  - path: proto/configs
+  - path: proto
     name: buf.build/origadmin/runtime
     lint:
       use:

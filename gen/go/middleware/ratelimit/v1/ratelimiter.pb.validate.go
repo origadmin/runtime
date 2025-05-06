@@ -151,7 +151,7 @@ type RateLimiterMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RateLimiterMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -265,7 +265,7 @@ type RateLimiter_RedisMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RateLimiter_RedisMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -371,7 +371,7 @@ type RateLimiter_MemoryMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RateLimiter_MemoryMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

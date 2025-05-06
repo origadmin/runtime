@@ -249,7 +249,7 @@ type CircuitBreakerMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m CircuitBreakerMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -349,7 +349,7 @@ type HeaderMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m HeaderMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -486,7 +486,7 @@ type ResponseDataMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ResponseDataMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -615,7 +615,7 @@ type BackupServiceMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m BackupServiceMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -722,7 +722,7 @@ type SuccessRatioMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m SuccessRatioMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

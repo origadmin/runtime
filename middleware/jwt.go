@@ -112,6 +112,18 @@ func getClaimsFunc(subject string, ctp string, cfg *secjwtv1.Config) func() jwt.
 				"iat": now.Unix(),
 			}
 		}
+	//case "registered":
+	//	return func() jwt.Claims {
+	//		now := time.Now()
+	//		return &jwt.RegisteredClaims{
+	//			Issuer:    cfg.Issuer,
+	//			Subject:   subject,
+	//			Audience:  cfg.Audience,
+	//			ExpiresAt: jwt.NewNumericDate(now.Add(exp)),
+	//			NotBefore: jwt.NewNumericDate(now),
+	//			IssuedAt:  jwt.NewNumericDate(now),
+	//		}
+	//	}
 	default:
 		return func() jwt.Claims {
 			now := time.Now()

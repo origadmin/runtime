@@ -70,6 +70,8 @@ func (m *SourceConfig) validate(all bool) error {
 
 	// no validation rules for Name
 
+	// no validation rules for Version
+
 	// no validation rules for Env
 
 	// no validation rules for EnvArgs
@@ -186,7 +188,7 @@ type SourceConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m SourceConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -301,7 +303,7 @@ type SourceConfig_FileMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m SourceConfig_FileMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -411,7 +413,7 @@ type SourceConfig_ConsulMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m SourceConfig_ConsulMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -513,7 +515,7 @@ type SourceConfig_ETCDMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m SourceConfig_ETCDMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

@@ -187,7 +187,7 @@ type GatewayMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m GatewayMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -295,7 +295,7 @@ type TLSMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m TLSMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -433,7 +433,7 @@ type PriorityConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m PriorityConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -643,7 +643,7 @@ type EndpointMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m EndpointMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -731,34 +731,7 @@ func (m *Middleware) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if all {
-		switch v := interface{}(m.GetOptions()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Options",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Options",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetOptions()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "Options",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Options
 
 	// no validation rules for Required
 
@@ -775,7 +748,7 @@ type MiddlewareMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m MiddlewareMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -914,7 +887,7 @@ type BackendMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m BackendMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1017,7 +990,7 @@ type HealthCheckMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m HealthCheckMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1153,7 +1126,7 @@ type RetryMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RetryMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1310,7 +1283,7 @@ type ConditionMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ConditionMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1414,7 +1387,7 @@ type ConditionHeaderMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ConditionHeaderMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

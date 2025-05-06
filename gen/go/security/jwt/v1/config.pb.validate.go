@@ -56,19 +56,107 @@ func (m *Config) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for SigningMethod
+	if l := utf8.RuneCountInString(m.GetSigningMethod()); l < 1 || l > 1024 {
+		err := ConfigValidationError{
+			field:  "SigningMethod",
+			reason: "value length must be between 1 and 1024 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Key
+	if !_Config_SigningMethod_Pattern.MatchString(m.GetSigningMethod()) {
+		err := ConfigValidationError{
+			field:  "SigningMethod",
+			reason: "value does not match regex pattern \"^[A-Z0-9]+$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetKey()); l < 1 || l > 1024 {
+		err := ConfigValidationError{
+			field:  "Key",
+			reason: "value length must be between 1 and 1024 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Key2
 
-	// no validation rules for AccessTokenLifetime
+	if val := m.GetAccessTokenLifetime(); val < 1 || val > 31536000 {
+		err := ConfigValidationError{
+			field:  "AccessTokenLifetime",
+			reason: "value must be inside range [1, 31536000]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for RefreshTokenLifetime
+	if val := m.GetRefreshTokenLifetime(); val < 1 || val > 31536000 {
+		err := ConfigValidationError{
+			field:  "RefreshTokenLifetime",
+			reason: "value must be inside range [1, 31536000]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Issuer
 
-	// no validation rules for TokenType
+	if l := len(m.GetAudience()); l < 1 || l > 1024 {
+		err := ConfigValidationError{
+			field:  "Audience",
+			reason: "value must contain between 1 and 1024 items, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	_Config_Audience_Unique := make(map[string]struct{}, len(m.GetAudience()))
+
+	for idx, item := range m.GetAudience() {
+		_, _ = idx, item
+
+		if _, exists := _Config_Audience_Unique[item]; exists {
+			err := ConfigValidationError{
+				field:  fmt.Sprintf("Audience[%v]", idx),
+				reason: "repeated value must contain unique items",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else {
+			_Config_Audience_Unique[item] = struct{}{}
+		}
+
+		// no validation rules for Audience[idx]
+	}
+
+	if l := utf8.RuneCountInString(m.GetTokenType()); l < 1 || l > 1024 {
+		err := ConfigValidationError{
+			field:  "TokenType",
+			reason: "value length must be between 1 and 1024 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return ConfigMultiError(errors)
@@ -83,7 +171,7 @@ type ConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -146,3 +234,5 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ConfigValidationError{}
+
+var _Config_SigningMethod_Pattern = regexp.MustCompile("^[A-Z0-9]+$")

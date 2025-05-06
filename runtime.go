@@ -11,7 +11,6 @@ import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/transport"
 
-	"github.com/origadmin/runtime/application"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
@@ -47,18 +46,17 @@ var (
 var ErrNotFound = errors.String("not found")
 
 type Runtime[T any] struct {
-	once        sync.Once
-	builder     *builder
-	Debug       bool
-	EnvPrefix   string
-	WorkDir     string
-	Application application.Application
-	Logging     log.Logging
-	Config      config.Config
-	Registry    registry.Registry
-	Middleware  middleware.Middleware
-	Service     service.Service
-	bootstrap   T
+	once       sync.Once
+	builder    *builder
+	Debug      bool
+	EnvPrefix  string
+	WorkDir    string
+	Logging    log.Logging
+	Config     config.Config
+	Registry   registry.Registry
+	Middleware middleware.Middleware
+	Service    service.Service
+	bootstrap  T
 }
 
 func (r *Runtime[T]) Load(bs *bootstrap.Bootstrap) error {
@@ -70,27 +68,10 @@ func (r *Runtime[T]) Load(bs *bootstrap.Bootstrap) error {
 			return
 		}
 
-		//// todo: add init and check before load
-		//// todo: load config
-		if err := r.Config.LoadFromSource(sc); err != nil {
+		if err := r.Config.Load(bs.ServiceName(), sc); err != nil {
 			rerr = errors.Wrap(err, "load config")
 			return
 		}
-		//// todo: load registry
-		//if err := r.Registry.Load(); err != nil {
-		//	rerr = errors.Wrap(err, "load registry")
-		//	return
-		//}
-		//// todo: load service
-		//if err := r.Service.Load(); err != nil {
-		//	rerr = errors.Wrap(err, "load service")
-		//	return
-		//}
-		//// todo: load middleware
-		//if err := r.Build.Load(); err != nil {
-		//	rerr = errors.Wrap(err, "load middleware")
-		//	return
-		//}
 	})
 	return rerr
 }
@@ -110,7 +91,7 @@ func (r *Runtime[T]) Build(rr registry.Registry, ss ...transport.Server) *kratos
 }
 
 func (r *Runtime[T]) CreateRegistrar(serviceName string, ss ...registry.Option) (registry.KRegistrar, error) {
-	cfg, err := r.Config.Registry(serviceName)
+	err := r.Config.Scan(serviceName)
 	if err != nil {
 		return nil, err
 	}

@@ -81,7 +81,7 @@ type LoggerHookMessageMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m LoggerHookMessageMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -259,7 +259,7 @@ type LoggerMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m LoggerMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -372,7 +372,7 @@ type Logger_FileMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Logger_FileMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -492,7 +492,7 @@ type Logger_DevLoggerMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Logger_DevLoggerMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

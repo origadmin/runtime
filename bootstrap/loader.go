@@ -13,11 +13,37 @@ import (
 )
 
 type Loader interface {
+	Bootstrap() *Bootstrap
 	Load() (*configv1.SourceConfig, error)
-	Reload() error
 }
 
-type decoder = func(string, any) error
+type loader struct {
+	config    *configv1.SourceConfig
+	bootstrap *Bootstrap
+	ignores   []string
+}
+
+func (l *loader) Bootstrap() *Bootstrap {
+	return l.bootstrap
+}
+
+// Load 加载配置（强制重新加载）
+func (l *loader) Load() (*configv1.SourceConfig, error) {
+	cfg, err := LoadSourceConfig(l.bootstrap)
+	if err != nil {
+		return nil, err
+	}
+
+	l.config = cfg
+	return cfg, nil
+}
+
+// NewLoader 创建Loader实例
+func NewLoader(bootstrap *Bootstrap, ) Loader {
+	return &loader{
+		bootstrap: bootstrap,
+	}
+}
 
 // loadSourceConfig loads the config file from the given path
 func loadSourceConfig(si os.FileInfo, path string, ignores []string) (*configv1.SourceConfig, error) {
@@ -48,7 +74,7 @@ func loadCustomizeConfig(si os.FileInfo, path string, cfg any, ignores []string)
 }
 
 // LoadSourceConfig loads the config file from the given path
-func LoadSourceConfig(bootstrap *Bootstrap) (*configv1.SourceConfig, error) {
+func LoadSourceConfig(bootstrap *Bootstrap, ignores []string) (*configv1.SourceConfig, error) {
 	// Get the path from the bootstrap
 	path := bootstrap.ConfigFilePath()
 
@@ -59,36 +85,16 @@ func LoadSourceConfig(bootstrap *Bootstrap) (*configv1.SourceConfig, error) {
 	}
 
 	// Load the config file
-	return loadSourceConfig(stat, path)
+	return loadSourceConfig(stat, path, ignores)
 }
 
 // LoadSourceConfigFromPath loads the config file from the given path
-func LoadSourceConfigFromPath(path string) (*configv1.SourceConfig, error) {
+func LoadSourceConfigFromPath(path string, ignores []string) (*configv1.SourceConfig, error) {
 	// Get the file info from the path
 	stat, err := os.Stat(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "load config stat error")
 	}
 	// Load the config file
-	return loadSourceConfig(stat, path)
-}
-
-// LoadLocalConfig loads the config file from the given path
-func LoadLocalConfig(bs *Bootstrap, v any) error {
-	source, err := LoadSourceConfig(bs)
-	if err != nil {
-		return err
-	}
-	if source.GetType() != "file" {
-		return errors.New("local config type must be file")
-	}
-
-	path := source.GetFile().GetPath()
-	// Get the file info from the path
-	stat, err := os.Stat(path)
-	if err != nil {
-		return errors.Wrap(err, "load config stat error")
-	}
-
-	return loadCustomizeConfig(stat, path, v)
+	return loadSourceConfig(stat, path, ignores)
 }

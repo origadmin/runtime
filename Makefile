@@ -112,12 +112,12 @@ examples:
 	cd examples && protoc \
 	--proto_path=./proto \
 	--proto_path=../third_party \
-	--go_out=paths=source_relative:./services \
-	--go-gins_out=paths=source_relative:./services \
-	--go-grpc_out=paths=source_relative:./services \
-	--go-http_out=paths=source_relative:./services \
-	--go-errors_out=paths=source_relative:./services \
-	--openapi_out=paths=source_relative:./services \
+	--go_out=paths=source_relative:./proto \
+	--go-gins_out=paths=source_relative:./proto \
+	--go-grpc_out=paths=source_relative:./proto \
+	--go-http_out=paths=source_relative:./proto \
+	--go-errors_out=paths=source_relative:./proto \
+	--openapi_out=paths=source_relative:./proto \
 	./proto/helloworld/v1/helloworld.proto
 
 #.PHONY: server
@@ -134,12 +134,13 @@ examples:
 # generate internal proto or use ./internal/generate.go
 runtime:
 	protoc \
-	--proto_path=./runtime/proto \
+	--proto_path=./proto \
 	--proto_path=./third_party \
-	--go_out=paths=source_relative:./runtime/internal \
-	--validate_out=lang=go,paths=source_relative:./runtime/internal \
+	--go_out=paths=source_relative:./gen/go \
+	--validate_out=lang=go,paths=source_relative:./gen/go \
 	$(RUNTIME_PROTO_FILES)
-	.PHONY: generate
+
+.PHONY: generate
 # run go generate to generate code
 generate:
 	go generate ./...
@@ -147,9 +148,9 @@ generate:
 .PHONY: all
 # generate all
 all:
-	make init;
-	make runtime;
-	make generate;
+	$(MAKE) init
+	$(MAKE) runtime
+	$(MAKE) generate
 
 .PHONY: version
 # run version example

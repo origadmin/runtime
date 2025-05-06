@@ -343,7 +343,7 @@ type MessageMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m MessageMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -459,7 +459,7 @@ type Message_MQTTMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_MQTTMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -563,7 +563,7 @@ type Message_KafkaMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_KafkaMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -667,7 +667,7 @@ type Message_RabbitMQMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_RabbitMQMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -771,7 +771,7 @@ type Message_ActiveMQMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_ActiveMQMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -874,7 +874,7 @@ type Message_NATSMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_NATSMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -977,7 +977,7 @@ type Message_NSQMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_NSQMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1081,7 +1081,7 @@ type Message_PulsarMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_PulsarMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1185,7 +1185,7 @@ type Message_RedisMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_RedisMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1305,7 +1305,7 @@ type Message_RocketMQMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Message_RocketMQMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

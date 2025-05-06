@@ -14,6 +14,7 @@ type Configure interface {
 }
 
 type Options struct {
+	ServiceName   string
 	SourceOptions []KOption
 	Decoder       KDecoder
 	Encoder       Encoder
@@ -33,8 +34,20 @@ func WithOptions(options ...KOption) Option {
 	}
 }
 
+func AppendOptions(options ...KOption) Option {
+	return func(option *Options) {
+		option.SourceOptions = append(option.SourceOptions, options...)
+	}
+}
+
 func WithConfigure(cfg Configure) Option {
 	return func(option *Options) {
 		option.Configure = cfg
+	}
+}
+
+func WithServiceName(name string) Option {
+	return func(option *Options) {
+		option.ServiceName = name
 	}
 }

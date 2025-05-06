@@ -169,7 +169,7 @@ type TaskMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m TaskMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -283,7 +283,7 @@ type Task_AsynqMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Task_AsynqMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -383,7 +383,7 @@ type Task_MachineryMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Task_MachineryMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -484,7 +484,7 @@ type Task_CronMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Task_CronMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

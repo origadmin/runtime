@@ -8,8 +8,8 @@ package config
 import (
 	configenv "github.com/go-kratos/kratos/v2/config/env"
 	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/runtime/config/internal/reflection"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/env"
 )
@@ -67,63 +67,52 @@ func (v *EnvVars) Get(key string) (string, bool) {
 }
 
 type Config struct {
-	cfg         any
+	cfg         *configv1.SourceConfig
 	envVars     EnvVars
-	source      KConfig
-	Path        string
+	sources     map[string]KConfig
 	EnvPrefixes []string
-	Builder     Builder
-	registry    func(source any, serviceName string) (*configv1.Registry, error)
-	service     func(source any, serviceName string) (*configv1.Service, error)
+	builder     Builder
+	path        string
 }
 
-func (c *Config) Init() {
-	c.registry = func(source any, serviceName string) (*configv1.Registry, error) {
-
-		return reflection.FieldPointByType[configv1.Registry](source)
-	}
-	c.service = func(source any, serviceName string) (*configv1.Service, error) {
-		return reflection.FieldPointByType[configv1.Service](source)
-	}
-}
-
-func (c *Config) LoadFromFile(path string, opts ...KOption) error {
-	if c.source != nil {
+func (c *Config) Load(name string, cfg *configv1.SourceConfig, opts ...Option) error {
+	if c.sources != nil {
 		return nil
 	}
-	var sources = []KSource{file.NewSource(path)}
+	if _, ok := c.sources[name]; ok {
+		return nil
+	}
+
+	option := settings.ApplyZero(opts)
+	var sources = []KSource{
+		file.NewSource(c.path),
+	}
 	if c.EnvPrefixes != nil {
 		sources = append(sources, configenv.NewSource(c.EnvPrefixes...))
-		opts = append(opts, WithSource(sources...))
+		option.SourceOptions = append(option.SourceOptions, WithSource(sources...))
 	}
-	c.source = NewSourceConfig(opts...)
-	return c.source.Load()
-}
-
-func (c *Config) LoadFromSource(cfg *configv1.SourceConfig, opts ...Option) error {
-	if c.source != nil {
-		return nil
-	}
-
-	config, err := c.Builder.NewConfig(cfg, opts...)
+	config, err := c.builder.NewConfig(cfg, opts...)
 	if err != nil {
 		return err
 	}
-	c.source = config
-	return c.source.Load()
+	c.sources[name] = config
+	return config.Load()
 }
 
-func (c *Config) Scan() error {
-	return c.source.Scan(c.cfg)
-}
-
-func (c *Config) Bind(cfg any) error {
-	c.cfg = cfg
-	return c.Scan()
+func (c *Config) Scan(name string, v any) error {
+	service, ok := c.sources[name]
+	if !ok {
+		return ErrNotFound
+	}
+	return service.Scan(v)
 }
 
 func (c *Config) Watch(key string, ob KObserver) error {
-	return c.source.Watch(key, ob)
+	service, ok := c.sources[key]
+	if !ok {
+		return ErrNotFound
+	}
+	return service.Watch(key, ob)
 }
 
 func (c *Config) SetEnv(key, value string) {
@@ -141,26 +130,18 @@ func (c *Config) Setup(prefix string) error {
 	return c.envVars.Setup(prefix)
 }
 
-func (c *Config) BindRegistry(fn func(source any, serviceName string) (*configv1.Registry, error)) {
-	c.registry = fn
-}
-
-func (c *Config) Registry(serviceName string) (*configv1.Registry, error) {
-	if c.registry != nil {
-		return c.registry(c.cfg, serviceName)
-	}
-	return nil, ErrNotFound
-}
-
-func (c *Config) Service(serviceName string) (*configv1.Service, error) {
-	if c.service != nil {
-		return c.service(c.cfg, serviceName)
-	}
-	return nil, ErrNotFound
-}
-
 func NewBuilder() Builder {
 	return &builder{
 		factories: make(map[string]Factory),
+	}
+}
+
+func New(path string, builder Builder) Config {
+	return Config{
+		path: path,
+		envVars: EnvVars{
+			KeyValues: make(map[string]string),
+		},
+		builder: builder,
 	}
 }

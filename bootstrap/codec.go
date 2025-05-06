@@ -35,7 +35,10 @@ func decodeFile(path string, cfg any, ignores []string) error {
 			return nil
 		}
 	}
-	codec.IsSupportCodec(path)
+	supported := codec.IsSupported(path)
+	if !supported {
+		return errors.New("unsupported config file type: " + path)
+	}
 
 	// Decode the file into the config struct
 	if err := codec.DecodeFromFile(path, cfg); err != nil {

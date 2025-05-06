@@ -72,6 +72,35 @@ func (m *Registry) validate(all bool) error {
 
 	// no validation rules for Debug
 
+	if all {
+		switch v := interface{}(m.GetCustomize()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, RegistryValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, RegistryValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return RegistryValidationError{
+				field:  "Customize",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if m.Consul != nil {
 
 		if all {
@@ -151,7 +180,7 @@ type RegistryMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m RegistryMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -279,7 +308,7 @@ type Registry_ConsulMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Registry_ConsulMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -379,7 +408,7 @@ type Registry_ETCDMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Registry_ETCDMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -442,132 +471,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Registry_ETCDValidationError{}
-
-// Validate checks the field values on Registry_Custom with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *Registry_Custom) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Registry_Custom with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// Registry_CustomMultiError, or nil if none found.
-func (m *Registry_Custom) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Registry_Custom) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetConfig()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Registry_CustomValidationError{
-					field:  "Config",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Registry_CustomValidationError{
-					field:  "Config",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetConfig()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Registry_CustomValidationError{
-				field:  "Config",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return Registry_CustomMultiError(errors)
-	}
-
-	return nil
-}
-
-// Registry_CustomMultiError is an error wrapping multiple validation errors
-// returned by Registry_Custom.ValidateAll() if the designated constraints
-// aren't met.
-type Registry_CustomMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m Registry_CustomMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m Registry_CustomMultiError) AllErrors() []error { return m }
-
-// Registry_CustomValidationError is the validation error returned by
-// Registry_Custom.Validate if the designated constraints aren't met.
-type Registry_CustomValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e Registry_CustomValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e Registry_CustomValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e Registry_CustomValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e Registry_CustomValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e Registry_CustomValidationError) ErrorName() string { return "Registry_CustomValidationError" }
-
-// Error satisfies the builtin error interface
-func (e Registry_CustomValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sRegistry_Custom.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = Registry_CustomValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = Registry_CustomValidationError{}

@@ -60,7 +60,16 @@ func (m *JWT) validate(all bool) error {
 
 	// no validation rules for Subject
 
-	// no validation rules for ClaimType
+	if _, ok := _JWT_ClaimType_InLookup[m.GetClaimType()]; !ok {
+		err := JWTValidationError{
+			field:  "ClaimType",
+			reason: "value must be in list [map registered]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for TokenHeader
 
@@ -106,7 +115,7 @@ type JWTMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m JWTMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -169,3 +178,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = JWTValidationError{}
+
+var _JWT_ClaimType_InLookup = map[string]struct{}{
+	"map":        {},
+	"registered": {},
+}

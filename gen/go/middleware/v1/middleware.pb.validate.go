@@ -252,7 +252,7 @@ type MiddlewareMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m MiddlewareMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -358,7 +358,7 @@ type Middleware_MetadataMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m Middleware_MetadataMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

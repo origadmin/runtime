@@ -170,7 +170,7 @@ type AuthNConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -382,7 +382,7 @@ type AuthZConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthZConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -546,7 +546,7 @@ type SecurityMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m SecurityMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -658,7 +658,7 @@ type AuthNConfig_JWTConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_JWTConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -766,7 +766,7 @@ type AuthNConfig_OIDCConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_OIDCConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -868,7 +868,7 @@ type AuthNConfig_PreSharedKeyConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_PreSharedKeyConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -971,7 +971,7 @@ type AuthNConfig_BasicAuthConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_BasicAuthConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1074,7 +1074,7 @@ type AuthNConfig_OAuth2ConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_OAuth2ConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1176,7 +1176,7 @@ type AuthNConfig_LdapConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_LdapConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1278,7 +1278,7 @@ type AuthNConfig_X509ConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_X509ConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1380,7 +1380,7 @@ type AuthNConfig_SamlConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_SamlConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1482,7 +1482,7 @@ type AuthNConfig_ApiKeyConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNConfig_ApiKeyConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1588,7 +1588,7 @@ type AuthZConfig_CasbinConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthZConfig_CasbinConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1698,7 +1698,7 @@ type AuthZConfig_OpaConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthZConfig_OpaConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1808,7 +1808,7 @@ type AuthZConfig_ZanzibarConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthZConfig_ZanzibarConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

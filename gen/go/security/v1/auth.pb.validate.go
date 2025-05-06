@@ -92,7 +92,7 @@ type BasicAuthMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m BasicAuthMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -202,7 +202,7 @@ type BearerAuthMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m BearerAuthMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -400,7 +400,7 @@ type DigestAuthMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m DigestAuthMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -554,7 +554,7 @@ type OAuth2AuthMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m OAuth2AuthMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -664,7 +664,7 @@ type ApiKeyAuthMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ApiKeyAuthMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -831,7 +831,7 @@ type JwtAuthMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m JwtAuthMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1126,36 +1126,7 @@ func (m *AuthN) validate(all bool) error {
 	}
 
 	if m.Additional != nil {
-
-		if all {
-			switch v := interface{}(m.GetAdditional()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, AuthNValidationError{
-						field:  "Additional",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, AuthNValidationError{
-						field:  "Additional",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetAdditional()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return AuthNValidationError{
-					field:  "Additional",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
+		// no validation rules for Additional
 	}
 
 	if len(errors) > 0 {
@@ -1171,7 +1142,7 @@ type AuthNMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthNMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1328,7 +1299,7 @@ type CasbinAuthMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m CasbinAuthMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1474,7 +1445,7 @@ type AuthZMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m AuthZMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -1630,7 +1601,7 @@ type ClaimsMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m ClaimsMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}

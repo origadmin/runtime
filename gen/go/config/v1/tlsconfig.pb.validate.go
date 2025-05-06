@@ -128,7 +128,7 @@ type TLSConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m TLSConfigMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -234,7 +234,7 @@ type TLSConfig_FileMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m TLSConfig_FileMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
@@ -340,7 +340,7 @@ type TLSConfig_PEMMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
 func (m TLSConfig_PEMMultiError) Error() string {
-	var msgs []string
+	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
 	}
