@@ -8,7 +8,7 @@ package validate
 import (
 	"fmt"
 
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/origadmin/runtime/context"

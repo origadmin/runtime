@@ -22,6 +22,7 @@ type ServiceInfo struct {
 	Name      string
 	Version   string
 	StartTime time.Time
+	Metadata  map[string]string
 }
 
 var (

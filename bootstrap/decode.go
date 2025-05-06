@@ -14,27 +14,8 @@ import (
 	"github.com/origadmin/toolkits/errors"
 )
 
-type Decoder interface {
-	Decode(string, any) error
-}
-
-type Encoder interface {
-	Encode(any) (string, error)
-}
-
-type Codec interface {
-	Decoder
-	Encoder
-}
-
 // decodeFile loads the config file from the given path
-func decodeFile(path string, cfg any, ignores []string) error {
-	var ignore string
-	for _, ignore = range ignores {
-		if strings.HasSuffix(path, ignore) {
-			return nil
-		}
-	}
+func decodeFile(path string, cfg any) error {
 	supported := codec.IsSupported(path)
 	if !supported {
 		return errors.New("unsupported config file type: " + path)
@@ -49,6 +30,7 @@ func decodeFile(path string, cfg any, ignores []string) error {
 
 func decodeDirWithDepth(path string, cfg any, ignores []string, depth int) error {
 	found := false
+	var ignore string
 	err := filepath.WalkDir(path, func(walkpath string, d os.DirEntry, err error) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to get config file %s", walkpath)
@@ -57,8 +39,14 @@ func decodeDirWithDepth(path string, cfg any, ignores []string, depth int) error
 			return decodeDirWithDepth(walkpath, cfg, ignores, depth-1)
 		}
 
+		for _, ignore = range ignores {
+			if strings.HasSuffix(walkpath, ignore) {
+				return nil
+			}
+		}
+
 		// Decode the file into the config struct
-		if err := decodeFile(walkpath, cfg, ignores); err != nil {
+		if err := decodeFile(walkpath, cfg); err != nil {
 			return err
 		}
 		found = true
@@ -85,7 +73,7 @@ func decodeDir(path string, cfg any, ignores []string) error {
 		}
 
 		// Decode the file into the config struct
-		if err := decodeFile(walkpath, cfg, ignores); err != nil {
+		if err := decodeFile(walkpath, cfg); err != nil {
 			return err
 		}
 		found = true
@@ -100,34 +88,14 @@ func decodeDir(path string, cfg any, ignores []string) error {
 	return nil
 }
 
-func decodeConfig(path string, cfg any, ignores []string) error {
+func decodeConfig(path string, cfg any) error {
 	// Check if the path is a directory
 	info, err := os.Stat(path)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get config file %s", path)
 	}
 	if info.IsDir() {
-		return decodeDir(path, cfg, ignores)
+		return errors.New("config path is a directory")
 	}
-	return decodeFile(path, cfg, ignores)
+	return decodeFile(path, cfg)
 }
-
-type bootstrapCodec struct {
-	ignores []string
-}
-
-func (c bootstrapCodec) Decode(path string, cfg any) error {
-	return decodeConfig(path, cfg, c.ignores)
-}
-
-func (c bootstrapCodec) Encode(cfg any) (string, error) {
-	return "", nil
-}
-
-func NewCodec(ignores []string) Codec {
-	return &bootstrapCodec{
-		ignores: ignores,
-	}
-}
-
-var _ Codec = (*bootstrapCodec)(nil)

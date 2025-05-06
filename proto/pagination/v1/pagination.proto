@@ -7,7 +7,7 @@ import "google/protobuf/any.proto";
 import "google/protobuf/field_mask.proto";
 
 option cc_enable_arenas = true;
-option go_package = "github.com/origadmin/runtime/proto/gen/go/pagination/v1;paginationv1";
+option go_package = "github.com/origadmin/runtime/gen/go/pagination/v1;paginationv1";
 option java_multiple_files = true;
 option java_outer_classname = "PaginationProto";
 option java_package = "com.github.origadmin.runtime.pagination.v1";

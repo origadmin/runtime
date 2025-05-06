@@ -42,8 +42,8 @@ func (b *builder) RegisterConfigSync(name string, configSyncer ConfigSyncFunc) {
 	b.RegisterConfigSyncer(name, configSyncer)
 }
 
-// LoadRemoteConfig loads the config file from the given path
-func LoadRemoteConfig(bs *bootstrap.Bootstrap, v any, ss ...config.Option) error {
+// LoadConfig loads the config file from the given path
+func LoadConfig(bs *bootstrap.Bootstrap, v any, ss ...config.Option) error {
 	sourceConfig, err := bootstrap.LoadSourceConfig(bs)
 	if err != nil {
 		return err

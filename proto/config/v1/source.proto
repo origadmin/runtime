@@ -17,6 +17,7 @@ message SourceConfig {
   message File {
     string path = 1 [json_name = "path"];
     string format = 2 [json_name = "format"];
+    repeated string ignores = 3 [json_name = "ignores"];
   }
   // Consul
   message Consul {

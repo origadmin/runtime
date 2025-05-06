@@ -46,7 +46,7 @@ else
 	API_PROTO_FILES=$(shell find api -name *.proto)
 
     BUILT_DATE = $(shell TZ=Asia/Shanghai date +%FT%T%z)
-    TREE_STATE = $(shell if git status | grep -q 'clean'; then echo clean; else echo dirty; fi)
+    TREE_STATE := $(if $(shell git status | grep -q 'clean'),clean,dirty)
     TAG = $(shell if git tag --points-at "${gitHash}" | grep -q '^v'; then echo $(HEAD_TAG); else echo ${gitHash}; fi)
 	# buildDate = $(shell TZ=Asia/Shanghai date +%F\ %T%z | tr 'T' ' ')
 	# same as gitHash previously
@@ -130,6 +130,16 @@ examples:
 #client:
 #	kratos proto client ./api
 
+
+.PHONY: update
+#update
+update:
+	go get -u github.com/goexts/generic@latest
+	go get -u github.com/origadmin/toolkits@latest
+	go get -u github.com/origadmin/toolkits/codec@latest
+	go get -u github.com/origadmin/toolkits/errors@latest
+	go mod tidy
+
 .PHONY: runtime
 # generate internal proto or use ./internal/generate.go
 runtime:
@@ -149,6 +159,7 @@ generate:
 # generate all
 all:
 	$(MAKE) init
+	$(MAKE) update
 	$(MAKE) runtime
 	$(MAKE) generate
 

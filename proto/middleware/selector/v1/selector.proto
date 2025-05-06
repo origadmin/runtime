@@ -3,7 +3,7 @@ syntax = "proto3";
 package middleware.selector.v1;
 
 option cc_enable_arenas = true;
-option go_package = "github.com/origadmin/runtime/proto/gen/go/middleware/selector/v1;selectorv1";
+option go_package = "github.com/origadmin/runtime/gen/go/middleware/selector/v1;selectorv1";
 option java_multiple_files = true;
 option java_outer_classname = "SelectorProto";
 option java_package = "com.github.origadmin.runtime.middleware.selector.v1";

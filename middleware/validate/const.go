@@ -6,7 +6,7 @@
 package validate
 
 import (
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoregistry"
 )
