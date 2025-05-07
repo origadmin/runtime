@@ -1,11 +1,10 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
 // Package bootstrap is a package that provides the bootstrap information for the service.
 package bootstrap
 
 import (
+	"crypto/rand"
+	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -72,15 +71,6 @@ func (b *Bootstrap) ServiceID() string {
 
 func (b *Bootstrap) ServiceName() string {
 	return b.serviceName
-}
-
-func (b *Bootstrap) ServiceInfo() ServiceInfo {
-	return ServiceInfo{
-		ID:        b.serviceID,
-		Name:      b.serviceName,
-		StartTime: b.startTime,
-		Version:   b.version,
-	}
 }
 
 func (b *Bootstrap) Daemon() bool {
@@ -165,14 +155,14 @@ func absPath(p string) string {
 // New returns a new bootstrap
 func New() *Bootstrap {
 	return &Bootstrap{
-		//WorkDir:     DefaultWorkDir,
-		//ConfigPath:  DefaultConfigPath,
-		env:       buildEnv,
-		serviceID: RandomID(),
-		//version:     version,
-		//serviceName: name,
-		startTime: time.Now(),
-		metadata:  make(map[string]string),
+		workDir:     DefaultWorkDir,
+		configPath:  DefaultConfigPath,
+		version:     DefaultVersion,
+		serviceName: DefaultServiceName,
+		env:         buildEnv,
+		serviceID:   RandomID(),
+		startTime:   time.Now(),
+		metadata:    make(map[string]string),
 	}
 }
 
@@ -181,4 +171,17 @@ func WithFlags(name string, version string) *Bootstrap {
 	bs.serviceName = name
 	bs.version = version
 	return bs
+}
+
+func RandomID() string {
+	id, err := os.Hostname()
+	if err != nil {
+		id = "unknown"
+	}
+
+	b := make([]byte, 4)
+	if _, err := rand.Read(b); err == nil {
+		return fmt.Sprintf("%s.%x", id, b)
+	}
+	return id + "." + RandomSuffix
 }
