@@ -142,6 +142,16 @@ func (b *Bootstrap) SetServiceInfo(name, version string) {
 	b.version = version
 }
 
+func (b *Bootstrap) ServiceInfo() ServiceInfo {
+	return ServiceInfo{
+		Name:      b.serviceName,
+		Version:   b.version,
+		ID:        b.serviceID,
+		Metadata:  b.metadata,
+		StartTime: b.startTime,
+	}
+}
+
 func absPath(p string) string {
 	if filepath.IsAbs(p) {
 		return p

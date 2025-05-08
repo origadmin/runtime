@@ -7,21 +7,22 @@ package registry
 
 import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/interfaces/builder"
 )
 
 type (
 
 	// Builder is an interface that defines a method for registering a RegistryBuilder.
 	Builder interface {
+		builder.Builder[Factory]
 		Factory
-		RegisterRegistryBuilder(string, Factory)
 	}
-
 	// Factory is an interface that defines methods for creating a discovery and a KRegistrar.
 	Factory interface {
 		NewRegistrar(*configv1.Registry, ...Option) (KRegistrar, error)
 		NewDiscovery(*configv1.Registry, ...Option) (KDiscovery, error)
 	}
+
 	Registry interface {
 		KRegistrar
 		KDiscovery
@@ -42,6 +43,19 @@ type DiscoveryBuildFunc func(*configv1.Registry, ...Option) (KDiscovery, error)
 // NewDiscovery is a method that calls the DiscoveryBuildFunc with the given config.
 func (fn DiscoveryBuildFunc) NewDiscovery(cfg *configv1.Registry, ss ...Option) (KDiscovery, error) {
 	return fn(cfg, ss...)
+}
+
+type FuncFactory struct {
+	RegistrarFunc func(*configv1.Registry, ...Option) (KRegistrar, error)
+	DiscoveryFunc func(*configv1.Registry, ...Option) (KDiscovery, error)
+}
+
+func (f FuncFactory) NewRegistrar(cfg *configv1.Registry, opts ...Option) (KRegistrar, error) {
+	return f.RegistrarFunc(cfg, opts...)
+}
+
+func (f FuncFactory) NewDiscovery(cfg *configv1.Registry, opts ...Option) (KDiscovery, error) {
+	return f.DiscoveryFunc(cfg, opts...)
 }
 
 // wrapped is a struct that embeds RegistrarBuildFunc and DiscoveryBuildFunc.

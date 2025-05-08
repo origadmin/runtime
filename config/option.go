@@ -15,10 +15,12 @@ type Configure interface {
 
 type Options struct {
 	ServiceName   string
+	ResolverName  string
 	SourceOptions []KOption
 	Decoder       KDecoder
 	Encoder       Encoder
 	Configure     Configure
+	Prefixes      []string
 }
 
 // Encoder is a function that takes a value and returns a byte slice and an error.
@@ -40,6 +42,20 @@ func AppendOptions(options ...KOption) Option {
 	}
 }
 
+// WithDecoderOption sets the decoder field of the KOption struct.
+func WithDecoderOption(decoder KDecoder) Option {
+	return func(option *Options) {
+		option.Decoder = decoder
+	}
+}
+
+// WithEncoderOption sets the encoder field of the KOption struct.
+func WithEncoderOption(encoder Encoder) Option {
+	return func(option *Options) {
+		option.Encoder = encoder
+	}
+}
+
 func WithConfigure(cfg Configure) Option {
 	return func(option *Options) {
 		option.Configure = cfg
@@ -49,5 +65,11 @@ func WithConfigure(cfg Configure) Option {
 func WithServiceName(name string) Option {
 	return func(option *Options) {
 		option.ServiceName = name
+	}
+}
+
+func WithPrefixes(prefixes ...string) Option {
+	return func(option *Options) {
+		option.Prefixes = prefixes
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"errors"
 
 	"github.com/origadmin/runtime/interfaces/security"
+	"github.com/origadmin/runtime/interfaces/security/token"
 
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
@@ -158,7 +159,7 @@ func WithConfig(cfg *configv1.Security) Option {
 
 type AuthNSetting = func(authenticator *Authenticator)
 
-func WithCache(cache security.CacheStorage) AuthNSetting {
+func WithCache(cache token.CacheStorage) AuthNSetting {
 	return func(authenticator *Authenticator) {
 		authenticator.Cache = cache
 	}

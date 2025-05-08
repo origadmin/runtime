@@ -6,19 +6,18 @@
 package service
 
 import (
-	"sync"
-
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/interfaces/builder"
 	"github.com/origadmin/runtime/service/grpc"
 	"github.com/origadmin/runtime/service/http"
 	"github.com/origadmin/runtime/service/selector"
 )
 
-// DefaultServiceBuilder is the default instance of the builder.
+// DefaultServiceBuilder is the default instance of the buildImpl.
 var DefaultServiceBuilder = &factory{}
 
-// ServiceBuilder is a struct that implements the builder interface.
+// ServiceBuilder is a struct that implements the buildImpl interface.
 // It provides methods for creating new gRPC and HTTP servers and clients.
 type factory struct{}
 
@@ -70,59 +69,48 @@ func (f factory) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ..
 	return http.NewClient(ctx, cfg, ss...)
 }
 
-type builder struct {
-	factoryMux sync.RWMutex
-	factories  map[string]Factory
-}
-
-func (s *builder) RegisterServiceBuilder(name string, factory Factory) {
-	s.factoryMux.Lock()
-	defer s.factoryMux.Unlock()
-	s.factories[name] = factory
+type buildImpl struct {
+	builder.Builder[Factory]
 }
 
 // NewGRPCServer creates a new gRPC server based on the given ServiceConfig.
-func (s *builder) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
-	s.factoryMux.RLock()
-	defer s.factoryMux.RUnlock()
-	if serviceBuilder, ok := s.factories[cfg.Name]; ok {
+func (b *buildImpl) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
+	serviceBuilder, ok := b.Get(cfg.Name)
+	if ok {
 		return serviceBuilder.NewGRPCServer(cfg, ss...)
 	}
 	return nil, ErrServiceNotFound
 }
 
 // NewHTTPServer creates a new HTTP server based on the given ServiceConfig.
-func (s *builder) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
-	s.factoryMux.RLock()
-	defer s.factoryMux.RUnlock()
-	if serviceBuilder, ok := s.factories[cfg.Name]; ok {
+func (b *buildImpl) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
+	serviceBuilder, ok := b.Get(cfg.Name)
+	if ok {
 		return serviceBuilder.NewHTTPServer(cfg, ss...)
 	}
 	return nil, ErrServiceNotFound
 }
 
 // NewGRPCClient creates a new gRPC client based on the given ServiceConfig.
-func (s *builder) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOption) (*GRPCClient, error) {
-	s.factoryMux.RLock()
-	defer s.factoryMux.RUnlock()
-	if serviceBuilder, ok := s.factories[cfg.Name]; ok {
+func (b *buildImpl) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOption) (*GRPCClient, error) {
+	serviceBuilder, ok := b.Get(cfg.Name)
+	if ok {
 		return serviceBuilder.NewGRPCClient(ctx, cfg, ss...)
 	}
 	return nil, ErrServiceNotFound
 }
 
 // NewHTTPClient creates a new HTTP client based on the given ServiceConfig.
-func (s *builder) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOption) (*HTTPClient, error) {
-	s.factoryMux.RLock()
-	defer s.factoryMux.RUnlock()
-	if serviceBuilder, ok := s.factories[cfg.Name]; ok {
+func (b *buildImpl) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOption) (*HTTPClient, error) {
+	serviceBuilder, ok := b.Get(cfg.Name)
+	if ok {
 		return serviceBuilder.NewHTTPClient(ctx, cfg, ss...)
 	}
 	return nil, ErrServiceNotFound
 }
 
 func NewBuilder() Builder {
-	return &builder{
-		factories: make(map[string]Factory),
+	return &buildImpl{
+		Builder: builder.New[Factory](),
 	}
 }

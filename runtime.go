@@ -29,17 +29,16 @@ const (
 )
 
 type Builder interface {
-	config.Builder
-	registry.Builder
-	service.Builder
-	MiddlewareBuilders
-	middlewareBuildRegistry
+	Config() config.Builder
+	Registry() registry.Builder
+	Service() service.Builder
+	Middleware() middleware.Builder
 }
 
 // build is a global variable that holds an instance of the builder struct.
 var (
 	once    = &sync.Once{}
-	runtime = &Runtime[any]{
+	runtime = &Runtime{
 		builder:   &builder{},
 		EnvPrefix: DefaultEnvPrefix,
 	}
@@ -48,16 +47,24 @@ var (
 // ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
 var ErrNotFound = errors.String("not found")
 
-type Runtime[T any] struct {
+type Provider interface {
+	Load(*bootstrap.Bootstrap) error
+	Scan(v any) error
+	CreateApp(context.Context, registry.Registry, ...transport.Server) *kratos.App
+	Signals() []os.Signal
+	SetSignals([]os.Signal)
+}
+
+type Runtime struct {
 	once        sync.Once
 	builder     *builder
-	Debug       bool
+	env         string
 	signals     []os.Signal
+	Config      *config.Config
 	EnvPrefix   string
 	WorkDir     string
 	Logging     log.Logging
 	logger      log.KLogger
-	Config      config.KConfig
 	Registry    registry.Registry
 	Middleware  middleware.Middleware
 	Service     service.Service
@@ -65,7 +72,15 @@ type Runtime[T any] struct {
 	serviceInfo bootstrap.ServiceInfo
 }
 
-func (r *Runtime[T]) Load(bs *bootstrap.Bootstrap) error {
+func (r *Runtime) Signals() []os.Signal {
+	return r.signals
+}
+
+func (r *Runtime) SetSignals(signals []os.Signal) {
+	r.signals = signals
+}
+
+func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
 	var rerr error
 	r.once.Do(func() {
 		sourceConfig, err := bootstrap.LoadSourceConfig(bs)
@@ -74,30 +89,17 @@ func (r *Runtime[T]) Load(bs *bootstrap.Bootstrap) error {
 			return
 		}
 		r.source = sourceConfig
-		kcfg, err := r.builder.NewConfig(r.source, config.WithServiceName(bs.ServiceName()))
-		if err != nil {
-			rerr = errors.Wrap(err, "new config")
+		r.Config = config.New(bs.ConfigFilePath())
+		if err := r.Config.Load(bs.ServiceName(), sourceConfig); err != nil {
+			return
 		}
-		r.Config = kcfg
-		r.serviceInfo = bootstrap.ServiceInfo{
-			ID:       bs.ServiceID(),
-			Name:     bs.ServiceName(),
-			Version:  bs.Version(),
-			Metadata: bs.Metadata(),
-		}
+		r.serviceInfo = bs.ServiceInfo()
 	})
 
 	return rerr
 }
 
-func (r *Runtime[T]) Scan(v any) error {
-	if err := r.Config.Scan(v); err != nil {
-		return errors.Wrap(err, "scan config")
-	}
-	return nil
-}
-
-func (r *Runtime[T]) CreateApp(ctx context.Context, rr registry.Registry, ss ...transport.Server) *kratos.App {
+func (r *Runtime) CreateApp(ctx context.Context, rr registry.Registry, ss ...transport.Server) *kratos.App {
 	opts := []kratos.Option{
 		kratos.ID(r.serviceInfo.ID),
 		kratos.Name(r.serviceInfo.Name),
@@ -119,7 +121,7 @@ func (r *Runtime[T]) CreateApp(ctx context.Context, rr registry.Registry, ss ...
 }
 
 //
-//func (r *Runtime[T]) CreateRegistrar(serviceName string, ss ...registry.Option) (registry.KRegistrar, error) {
+//func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.Option) (registry.KRegistrar, error) {
 //	err := r.Config.Scan(serviceName)
 //	if err != nil {
 //		return nil, err
@@ -127,7 +129,7 @@ func (r *Runtime[T]) CreateApp(ctx context.Context, rr registry.Registry, ss ...
 //	return r.builder.NewRegistrar(cfg, ss...)
 //}
 //
-//func (r *Runtime[T]) CreateDiscovery(serviceName string, ss ...registry.Option) (registry.KDiscovery, error) {
+//func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.Option) (registry.KDiscovery, error) {
 //	cfg, err := r.builder.NewDiscovery()
 //	if err != nil {
 //		return nil, err
@@ -135,7 +137,7 @@ func (r *Runtime[T]) CreateApp(ctx context.Context, rr registry.Registry, ss ...
 //	return r.builder.NewDiscovery(cfg, ss...)
 //}
 //
-//func (r *Runtime[T]) CreateGRPCServer(serviceName string, ss ...service.GRPCOption) (*service.GRPCServer, error) {
+//func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.GRPCOption) (*service.GRPCServer, error) {
 //	cfg, err := r.Config.Service(serviceName)
 //	if err != nil {
 //		return nil, err
@@ -143,7 +145,7 @@ func (r *Runtime[T]) CreateApp(ctx context.Context, rr registry.Registry, ss ...
 //	return r.builder.NewGRPCServer(cfg, ss...)
 //}
 //
-//func (r *Runtime[T]) CreateHTTPServer(serviceName string, ss ...service.HTTPOption) (*service.HTTPServer, error) {
+//func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.HTTPOption) (*service.HTTPServer, error) {
 //	cfg, err := r.Config.Service(serviceName)
 //	if err != nil {
 //		return nil, err
@@ -157,19 +159,14 @@ func init() {
 	})
 }
 
-// GlobalBuilder returns the global instance of the builder.
-func GlobalBuilder() Builder {
-	return runtime.builder
-}
-
 // Global returns the global instance of the Runtime struct.
-func Global() *Runtime[any] {
+func Global() *Runtime {
 	return runtime
 }
 
 // New returns a new instance of the Runtime struct.
-func New[T any]() Runtime[T] {
-	return Runtime[T]{
+func New() Runtime {
+	return Runtime{
 		builder:   runtime.builder,
 		EnvPrefix: DefaultEnvPrefix,
 		signals: []os.Signal{

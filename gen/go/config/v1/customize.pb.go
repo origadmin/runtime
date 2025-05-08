@@ -25,8 +25,8 @@ const (
 // Customize
 type Customize struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// configs is a map of custom configs
-	Configs       map[string]*Customize_Config `protobuf:"bytes,1,rep,name=configs,proto3" json:"configs,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// configs is a map of custom configs with type string
+	Configs       []*Customize_Config `protobuf:"bytes,1,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,9 +61,53 @@ func (*Customize) Descriptor() ([]byte, []int) {
 	return file_config_v1_customize_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Customize) GetConfigs() map[string]*Customize_Config {
+func (x *Customize) GetConfigs() []*Customize_Config {
 	if x != nil {
 		return x.Configs
+	}
+	return nil
+}
+
+type CustomizeMap struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Types         map[string]*Customize  `protobuf:"bytes,1,rep,name=types,proto3" json:"types,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CustomizeMap) Reset() {
+	*x = CustomizeMap{}
+	mi := &file_config_v1_customize_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CustomizeMap) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CustomizeMap) ProtoMessage() {}
+
+func (x *CustomizeMap) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_customize_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CustomizeMap.ProtoReflect.Descriptor instead.
+func (*CustomizeMap) Descriptor() ([]byte, []int) {
+	return file_config_v1_customize_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CustomizeMap) GetTypes() map[string]*Customize {
+	if x != nil {
+		return x.Types
 	}
 	return nil
 }
@@ -72,8 +116,8 @@ type Customize_Config struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// enabled is used to enable or disable the custom config
 	Enabled bool `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	// type can be any type but defined in runtime
-	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	// name can be any named with registered names
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// value can be any type
 	Value         *anypb.Any `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -82,7 +126,7 @@ type Customize_Config struct {
 
 func (x *Customize_Config) Reset() {
 	*x = Customize_Config{}
-	mi := &file_config_v1_customize_proto_msgTypes[1]
+	mi := &file_config_v1_customize_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -94,7 +138,7 @@ func (x *Customize_Config) String() string {
 func (*Customize_Config) ProtoMessage() {}
 
 func (x *Customize_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_customize_proto_msgTypes[1]
+	mi := &file_config_v1_customize_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -117,9 +161,9 @@ func (x *Customize_Config) GetEnabled() bool {
 	return false
 }
 
-func (x *Customize_Config) GetType() string {
+func (x *Customize_Config) GetName() string {
 	if x != nil {
-		return x.Type
+		return x.Name
 	}
 	return ""
 }
@@ -135,16 +179,19 @@ var File_config_v1_customize_proto protoreflect.FileDescriptor
 
 const file_config_v1_customize_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/v1/customize.proto\x12\tconfig.v1\x1a\x19google/protobuf/any.proto\"\x85\x02\n" +
-	"\tCustomize\x12;\n" +
-	"\aconfigs\x18\x01 \x03(\v2!.config.v1.Customize.ConfigsEntryR\aconfigs\x1ab\n" +
+	"\x19config/v1/customize.proto\x12\tconfig.v1\x1a\x19google/protobuf/any.proto\"\xa6\x01\n" +
+	"\tCustomize\x125\n" +
+	"\aconfigs\x18\x01 \x03(\v2\x1b.config.v1.Customize.ConfigR\aconfigs\x1ab\n" +
 	"\x06Config\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12*\n" +
-	"\x05value\x18\x03 \x01(\v2\x14.google.protobuf.AnyR\x05value\x1aW\n" +
-	"\fConfigsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x121\n" +
-	"\x05value\x18\x02 \x01(\v2\x1b.config.v1.Customize.ConfigR\x05value:\x028\x01B\x9f\x01\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12*\n" +
+	"\x05value\x18\x03 \x01(\v2\x14.google.protobuf.AnyR\x05value\"\x98\x01\n" +
+	"\fCustomizeMap\x128\n" +
+	"\x05types\x18\x01 \x03(\v2\".config.v1.CustomizeMap.TypesEntryR\x05types\x1aN\n" +
+	"\n" +
+	"TypesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.config.v1.CustomizeR\x05value:\x028\x01B\x9f\x01\n" +
 	"\rcom.config.v1B\x0eCustomizeProtoP\x01Z6github.com/origadmin/runtime/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -160,22 +207,24 @@ func file_config_v1_customize_proto_rawDescGZIP() []byte {
 	return file_config_v1_customize_proto_rawDescData
 }
 
-var file_config_v1_customize_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_config_v1_customize_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_config_v1_customize_proto_goTypes = []any{
 	(*Customize)(nil),        // 0: config.v1.Customize
-	(*Customize_Config)(nil), // 1: config.v1.Customize.Config
-	nil,                      // 2: config.v1.Customize.ConfigsEntry
-	(*anypb.Any)(nil),        // 3: google.protobuf.Any
+	(*CustomizeMap)(nil),     // 1: config.v1.CustomizeMap
+	(*Customize_Config)(nil), // 2: config.v1.Customize.Config
+	nil,                      // 3: config.v1.CustomizeMap.TypesEntry
+	(*anypb.Any)(nil),        // 4: google.protobuf.Any
 }
 var file_config_v1_customize_proto_depIdxs = []int32{
-	2, // 0: config.v1.Customize.configs:type_name -> config.v1.Customize.ConfigsEntry
-	3, // 1: config.v1.Customize.Config.value:type_name -> google.protobuf.Any
-	1, // 2: config.v1.Customize.ConfigsEntry.value:type_name -> config.v1.Customize.Config
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: config.v1.Customize.configs:type_name -> config.v1.Customize.Config
+	3, // 1: config.v1.CustomizeMap.types:type_name -> config.v1.CustomizeMap.TypesEntry
+	4, // 2: config.v1.Customize.Config.value:type_name -> google.protobuf.Any
+	0, // 3: config.v1.CustomizeMap.TypesEntry.value:type_name -> config.v1.Customize
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_customize_proto_init() }
@@ -189,7 +238,7 @@ func file_config_v1_customize_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_customize_proto_rawDesc), len(file_config_v1_customize_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

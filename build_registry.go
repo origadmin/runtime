@@ -22,7 +22,7 @@ func (b *builder) NewDiscovery(cfg *configv1.Registry, ss ...registry.Option) (r
 
 // RegisterRegistryBuilder registers a new RegistryBuilder with the given name.
 func (b *builder) RegisterRegistryBuilder(name string, factory registry.Factory) {
-	b.RegistryBuilder.RegisterRegistryBuilder(name, factory)
+	b.RegistryBuilder.Register(name, factory)
 }
 
 // RegisterRegistryFunc registers a new RegistryBuilder with the given name and functions.

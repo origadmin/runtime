@@ -13,6 +13,7 @@ import (
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces/security"
+	"github.com/origadmin/runtime/interfaces/security/token"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -163,7 +164,7 @@ func NewAuthN(cfg *configv1.Security, ss ...Option) (middleware.Middleware, erro
 
 type Authenticator struct {
 	Tokenizer security.Tokenizer
-	Cache     security.CacheStorage
+	Cache     token.CacheStorage
 	Scheme    security.Scheme
 }
 
@@ -184,11 +185,11 @@ func (obj Authenticator) AuthenticateContext(ctx context.Context, tokenType secu
 }
 
 func (obj Authenticator) DestroyToken(ctx context.Context, tokenStr string) error {
-	return obj.Cache.Remove(ctx, obj.key(security.TokenCacheAccess, tokenStr))
+	return obj.Cache.Remove(ctx, obj.key(token.CacheAccess, tokenStr))
 }
 
 func (obj Authenticator) DestroyRefreshToken(ctx context.Context, tokenStr string) error {
-	return obj.Cache.Remove(ctx, obj.key(security.TokenCacheRefresh, tokenStr))
+	return obj.Cache.Remove(ctx, obj.key(token.CacheRefresh, tokenStr))
 }
 
 func (obj Authenticator) key(ns, token string) string {
@@ -198,7 +199,7 @@ func (obj Authenticator) key(ns, token string) string {
 func NewAuthenticator(tokenizer security.Tokenizer, ss ...AuthNSetting) security.Authenticator {
 	return settings.Apply(&Authenticator{
 		Tokenizer: tokenizer,
-		Cache:     security.NewCacheStorage(),
+		Cache:     token.New(),
 		Scheme:    security.SchemeBearer,
 	}, ss)
 }

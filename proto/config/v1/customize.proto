@@ -16,12 +16,16 @@ message Customize {
   message Config {
     // enabled is used to enable or disable the custom config
     bool enabled = 1 [json_name = "enabled"];
-    // type can be any type but defined in runtime
-    string type = 2 [json_name = "type"];
+    // name can be any named with registered names
+    string name = 2 [json_name = "name"];
     // value can be any type
     google.protobuf.Any value = 3 [json_name = "value"];
   }
 
-  // configs is a map of custom configs
-  map<string, Config> configs = 1 [json_name = "configs"];
+  // configs is a map of custom configs with type string
+  repeated Config configs = 1 [json_name = "configs"];
+}
+
+message CustomizeMap {
+  map<string, Customize> types = 1 [json_name = "types"];
 }

@@ -6,26 +6,21 @@
 package config
 
 import (
-	"sync"
-
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.com/origadmin/runtime/interfaces/builder"
 )
 
-type builder struct {
-	factoryMux sync.RWMutex
-	factories  map[string]Factory
-}
+var (
+	DefaultBuilder = NewBuilder()
+)
 
-// RegisterConfigBuilder registers a new ConfigBuilder with the given name.
-func (b *builder) RegisterConfigBuilder(name string, factory Factory) {
-	b.factoryMux.Lock()
-	defer b.factoryMux.Unlock()
-	b.factories[name] = factory
+type buildImpl struct {
+	builder.Builder[Factory]
 }
 
 // RegisterConfigFunc registers a new ConfigBuilder with the given name and function.
-func (b *builder) RegisterConfigFunc(name string, buildFunc BuildFunc) {
-	b.RegisterConfigBuilder(name, buildFunc)
+func (b *buildImpl) RegisterConfigFunc(name string, buildFunc BuildFunc) {
+	b.Register(name, buildFunc)
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
@@ -38,13 +33,17 @@ func (fn BuildFunc) NewConfig(cfg *configv1.SourceConfig, ss ...Option) (KConfig
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (b *builder) NewConfig(cfg *configv1.SourceConfig, ss ...Option) (KConfig, error) {
-	b.factoryMux.RLock()
-	defer b.factoryMux.RUnlock()
-	configBuilder, ok := b.factories[cfg.Type]
+func (b *buildImpl) NewConfig(cfg *configv1.SourceConfig, ss ...Option) (KConfig, error) {
+	configBuilder, ok := b.Get(cfg.Type)
 	if !ok {
 		return nil, ErrNotFound
 	}
 
 	return configBuilder.NewConfig(cfg, ss...)
+}
+
+func NewBuilder() Builder {
+	return &buildImpl{
+		Builder: builder.New[Factory](),
+	}
 }

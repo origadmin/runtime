@@ -18,13 +18,28 @@ import (
 
 // builder is a struct that holds a map of ConfigBuilders and a map of RegistryBuilders.
 type builder struct {
-	syncMux         sync.RWMutex
-	syncs           map[string]config.Syncer
-	ConfigBuilder   config.Builder
-	RegistryBuilder registry.Builder
-	ServiceBuilder  service.Builder
-	middlewareMux   sync.RWMutex
-	middlewares     map[string]MiddlewareBuilder
+	syncMux           sync.RWMutex
+	syncs             map[string]config.Syncer
+	ConfigBuilder     config.Builder
+	RegistryBuilder   registry.Builder
+	ServiceBuilder    service.Builder
+	MiddlewareBuilder middleware.Builder
+}
+
+func (b *builder) Config() config.Builder {
+	return b.ConfigBuilder
+}
+
+func (b *builder) Registry() registry.Builder {
+	return b.RegistryBuilder
+}
+
+func (b *builder) Service() service.Builder {
+	return b.ServiceBuilder
+}
+
+func (b *builder) Middleware() middleware.Builder {
+	return b.MiddlewareBuilder
 }
 
 func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, setting ...config.Option) (config.KConfig, error) {
@@ -32,7 +47,7 @@ func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, setting ...conf
 }
 
 func (b *builder) RegisterConfigBuilder(s string, factory config.Factory) {
-	b.ConfigBuilder.RegisterConfigBuilder(s, factory)
+	b.ConfigBuilder.Register(s, factory)
 }
 
 func (b *builder) NewGRPCServer(c *configv1.Service, setting ...service.GRPCOption) (*service.GRPCServer, error) {
@@ -52,7 +67,7 @@ func (b *builder) NewHTTPClient(c context.Context, c2 *configv1.Service, setting
 }
 
 func (b *builder) RegisterServiceBuilder(name string, factory service.Factory) {
-	b.ServiceBuilder.RegisterServiceBuilder(name, factory)
+	b.ServiceBuilder.Register(name, factory)
 }
 
 // init initializes the builder struct.
@@ -62,7 +77,7 @@ func (b *builder) init() {
 	b.ConfigBuilder = config.NewBuilder()
 	b.RegistryBuilder = registry.NewBuilder()
 	b.ServiceBuilder = service.NewBuilder()
-	b.middlewares = make(map[string]MiddlewareBuilder)
+	b.MiddlewareBuilder = middleware.NewBuilder()
 }
 
 func newBuilder() *builder {
@@ -77,12 +92,12 @@ func NewConfig(cfg *configv1.SourceConfig, ss ...config.Option) (config.KConfig,
 
 // RegisterConfig registers a ConfigBuilder with the builder.
 func RegisterConfig(name string, factory config.Factory) {
-	runtime.builder.ConfigBuilder.RegisterConfigBuilder(name, factory)
+	runtime.builder.ConfigBuilder.Register(name, factory)
 }
 
 // RegisterConfigFunc registers a ConfigBuilder with the builder.
 func RegisterConfigFunc(name string, buildFunc config.BuildFunc) {
-	runtime.builder.ConfigBuilder.RegisterConfigBuilder(name, buildFunc)
+	runtime.builder.ConfigBuilder.Register(name, buildFunc)
 }
 
 // SyncConfig synchronizes the given configuration with the given value.
@@ -90,7 +105,7 @@ func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.Option) error {
 	return runtime.builder.SyncConfig(cfg, v, ss...)
 }
 
-func RegisterConfigSync(name string, syncFunc ConfigSyncFunc) {
+func RegisterConfigSync(name string, syncFunc config.Syncer) {
 	runtime.builder.RegisterConfigSync(name, syncFunc)
 }
 
@@ -130,8 +145,8 @@ func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.Option) []mid
 }
 
 // RegisterMiddleware registers a MiddlewareBuilder with the builder.
-func RegisterMiddleware(name string, middlewareBuilder MiddlewareBuilder) {
-	runtime.builder.RegisterMiddlewareBuilder(name, middlewareBuilder)
+func RegisterMiddleware(name string, builder middleware.Builder) {
+	runtime.builder.RegisterMiddlewareBuilder(name, builder)
 }
 
 // NewHTTPServiceServer creates a new HTTP server using the provided configuration
@@ -161,7 +176,7 @@ func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...serv
 // RegisterService registers a service builder with the provided name
 func RegisterService(name string, factory service.Factory) {
 	// Call the runtime.builder.RegisterServiceBuilder function with the provided name and service builder
-	runtime.builder.ServiceBuilder.RegisterServiceBuilder(name, factory)
+	runtime.builder.ServiceBuilder.Register(name, factory)
 }
 
 // NewBuilder creates a new Builder.
