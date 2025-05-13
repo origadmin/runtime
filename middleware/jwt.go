@@ -13,8 +13,25 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	jwtv1 "github.com/origadmin/runtime/gen/go/middleware/jwt/v1"
+	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	secjwtv1 "github.com/origadmin/runtime/gen/go/security/jwt/v1"
 )
+
+type jwtFactory struct{}
+
+func (f jwtFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	if middleware.GetJwt().GetEnabled() {
+		return JwtClient(middleware.GetJwt())
+	}
+	return nil, false
+}
+
+func (f jwtFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	if middleware.GetJwt().GetEnabled() {
+		return JwtServer(middleware.GetJwt())
+	}
+	return nil, false
+}
 
 func JwtServer(cfg *jwtv1.JWT) (KMiddleware, bool) {
 	config := cfg.GetConfig()
@@ -91,7 +108,7 @@ func getKeyFunc(key string, method string) jwt.Keyfunc {
 	}
 }
 
-func getClaimsFunc(subject string, ctp string, cfg *secjwtv1.Config) func() jwt.Claims {
+func getClaimsFunc(subject string, claimType string, cfg *secjwtv1.Config) func() jwt.Claims {
 	if subject == "" {
 		subject = "anonymous"
 	}
@@ -99,7 +116,7 @@ func getClaimsFunc(subject string, ctp string, cfg *secjwtv1.Config) func() jwt.
 	if exp == 0 {
 		exp = time.Hour
 	}
-	switch ctp {
+	switch claimType {
 	case "map":
 		return func() jwt.Claims {
 			now := time.Now()

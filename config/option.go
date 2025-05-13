@@ -5,22 +5,17 @@
 // Package config implements the functions, types, and interfaces for the module.
 package config
 
-import (
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-)
-
-type Configure interface {
-	FromConfig(cfg *configv1.SourceConfig) error
-}
-
 type Options struct {
+	ConfigName    string
 	ServiceName   string
 	ResolverName  string
-	SourceOptions []KOption
+	EnvPrefixes   []string
+	Sources       []KSource
+	ConfigOptions []KOption
 	Decoder       KDecoder
 	Encoder       Encoder
-	Configure     Configure
-	Prefixes      []string
+	Resolver      Resolver
+	ForceReload   bool
 }
 
 // Encoder is a function that takes a value and returns a byte slice and an error.
@@ -32,13 +27,13 @@ type Option = func(s *Options)
 // WithOptions sets the options field of the KOption struct.
 func WithOptions(options ...KOption) Option {
 	return func(option *Options) {
-		option.SourceOptions = options
+		option.ConfigOptions = options
 	}
 }
 
 func AppendOptions(options ...KOption) Option {
 	return func(option *Options) {
-		option.SourceOptions = append(option.SourceOptions, options...)
+		option.ConfigOptions = append(option.ConfigOptions, options...)
 	}
 }
 
@@ -56,20 +51,32 @@ func WithEncoderOption(encoder Encoder) Option {
 	}
 }
 
-func WithConfigure(cfg Configure) Option {
-	return func(option *Options) {
-		option.Configure = cfg
-	}
-}
-
 func WithServiceName(name string) Option {
 	return func(option *Options) {
 		option.ServiceName = name
 	}
 }
 
-func WithPrefixes(prefixes ...string) Option {
+func WithEnvPrefixes(prefixes ...string) Option {
 	return func(option *Options) {
-		option.Prefixes = prefixes
+		option.EnvPrefixes = prefixes
+	}
+}
+
+func WithConfigResolver(resolver Resolver) Option {
+	return func(option *Options) {
+		option.Resolver = resolver
+	}
+}
+
+func WithForceReload() Option {
+	return func(o *Options) {
+		o.ForceReload = true
+	}
+}
+
+func WithConfigName(name string) Option {
+	return func(option *Options) {
+		option.ConfigName = name
 	}
 }

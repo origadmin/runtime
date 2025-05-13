@@ -6,12 +6,44 @@
 package middleware
 
 import (
-	"github.com/go-kratos/kratos/v2/middleware"
-	middlewareValidate "github.com/go-kratos/kratos/v2/middleware/validate"
+	"context"
 
+	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/middleware"
+
+	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	validatorv1 "github.com/origadmin/runtime/gen/go/middleware/validator/v1"
 	"github.com/origadmin/runtime/middleware/validate"
 )
+
+type validatorFactory struct {
+}
+
+func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	return nil, false
+}
+
+func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	if middleware.Validator == nil {
+		return nil, false
+	}
+	cfg := middleware.GetValidator()
+	switch validate.Version(cfg.GetVersion()) {
+	case validate.V2:
+		opts := []validate.Option{
+			validate.WithFailFast(cfg.GetFailFast()),
+		}
+		if validate.Version(cfg.Version) == validate.V2 {
+			opts = append(opts, validate.WithV2ProtoValidatorOptions())
+		}
+		if m, err := validate.Server(opts...); err == nil {
+			return m, true
+		}
+	default:
+		return validateMiddlewareV1(cfg), true
+	}
+	return nil, false
+}
 
 // Validate is a middleware validator.
 // Deprecated: use ValidateServer
@@ -39,5 +71,22 @@ func ValidateServer(ms []KMiddleware, validator *validatorv1.Validator) []KMiddl
 }
 
 func validateMiddlewareV1(_ *validatorv1.Validator) middleware.Middleware {
-	return middlewareValidate.Validator()
+	return Validator()
+}
+
+type validator interface {
+	Validate() error
+}
+
+func Validator() middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req any) (reply any, err error) {
+			if v, ok := req.(validator); ok {
+				if err := v.Validate(); err != nil {
+					return nil, errors.BadRequest("VALIDATOR", err.Error()).WithCause(err)
+				}
+			}
+			return handler(ctx, req)
+		}
+	}
 }

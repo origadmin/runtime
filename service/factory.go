@@ -6,24 +6,26 @@
 package service
 
 import (
+	"github.com/go-kratos/kratos/v2/transport"
+
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/interfaces/builder"
+	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/service/grpc"
 	"github.com/origadmin/runtime/service/http"
 	"github.com/origadmin/runtime/service/selector"
 )
 
-// DefaultServiceBuilder is the default instance of the buildImpl.
-var DefaultServiceBuilder = &factory{}
+// DefaultServiceFactory is the default instance of the buildImpl.
+var DefaultServiceFactory = &factoryImpl{}
 
 // ServiceBuilder is a struct that implements the buildImpl interface.
 // It provides methods for creating new gRPC and HTTP servers and clients.
-type factory struct{}
+type factoryImpl struct{}
 
 // NewGRPCServer creates a new gRPC server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (f factory) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
+func (f factoryImpl) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
 	if cfg.GetSelector() != nil {
 		filter, err := selector.NewFilter(cfg.GetSelector())
 		if err != nil {
@@ -39,7 +41,7 @@ func (f factory) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCSe
 
 // NewHTTPServer creates a new HTTP server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
-func (f factory) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
+func (f factoryImpl) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
 	if cfg.GetSelector() != nil {
 		filter, err := selector.NewFilter(cfg.GetSelector())
 		if err != nil {
@@ -56,7 +58,7 @@ func (f factory) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPSe
 
 // NewGRPCClient creates a new gRPC client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (f factory) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOption) (*GRPCClient,
+func (f factoryImpl) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOption) (*GRPCClient,
 	error) {
 	// Create a new gRPC client using the provided context, configuration, and options.
 	return grpc.NewClient(ctx, cfg, ss...)
@@ -64,53 +66,25 @@ func (f factory) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ..
 
 // NewHTTPClient creates a new HTTP client based on the provided context and configuration.
 // It returns a pointer to the new client and an error if any.
-func (f factory) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOption) (*HTTPClient, error) {
+func (f factoryImpl) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOption) (*HTTPClient, error) {
 	// Create a new HTTP client using the provided context, configuration, and options.
 	return http.NewClient(ctx, cfg, ss...)
 }
 
 type buildImpl struct {
-	builder.Builder[Factory]
+	factory.Registry[ServerFactory]
 }
 
-// NewGRPCServer creates a new gRPC server based on the given ServiceConfig.
-func (b *buildImpl) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
-	serviceBuilder, ok := b.Get(cfg.Name)
-	if ok {
-		return serviceBuilder.NewGRPCServer(cfg, ss...)
+func (b *buildImpl) Build(name string, service *configv1.Service, options ...ServerOption) (transport.Server, error) {
+	f, ok := b.Get(name)
+	if !ok {
+		return nil, ErrServiceNotFound
 	}
-	return nil, ErrServiceNotFound
+	return f.New(service, options...)
 }
 
-// NewHTTPServer creates a new HTTP server based on the given ServiceConfig.
-func (b *buildImpl) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
-	serviceBuilder, ok := b.Get(cfg.Name)
-	if ok {
-		return serviceBuilder.NewHTTPServer(cfg, ss...)
-	}
-	return nil, ErrServiceNotFound
-}
-
-// NewGRPCClient creates a new gRPC client based on the given ServiceConfig.
-func (b *buildImpl) NewGRPCClient(ctx context.Context, cfg *configv1.Service, ss ...GRPCOption) (*GRPCClient, error) {
-	serviceBuilder, ok := b.Get(cfg.Name)
-	if ok {
-		return serviceBuilder.NewGRPCClient(ctx, cfg, ss...)
-	}
-	return nil, ErrServiceNotFound
-}
-
-// NewHTTPClient creates a new HTTP client based on the given ServiceConfig.
-func (b *buildImpl) NewHTTPClient(ctx context.Context, cfg *configv1.Service, ss ...HTTPOption) (*HTTPClient, error) {
-	serviceBuilder, ok := b.Get(cfg.Name)
-	if ok {
-		return serviceBuilder.NewHTTPClient(ctx, cfg, ss...)
-	}
-	return nil, ErrServiceNotFound
-}
-
-func NewBuilder() Builder {
+func NewBuilder() ServerBuilder {
 	return &buildImpl{
-		Builder: builder.New[Factory](),
+		Registry: factory.New[ServerFactory](),
 	}
 }

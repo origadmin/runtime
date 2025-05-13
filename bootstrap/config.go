@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/codec"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -98,4 +99,33 @@ func decodeConfig(path string, cfg any) error {
 		return errors.New("config path is a directory")
 	}
 	return decodeFile(path, cfg)
+}
+
+// loadSourceConfig loads the config file from the given path
+func loadSourceConfig(path string) (*configv1.SourceConfig, error) {
+	var cfg configv1.SourceConfig
+	err := decodeFile(path, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	return &cfg, nil
+}
+
+// LoadSourceConfigFromBootstrap loads the config file from the given path
+func LoadSourceConfigFromBootstrap(bootstrap *Bootstrap) (*configv1.SourceConfig, error) {
+	// Get the path from the bootstrap
+	return loadSourceConfig(bootstrap.ConfigFilePath())
+}
+
+// LoadSourceConfig loads the config file from the given path
+func LoadSourceConfig(path string) (*configv1.SourceConfig, error) {
+	// Get the file info from the path
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed locate to config path %s", path)
+	}
+	if info.IsDir() {
+		return nil, errors.New("config path is a directory")
+	}
+	return loadSourceConfig(path)
 }

@@ -12,9 +12,10 @@ import (
 )
 
 type Options struct {
-	Logger    log.Logger
-	MatchFunc selector.MatchFunc
-	Customize *configv1.Customize
+	Logger      log.Logger
+	MatchFunc   selector.MatchFunc
+	Customize   *configv1.Customize
+	Middlewares []KMiddleware
 }
 
 type Option = func(*Options)

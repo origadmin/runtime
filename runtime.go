@@ -7,20 +7,19 @@ package runtime
 
 import (
 	"os"
-	"sync"
+	"sync/atomic"
 	"syscall"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
-	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -28,87 +27,83 @@ const (
 	DefaultEnvPrefix = "ORIGADMIN_RUNTIME_SERVICE"
 )
 
-type Builder interface {
-	Config() config.Builder
-	Registry() registry.Builder
-	Service() service.Builder
-	Middleware() middleware.Builder
-}
-
 // build is a global variable that holds an instance of the builder struct.
 var (
-	once    = &sync.Once{}
-	runtime = &Runtime{
-		builder:   &builder{},
-		EnvPrefix: DefaultEnvPrefix,
-	}
+	globalRuntime = newRuntime()
 )
 
 // ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
 var ErrNotFound = errors.String("not found")
 
-type Provider interface {
-	Load(*bootstrap.Bootstrap) error
-	Scan(v any) error
-	CreateApp(context.Context, registry.Registry, ...transport.Server) *kratos.App
+type Runtime interface {
 	Signals() []os.Signal
 	SetSignals([]os.Signal)
+	Load(opts ...config.Option) error
+	CreateApp(context.Context, registry.Registry, ...transport.Server) *kratos.App
 }
 
-type Runtime struct {
-	once        sync.Once
-	builder     *builder
-	env         string
-	signals     []os.Signal
-	Config      *config.Config
-	EnvPrefix   string
-	WorkDir     string
-	Logging     log.Logging
-	logger      log.KLogger
-	Registry    registry.Registry
-	Middleware  middleware.Middleware
-	Service     service.Service
-	source      *configv1.SourceConfig
-	serviceInfo bootstrap.ServiceInfo
+type runtime struct {
+	loaded    *atomic.Bool
+	builder   Builder
+	prefix    string
+	signals   []os.Signal
+	source    *configv1.SourceConfig
+	bootstrap *bootstrap.Bootstrap
+	logger    log.KLogger
+	Logging   log.Logging
+	options   *Options
 }
 
-func (r *Runtime) Signals() []os.Signal {
+func (r *runtime) Signals() []os.Signal {
 	return r.signals
 }
 
-func (r *Runtime) SetSignals(signals []os.Signal) {
+func (r *runtime) SetSignals(signals []os.Signal) {
 	r.signals = signals
 }
 
-func (r *Runtime) Load(bs *bootstrap.Bootstrap) error {
-	var rerr error
-	r.once.Do(func() {
-		sourceConfig, err := bootstrap.LoadSourceConfig(bs)
-		if err != nil {
-			rerr = errors.Wrap(err, "load source config")
-			return
-		}
-		r.source = sourceConfig
-		r.Config = config.New(bs.ConfigFilePath())
-		if err := r.Config.Load(bs.ServiceName(), sourceConfig); err != nil {
-			return
-		}
-		r.serviceInfo = bs.ServiceInfo()
-	})
-
-	return rerr
+func (r *runtime) IsLoaded() bool {
+	return r.loaded.Load()
 }
 
-func (r *Runtime) CreateApp(ctx context.Context, rr registry.Registry, ss ...transport.Server) *kratos.App {
-	opts := []kratos.Option{
-		kratos.ID(r.serviceInfo.ID),
-		kratos.Name(r.serviceInfo.Name),
-		kratos.Version(r.serviceInfo.Version),
-		kratos.Metadata(r.serviceInfo.Metadata),
-		kratos.Context(ctx),
-		kratos.Signal(r.signals...),
-		kratos.Logger(r.logger),
+func (r *runtime) Load(opts ...config.Option) error {
+	if r.IsLoaded() {
+		return nil
 	}
+	sourceConfig, err := bootstrap.LoadSourceConfig(r.bootstrap.ConfigFilePath())
+	if err != nil {
+		return errors.Wrap(err, "load source config")
+	}
+
+	opts = append(opts, config.WithServiceName(r.bootstrap.ServiceName()))
+	if sourceConfig.Env {
+		opts = append(opts, config.WithEnvPrefixes(sourceConfig.EnvPrefixes...))
+	}
+
+	r.source = sourceConfig
+	// 实现加载配置的具体逻辑
+	//cfg, err := config.NewSourceConfig(, opts...)
+	//if err != nil {
+	//	return errors.Wrap(err, "load config")
+	//}
+
+	// 初始化日志
+	if err := r.initLogger(&configv1.Logger{}); err != nil {
+		return errors.Wrap(err, "init logger")
+	}
+
+	// 标记为已加载
+	r.loaded.Store(true)
+	return nil
+}
+
+func (r *runtime) CreateApp(ctx context.Context, rr registry.Registry, ss ...transport.Server) *kratos.App {
+	opts := buildServiceOptions(r.bootstrap.ServiceInfo())
+	opts = append(opts,
+		kratos.Context(ctx),
+		kratos.Logger(r.logger),
+		kratos.Signal(r.signals...),
+	)
 
 	if rr != nil {
 		opts = append(opts, kratos.Registrar(rr))
@@ -120,66 +115,78 @@ func (r *Runtime) CreateApp(ctx context.Context, rr registry.Registry, ss ...tra
 	return kratos.New(opts...)
 }
 
-//
-//func (r *Runtime) CreateRegistrar(serviceName string, ss ...registry.Option) (registry.KRegistrar, error) {
-//	err := r.Config.Scan(serviceName)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return r.builder.NewRegistrar(cfg, ss...)
-//}
-//
-//func (r *Runtime) CreateDiscovery(serviceName string, ss ...registry.Option) (registry.KDiscovery, error) {
-//	cfg, err := r.builder.NewDiscovery()
-//	if err != nil {
-//		return nil, err
-//	}
-//	return r.builder.NewDiscovery(cfg, ss...)
-//}
-//
-//func (r *Runtime) CreateGRPCServer(serviceName string, ss ...service.GRPCOption) (*service.GRPCServer, error) {
-//	cfg, err := r.Config.Service(serviceName)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return r.builder.NewGRPCServer(cfg, ss...)
-//}
-//
-//func (r *Runtime) CreateHTTPServer(serviceName string, ss ...service.HTTPOption) (*service.HTTPServer, error) {
-//	cfg, err := r.Config.Service(serviceName)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return r.builder.NewHTTPServer(cfg, ss...)
-//}
-
-func init() {
-	once.Do(func() {
-		runtime.builder.init()
-	})
+func buildServiceOptions(info bootstrap.ServiceInfo) []kratos.Option {
+	return []kratos.Option{
+		kratos.ID(info.ID),
+		kratos.Name(info.Name),
+		kratos.Version(info.Version),
+		kratos.Metadata(info.Metadata),
+	}
 }
 
-// Global returns the global instance of the Runtime struct.
-func Global() *Runtime {
-	return runtime
+func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
+	r.logger = log.New(loggingCfg)
+	return nil
 }
 
-// New returns a new instance of the Runtime struct.
+func (r *runtime) reload(bs *bootstrap.Bootstrap, opts ...config.Option) error {
+	r.loaded.Store(false)
+
+	r.bootstrap = bs
+
+	if err := r.Load(opts...); err != nil {
+		return err
+	}
+
+	r.builder = NewBuilder()
+
+	if r.options != nil {
+		if r.options.Logger != nil {
+			r.logger = r.options.Logger
+		}
+		if len(r.options.Signals) > 0 {
+			r.signals = r.options.Signals
+		}
+	}
+
+	return nil
+}
+
+// Global function returns the interface type
+func Global() Runtime {
+	return globalRuntime
+}
+
+// New creates a new Runtime instance with default settings.
 func New() Runtime {
-	return Runtime{
-		builder:   runtime.builder,
-		EnvPrefix: DefaultEnvPrefix,
-		signals: []os.Signal{
-			syscall.SIGHUP,
-			syscall.SIGINT,
-			syscall.SIGTERM,
-			syscall.SIGQUIT,
-		},
+	return newRuntime()
+}
+
+func newRuntime() *runtime {
+	return &runtime{
+		loaded:  new(atomic.Bool),
+		builder: NewBuilder(),
+		prefix:  DefaultEnvPrefix,
+		signals: defaultSignals(),
 	}
 }
 
 // Load uses the global Runtime instance to load configurations and other resources
 // with the provided bootstrap settings. It returns an error if the loading process fails.
-func Load(bs *bootstrap.Bootstrap) error {
-	return runtime.Load(bs)
+func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
+	r := newRuntime()
+	r.options = settings.ApplyZero(opts)
+	if err := r.reload(bs, r.options.ConfigOptions...); err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func defaultSignals() []os.Signal {
+	return []os.Signal{
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+	}
 }

@@ -7,14 +7,14 @@ package registry
 
 import (
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	"github.com/origadmin/runtime/interfaces/builder"
+	"github.com/origadmin/runtime/interfaces/factory"
 )
 
 type (
 
 	// Builder is an interface that defines a method for registering a RegistryBuilder.
 	Builder interface {
-		builder.Builder[Factory]
+		factory.Registry[Factory]
 		Factory
 	}
 	// Factory is an interface that defines methods for creating a discovery and a KRegistrar.

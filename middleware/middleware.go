@@ -8,34 +8,25 @@ package middleware
 import (
 	"github.com/goexts/generic/settings"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
-	"github.com/origadmin/runtime/interfaces/builder"
+	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/log"
 )
 
 type (
 	// Builder is an interface that defines a method for registering a buildImpl.
 	Builder interface {
-		builder.Builder[Factory]
-		Factory
-	}
-
-	Provider interface {
-		BuildClient(cfg *middlewarev1.Middleware) KMiddleware
-		BuildServer(cfg *middlewarev1.Middleware) KMiddleware
+		factory.Registry[Factory]
+		BuildClient(*middlewarev1.Middleware, ...Option) []KMiddleware
+		BuildServer(*middlewarev1.Middleware, ...Option) []KMiddleware
 	}
 
 	// Factory is an interface that defines a method for creating a new buildImpl.
 	Factory interface {
-		// NewMiddlewaresClient build middleware
-		NewMiddlewaresClient([]KMiddleware, *configv1.Customize, ...Option) []KMiddleware
-		// NewMiddlewaresServer build middleware
-		NewMiddlewaresServer([]KMiddleware, *configv1.Customize, ...Option) []KMiddleware
 		// NewMiddlewareClient build middleware
-		NewMiddlewareClient(string, *configv1.Customize_Config, ...Option) (KMiddleware, error)
+		NewMiddlewareClient(*middlewarev1.Middleware, *Options) (KMiddleware, bool)
 		// NewMiddlewareServer build middleware
-		NewMiddlewareServer(string, *configv1.Customize_Config, ...Option) (KMiddleware, error)
+		NewMiddlewareServer(*middlewarev1.Middleware, *Options) (KMiddleware, bool)
 	}
 )
 
@@ -43,7 +34,22 @@ type Middleware struct {
 }
 
 // NewClient creates a new client with the given configuration
-func NewClient(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {
+func NewClient(cfg *middlewarev1.Middleware, options ...Option) []KMiddleware {
+	if DefaultBuilder != nil {
+		return DefaultBuilder.BuildClient(cfg, options...)
+	}
+	return buildClientMiddlewares(cfg, options...)
+}
+
+func NewServer(cfg *middlewarev1.Middleware, options ...Option) []KMiddleware {
+	if DefaultBuilder != nil {
+		return DefaultBuilder.BuildServer(cfg, options...)
+	}
+
+	return buildServerMiddlewares(cfg, options...)
+}
+
+func buildClientMiddlewares(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {
 	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
 	// If the configuration is nil, return the empty slice
@@ -86,7 +92,7 @@ func NewClient(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {
 }
 
 // NewServer creates a new server with the given configuration
-func NewServer(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {
+func buildServerMiddlewares(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {
 	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
 

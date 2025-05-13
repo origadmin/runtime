@@ -309,9 +309,9 @@ type Logger_File struct {
 	Lumberjack    bool                   `protobuf:"varint,2,opt,name=lumberjack,proto3" json:"lumberjack,omitempty"`
 	Compress      bool                   `protobuf:"varint,3,opt,name=compress,proto3" json:"compress,omitempty"`
 	LocalTime     bool                   `protobuf:"varint,4,opt,name=local_time,proto3" json:"local_time,omitempty"`
-	MaxSize       string                 `protobuf:"bytes,5,opt,name=max_size,proto3" json:"max_size,omitempty"`
-	MaxAge        string                 `protobuf:"bytes,6,opt,name=max_age,proto3" json:"max_age,omitempty"`
-	MaxBackups    string                 `protobuf:"bytes,7,opt,name=max_backups,proto3" json:"max_backups,omitempty"`
+	MaxSize       int32                  `protobuf:"varint,5,opt,name=max_size,proto3" json:"max_size,omitempty"`
+	MaxAge        int32                  `protobuf:"varint,6,opt,name=max_age,proto3" json:"max_age,omitempty"`
+	MaxBackups    int32                  `protobuf:"varint,7,opt,name=max_backups,proto3" json:"max_backups,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -374,25 +374,25 @@ func (x *Logger_File) GetLocalTime() bool {
 	return false
 }
 
-func (x *Logger_File) GetMaxSize() string {
+func (x *Logger_File) GetMaxSize() int32 {
 	if x != nil {
 		return x.MaxSize
 	}
-	return ""
+	return 0
 }
 
-func (x *Logger_File) GetMaxAge() string {
+func (x *Logger_File) GetMaxAge() int32 {
 	if x != nil {
 		return x.MaxAge
 	}
-	return ""
+	return 0
 }
 
-func (x *Logger_File) GetMaxBackups() string {
+func (x *Logger_File) GetMaxBackups() int32 {
 	if x != nil {
 		return x.MaxBackups
 	}
-	return ""
+	return 0
 }
 
 // Dev logger
@@ -553,9 +553,9 @@ const file_config_v1_logger_proto_rawDesc = "" +
 	"\n" +
 	"local_time\x18\x04 \x01(\bR\n" +
 	"local_time\x12\x1a\n" +
-	"\bmax_size\x18\x05 \x01(\tR\bmax_size\x12\x18\n" +
-	"\amax_age\x18\x06 \x01(\tR\amax_age\x12 \n" +
-	"\vmax_backups\x18\a \x01(\tR\vmax_backups\x1a\xb9\x02\n" +
+	"\bmax_size\x18\x05 \x01(\x05R\bmax_size\x12\x18\n" +
+	"\amax_age\x18\x06 \x01(\x05R\amax_age\x12 \n" +
+	"\vmax_backups\x18\a \x01(\x05R\vmax_backups\x1a\xb9\x02\n" +
 	"\tDevLogger\x12\x1c\n" +
 	"\tmax_slice\x18\x01 \x01(\rR\tmax_slice\x12\x1c\n" +
 	"\tsort_keys\x18\x02 \x01(\bR\tsort_keys\x12\x18\n" +

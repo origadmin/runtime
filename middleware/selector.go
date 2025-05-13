@@ -9,7 +9,25 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 
 	selectorv1 "github.com/origadmin/runtime/gen/go/middleware/selector/v1"
+	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 )
+
+type selectorFactory struct {
+}
+
+func (s selectorFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	if middleware.Selector == nil || !middleware.Selector.Enabled {
+		return nil, false
+	}
+	return SelectorClient(middleware.Selector, options.MatchFunc, options.Middlewares[0]), true
+}
+
+func (s selectorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	if middleware.Selector == nil || !middleware.Selector.Enabled {
+		return nil, false
+	}
+	return SelectorServer(middleware.Selector, options.MatchFunc, options.Middlewares[0]), true
+}
 
 func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middleware KMiddleware) KMiddleware {
 	if cfg == nil || !cfg.Enabled {

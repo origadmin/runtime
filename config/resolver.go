@@ -11,11 +11,21 @@ import (
 )
 
 type Resolver interface {
-	Observer(string, KValue)
-	Resolve(KConfig) (Resolved, error)
+	Resolve(config KConfig) (Resolved, error)
 }
 
 type Resolved interface {
+	Value(name string) (KValue, error)
 	Middleware() (*middlewarev1.Middleware, error)
 	Service() (*configv1.Service, error)
+}
+
+type ResolveObserver interface {
+	Observer(string, KValue)
+}
+
+type ResolveFunc func(config KConfig) (Resolved, error)
+
+func (r ResolveFunc) Resolve(config KConfig) (Resolved, error) {
+	return r(config)
 }

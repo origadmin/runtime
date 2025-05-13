@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/origadmin/toolkits/errors"
 )
 
 // Constants for default paths and environment
@@ -123,9 +121,6 @@ var (
 )
 
 func (b *Bootstrap) SetEnv(env string) {
-	if env != "debug" && env != "release" {
-		panic(errors.New("env must be debug or release"))
-	}
 	b.env = env
 }
 
