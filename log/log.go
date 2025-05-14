@@ -9,8 +9,9 @@ import (
 	"path/filepath"
 
 	"github.com/go-kratos/kratos/v2/log"
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	kslog "github.com/origadmin/slog-kratos"
+
+	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/toolkits/slogx"
 )
 
@@ -55,18 +56,10 @@ func New(cfg *configv1.Logger) log.Logger {
 		options = append(options, slogx.WithFormat(slogx.FormatText))
 	}
 	options = append(options, LevelOption(cfg.GetLevel()))
-	//l := log.With(kslog.NewLogger(),
-	//	"ts", log.DefaultTimestamp,
-	//	"caller", log.DefaultCaller,
-	//	"service.id", flags.ServiceID(),
-	//	"service.name", flags.ServiceName(),
-	//	"service.version", flags.Version(),
-	//	"trace.id", tracing.TraceID(),
-	//	"span.id", tracing.SpanID(),
-	//)
-	//log.SetLogger(l)
 	logger := slogx.New(options...)
-	return kslog.NewLogger(logger)
+	l := kslog.NewLogger(kslog.WithLogger(logger))
+	log.SetLogger(l)
+	return l
 }
 
 func LevelOption(level configv1.LoggerLevel) slogx.Option {
@@ -85,3 +78,91 @@ func LevelOption(level configv1.LoggerLevel) slogx.Option {
 	}
 	return slogx.WithLevel(ll)
 }
+
+//func New(cfg *configv1.Logger) log.Logger {
+//	// ... 原有代码 ...
+//
+//	// 补充采样配置
+//	if cfg.GetSampling() != nil {
+//		options = append(options, slogx.WithSampling(
+//			cfg.GetSampling().GetEnabled(),
+//			cfg.GetSampling().GetRate(),
+//		))
+//	}
+//
+//	// 补充异步写入
+//	if cfg.GetAsync() {
+//		options = append(options, slogx.WithAsync(true))
+//	}
+//
+//	// 补充编码器配置
+//	if ec := cfg.GetEncoder(); ec != nil {
+//		encoderOpts := []slogx.EncoderOption{
+//			slogx.WithTimeKey(ec.GetTimeKey()),
+//			slogx.WithLevelKey(ec.GetLevelKey()),
+//			slogx.WithNameKey(ec.GetNameKey()),
+//			slogx.WithCallerKey(ec.GetCallerKey()),
+//			slogx.WithFunctionKey(ec.GetFunctionKey()),
+//			slogx.WithStacktraceKey(ec.GetStacktraceKey()),
+//			slogx.WithTimeFormat(ec.GetTimeFormat()),
+//			slogx.WithUTC(ec.GetUtc()),
+//		}
+//		options = append(options, slogx.WithEncoderOptions(encoderOpts...))
+//	}
+//
+//	// 补充时间间隔切割
+//	if cfg.GetFile() != nil && cfg.GetFile().GetRotateInterval() > 0 {
+//		options = append(options, slogx.WithRotateInterval(
+//			time.Duration(cfg.GetFile().GetRotateInterval())*time.Hour,
+//		))
+//	}
+//
+//	// 补充最小级别过滤
+//	if cfg.GetMinLevel() != configv1.LoggerLevel_LOGGER_LEVEL_UNSPECIFIED {
+//		options = append(options, LevelFilterOption(cfg.GetMinLevel()))
+//	}
+//
+//	// ... 后续原有代码 ...
+//}
+//
+//// 新增最小级别过滤函数
+//func LevelFilterOption(level configv1.LoggerLevel) slogx.Option {
+//	ll := slogx.LevelInfo
+//	switch level {
+//	// ... 复用已有的LevelOption转换逻辑 ...
+//	}
+//	return slogx.WithLevelFilter(ll)
+//}
+
+//message Logger {
+//// ... 已有字段 ...
+//
+//// 采样配置
+//message Sampling {
+//bool enabled = 1;
+//float rate = 2; // 采样率 0.0-1.0
+//}
+//Sampling sampling = 10;
+//
+//// 异步写入
+//bool async = 11;
+//
+//// 编码器配置
+//message Encoder {
+//string time_key = 1;
+//string level_key = 2;
+//string name_key = 3;
+//string caller_key = 4;
+//string function_key = 5;
+//string stacktrace_key = 6;
+//string time_format = 7;
+//bool utc = 8;
+//}
+//Encoder encoder = 12;
+//
+//// 最小日志级别
+//LoggerLevel min_level = 13;
+//
+//// 文件切割时间间隔 (小时)
+//int32 rotate_interval = 14;
+//}

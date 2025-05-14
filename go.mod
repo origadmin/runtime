@@ -3,14 +3,18 @@ module github.com/origadmin/runtime
 go 1.23.7
 
 require (
+	buf.build/go/protovalidate v0.12.0
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-kratos/kratos/v2 v2.8.4
 	github.com/goexts/generic v0.3.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/gnostic v0.7.0
+	github.com/origadmin/slog-kratos v1.0.4
 	github.com/origadmin/toolkits v0.3.16
 	github.com/origadmin/toolkits/codec v0.3.16
 	github.com/origadmin/toolkits/errors v0.3.16
+	github.com/origadmin/toolkits/slogx v0.3.16
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
@@ -18,7 +22,6 @@ require (
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250425153114-8976f5be98c1.1 // indirect
-	buf.build/go/protovalidate v0.12.0 // indirect
 	cel.dev/expr v0.23.1 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
@@ -27,7 +30,6 @@ require (
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-kratos/aegis v0.2.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -47,7 +49,6 @@ require (
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/origadmin/toolkits/slogx v0.3.16 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect

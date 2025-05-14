@@ -621,8 +621,6 @@ github.com/apache/arrow/go/v11 v11.0.0/go.mod h1:Eg5OsL5H+e299f7u5ssuXsuHQVEGC4x
 github.com/apache/thrift v0.16.0/go.mod h1:PHK3hniurgQaNMZYaCLEqXKsYK8upmhPbmdP2FXSqgU=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
-github.com/bufbuild/protovalidate-go v0.10.0 h1:QdaKhfk3/Dnb2soL9mKmuLPstq+ogAwSWCE3sQ1NBEE=
-github.com/bufbuild/protovalidate-go v0.10.0/go.mod h1:nIggbFjqS4DxJgSFBhOzH97Pb8SPNceFc5nygg1pOA8=
 github.com/buger/jsonparser v1.1.1/go.mod h1:6RYKKt7H4d4+iWqouImQ9R2FZql3VbhNgx27UK13J/0=
 github.com/bytedance/sonic v1.13.2 h1:8/H1FempDZqC4VqjptGo14QQlJx8VdZJegxs6wwfqpQ=
 github.com/bytedance/sonic v1.13.2/go.mod h1:o68xyaF9u2gvVBuGHPlUVCy+ZfmNNO5ETf1+KgkJhz4=
@@ -886,6 +884,8 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
+github.com/origadmin/slog-kratos v1.0.4 h1:1et3TBy61Uwf5N1ZbEBFhMqCjgxqfRXmz2w0Q1dujG0=
+github.com/origadmin/slog-kratos v1.0.4/go.mod h1:WUdhcWLyN0i8TbdemqE2Y/muoj0GaZ86OcdpumAWHPo=
 github.com/origadmin/toolkits v0.3.16 h1:R/Ws2S2W64ZScSkBz4QQ8HPXWpuH/ac+z1z0iHPyG0M=
 github.com/origadmin/toolkits v0.3.16/go.mod h1:l0H6drsQuWNiSDagDwI2jvLqxlNGtF1LI++fPrz5KAg=
 github.com/origadmin/toolkits/codec v0.3.16 h1:fRyWCMwyXz032I1ZHpsRuG/8YfWRS4YlfqYNdjeziMw=
