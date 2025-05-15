@@ -14,7 +14,6 @@ type Options struct {
 	ConfigOptions []KOption
 	Decoder       KDecoder
 	Encoder       Encoder
-	Resolver      Resolver
 	ForceReload   bool
 }
 
@@ -60,12 +59,6 @@ func WithServiceName(name string) Option {
 func WithEnvPrefixes(prefixes ...string) Option {
 	return func(option *Options) {
 		option.EnvPrefixes = prefixes
-	}
-}
-
-func WithConfigResolver(resolver Resolver) Option {
-	return func(option *Options) {
-		option.Resolver = resolver
 	}
 }
 

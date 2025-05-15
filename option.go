@@ -18,6 +18,7 @@ type Options struct {
 	ConfigOptions []config.Option
 	Logger        log.Logger
 	Signals       []os.Signal
+	Resolver      config.Resolver
 }
 
 type Option func(*Options)

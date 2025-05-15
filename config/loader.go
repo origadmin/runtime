@@ -35,25 +35,23 @@ func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...Option) error {
 	if err := config.Load(); err != nil {
 		return err
 	}
-	if resolver := options.Resolver; resolver != nil {
-		err := c.Resolve(config, resolver)
-		if err != nil {
-			return err
-		}
+	if err := c.Resolve(config); err != nil {
+		return err
 	}
 	c.source = config
 	return nil
 }
 
-func (c *Loader) Resolve(config KConfig, resolver Resolver) error {
-	resolved, err := resolver.Resolve(config)
-	if err != nil {
-		return fmt.Errorf("resolve config: %w", err)
+func (c *Loader) Resolve(config KConfig) error {
+	if c.resolver == nil {
+		return fmt.Errorf("resolver is not set")
 	}
-
+	resolved, err := c.resolver.Resolve(config)
+	if err != nil {
+		return err
+	}
 	c.mu.Lock()
 	c.resolved = resolved
-	c.resolver = resolver
 	c.mu.Unlock()
 	return nil
 }
@@ -68,6 +66,19 @@ func (c *Loader) GetResolved() (Resolved, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.resolved, nil
+}
+
+func (c *Loader) GetResolver() (Resolver, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.resolver, nil
+}
+
+func (c *Loader) SetResolver(resolver Resolver) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.resolver = resolver
+	return nil
 }
 
 func New() *Loader {

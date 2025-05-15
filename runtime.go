@@ -54,6 +54,7 @@ type runtime struct {
 	Logging   log.Logging
 	options   *Options
 	loader    *config.Loader
+	resolver  config.Resolver
 }
 
 func (r *runtime) Signals() []os.Signal {
@@ -88,6 +89,9 @@ func (r *runtime) Load(opts ...config.Option) error {
 
 	r.source = sourceConfig
 	r.loader = config.NewWithBuilder(r.builder.Config())
+	if err := r.loader.SetResolver(r.resolver); err != nil {
+		return err
+	}
 	if err := r.loader.Load(r.source, opts...); err != nil {
 		return err
 	}
@@ -185,6 +189,9 @@ func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 	}
 	if len(options.Signals) > 0 {
 		r.signals = r.options.Signals
+	}
+	if options.Resolver != nil {
+		r.resolver = r.options.Resolver
 	}
 
 	if err := r.reload(bs, r.options.ConfigOptions...); err != nil {
