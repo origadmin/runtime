@@ -16,6 +16,7 @@ import (
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/config/envsetup"
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
@@ -78,6 +79,10 @@ func (r *runtime) Load(opts ...config.Option) error {
 
 	opts = append(opts, config.WithServiceName(r.bootstrap.ServiceName()))
 	if sourceConfig.Env {
+		err := envsetup.SetWithPrefix(r.prefix, sourceConfig.EnvArgs)
+		if err != nil {
+			return errors.Wrap(err, "set env")
+		}
 		opts = append(opts, config.WithEnvPrefixes(sourceConfig.EnvPrefixes...))
 	}
 
@@ -136,15 +141,8 @@ func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
 
 func (r *runtime) reload(bs *bootstrap.Bootstrap, opts ...config.Option) error {
 	r.loaded.Store(false)
-
 	r.bootstrap = bs
-
-	if err := r.Load(opts...); err != nil {
-		return err
-	}
-
 	r.builder = NewBuilder()
-
 	if r.options != nil {
 		if r.options.Logger != nil {
 			r.logger = r.options.Logger
@@ -152,6 +150,10 @@ func (r *runtime) reload(bs *bootstrap.Bootstrap, opts ...config.Option) error {
 		if len(r.options.Signals) > 0 {
 			r.signals = r.options.Signals
 		}
+	}
+
+	if err := r.Load(opts...); err != nil {
+		return err
 	}
 
 	return nil
