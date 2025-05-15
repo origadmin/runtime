@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package config.v1;
 
+import "config/v1/customize.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
@@ -37,18 +38,25 @@ message SourceConfig {
     repeated string endpoints = 1 [json_name = "endpoints"];
   }
 
-  string type = 1 [
-    json_name = "type",
-    (validate.rules).string = {
+  message Nacos {}
+  message Apollo {}
+
+  message Kubernetes {}
+
+  message Polaris {}
+
+  repeated string types = 1 [
+    json_name = "types",
+    (validate.rules).repeated.items.string = {
       in: [
-        "none",
         "file",
+        "apollo",
         "consul",
         "etcd",
-        "nacos",
-        "apollo",
         "kubernetes",
-        "polaris"
+        "nacos",
+        "polaris",
+        "customize"
       ]
     }
   ]; // Type
@@ -66,4 +74,9 @@ message SourceConfig {
   optional File file = 100 [json_name = "file"];
   optional Consul consul = 200 [json_name = "consul"];
   optional ETCD etcd = 300 [json_name = "etcd"];
+  optional Nacos nacos = 400 [json_name = "nacos"]; // Nacos
+  optional Apollo apollo = 500 [json_name = "apollo"]; // Apollo
+  optional Kubernetes kubernetes = 600 [json_name = "kubernetes"]; // Kubernetes
+  optional Polaris polaris = 700 [json_name = "polaris"]; // Polaris
+  optional config.v1.Customize customize = 800 [json_name = "customize"]; // Customize
 }

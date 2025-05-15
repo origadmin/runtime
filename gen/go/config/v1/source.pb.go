@@ -25,7 +25,7 @@ const (
 // SourceConfig is the source file for load configuration
 type SourceConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Type  string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"` // Type
+	Types []string               `protobuf:"bytes,1,rep,name=types,proto3" json:"types,omitempty"` // Type
 	// name
 	Name    string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Version string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
@@ -35,10 +35,15 @@ type SourceConfig struct {
 	// set the environment variable name
 	EnvArgs map[string]string `protobuf:"bytes,6,rep,name=env_args,proto3" json:"env_args,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// set the environment variable prefix
-	EnvPrefixes   []string             `protobuf:"bytes,7,rep,name=env_prefixes,proto3" json:"env_prefixes,omitempty"`
-	File          *SourceConfig_File   `protobuf:"bytes,100,opt,name=file,proto3,oneof" json:"file,omitempty"`
-	Consul        *SourceConfig_Consul `protobuf:"bytes,200,opt,name=consul,proto3,oneof" json:"consul,omitempty"`
-	Etcd          *SourceConfig_ETCD   `protobuf:"bytes,300,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`
+	EnvPrefixes   []string                 `protobuf:"bytes,7,rep,name=env_prefixes,proto3" json:"env_prefixes,omitempty"`
+	File          *SourceConfig_File       `protobuf:"bytes,100,opt,name=file,proto3,oneof" json:"file,omitempty"`
+	Consul        *SourceConfig_Consul     `protobuf:"bytes,200,opt,name=consul,proto3,oneof" json:"consul,omitempty"`
+	Etcd          *SourceConfig_ETCD       `protobuf:"bytes,300,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`
+	Nacos         *SourceConfig_Nacos      `protobuf:"bytes,400,opt,name=nacos,proto3,oneof" json:"nacos,omitempty"`           // Nacos
+	Apollo        *SourceConfig_Apollo     `protobuf:"bytes,500,opt,name=apollo,proto3,oneof" json:"apollo,omitempty"`         // Apollo
+	Kubernetes    *SourceConfig_Kubernetes `protobuf:"bytes,600,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"` // Kubernetes
+	Polaris       *SourceConfig_Polaris    `protobuf:"bytes,700,opt,name=polaris,proto3,oneof" json:"polaris,omitempty"`       // Polaris
+	Customize     *Customize               `protobuf:"bytes,800,opt,name=customize,proto3,oneof" json:"customize,omitempty"`   // Customize
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,11 +78,11 @@ func (*SourceConfig) Descriptor() ([]byte, []int) {
 	return file_config_v1_source_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *SourceConfig) GetType() string {
+func (x *SourceConfig) GetTypes() []string {
 	if x != nil {
-		return x.Type
+		return x.Types
 	}
-	return ""
+	return nil
 }
 
 func (x *SourceConfig) GetName() string {
@@ -139,6 +144,41 @@ func (x *SourceConfig) GetConsul() *SourceConfig_Consul {
 func (x *SourceConfig) GetEtcd() *SourceConfig_ETCD {
 	if x != nil {
 		return x.Etcd
+	}
+	return nil
+}
+
+func (x *SourceConfig) GetNacos() *SourceConfig_Nacos {
+	if x != nil {
+		return x.Nacos
+	}
+	return nil
+}
+
+func (x *SourceConfig) GetApollo() *SourceConfig_Apollo {
+	if x != nil {
+		return x.Apollo
+	}
+	return nil
+}
+
+func (x *SourceConfig) GetKubernetes() *SourceConfig_Kubernetes {
+	if x != nil {
+		return x.Kubernetes
+	}
+	return nil
+}
+
+func (x *SourceConfig) GetPolaris() *SourceConfig_Polaris {
+	if x != nil {
+		return x.Polaris
+	}
+	return nil
+}
+
+func (x *SourceConfig) GetCustomize() *Customize {
+	if x != nil {
+		return x.Customize
 	}
 	return nil
 }
@@ -318,14 +358,158 @@ func (x *SourceConfig_ETCD) GetEndpoints() []string {
 	return nil
 }
 
+type SourceConfig_Nacos struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SourceConfig_Nacos) Reset() {
+	*x = SourceConfig_Nacos{}
+	mi := &file_config_v1_source_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SourceConfig_Nacos) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SourceConfig_Nacos) ProtoMessage() {}
+
+func (x *SourceConfig_Nacos) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_source_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SourceConfig_Nacos.ProtoReflect.Descriptor instead.
+func (*SourceConfig_Nacos) Descriptor() ([]byte, []int) {
+	return file_config_v1_source_proto_rawDescGZIP(), []int{0, 3}
+}
+
+type SourceConfig_Apollo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SourceConfig_Apollo) Reset() {
+	*x = SourceConfig_Apollo{}
+	mi := &file_config_v1_source_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SourceConfig_Apollo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SourceConfig_Apollo) ProtoMessage() {}
+
+func (x *SourceConfig_Apollo) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_source_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SourceConfig_Apollo.ProtoReflect.Descriptor instead.
+func (*SourceConfig_Apollo) Descriptor() ([]byte, []int) {
+	return file_config_v1_source_proto_rawDescGZIP(), []int{0, 4}
+}
+
+type SourceConfig_Kubernetes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SourceConfig_Kubernetes) Reset() {
+	*x = SourceConfig_Kubernetes{}
+	mi := &file_config_v1_source_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SourceConfig_Kubernetes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SourceConfig_Kubernetes) ProtoMessage() {}
+
+func (x *SourceConfig_Kubernetes) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_source_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SourceConfig_Kubernetes.ProtoReflect.Descriptor instead.
+func (*SourceConfig_Kubernetes) Descriptor() ([]byte, []int) {
+	return file_config_v1_source_proto_rawDescGZIP(), []int{0, 5}
+}
+
+type SourceConfig_Polaris struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SourceConfig_Polaris) Reset() {
+	*x = SourceConfig_Polaris{}
+	mi := &file_config_v1_source_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SourceConfig_Polaris) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SourceConfig_Polaris) ProtoMessage() {}
+
+func (x *SourceConfig_Polaris) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_source_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SourceConfig_Polaris.ProtoReflect.Descriptor instead.
+func (*SourceConfig_Polaris) Descriptor() ([]byte, []int) {
+	return file_config_v1_source_proto_rawDescGZIP(), []int{0, 6}
+}
+
 var File_config_v1_source_proto protoreflect.FileDescriptor
 
 const file_config_v1_source_proto_rawDesc = "" +
 	"\n" +
-	"\x16config/v1/source.proto\x12\tconfig.v1\x1a\x17validate/validate.proto\"\x87\x06\n" +
-	"\fSourceConfig\x12W\n" +
-	"\x04type\x18\x01 \x01(\tBC\xfaB@r>R\x04noneR\x04fileR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
-	"kubernetesR\apolarisR\x04type\x12\x12\n" +
+	"\x16config/v1/source.proto\x12\tconfig.v1\x1a\x19config/v1/customize.proto\x1a\x17validate/validate.proto\"\xbb\t\n" +
+	"\fSourceConfig\x12c\n" +
+	"\x05types\x18\x01 \x03(\tBM\xfaBJ\x92\x01G\"ErCR\x04fileR\x06apolloR\x06consulR\x04etcdR\n" +
+	"kubernetesR\x05nacosR\apolarisR\tcustomizeR\x05types\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x03 \x01(\tR\aversion\x12\x18\n" +
 	"\aformats\x18\x04 \x03(\tR\aformats\x12\x10\n" +
@@ -334,7 +518,14 @@ const file_config_v1_source_proto_rawDesc = "" +
 	"\fenv_prefixes\x18\a \x03(\tR\fenv_prefixes\x125\n" +
 	"\x04file\x18d \x01(\v2\x1c.config.v1.SourceConfig.FileH\x00R\x04file\x88\x01\x01\x12<\n" +
 	"\x06consul\x18\xc8\x01 \x01(\v2\x1e.config.v1.SourceConfig.ConsulH\x01R\x06consul\x88\x01\x01\x126\n" +
-	"\x04etcd\x18\xac\x02 \x01(\v2\x1c.config.v1.SourceConfig.ETCDH\x02R\x04etcd\x88\x01\x01\x1aL\n" +
+	"\x04etcd\x18\xac\x02 \x01(\v2\x1c.config.v1.SourceConfig.ETCDH\x02R\x04etcd\x88\x01\x01\x129\n" +
+	"\x05nacos\x18\x90\x03 \x01(\v2\x1d.config.v1.SourceConfig.NacosH\x03R\x05nacos\x88\x01\x01\x12<\n" +
+	"\x06apollo\x18\xf4\x03 \x01(\v2\x1e.config.v1.SourceConfig.ApolloH\x04R\x06apollo\x88\x01\x01\x12H\n" +
+	"\n" +
+	"kubernetes\x18\xd8\x04 \x01(\v2\".config.v1.SourceConfig.KubernetesH\x05R\n" +
+	"kubernetes\x88\x01\x01\x12?\n" +
+	"\apolaris\x18\xbc\x05 \x01(\v2\x1f.config.v1.SourceConfig.PolarisH\x06R\apolaris\x88\x01\x01\x128\n" +
+	"\tcustomize\x18\xa0\x06 \x01(\v2\x14.config.v1.CustomizeH\aR\tcustomize\x88\x01\x01\x1aL\n" +
 	"\x04File\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\x12\x16\n" +
 	"\x06format\x18\x02 \x01(\tR\x06format\x12\x18\n" +
@@ -345,13 +536,25 @@ const file_config_v1_source_proto_rawDesc = "" +
 	"\x05token\x18\x03 \x01(\tR\x05token\x12\x12\n" +
 	"\x04path\x18\x04 \x01(\tR\x04path\x1a$\n" +
 	"\x04ETCD\x12\x1c\n" +
-	"\tendpoints\x18\x01 \x03(\tR\tendpoints\x1a:\n" +
+	"\tendpoints\x18\x01 \x03(\tR\tendpoints\x1a\a\n" +
+	"\x05Nacos\x1a\b\n" +
+	"\x06Apollo\x1a\f\n" +
+	"\n" +
+	"Kubernetes\x1a\t\n" +
+	"\aPolaris\x1a:\n" +
 	"\fEnvArgsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\a\n" +
 	"\x05_fileB\t\n" +
 	"\a_consulB\a\n" +
-	"\x05_etcdB\x9c\x01\n" +
+	"\x05_etcdB\b\n" +
+	"\x06_nacosB\t\n" +
+	"\a_apolloB\r\n" +
+	"\v_kubernetesB\n" +
+	"\n" +
+	"\b_polarisB\f\n" +
+	"\n" +
+	"_customizeB\x9c\x01\n" +
 	"\rcom.config.v1B\vSourceProtoP\x01Z6github.com/origadmin/runtime/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -367,24 +570,34 @@ func file_config_v1_source_proto_rawDescGZIP() []byte {
 	return file_config_v1_source_proto_rawDescData
 }
 
-var file_config_v1_source_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_config_v1_source_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_config_v1_source_proto_goTypes = []any{
-	(*SourceConfig)(nil),        // 0: config.v1.SourceConfig
-	(*SourceConfig_File)(nil),   // 1: config.v1.SourceConfig.File
-	(*SourceConfig_Consul)(nil), // 2: config.v1.SourceConfig.Consul
-	(*SourceConfig_ETCD)(nil),   // 3: config.v1.SourceConfig.ETCD
-	nil,                         // 4: config.v1.SourceConfig.EnvArgsEntry
+	(*SourceConfig)(nil),            // 0: config.v1.SourceConfig
+	(*SourceConfig_File)(nil),       // 1: config.v1.SourceConfig.File
+	(*SourceConfig_Consul)(nil),     // 2: config.v1.SourceConfig.Consul
+	(*SourceConfig_ETCD)(nil),       // 3: config.v1.SourceConfig.ETCD
+	(*SourceConfig_Nacos)(nil),      // 4: config.v1.SourceConfig.Nacos
+	(*SourceConfig_Apollo)(nil),     // 5: config.v1.SourceConfig.Apollo
+	(*SourceConfig_Kubernetes)(nil), // 6: config.v1.SourceConfig.Kubernetes
+	(*SourceConfig_Polaris)(nil),    // 7: config.v1.SourceConfig.Polaris
+	nil,                             // 8: config.v1.SourceConfig.EnvArgsEntry
+	(*Customize)(nil),               // 9: config.v1.Customize
 }
 var file_config_v1_source_proto_depIdxs = []int32{
-	4, // 0: config.v1.SourceConfig.env_args:type_name -> config.v1.SourceConfig.EnvArgsEntry
+	8, // 0: config.v1.SourceConfig.env_args:type_name -> config.v1.SourceConfig.EnvArgsEntry
 	1, // 1: config.v1.SourceConfig.file:type_name -> config.v1.SourceConfig.File
 	2, // 2: config.v1.SourceConfig.consul:type_name -> config.v1.SourceConfig.Consul
 	3, // 3: config.v1.SourceConfig.etcd:type_name -> config.v1.SourceConfig.ETCD
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	4, // 4: config.v1.SourceConfig.nacos:type_name -> config.v1.SourceConfig.Nacos
+	5, // 5: config.v1.SourceConfig.apollo:type_name -> config.v1.SourceConfig.Apollo
+	6, // 6: config.v1.SourceConfig.kubernetes:type_name -> config.v1.SourceConfig.Kubernetes
+	7, // 7: config.v1.SourceConfig.polaris:type_name -> config.v1.SourceConfig.Polaris
+	9, // 8: config.v1.SourceConfig.customize:type_name -> config.v1.Customize
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_source_proto_init() }
@@ -392,6 +605,7 @@ func file_config_v1_source_proto_init() {
 	if File_config_v1_source_proto != nil {
 		return
 	}
+	file_config_v1_customize_proto_init()
 	file_config_v1_source_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -399,7 +613,7 @@ func file_config_v1_source_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_source_proto_rawDesc), len(file_config_v1_source_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
