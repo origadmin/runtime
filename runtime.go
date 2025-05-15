@@ -142,15 +142,6 @@ func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
 func (r *runtime) reload(bs *bootstrap.Bootstrap, opts ...config.Option) error {
 	r.loaded.Store(false)
 	r.bootstrap = bs
-	r.builder = NewBuilder()
-	if r.options != nil {
-		if r.options.Logger != nil {
-			r.logger = r.options.Logger
-		}
-		if len(r.options.Signals) > 0 {
-			r.signals = r.options.Signals
-		}
-	}
 
 	if err := r.Load(opts...); err != nil {
 		return err
@@ -182,7 +173,20 @@ func newRuntime() *runtime {
 // with the provided bootstrap settings. It returns an error if the loading process fails.
 func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 	r := newRuntime()
-	r.options = settings.ApplyZero(opts)
+	options := settings.ApplyZero(opts)
+	if r.builder == nil {
+		r.builder = NewBuilder()
+	}
+	if options.Prefix != "" {
+		r.prefix = r.options.Prefix
+	}
+	if options.Logger != nil {
+		r.logger = r.options.Logger
+	}
+	if len(options.Signals) > 0 {
+		r.signals = r.options.Signals
+	}
+
 	if err := r.reload(bs, r.options.ConfigOptions...); err != nil {
 		return nil, err
 	}
