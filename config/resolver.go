@@ -15,9 +15,11 @@ type Resolver interface {
 }
 
 type Resolved interface {
-	Value(name string) (KValue, error)
-	Middleware() (*middlewarev1.Middleware, error)
-	Service() (*configv1.Service, error)
+	WithDecode(name string, v any, decode func([]byte, any) error) error
+	Value(name string) (any, error)
+	Middleware() *middlewarev1.Middleware
+	Service() *configv1.Service
+	Logger() *configv1.Logger
 }
 
 type ResolveObserver interface {

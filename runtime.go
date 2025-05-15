@@ -52,6 +52,7 @@ type runtime struct {
 	logger    log.KLogger
 	Logging   log.Logging
 	options   *Options
+	loader    *config.Loader
 }
 
 func (r *runtime) Signals() []os.Signal {
@@ -81,18 +82,19 @@ func (r *runtime) Load(opts ...config.Option) error {
 	}
 
 	r.source = sourceConfig
-	// 实现加载配置的具体逻辑
-	//cfg, err := config.NewSourceConfig(, opts...)
-	//if err != nil {
-	//	return errors.Wrap(err, "load config")
-	//}
-
-	// 初始化日志
-	if err := r.initLogger(&configv1.Logger{}); err != nil {
+	r.loader = config.NewWithBuilder(r.builder.Config())
+	if err := r.loader.Load(r.source, opts...); err != nil {
+		return err
+	}
+	resolved, err := r.loader.GetResolved()
+	if err != nil {
+		return err
+	}
+	// Initialize the logs
+	if err := r.initLogger(resolved.Logger()); err != nil {
 		return errors.Wrap(err, "init logger")
 	}
 
-	// 标记为已加载
 	r.loaded.Store(true)
 	return nil
 }
@@ -125,6 +127,9 @@ func buildServiceOptions(info bootstrap.ServiceInfo) []kratos.Option {
 }
 
 func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
+	if loggingCfg == nil {
+		return errors.New("logger config is nil")
+	}
 	r.logger = log.New(loggingCfg)
 	return nil
 }

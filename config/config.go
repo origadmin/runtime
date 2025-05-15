@@ -31,6 +31,6 @@ type (
 
 	// ProtoSyncer is an interface that defines a method for synchronizing a protobuf message.
 	ProtoSyncer interface {
-		SyncConfig(*configv1.SourceConfig, string, proto.Message, ...Option) error
+		SyncConfig(*configv1.SourceConfig, string, proto.Message, *Options) error
 	}
 )

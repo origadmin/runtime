@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"sync"
 
-	configenv "github.com/go-kratos/kratos/v2/config/env"
 	"github.com/goexts/generic/settings"
 
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
@@ -29,14 +28,13 @@ func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...Option) error {
 		return nil
 	}
 
+	config, err := c.builder.NewConfig(cfg, opts...)
 	if err != nil {
 		return err
 	}
-
 	if err := config.Load(); err != nil {
 		return err
 	}
-
 	if resolver := options.Resolver; resolver != nil {
 		err := c.Resolve(config, resolver)
 		if err != nil {
@@ -73,9 +71,7 @@ func (c *Loader) GetResolved() (Resolved, error) {
 }
 
 func New() *Loader {
-	return &Loader{
-		builder: DefaultBuilder,
-	}
+	return NewWithBuilder(DefaultBuilder)
 }
 
 func NewWithBuilder(builder Builder) *Loader {
