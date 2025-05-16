@@ -6,6 +6,8 @@
 package runtime
 
 import (
+	"github.com/goexts/generic/settings"
+
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
@@ -15,11 +17,22 @@ import (
 func (b *builder) SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.Option) error {
 	b.syncMux.RLock()
 	defer b.syncMux.RUnlock()
-	configSyncer, ok := b.syncs[cfg.Type]
-	if !ok {
-		return ErrNotFound
+	syncers := make([]config.Syncer, 0)
+	for _, tp := range cfg.Types {
+		configSyncer, ok := b.syncs[tp]
+		if !ok {
+			continue
+		}
+		syncers = append(syncers, configSyncer)
 	}
-	return configSyncer.SyncConfig(cfg, "", v, ss...)
+	options := settings.ApplyZero(ss)
+
+	for _, s := range syncers {
+		if err := s.SyncConfig(cfg, "", v, options); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *builder) RegisterConfigSyncer(name string, configSyncer config.Syncer) {
@@ -35,7 +48,7 @@ func (b *builder) RegisterConfigSync(name string, configSyncer config.Syncer) {
 
 // LoadConfig loads the config file from the given path
 func LoadConfig(bs *bootstrap.Bootstrap, v any, ss ...config.Option) error {
-	sourceConfig, err := bootstrap.LoadSourceConfig(bs)
+	sourceConfig, err := bootstrap.LoadSourceConfigFromBootstrap(bs)
 	if err != nil {
 		return err
 	}
