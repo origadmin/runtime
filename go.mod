@@ -10,6 +10,7 @@ require (
 	github.com/goexts/generic v0.3.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/gnostic v0.7.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/origadmin/slog-kratos v1.0.4
 	github.com/origadmin/toolkits v0.3.16
 	github.com/origadmin/toolkits/codec v0.3.16

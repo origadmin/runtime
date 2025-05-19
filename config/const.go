@@ -9,6 +9,8 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 )
 
+const Type = "config"
+
 // Define types from kratos config package
 type (
 	KDecoder  = kratosconfig.Decoder

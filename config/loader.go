@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/goexts/generic/settings"
-
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
@@ -23,11 +21,12 @@ type Loader struct {
 }
 
 func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...Option) error {
-	options := settings.ApplyZero(opts)
-	if c.source != nil && !options.ForceReload {
+	if c.source != nil {
 		return nil
 	}
-
+	if c.resolver == nil {
+		return fmt.Errorf("resolver is not set")
+	}
 	config, err := c.builder.NewConfig(cfg, opts...)
 	if err != nil {
 		return err

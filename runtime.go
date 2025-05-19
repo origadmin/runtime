@@ -40,7 +40,7 @@ type Runtime interface {
 	Signals() []os.Signal
 	SetSignals([]os.Signal)
 	Load(opts ...config.Option) error
-	CreateApp(context.Context, registry.Registry, ...transport.Server) *kratos.App
+	CreateApp(context.Context, ...transport.Server) *kratos.App
 }
 
 type runtime struct {
@@ -52,7 +52,6 @@ type runtime struct {
 	bootstrap *bootstrap.Bootstrap
 	logger    log.KLogger
 	Logging   log.Logging
-	options   *Options
 	loader    *config.Loader
 	resolver  config.Resolver
 }
@@ -110,17 +109,46 @@ func (r *runtime) Load(opts ...config.Option) error {
 	return nil
 }
 
-func (r *runtime) CreateApp(ctx context.Context, rr registry.Registry, ss ...transport.Server) *kratos.App {
+func (r *runtime) buildRegistrar() (registry.KRegistrar, error) {
+	resolved, err := r.loader.GetResolved()
+	if err != nil {
+		return nil, err
+	}
+	registrar, err := r.builder.NewRegistrar(resolved.Registry())
+	if err != nil {
+		return nil, err
+	}
+	return registrar, nil
+}
+
+func (r *runtime) Resolve(fn func(kConfig config.KConfig) error) error {
+	if fn == nil {
+		return errors.New("resolve function is nil")
+	}
+	if err := r.Load(); err != nil {
+		return err
+	}
+	source, err := r.loader.GetSource()
+	if err != nil {
+		return err
+	}
+	return fn(source)
+}
+
+func (r *runtime) CreateApp(ctx context.Context, ss ...transport.Server) *kratos.App {
 	opts := buildServiceOptions(r.bootstrap.ServiceInfo())
 	opts = append(opts,
 		kratos.Context(ctx),
 		kratos.Logger(r.logger),
 		kratos.Signal(r.signals...),
 	)
-
-	if rr != nil {
+	rr, err := r.buildRegistrar()
+	if err != nil {
+		_ = r.logger.Log(log.LevelError, "error", err)
+	} else if rr != nil {
 		opts = append(opts, kratos.Registrar(rr))
 	}
+
 	if len(ss) > 0 {
 		opts = append(opts, kratos.Server(ss...))
 	}
@@ -141,6 +169,7 @@ func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
 	if loggingCfg == nil {
 		return errors.New("logger config is nil")
 	}
+
 	r.logger = log.New(loggingCfg)
 	return nil
 }
@@ -184,19 +213,19 @@ func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 		r.builder = NewBuilder()
 	}
 	if options.Prefix != "" {
-		r.prefix = r.options.Prefix
+		r.prefix = options.Prefix
 	}
 	if options.Logger != nil {
-		r.logger = r.options.Logger
+		r.logger = options.Logger
 	}
 	if len(options.Signals) > 0 {
-		r.signals = r.options.Signals
+		r.signals = options.Signals
 	}
 	if options.Resolver != nil {
-		r.resolver = r.options.Resolver
+		r.resolver = options.Resolver
 	}
 
-	if err := r.reload(bs, r.options.ConfigOptions); err != nil {
+	if err := r.reload(bs, options.ConfigOptions); err != nil {
 		return nil, err
 	}
 	return r, nil
