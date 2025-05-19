@@ -47,7 +47,25 @@ func (b *builder) RegisterConfigSync(name string, configSyncer config.Syncer) {
 }
 
 // LoadConfig loads the config file from the given path
-func LoadConfig(bs *bootstrap.Bootstrap, v any, ss ...config.Option) error {
+func LoadConfig(path string, v any, ss ...config.Option) error {
+	sourceConfig, err := bootstrap.LoadSourceConfig(path)
+	if err != nil {
+		return err
+	}
+	runtimeConfig, err := NewConfig(sourceConfig, ss...)
+	if err != nil {
+		return err
+	}
+	if err := runtimeConfig.Load(); err != nil {
+		return err
+	}
+	if err := runtimeConfig.Scan(v); err != nil {
+		return err
+	}
+	return nil
+}
+
+func LoadConfigFromBootstrap(bs *bootstrap.Bootstrap, v any, ss ...config.Option) error {
 	sourceConfig, err := bootstrap.LoadSourceConfigFromBootstrap(bs)
 	if err != nil {
 		return err

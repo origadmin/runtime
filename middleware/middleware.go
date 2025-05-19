@@ -35,18 +35,19 @@ type Middleware struct {
 
 // NewClient creates a new client with the given configuration
 func NewClient(cfg *middlewarev1.Middleware, options ...Option) []KMiddleware {
-	if DefaultBuilder != nil {
-		return DefaultBuilder.BuildClient(cfg, options...)
-	}
-	return buildClientMiddlewares(cfg, options...)
+	return DefaultBuilder.BuildClient(cfg, options...)
+	//if DefaultBuilder != nil {
+	//	return DefaultBuilder.BuildClient(cfg, options...)
+	//}
+	//return buildClientMiddlewares(cfg, options...)
 }
 
 func NewServer(cfg *middlewarev1.Middleware, options ...Option) []KMiddleware {
-	if DefaultBuilder != nil {
-		return DefaultBuilder.BuildServer(cfg, options...)
-	}
-
-	return buildServerMiddlewares(cfg, options...)
+	return DefaultBuilder.BuildServer(cfg, options...)
+	//if DefaultBuilder != nil {
+	//	return DefaultBuilder.BuildServer(cfg, options...)
+	//}
+	//return buildServerMiddlewares(cfg, options...)
 }
 
 func buildClientMiddlewares(cfg *middlewarev1.Middleware, ss ...Option) []KMiddleware {

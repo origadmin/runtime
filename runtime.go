@@ -100,8 +100,10 @@ func (r *runtime) Load(opts ...config.Option) error {
 		return err
 	}
 	// Initialize the logs
-	if err := r.initLogger(resolved.Logger()); err != nil {
-		return errors.Wrap(err, "init logger")
+	if r.logger == nil {
+		if err := r.initLogger(resolved.Logger()); err != nil {
+			return errors.Wrap(err, "init logger")
+		}
 	}
 
 	r.loaded.Store(true)
@@ -143,7 +145,7 @@ func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
 	return nil
 }
 
-func (r *runtime) reload(bs *bootstrap.Bootstrap, opts ...config.Option) error {
+func (r *runtime) reload(bs *bootstrap.Bootstrap, opts []config.Option) error {
 	r.loaded.Store(false)
 	r.bootstrap = bs
 
@@ -194,7 +196,7 @@ func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 		r.resolver = r.options.Resolver
 	}
 
-	if err := r.reload(bs, r.options.ConfigOptions...); err != nil {
+	if err := r.reload(bs, r.options.ConfigOptions); err != nil {
 		return nil, err
 	}
 	return r, nil
