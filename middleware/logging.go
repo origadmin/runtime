@@ -26,15 +26,17 @@ type loggingFactory struct {
 }
 
 func (l loggingFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.GetLogging() {
-		return logging.Client(options.Logger), true
+	log.Debug("[Middleware] Logging client middleware enabled")
+	if !checkEnabled(middleware, "logging") {
+		return nil, false
 	}
-	return nil, false
+	return logging.Client(options.Logger), true
 }
 
 func (l loggingFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.GetLogging() {
-		return logging.Server(options.Logger), true
+	log.Debug("[Middleware] Logging server middleware enabled")
+	if !checkEnabled(middleware, "logging") {
+		return nil, false
 	}
-	return nil, false
+	return logging.Server(options.Logger), true
 }

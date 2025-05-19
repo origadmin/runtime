@@ -43,40 +43,51 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middleware, options ..
 		Logger: log.DefaultLogger,
 	}, options)
 
-	if cfg.Logging {
-		middlewares = LoggingServer(middlewares, option.Logger)
-	}
-	if cfg.Recovery {
-		// Add the Recovery middleware to the slice
-		middlewares = Recovery(middlewares)
-	}
-	if cfg.GetValidator().GetEnabled() {
-		// Add the ValidateServer middleware to the slice
-		middlewares = ValidateServer(middlewares, cfg.Validator)
-	}
-	if cfg.Tracing {
-		// Add the TracingServer middleware to the slice
-		middlewares = TracingServer(middlewares)
-	}
-	if cfg.GetMetadata().GetEnabled() {
-		// Add the MetadataServer middleware to the slice
-		middlewares = MetadataServer(middlewares, cfg.Metadata)
-	}
-	if cfg.GetRateLimiter().GetEnabled() {
-		// Add the RateLimitServer middleware to the slice
-		middlewares = RateLimitServer(middlewares, cfg.RateLimiter)
-	}
-	if cfg.GetJwt().GetEnabled() {
-		jwt, exist := b.Get("jwt")
-		if !exist {
-			return middlewares
+	for _, em := range cfg.EnabledMiddlewares {
+		f, ok := b.Get(em)
+		if !ok {
+			continue
 		}
-		m, ok := jwt.NewMiddlewareClient(cfg, option)
-		if ok && cfg.GetSelector().GetEnabled() {
-			m = SelectorServer(cfg.GetSelector(), option.MatchFunc, m)
+		m, ok := f.NewMiddlewareClient(cfg, option)
+		if ok {
+			middlewares = append(middlewares, m)
 		}
-		middlewares = append(middlewares, m)
+
 	}
+	//if cfg.Logging {
+	//	middlewares = LoggingServer(middlewares, option.Logger)
+	//}
+	//if cfg.Recovery {
+	//	// Add the Recovery middleware to the slice
+	//	middlewares = Recovery(middlewares)
+	//}
+	//if cfg.GetValidator().GetEnabled() {
+	//	// Add the ValidateServer middleware to the slice
+	//	middlewares = ValidateServer(middlewares, cfg.Validator)
+	//}
+	//if cfg.Tracing {
+	//	// Add the TracingServer middleware to the slice
+	//	middlewares = TracingServer(middlewares)
+	//}
+	//if cfg.GetMetadata().GetEnabled() {
+	//	// Add the MetadataServer middleware to the slice
+	//	middlewares = MetadataServer(middlewares, cfg.Metadata)
+	//}
+	//if cfg.GetRateLimiter().GetEnabled() {
+	//	// Add the RateLimitServer middleware to the slice
+	//	middlewares = RateLimitServer(middlewares, cfg.RateLimiter)
+	//}
+	//if cfg.GetJwt().GetEnabled() {
+	//	jwt, exist := b.Get("jwt")
+	//	if !exist {
+	//		return middlewares
+	//	}
+	//	m, ok := jwt.NewMiddlewareClient(cfg, option)
+	//	if ok && cfg.GetSelector().GetEnabled() {
+	//		m = SelectorServer(cfg.GetSelector(), option.MatchFunc, m)
+	//	}
+	//	middlewares = append(middlewares, m)
+	//}
 	return middlewares
 }
 
@@ -89,40 +100,50 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middleware, options ..
 		Logger: log.DefaultLogger,
 	}, options)
 
-	if cfg.Logging {
-		middlewares = LoggingServer(middlewares, option.Logger)
-	}
-	if cfg.Recovery {
-		// Add the Recovery middleware to the slice
-		middlewares = Recovery(middlewares)
-	}
-	if cfg.GetValidator().GetEnabled() {
-		// Add the ValidateServer middleware to the slice
-		middlewares = ValidateServer(middlewares, cfg.Validator)
-	}
-	if cfg.Tracing {
-		// Add the TracingServer middleware to the slice
-		middlewares = TracingServer(middlewares)
-	}
-	if cfg.GetMetadata().GetEnabled() {
-		// Add the MetadataServer middleware to the slice
-		middlewares = MetadataServer(middlewares, cfg.Metadata)
-	}
-	if cfg.GetRateLimiter().GetEnabled() {
-		// Add the RateLimitServer middleware to the slice
-		middlewares = RateLimitServer(middlewares, cfg.RateLimiter)
-	}
-	if cfg.GetJwt().GetEnabled() {
-		jwt, exist := b.Get("jwt")
-		if !exist {
-			return middlewares
+	for _, em := range cfg.EnabledMiddlewares {
+		f, ok := b.Get(em)
+		if !ok {
+			continue
 		}
-		m, ok := jwt.NewMiddlewareServer(cfg, option)
-		if ok && cfg.GetSelector().GetEnabled() {
-			m = SelectorServer(cfg.GetSelector(), option.MatchFunc, m)
+		m, ok := f.NewMiddlewareServer(cfg, option)
+		if ok {
+			middlewares = append(middlewares, m)
 		}
-		middlewares = append(middlewares, m)
 	}
+	//if cfg.Logging {
+	//	middlewares = LoggingServer(middlewares, option.Logger)
+	//}
+	//if cfg.Recovery {
+	//	// Add the Recovery middleware to the slice
+	//	middlewares = Recovery(middlewares)
+	//}
+	//if cfg.GetValidator().GetEnabled() {
+	//	// Add the ValidateServer middleware to the slice
+	//	middlewares = ValidateServer(middlewares, cfg.Validator)
+	//}
+	//if cfg.Tracing {
+	//	// Add the TracingServer middleware to the slice
+	//	middlewares = TracingServer(middlewares)
+	//}
+	//if cfg.GetMetadata().GetEnabled() {
+	//	// Add the MetadataServer middleware to the slice
+	//	middlewares = MetadataServer(middlewares, cfg.Metadata)
+	//}
+	//if cfg.GetRateLimiter().GetEnabled() {
+	//	// Add the RateLimitServer middleware to the slice
+	//	middlewares = RateLimitServer(middlewares, cfg.RateLimiter)
+	//}
+	//if cfg.GetJwt().GetEnabled() {
+	//	jwt, exist := b.Get("jwt")
+	//	if !exist {
+	//		return middlewares
+	//	}
+	//	m, ok := jwt.NewMiddlewareServer(cfg, option)
+	//	if ok && cfg.GetSelector().GetEnabled() {
+	//		m = SelectorServer(cfg.GetSelector(), option.MatchFunc, m)
+	//	}
+	//	middlewares = append(middlewares, m)
+	//}
 	return middlewares
 }
 

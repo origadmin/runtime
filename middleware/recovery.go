@@ -16,14 +16,16 @@ type recoveryFactory struct {
 }
 
 func (r recoveryFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.GetRecovery() {
+	log.Debug("[Middleware] Recovery client middleware enabled")
+	if checkEnabled(middleware, "recovery") {
 		return recovery.Recovery(), true
 	}
 	return nil, false
 }
 
 func (r recoveryFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.GetRecovery() {
+	log.Debug("[Middleware] Recovery server middleware enabled")
+	if checkEnabled(middleware, "recovery") {
 		return recovery.Recovery(), true
 	}
 	return nil, false

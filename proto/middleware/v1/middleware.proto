@@ -54,6 +54,21 @@ option php_namespace = "OrigAdmin\\Runtime\\Middleware\\V1";
 //      }
 //    };
 
+enum MiddlewareName {
+  MIDDLEWARE_NAME_UNSPECIFIED = 0;
+  LOGGING = 1;
+  RECOVERY = 2;
+  TRACING = 3;
+  CIRCUIT_BREAKER = 4;
+  METADATA = 5;
+  JWT = 6;
+  RATE_LIMITER = 7;
+  METRICS = 8;
+  VALIDATOR = 9;
+  SELECTOR = 10;
+  Customize = 11;
+}
+
 // Middleware middleware is used to middlewareure middleware for entry
 message Middleware {
   // Metadata
@@ -65,18 +80,7 @@ message Middleware {
     map<string, string> data = 3 [json_name = "data"];
   }
 
-  // Logging switch
-  bool logging = 1 [json_name = "logging"];
-  // Recovery switch
-  bool recovery = 2 [json_name = "recovery"];
-  //  // tracing switch
-  bool tracing = 3 [json_name = "tracing"];
-  // Circuit breaker switch
-  bool circuit_breaker = 4 [json_name = "circuit_breaker"];
-  //  // Metadata switch
-  //  bool enable_metadata = 6 [json_name = "enable_metadata"];
-  //  // JWT switch
-  //  bool enable_jwt = 7 [json_name = "jwt"];
+  repeated string enabled_middlewares = 1 [json_name = "enabled_middlewares"];
 
   Metadata metadata = 100 [json_name = "metadata"];
   middleware.ratelimit.v1.RateLimiter rate_limiter = 101 [json_name = "rate_limiter"];

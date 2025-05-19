@@ -37,3 +37,10 @@ func WithCustomize(customize *configv1.Customize) Option {
 		o.Customize = customize
 	}
 }
+
+func WithMiddlewares(middlewares ...KMiddleware) Option {
+	return func(o *Options) {
+		o.Middlewares = middlewares
+	}
+
+}

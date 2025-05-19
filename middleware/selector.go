@@ -16,45 +16,42 @@ type selectorFactory struct {
 }
 
 func (s selectorFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.Selector == nil || !middleware.Selector.Enabled {
+	if !middleware.GetSelector().GetEnabled() {
 		return nil, false
 	}
-	return SelectorClient(middleware.Selector, options.MatchFunc, options.Middlewares[0]), true
+	return SelectorClient(middleware.Selector, options.MatchFunc, options.Middlewares...), true
 }
 
 func (s selectorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.Selector == nil || !middleware.Selector.Enabled {
+	if !middleware.GetSelector().GetEnabled() {
 		return nil, false
 	}
-	return SelectorServer(middleware.Selector, options.MatchFunc, options.Middlewares[0]), true
+	return SelectorServer(middleware.Selector, options.MatchFunc, options.Middlewares...), true
 }
 
-func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middleware KMiddleware) KMiddleware {
-	if cfg == nil || !cfg.Enabled {
-		return middleware
-	}
-	return selectorBuilder(cfg, selector.Server(middleware), matchFunc)
+func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KMiddleware) KMiddleware {
+	return selectorBuilder(cfg, selector.Server(middlewares...), matchFunc)
 }
 
-func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middleware KMiddleware) KMiddleware {
-	if cfg == nil || !cfg.Enabled {
-		return middleware
-	}
-	return selectorBuilder(cfg, selector.Client(middleware), matchFunc)
+func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KMiddleware) KMiddleware {
+	return selectorBuilder(cfg, selector.Client(middlewares...), matchFunc)
 }
 
 func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchFunc selector.MatchFunc) KMiddleware {
 	if matchFunc != nil {
 		builder.Match(matchFunc)
 	}
-	if path := cfg.GetPaths(); path != nil {
-		builder.Path(path...)
+	if cfg == nil {
+		return builder.Build()
 	}
-	if prefixes := cfg.GetPrefixes(); prefixes != nil {
-		builder.Prefix(prefixes...)
+	if cfg.Paths != nil {
+		builder.Path(cfg.Paths...)
 	}
-	if regex := cfg.GetRegex(); regex != "" {
-		builder.Regex(regex)
+	if cfg.Prefixes != nil {
+		builder.Prefix(cfg.Prefixes...)
 	}
-	return builder.Match(matchFunc).Build()
+	if cfg.Regex != "" {
+		builder.Regex(cfg.Regex)
+	}
+	return builder.Build()
 }

@@ -13,6 +13,7 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	validatorv1 "github.com/origadmin/runtime/gen/go/middleware/validator/v1"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware/validate"
 )
 
@@ -24,7 +25,8 @@ func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.Middlewar
 }
 
 func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.Validator == nil {
+	log.Debug("[Middleware] Validator server middleware enabled")
+	if !checkEnabled(middleware, "validator") {
 		return nil, false
 	}
 	cfg := middleware.GetValidator()

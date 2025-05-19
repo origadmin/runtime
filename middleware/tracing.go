@@ -16,14 +16,16 @@ type tracingFactory struct {
 }
 
 func (t tracingFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.GetTracing() {
+	log.Debug("[Middleware] Tracing client middleware enabled")
+	if checkEnabled(middleware, "tracing") {
 		return tracing.Client(), true
 	}
 	return nil, false
 }
 
 func (t tracingFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.GetTracing() {
+	log.Debug("[Middleware] Tracing server middleware enabled")
+	if checkEnabled(middleware, "tracing") {
 		return tracing.Server(), true
 	}
 	return nil, false

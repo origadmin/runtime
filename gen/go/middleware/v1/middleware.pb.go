@@ -26,25 +26,94 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type MiddlewareName int32
+
+const (
+	MiddlewareName_MIDDLEWARE_NAME_UNSPECIFIED MiddlewareName = 0
+	MiddlewareName_LOGGING                     MiddlewareName = 1
+	MiddlewareName_RECOVERY                    MiddlewareName = 2
+	MiddlewareName_TRACING                     MiddlewareName = 3
+	MiddlewareName_CIRCUIT_BREAKER             MiddlewareName = 4
+	MiddlewareName_METADATA                    MiddlewareName = 5
+	MiddlewareName_JWT                         MiddlewareName = 6
+	MiddlewareName_RATE_LIMITER                MiddlewareName = 7
+	MiddlewareName_METRICS                     MiddlewareName = 8
+	MiddlewareName_VALIDATOR                   MiddlewareName = 9
+	MiddlewareName_SELECTOR                    MiddlewareName = 10
+	MiddlewareName_Customize                   MiddlewareName = 11
+)
+
+// Enum value maps for MiddlewareName.
+var (
+	MiddlewareName_name = map[int32]string{
+		0:  "MIDDLEWARE_NAME_UNSPECIFIED",
+		1:  "LOGGING",
+		2:  "RECOVERY",
+		3:  "TRACING",
+		4:  "CIRCUIT_BREAKER",
+		5:  "METADATA",
+		6:  "JWT",
+		7:  "RATE_LIMITER",
+		8:  "METRICS",
+		9:  "VALIDATOR",
+		10: "SELECTOR",
+		11: "Customize",
+	}
+	MiddlewareName_value = map[string]int32{
+		"MIDDLEWARE_NAME_UNSPECIFIED": 0,
+		"LOGGING":                     1,
+		"RECOVERY":                    2,
+		"TRACING":                     3,
+		"CIRCUIT_BREAKER":             4,
+		"METADATA":                    5,
+		"JWT":                         6,
+		"RATE_LIMITER":                7,
+		"METRICS":                     8,
+		"VALIDATOR":                   9,
+		"SELECTOR":                    10,
+		"Customize":                   11,
+	}
+)
+
+func (x MiddlewareName) Enum() *MiddlewareName {
+	p := new(MiddlewareName)
+	*p = x
+	return p
+}
+
+func (x MiddlewareName) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MiddlewareName) Descriptor() protoreflect.EnumDescriptor {
+	return file_middleware_v1_middleware_proto_enumTypes[0].Descriptor()
+}
+
+func (MiddlewareName) Type() protoreflect.EnumType {
+	return &file_middleware_v1_middleware_proto_enumTypes[0]
+}
+
+func (x MiddlewareName) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MiddlewareName.Descriptor instead.
+func (MiddlewareName) EnumDescriptor() ([]byte, []int) {
+	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{0}
+}
+
 // Middleware middleware is used to middlewareure middleware for entry
 type Middleware struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Logging switch
-	Logging bool `protobuf:"varint,1,opt,name=logging,proto3" json:"logging,omitempty"`
-	// Recovery switch
-	Recovery bool `protobuf:"varint,2,opt,name=recovery,proto3" json:"recovery,omitempty"`
-	// // tracing switch
-	Tracing bool `protobuf:"varint,3,opt,name=tracing,proto3" json:"tracing,omitempty"`
-	// Circuit breaker switch
-	CircuitBreaker bool                 `protobuf:"varint,4,opt,name=circuit_breaker,proto3" json:"circuit_breaker,omitempty"`
-	Metadata       *Middleware_Metadata `protobuf:"bytes,100,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	RateLimiter    *v1.RateLimiter      `protobuf:"bytes,101,opt,name=rate_limiter,proto3" json:"rate_limiter,omitempty"`
-	Metrics        *v11.Metrics         `protobuf:"bytes,102,opt,name=metrics,proto3" json:"metrics,omitempty"`
-	Validator      *v12.Validator       `protobuf:"bytes,103,opt,name=validator,proto3" json:"validator,omitempty"`
-	Jwt            *v13.JWT             `protobuf:"bytes,104,opt,name=jwt,proto3" json:"jwt,omitempty"`
-	Selector       *v14.Selector        `protobuf:"bytes,105,opt,name=selector,proto3" json:"selector,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	EnabledMiddlewares []string               `protobuf:"bytes,1,rep,name=enabled_middlewares,proto3" json:"enabled_middlewares,omitempty"`
+	Metadata           *Middleware_Metadata   `protobuf:"bytes,100,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	RateLimiter        *v1.RateLimiter        `protobuf:"bytes,101,opt,name=rate_limiter,proto3" json:"rate_limiter,omitempty"`
+	Metrics            *v11.Metrics           `protobuf:"bytes,102,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	Validator          *v12.Validator         `protobuf:"bytes,103,opt,name=validator,proto3" json:"validator,omitempty"`
+	Jwt                *v13.JWT               `protobuf:"bytes,104,opt,name=jwt,proto3" json:"jwt,omitempty"`
+	Selector           *v14.Selector          `protobuf:"bytes,105,opt,name=selector,proto3" json:"selector,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *Middleware) Reset() {
@@ -77,32 +146,11 @@ func (*Middleware) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Middleware) GetLogging() bool {
+func (x *Middleware) GetEnabledMiddlewares() []string {
 	if x != nil {
-		return x.Logging
+		return x.EnabledMiddlewares
 	}
-	return false
-}
-
-func (x *Middleware) GetRecovery() bool {
-	if x != nil {
-		return x.Recovery
-	}
-	return false
-}
-
-func (x *Middleware) GetTracing() bool {
-	if x != nil {
-		return x.Tracing
-	}
-	return false
-}
-
-func (x *Middleware) GetCircuitBreaker() bool {
-	if x != nil {
-		return x.CircuitBreaker
-	}
-	return false
+	return nil
 }
 
 func (x *Middleware) GetMetadata() *Middleware_Metadata {
@@ -214,13 +262,10 @@ var File_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"\x1emiddleware/v1/middleware.proto\x12\rmiddleware.v1\x1a\x1bmiddleware/jwt/v1/jwt.proto\x1a#middleware/metrics/v1/metrics.proto\x1a)middleware/ratelimit/v1/ratelimiter.proto\x1a%middleware/selector/v1/selector.proto\x1a'middleware/validator/v1/validator.proto\"\xae\x05\n" +
+	"\x1emiddleware/v1/middleware.proto\x12\rmiddleware.v1\x1a\x1bmiddleware/jwt/v1/jwt.proto\x1a#middleware/metrics/v1/metrics.proto\x1a)middleware/ratelimit/v1/ratelimiter.proto\x1a%middleware/selector/v1/selector.proto\x1a'middleware/validator/v1/validator.proto\"\xe6\x04\n" +
 	"\n" +
-	"Middleware\x12\x18\n" +
-	"\alogging\x18\x01 \x01(\bR\alogging\x12\x1a\n" +
-	"\brecovery\x18\x02 \x01(\bR\brecovery\x12\x18\n" +
-	"\atracing\x18\x03 \x01(\bR\atracing\x12(\n" +
-	"\x0fcircuit_breaker\x18\x04 \x01(\bR\x0fcircuit_breaker\x12>\n" +
+	"Middleware\x120\n" +
+	"\x13enabled_middlewares\x18\x01 \x03(\tR\x13enabled_middlewares\x12>\n" +
 	"\bmetadata\x18d \x01(\v2\".middleware.v1.Middleware.MetadataR\bmetadata\x12H\n" +
 	"\frate_limiter\x18e \x01(\v2$.middleware.ratelimit.v1.RateLimiterR\frate_limiter\x128\n" +
 	"\ametrics\x18f \x01(\v2\x1e.middleware.metrics.v1.MetricsR\ametrics\x12@\n" +
@@ -233,7 +278,21 @@ const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x04data\x18\x03 \x03(\v2,.middleware.v1.Middleware.Metadata.DataEntryR\x04data\x1a7\n" +
 	"\tDataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\xbc\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\xd0\x01\n" +
+	"\x0eMiddlewareName\x12\x1f\n" +
+	"\x1bMIDDLEWARE_NAME_UNSPECIFIED\x10\x00\x12\v\n" +
+	"\aLOGGING\x10\x01\x12\f\n" +
+	"\bRECOVERY\x10\x02\x12\v\n" +
+	"\aTRACING\x10\x03\x12\x13\n" +
+	"\x0fCIRCUIT_BREAKER\x10\x04\x12\f\n" +
+	"\bMETADATA\x10\x05\x12\a\n" +
+	"\x03JWT\x10\x06\x12\x10\n" +
+	"\fRATE_LIMITER\x10\a\x12\v\n" +
+	"\aMETRICS\x10\b\x12\r\n" +
+	"\tVALIDATOR\x10\t\x12\f\n" +
+	"\bSELECTOR\x10\n" +
+	"\x12\r\n" +
+	"\tCustomize\x10\vB\xbc\x01\n" +
 	"\x11com.middleware.v1B\x0fMiddlewareProtoP\x01Z>github.com/origadmin/runtime/gen/go/middleware/v1;middlewarev1\xf8\x01\x01\xa2\x02\x03MXX\xaa\x02\rMiddleware.V1\xca\x02\rMiddleware\\V1\xe2\x02\x19Middleware\\V1\\GPBMetadata\xea\x02\x0eMiddleware::V1b\x06proto3"
 
 var (
@@ -248,25 +307,27 @@ func file_middleware_v1_middleware_proto_rawDescGZIP() []byte {
 	return file_middleware_v1_middleware_proto_rawDescData
 }
 
+var file_middleware_v1_middleware_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_middleware_v1_middleware_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_middleware_v1_middleware_proto_goTypes = []any{
-	(*Middleware)(nil),          // 0: middleware.v1.Middleware
-	(*Middleware_Metadata)(nil), // 1: middleware.v1.Middleware.Metadata
-	nil,                         // 2: middleware.v1.Middleware.Metadata.DataEntry
-	(*v1.RateLimiter)(nil),      // 3: middleware.ratelimit.v1.RateLimiter
-	(*v11.Metrics)(nil),         // 4: middleware.metrics.v1.Metrics
-	(*v12.Validator)(nil),       // 5: middleware.validator.v1.Validator
-	(*v13.JWT)(nil),             // 6: middleware.jwt.v1.JWT
-	(*v14.Selector)(nil),        // 7: middleware.selector.v1.Selector
+	(MiddlewareName)(0),         // 0: middleware.v1.MiddlewareName
+	(*Middleware)(nil),          // 1: middleware.v1.Middleware
+	(*Middleware_Metadata)(nil), // 2: middleware.v1.Middleware.Metadata
+	nil,                         // 3: middleware.v1.Middleware.Metadata.DataEntry
+	(*v1.RateLimiter)(nil),      // 4: middleware.ratelimit.v1.RateLimiter
+	(*v11.Metrics)(nil),         // 5: middleware.metrics.v1.Metrics
+	(*v12.Validator)(nil),       // 6: middleware.validator.v1.Validator
+	(*v13.JWT)(nil),             // 7: middleware.jwt.v1.JWT
+	(*v14.Selector)(nil),        // 8: middleware.selector.v1.Selector
 }
 var file_middleware_v1_middleware_proto_depIdxs = []int32{
-	1, // 0: middleware.v1.Middleware.metadata:type_name -> middleware.v1.Middleware.Metadata
-	3, // 1: middleware.v1.Middleware.rate_limiter:type_name -> middleware.ratelimit.v1.RateLimiter
-	4, // 2: middleware.v1.Middleware.metrics:type_name -> middleware.metrics.v1.Metrics
-	5, // 3: middleware.v1.Middleware.validator:type_name -> middleware.validator.v1.Validator
-	6, // 4: middleware.v1.Middleware.jwt:type_name -> middleware.jwt.v1.JWT
-	7, // 5: middleware.v1.Middleware.selector:type_name -> middleware.selector.v1.Selector
-	2, // 6: middleware.v1.Middleware.Metadata.data:type_name -> middleware.v1.Middleware.Metadata.DataEntry
+	2, // 0: middleware.v1.Middleware.metadata:type_name -> middleware.v1.Middleware.Metadata
+	4, // 1: middleware.v1.Middleware.rate_limiter:type_name -> middleware.ratelimit.v1.RateLimiter
+	5, // 2: middleware.v1.Middleware.metrics:type_name -> middleware.metrics.v1.Metrics
+	6, // 3: middleware.v1.Middleware.validator:type_name -> middleware.validator.v1.Validator
+	7, // 4: middleware.v1.Middleware.jwt:type_name -> middleware.jwt.v1.JWT
+	8, // 5: middleware.v1.Middleware.selector:type_name -> middleware.selector.v1.Selector
+	3, // 6: middleware.v1.Middleware.Metadata.data:type_name -> middleware.v1.Middleware.Metadata.DataEntry
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type
 	7, // [7:7] is the sub-list for extension type_name
@@ -284,13 +345,14 @@ func file_middleware_v1_middleware_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_middleware_v1_middleware_proto_rawDesc), len(file_middleware_v1_middleware_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_middleware_v1_middleware_proto_goTypes,
 		DependencyIndexes: file_middleware_v1_middleware_proto_depIdxs,
+		EnumInfos:         file_middleware_v1_middleware_proto_enumTypes,
 		MessageInfos:      file_middleware_v1_middleware_proto_msgTypes,
 	}.Build()
 	File_middleware_v1_middleware_proto = out.File

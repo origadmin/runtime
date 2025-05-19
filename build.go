@@ -13,6 +13,7 @@ import (
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
 	"github.com/origadmin/runtime/service"
@@ -25,11 +26,11 @@ type Builder interface {
 	Registry() registry.Builder
 	Service() service.ServerBuilder
 	Middleware() middleware.Builder
-	NewMiddlewareClient(name string, config *configv1.Customize_Config, ss ...middleware.Option) (middleware.KMiddleware, error)
-	NewMiddlewareServer(name string, config *configv1.Customize_Config, ss ...middleware.Option) (middleware.KMiddleware, error)
-	NewMiddlewaresClient(mms []middleware.KMiddleware, cc *configv1.Customize, ss ...middleware.Option) []middleware.KMiddleware
-	NewMiddlewaresServer(mms []middleware.KMiddleware, cc *configv1.Customize, ss ...middleware.Option) []middleware.KMiddleware
-	RegisterMiddlewareBuilder(name string, builder middleware.Builder)
+	NewMiddlewareClient(name string, config *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error)
+	NewMiddlewareServer(name string, config *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error)
+	NewMiddlewaresClient(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware
+	NewMiddlewaresServer(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware
+	RegisterMiddlewareBuilder(name string, builder middleware.Factory)
 	NewRegistrar(cfg *configv1.Registry, ss ...registry.Option) (registry.KRegistrar, error)
 	NewDiscovery(cfg *configv1.Registry, ss ...registry.Option) (registry.KDiscovery, error)
 	RegisterRegistryBuilder(name string, factory registry.Factory)
@@ -154,27 +155,27 @@ func RegisterRegistry(name string, factory registry.Factory) {
 }
 
 // NewMiddlewareClient creates a new KMiddleware with the builder.
-func NewMiddlewareClient(name string, cm *configv1.Customize_Config, ss ...middleware.Option) (middleware.KMiddleware, error) {
+func NewMiddlewareClient(name string, cm *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error) {
 	return globalRuntime.builder.NewMiddlewareClient(name, cm, ss...)
 }
 
 // NewMiddlewareServer creates a new KMiddleware with the builder.
-func NewMiddlewareServer(name string, cm *configv1.Customize_Config, ss ...middleware.Option) (middleware.KMiddleware, error) {
+func NewMiddlewareServer(name string, cm *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error) {
 	return globalRuntime.builder.NewMiddlewareServer(name, cm, ss...)
 }
 
 // NewMiddlewaresClient creates a new KMiddleware with the builder.
-func NewMiddlewaresClient(cc *configv1.Customize, ss ...middleware.Option) []middleware.KMiddleware {
-	return globalRuntime.builder.NewMiddlewaresClient(nil, cc, ss...)
+func NewMiddlewaresClient(cc *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware {
+	return globalRuntime.builder.NewMiddlewaresClient(cc, ss...)
 }
 
 // NewMiddlewaresServer creates a new KMiddleware with the builder.
-func NewMiddlewaresServer(cc *configv1.Customize, ss ...middleware.Option) []middleware.KMiddleware {
-	return globalRuntime.builder.NewMiddlewaresServer(nil, cc, ss...)
+func NewMiddlewaresServer(cc *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware {
+	return globalRuntime.builder.NewMiddlewaresServer(cc, ss...)
 }
 
 // RegisterMiddleware registers a MiddlewareBuilder with the builder.
-func RegisterMiddleware(name string, builder middleware.Builder) {
+func RegisterMiddleware(name string, builder middleware.Factory) {
 	globalRuntime.builder.RegisterMiddlewareBuilder(name, builder)
 }
 

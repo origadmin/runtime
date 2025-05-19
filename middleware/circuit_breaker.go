@@ -16,13 +16,15 @@ type circuitBreakerFactory struct {
 }
 
 func (c circuitBreakerFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
-	if middleware.GetCircuitBreaker() {
+	log.Debug("[Middleware] CircuitBreaker client middleware enabled")
+	if checkEnabled(middleware, "circuit_breaker") {
 		return circuitbreaker.Client(), true
 	}
 	return nil, false
 }
 
 func (c circuitBreakerFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	log.Debug("[Middleware] CircuitBreaker server middleware enabled, not supported yet")
 	return nil, false
 }
 

@@ -57,14 +57,6 @@ func (m *Middleware) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Logging
-
-	// no validation rules for Recovery
-
-	// no validation rules for Tracing
-
-	// no validation rules for CircuitBreaker
-
 	if all {
 		switch v := interface{}(m.GetMetadata()).(type) {
 		case interface{ ValidateAll() error }:

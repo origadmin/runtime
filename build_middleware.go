@@ -6,7 +6,10 @@
 package runtime
 
 import (
+	"github.com/goexts/generic/settings"
+
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/middleware"
 )
 
@@ -14,13 +17,13 @@ type (
 	// MiddlewareBuilders middleware builders for runtime
 	MiddlewareBuilders interface {
 		// NewMiddlewaresClient build middleware
-		NewMiddlewaresClient([]middleware.KMiddleware, *configv1.Customize, ...middleware.Option) []middleware.KMiddleware
+		NewMiddlewaresClient(*middlewarev1.Middleware, ...middleware.Option) []middleware.KMiddleware
 		// NewMiddlewaresServer build middleware
-		NewMiddlewaresServer([]middleware.KMiddleware, *configv1.Customize, ...middleware.Option) []middleware.KMiddleware
+		NewMiddlewaresServer(*middlewarev1.Middleware, ...middleware.Option) []middleware.KMiddleware
 		// NewMiddlewareClient build middleware
-		NewMiddlewareClient(string, *configv1.Customize_Config, ...middleware.Option) (middleware.KMiddleware, error)
+		NewMiddlewareClient(string, *middlewarev1.Middleware, ...middleware.Option) (middleware.KMiddleware, error)
 		// NewMiddlewareServer build middleware
-		NewMiddlewareServer(string, *configv1.Customize_Config, ...middleware.Option) (middleware.KMiddleware, error)
+		NewMiddlewareServer(string, *middlewarev1.Middleware, ...middleware.Option) (middleware.KMiddleware, error)
 	}
 
 	// MiddlewareBuilder middleware builder interface
@@ -35,61 +38,42 @@ type (
 	MiddlewareBuildFunc = func(*configv1.Customize_Config, ...middleware.Option) (middleware.KMiddleware, error)
 )
 
-func (b *builder) NewMiddlewareClient(name string, config *configv1.Customize_Config, ss ...middleware.Option) (middleware.KMiddleware, error) {
-	return b.MiddlewareBuilder.NewMiddlewareClient(name, config, ss...)
+func (b *builder) NewMiddlewareClient(name string, config *middlewarev1.Middleware,
+	ss ...middleware.Option) (middleware.KMiddleware, error) {
+	factory, ok := b.MiddlewareBuilder.Get(name)
+	if !ok {
+		return nil, ErrNotFound
+	}
+	options := settings.ApplyZero(ss)
+	m, ok := factory.NewMiddlewareClient(config, options)
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return m, nil
 }
 
-func (b *builder) NewMiddlewareServer(name string, config *configv1.Customize_Config, ss ...middleware.Option) (middleware.KMiddleware, error) {
-	return b.MiddlewareBuilder.NewMiddlewareServer(name, config, ss...)
+func (b *builder) NewMiddlewareServer(name string, config *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error) {
+	factory, ok := b.MiddlewareBuilder.Get(name)
+	if !ok {
+		return nil, ErrNotFound
+	}
+	options := settings.ApplyZero(ss)
+	m, ok := factory.NewMiddlewareServer(config, options)
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return m, nil
 }
 
-func (b *builder) NewMiddlewaresClient(mms []middleware.KMiddleware, cc *configv1.Customize, ss ...middleware.Option) []middleware.KMiddleware {
-	return b.MiddlewareBuilder.NewMiddlewaresClient(mms, cc, ss...)
-	//configs := customize.ConfigsFromType(cc, middleware.Type)
-	//var mbs []*middlewareWrap
-	//b.middlewareMux.RLock()
-	//for name := range configs {
-	//	if mb, ok := b.middlewares[name]; ok {
-	//		mbs = append(mbs, &middlewareWrap{
-	//			Name:    name,
-	//			Config:  configs[name],
-	//			Builder: mb,
-	//		})
-	//	}
-	//}
-	//b.middlewareMux.RUnlock()
-	//for _, mb := range mbs {
-	//	if m, err := mb.NewClient(ss...); err == nil {
-	//		mms = append(mms, m)
-	//	}
-	//}
-	//return mms
+func (b *builder) NewMiddlewaresClient(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware {
+	return b.MiddlewareBuilder.BuildClient(config, ss...)
 }
 
-func (b *builder) NewMiddlewaresServer(mms []middleware.KMiddleware, cc *configv1.Customize, ss ...middleware.Option) []middleware.KMiddleware {
-	return b.MiddlewareBuilder.NewMiddlewaresServer(mms, cc, ss...)
-	//configs := customize.ConfigsFromType(cc, middleware.Type)
-	//var mbs []*middlewareWrap
-	//b.middlewareMux.RLock()
-	//for name := range configs {
-	//	if mb, ok := b.middlewares[name]; ok {
-	//		mbs = append(mbs, &middlewareWrap{
-	//			Name:    name,
-	//			Config:  configs[name],
-	//			Builder: mb,
-	//		})
-	//	}
-	//}
-	//b.middlewareMux.RUnlock()
-	//for _, mb := range mbs {
-	//	if m, err := mb.NewServer(ss...); err == nil {
-	//		mms = append(mms, m)
-	//	}
-	//}
-	//return mms
+func (b *builder) NewMiddlewaresServer(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware {
+	return b.MiddlewareBuilder.BuildServer(config, ss...)
 }
 
 // RegisterMiddlewareBuilder registers a new MiddlewareBuilder with the given name.
-func (b *builder) RegisterMiddlewareBuilder(name string, builder middleware.Builder) {
+func (b *builder) RegisterMiddlewareBuilder(name string, builder middleware.Factory) {
 	b.MiddlewareBuilder.Register(name, builder)
 }

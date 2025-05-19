@@ -40,7 +40,7 @@ type PageRequest struct {
 	// sort condition
 	OrderBy string `protobuf:"bytes,6,opt,name=order_by,proto3" json:"order_by,omitempty"`
 	// Field mask
-	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,7,opt,name=update_mask,proto3" json:"update_mask,omitempty"`
+	FieldMask     *fieldmaskpb.FieldMask `protobuf:"bytes,7,opt,name=field_mask,proto3" json:"field_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -117,9 +117,9 @@ func (x *PageRequest) GetOrderBy() string {
 	return ""
 }
 
-func (x *PageRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+func (x *PageRequest) GetFieldMask() *fieldmaskpb.FieldMask {
 	if x != nil {
-		return x.UpdateMask
+		return x.FieldMask
 	}
 	return nil
 }
@@ -221,7 +221,7 @@ var File_pagination_v1_pagination_proto protoreflect.FileDescriptor
 
 const file_pagination_v1_pagination_proto_rawDesc = "" +
 	"\n" +
-	"\x1epagination/v1/pagination.proto\x12\rpagination.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x19google/protobuf/any.proto\x1a google/protobuf/field_mask.proto\"\xf1\x05\n" +
+	"\x1epagination/v1/pagination.proto\x12\rpagination.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x19google/protobuf/any.proto\x1a google/protobuf/field_mask.proto\"\xef\x05\n" +
 	"\vPageRequest\x12E\n" +
 	"\acurrent\x18\x01 \x01(\x05B&\xbaG#\x8a\x02\t\t\x00\x00\x00\x00\x00\x00\xf0?\x92\x02\x14current page number H\x00R\acurrent\x88\x01\x01\x12Q\n" +
 	"\tpage_size\x18\x02 \x01(\x05B.\xbaG+\x8a\x02\t\t\x00\x00\x00\x00\x00\x00.@\x92\x02\x1cThe number of lines per pageH\x01R\tpage_size\x88\x01\x01\x122\n" +
@@ -232,8 +232,10 @@ const file_pagination_v1_pagination_proto_rawDesc = "" +
 	"only_count\x18\x04 \x01(\bB\x16\xbaG\x13\x92\x02\x10query total onlyR\n" +
 	"only_count\x12;\n" +
 	"\tno_paging\x18\x05 \x01(\bB\x18\xbaG\x15\x92\x02\x12whether not pagingH\x02R\tno_paging\x88\x01\x01\x12{\n" +
-	"\border_by\x18\x06 \x01(\tB_\xbaG\\:\b\x12\x06id:asc\x92\x02Osort condition, field name followed by 'asc' (ascending) or 'desc' (descending)R\border_by\x12\xf9\x01\n" +
-	"\vupdate_mask\x18\a \x01(\v2\x1a.google.protobuf.FieldMaskB\xba\x01\xbaG\xb6\x01:\r\x12\vid,name,age\x92\x02\xa3\x01It is used to Update the request message, which is used to perform a partial update to the resource. This mask is related to the resource, not the request message.R\vupdate_maskB\n" +
+	"\border_by\x18\x06 \x01(\tB_\xbaG\\:\b\x12\x06id:asc\x92\x02Osort condition, field name followed by 'asc' (ascending) or 'desc' (descending)R\border_by\x12\xf7\x01\n" +
+	"\n" +
+	"field_mask\x18\a \x01(\v2\x1a.google.protobuf.FieldMaskB\xba\x01\xbaG\xb6\x01:\r\x12\vid,name,age\x92\x02\xa3\x01It is used to Update the request message, which is used to perform a partial update to the resource. This mask is related to the resource, not the request message.R\n" +
+	"field_maskB\n" +
 	"\n" +
 	"\b_currentB\f\n" +
 	"\n" +
@@ -281,7 +283,7 @@ var file_pagination_v1_pagination_proto_goTypes = []any{
 	(*anypb.Any)(nil),             // 4: google.protobuf.Any
 }
 var file_pagination_v1_pagination_proto_depIdxs = []int32{
-	3, // 0: pagination.v1.PageRequest.update_mask:type_name -> google.protobuf.FieldMask
+	3, // 0: pagination.v1.PageRequest.field_mask:type_name -> google.protobuf.FieldMask
 	4, // 1: pagination.v1.PageResponse.data:type_name -> google.protobuf.Any
 	2, // 2: pagination.v1.PageResponse.extra:type_name -> pagination.v1.PageResponse.ExtraEntry
 	4, // 3: pagination.v1.PageResponse.ExtraEntry.value:type_name -> google.protobuf.Any

@@ -15,20 +15,30 @@ import (
 	jwtv1 "github.com/origadmin/runtime/gen/go/middleware/jwt/v1"
 	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	secjwtv1 "github.com/origadmin/runtime/gen/go/security/jwt/v1"
+	"github.com/origadmin/runtime/log"
 )
 
 type jwtFactory struct{}
 
 func (f jwtFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	log.Debug("[Middleware] Jwt client middleware enabled")
 	if middleware.GetJwt().GetEnabled() {
-		return JwtClient(middleware.GetJwt())
+		m, ok := JwtClient(middleware.GetJwt())
+		if ok && middleware.GetSelector().GetEnabled() {
+			m = SelectorServer(middleware.GetSelector(), options.MatchFunc, m)
+		}
 	}
 	return nil, false
 }
 
 func (f jwtFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+	log.Debug("[Middleware] Jwt server middleware enabled")
 	if middleware.GetJwt().GetEnabled() {
-		return JwtServer(middleware.GetJwt())
+		m, ok := JwtServer(middleware.GetJwt())
+		if ok && middleware.GetSelector().GetEnabled() {
+			m = SelectorServer(middleware.GetSelector(), options.MatchFunc, m)
+		}
+		return m, ok
 	}
 	return nil, false
 }
@@ -129,18 +139,6 @@ func getClaimsFunc(subject string, claimType string, cfg *secjwtv1.Config) func(
 				"iat": now.Unix(),
 			}
 		}
-	//case "registered":
-	//	return func() jwt.Claims {
-	//		now := time.Now()
-	//		return &jwt.RegisteredClaims{
-	//			Issuer:    cfg.Issuer,
-	//			Subject:   subject,
-	//			Audience:  cfg.Audience,
-	//			ExpiresAt: jwt.NewNumericDate(now.Add(exp)),
-	//			NotBefore: jwt.NewNumericDate(now),
-	//			IssuedAt:  jwt.NewNumericDate(now),
-	//		}
-	//	}
 	default:
 		return func() jwt.Claims {
 			now := time.Now()
