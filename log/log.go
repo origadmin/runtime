@@ -15,15 +15,15 @@ import (
 	"github.com/origadmin/toolkits/slogx"
 )
 
-type Logging struct {
-	Logger log.Logger
-	source log.Logger
-}
-
-func (l *Logging) Init(kv ...any) {
-	l.Logger = log.With(l.source, kv...)
-	log.SetLogger(l.Logger)
-}
+//type Logging struct {
+//	Logger log.Logger
+//	source log.Logger
+//}
+//
+//func (l *Logging) Init(kv ...any) {
+//	l.Logger = log.With(l.source, kv...)
+//	log.SetLogger(l.Logger)
+//}
 
 func New(cfg *configv1.Logger) log.Logger {
 	if cfg == nil || cfg.GetDisabled() {
@@ -56,10 +56,16 @@ func New(cfg *configv1.Logger) log.Logger {
 		options = append(options, slogx.WithFormat(slogx.FormatText))
 	}
 	options = append(options, LevelOption(cfg.GetLevel()))
-	logger := slogx.New(options...)
-	l := kslog.NewLogger(kslog.WithLogger(logger))
-	log.SetLogger(l)
+	l := NewKSLoggerWithOption(options)
+	if cfg.GetDefault() {
+		log.SetLogger(l)
+	}
 	return l
+}
+
+func NewKSLoggerWithOption(options []slogx.Option) *kslog.Logger {
+	base := slogx.New(options...)
+	return kslog.NewLogger(kslog.WithLogger(base))
 }
 
 func LevelOption(level configv1.LoggerLevel) slogx.Option {

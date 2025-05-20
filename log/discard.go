@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-var discardInstance = &DiscardLogger{}
+var discardInstance DiscardLogger
 
 func NewDiscard() log.Logger {
 	return discardInstance
@@ -17,18 +17,18 @@ func NewDiscard() log.Logger {
 
 type DiscardLogger struct{}
 
-func (d *DiscardLogger) Log(level log.Level, keyvals ...interface{}) error {
+func (d DiscardLogger) Log(level log.Level, keyvals ...interface{}) error {
 	return nil
 }
 
-func (d *DiscardLogger) Debug(msg string, keyvals ...interface{}) {
+func (d DiscardLogger) Debug(msg string, keyvals ...interface{}) {
 }
 
-func (d *DiscardLogger) Info(msg string, keyvals ...interface{}) {
+func (d DiscardLogger) Info(msg string, keyvals ...interface{}) {
 }
 
-func (d *DiscardLogger) Warn(msg string, keyvals ...interface{}) {
+func (d DiscardLogger) Warn(msg string, keyvals ...interface{}) {
 }
 
-func (d *DiscardLogger) Error(msg string, keyvals ...interface{}) {
+func (d DiscardLogger) Error(msg string, keyvals ...interface{}) {
 }
