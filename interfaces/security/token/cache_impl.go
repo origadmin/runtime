@@ -56,9 +56,7 @@ func (obj *tokenCacheStorage) Close(ctx context.Context) error {
 
 // New creates a new CacheStorage instance
 func New(ss ...StorageOption) CacheStorage {
-	service := settings.Apply(&tokenCacheStorage{
-		c: cache.NewMemoryCache(),
-	}, ss)
+	service := settings.ApplyZero(ss)
 	if service.c == nil {
 		service.c = cache.NewMemoryCache()
 	}

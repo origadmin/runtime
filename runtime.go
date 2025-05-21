@@ -50,6 +50,7 @@ type SignalHandler interface {
 type Runtime interface {
 	Logger
 	SignalHandler
+	Context() context.Context
 	Load(opts ...config.Option) error
 	CreateApp(...transport.Server) *kratos.App
 	WithLoggerAttrs(kvs ...any) Runtime
@@ -65,6 +66,10 @@ type runtime struct {
 	bootstrap *bootstrap.Bootstrap
 	logger    log.KLogger
 	loader    *config.Loader
+}
+
+func (r *runtime) Context() context.Context {
+	return r.ctx
 }
 
 func (r *runtime) WithLoggerAttrs(kvs ...any) Runtime {
