@@ -36,13 +36,22 @@ var (
 // ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
 var ErrNotFound = errors.String("not found")
 
-type Runtime interface {
+type Logger interface {
+	Logger() log.KLogger
+	SetLogger(kvs ...any)
+	WithLogger(kvs ...any) log.KLogger
+}
+
+type SignalHandler interface {
 	Signals() []os.Signal
 	SetSignals([]os.Signal)
+}
+
+type Runtime interface {
+	Logger
+	SignalHandler
 	Load(opts ...config.Option) error
 	CreateApp(...transport.Server) *kratos.App
-	Logger() log.KLogger
-	WithLogger(kvs ...any) log.KLogger
 }
 
 type runtime struct {
@@ -63,6 +72,10 @@ func (r *runtime) Logger() log.KLogger {
 		r.logger = log.DefaultLogger
 	}
 	return r.logger
+}
+
+func (r *runtime) SetLogger(kvs ...any) {
+	r.logger = log.With(r.logger, kvs...)
 }
 
 func (r *runtime) WithLogger(kvs ...any) log.KLogger {
