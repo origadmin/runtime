@@ -56,7 +56,7 @@ func WithResolver(r KResolver) KOption {
 	return kratosconfig.WithResolver(r)
 }
 
-// WithSource sets the source
+// WithSource sets the sourceConfig
 func WithSource(s ...KSource) KOption {
 	return kratosconfig.WithSource(s...)
 }

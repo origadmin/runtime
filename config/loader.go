@@ -13,15 +13,18 @@ import (
 )
 
 type Loader struct {
-	builder  Builder
-	source   KConfig
-	resolver Resolver
-	resolved Resolved
-	mu       sync.RWMutex
+	cfg          *configv1.SourceConfig
+	builder      Builder
+	sourceConfig KConfig
+	resolver     Resolver
+	resolved     Resolved
+	mu           sync.RWMutex
 }
 
 func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...Option) error {
-	if c.source != nil {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.sourceConfig != nil {
 		return nil
 	}
 	if c.resolver == nil {
@@ -34,14 +37,20 @@ func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...Option) error {
 	if err := config.Load(); err != nil {
 		return err
 	}
-	if err := c.Resolve(config); err != nil {
+	resolved, err := c.resolver.Resolve(config) // Resolve without internal lock
+	if err != nil {
 		return err
 	}
-	c.source = config
+	c.sourceConfig = config
+	c.cfg = cfg
+	c.resolved = resolved
+
 	return nil
 }
 
 func (c *Loader) Resolve(config KConfig) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if c.resolver == nil {
 		return fmt.Errorf("resolver is not set")
 	}
@@ -49,16 +58,20 @@ func (c *Loader) Resolve(config KConfig) error {
 	if err != nil {
 		return err
 	}
-	c.mu.Lock()
 	c.resolved = resolved
-	c.mu.Unlock()
 	return nil
+}
+
+func (c *Loader) GetConfig() (*configv1.SourceConfig, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.cfg, nil
 }
 
 func (c *Loader) GetSource() (KConfig, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.source, nil
+	return c.sourceConfig, nil
 }
 
 func (c *Loader) GetResolved() (Resolved, error) {

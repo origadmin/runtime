@@ -52,6 +52,7 @@ type Runtime interface {
 	SignalHandler
 	Load(opts ...config.Option) error
 	CreateApp(...transport.Server) *kratos.App
+	WithLoggerAttrs(kvs ...any) Runtime
 }
 
 type runtime struct {
@@ -64,7 +65,12 @@ type runtime struct {
 	bootstrap *bootstrap.Bootstrap
 	logger    log.KLogger
 	loader    *config.Loader
-	resolver  config.Resolver
+}
+
+func (r *runtime) WithLoggerAttrs(kvs ...any) Runtime {
+	rr := *r
+	rr.logger = log.With(rr.logger, kvs...)
+	return &rr
 }
 
 func (r *runtime) Logger() log.KLogger {
@@ -112,12 +118,7 @@ func (r *runtime) Load(opts ...config.Option) error {
 		opts = append(opts, config.WithEnvPrefixes(sourceConfig.EnvPrefixes...))
 	}
 
-	r.source = sourceConfig
-	r.loader = config.NewWithBuilder(r.builder.Config())
-	if err := r.loader.SetResolver(r.resolver); err != nil {
-		return err
-	}
-	if err := r.loader.Load(r.source, opts...); err != nil {
+	if err := r.loader.Load(sourceConfig, opts...); err != nil {
 		return err
 	}
 	resolved, err := r.loader.GetResolved()
@@ -253,7 +254,11 @@ func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 		r.signals = options.Signals
 	}
 	if options.Resolver != nil {
-		r.resolver = options.Resolver
+		//r.resolver = options.Resolver
+		r.loader = config.NewWithBuilder(r.builder.Config())
+		if err := r.loader.SetResolver(options.Resolver); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := r.reload(bs, options.ConfigOptions); err != nil {
