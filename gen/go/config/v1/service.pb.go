@@ -7,6 +7,7 @@
 package configv1
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	v1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -26,7 +27,8 @@ type Service struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Service name for service discovery
 	Name            string            `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	DynamicEndpoint bool              `protobuf:"varint,2,opt,name=dynamic_endpoint,proto3" json:"dynamic_endpoint,omitempty"`
+	Type            string            `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	DynamicEndpoint bool              `protobuf:"varint,3,opt,name=dynamic_endpoint,proto3" json:"dynamic_endpoint,omitempty"`
 	Grpc            *Service_GRPC     `protobuf:"bytes,10,opt,name=grpc,proto3" json:"grpc,omitempty"`
 	Http            *Service_HTTP     `protobuf:"bytes,20,opt,name=http,proto3" json:"http,omitempty"`
 	Websocket       *WebSocket        `protobuf:"bytes,100,opt,name=websocket,proto3" json:"websocket,omitempty"`
@@ -71,6 +73,13 @@ func (*Service) Descriptor() ([]byte, []int) {
 func (x *Service) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *Service) GetType() string {
+	if x != nil {
+		return x.Type
 	}
 	return ""
 }
@@ -422,10 +431,11 @@ var File_config_v1_service_proto protoreflect.FileDescriptor
 
 const file_config_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/tlsconfig.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\"\x90\t\n" +
+	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/tlsconfig.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\xd1\t\n" +
 	"\aService\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12*\n" +
-	"\x10dynamic_endpoint\x18\x02 \x01(\bR\x10dynamic_endpoint\x12+\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12?\n" +
+	"\x04type\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\x04type\x12*\n" +
+	"\x10dynamic_endpoint\x18\x03 \x01(\bR\x10dynamic_endpoint\x12+\n" +
 	"\x04grpc\x18\n" +
 	" \x01(\v2\x17.config.v1.Service.GRPCR\x04grpc\x12+\n" +
 	"\x04http\x18\x14 \x01(\v2\x17.config.v1.Service.HTTPR\x04http\x122\n" +

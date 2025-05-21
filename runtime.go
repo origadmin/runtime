@@ -40,10 +40,13 @@ type Runtime interface {
 	Signals() []os.Signal
 	SetSignals([]os.Signal)
 	Load(opts ...config.Option) error
-	CreateApp(context.Context, ...transport.Server) *kratos.App
+	CreateApp(...transport.Server) *kratos.App
+	Logger() log.KLogger
+	WithLogger(kvs ...any) log.KLogger
 }
 
 type runtime struct {
+	ctx       context.Context
 	loaded    *atomic.Bool
 	builder   Builder
 	prefix    string
@@ -51,9 +54,19 @@ type runtime struct {
 	source    *configv1.SourceConfig
 	bootstrap *bootstrap.Bootstrap
 	logger    log.KLogger
-	Logging   log.Logging
 	loader    *config.Loader
 	resolver  config.Resolver
+}
+
+func (r *runtime) Logger() log.KLogger {
+	if r.logger == nil {
+		r.logger = log.DefaultLogger
+	}
+	return r.logger
+}
+
+func (r *runtime) WithLogger(kvs ...any) log.KLogger {
+	return log.With(r.Logger(), kvs...)
 }
 
 func (r *runtime) Signals() []os.Signal {
@@ -135,16 +148,16 @@ func (r *runtime) Resolve(fn func(kConfig config.KConfig) error) error {
 	return fn(source)
 }
 
-func (r *runtime) CreateApp(ctx context.Context, ss ...transport.Server) *kratos.App {
+func (r *runtime) CreateApp(ss ...transport.Server) *kratos.App {
 	opts := buildServiceOptions(r.bootstrap.ServiceInfo())
 	opts = append(opts,
-		kratos.Context(ctx),
-		kratos.Logger(r.logger),
+		kratos.Context(r.ctx),
+		kratos.Logger(r.WithLogger("module", "server")),
 		kratos.Signal(r.signals...),
 	)
 	rr, err := r.buildRegistrar()
 	if err != nil {
-		_ = r.logger.Log(log.LevelError, "error", err)
+		_ = r.WithLogger("module", "runtime").Log(log.LevelError, "create registrar failed", err)
 	} else if rr != nil {
 		opts = append(opts, kratos.Registrar(rr))
 	}
@@ -211,6 +224,11 @@ func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 	options := settings.ApplyZero(opts)
 	if r.builder == nil {
 		r.builder = NewBuilder()
+	}
+
+	r.ctx = context.Background()
+	if options.Context != nil {
+		r.ctx = options.Context
 	}
 	if options.Prefix != "" {
 		r.prefix = options.Prefix

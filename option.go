@@ -11,10 +11,11 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/context"
 )
 
 type Options struct {
-	//Context       context.Context
+	Context       context.Context
 	Prefix        string
 	ConfigOptions []config.Option
 	Logger        log.Logger
@@ -61,8 +62,8 @@ func WithDefaultOptions() Option {
 	}
 }
 
-//func WithContext(ctx context.Context) Option {
-//	return func(o *Options) {
-//		o.Context = ctx
-//	}
-//}
+func WithContext(ctx context.Context) Option {
+	return func(o *Options) {
+		o.Context = ctx
+	}
+}

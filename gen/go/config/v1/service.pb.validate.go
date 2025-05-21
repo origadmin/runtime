@@ -58,6 +58,17 @@ func (m *Service) validate(all bool) error {
 
 	// no validation rules for Name
 
+	if _, ok := _Service_Type_InLookup[m.GetType()]; !ok {
+		err := ServiceValidationError{
+			field:  "Type",
+			reason: "value must be in list [http grpc websocket message task]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for DynamicEndpoint
 
 	if all {
@@ -339,6 +350,14 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ServiceValidationError{}
+
+var _Service_Type_InLookup = map[string]struct{}{
+	"http":      {},
+	"grpc":      {},
+	"websocket": {},
+	"message":   {},
+	"task":      {},
+}
 
 // Validate checks the field values on Service_HTTP with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

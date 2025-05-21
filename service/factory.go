@@ -7,6 +7,7 @@ package service
 
 import (
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/goexts/generic/settings"
 
 	"github.com/origadmin/runtime/context"
 	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
@@ -17,11 +18,22 @@ import (
 )
 
 // DefaultServiceFactory is the default instance of the buildImpl.
-var DefaultServiceFactory = &factoryImpl{}
+var DefaultServiceFactory ServerFactory = &factoryImpl{}
 
 // ServiceBuilder is a struct that implements the buildImpl interface.
 // It provides methods for creating new gRPC and HTTP servers and clients.
 type factoryImpl struct{}
+
+func (f factoryImpl) New(service *configv1.Service, opts ...ServerOption) (transport.Server, error) {
+	options := settings.ApplyZero(opts)
+	switch service.GetType() {
+	case "grpc":
+		return f.NewGRPCServer(service, options.ToGRPC())
+	case "http":
+		return f.NewHTTPServer(service, options.ToHTTP())
+	}
+	return nil, ErrServiceNotFound
+}
 
 // NewGRPCServer creates a new gRPC server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
