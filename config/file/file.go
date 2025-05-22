@@ -67,7 +67,7 @@ func (f *file) shouldIgnore(filename string) bool {
 	}
 	ext := strings.ToLower(filepath.Ext(filename))
 	for _, ignoreExt := range f.ignores {
-		if strings.ToLower(ignoreExt) == ext {
+		if strings.HasSuffix(ext, ignoreExt) {
 			return true
 		}
 	}
