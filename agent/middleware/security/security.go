@@ -7,8 +7,8 @@ package security
 import (
 	"github.com/go-kratos/kratos/v2/metadata"
 
+	securityv1 "github.com/origadmin/runtime/api/gen/go/security/v1"
 	"github.com/origadmin/runtime/context"
-	securityv1 "github.com/origadmin/runtime/gen/go/security/v1"
 	"github.com/origadmin/runtime/interfaces/security"
 )
 

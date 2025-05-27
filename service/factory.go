@@ -9,8 +9,9 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/settings"
 
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/context"
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	"github.c
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/service/grpc"
 	"github.com/origadmin/runtime/service/http"

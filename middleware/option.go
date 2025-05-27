@@ -8,7 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 )
 
 type Options struct {

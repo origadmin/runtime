@@ -8,9 +8,9 @@ package runtime
 import (
 	"github.com/goexts/generic/settings"
 
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 )
 
 // SyncConfig is a method that implements the ConfigSyncer interface for ConfigSyncFunc.

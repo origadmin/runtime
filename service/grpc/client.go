@@ -12,8 +12,8 @@ import (
 	"github.com/goexts/generic/settings"
 	"google.golang.org/grpc"
 
-	"github.com/origadmin/runtime/context"
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/cont
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/selector"
 	"github.com/origadmin/runtime/service/tls"

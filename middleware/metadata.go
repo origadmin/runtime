@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/metadata"
 	middlewareMetadata "github.com/go-kratos/kratos/v2/middleware/metadata"
 
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 )
 
 func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []KMiddleware {

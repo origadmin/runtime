@@ -11,8 +11,8 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 )
 
 type Resolver interface {
@@ -25,7 +25,7 @@ type Resolved interface {
 	Middleware() *middlewarev1.Middleware
 	Service() *configv1.Service
 	Logger() *configv1.Logger
-	Registry() *configv1.Registry
+	Discovery() *configv1.Discovery
 }
 
 type ResolveObserver interface {
@@ -42,17 +42,17 @@ type resolver struct {
 	values map[string]any
 }
 
-func (r resolver) Registry() *configv1.Registry {
-	v, ok := r.values["registry"]
+func (r resolver) Discovery() *configv1.Discovery {
+	v, ok := r.values["discovery"]
 	if !ok {
 		return nil
 	}
-	var registry configv1.Registry
-	err := mapstructure.Decode(v, &registry)
+	var discovery configv1.Discovery
+	err := mapstructure.Decode(v, &discovery)
 	if err != nil {
 		return nil
 	}
-	return &registry
+	return &discovery
 }
 
 func (r resolver) WithDecode(name string, v any, decode func([]byte, any) error) error {

@@ -8,7 +8,7 @@ package middleware
 import (
 	"github.com/goexts/generic/settings"
 
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/log"
 )

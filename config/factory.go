@@ -11,8 +11,9 @@ import (
 	configenv "github.com/go-kratos/kratos/v2/config/env"
 	"github.com/goexts/generic/settings"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
+	"github.com/origadmin/runtime/log"
 )
 
 var (
@@ -50,6 +51,7 @@ func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...Option) (K
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", t)
 		}
+		log.Infof("registering type: %s", t)
 		source, err := b.NewSource(cfg, options)
 		if err != nil {
 			return nil, err

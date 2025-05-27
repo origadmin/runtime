@@ -9,7 +9,7 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 )
 
 type (

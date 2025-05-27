@@ -8,8 +8,8 @@ package middleware
 import (
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 
-	selectorv1 "github.com/origadmin/runtime/gen/go/middleware/selector/v1"
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/selector"
 )
 
 type selectorFactory struct {

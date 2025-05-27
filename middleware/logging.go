@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 )
 
 func LoggingServer(ms []KMiddleware, logger log.Logger) []KMiddleware {

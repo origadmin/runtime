@@ -8,8 +8,8 @@ package middleware
 import (
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 
-	ratelimitv1 "github.com/origadmin/runtime/gen/go/middleware/ratelimit/v1"
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	ratelimitv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/ratelimit"
 	"github.com/origadmin/runtime/log"
 )
 

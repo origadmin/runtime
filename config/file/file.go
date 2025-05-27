@@ -27,15 +27,17 @@ var defaultIgnores = []string{
 }
 
 type file struct {
-	path    string
-	ignores []string
+	path      string
+	ignores   []string
+	formatter Formatter
 }
 
 // NewSource new a file source.
 func NewSource(path string, opts ...Option) config.Source {
 	f := &file{
-		path:    path,
-		ignores: defaultIgnores,
+		path:      path,
+		ignores:   defaultIgnores,
+		formatter: defaultFormatter,
 	}
 	return settings.Apply(f, opts)
 }
@@ -53,6 +55,9 @@ func (f *file) loadFile(path string) (*config.KeyValue, error) {
 	info, err := file.Stat()
 	if err != nil {
 		return nil, err
+	}
+	if f.formatter != nil {
+		return f.formatter(info.Name(), data)
 	}
 	return &config.KeyValue{
 		Key:    info.Name(),
@@ -114,4 +119,12 @@ func (f *file) Load() (kvs []*config.KeyValue, err error) {
 
 func (f *file) Watch() (config.Watcher, error) {
 	return newWatcher(f)
+}
+
+func defaultFormatter(key string, value []byte) (*config.KeyValue, error) {
+	return &config.KeyValue{
+		Key:    key,
+		Format: format(key),
+		Value:  value,
+	}, nil
 }

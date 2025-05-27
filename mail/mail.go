@@ -10,7 +10,7 @@ import (
 
 	"github.com/origadmin/toolkits/mail"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 )
 
 type (

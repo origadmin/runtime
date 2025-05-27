@@ -12,7 +12,7 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/goexts/generic/settings"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/endpoint"
 	"github.com/origadmin/runtime/service/tls"

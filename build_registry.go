@@ -6,17 +6,17 @@
 package runtime
 
 import (
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/registry"
 )
 
 // NewRegistrar creates a new KRegistrar object based on the given RegistryConfig.
-func (b *builder) NewRegistrar(cfg *configv1.Registry, ss ...registry.Option) (registry.KRegistrar, error) {
+func (b *builder) NewRegistrar(cfg *configv1.Discovery, ss ...registry.Option) (registry.KRegistrar, error) {
 	return b.RegistryBuilder.NewRegistrar(cfg, ss...)
 }
 
 // NewDiscovery creates a new discovery object based on the given RegistryConfig.
-func (b *builder) NewDiscovery(cfg *configv1.Registry, ss ...registry.Option) (registry.KDiscovery, error) {
+func (b *builder) NewDiscovery(cfg *configv1.Discovery, ss ...registry.Option) (registry.KDiscovery, error) {
 	return b.RegistryBuilder.NewDiscovery(cfg, ss...)
 }
 

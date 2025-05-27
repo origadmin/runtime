@@ -8,7 +8,7 @@ package config
 import (
 	"google.golang.org/protobuf/proto"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 
@@ -24,6 +24,8 @@ type (
 		NewSource(*configv1.SourceConfig, *Options) (KSource, error)
 	}
 
+	SyncFunc func(*configv1.SourceConfig, string, any, *Options) error
+
 	// Syncer is an interface that defines a method for synchronizing a config.
 	Syncer interface {
 		SyncConfig(*configv1.SourceConfig, string, any, *Options) error
@@ -34,3 +36,7 @@ type (
 		SyncConfig(*configv1.SourceConfig, string, proto.Message, *Options) error
 	}
 )
+
+func (fn SyncFunc) SyncConfig(cfg *configv1.SourceConfig, key string, value any, opts *Options) error {
+	return fn(cfg, key, value, opts)
+}

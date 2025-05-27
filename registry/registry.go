@@ -6,7 +6,7 @@
 package registry
 
 import (
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 
@@ -19,8 +19,8 @@ type (
 	}
 	// Factory is an interface that defines methods for creating a discovery and a KRegistrar.
 	Factory interface {
-		NewRegistrar(*configv1.Registry, ...Option) (KRegistrar, error)
-		NewDiscovery(*configv1.Registry, ...Option) (KDiscovery, error)
+		NewRegistrar(*configv1.Discovery, ...Option) (KRegistrar, error)
+		NewDiscovery(*configv1.Discovery, ...Option) (KDiscovery, error)
 	}
 
 	Registry interface {
@@ -30,31 +30,31 @@ type (
 )
 
 // RegistrarBuildFunc is a function type that takes a *config.RegistryConfig and returns a KRegistrar and an error.
-type RegistrarBuildFunc func(*configv1.Registry, ...Option) (KRegistrar, error)
+type RegistrarBuildFunc func(*configv1.Discovery, ...Option) (KRegistrar, error)
 
 // NewRegistrar is a method that calls the RegistrarBuildFunc with the given config.
-func (fn RegistrarBuildFunc) NewRegistrar(cfg *configv1.Registry, ss ...Option) (KRegistrar, error) {
+func (fn RegistrarBuildFunc) NewRegistrar(cfg *configv1.Discovery, ss ...Option) (KRegistrar, error) {
 	return fn(cfg, ss...)
 }
 
 // DiscoveryBuildFunc is a function type that takes a *config.RegistryConfig and returns a discovery and an error.
-type DiscoveryBuildFunc func(*configv1.Registry, ...Option) (KDiscovery, error)
+type DiscoveryBuildFunc func(*configv1.Discovery, ...Option) (KDiscovery, error)
 
 // NewDiscovery is a method that calls the DiscoveryBuildFunc with the given config.
-func (fn DiscoveryBuildFunc) NewDiscovery(cfg *configv1.Registry, ss ...Option) (KDiscovery, error) {
+func (fn DiscoveryBuildFunc) NewDiscovery(cfg *configv1.Discovery, ss ...Option) (KDiscovery, error) {
 	return fn(cfg, ss...)
 }
 
 type FuncFactory struct {
-	RegistrarFunc func(*configv1.Registry, ...Option) (KRegistrar, error)
-	DiscoveryFunc func(*configv1.Registry, ...Option) (KDiscovery, error)
+	RegistrarFunc func(*configv1.Discovery, ...Option) (KRegistrar, error)
+	DiscoveryFunc func(*configv1.Discovery, ...Option) (KDiscovery, error)
 }
 
-func (f FuncFactory) NewRegistrar(cfg *configv1.Registry, opts ...Option) (KRegistrar, error) {
+func (f FuncFactory) NewRegistrar(cfg *configv1.Discovery, opts ...Option) (KRegistrar, error) {
 	return f.RegistrarFunc(cfg, opts...)
 }
 
-func (f FuncFactory) NewDiscovery(cfg *configv1.Registry, opts ...Option) (KDiscovery, error) {
+func (f FuncFactory) NewDiscovery(cfg *configv1.Discovery, opts ...Option) (KDiscovery, error) {
 	return f.DiscoveryFunc(cfg, opts...)
 }
 

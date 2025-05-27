@@ -14,11 +14,11 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/settings"
 
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/envsetup"
 	"github.com/origadmin/runtime/context"
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/registry"
 	"github.com/origadmin/toolkits/errors"
@@ -30,7 +30,8 @@ const (
 
 // build is a global variable that holds an instance of the builder struct.
 var (
-	globalRuntime = newRuntime()
+	//globalRuntime  = newRuntime()
+	runtimeBuilder = NewBuilder()
 )
 
 // ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
@@ -50,6 +51,7 @@ type SignalHandler interface {
 type Runtime interface {
 	Logger
 	SignalHandler
+	Builder() Builder
 	Context() context.Context
 	Load(opts ...config.Option) error
 	CreateApp(...transport.Server) *kratos.App
@@ -57,15 +59,19 @@ type Runtime interface {
 }
 
 type runtime struct {
-	ctx       context.Context
-	loaded    *atomic.Bool
-	builder   Builder
+	ctx    context.Context
+	loaded *atomic.Bool
+	//builder   Builder
 	prefix    string
 	signals   []os.Signal
 	source    *configv1.SourceConfig
 	bootstrap *bootstrap.Bootstrap
 	logger    log.KLogger
 	loader    *config.Loader
+}
+
+func (r *runtime) Builder() Builder {
+	return runtimeBuilder
 }
 
 func (r *runtime) Context() context.Context {
@@ -113,7 +119,7 @@ func (r *runtime) Load(opts ...config.Option) error {
 	if err != nil {
 		return errors.Wrap(err, "load source config")
 	}
-
+	log.NewHelper(log.DefaultLogger).Infof("loading config: %+v", sourceConfig)
 	opts = append(opts, config.WithServiceName(r.bootstrap.ServiceName()))
 	if sourceConfig.Env {
 		err := envsetup.SetWithPrefix(r.prefix, sourceConfig.EnvArgs)
@@ -146,7 +152,7 @@ func (r *runtime) buildRegistrar() (registry.KRegistrar, error) {
 	if err != nil {
 		return nil, err
 	}
-	registrar, err := r.builder.NewRegistrar(resolved.Registry())
+	registrar, err := runtimeBuilder.NewRegistrar(resolved.Discovery())
 	if err != nil {
 		return nil, err
 	}
@@ -219,18 +225,18 @@ func (r *runtime) reload(bs *bootstrap.Bootstrap, opts []config.Option) error {
 
 // Global function returns the interface type
 func Global() Runtime {
-	return globalRuntime
+	return newRuntime()
 }
 
-// New creates a new Runtime instance with default settings.
-func New() Runtime {
-	return newRuntime()
+// GlobalBuilder returns the global Builder instance.
+func GlobalBuilder() Builder {
+	return runtimeBuilder
 }
 
 func newRuntime() *runtime {
 	return &runtime{
+		ctx:     context.Background(),
 		loaded:  new(atomic.Bool),
-		builder: NewBuilder(),
 		prefix:  DefaultEnvPrefix,
 		signals: defaultSignals(),
 	}
@@ -241,11 +247,7 @@ func newRuntime() *runtime {
 func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 	r := newRuntime()
 	options := settings.ApplyZero(opts)
-	if r.builder == nil {
-		r.builder = NewBuilder()
-	}
 
-	r.ctx = context.Background()
 	if options.Context != nil {
 		r.ctx = options.Context
 	}
@@ -260,7 +262,7 @@ func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 	}
 	if options.Resolver != nil {
 		//r.resolver = options.Resolver
-		r.loader = config.NewWithBuilder(r.builder.Config())
+		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
 		if err := r.loader.SetResolver(options.Resolver); err != nil {
 			return nil, err
 		}

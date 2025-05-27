@@ -78,7 +78,7 @@ const (
 	//`
 )
 
-//func TestScan(t *testing.T) {
+//func TestScan(defaultFormatter *testing.T) {
 //
 //}
 

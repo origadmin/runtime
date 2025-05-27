@@ -10,7 +10,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 )
 
 // GetTypedConfig retrieves a configuration of the specified type and name from the CustomizeMap

@@ -11,7 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	kslog "github.com/origadmin/slog-kratos"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/toolkits/slogx"
 )
 

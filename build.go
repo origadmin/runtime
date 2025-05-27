@@ -10,10 +10,10 @@ import (
 
 	"github.com/go-kratos/kratos/v2/transport"
 
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
 	"github.com/origadmin/runtime/service"
@@ -31,8 +31,8 @@ type Builder interface {
 	NewMiddlewaresClient(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware
 	NewMiddlewaresServer(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware
 	RegisterMiddlewareBuilder(name string, builder middleware.Factory)
-	NewRegistrar(cfg *configv1.Registry, ss ...registry.Option) (registry.KRegistrar, error)
-	NewDiscovery(cfg *configv1.Registry, ss ...registry.Option) (registry.KDiscovery, error)
+	NewRegistrar(cfg *configv1.Discovery, ss ...registry.Option) (registry.KRegistrar, error)
+	NewDiscovery(cfg *configv1.Discovery, ss ...registry.Option) (registry.KDiscovery, error)
 	RegisterRegistryBuilder(name string, factory registry.Factory)
 	RegisterRegistryFunc(name string, registryBuilder registry.RegistrarBuildFunc, discoveryBuilder registry.DiscoveryBuildFunc)
 	NewConfig(sourceConfig *configv1.SourceConfig, options ...config.Option) (config.KConfig, error)
@@ -117,96 +117,96 @@ func (b *builder) init() Builder {
 
 // NewConfig creates a new SelectorServer using the registered ConfigBuilder.
 func NewConfig(cfg *configv1.SourceConfig, ss ...config.Option) (config.KConfig, error) {
-	return globalRuntime.builder.Config().NewConfig(cfg, ss...)
+	return runtimeBuilder.Config().NewConfig(cfg, ss...)
 }
 
 // RegisterConfig registers a ConfigBuilder with the builder.
 func RegisterConfig(name string, factory config.Factory) {
-	globalRuntime.builder.Config().Register(name, factory)
+	runtimeBuilder.Config().Register(name, factory)
 }
 
 // RegisterConfigFunc registers a ConfigBuilder with the builder.
 func RegisterConfigFunc(name string, buildFunc config.BuildFunc) {
-	globalRuntime.builder.Config().Register(name, buildFunc)
+	runtimeBuilder.Config().Register(name, buildFunc)
 }
 
 // SyncConfig synchronizes the given configuration with the given value.
 func SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.Option) error {
-	return globalRuntime.builder.SyncConfig(cfg, v, ss...)
+	return runtimeBuilder.SyncConfig(cfg, v, ss...)
 }
 
 func RegisterConfigSync(name string, syncFunc config.Syncer) {
-	globalRuntime.builder.RegisterConfigSync(name, syncFunc)
+	runtimeBuilder.RegisterConfigSync(name, syncFunc)
 }
 
 // NewDiscovery creates a new discovery using the registered RegistryBuilder.
-func NewDiscovery(cfg *configv1.Registry, ss ...registry.Option) (registry.KDiscovery, error) {
-	return globalRuntime.builder.NewDiscovery(cfg, ss...)
+func NewDiscovery(cfg *configv1.Discovery, ss ...registry.Option) (registry.KDiscovery, error) {
+	return runtimeBuilder.NewDiscovery(cfg, ss...)
 }
 
 // NewRegistrar creates a new KRegistrar using the registered RegistryBuilder.
-func NewRegistrar(cfg *configv1.Registry, ss ...registry.Option) (registry.KRegistrar, error) {
-	return globalRuntime.builder.NewRegistrar(cfg, ss...)
+func NewRegistrar(cfg *configv1.Discovery, ss ...registry.Option) (registry.KRegistrar, error) {
+	return runtimeBuilder.NewRegistrar(cfg, ss...)
 }
 
 // RegisterRegistry registers a RegistryBuilder with the builder.
 func RegisterRegistry(name string, factory registry.Factory) {
-	globalRuntime.builder.RegisterRegistryBuilder(name, factory)
+	runtimeBuilder.RegisterRegistryBuilder(name, factory)
 }
 
 // NewMiddlewareClient creates a new KMiddleware with the builder.
 func NewMiddlewareClient(name string, cm *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error) {
-	return globalRuntime.builder.NewMiddlewareClient(name, cm, ss...)
+	return runtimeBuilder.NewMiddlewareClient(name, cm, ss...)
 }
 
 // NewMiddlewareServer creates a new KMiddleware with the builder.
 func NewMiddlewareServer(name string, cm *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error) {
-	return globalRuntime.builder.NewMiddlewareServer(name, cm, ss...)
+	return runtimeBuilder.NewMiddlewareServer(name, cm, ss...)
 }
 
 // NewMiddlewaresClient creates a new KMiddleware with the builder.
 func NewMiddlewaresClient(cc *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware {
-	return globalRuntime.builder.NewMiddlewaresClient(cc, ss...)
+	return runtimeBuilder.NewMiddlewaresClient(cc, ss...)
 }
 
 // NewMiddlewaresServer creates a new KMiddleware with the builder.
 func NewMiddlewaresServer(cc *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware {
-	return globalRuntime.builder.NewMiddlewaresServer(cc, ss...)
+	return runtimeBuilder.NewMiddlewaresServer(cc, ss...)
 }
 
 // RegisterMiddleware registers a MiddlewareBuilder with the builder.
 func RegisterMiddleware(name string, builder middleware.Factory) {
-	globalRuntime.builder.RegisterMiddlewareBuilder(name, builder)
+	runtimeBuilder.RegisterMiddlewareBuilder(name, builder)
 }
 
 // NewHTTPServiceServer creates a new HTTP server using the provided configuration
 func NewHTTPServiceServer(cfg *configv1.Service, ss ...service.HTTPOption) (*service.HTTPServer, error) {
-	// Call the globalRuntime.builder.NewHTTPServer function with the provided configuration
-	return globalRuntime.builder.NewHTTPServer(cfg, ss...)
+	// Call the runtimeBuilder.NewHTTPServer function with the provided configuration
+	return runtimeBuilder.NewHTTPServer(cfg, ss...)
 }
 
 // NewHTTPServiceClient creates a new HTTP client using the provided context and configuration
 func NewHTTPServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.HTTPOption) (*service.HTTPClient, error) {
-	// Call the globalRuntime.builder.NewHTTPClient function with the provided context and configuration
-	return globalRuntime.builder.NewHTTPClient(ctx, cfg, ss...)
+	// Call the runtimeBuilder.NewHTTPClient function with the provided context and configuration
+	return runtimeBuilder.NewHTTPClient(ctx, cfg, ss...)
 }
 
 // NewGRPCServiceServer creates a new GRPC server using the provided configuration
 func NewGRPCServiceServer(cfg *configv1.Service, ss ...service.GRPCOption) (*service.GRPCServer, error) {
-	// Call the globalRuntime.builder.NewGRPCServer function with the provided configuration
-	return globalRuntime.builder.NewGRPCServer(cfg, ss...)
+	// Call the runtimeBuilder.NewGRPCServer function with the provided configuration
+	return runtimeBuilder.NewGRPCServer(cfg, ss...)
 }
 
 // NewGRPCServiceClient creates a new GRPC client using the provided context and configuration
 func NewGRPCServiceClient(ctx context.Context, cfg *configv1.Service, ss ...service.GRPCOption) (*service.GRPCClient, error) {
-	// Call the globalRuntime.builder.NewGRPCClient function with the provided context and configuration
-	return globalRuntime.builder.NewGRPCClient(ctx, cfg, ss...)
+	// Call the runtimeBuilder.NewGRPCClient function with the provided context and configuration
+	return runtimeBuilder.NewGRPCClient(ctx, cfg, ss...)
 }
 
 // RegisterService registers a service builder with the provided name
 func RegisterService(name string, factory service.ServerFactory) {
-	// Call the globalRuntime.builder.RegisterServiceBuilder function with the provided name and service builder
-	globalRuntime.builder.Service().Register(name, factory)
+	// Call the runtimeBuilder.RegisterServiceBuilder function with the provided name and service builder
+	runtimeBuilder.Service().Register(name, factory)
 }
 
 // NewBuilder creates a new Builder.

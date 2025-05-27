@@ -10,15 +10,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/toolkits/codec"
 	"github.com/origadmin/toolkits/errors"
 )
 
 // decodeFile loads the config file from the given path
 func decodeFile(path string, cfg any) error {
-	supported := codec.IsSupported(path)
-	if !supported {
+	c := codec.TypeFromPath(path)
+	if !c.IsSupported() {
 		return errors.New("unsupported config file type: " + path)
 	}
 

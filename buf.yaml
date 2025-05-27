@@ -2,11 +2,13 @@
 version: v2
 
 modules:
-  - path: proto
+  - path: api/proto
     name: buf.build/origadmin/runtime
     lint:
       use:
         - STANDARD
+      except:
+        - PACKAGE_VERSION_SUFFIX
     breaking:
       use:
         - FILE

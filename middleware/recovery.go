@@ -8,7 +8,7 @@ package middleware
 import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/log"
 )
 

@@ -11,8 +11,8 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
-	validatorv1 "github.com/origadmin/runtime/gen/go/middleware/validator/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	validatorv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/validator"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware/validate"
 )

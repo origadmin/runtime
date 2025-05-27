@@ -8,8 +8,8 @@ package runtime
 import (
 	"github.com/goexts/generic/settings"
 
-	configv1 "github.com/origadmin/runtime/gen/go/config/v1"
-	middlewarev1 "github.com/origadmin/runtime/gen/go/middleware/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/middleware"
 )
 
