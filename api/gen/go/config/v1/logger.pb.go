@@ -83,7 +83,7 @@ func (LoggerLevel) EnumDescriptor() ([]byte, []int) {
 // Logger hook message
 type LoggerHookMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Level         LoggerLevel            `protobuf:"varint,1,opt,name=level,proto3,enum=config.v1.LoggerLevel" json:"level,omitempty"`
+	Level         string                 `protobuf:"bytes,1,opt,name=level,proto3" json:"level,omitempty"`
 	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	Stacktrace    string                 `protobuf:"bytes,3,opt,name=stacktrace,proto3" json:"stacktrace,omitempty"`
 	Error         string                 `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
@@ -122,11 +122,11 @@ func (*LoggerHookMessage) Descriptor() ([]byte, []int) {
 	return file_config_v1_logger_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *LoggerHookMessage) GetLevel() LoggerLevel {
+func (x *LoggerHookMessage) GetLevel() string {
 	if x != nil {
 		return x.Level
 	}
-	return LoggerLevel_LOGGER_LEVEL_UNSPECIFIED
+	return ""
 }
 
 func (x *LoggerHookMessage) GetMessage() string {
@@ -171,7 +171,7 @@ type Logger struct {
 	// Logger format json text or tint
 	Format string `protobuf:"bytes,5,opt,name=format,proto3" json:"format,omitempty"`
 	// Logger level
-	Level LoggerLevel `protobuf:"varint,6,opt,name=level,proto3,enum=config.v1.LoggerLevel" json:"level,omitempty"`
+	Level string `protobuf:"bytes,6,opt,name=level,proto3" json:"level,omitempty"`
 	// Logger output stdout
 	Stdout bool `protobuf:"varint,7,opt,name=stdout,proto3" json:"stdout,omitempty"`
 	// Disable logger caller
@@ -253,11 +253,11 @@ func (x *Logger) GetFormat() string {
 	return ""
 }
 
-func (x *Logger) GetLevel() LoggerLevel {
+func (x *Logger) GetLevel() string {
 	if x != nil {
 		return x.Level
 	}
-	return LoggerLevel_LOGGER_LEVEL_UNSPECIFIED
+	return ""
 }
 
 func (x *Logger) GetStdout() bool {
@@ -516,9 +516,9 @@ var File_config_v1_logger_proto protoreflect.FileDescriptor
 
 const file_config_v1_logger_proto_rawDesc = "" +
 	"\n" +
-	"\x16config/v1/logger.proto\x12\tconfig.v1\"\x8e\x02\n" +
-	"\x11LoggerHookMessage\x12,\n" +
-	"\x05level\x18\x01 \x01(\x0e2\x16.config.v1.LoggerLevelR\x05level\x12\x18\n" +
+	"\x16config/v1/logger.proto\x12\tconfig.v1\"\xf6\x01\n" +
+	"\x11LoggerHookMessage\x12\x14\n" +
+	"\x05level\x18\x01 \x01(\tR\x05level\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1e\n" +
 	"\n" +
 	"stacktrace\x18\x03 \x01(\tR\n" +
@@ -527,14 +527,14 @@ const file_config_v1_logger_proto_rawDesc = "" +
 	"\x06fields\x18\x05 \x03(\v2(.config.v1.LoggerHookMessage.FieldsEntryR\x06fields\x1a9\n" +
 	"\vFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xac\a\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x94\a\n" +
 	"\x06Logger\x12\x1a\n" +
 	"\bdisabled\x18\x01 \x01(\bR\bdisabled\x12\x18\n" +
 	"\adevelop\x18\x02 \x01(\bR\adevelop\x12\x18\n" +
 	"\adefault\x18\x03 \x01(\bR\adefault\x12\x12\n" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12\x16\n" +
-	"\x06format\x18\x05 \x01(\tR\x06format\x12,\n" +
-	"\x05level\x18\x06 \x01(\x0e2\x16.config.v1.LoggerLevelR\x05level\x12\x16\n" +
+	"\x06format\x18\x05 \x01(\tR\x06format\x12\x14\n" +
+	"\x05level\x18\x06 \x01(\tR\x05level\x12\x16\n" +
 	"\x06stdout\x18\a \x01(\bR\x06stdout\x12&\n" +
 	"\x0edisable_caller\x18\b \x01(\bR\x0edisable_caller\x12 \n" +
 	"\vcaller_skip\x18\t \x01(\rR\vcaller_skip\x12 \n" +
@@ -605,16 +605,14 @@ var file_config_v1_logger_proto_goTypes = []any{
 	(*Logger_DevLogger)(nil),  // 5: config.v1.Logger.DevLogger
 }
 var file_config_v1_logger_proto_depIdxs = []int32{
-	0, // 0: config.v1.LoggerHookMessage.level:type_name -> config.v1.LoggerLevel
-	3, // 1: config.v1.LoggerHookMessage.fields:type_name -> config.v1.LoggerHookMessage.FieldsEntry
-	0, // 2: config.v1.Logger.level:type_name -> config.v1.LoggerLevel
-	4, // 3: config.v1.Logger.file:type_name -> config.v1.Logger.File
-	5, // 4: config.v1.Logger.dev_logger:type_name -> config.v1.Logger.DevLogger
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	3, // 0: config.v1.LoggerHookMessage.fields:type_name -> config.v1.LoggerHookMessage.FieldsEntry
+	4, // 1: config.v1.Logger.file:type_name -> config.v1.Logger.File
+	5, // 2: config.v1.Logger.dev_logger:type_name -> config.v1.Logger.DevLogger
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_logger_proto_init() }

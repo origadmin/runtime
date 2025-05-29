@@ -12,7 +12,7 @@ import (
 	"github.com/goexts/generic/settings"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/cont
+	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/selector"
 	"github.com/origadmin/runtime/service/tls"
@@ -27,6 +27,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*trans
 	if cfg == nil {
 		return nil, errors.New("service config is nil")
 	}
+	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 	option := settings.ApplyDefaultsOrZero(ss...)
 	timeout := defaultTimeout
 	clientOptions := []transhttp.ClientOption{
@@ -53,7 +54,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*trans
 
 	if option.Discovery != nil {
 		endpoint := helpers.ServiceDiscovery(option.ServiceName)
-		log.Debugf("http service [%s] discovery endpoint [%s]", option.ServiceName, endpoint)
+		ll.Debugw("msg", "init with discovery", "service", "http", "name", option.ServiceName, "endpoint", endpoint)
 		clientOptions = append(clientOptions,
 			transhttp.WithEndpoint(endpoint),
 			transhttp.WithDiscovery(option.Discovery),

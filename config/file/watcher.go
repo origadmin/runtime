@@ -38,6 +38,9 @@ func (w *watcher) Next() ([]*config.KeyValue, error) {
 		return nil, w.ctx.Err()
 	case event := <-w.fw.Events:
 		if event.Op == fsnotify.Rename {
+			if w.f.shouldIgnore(event.Name) {
+				return nil, nil
+			}
 			if _, err := os.Stat(event.Name); err == nil || os.IsExist(err) {
 				if err := w.fw.Add(event.Name); err != nil {
 					return nil, err
@@ -51,6 +54,9 @@ func (w *watcher) Next() ([]*config.KeyValue, error) {
 		path := w.f.path
 		if fi.IsDir() {
 			path = filepath.Join(w.f.path, filepath.Base(event.Name))
+		}
+		if w.f.shouldIgnore(event.Name) {
+			return nil, nil
 		}
 		kv, err := w.f.loadFile(path)
 		if err != nil {

@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/cont
+	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/selector"
 	"github.com/origadmin/runtime/service/tls"
@@ -26,9 +26,9 @@ const defaultTimeout = 5 * time.Second
 // NewClient Creating a GRPC client instance
 func NewClient(ctx context.Context, cfg *configv1.Service, options ...Option) (*grpc.ClientConn, error) {
 	if cfg == nil {
-		//bootstrap = config.DefaultRuntimeConfig
 		return nil, errors.New("service config is nil")
 	}
+	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	option := settings.ApplyDefaultsOrZero(options...)
 	timeout := defaultTimeout
 	clientOptions := []transgrpc.ClientOption{
@@ -55,7 +55,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, options ...Option) (*
 
 	if option.Discovery != nil {
 		endpoint := helpers.ServiceDiscovery(option.ServiceName)
-		log.Debugf("grpc service [%s] discovery endpoint [%s]", option.ServiceName, endpoint)
+		ll.Debugw("msg", "init with discovery", "service", "grpc", "name", option.ServiceName, "endpoint", endpoint)
 		clientOptions = append(clientOptions,
 			transgrpc.WithEndpoint(endpoint),
 			transgrpc.WithDiscovery(option.Discovery))

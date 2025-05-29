@@ -1347,22 +1347,22 @@ var _ interface {
 	ErrorName() string
 } = ConditionValidationError{}
 
-// Validate checks the field values on ConditionHeader with the rules defined
+// Validate checks the field values on Condition_Header with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
-func (m *ConditionHeader) Validate() error {
+func (m *Condition_Header) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ConditionHeader with the rules
+// ValidateAll checks the field values on Condition_Header with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ConditionHeaderMultiError, or nil if none found.
-func (m *ConditionHeader) ValidateAll() error {
+// Condition_HeaderMultiError, or nil if none found.
+func (m *Condition_Header) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ConditionHeader) validate(all bool) error {
+func (m *Condition_Header) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -1374,19 +1374,19 @@ func (m *ConditionHeader) validate(all bool) error {
 	// no validation rules for Value
 
 	if len(errors) > 0 {
-		return ConditionHeaderMultiError(errors)
+		return Condition_HeaderMultiError(errors)
 	}
 
 	return nil
 }
 
-// ConditionHeaderMultiError is an error wrapping multiple validation errors
-// returned by ConditionHeader.ValidateAll() if the designated constraints
+// Condition_HeaderMultiError is an error wrapping multiple validation errors
+// returned by Condition_Header.ValidateAll() if the designated constraints
 // aren't met.
-type ConditionHeaderMultiError []error
+type Condition_HeaderMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ConditionHeaderMultiError) Error() string {
+func (m Condition_HeaderMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -1395,11 +1395,11 @@ func (m ConditionHeaderMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ConditionHeaderMultiError) AllErrors() []error { return m }
+func (m Condition_HeaderMultiError) AllErrors() []error { return m }
 
-// ConditionHeaderValidationError is the validation error returned by
-// ConditionHeader.Validate if the designated constraints aren't met.
-type ConditionHeaderValidationError struct {
+// Condition_HeaderValidationError is the validation error returned by
+// Condition_Header.Validate if the designated constraints aren't met.
+type Condition_HeaderValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -1407,22 +1407,22 @@ type ConditionHeaderValidationError struct {
 }
 
 // Field function returns field value.
-func (e ConditionHeaderValidationError) Field() string { return e.field }
+func (e Condition_HeaderValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ConditionHeaderValidationError) Reason() string { return e.reason }
+func (e Condition_HeaderValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ConditionHeaderValidationError) Cause() error { return e.cause }
+func (e Condition_HeaderValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ConditionHeaderValidationError) Key() bool { return e.key }
+func (e Condition_HeaderValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ConditionHeaderValidationError) ErrorName() string { return "ConditionHeaderValidationError" }
+func (e Condition_HeaderValidationError) ErrorName() string { return "Condition_HeaderValidationError" }
 
 // Error satisfies the builtin error interface
-func (e ConditionHeaderValidationError) Error() string {
+func (e Condition_HeaderValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -1434,14 +1434,14 @@ func (e ConditionHeaderValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sConditionHeader.%s: %s%s",
+		"invalid %sCondition_Header.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ConditionHeaderValidationError{}
+var _ error = Condition_HeaderValidationError{}
 
 var _ interface {
 	Field() string
@@ -1449,4 +1449,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ConditionHeaderValidationError{}
+} = Condition_HeaderValidationError{}

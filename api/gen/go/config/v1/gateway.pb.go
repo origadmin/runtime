@@ -24,25 +24,25 @@ const (
 type Protocol int32
 
 const (
-	Protocol_UNSPECIFIED Protocol = 0
-	Protocol_HTTP        Protocol = 1
-	Protocol_GRPC        Protocol = 2
-	Protocol_CUSTOM      Protocol = 3
+	Protocol_PROTOCOL_UNSPECIFIED Protocol = 0
+	Protocol_PROTOCOL_HTTP        Protocol = 1
+	Protocol_PROTOCOL_GRPC        Protocol = 2
+	Protocol_PROTOCOL_CUSTOM      Protocol = 3
 )
 
 // Enum value maps for Protocol.
 var (
 	Protocol_name = map[int32]string{
-		0: "UNSPECIFIED",
-		1: "HTTP",
-		2: "GRPC",
-		3: "CUSTOM",
+		0: "PROTOCOL_UNSPECIFIED",
+		1: "PROTOCOL_HTTP",
+		2: "PROTOCOL_GRPC",
+		3: "PROTOCOL_CUSTOM",
 	}
 	Protocol_value = map[string]int32{
-		"UNSPECIFIED": 0,
-		"HTTP":        1,
-		"GRPC":        2,
-		"CUSTOM":      3,
+		"PROTOCOL_UNSPECIFIED": 0,
+		"PROTOCOL_HTTP":        1,
+		"PROTOCOL_GRPC":        2,
+		"PROTOCOL_CUSTOM":      3,
 	}
 )
 
@@ -76,19 +76,22 @@ func (Protocol) EnumDescriptor() ([]byte, []int) {
 type HealthCheck_CheckType int32
 
 const (
-	HealthCheck_HTTP HealthCheck_CheckType = 0
-	HealthCheck_TCP  HealthCheck_CheckType = 1
+	HealthCheck_CHECK_TYPE_UNSPECIFIED HealthCheck_CheckType = 0
+	HealthCheck_CHECK_TYPE_HTTP        HealthCheck_CheckType = 1
+	HealthCheck_CHECK_TYPE_TCP         HealthCheck_CheckType = 2
 )
 
 // Enum value maps for HealthCheck_CheckType.
 var (
 	HealthCheck_CheckType_name = map[int32]string{
-		0: "HTTP",
-		1: "TCP",
+		0: "CHECK_TYPE_UNSPECIFIED",
+		1: "CHECK_TYPE_HTTP",
+		2: "CHECK_TYPE_TCP",
 	}
 	HealthCheck_CheckType_value = map[string]int32{
-		"HTTP": 0,
-		"TCP":  1,
+		"CHECK_TYPE_UNSPECIFIED": 0,
+		"CHECK_TYPE_HTTP":        1,
+		"CHECK_TYPE_TCP":         2,
 	}
 )
 
@@ -412,7 +415,7 @@ func (x *Endpoint) GetProtocol() Protocol {
 	if x != nil {
 		return x.Protocol
 	}
-	return Protocol_UNSPECIFIED
+	return Protocol_PROTOCOL_UNSPECIFIED
 }
 
 func (x *Endpoint) GetTimeout() int64 {
@@ -646,7 +649,7 @@ func (x *HealthCheck) GetType() HealthCheck_CheckType {
 	if x != nil {
 		return x.Type
 	}
-	return HealthCheck_HTTP
+	return HealthCheck_CHECK_TYPE_UNSPECIFIED
 }
 
 func (x *HealthCheck) GetEndpoint() string {
@@ -783,7 +786,7 @@ func (x *Condition) GetByStatusCode() string {
 	return ""
 }
 
-func (x *Condition) GetByHeader() *ConditionHeader {
+func (x *Condition) GetByHeader() *Condition_Header {
 	if x != nil {
 		if x, ok := x.Condition.(*Condition_ByHeader); ok {
 			return x.ByHeader
@@ -803,14 +806,14 @@ type Condition_ByStatusCode struct {
 
 type Condition_ByHeader struct {
 	// {"name": "grpc-status", "value": "14"}
-	ByHeader *ConditionHeader `protobuf:"bytes,2,opt,name=by_header,json=byHeader,proto3,oneof"`
+	ByHeader *Condition_Header `protobuf:"bytes,2,opt,name=by_header,json=byHeader,proto3,oneof"`
 }
 
 func (*Condition_ByStatusCode) isCondition_Condition() {}
 
 func (*Condition_ByHeader) isCondition_Condition() {}
 
-type ConditionHeader struct {
+type Condition_Header struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
@@ -818,20 +821,20 @@ type ConditionHeader struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ConditionHeader) Reset() {
-	*x = ConditionHeader{}
+func (x *Condition_Header) Reset() {
+	*x = Condition_Header{}
 	mi := &file_config_v1_gateway_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ConditionHeader) String() string {
+func (x *Condition_Header) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ConditionHeader) ProtoMessage() {}
+func (*Condition_Header) ProtoMessage() {}
 
-func (x *ConditionHeader) ProtoReflect() protoreflect.Message {
+func (x *Condition_Header) ProtoReflect() protoreflect.Message {
 	mi := &file_config_v1_gateway_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -843,19 +846,19 @@ func (x *ConditionHeader) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ConditionHeader.ProtoReflect.Descriptor instead.
-func (*ConditionHeader) Descriptor() ([]byte, []int) {
+// Deprecated: Use Condition_Header.ProtoReflect.Descriptor instead.
+func (*Condition_Header) Descriptor() ([]byte, []int) {
 	return file_config_v1_gateway_proto_rawDescGZIP(), []int{8, 0}
 }
 
-func (x *ConditionHeader) GetName() string {
+func (x *Condition_Header) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *ConditionHeader) GetValue() string {
+func (x *Condition_Header) GetValue() string {
 	if x != nil {
 		return x.Value
 	}
@@ -918,13 +921,14 @@ const file_config_v1_gateway_proto_rawDesc = "" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\t\n" +
-	"\a_weight\"\x7f\n" +
+	"\a_weight\"\xb1\x01\n" +
 	"\vHealthCheck\x124\n" +
 	"\x04type\x18\x01 \x01(\x0e2 .config.v1.HealthCheck.CheckTypeR\x04type\x12\x1a\n" +
-	"\bendpoint\x18\x02 \x01(\tR\bendpoint\"\x1e\n" +
-	"\tCheckType\x12\b\n" +
-	"\x04HTTP\x10\x00\x12\a\n" +
-	"\x03TCP\x10\x01\"\xa1\x01\n" +
+	"\bendpoint\x18\x02 \x01(\tR\bendpoint\"P\n" +
+	"\tCheckType\x12\x1a\n" +
+	"\x16CHECK_TYPE_UNSPECIFIED\x10\x00\x12\x13\n" +
+	"\x0fCHECK_TYPE_HTTP\x10\x01\x12\x12\n" +
+	"\x0eCHECK_TYPE_TCP\x10\x02\"\xa1\x01\n" +
 	"\x05Retry\x12\x1a\n" +
 	"\battempts\x18\x01 \x01(\rR\battempts\x12&\n" +
 	"\x0fper_try_timeout\x18\x02 \x01(\x03R\rperTryTimeout\x124\n" +
@@ -936,17 +940,16 @@ const file_config_v1_gateway_proto_rawDesc = "" +
 	"priorities\"\xb0\x01\n" +
 	"\tCondition\x12&\n" +
 	"\x0eby_status_code\x18\x01 \x01(\tH\x00R\fbyStatusCode\x12:\n" +
-	"\tby_header\x18\x02 \x01(\v2\x1b.config.v1.Condition.headerH\x00R\bbyHeader\x1a2\n" +
-	"\x06header\x12\x12\n" +
+	"\tby_header\x18\x02 \x01(\v2\x1b.config.v1.Condition.HeaderH\x00R\bbyHeader\x1a2\n" +
+	"\x06Header\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05valueB\v\n" +
-	"\tcondition*;\n" +
-	"\bProtocol\x12\x0f\n" +
-	"\vUNSPECIFIED\x10\x00\x12\b\n" +
-	"\x04HTTP\x10\x01\x12\b\n" +
-	"\x04GRPC\x10\x02\x12\n" +
-	"\n" +
-	"\x06CUSTOM\x10\x03B\xa1\x01\n" +
+	"\tcondition*_\n" +
+	"\bProtocol\x12\x18\n" +
+	"\x14PROTOCOL_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rPROTOCOL_HTTP\x10\x01\x12\x11\n" +
+	"\rPROTOCOL_GRPC\x10\x02\x12\x13\n" +
+	"\x0fPROTOCOL_CUSTOM\x10\x03B\xa1\x01\n" +
 	"\rcom.config.v1B\fGatewayProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -979,7 +982,7 @@ var file_config_v1_gateway_proto_goTypes = []any{
 	nil,                        // 11: config.v1.Gateway.TlsStoreEntry
 	nil,                        // 12: config.v1.Endpoint.MetadataEntry
 	nil,                        // 13: config.v1.Backend.MetadataEntry
-	(*ConditionHeader)(nil),    // 14: config.v1.Condition.header
+	(*Condition_Header)(nil),   // 14: config.v1.Condition.Header
 }
 var file_config_v1_gateway_proto_depIdxs = []int32{
 	5,  // 0: config.v1.Gateway.endpoints:type_name -> config.v1.Endpoint
@@ -995,7 +998,7 @@ var file_config_v1_gateway_proto_depIdxs = []int32{
 	13, // 10: config.v1.Backend.metadata:type_name -> config.v1.Backend.MetadataEntry
 	1,  // 11: config.v1.HealthCheck.type:type_name -> config.v1.HealthCheck.CheckType
 	10, // 12: config.v1.Retry.conditions:type_name -> config.v1.Condition
-	14, // 13: config.v1.Condition.by_header:type_name -> config.v1.Condition.header
+	14, // 13: config.v1.Condition.by_header:type_name -> config.v1.Condition.Header
 	3,  // 14: config.v1.Gateway.TlsStoreEntry.value:type_name -> config.v1.TLS
 	15, // [15:15] is the sub-list for method output_type
 	15, // [15:15] is the sub-list for method input_type

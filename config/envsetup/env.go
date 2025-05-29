@@ -8,6 +8,8 @@ package envsetup
 import (
 	"os"
 	"strings"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 func Set(env map[string]string) error {
@@ -21,8 +23,12 @@ func Set(env map[string]string) error {
 }
 
 func SetWithPrefix(prefix string, env map[string]string) error {
+	ll := log.NewHelper(log.With(log.GetLogger(), "module", "envsetup"))
 	for k, v := range env {
-		err := os.Setenv(strings.Join([]string{prefix, k}, "_"), v)
+		pk := strings.Join([]string{prefix, k}, "_")
+		//pk = strings.ToUpper(pk)
+		ll.Infow("msg", "set env", "key", pk, "value", v)
+		err := os.Setenv(pk, v)
 		if err != nil {
 			return err
 		}

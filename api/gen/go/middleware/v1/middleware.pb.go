@@ -29,49 +29,49 @@ const (
 type MiddlewareName int32
 
 const (
-	MiddlewareName_MIDDLEWARE_NAME_UNSPECIFIED MiddlewareName = 0
-	MiddlewareName_LOGGING                     MiddlewareName = 1
-	MiddlewareName_RECOVERY                    MiddlewareName = 2
-	MiddlewareName_TRACING                     MiddlewareName = 3
-	MiddlewareName_CIRCUIT_BREAKER             MiddlewareName = 4
-	MiddlewareName_METADATA                    MiddlewareName = 5
-	MiddlewareName_JWT                         MiddlewareName = 6
-	MiddlewareName_RATE_LIMITER                MiddlewareName = 7
-	MiddlewareName_METRICS                     MiddlewareName = 8
-	MiddlewareName_VALIDATOR                   MiddlewareName = 9
-	MiddlewareName_SELECTOR                    MiddlewareName = 10
-	MiddlewareName_Customize                   MiddlewareName = 11
+	MiddlewareName_MIDDLEWARE_NAME_UNSPECIFIED     MiddlewareName = 0
+	MiddlewareName_MIDDLEWARE_NAME_LOGGING         MiddlewareName = 1
+	MiddlewareName_MIDDLEWARE_NAME_RECOVERY        MiddlewareName = 2
+	MiddlewareName_MIDDLEWARE_NAME_TRACING         MiddlewareName = 3
+	MiddlewareName_MIDDLEWARE_NAME_CIRCUIT_BREAKER MiddlewareName = 4
+	MiddlewareName_MIDDLEWARE_NAME_METADATA        MiddlewareName = 5
+	MiddlewareName_MIDDLEWARE_NAME_JWT             MiddlewareName = 6
+	MiddlewareName_MIDDLEWARE_NAME_RATE_LIMITER    MiddlewareName = 7
+	MiddlewareName_MIDDLEWARE_NAME_METRICS         MiddlewareName = 8
+	MiddlewareName_MIDDLEWARE_NAME_VALIDATOR       MiddlewareName = 9
+	MiddlewareName_MIDDLEWARE_NAME_SELECTOR        MiddlewareName = 10
+	MiddlewareName_MIDDLEWARE_NAME_CUSTOMIZE       MiddlewareName = 11
 )
 
 // Enum value maps for MiddlewareName.
 var (
 	MiddlewareName_name = map[int32]string{
 		0:  "MIDDLEWARE_NAME_UNSPECIFIED",
-		1:  "LOGGING",
-		2:  "RECOVERY",
-		3:  "TRACING",
-		4:  "CIRCUIT_BREAKER",
-		5:  "METADATA",
-		6:  "JWT",
-		7:  "RATE_LIMITER",
-		8:  "METRICS",
-		9:  "VALIDATOR",
-		10: "SELECTOR",
-		11: "Customize",
+		1:  "MIDDLEWARE_NAME_LOGGING",
+		2:  "MIDDLEWARE_NAME_RECOVERY",
+		3:  "MIDDLEWARE_NAME_TRACING",
+		4:  "MIDDLEWARE_NAME_CIRCUIT_BREAKER",
+		5:  "MIDDLEWARE_NAME_METADATA",
+		6:  "MIDDLEWARE_NAME_JWT",
+		7:  "MIDDLEWARE_NAME_RATE_LIMITER",
+		8:  "MIDDLEWARE_NAME_METRICS",
+		9:  "MIDDLEWARE_NAME_VALIDATOR",
+		10: "MIDDLEWARE_NAME_SELECTOR",
+		11: "MIDDLEWARE_NAME_CUSTOMIZE",
 	}
 	MiddlewareName_value = map[string]int32{
-		"MIDDLEWARE_NAME_UNSPECIFIED": 0,
-		"LOGGING":                     1,
-		"RECOVERY":                    2,
-		"TRACING":                     3,
-		"CIRCUIT_BREAKER":             4,
-		"METADATA":                    5,
-		"JWT":                         6,
-		"RATE_LIMITER":                7,
-		"METRICS":                     8,
-		"VALIDATOR":                   9,
-		"SELECTOR":                    10,
-		"Customize":                   11,
+		"MIDDLEWARE_NAME_UNSPECIFIED":     0,
+		"MIDDLEWARE_NAME_LOGGING":         1,
+		"MIDDLEWARE_NAME_RECOVERY":        2,
+		"MIDDLEWARE_NAME_TRACING":         3,
+		"MIDDLEWARE_NAME_CIRCUIT_BREAKER": 4,
+		"MIDDLEWARE_NAME_METADATA":        5,
+		"MIDDLEWARE_NAME_JWT":             6,
+		"MIDDLEWARE_NAME_RATE_LIMITER":    7,
+		"MIDDLEWARE_NAME_METRICS":         8,
+		"MIDDLEWARE_NAME_VALIDATOR":       9,
+		"MIDDLEWARE_NAME_SELECTOR":        10,
+		"MIDDLEWARE_NAME_CUSTOMIZE":       11,
 	}
 )
 
@@ -278,21 +278,21 @@ const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x04data\x18\x03 \x03(\v2,.middleware.v1.Middleware.Metadata.DataEntryR\x04data\x1a7\n" +
 	"\tDataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\xd0\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\x80\x03\n" +
 	"\x0eMiddlewareName\x12\x1f\n" +
-	"\x1bMIDDLEWARE_NAME_UNSPECIFIED\x10\x00\x12\v\n" +
-	"\aLOGGING\x10\x01\x12\f\n" +
-	"\bRECOVERY\x10\x02\x12\v\n" +
-	"\aTRACING\x10\x03\x12\x13\n" +
-	"\x0fCIRCUIT_BREAKER\x10\x04\x12\f\n" +
-	"\bMETADATA\x10\x05\x12\a\n" +
-	"\x03JWT\x10\x06\x12\x10\n" +
-	"\fRATE_LIMITER\x10\a\x12\v\n" +
-	"\aMETRICS\x10\b\x12\r\n" +
-	"\tVALIDATOR\x10\t\x12\f\n" +
-	"\bSELECTOR\x10\n" +
-	"\x12\r\n" +
-	"\tCustomize\x10\vB\xc0\x01\n" +
+	"\x1bMIDDLEWARE_NAME_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17MIDDLEWARE_NAME_LOGGING\x10\x01\x12\x1c\n" +
+	"\x18MIDDLEWARE_NAME_RECOVERY\x10\x02\x12\x1b\n" +
+	"\x17MIDDLEWARE_NAME_TRACING\x10\x03\x12#\n" +
+	"\x1fMIDDLEWARE_NAME_CIRCUIT_BREAKER\x10\x04\x12\x1c\n" +
+	"\x18MIDDLEWARE_NAME_METADATA\x10\x05\x12\x17\n" +
+	"\x13MIDDLEWARE_NAME_JWT\x10\x06\x12 \n" +
+	"\x1cMIDDLEWARE_NAME_RATE_LIMITER\x10\a\x12\x1b\n" +
+	"\x17MIDDLEWARE_NAME_METRICS\x10\b\x12\x1d\n" +
+	"\x19MIDDLEWARE_NAME_VALIDATOR\x10\t\x12\x1c\n" +
+	"\x18MIDDLEWARE_NAME_SELECTOR\x10\n" +
+	"\x12\x1d\n" +
+	"\x19MIDDLEWARE_NAME_CUSTOMIZE\x10\vB\xc0\x01\n" +
 	"\x11com.middleware.v1B\x0fMiddlewareProtoP\x01ZBgithub.com/origadmin/runtime/api/gen/go/middleware/v1;middlewarev1\xf8\x01\x01\xa2\x02\x03MXX\xaa\x02\rMiddleware.V1\xca\x02\rMiddleware\\V1\xe2\x02\x19Middleware\\V1\\GPBMetadata\xea\x02\x0eMiddleware::V1b\x06proto3"
 
 var (

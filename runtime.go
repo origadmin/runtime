@@ -56,18 +56,23 @@ type Runtime interface {
 	Load(opts ...config.Option) error
 	CreateApp(...transport.Server) *kratos.App
 	WithLoggerAttrs(kvs ...any) Runtime
+	SetRegistry(registrar registry.KRegistrar)
 }
 
 type runtime struct {
-	ctx    context.Context
-	loaded *atomic.Bool
-	//builder   Builder
+	ctx       context.Context
+	loaded    *atomic.Bool
 	prefix    string
 	signals   []os.Signal
 	source    *configv1.SourceConfig
 	bootstrap *bootstrap.Bootstrap
 	logger    log.KLogger
 	loader    *config.Loader
+	registrar registry.KRegistrar
+}
+
+func (r *runtime) SetRegistry(registrar registry.KRegistrar) {
+	r.registrar = registrar
 }
 
 func (r *runtime) Builder() Builder {
@@ -119,7 +124,7 @@ func (r *runtime) Load(opts ...config.Option) error {
 	if err != nil {
 		return errors.Wrap(err, "load source config")
 	}
-	log.NewHelper(log.DefaultLogger).Infof("loading config: %+v", sourceConfig)
+	log.NewHelper(log.GetLogger()).Infof("loading config: %+v", sourceConfig)
 	opts = append(opts, config.WithServiceName(r.bootstrap.ServiceName()))
 	if sourceConfig.Env {
 		err := envsetup.SetWithPrefix(r.prefix, sourceConfig.EnvArgs)

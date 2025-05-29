@@ -26,11 +26,13 @@ const (
 
 // NewServer Create a GRPC server instance
 func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, error) {
-	log.Debugf("Creating new GRPC server instance with config: %+v", cfg)
 	if cfg == nil {
 		return nil, errors.New("service config is nil")
 	}
+	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
+	ll.Debugf("Creating new GRPC server instance with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(options...)
+
 	serverOptions := []transgrpc.ServerOption{
 		transgrpc.Middleware(option.Middlewares...),
 	}
@@ -64,13 +66,13 @@ func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, err
 			}
 			serviceGrpc.Endpoint = dynamic
 		}
-		log.Debugf("GRPC endpoint: %s", serviceGrpc.Endpoint)
+		ll.Debugw("msg", "GRPC", "endpoint", serviceGrpc.Endpoint)
 		if serviceGrpc.Endpoint != "" {
 			parsedEndpoint, err := url.Parse(serviceGrpc.Endpoint)
 			if err == nil {
 				serverOptions = append(serverOptions, transgrpc.Endpoint(parsedEndpoint))
 			} else {
-				log.Errorf("Failed to parse endpoint: %v", err)
+				ll.Errorf("Failed to parse endpoint: %v", err)
 			}
 		}
 	}

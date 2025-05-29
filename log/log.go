@@ -6,7 +6,7 @@
 package log
 
 import (
-	"path/filepath"
+	"strings"
 
 	"github.com/go-kratos/kratos/v2/log"
 	kslog "github.com/origadmin/slog-kratos"
@@ -30,17 +30,33 @@ func New(cfg *configv1.Logger) log.Logger {
 		return NewDiscard()
 	}
 	options := make([]slogx.Option, 0)
-	if cfg.GetFile() != nil {
-		options = append(options, slogx.WithFile(cfg.GetFile().GetPath()))
-		_, file := filepath.Split(cfg.GetFile().GetPath())
-		options = append(options, slogx.WithLumberjack(&slogx.LumberjackLogger{
-			Filename:   file,
-			MaxSize:    int(cfg.GetFile().GetMaxSize()),
-			MaxAge:     int(cfg.GetFile().GetMaxAge()),
-			MaxBackups: int(cfg.GetFile().GetMaxBackups()),
-			LocalTime:  cfg.GetFile().GetLocalTime(),
-			Compress:   cfg.GetFile().GetCompress(),
-		}))
+	fileConfig := cfg.File
+	if fileConfig != nil {
+		log.Infof("show log file config: %+v", fileConfig)
+		//path, _ := filepath.Abs(fileConfig.GetPath())
+		//log.Infof("log file path: %s", path)
+		//_, err := os.Stat(path)
+		//if err != nil && os.IsNotExist(err) {
+		//	err = os.MkdirAll(path, os.ModePerm)
+		//	if err != nil {
+		//		log.Errorf("create log file path error: %v", err)
+		//		return NewDiscard()
+		//	}
+		//}
+		//pathname := filepath.Join(fileConfig.GetPath(), cfg.GetName())
+
+		if fileConfig.Lumberjack {
+			options = append(options, slogx.WithLumberjack(&slogx.LumberjackLogger{
+				Filename:   fileConfig.GetPath(),
+				MaxSize:    int(fileConfig.GetMaxSize()),
+				MaxAge:     int(fileConfig.GetMaxAge()),
+				MaxBackups: int(fileConfig.GetMaxBackups()),
+				LocalTime:  fileConfig.GetLocalTime(),
+				Compress:   fileConfig.GetCompress(),
+			}))
+		} else {
+			options = append(options, slogx.WithFile(cfg.GetName()))
+		}
 	}
 	if cfg.GetStdout() {
 		options = append(options, slogx.WithConsole(true))
@@ -68,20 +84,32 @@ func NewKSLoggerWithOption(options []slogx.Option) *kslog.Logger {
 	return kslog.NewLogger(kslog.WithLogger(base))
 }
 
-func LevelOption(level configv1.LoggerLevel) slogx.Option {
+func LevelOption(level string) slogx.Option {
 	ll := slogx.LevelInfo
-	switch level {
-	case configv1.LoggerLevel_LOGGER_LEVEL_FATAL:
+	switch strings.ToLower(level) {
+	case "fatal":
 		ll = slogx.LevelFatal
-	case configv1.LoggerLevel_LOGGER_LEVEL_DEBUG:
+	case "debug":
 		ll = slogx.LevelDebug
-	case configv1.LoggerLevel_LOGGER_LEVEL_ERROR:
+	case "error":
 		ll = slogx.LevelError
-	case configv1.LoggerLevel_LOGGER_LEVEL_WARN:
+	case "warn":
 		ll = slogx.LevelWarn
-	case configv1.LoggerLevel_LOGGER_LEVEL_INFO:
+	case "info":
 		ll = slogx.LevelInfo
+	default:
+
 	}
+	//case configv1.LoggerLevel_LOGGER_LEVEL_FATAL:
+	//	ll = slogx.LevelFatal
+	//case configv1.LoggerLevel_LOGGER_LEVEL_DEBUG:
+	//	ll = slogx.LevelDebug
+	//case configv1.LoggerLevel_LOGGER_LEVEL_ERROR:
+	//	ll = slogx.LevelError
+	//case configv1.LoggerLevel_LOGGER_LEVEL_WARN:
+	//	ll = slogx.LevelWarn
+	//case configv1.LoggerLevel_LOGGER_LEVEL_INFO:
+	//	ll = slogx.LevelInfo
 	return slogx.WithLevel(ll)
 }
 
@@ -117,9 +145,9 @@ func LevelOption(level configv1.LoggerLevel) slogx.Option {
 //	}
 //
 //	// 补充时间间隔切割
-//	if cfg.GetFile() != nil && cfg.GetFile().GetRotateInterval() > 0 {
+//	if fileConfig != nil && fileConfig.GetRotateInterval() > 0 {
 //		options = append(options, slogx.WithRotateInterval(
-//			time.Duration(cfg.GetFile().GetRotateInterval())*time.Hour,
+//			time.Duration(fileConfig.GetRotateInterval())*time.Hour,
 //		))
 //	}
 //

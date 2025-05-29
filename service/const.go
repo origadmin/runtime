@@ -37,31 +37,41 @@ type (
 	GRPCClientOption = transgrpc.ClientOption
 	// HTTPClientOption define the HTTP client options
 	HTTPClientOption = transhttp.ClientOption
+
+	Option interface {
+		GRPCServerOption | HTTPServerOption | GRPCClientOption | HTTPClientOption
+	}
 )
 
 type (
-	// RegisterGRPCServerFunc register a gRPC server
-	RegisterGRPCServerFunc = func(context.Context, *GRPCServer)
-	// RegisterHTTPServerFunc register a HTTP server
-	RegisterHTTPServerFunc = func(context.Context, *HTTPServer)
-	// RegisterGRPCClientFunc register a gRPC client
-	RegisterGRPCClientFunc = func(context.Context, *GRPCClient)
-	// RegisterHTTPClientFunc register a HTTP client
-	RegisterHTTPClientFunc = func(context.Context, *HTTPClient)
+	// RegisterFunc register a service
+	RegisterFunc[T any] func(context.Context, *T)
+	// RegisterGRPCFunc register a gRPC server
+	RegisterGRPCFunc = RegisterFunc[GRPCServer]
+	// RegisterHTTPFunc register a HTTP server
+	RegisterHTTPFunc = RegisterFunc[HTTPServer]
 )
 
-type HTTPServerRegister interface {
-	HTTPServer(context.Context, *HTTPServer)
+func (f RegisterFunc[T]) Register(ctx context.Context, t *T) {
+	f(ctx, t)
 }
 
-type GRPCServerRegister interface {
-	GRPCServer(context.Context, *GRPCServer)
+type Registrar[T any] interface {
+	Register(context.Context, *T)
 }
 
-type ServerRegister interface {
-	GRPCServerRegister
-	HTTPServerRegister
-	Server(context.Context, *GRPCServer, *HTTPServer)
+type HTTPRegistrar interface {
+	RegisterHTTP(context.Context, *HTTPServer)
+}
+
+type GRPCRegistrar interface {
+	RegisterGRPC(context.Context, *GRPCServer)
+}
+
+type ServerRegistrar interface {
+	Register(context.Context, any)
+	RegisterHTTP(context.Context, *HTTPServer)
+	RegisterGRPC(context.Context, *GRPCServer)
 }
 
 var (

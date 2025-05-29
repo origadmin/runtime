@@ -23,7 +23,7 @@ type Resolved interface {
 	WithDecode(name string, v any, decode func([]byte, any) error) error
 	Value(name string) (any, error)
 	Middleware() *middlewarev1.Middleware
-	Service() *configv1.Service
+	Services() []*configv1.Service
 	Logger() *configv1.Logger
 	Discovery() *configv1.Discovery
 }
@@ -40,6 +40,14 @@ func (r ResolveFunc) Resolve(config KConfig) (Resolved, error) {
 
 type resolver struct {
 	values map[string]any
+}
+
+func (r resolver) Services() []*configv1.Service {
+	var ss []*configv1.Service
+	if r.loadConfig("service", &ss) {
+		return ss
+	}
+	return nil
 }
 
 func (r resolver) Discovery() *configv1.Discovery {
@@ -85,14 +93,6 @@ func (r resolver) Middleware() *middlewarev1.Middleware {
 	var m middlewarev1.Middleware
 	if r.loadConfig("middleware", &m) {
 		return &m
-	}
-	return nil
-}
-
-func (r resolver) Service() *configv1.Service {
-	var s configv1.Service
-	if r.loadConfig("service", &s) {
-		return &s
 	}
 	return nil
 }

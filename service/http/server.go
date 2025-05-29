@@ -27,11 +27,12 @@ const (
 
 // NewServer Create an HTTP server instance.
 func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
-	log.Debugf("Creating new HTTP server with config: %+v", cfg)
 	if cfg == nil {
 		log.Errorf("Service config is nil")
 		return nil, errors.New("service config is nil")
 	}
+	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
+	ll.Debugf("Creating new HTTP server instance with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
 	serverOptions := []transhttp.ServerOption{
 		transhttp.Middleware(option.Middlewares...),
@@ -74,13 +75,13 @@ func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
 			}
 			serviceHttp.Endpoint = dynamic
 		}
-		log.Debugf("HTTP endpoint: %s", serviceHttp.Endpoint)
+		ll.Debugw("msg", "HTTP", "endpoint", serviceHttp.Endpoint)
 		if serviceHttp.Endpoint != "" {
 			parsedEndpoint, err := url.Parse(serviceHttp.Endpoint)
 			if err == nil {
 				serverOptions = append(serverOptions, transhttp.Endpoint(parsedEndpoint))
 			} else {
-				log.Errorf("Failed to parse endpoint: %v", err)
+				ll.Errorf("Failed to parse endpoint: %v", err)
 			}
 		}
 	}
