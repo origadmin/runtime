@@ -75,7 +75,7 @@ message Middleware {
   message Metadata {
     bool enabled = 1 [json_name = "enabled"];
     // Metadata prefix
-    string prefix = 2 [json_name = "prefix"];
+    repeated string prefixes = 2 [json_name = "prefixes"];
     // Metadata data
     map<string, string> data = 3 [json_name = "data"];
   }

@@ -332,8 +332,6 @@ func (m *Middleware_Metadata) validate(all bool) error {
 
 	// no validation rules for Enabled
 
-	// no validation rules for Prefix
-
 	// no validation rules for Data
 
 	if len(errors) > 0 {

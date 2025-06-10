@@ -200,7 +200,7 @@ type Middleware_Metadata struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Enabled bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	// Metadata prefix
-	Prefix string `protobuf:"bytes,2,opt,name=prefix,proto3" json:"prefix,omitempty"`
+	Prefixes []string `protobuf:"bytes,2,rep,name=prefixes,proto3" json:"prefixes,omitempty"`
 	// Metadata data
 	Data          map[string]string `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
@@ -244,11 +244,11 @@ func (x *Middleware_Metadata) GetEnabled() bool {
 	return false
 }
 
-func (x *Middleware_Metadata) GetPrefix() string {
+func (x *Middleware_Metadata) GetPrefixes() []string {
 	if x != nil {
-		return x.Prefix
+		return x.Prefixes
 	}
-	return ""
+	return nil
 }
 
 func (x *Middleware_Metadata) GetData() map[string]string {
@@ -262,7 +262,7 @@ var File_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"\x1emiddleware/v1/middleware.proto\x12\rmiddleware.v1\x1a\x1bmiddleware/v1/jwt/jwt.proto\x1a#middleware/v1/metrics/metrics.proto\x1a)middleware/v1/ratelimit/ratelimiter.proto\x1a%middleware/v1/selector/selector.proto\x1a'middleware/v1/validator/validator.proto\"\xe6\x04\n" +
+	"\x1emiddleware/v1/middleware.proto\x12\rmiddleware.v1\x1a\x1bmiddleware/v1/jwt/jwt.proto\x1a#middleware/v1/metrics/metrics.proto\x1a)middleware/v1/ratelimit/ratelimiter.proto\x1a%middleware/v1/selector/selector.proto\x1a'middleware/v1/validator/validator.proto\"\xea\x04\n" +
 	"\n" +
 	"Middleware\x120\n" +
 	"\x13enabled_middlewares\x18\x01 \x03(\tR\x13enabled_middlewares\x12>\n" +
@@ -271,10 +271,10 @@ const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\ametrics\x18f \x01(\v2\x1e.middleware.v1.metrics.MetricsR\ametrics\x12@\n" +
 	"\tvalidator\x18g \x01(\v2\".middleware.v1.validator.ValidatorR\tvalidator\x12(\n" +
 	"\x03jwt\x18h \x01(\v2\x16.middleware.v1.jwt.JWTR\x03jwt\x12<\n" +
-	"\bselector\x18i \x01(\v2 .middleware.v1.selector.SelectorR\bselector\x1a\xb7\x01\n" +
+	"\bselector\x18i \x01(\v2 .middleware.v1.selector.SelectorR\bselector\x1a\xbb\x01\n" +
 	"\bMetadata\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x16\n" +
-	"\x06prefix\x18\x02 \x01(\tR\x06prefix\x12@\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x1a\n" +
+	"\bprefixes\x18\x02 \x03(\tR\bprefixes\x12@\n" +
 	"\x04data\x18\x03 \x03(\v2,.middleware.v1.Middleware.Metadata.DataEntryR\x04data\x1a7\n" +
 	"\tDataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
