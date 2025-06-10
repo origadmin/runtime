@@ -32,13 +32,8 @@ func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, err
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	ll.Debugf("Creating new GRPC server instance with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(options...)
-
-	serverOptions := []transgrpc.ServerOption{
-		transgrpc.Middleware(option.Middlewares...),
-	}
-	if len(option.ServerOptions) > 0 {
-		serverOptions = append(serverOptions, option.ServerOptions...)
-	}
+	timeout := defaultTimeout
+	serverOptions := option.ServerOptions
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.UseTls {
 			tlsConfig, err := tls.NewServerTLSConfig(serviceGrpc.GetTlsConfig())
@@ -56,7 +51,7 @@ func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, err
 			serverOptions = append(serverOptions, transgrpc.Address(serviceGrpc.Addr))
 		}
 		if serviceGrpc.Timeout != 0 {
-			serverOptions = append(serverOptions, transgrpc.Timeout(time.Duration(serviceGrpc.Timeout*1e6)))
+			timeout = time.Duration(serviceGrpc.Timeout * 1e6)
 		}
 		if cfg.DynamicEndpoint && serviceGrpc.Endpoint == "" {
 			ep := parseEndpointOption(option)
@@ -76,7 +71,10 @@ func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, err
 			}
 		}
 	}
-
+	serverOptions = append(serverOptions, transgrpc.Timeout(timeout))
+	if len(option.Middlewares) > 0 {
+		serverOptions = append(serverOptions, transgrpc.Middleware(option.Middlewares...))
+	}
 	srv := transgrpc.NewServer(serverOptions...)
 	return srv, nil
 }

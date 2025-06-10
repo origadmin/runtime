@@ -34,12 +34,12 @@ func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 	ll.Debugf("Creating new HTTP server instance with config: %+v", cfg)
 	option := settings.ApplyDefaultsOrZero(ss...)
-	serverOptions := []transhttp.ServerOption{
-		transhttp.Middleware(option.Middlewares...),
-	}
-	if len(option.ServerOptions) > 0 {
-		serverOptions = append(serverOptions, option.ServerOptions...)
-	}
+	//serverOptions := []transhttp.ServerOption{
+	//	transhttp.Timeout(defaultTimeout),
+	//	transhttp.Middleware(option.Middlewares...),
+	//}
+	timeout := defaultTimeout
+	serverOptions := option.ServerOptions
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
 		if serviceHttp.UseTls {
 			tlsConfig, err := tls.NewServerTLSConfig(serviceHttp.GetTlsConfig())
@@ -57,7 +57,7 @@ func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
 			serverOptions = append(serverOptions, transhttp.Address(serviceHttp.Addr))
 		}
 		if serviceHttp.Timeout != 0 {
-			serverOptions = append(serverOptions, transhttp.Timeout(time.Duration(serviceHttp.Timeout)))
+			timeout = time.Duration(serviceHttp.Timeout * 1e6)
 		}
 		if cfg.DynamicEndpoint && serviceHttp.Endpoint == "" {
 			hostEnv := hostName
@@ -84,6 +84,10 @@ func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
 				ll.Errorf("Failed to parse endpoint: %v", err)
 			}
 		}
+	}
+	serverOptions = append(serverOptions, transhttp.Timeout(timeout))
+	if len(option.Middlewares) > 0 {
+		serverOptions = append(serverOptions, transhttp.Middleware(option.Middlewares...))
 	}
 
 	srv := transhttp.NewServer(serverOptions...)

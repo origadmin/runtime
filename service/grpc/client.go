@@ -31,10 +31,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, options ...Option) (*
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	option := settings.ApplyDefaultsOrZero(options...)
 	timeout := defaultTimeout
-	clientOptions := []transgrpc.ClientOption{
-		transgrpc.WithTimeout(timeout),
-		transgrpc.WithMiddleware(option.Middlewares...),
-	}
+	clientOptions := option.ClientOptions
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
 		if serviceGrpc.Timeout != 0 {
 			timeout = time.Duration(serviceGrpc.Timeout * 1e6)
@@ -49,8 +46,9 @@ func NewClient(ctx context.Context, cfg *configv1.Service, options ...Option) (*
 			}
 		}
 	}
-	if len(option.ClientOptions) > 0 {
-		clientOptions = append(clientOptions, option.ClientOptions...)
+	clientOptions = append(clientOptions, transgrpc.WithTimeout(timeout))
+	if len(option.Middlewares) > 0 {
+		clientOptions = append(clientOptions, transgrpc.WithMiddleware(option.Middlewares...))
 	}
 
 	if option.Discovery != nil {

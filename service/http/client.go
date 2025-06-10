@@ -30,13 +30,10 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*trans
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 	option := settings.ApplyDefaultsOrZero(ss...)
 	timeout := defaultTimeout
-	clientOptions := []transhttp.ClientOption{
-		transhttp.WithTimeout(timeout),
-		transhttp.WithMiddleware(option.Middlewares...),
-	}
+	clientOptions := option.ClientOptions
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {
 		if serviceHttp.Timeout != 0 {
-			timeout = time.Duration(serviceHttp.Timeout)
+			timeout = time.Duration(serviceHttp.Timeout * 1e6)
 		}
 		if serviceHttp.UseTls {
 			tlsConfig, err := tls.NewClientTLSConfig(serviceHttp.GetTlsConfig())
@@ -48,10 +45,10 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*trans
 			}
 		}
 	}
-	if len(option.ClientOptions) > 0 {
-		clientOptions = append(clientOptions, option.ClientOptions...)
+	clientOptions = append(clientOptions, transhttp.WithTimeout(timeout))
+	if len(option.Middlewares) > 0 {
+		clientOptions = append(clientOptions, transhttp.WithMiddleware(option.Middlewares...))
 	}
-
 	if option.Discovery != nil {
 		endpoint := helpers.ServiceDiscovery(option.ServiceName)
 		ll.Debugw("msg", "init with discovery", "service", "http", "name", option.ServiceName, "endpoint", endpoint)
@@ -60,7 +57,6 @@ func NewClient(ctx context.Context, cfg *configv1.Service, ss ...Option) (*trans
 			transhttp.WithDiscovery(option.Discovery),
 		)
 	}
-
 	if serviceSelector := cfg.GetSelector(); serviceSelector != nil {
 		filter, err := selector.NewFilter(cfg.GetSelector())
 		if err == nil {
