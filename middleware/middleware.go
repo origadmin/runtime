@@ -138,7 +138,7 @@ func buildServerMiddlewares(cfg *middlewarev1.Middleware, ss ...Option) []KMiddl
 		case "logging":
 			middlewares = LoggingServer(middlewares, option.Logger)
 		case "metadata":
-			middlewares = Recovery(middlewares)
+			middlewares = MetadataServer(middlewares, cfg.GetMetadata())
 		case "rate_limit":
 			middlewares = RateLimitServer(middlewares, cfg.GetRateLimiter())
 		case "tracing":
