@@ -14,8 +14,8 @@ import (
 
 func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []KMiddleware {
 	var options []middlewareMetadata.Option
-	if prefix := cfg.GetPrefix(); prefix != "" {
-		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefix))
+	if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
+		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
 	}
 	if metaSource := cfg.GetData(); len(metaSource) > 0 {
 		data := make(metadata.Metadata, len(metaSource))
@@ -29,8 +29,8 @@ func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []K
 
 func MetadataServer(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []KMiddleware {
 	var options []middlewareMetadata.Option
-	if prefix := cfg.GetPrefix(); prefix != "" {
-		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefix))
+	if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
+		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
 	}
 	if metaSource := cfg.GetData(); len(metaSource) > 0 {
 		data := metadata.Metadata{}
@@ -49,8 +49,8 @@ func (m metadataFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware
 	cfg := middleware.GetMetadata()
 	if cfg.GetEnabled() {
 		options := make([]middlewareMetadata.Option, 0)
-		if prefix := cfg.GetPrefix(); prefix != "" {
-			options = append(options, middlewareMetadata.WithPropagatedPrefix(prefix))
+		if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
+			options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
 		}
 		if metaSource := cfg.GetData(); len(metaSource) > 0 {
 			data := make(metadata.Metadata, len(metaSource))
@@ -68,8 +68,8 @@ func (m metadataFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware
 	cfg := middleware.GetMetadata()
 	if cfg.GetEnabled() {
 		options := make([]middlewareMetadata.Option, 0)
-		if prefix := cfg.GetPrefix(); prefix != "" {
-			options = append(options, middlewareMetadata.WithPropagatedPrefix(prefix))
+		if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
+			options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
 		}
 		if metaSource := cfg.GetData(); len(metaSource) > 0 {
 			data := metadata.Metadata{}
