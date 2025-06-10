@@ -51,6 +51,7 @@ type SignalHandler interface {
 type Runtime interface {
 	Logger
 	SignalHandler
+	Client() Runtime
 	Builder() Builder
 	Context() context.Context
 	Load(opts ...config.Option) error
@@ -69,6 +70,7 @@ type runtime struct {
 	logger    log.KLogger
 	loader    *config.Loader
 	registrar registry.KRegistrar
+	client    bool
 }
 
 func (r *runtime) SetRegistry(registrar registry.KRegistrar) {
@@ -81,6 +83,12 @@ func (r *runtime) Builder() Builder {
 
 func (r *runtime) Context() context.Context {
 	return r.ctx
+}
+
+func (r *runtime) Client() Runtime {
+	rr := *r
+	rr.client = true
+	return &rr
 }
 
 func (r *runtime) WithLoggerAttrs(kvs ...any) Runtime {
@@ -153,6 +161,9 @@ func (r *runtime) Load(opts ...config.Option) error {
 }
 
 func (r *runtime) buildRegistrar() (registry.KRegistrar, error) {
+	if r.client {
+		return nil, nil
+	}
 	resolved, err := r.loader.GetResolved()
 	if err != nil {
 		return nil, err
