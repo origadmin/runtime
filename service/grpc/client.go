@@ -29,7 +29,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, options ...Option) (*
 		return nil, errors.New("service config is nil")
 	}
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
-	option := settings.ApplyDefaultsOrZero(options...)
+	option := settings.ApplyZero(options)
 	timeout := defaultTimeout
 	clientOptions := option.ClientOptions
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {

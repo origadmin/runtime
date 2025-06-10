@@ -26,18 +26,14 @@ const (
 )
 
 // NewServer Create an HTTP server instance.
-func NewServer(cfg *configv1.Service, ss ...Option) (*transhttp.Server, error) {
+func NewServer(cfg *configv1.Service, options ...Option) (*transhttp.Server, error) {
 	if cfg == nil {
 		log.Errorf("Service config is nil")
 		return nil, errors.New("service config is nil")
 	}
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 	ll.Debugf("Creating new HTTP server instance with config: %+v", cfg)
-	option := settings.ApplyDefaultsOrZero(ss...)
-	//serverOptions := []transhttp.ServerOption{
-	//	transhttp.Timeout(defaultTimeout),
-	//	transhttp.Middleware(option.Middlewares...),
-	//}
+	option := settings.ApplyZero(options)
 	timeout := defaultTimeout
 	serverOptions := option.ServerOptions
 	if serviceHttp := cfg.GetHttp(); serviceHttp != nil {

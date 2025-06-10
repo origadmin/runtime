@@ -31,7 +31,7 @@ func NewServer(cfg *configv1.Service, options ...Option) (*transgrpc.Server, err
 	}
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	ll.Debugf("Creating new GRPC server instance with config: %+v", cfg)
-	option := settings.ApplyDefaultsOrZero(options...)
+	option := settings.ApplyZero(options)
 	timeout := defaultTimeout
 	serverOptions := option.ServerOptions
 	if serviceGrpc := cfg.GetGrpc(); serviceGrpc != nil {
