@@ -15,6 +15,7 @@ import (
 
 type ServerBuilder interface {
 	factory.Registry[ServerFactory]
+	DefaultBuild(*configv1.Service, ...ServerOption) (transport.Server, error)
 	Build(string, *configv1.Service, ...ServerOption) (transport.Server, error)
 }
 

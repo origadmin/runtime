@@ -42,12 +42,13 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middleware, options ..
 	option := settings.Apply(&Options{
 		Logger: log.DefaultLogger,
 	}, options)
-
+	log.Infof("build middleware client")
 	for _, em := range cfg.EnabledMiddlewares {
 		f, ok := b.Get(em)
 		if !ok {
 			continue
 		}
+		log.Infof("middleware: %s", em)
 		m, ok := f.NewMiddlewareClient(cfg, option)
 		if ok {
 			middlewares = append(middlewares, m)
@@ -92,19 +93,23 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middleware, options ..
 }
 
 func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middleware, options ...Option) []KMiddleware {
+	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
+
+	// If the configuration is nil, return the empty slice
 	if cfg == nil {
 		return middlewares
 	}
 	option := settings.Apply(&Options{
 		Logger: log.DefaultLogger,
 	}, options)
-
+	log.Infof("build middleware server")
 	for _, em := range cfg.EnabledMiddlewares {
 		f, ok := b.Get(em)
 		if !ok {
 			continue
 		}
+		log.Infof("middleware: %s", em)
 		m, ok := f.NewMiddlewareServer(cfg, option)
 		if ok {
 			middlewares = append(middlewares, m)

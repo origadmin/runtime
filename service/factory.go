@@ -14,18 +14,26 @@ import (
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/service/grpc"
 	"github.com/origadmin/runtime/service/http"
-	"github.com/origadmin/runtime/service/selector"
 )
+
+const DefaultName = "default"
+
+// DefaultBuilder is the default instance of the middlewareBuilder .
+var DefaultBuilder = NewBuilder()
 
 // DefaultServiceFactory is the default instance of the buildImpl.
 var DefaultServiceFactory ServerFactory = &factoryImpl{}
+
+func init() {
+	DefaultBuilder.Register(DefaultName, DefaultServiceFactory)
+}
 
 // ServiceBuilder is a struct that implements the buildImpl interface.
 // It provides methods for creating new gRPC and HTTP servers and clients.
 type factoryImpl struct{}
 
-func (f factoryImpl) New(service *configv1.Service, opts ...ServerOption) (transport.Server, error) {
-	options := settings.ApplyZero(opts)
+func (f factoryImpl) New(service *configv1.Service, ss ...ServerOption) (transport.Server, error) {
+	options := settings.ApplyZero(ss)
 	switch service.GetType() {
 	case "grpc":
 		return f.NewGRPCServer(service, options.ToGRPC())
@@ -38,15 +46,15 @@ func (f factoryImpl) New(service *configv1.Service, opts ...ServerOption) (trans
 // NewGRPCServer creates a new gRPC server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
 func (f factoryImpl) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GRPCServer, error) {
-	if cfg.GetSelector() != nil {
-		filter, err := selector.NewFilter(cfg.GetSelector())
-		if err != nil {
-			return nil, err
-		}
-		ss = append([]GRPCOption{
-			grpc.WithNodeFilter(filter),
-		}, ss...)
-	}
+	//if cfg.GetSelector() != nil {
+	//	filter, err := selector.NewFilter(cfg.GetSelector())
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	ss = append([]GRPCOption{
+	//		grpc.WithNodeFilter(filter),
+	//	}, ss...)
+	//}
 	// Create a new gRPC server using the provided configuration and options.
 	return grpc.NewServer(cfg, ss...)
 }
@@ -54,15 +62,15 @@ func (f factoryImpl) NewGRPCServer(cfg *configv1.Service, ss ...GRPCOption) (*GR
 // NewHTTPServer creates a new HTTP server based on the provided configuration.
 // It returns a pointer to the new server and an error if any.
 func (f factoryImpl) NewHTTPServer(cfg *configv1.Service, ss ...HTTPOption) (*HTTPServer, error) {
-	if cfg.GetSelector() != nil {
-		filter, err := selector.NewFilter(cfg.GetSelector())
-		if err != nil {
-			return nil, err
-		}
-		ss = append([]http.Option{
-			http.WithNodeFilter(filter),
-		}, ss...)
-	}
+	//if cfg.GetSelector() != nil {
+	//	filter, err := selector.NewFilter(cfg.GetSelector())
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	ss = append([]http.Option{
+	//		http.WithNodeFilter(filter),
+	//	}, ss...)
+	//}
 
 	// Create a new HTTP server using the provided configuration and options.
 	return http.NewServer(cfg, ss...)
@@ -89,6 +97,15 @@ type buildImpl struct {
 
 func (b *buildImpl) Build(name string, service *configv1.Service, options ...ServerOption) (transport.Server, error) {
 	f, ok := b.Get(name)
+	if !ok {
+		return nil, ErrServiceNotFound
+	}
+	return f.New(service, options...)
+}
+
+func (b *buildImpl) DefaultBuild(service *configv1.Service, options ...ServerOption) (transport.Server,
+	error) {
+	f, ok := b.Get(DefaultName)
 	if !ok {
 		return nil, ErrServiceNotFound
 	}

@@ -108,10 +108,10 @@ func (b *builder) RegisterServiceBuilder(name string, factory service.ServerFact
 
 // init initializes the builder struct.
 func (b *builder) init() Builder {
-	b.ConfigBuilder = config.NewBuilder()
-	b.RegistryBuilder = registry.NewBuilder()
-	b.ServiceBuilder = service.NewBuilder()
-	b.MiddlewareBuilder = middleware.NewBuilder()
+	b.ConfigBuilder = config.DefaultBuilder
+	b.RegistryBuilder = registry.DefaultBuilder
+	b.ServiceBuilder = service.DefaultBuilder
+	b.MiddlewareBuilder = middleware.DefaultBuilder
 	return b
 }
 
