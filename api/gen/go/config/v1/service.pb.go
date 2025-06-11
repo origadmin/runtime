@@ -8,7 +8,7 @@ package configv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	v1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	_ "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -34,7 +34,6 @@ type Service struct {
 	Websocket       *WebSocket        `protobuf:"bytes,100,opt,name=websocket,proto3" json:"websocket,omitempty"`
 	Message         *Message          `protobuf:"bytes,200,opt,name=message,proto3" json:"message,omitempty"`
 	Task            *Task             `protobuf:"bytes,300,opt,name=task,proto3" json:"task,omitempty"`
-	Middleware      *v1.Middleware    `protobuf:"bytes,400,opt,name=middleware,proto3" json:"middleware,omitempty"`
 	Selector        *Service_Selector `protobuf:"bytes,500,opt,name=selector,proto3" json:"selector,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -122,13 +121,6 @@ func (x *Service) GetMessage() *Message {
 func (x *Service) GetTask() *Task {
 	if x != nil {
 		return x.Task
-	}
-	return nil
-}
-
-func (x *Service) GetMiddleware() *v1.Middleware {
-	if x != nil {
-		return x.Middleware
 	}
 	return nil
 }
@@ -431,7 +423,7 @@ var File_config_v1_service_proto protoreflect.FileDescriptor
 
 const file_config_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/tlsconfig.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\xd1\t\n" +
+	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/tlsconfig.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\x95\t\n" +
 	"\aService\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12?\n" +
 	"\x04type\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\x04type\x12*\n" +
@@ -441,10 +433,7 @@ const file_config_v1_service_proto_rawDesc = "" +
 	"\x04http\x18\x14 \x01(\v2\x17.config.v1.Service.HTTPR\x04http\x122\n" +
 	"\twebsocket\x18d \x01(\v2\x14.config.v1.WebSocketR\twebsocket\x12-\n" +
 	"\amessage\x18\xc8\x01 \x01(\v2\x12.config.v1.MessageR\amessage\x12$\n" +
-	"\x04task\x18\xac\x02 \x01(\v2\x0f.config.v1.TaskR\x04task\x12:\n" +
-	"\n" +
-	"middleware\x18\x90\x03 \x01(\v2\x19.middleware.v1.MiddlewareR\n" +
-	"middleware\x128\n" +
+	"\x04task\x18\xac\x02 \x01(\v2\x0f.config.v1.TaskR\x04task\x128\n" +
 	"\bselector\x18\xf4\x03 \x01(\v2\x1b.config.v1.Service.SelectorR\bselector\x1a\xd4\x02\n" +
 	"\x04HTTP\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
@@ -501,8 +490,7 @@ var file_config_v1_service_proto_goTypes = []any{
 	(*WebSocket)(nil),        // 4: config.v1.WebSocket
 	(*Message)(nil),          // 5: config.v1.Message
 	(*Task)(nil),             // 6: config.v1.Task
-	(*v1.Middleware)(nil),    // 7: middleware.v1.Middleware
-	(*TLSConfig)(nil),        // 8: config.v1.TLSConfig
+	(*TLSConfig)(nil),        // 7: config.v1.TLSConfig
 }
 var file_config_v1_service_proto_depIdxs = []int32{
 	2, // 0: config.v1.Service.grpc:type_name -> config.v1.Service.GRPC
@@ -510,15 +498,14 @@ var file_config_v1_service_proto_depIdxs = []int32{
 	4, // 2: config.v1.Service.websocket:type_name -> config.v1.WebSocket
 	5, // 3: config.v1.Service.message:type_name -> config.v1.Message
 	6, // 4: config.v1.Service.task:type_name -> config.v1.Task
-	7, // 5: config.v1.Service.middleware:type_name -> middleware.v1.Middleware
-	3, // 6: config.v1.Service.selector:type_name -> config.v1.Service.Selector
-	8, // 7: config.v1.Service.HTTP.tls_config:type_name -> config.v1.TLSConfig
-	8, // 8: config.v1.Service.GRPC.tls_config:type_name -> config.v1.TLSConfig
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	3, // 5: config.v1.Service.selector:type_name -> config.v1.Service.Selector
+	7, // 6: config.v1.Service.HTTP.tls_config:type_name -> config.v1.TLSConfig
+	7, // 7: config.v1.Service.GRPC.tls_config:type_name -> config.v1.TLSConfig
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_service_proto_init() }
