@@ -291,6 +291,31 @@ func Value(ctx Context, key any) any {
 
 type skipCtx struct{}
 
+// NewSkip creates a new context with the skip value.
+// It takes a context as a parameter and returns a context.
+// The skip value is used to skip the middleware.
+//
+// Example usage:
+//
+//	ctx := context.NewSkip(ctx)
+func NewSkip(ctx Context) Context {
+	return WithValue(ctx, skipCtx{}, []string{})
+}
+
+// NewNamedSkip creates a new context with the skip value and name.
+// It takes a context and a name string as parameters and returns a context.
+// The skip value is used to skip the middleware.
+//
+// Example usage:
+//
+//	ctx := context.NewNamedSkip(ctx, "name")
+func NewNamedSkip(ctx Context, name ...string) Context {
+	if v, ok := ctx.Value(skipCtx{}).([]string); ok && len(v) > 0 {
+		return WithValue(ctx, skipCtx{}, append(v, name...))
+	}
+	return WithValue(ctx, skipCtx{}, name)
+}
+
 // IsSkipped checks if the context is skipped.
 // It takes a Context as a parameter and returns a boolean.
 // The skip value is used to skip the middleware.
@@ -307,13 +332,22 @@ func IsSkipped(ctx Context) bool {
 	return false
 }
 
-// NewSkip creates a new context with the skip value.
-// It takes a context as a parameter and returns a context.
+// IsNameSkipped checks if the context is skipped by name.
+// It takes a Context and a name string as parameters and returns a boolean.
 // The skip value is used to skip the middleware.
 //
 // Example usage:
 //
-//	ctx := context.NewSkip(ctx)
-func NewSkip(ctx Context) Context {
-	return WithValue(ctx, skipCtx{}, true)
+//	if context.IsNameSkipped(ctx, "name") {
+//		return
+//	}
+func IsNameSkipped(ctx Context, name string) bool {
+	if names, ok := ctx.Value(skipCtx{}).([]string); ok && names != nil {
+		for _, n := range names {
+			if n == name {
+				return true
+			}
+		}
+	}
+	return false
 }
