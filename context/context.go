@@ -288,3 +288,32 @@ func FromMapContext(parent Context) map[any]any {
 func Value(ctx Context, key any) any {
 	return ctx.Value(key)
 }
+
+type skipCtx struct{}
+
+// IsSkipped checks if the context is skipped.
+// It takes a Context as a parameter and returns a boolean.
+// The skip value is used to skip the middleware.
+//
+// Example usage:
+//
+//	if context.IsSkipped(ctx) {
+//		return
+//	}
+func IsSkipped(ctx Context) bool {
+	if v := ctx.Value(skipCtx{}); v != nil {
+		return true
+	}
+	return false
+}
+
+// NewSkip creates a new context with the skip value.
+// It takes a context as a parameter and returns a context.
+// The skip value is used to skip the middleware.
+//
+// Example usage:
+//
+//	ctx := context.NewSkip(ctx)
+func NewSkip(ctx Context) Context {
+	return WithValue(ctx, skipCtx{}, true)
+}
