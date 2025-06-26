@@ -22,10 +22,13 @@ func RequireTyped[T any](h component.Handle, purpose string) (T, error) {
 	if err != nil {
 		return zero, err
 	}
+	if res == nil {
+		return zero, fmt.Errorf("engine: component '%s/%s' required '%s' but got nil", h.Category(), h.Name(), purpose)
+	}
 	if t, ok := res.(T); ok {
 		return t, nil
 	}
-	return zero, fmt.Errorf("engine: requirement '%s' is not of type %T", purpose, zero)
+	return zero, fmt.Errorf("engine: component '%s/%s' required '%s' with type %T, but got %T", h.Category(), h.Name(), purpose, (*T)(nil), res)
 }
 
 // AsConfig extracts and asserts the configuration from a handle.
@@ -37,19 +40,24 @@ func AsConfig[T any](h component.Handle) (*T, error) {
 	if t, ok := cfg.(*T); ok {
 		return t, nil
 	}
-	var zero T
-	return nil, fmt.Errorf("engine: config for component '%s' in category '%s' is not of type %T", h.Name(), h.Category(), &zero)
+	return nil, fmt.Errorf("engine: component '%s/%s' expected config type %T, but got %T", h.Category(), h.Name(), (*T)(nil), cfg)
 }
 
 // --- Retrieval Helpers ---
-
 // Get retrieves a component by name from a locator and asserts its type.
 // If no name is provided, the default component is retrieved.
 func Get[T any](ctx context.Context, l component.Locator, name ...string) (T, error) {
-	var zero T
 	inst, err := l.Get(ctx, name...)
+
 	if err != nil {
-		return zero, err
+		return *new(T), err
+	}
+	if inst == nil {
+		reqName := ""
+		if len(name) > 0 {
+			reqName = name[0]
+		}
+		return *new(T), fmt.Errorf("engine: locator for '%s' found component '%s' but instance is nil", l.Category(), reqName)
 	}
 	if t, ok := inst.(T); ok {
 		return t, nil
@@ -58,7 +66,7 @@ func Get[T any](ctx context.Context, l component.Locator, name ...string) (T, er
 	if len(name) > 0 {
 		reqName = name[0]
 	}
-	return zero, fmt.Errorf("engine: component '%s' in category '%s' is not of type %T", reqName, l.Category(), zero)
+	return *new(T), fmt.Errorf("engine: locator for '%s' found component '%s' with type %T, but expected %T", l.Category(), reqName, inst, (*T)(nil))
 }
 
 // GetWithTag retrieves a component by tag from a locator and asserts its type.

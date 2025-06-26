@@ -8,6 +8,7 @@ import (
 
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/iterator"
+	"github.com/origadmin/runtime/helpers/comp"
 )
 
 type Status int
@@ -159,6 +160,9 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 }
 
 func (c *containerImpl) register(cat component.Category, p component.Provider, opts ...component.RegisterOption) {
+	if !comp.IsValidIdentifier(string(cat)) || comp.IsReserved(string(cat)) {
+		panic(fmt.Sprintf("engine: invalid or reserved category name '%s'", cat))
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.isLoaded {
@@ -208,6 +212,12 @@ func (c *containerImpl) Inject(cat component.Category, name string, inst any, op
 }
 
 func (c *containerImpl) inject(cat component.Category, name string, inst any, opts ...component.RegisterOption) {
+	if !comp.IsValidIdentifier(string(cat)) || comp.IsReserved(string(cat)) {
+		panic(fmt.Sprintf("engine: invalid or reserved category name '%s'", cat))
+	}
+	if name != "" && (!comp.IsValidIdentifier(name) || comp.IsReserved(name)) {
+		panic(fmt.Sprintf("engine: invalid or reserved component name '%s'", name))
+	}
 	cfg := &component.RegistrationOptions{}
 	for _, opt := range opts {
 		opt(cfg)
@@ -293,6 +303,12 @@ func (c *containerImpl) Requirement(cat component.Category, purpose string, res 
 }
 
 func (c *containerImpl) requirement(cat component.Category, purpose string, res component.RequirementResolver) {
+	if !comp.IsValidIdentifier(string(cat)) || comp.IsReserved(string(cat)) {
+		panic(fmt.Sprintf("engine: invalid or reserved category name '%s'", cat))
+	}
+	if !comp.IsValidIdentifier(purpose) || comp.IsReserved(purpose) {
+		panic(fmt.Sprintf("engine: invalid or reserved requirement purpose '%s'", purpose))
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.categoryRequirementResolvers == nil {
@@ -566,6 +582,12 @@ func (c *containerImpl) In(cat component.Category, opts ...component.InOption) c
 }
 
 func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error) {
+	if name != "" && name != defaultInstanceName && comp.IsReserved(name) {
+		return nil, newErrorf("instantiate", cat, scope, name, tags, "reserved prefix is not allowed for external component names")
+	}
+	if name != "" && name != defaultInstanceName && !comp.IsValidIdentifier(name) {
+		return nil, newErrorf("instantiate", cat, scope, name, tags, "component name contains illegal characters")
+	}
 	reqName := name
 	if reqName == "" {
 		reqName = defaultInstanceName
@@ -693,7 +715,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 		}
 	}
 	if lastErr != nil {
-		return nil, lastErr
+		return nil, wrapErrorf(lastErr, "instantiate", cat, internalScope, reqName, tags, "all providers failed to instantiate component")
 	}
 
 	// If we are here, it means no provider returned a non-nil instance or a hard error.
@@ -837,12 +859,20 @@ func (e *entryHandle) Locator() component.Locator { return e.l }
 func (e *entryHandle) Tag() string                { return e.activeTag }
 func (e *entryHandle) Require(purpose string) (any, error) {
 	if e.meta != nil && e.meta.requirementResolver != nil {
-		return e.meta.requirementResolver(context.Background(), e, purpose)
+		res, err := e.meta.requirementResolver(context.Background(), e, purpose)
+		if err != nil {
+			return nil, wrapErrorf(err, "require", e.category, e.scope, e.name, nil, "requirement resolver returned error for purpose '%s'", purpose)
+		}
+		return res, nil
 	}
 	if res := e.c.getCategoryRequirementResolver(e.category, purpose); res != nil {
-		return res(context.Background(), e, purpose)
+		r, err := res(context.Background(), e, purpose)
+		if err != nil {
+			return nil, wrapErrorf(err, "require", e.category, e.scope, e.name, nil, "category requirement resolver returned error for purpose '%s'", purpose)
+		}
+		return r, nil
 	}
-	return nil, fmt.Errorf("%w: %s (no resolver provided)", component.ErrRequirementNotFound, purpose)
+	return nil, newErrorf("require", e.category, e.scope, e.name, nil, "no requirement resolver provided for purpose '%s'", purpose)
 }
 
 func NewContainer(opts ...Option) component.Container {

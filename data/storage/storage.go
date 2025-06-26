@@ -52,7 +52,7 @@ func (p *providerImpl) Cache(name string) (storageiface.Cache, error) {
 
 // DefaultCache retrieves the default cache instance from the engine.
 func (p *providerImpl) DefaultCache() (storageiface.Cache, error) {
-	return comp.GetDefault[storageiface.Cache](context.Background(), p.l.In(CategoryCache))
+	return comp.Get[storageiface.Cache](context.Background(), p.l.In(CategoryCache))
 }
 
 // Database retrieves a database instance by name from the engine.
@@ -62,7 +62,7 @@ func (p *providerImpl) Database(name string) (storageiface.Database, error) {
 
 // DefaultDatabase retrieves the default database instance from the engine.
 func (p *providerImpl) DefaultDatabase() (storageiface.Database, error) {
-	return comp.GetDefault[storageiface.Database](context.Background(), p.l.In(CategoryDatabase))
+	return comp.Get[storageiface.Database](context.Background(), p.l.In(CategoryDatabase))
 }
 
 // ObjectStore retrieves an object store instance by name from the engine.
@@ -72,7 +72,7 @@ func (p *providerImpl) ObjectStore(name string) (storageiface.ObjectStore, error
 
 // DefaultObjectStore retrieves the default object store instance from the engine.
 func (p *providerImpl) DefaultObjectStore() (storageiface.ObjectStore, error) {
-	return comp.GetDefault[storageiface.ObjectStore](context.Background(), p.l.In(CategoryObjectStore))
+	return comp.Get[storageiface.ObjectStore](context.Background(), p.l.In(CategoryObjectStore))
 }
 
 // NewProvider creates a new storage provider instance.
