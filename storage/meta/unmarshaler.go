@@ -11,6 +11,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 
 	metav1 "github.com/origadmin/runtime/storage/meta/v1"
+	metav2 "github.com/origadmin/runtime/storage/meta/v2"
 )
 
 func UnmarshalFileMeta(data []byte) (interface{}, error) {
@@ -25,20 +26,14 @@ func UnmarshalFileMeta(data []byte) (interface{}, error) {
 		if err := msgpack.Unmarshal(data, &meta); err != nil {
 			return nil, err
 		}
-		return meta, nil
-	//case 2:
-	//	var meta FileMetaV2
-	//	if err := msgpack.Unmarshal(data, &meta); err != nil {
-	//		return nil, err
-	//	}
-	//	return meta, nil
-	//case 3:
-	//	var meta FileMetaV3
-	//	if err := msgpack.Unmarshal(data, &meta); err != nil {
-	//		return nil, err
-	//	}
-	//	return meta, nil
+		return &meta, nil
+	case 2:
+		var meta metav2.FileMetaV2
+		if err := msgpack.Unmarshal(data, &meta); err != nil {
+			return nil, err
+		}
+		return &meta, nil
 	default:
-		return nil, fmt.Errorf("unsupported FileMeta version: %d", version.Version)
+		return nil, fmt.Errorf("unsupported file meta version: %d", version.Version)
 	}
 }

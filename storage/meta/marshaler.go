@@ -11,6 +11,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 
 	metav1 "github.com/origadmin/runtime/storage/meta/v1"
+	metav2 "github.com/origadmin/runtime/storage/meta/v2"
 )
 
 func MarshalFileMeta(meta interface{}) ([]byte, error) {
@@ -19,18 +20,10 @@ func MarshalFileMeta(meta interface{}) ([]byte, error) {
 		v.Version = 1
 	case metav1.FileMetaV1:
 		v.Version = 1
-	//case 2:
-	//	var meta FileMetaV2
-	//	if err := msgpack.Unmarshal(data, &meta); err != nil {
-	//		return nil, err
-	//	}
-	//	return meta, nil
-	//case 3:
-	//	var meta FileMetaV3
-	//	if err := msgpack.Unmarshal(data, &meta); err != nil {
-	//		return nil, err
-	//	}
-	//	return meta, nil
+	case *metav2.FileMetaV2:
+		v.Version = 2
+	case metav2.FileMetaV2:
+		v.Version = 2
 	default:
 		return nil, fmt.Errorf("unknown meta type: %T", v)
 	}

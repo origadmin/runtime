@@ -2,12 +2,12 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package metav1 implements the functions, types, and interfaces for the module.
-package metav1
+// Package metav2 implements the functions, types, and interfaces for the module.
+package metav2
 
-const Version = 1
+const Version = 2
 
-type FileMetaV1 struct {
+type FileMetaV2 struct {
 	Version  int32  `msgpack:"v"` // Schema version, e.g., 1
 	Name     string `msgpack:"n"` // File name
 	Hash     string `msgpack:"h"` // Content hash
@@ -20,6 +20,6 @@ type FileMetaV1 struct {
 	BlockHashes []string `msgpack:"bh"` // New field
 }
 
-func (f FileMetaV1) CurrentVersion() int32 {
+func (f FileMetaV2) CurrentVersion() int32 {
 	return Version
 }
