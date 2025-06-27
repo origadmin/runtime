@@ -8,3 +8,8 @@ package meta
 type FileMeta interface {
 	CurrentVersion() int32
 }
+
+type BlobStorage interface {
+	Store(content []byte) (string, error)
+	Retrieve(hash string) ([]byte, error)
+}

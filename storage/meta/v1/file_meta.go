@@ -14,10 +14,6 @@ type FileMetaV1 struct {
 	Size     int64  `msgpack:"s"` // File size
 	MimeType string `msgpack:"m"` // MIME type
 	ModTime  int64  `msgpack:"t"` // Modify time
-
-	// if version > 1, then we have the following fields:
-	BlockSize   int32    `msgpack:"bs"` // New field
-	BlockHashes []string `msgpack:"bh"` // New field
 }
 
 func (f FileMetaV1) CurrentVersion() int32 {
