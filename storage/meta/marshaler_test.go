@@ -86,7 +86,7 @@ func TestMarshalFileMeta(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, data)
 
-				// Optional: 反序列化回来验证内容一致性
+				// Optional: Deserialize back to verify content consistency
 				var version struct {
 					Version int32 `msgpack:"v"`
 				}
