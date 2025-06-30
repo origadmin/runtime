@@ -14,16 +14,18 @@ import (
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
 )
 
-func MarshalFileMeta(meta interface{}) ([]byte, error) {
+func MarshalFileMeta(meta any) ([]byte, error) {
 	switch v := meta.(type) {
 	case *metav1.FileMetaV1:
 		v.Version = 1
 	case metav1.FileMetaV1:
 		v.Version = 1
+		meta = &v
 	case *metav2.FileMetaV2:
 		v.Version = 2
 	case metav2.FileMetaV2:
 		v.Version = 2
+		meta = &v
 	default:
 		return nil, fmt.Errorf("unknown meta type: %T", v)
 	}
