@@ -16,9 +16,9 @@ type FileMetaV2 struct {
 	ModTime  int64  `msgpack:"t"` // Modify time
 
 	// if version > 1, then we have the following fields:
-	BlockSize   int32    `msgpack:"bs"` // New field
-	BlockHashes []string `msgpack:"bh"` // New field
-	ExtraField  string   `msgpack:"ef"` // New field
+	BlockSize   int32             `msgpack:"bs"` // New field
+	BlockHashes []string          `msgpack:"bh"` // New field
+	Extra       map[string]string `msgpack:"e"`  // extra data
 }
 
 func (f FileMetaV2) CurrentVersion() int32 {
