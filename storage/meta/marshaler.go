@@ -16,14 +16,14 @@ import (
 
 func MarshalFileMeta(meta any) ([]byte, error) {
 	switch v := meta.(type) {
-	case *metav1.FileMetaV1:
+	case *metav1.FileMeta:
 		v.Version = 1
-	case metav1.FileMetaV1:
+	case metav1.FileMeta:
 		v.Version = 1
 		meta = &v
-	case *metav2.FileMetaV2:
+	case *metav2.FileMeta:
 		v.Version = 2
-	case metav2.FileMetaV2:
+	case metav2.FileMeta:
 		v.Version = 2
 		meta = &v
 	default:

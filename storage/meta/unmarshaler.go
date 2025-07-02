@@ -10,29 +10,36 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
+	"github.com/origadmin/runtime/interfaces/storage/meta"
 	metav1 "github.com/origadmin/runtime/storage/meta/v1"
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
 )
 
-func UnmarshalFileMeta(data []byte) (interface{}, error) {
-	var version FileMetaVersion
+func UnmarshalFileMeta(data []byte) (*metav2.FileMeta, error) {
+	var version meta.FileMetaVersion
 	if err := msgpack.Unmarshal(data, &version); err != nil {
 		return nil, err
 	}
 
 	switch version.Version {
 	case 1:
-		var meta metav1.FileMetaV1
-		if err := msgpack.Unmarshal(data, &meta); err != nil {
+		var metadata metav1.FileMeta
+		if err := msgpack.Unmarshal(data, &metadata); err != nil {
 			return nil, err
 		}
-		return &meta, nil
+		return &metav2.FileMeta{
+			Data: &metav2.FileMetaV2{
+				Size:     metadata.Data.Size,
+				ModTime:  metadata.Data.ModTime,
+				MimeType: metadata.Data.MimeType,
+			},
+		}, nil
 	case 2:
-		var meta metav2.FileMetaV2
-		if err := msgpack.Unmarshal(data, &meta); err != nil {
+		var metadata metav2.FileMeta
+		if err := msgpack.Unmarshal(data, &metadata); err != nil {
 			return nil, err
 		}
-		return &meta, nil
+		return &metadata, nil
 	default:
 		return nil, fmt.Errorf("unsupported file meta version: %d", version.Version)
 	}
