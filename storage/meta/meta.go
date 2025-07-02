@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log/slog"
 	"os"
+	p "path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -25,7 +27,7 @@ import (
 
 const (
 	// rootFileName defines the name of the file that stores the hash of the root directory index.
-	rootFileName = "ROOT"
+	rootFileName = ".root"
 )
 
 // Meta is the main entry point for managing file system metadata.
@@ -36,8 +38,8 @@ type Meta struct {
 	rootFile string
 	storage  meta.BlobStorage
 
-	// rootHash holds the current hash of the root DirectoryIndex blob.
-	rootHash string
+	// root holds the current root DirectoryIndex.
+	root *DirectoryIndex
 	// rootLock ensures that operations that modify the tree are serialized.
 	rootLock sync.Mutex
 
@@ -49,19 +51,22 @@ type Meta struct {
 
 // New creates and initializes a new Meta manager.
 // It sets up the blob storage and ensures the root directory exists.
-func New(rootPath string) (*Meta, error) {
+func New(path string) (*Meta, error) {
+	if err := os.MkdirAll(path, 0755); err != nil {
+		return nil, err
+	}
+	blobPath := filepath.Join(path, "blobs")
+	if err := os.MkdirAll(blobPath, 0755); err != nil {
+		return nil, err
+	}
+	rootPath := filepath.Join(path, "index")
 	if err := os.MkdirAll(rootPath, 0755); err != nil {
 		return nil, err
 	}
 
-	blobPath := filepath.Join(rootPath, "blobs")
-	if err := os.MkdirAll(blobPath, 0755); err != nil {
-		return nil, err
-	}
 	storage := NewBlobStorage(blobPath)
-
 	m := &Meta{
-		path:     rootPath,
+		path:     path,
 		rootFile: filepath.Join(rootPath, rootFileName),
 		storage:  storage,
 		dirCache: make(map[string]*DirectoryIndex),
@@ -86,19 +91,20 @@ func (m *Meta) initRoot() error {
 			Path:    "/",
 			Entries: []FileIndexEntry{},
 		}
-		hash, err := m.storeIndex(rootIndex)
+		marshal, err := msgpack.Marshal(rootIndex)
 		if err != nil {
 			return err
 		}
 
-		if err := atomicWrite(m.rootFile, []byte(hash)); err != nil {
+		if err := atomicWrite(m.rootFile, marshal); err != nil {
 			return err
 		}
-		m.rootHash = hash
+		m.root = rootIndex
 		return nil
 	}
-
-	m.rootHash = string(content)
+	if err := msgpack.Unmarshal(content, &m.root); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -156,31 +162,28 @@ func (d *DirectoryIndex) findEntry(name string) (*FileIndexEntry, bool) {
 
 // findEntryByPath traverses the directory tree to find the entry for a given path.
 func (m *Meta) findEntryByPath(path string) (*FileIndexEntry, error) {
-	cleanPath := filepath.Clean(path)
+	cleanPath := p.Clean(path)
+
+	slog.Info("find entry by path", "path", path, "cleanPath", cleanPath)
 	if !strings.HasPrefix(cleanPath, "/") {
-		return nil, &fs.PathError{Op: "find", Path: path, Err: errors.New("path must be absolute")}
+		return nil, &fs.PathError{Op: "find", Path: path, Err: errors.New("path must be absolute and start with /")}
 	}
 
 	if cleanPath == "/" {
 		// Return a virtual entry for the root directory itself.
 		return &FileIndexEntry{
 			EntryName:   "/",
-			Hash:        m.rootHash,
+			Hash:        "",
 			FileMode:    fs.ModeDir,
 			IsDirectory: true,
 		}, nil
 	}
 
 	parts := strings.Split(strings.TrimPrefix(cleanPath, "/"), "/")
-	currentHash := m.rootHash
+	current := m.root
 
 	for i, part := range parts {
-		dir, err := m.getDirectoryIndexByHash(currentHash)
-		if err != nil {
-			return nil, err
-		}
-
-		entry, found := dir.findEntry(part)
+		entry, found := current.findEntry(part)
 		if !found {
 			return nil, &fs.PathError{Op: "find", Path: path, Err: fs.ErrNotExist}
 		}
@@ -192,9 +195,13 @@ func (m *Meta) findEntryByPath(path string) (*FileIndexEntry, error) {
 
 		// If it's not the last part, it must be a directory to continue.
 		if !entry.IsDirectory {
-			return nil, &fs.PathError{Op: "find", Path: path, Err: fs.ErrNotExist}
+			return nil, &fs.PathError{Op: "find", Path: path, Err: errors.New("not a directory")}
 		}
-		currentHash = entry.Hash
+		var err error
+		current, err = m.getDirectoryIndexByHash(entry.Hash)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// This part should not be reached.
@@ -205,13 +212,17 @@ func (m *Meta) Mkdir(path string, perm fs.FileMode) error {
 	m.rootLock.Lock()
 	defer m.rootLock.Unlock()
 
-	cleanPath := filepath.Clean(path)
-	if !strings.HasPrefix(cleanPath, "/") || cleanPath == "/" {
-		return &fs.PathError{Op: "mkdir", Path: path, Err: errors.New("invalid path")}
+	cleanPath := p.Clean(path)
+	if !strings.HasPrefix(cleanPath, "/") {
+		return &fs.PathError{Op: "mkdir", Path: path, Err: errors.New("path must be absolute and start with /")}
 	}
 
-	parentPath := filepath.Dir(cleanPath)
-	name := filepath.Base(cleanPath)
+	if cleanPath == "/" {
+		return &fs.PathError{Op: "mkdir", Path: path, Err: errors.New("cannot create root directory")}
+	}
+
+	parentPath := p.Dir(cleanPath)
+	name := p.Base(cleanPath)
 
 	newDirIndex := &DirectoryIndex{
 		Version: 1,
@@ -230,7 +241,7 @@ func (m *Meta) Mkdir(path string, perm fs.FileMode) error {
 		IsDirectory: true,
 	}
 
-	newRootHash, err := m.updateTree(parentPath, func(dir *DirectoryIndex) (*FileIndexEntry, error) {
+	_, err = m.updateTree(parentPath, func(dir *DirectoryIndex) (*FileIndexEntry, error) {
 		if _, found := dir.findEntry(name); found {
 			return nil, fs.ErrExist
 		}
@@ -241,12 +252,7 @@ func (m *Meta) Mkdir(path string, perm fs.FileMode) error {
 		return err
 	}
 
-	if err := atomicWrite(m.rootFile, []byte(newRootHash)); err != nil {
-		return err
-	}
-
-	m.rootHash = newRootHash
-	return nil
+	return m.writeRootFile()
 }
 
 // ReadDir reads the directory named by path and returns a list of directory entries.
@@ -258,6 +264,15 @@ func (m *Meta) ReadDir(path string) ([]fs.DirEntry, error) {
 
 	if !entry.IsDirectory {
 		return nil, &fs.PathError{Op: "readdir", Path: path, Err: errors.New("not a directory")}
+	}
+
+	// Special case for the root directory
+	if path == "/" {
+		dirEntries := make([]fs.DirEntry, len(m.root.Entries))
+		for i, e := range m.root.Entries {
+			dirEntries[i] = e
+		}
+		return dirEntries, nil
 	}
 
 	dirIndex, err := m.getDirectoryIndexByHash(entry.Hash)
@@ -280,13 +295,17 @@ func (m *Meta) WriteFile(path string, r io.Reader, perm fs.FileMode) error {
 	m.rootLock.Lock()
 	defer m.rootLock.Unlock()
 
-	cleanPath := filepath.Clean(path)
-	if !strings.HasPrefix(cleanPath, "/") || cleanPath == "/" {
-		return &fs.PathError{Op: "write", Path: path, Err: errors.New("invalid path")}
+	cleanPath := p.Clean(path)
+	if !strings.HasPrefix(cleanPath, "/") {
+		return &fs.PathError{Op: "write", Path: path, Err: errors.New("path must be absolute and start with /")}
 	}
 
-	parentPath := filepath.Dir(cleanPath)
-	name := filepath.Base(cleanPath)
+	if cleanPath == "/" {
+		return &fs.PathError{Op: "write", Path: path, Err: errors.New("cannot write to root directory")}
+	}
+
+	parentPath := p.Dir(cleanPath)
+	name := p.Base(cleanPath)
 
 	// 1. Chunk and store data in blob storage
 	blockHashes, totalSize, err := chunkData(r, m.storage.Store)
@@ -324,7 +343,7 @@ func (m *Meta) WriteFile(path string, r io.Reader, perm fs.FileMode) error {
 	}
 
 	// 5. Update the directory tree
-	newRootHash, err := m.updateTree(parentPath, func(dir *DirectoryIndex) (*FileIndexEntry, error) {
+	_, err = m.updateTree(parentPath, func(dir *DirectoryIndex) (*FileIndexEntry, error) {
 		// Check if file already exists, if so, replace it.
 		for i, entry := range dir.Entries {
 			if entry.EntryName == name {
@@ -345,12 +364,7 @@ func (m *Meta) WriteFile(path string, r io.Reader, perm fs.FileMode) error {
 		return err
 	}
 
-	if err := atomicWrite(m.rootFile, []byte(newRootHash)); err != nil {
-		return err
-	}
-
-	m.rootHash = newRootHash
-	return nil
+	return m.writeRootFile()
 }
 
 // A temporary struct to unmarshal only the version to determine the actual FileMeta type.
@@ -410,73 +424,79 @@ func (m *Meta) Stat(path string) (fs.FileInfo, error) {
 }
 
 func (m *Meta) updateTree(path string, modifier func(*DirectoryIndex) (*FileIndexEntry, error)) (string, error) {
-	cleanPath := filepath.Clean(path)
+	m.rootLock.Lock()
+	defer m.rootLock.Unlock()
+
+	cleanPath := p.Clean(path)
 	if !strings.HasPrefix(cleanPath, "/") {
 		return "", errors.New("path must be absolute")
 	}
 
-	var recurse func(currentHash, subPath string) (string, error)
-	recurse = func(currentHash, subPath string) (string, error) {
-		dir, err := m.getDirectoryIndexByHash(currentHash)
-		if err != nil {
-			return "", err
-		}
-
-		newDir := *dir
-		newDir.Entries = make([]FileIndexEntry, len(dir.Entries))
-		copy(newDir.Entries, dir.Entries)
-
-		var newHash string
-
-		if subPath == "." || subPath == "" || subPath == "/" {
-			entry, err := modifier(&newDir)
-			if err != nil {
-				return "", err
-			}
-
-			found := false
-			for i, e := range newDir.Entries {
-				if e.EntryName == entry.EntryName {
-					newDir.Entries[i] = *entry
-					found = true
-					break
-				}
-			}
-			if !found {
-				newDir.Entries = append(newDir.Entries, *entry)
-			}
-
-		} else {
-			parts := strings.SplitN(subPath, "/", 2)
-			childName := parts[0]
-			remainingPath := "."
-			if len(parts) > 1 {
-				remainingPath = parts[1]
-			}
-
-			childEntry, found := newDir.findEntry(childName)
-			if !found || !childEntry.IsDirectory {
-				return "", fs.ErrNotExist
-			}
-
-			newChildHash, err := recurse(childEntry.Hash, remainingPath)
-			if err != nil {
-				return "", err
-			}
-
-			childEntry.Hash = newChildHash
-		}
-
-		newHash, err = m.storeIndex(&newDir)
-		if err != nil {
-			return "", err
-		}
-		return newHash, nil
+	parentDir, err := m.findDirectoryByPath(cleanPath)
+	if err != nil {
+		return "", err
 	}
 
-	subPath := strings.TrimPrefix(cleanPath, "/")
-	if subPath == "" {
-		subPath = "."
+	_, err = modifier(parentDir)
+	if err != nil {
+		return "", err
 	}
-	return recurse(m.rootHash, subPath)
+
+	return m.storeDirectoryIndex(parentDir)
+}
+
+func (m *Meta) findDirectoryByPath(path string) (*DirectoryIndex, error) {
+	cleanPath := p.Clean(path)
+	if !strings.HasPrefix(cleanPath, "/") {
+		return nil, errors.New("path must be absolute")
+	}
+
+	if cleanPath == "/" {
+		return m.root, nil
+	}
+
+	parts := strings.Split(strings.TrimPrefix(cleanPath, "/"), "/")
+	dir := m.root
+
+	for _, part := range parts {
+		entry, found := dir.findEntry(part)
+		if !found || !entry.IsDirectory {
+			return nil, fs.ErrNotExist
+		}
+
+		idx, err := m.getDirectoryIndexByHash(entry.Hash)
+		if err != nil {
+			return nil, err
+		}
+		dir = idx
+	}
+
+	return dir, nil
+}
+
+func (m *Meta) storeDirectoryIndex(idx *DirectoryIndex) (string, error) {
+	data, err := msgpack.Marshal(idx)
+	if err != nil {
+		return "", err
+	}
+
+	hash, err := m.storage.Store(data)
+	if err != nil {
+		return "", err
+	}
+
+	m.cacheLock.Lock()
+	m.dirCache[hash] = idx
+	m.cacheLock.Unlock()
+
+	return hash, nil
+}
+
+func (m *Meta) writeRootFile() error {
+	data, err := msgpack.Marshal(m.root)
+	if err != nil {
+		return err
+	}
+
+	return atomicWrite(m.rootFile, data)
 }

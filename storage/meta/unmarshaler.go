@@ -15,7 +15,7 @@ import (
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
 )
 
-func UnmarshalFileMeta(data []byte) (*metav2.FileMeta, error) {
+func Unmarshal(data []byte) (any, error) {
 	var version meta.FileMetaVersion
 	if err := msgpack.Unmarshal(data, &version); err != nil {
 		return nil, err
@@ -25,6 +25,11 @@ func UnmarshalFileMeta(data []byte) (*metav2.FileMeta, error) {
 	case 1:
 		var metadata metav1.FileMeta
 		if err := msgpack.Unmarshal(data, &metadata); err != nil {
+			// try to unmarshal as DirectoryIndex
+			var dir DirectoryIndex
+			if err2 := msgpack.Unmarshal(data, &dir); err2 == nil {
+				return &dir, nil
+			}
 			return nil, err
 		}
 		return &metav2.FileMeta{
@@ -43,4 +48,15 @@ func UnmarshalFileMeta(data []byte) (*metav2.FileMeta, error) {
 	default:
 		return nil, fmt.Errorf("unsupported file meta version: %d", version.Version)
 	}
+}
+
+func UnmarshalFileMeta(data []byte) (*metav2.FileMeta, error) {
+	meta, err := Unmarshal(data)
+	if err != nil {
+		return nil, err
+	}
+	if fileMeta, ok := meta.(*metav2.FileMeta); ok {
+		return fileMeta, nil
+	}
+	return nil, fmt.Errorf("unexpected meta type: %T", meta)
 }

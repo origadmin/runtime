@@ -8,8 +8,10 @@ package meta
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"hash"
 	"os"
+	"path/filepath"
 
 	"github.com/origadmin/runtime/interfaces/storage/meta"
 )
@@ -24,6 +26,7 @@ func hashPath(path, hash string) string {
 }
 
 func atomicWrite(path string, content []byte) error {
+	fmt.Println("write file:", path)
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, content, 0644); err != nil {
 		return err
@@ -40,6 +43,12 @@ func (m blobStorage) getHash(content []byte) string {
 func (m blobStorage) Store(content []byte) (string, error) {
 	encodeHash := m.getHash(content)
 	path := hashPath(m.Path, encodeHash)
+
+	// Ensure the directory for the blob exists.
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return "", err
+	}
 
 	if err := atomicWrite(path, content); err != nil {
 		return "", err

@@ -26,6 +26,8 @@ func MarshalFileMeta(meta any) ([]byte, error) {
 	case metav2.FileMeta:
 		v.Version = 2
 		meta = &v
+	case *DirectoryIndex:
+		v.Version = 1 // Or the appropriate version
 	default:
 		return nil, fmt.Errorf("unknown meta type: %T", v)
 	}
