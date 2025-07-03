@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
+// Package meta implements the functions, types, and interfaces for the module.
+package meta
+
+import (
+	"io/fs"
+	"time"
+)
+
+type FileMeta interface {
+	// CurrentVersion returns the version number of this metadata record.
+	CurrentVersion() int32
+	// Size returns the byte size of the file contents.
+	Size() int64
+	// ModTime returns when the contents of the file itself were last modified.
+	ModTime() time.Time
+	// GetExtension is used to obtain extension properties related to the content of a file.
+	GetExtension(key string) (interface{}, bool)
+	// SetExtension is used to set extension properties related to the contents of the file.
+	SetExtension(key string, value interface{})
+}
+type FileMetaVersion struct {
+	Version int32 `msgpack:"v"`
+}
+
+func (f FileMetaVersion) CurrentVersion() int32 {
+	return f.Version
+}
+
+type FileMetaInfo struct {
+	Name     string      `json:"name" msgpack:"n"`      // File name
+	Hash     string      `json:"hash" msgpack:"h"`      // File hash
+	FileMode fs.FileMode `json:"file_mode" msgpack:"m"` // File mode
+	Sys      any         `json:"sys" msgpack:"s"`       // System-specific data
+}
+
+type FileMetaData[T any] struct {
+	Version int32         `json:"version" msgpack:"v"`
+	Info    *FileMetaInfo `json:"info" msgpack:"i"`
+	Data    *T            `json:"data" msgpack:"d"`
+}
+
+// The FileInfo interface defines the file information and is io/fs compatible. FileInfo。
+// It will be implemented by DirEntry in the Index module and will contain information at the file system level.
+type FileInfo interface {
+	fs.FileInfo
+	// This is where you can add other file information methods that are unique to the Index module
+}

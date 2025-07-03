@@ -455,7 +455,7 @@ func (m *SourceConfig_File) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Path
+	// no validation rules for path
 
 	// no validation rules for Format
 
@@ -567,7 +567,7 @@ func (m *SourceConfig_Consul) validate(all bool) error {
 
 	// no validation rules for Token
 
-	// no validation rules for Path
+	// no validation rules for path
 
 	if len(errors) > 0 {
 		return SourceConfig_ConsulMultiError(errors)

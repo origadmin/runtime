@@ -29,9 +29,9 @@ func TestMarshalFileMeta(t *testing.T) {
 			input: &metainterfaces.FileMetaData[metav1.FileMetaV1]{
 				Info: FileIndexEntry{EntryName: "test1.txt"},
 				Data: &metav1.FileMetaV1{
-					Size:     1024,
+					FileSize:     1024,
 					MimeType: "text/plain",
-					ModTime:  1717182000,
+					ModifyTime:  1717182000,
 				},
 			},
 			wantErr: false,
@@ -41,9 +41,9 @@ func TestMarshalFileMeta(t *testing.T) {
 			input: metainterfaces.FileMetaData[metav1.FileMetaV1]{
 				Info: FileIndexEntry{EntryName: "test2.txt"},
 				Data: &metav1.FileMetaV1{
-					Size:     2048,
+					FileSize:     2048,
 					MimeType: "image/png",
-					ModTime:  1717182001,
+					ModifyTime:  1717182001,
 				},
 			},
 			wantErr: false,
@@ -53,9 +53,9 @@ func TestMarshalFileMeta(t *testing.T) {
 			input: &metainterfaces.FileMetaData[metav2.FileMetaV2]{
 				Info: FileIndexEntry{EntryName: "test3.json"},
 				Data: &metav2.FileMetaV2{
-					Size:        4096,
+					FileSize:        4096,
 					MimeType:    "application/json",
-					ModTime:     1717182002,
+					ModifyTime:     1717182002,
 					BlockSize:   1024,
 					BlockHashes: []string{"h5", "h6"},
 				},
@@ -67,9 +67,9 @@ func TestMarshalFileMeta(t *testing.T) {
 			input: metainterfaces.FileMetaData[metav2.FileMetaV2]{
 				Info: FileIndexEntry{EntryName: "test4.mp4"},
 				Data: &metav2.FileMetaV2{
-					Size:        8192,
+					FileSize:        8192,
 					MimeType:    "video/mp4",
-					ModTime:     1717182003,
+					ModifyTime:     1717182003,
 					BlockSize:   2048,
 					BlockHashes: []string{"h7", "h8"},
 				},

@@ -8,7 +8,7 @@ import (
 
 type FileIndexEntry struct {
 	EntryName   string      `json:"name" msgpack:"n"` // Renamed from Name
-	Hash        string      `json:"hash" msgpack:"h"` // 指向 FileMeta 或 DirectoryIndex 的 hash
+	Hash        string      `json:"hash" msgpack:"h"` // A hash that points to a FileMeta or DirectoryIndex
 	FileMode    fs.FileMode `json:"mode" msgpack:"m"`
 	IsDirectory bool        `json:"is_dir" msgpack:"d"`
 }
@@ -47,7 +47,7 @@ func (f FileIndexEntry) Info() (fs.FileInfo, error) {
 
 // Size returns the size of the file. For directories, it is 0.
 func (f FileIndexEntry) Size() int64 {
-	// Size is not stored in the directory entry. A full Stat() is required.
+	// FileSize is not stored in the directory entry. A full Stat() is required.
 	return 0
 }
 

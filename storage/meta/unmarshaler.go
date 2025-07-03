@@ -34,9 +34,9 @@ func Unmarshal(data []byte) (any, error) {
 		}
 		return &metav2.FileMeta{
 			Data: &metav2.FileMetaV2{
-				Size:     metadata.Data.Size,
-				ModTime:  metadata.Data.ModTime,
-				MimeType: metadata.Data.MimeType,
+				FileSize:   metadata.Data.Size,
+				ModifyTime: metadata.Data.ModTime,
+				MimeType:   metadata.Data.MimeType,
 			},
 		}, nil
 	case 2:

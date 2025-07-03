@@ -59,7 +59,7 @@ func (m *Migration) validate(all bool) error {
 
 	// no validation rules for Enabled
 
-	// no validation rules for Path
+	// no validation rules for path
 
 	// no validation rules for Version
 
@@ -586,7 +586,7 @@ func (m *Memory) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Size
+	// no validation rules for FileSize
 
 	// no validation rules for Capacity
 
@@ -693,7 +693,7 @@ func (m *BadgerDS) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Path
+	// no validation rules for path
 
 	// no validation rules for SyncWrites
 

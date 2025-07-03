@@ -519,7 +519,7 @@ func (m *Endpoint) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Path
+	// no validation rules for path
 
 	// no validation rules for Method
 

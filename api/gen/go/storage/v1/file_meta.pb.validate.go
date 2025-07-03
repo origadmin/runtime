@@ -63,11 +63,11 @@ func (m *FileMeta) validate(all bool) error {
 
 	// no validation rules for Hash
 
-	// no validation rules for Size
+	// no validation rules for FileSize
 
 	// no validation rules for MimeType
 
-	// no validation rules for ModTime
+	// no validation rules for ModifyTime
 
 	if len(errors) > 0 {
 		return FileMetaMultiError(errors)
