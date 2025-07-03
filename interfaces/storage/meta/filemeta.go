@@ -6,7 +6,10 @@
 package meta
 
 import (
+	"io"
 	"time"
+
+	blob_interface "github.com/origadmin/runtime/interfaces/storage/blob"
 )
 
 type FileMeta interface {
@@ -16,17 +19,11 @@ type FileMeta interface {
 	Size() int64
 	// ModTime returns when the contents of the file itself were last modified.
 	ModTime() time.Time
-	// MimeType returns the MIME type of the file content.
-	MimeType() string
-	// RefCount returns the reference count of the file content.
-	RefCount() int32
-	// BlobRef returns the IDs of the blobs that constitute this file's content.
-	BlobRef() ([]string, error)
-	// GetExtension is used to obtain extension properties related to the content of a file.
-	GetExtension(key string) (interface{}, bool)
-	// SetExtension is used to set extension properties related to the contents of the file.
-	SetExtension(key string, value interface{})
+	// GetContentReader returns an io.Reader for the file's content.
+	// It handles whether the content is embedded or stored in blobs.
+	ContentReader(storage blob_interface.BlobStore) (io.Reader, error)
 }
+
 type FileMetaVersion struct {
 	Version int32 `msgpack:"v"`
 }

@@ -1,5 +1,5 @@
 // Package meta implements the functions, types, and interfaces for the module.
-package meta
+package blob
 
 type BlobStore interface {
 	Write(data []byte) (string, error)
