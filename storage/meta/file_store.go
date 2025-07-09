@@ -9,11 +9,12 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	meta_interface "github.com/origadmin/runtime/interfaces/storage/meta"
+	"github.com/vmihailenco/msgpack/v5"
+
+	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
+	"github.com/origadmin/runtime/storage/layout"
 	metav1 "github.com/origadmin/runtime/storage/meta/v1"
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
-	"github.com/origadmin/runtime/storage/layout"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 // FileMetaStore implements the MetaStore interface using the local filesystem.
@@ -22,18 +23,17 @@ type FileMetaStore struct {
 	layout layout.ShardedStorage
 }
 
+// Ensure FileMetaStore implements the MetaStore interface.
+var _ metaiface.MetaStore = (*FileMetaStore)(nil)
+
 // NewFileMetaStore creates a new FileMetaStore.
-func NewFileMetaStore(basePath string) (*FileMetaStore, error) {
-	ls, err := layout.NewLocalShardedStorage(basePath)
-	if err != nil {
-		return nil, err
-	}
+func NewFileMetaStore(ls layoutiface.ShardedStorage) (*FileMetaStore, error) {
 	return &FileMetaStore{layout: ls}, nil
 }
 
 // Create serializes the FileMeta and stores it.
 // It returns the ID (hash) of the stored meta.
-func (s *FileMetaStore) Create(fileMeta meta_interface.FileMeta) (string, error) {
+func (s *FileMetaStore) Create(fileMeta metaiface.FileMeta) (string, error) {
 	var fileMetaData interface{} // Use interface{} to hold FileMetaData[V1] or FileMetaData[V2]
 
 	switch fileMeta.CurrentVersion() {
@@ -42,7 +42,7 @@ func (s *FileMetaStore) Create(fileMeta meta_interface.FileMeta) (string, error)
 		if !ok {
 			return "", fmt.Errorf("expected FileMetaV1 for version %d, got %T", metav1.Version, fileMeta)
 		}
-		fileMetaData = &meta_interface.FileMetaData[metav1.FileMetaV1]{
+		fileMetaData = &metaiface.FileMetaData[metav1.FileMetaV1]{
 			Version: metav1.Version,
 			Data:    actualFileMeta,
 		}
@@ -51,7 +51,7 @@ func (s *FileMetaStore) Create(fileMeta meta_interface.FileMeta) (string, error)
 		if !ok {
 			return "", fmt.Errorf("expected FileMetaV2 for version %d, got %T", metav2.Version, fileMeta)
 		}
-		fileMetaData = &meta_interface.FileMetaData[metav2.FileMetaV2]{
+		fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Version: metav2.Version,
 			Data:    actualFileMeta,
 		}
@@ -75,14 +75,13 @@ func (s *FileMetaStore) Create(fileMeta meta_interface.FileMeta) (string, error)
 }
 
 // Get retrieves and deserializes the FileMeta by its ID.
-// It currently ignores targetVersion and always returns the stored version.
-func (s *FileMetaStore) Get(id string, targetVersion int) (meta_interface.FileMeta, error) {
+func (s *FileMetaStore) Get(id string) (metaiface.FileMeta, error) {
 	data, err := s.layout.Read(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read FileMeta from layout: %w", err)
 	}
 
-	var versionOnly meta_interface.FileMetaVersion
+	var versionOnly metaiface.FileMetaVersion
 	err = msgpack.Unmarshal(data, &versionOnly)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal FileMeta version: %w", err)
@@ -90,14 +89,14 @@ func (s *FileMetaStore) Get(id string, targetVersion int) (meta_interface.FileMe
 
 	switch versionOnly.Version {
 	case metav1.Version:
-		var fileMetaData meta_interface.FileMetaData[metav1.FileMetaV1]
+		var fileMetaData metaiface.FileMetaData[metav1.FileMetaV1]
 		err = msgpack.Unmarshal(data, &fileMetaData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal FileMetaV1: %w", err)
 		}
 		return fileMetaData.Data, nil
 	case metav2.Version:
-		var fileMetaData meta_interface.FileMetaData[metav2.FileMetaV2]
+		var fileMetaData metaiface.FileMetaData[metav2.FileMetaV2]
 		err = msgpack.Unmarshal(data, &fileMetaData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal FileMetaV2: %w", err)
@@ -109,7 +108,7 @@ func (s *FileMetaStore) Get(id string, targetVersion int) (meta_interface.FileMe
 }
 
 // Update serializes the updated FileMeta and overwrites the existing record.
-func (s *FileMetaStore) Update(id string, fileMeta meta_interface.FileMeta) error {
+func (s *FileMetaStore) Update(id string, fileMeta metaiface.FileMeta) error {
 	var fileMetaData interface{}
 
 	switch fileMeta.CurrentVersion() {
@@ -118,7 +117,7 @@ func (s *FileMetaStore) Update(id string, fileMeta meta_interface.FileMeta) erro
 		if !ok {
 			return fmt.Errorf("expected FileMetaV1 for version %d, got %T", metav1.Version, fileMeta)
 		}
-		fileMetaData = &meta_interface.FileMetaData[metav1.FileMetaV1]{
+		fileMetaData = &metaiface.FileMetaData[metav1.FileMetaV1]{
 			Version: metav1.Version,
 			Data:    actualFileMeta,
 		}
@@ -127,7 +126,7 @@ func (s *FileMetaStore) Update(id string, fileMeta meta_interface.FileMeta) erro
 		if !ok {
 			return fmt.Errorf("expected FileMetaV2 for version %d, got %T", metav2.Version, fileMeta)
 		}
-		fileMetaData = &meta_interface.FileMetaData[metav2.FileMetaV2]{
+		fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Version: metav2.Version,
 			Data:    actualFileMeta,
 		}
@@ -149,13 +148,13 @@ func (s *FileMetaStore) Delete(id string) error {
 }
 
 // BatchGet is not yet implemented.
-func (s *FileMetaStore) BatchGet(ids []string, targetVersion int) (map[string]meta_interface.FileMeta, error) {
-	return nil, fmt.Errorf("BatchGet not implemented")
+func (s *FileMetaStore) BatchGet(ids []string) (map[string]metaiface.FileMeta, error) {
+	return nil, fmt.Errorf("method BatchGet not implemented")
 }
 
 // Migrate is not yet implemented.
-func (s *FileMetaStore) Migrate(id string, targetVersion int) (meta_interface.FileMeta, error) {
-	return nil, fmt.Errorf("Migrate not implemented")
+func (s *FileMetaStore) Migrate(id string) (metaiface.FileMeta, error) {
+	return nil, fmt.Errorf("method Migrate not implemented")
 }
 
 // SupportedVersions returns the supported meta versions.

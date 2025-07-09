@@ -14,125 +14,168 @@ import (
 	"path"
 	"time"
 
-	meta "github.com/origadmin/runtime/interfaces/storage/meta" // Alias for clarity
-	metav1 "github.com/origadmin/runtime/storage/meta/v1"
+	blobiface "github.com/origadmin/runtime/interfaces/storage/blob"
+	contentiface "github.com/origadmin/runtime/interfaces/storage/content"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
 )
 
 const (
 	// DefaultBlockSize is a general constant, not directly tied to meta.go's logic now.
-	DefaultBlockSize = 1024 * 1024 // 1MB
+	DefaultBlockSize = 4 * 1024 * 1024 // 4MB
 )
+
+// chunkData reads from the reader and splits the content into blocks of a fixed size.
+// For each block, it calls the provided store function.
+func (m *Meta) chunkData(r io.Reader) ([]string, int64, error) {
+	var hashes []string
+	var totalSize int64
+	buf := make([]byte, m.chunkSize)
+
+	for {
+		n, err := io.ReadFull(r, buf)
+		if err != nil && err != io.EOF && !errors.Is(err, io.ErrUnexpectedEOF) {
+			return nil, 0, err
+		}
+		if n == 0 {
+			break
+		}
+
+		data := buf[:n]
+		hash, storeErr := m.blobStorage.Store(data)
+		if storeErr != nil {
+			return nil, 0, storeErr
+		}
+		hashes = append(hashes, hash)
+		totalSize += int64(n)
+
+		if err == io.EOF || errors.Is(err, io.ErrUnexpectedEOF) {
+			break
+		}
+	}
+
+	return hashes, totalSize, nil
+}
 
 // Meta 结构体现在管理文件内容的元数据。
 // 它不再管理目录结构，也不再直接存储文件系统层面的属性（如文件名、权限）。
 type Meta struct {
-	blobStorage meta.BlobStore
-	path        string                   // Base path for meta storage (e.g., where meta blobs are stored)
-	files       map[string]meta.FileMeta // Stores file metadata by its full path (for in-memory simulation)
+	metaStore   metaiface.Store
+	blobStorage blobiface.Store
+	assembler   contentiface.Assembler
+	files       map[string]metaiface.FileMeta // Stores metaFile metadata by its full path (for in-memory simulation)
+	chunkSize   int64                         // Configurable chunk size for writing large files
 }
 
 // New creates a new Meta instance.
-func New(path string, blobStorage meta.BlobStore) (*Meta, error) {
+func New(metaStore metaiface.Store, blobStorage blobiface.Store, assembler contentiface.Assembler, chunkSize int64) (*Meta, error) {
 	m := &Meta{
-		path:        path,
+		metaStore:   metaStore,
 		blobStorage: blobStorage,
-		files:       make(map[string]meta.FileMeta),
+		assembler:   assembler,
+		files:       make(map[string]metaiface.FileMeta),
+		chunkSize:   chunkSize,
 	}
 	return m, nil
 }
 
-// WriteFile writes content to a file, creating or updating its metadata.
+// WriteFile writes content to a metaFile, creating or updating its metadata.
 // It handles small files by embedding content directly into FileMetaV2.
 func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
-	if !path.IsAbs(name) {
-		return fmt.Errorf("path must be absolute: %s", name)
-	}
+	// Path validation should ideally happen at a higher layer (e.g., Index)
+	// if !path.IsAbs(name) {
+	// 	return fmt.Errorf("path must be absolute: %s", name)
+	// }
 
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return err
-	}
+	var fileMeta metaiface.FileMeta
 
-	var fileMeta meta.FileMeta
+	// Use a bytes.Buffer to peek at the content and determine if it's embedded or sharded.
+	// This allows us to read the content once.
+	buf := new(bytes.Buffer)
+	teeReader := io.TeeReader(r, buf) // Read from r, and also write to buf
+
+	// Try to read up to the embedded size threshold + 1 byte to determine if it's larger
+	_, err := io.CopyN(io.Discard, teeReader, metav2.EmbeddedFileSizeThreshold+1)
+
+	// The actual content read so far is in buf.Bytes()
+	contentBytes := buf.Bytes()
 
 	// Determine if content should be embedded (for FileMetaV2)
-	if int64(len(content)) <= metav2.EmbeddedFileSizeThreshold {
-		// Create a FileMetaV2 instance for embedded content
+	if int64(len(contentBytes)) <= metav2.EmbeddedFileSizeThreshold && err == io.EOF { // Check for EOF to ensure it's truly small
+		// It's a small metaFile, embed the content
 		v2Data := &metav2.FileMetaV2{
 			Version:      metav2.Version,
-			FileSize:     int64(len(content)),
+			FileSize:     int64(len(contentBytes)),
 			ModifyTime:   time.Now().Unix(),
 			MimeType:     "application/octet-stream", // Default MIME type
 			RefCount:     1,                          // Initial ref count
-			EmbeddedData: content,
-			BlobRef:      "", // No external blob reference for embedded data
+			EmbeddedData: contentBytes,
+			BlobHashes:   nil, // No external blob reference for embedded data
 		}
-		fileMeta = &meta.FileMetaData[metav2.FileMetaV2]{
+		fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Data: v2Data,
 			Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
 		}
 	} else {
-		// Store content in blob storage for large files
-		contentHash, err := m.blobStorage.Store(content)
-		if err != nil {
-			return err
+		// It's a large metaFile, or we couldn't determine size easily, so chunk the rest of the stream.
+		// The teeReader has already consumed some bytes, so chunkData will continue from there.
+		hashes, totalSize, chunkErr := m.chunkData(io.MultiReader(bytes.NewReader(contentBytes), r))
+		if chunkErr != nil {
+			return fmt.Errorf("failed to chunk and store data: %w", chunkErr)
 		}
 
 		// Create a FileMetaV2 instance for blob-referenced content
 		v2Data := &metav2.FileMetaV2{
 			Version:    metav2.Version,
-			FileSize:   int64(len(content)),
+			FileSize:   totalSize,
 			ModifyTime: time.Now().Unix(),
 			MimeType:   "application/octet-stream", // Default MIME type
 			RefCount:   1,                          // Initial ref count
-			BlobRef:    contentHash,
-			// BlockSize and BlockHashes would be populated here if chunking was handled by meta.go
-			// For now, assuming blobStorage.Store handles it as a single blob.
+			BlobHashes: hashes,
 		}
-		fileMeta = &meta.FileMetaData[metav2.FileMetaV2]{
+		fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Data: v2Data,
 			Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
 		}
 	}
 
-	// Store file metadata directly by its full path (in-memory simulation)
+	// Store metaFile metadata using the injected MetaStore
+	_, err = m.metaStore.Create(fileMeta)
+	if err != nil {
+		return fmt.Errorf("failed to create metaFile meta in store: %w", err)
+	}
+
+	// Store metaFile metadata directly by its full path (in-memory simulation) - This part might be removed later if Index handles it
 	m.files[name] = fileMeta
 
 	return nil
+
 }
 
-// Open opens a file for reading.
+// Open opens a metaFile for reading.
 func (m *Meta) Open(name string) (fs.File, error) {
-	if !path.IsAbs(name) {
-		return nil, fmt.Errorf("path must be absolute: %s", name)
+	// Path validation should ideally happen at a higher layer (e.g., Index)
+	// if !path.IsAbs(name) {
+	// 	return nil, fmt.Errorf("path must be absolute: %s", name)
+	// }
+
+	fileMeta, err := m.metaStore.Get(name) // Assuming name can be used as ID
+	if err != nil {
+		return nil, err
 	}
 
-	fileMeta, ok := m.files[name]
-	if !ok {
-		return nil, os.ErrNotExist
+	reader, err := m.assembler.NewReader(fileMeta, m.blobStorage)
+	if err != nil {
+		return nil, err
 	}
 
-	// Based on the version of the FileMeta, call the appropriate NewMetaFile function
-	switch fileMeta.Version() {
-	case metav1.Version:
-		// We need to pass the underlying data to NewMetaFileV1
-		if fm, ok := fileMeta.(*meta.FileMetaData[metav1.FileMetaV1]); ok {
-			return metav1.NewMetaFileV1(m.blobStorage, fm)
-		}
-		return nil, fmt.Errorf("invalid FileMeta type for V1: %T", fileMeta)
-	case metav2.Version:
-		// We need to pass the underlying data to NewMetaFileV2
-		if fm, ok := fileMeta.(*meta.FileMetaData[metav2.FileMetaV2]); ok {
-			return metav2.NewMetaFileV2(m.blobStorage, fm)
-		}
-		return nil, fmt.Errorf("invalid FileMeta type for V2: %T", fileMeta)
-	default:
-		return nil, fmt.Errorf("unsupported file meta version: %d", fileMeta.Version())
-	}
+	return &metaFile{
+		meta:   fileMeta,
+		reader: reader,
+	}, nil
 }
 
-// Stat returns file information.
+// Stat returns metaFile information.
 func (m *Meta) Stat(name string) (fs.FileInfo, error) {
 	if !path.IsAbs(name) {
 		return nil, fmt.Errorf("path must be absolute: %s", name)
@@ -147,10 +190,10 @@ func (m *Meta) Stat(name string) (fs.FileInfo, error) {
 	return &metaFileInfo{meta: fileMeta}, nil
 }
 
-// file implements fs.File for our custom file entries.
+// metaFile implements fs.File for our custom metaFile entries.
 type file struct {
-	storage meta.BlobStore
-	meta    meta.FileMeta // Now uses the interface
+	storage blobiface.Store
+	meta    metaiface.FileMeta // Now uses the interface
 	reader  io.Reader
 	offset  int64
 	closed  bool
@@ -177,7 +220,7 @@ func (f *file) Close() error {
 
 // metaFileInfo implements fs.FileInfo for our custom file entries.
 type metaFileInfo struct {
-	meta meta.FileMeta // Now uses the interface
+	meta metaiface.FileMeta // Now uses the interface
 }
 
 func (m metaFileInfo) Name() string {
@@ -201,19 +244,43 @@ func (m metaFileInfo) ModTime() time.Time {
 }
 
 func (m metaFileInfo) IsDir() bool {
-	return false // FileMeta always represents a file, not a directory
+	return false // FileMeta always represents a metaFile, not a directory
 }
 
 func (m metaFileInfo) Sys() any {
 	return nil
 }
 
-// ReadDir is not supported for file-only meta.
+// ReadDir is not supported for metaFile-only meta.
 func (m *Meta) ReadDir(p string) ([]fs.DirEntry, error) {
-	return nil, fmt.Errorf("ReadDir not supported for file-only meta")
+	return nil, fmt.Errorf("ReadDir not supported for metaFile-only meta")
 }
 
-// Mkdir is not supported for file-only meta.
+// Mkdir is not supported for metaFile-only meta.
 func (m *Meta) Mkdir(p string, perm fs.FileMode) error {
 	return fmt.Errorf("Mkdir not supported for file-only meta")
+}
+
+// StartUpload initiates a new file upload session for chunked uploads.
+func (m *Meta) StartUpload(fileName string, totalSize int64, mimeType string) (uploadID string, err error) {
+	// Placeholder implementation
+	return "", fmt.Errorf("StartUpload not yet implemented")
+}
+
+// UploadChunk uploads a single chunk of a file.
+func (m *Meta) UploadChunk(uploadID string, chunkIndex int, chunkData []byte) (err error) {
+	// Placeholder implementation
+	return fmt.Errorf("UploadChunk not yet implemented")
+}
+
+// FinishUpload finalizes a file upload session.
+func (m *Meta) FinishUpload(uploadID string) (fileMetaID string, err error) {
+	// Placeholder implementation
+	return "", fmt.Errorf("FinishUpload not yet implemented")
+}
+
+// CancelUpload cancels a file upload session and cleans up temporary data.
+func (m *Meta) CancelUpload(uploadID string) (err error) {
+	// Placeholder implementation
+	return fmt.Errorf("CancelUpload not yet implemented")
 }

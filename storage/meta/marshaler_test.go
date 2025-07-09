@@ -11,9 +11,9 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
-	metainterfaces "github.com/origadmin/runtime/interfaces/storage/meta"
-	metav1 "github.com/origadmin/runtime/storage/meta/v1"
-	metav2 "github.com/origadmin/runtime/storage/meta/v2"
+	metainterfaces "github.com/origadmin/runtime/interfaces/store/meta"
+	metav1 "github.com/origadmin/runtime/store/meta/v1"
+	metav2 "github.com/origadmin/runtime/store/meta/v2"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -6,10 +6,7 @@
 package meta
 
 import (
-	"io"
 	"time"
-
-	blob_interface "github.com/origadmin/runtime/interfaces/storage/blob"
 )
 
 type FileMeta interface {
@@ -19,9 +16,6 @@ type FileMeta interface {
 	Size() int64
 	// ModTime returns when the contents of the file itself were last modified.
 	ModTime() time.Time
-	// GetContentReader returns an io.Reader for the file's content.
-	// It handles whether the content is embedded or stored in blobs.
-	ContentReader(storage blob_interface.BlobStore) (io.Reader, error)
 }
 
 type FileMetaVersion struct {

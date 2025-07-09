@@ -8,18 +8,18 @@ import (
 	"io/fs"
 	"time"
 
-	index_interface "github.com/origadmin/runtime/interfaces/storage/index"
-	meta_interface "github.com/origadmin/runtime/interfaces/storage/meta"
+	indexiface "github.com/origadmin/runtime/interfaces/storage/index"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
 )
 
 // fileInfo implements fs.FileInfo by combining IndexNode and FileMeta.
 type fileInfo struct {
-	node     *index_interface.IndexNode
-	fileMeta meta_interface.FileMeta // Optional, only for files
+	node     *indexiface.Node
+	fileMeta metaiface.FileMeta // Optional, only for files
 }
 
 // NewFileInfo creates an fs.FileInfo from an IndexNode and optional FileMeta.
-func NewFileInfo(node *index_interface.IndexNode, fileMeta meta_interface.FileMeta) fs.FileInfo {
+func NewFileInfo(node *indexiface.Node, fileMeta metaiface.FileMeta) fs.FileInfo {
 	return &fileInfo{node: node, fileMeta: fileMeta}
 }
 
@@ -28,7 +28,7 @@ func (fi *fileInfo) Name() string {
 }
 
 func (fi *fileInfo) Size() int64 {
-	if fi.node.NodeType == index_interface.File && fi.fileMeta != nil {
+	if fi.node.NodeType == indexiface.File && fi.fileMeta != nil {
 		return fi.fileMeta.Size()
 	}
 	// For directories, size is typically 0 or undefined in fs.FileInfo
@@ -42,14 +42,14 @@ func (fi *fileInfo) Mode() fs.FileMode {
 func (fi *fileInfo) ModTime() time.Time {
 	// This should be the modification time of the file's content (from FileMeta)
 	// or the node's modification time (from IndexNode) if it's a directory or symlink.
-	if fi.node.NodeType == index_interface.File && fi.fileMeta != nil {
+	if fi.node.NodeType == indexiface.File && fi.fileMeta != nil {
 		return fi.fileMeta.ModTime()
 	}
 	return fi.node.Mtime // Node's modification time
 }
 
 func (fi *fileInfo) IsDir() bool {
-	return fi.node.NodeType == index_interface.Directory
+	return fi.node.NodeType == indexiface.Directory
 }
 
 func (fi *fileInfo) Sys() any {

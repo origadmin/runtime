@@ -11,7 +11,7 @@ import (
 
 // IndexNode represents a single entry in the file system index.
 // It can be a file, a directory, or other types like a symlink.
-type IndexNode struct {
+type Node struct {
 	// --- Common Metadata ---
 	// These fields are present for all node types.
 

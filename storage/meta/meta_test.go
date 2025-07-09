@@ -57,7 +57,7 @@ func TestNewMeta(t *testing.T) {
 		t.Fatalf("NewMeta failed: %v", err)
 	}
 
-	// No specific checks for root file or directory structure as meta now only handles files.
+	// No specific checks for root metaFile or directory structure as meta now only handles files.
 }
 
 func TestWriteFile(t *testing.T) {
@@ -70,14 +70,14 @@ func TestWriteFile(t *testing.T) {
 		t.Fatalf("NewMeta failed: %v", err)
 	}
 
-	// Write a small file
+	// Write a small metaFile
 	content := "Hello, world!"
 	err = m.WriteFile("/test.txt", bytes.NewReader([]byte(content)), 0644)
 	if err != nil {
 		t.Fatalf("WriteFile failed: %v", err)
 	}
 
-	// Verify file exists and content is correct
+	// Verify metaFile exists and content is correct
 	file, err := m.Open("/test.txt")
 	if err != nil {
 		t.Fatalf("Open /test.txt failed: %v", err)
@@ -92,7 +92,7 @@ func TestWriteFile(t *testing.T) {
 		t.Fatalf("expected '%s', got '%s'", content, string(readContent))
 	}
 
-	// Overwrite existing file
+	// Overwrite existing metaFile
 	newContent := "New content here."
 	err = m.WriteFile("/test.txt", bytes.NewReader([]byte(newContent)), 0644)
 	if err != nil {
@@ -113,7 +113,7 @@ func TestWriteFile(t *testing.T) {
 		t.Fatalf("expected '%s', got '%s' after overwrite", newContent, string(readContent))
 	}
 
-	// Write a larger file to test chunking (e.g., 5MB)
+	// Write a larger metaFile to test chunking (e.g., 5MB)
 	largeContent := make([]byte, DefaultBlockSize+1024) // Slightly larger than one block
 	for i := range largeContent {
 		largeContent[i] = byte(i % 256)
@@ -134,7 +134,7 @@ func TestWriteFile(t *testing.T) {
 		t.Fatalf("ReadAll /large.bin failed: %v", err)
 	}
 	if !bytes.Equal(readContent, largeContent) {
-		t.Fatalf("large file content mismatch")
+		t.Fatalf("large metaFile content mismatch")
 	}
 }
 
@@ -148,14 +148,14 @@ func TestOpen(t *testing.T) {
 		t.Fatalf("NewMeta failed: %v", err)
 	}
 
-	// Write a file
-	content := "This is the file content."
+	// Write a metaFile
+	content := "This is the metaFile content."
 	err = m.WriteFile("/my_file.txt", bytes.NewReader([]byte(content)), 0644)
 	if err != nil {
 		t.Fatalf("WriteFile failed: %v", err)
 	}
 
-	// Open and read the file
+	// Open and read the metaFile
 	file, err := m.Open("/my_file.txt")
 	if err != nil {
 		t.Fatalf("Open /my_file.txt failed: %v", err)
@@ -170,10 +170,10 @@ func TestOpen(t *testing.T) {
 		t.Fatalf("expected '%s', got '%s'", content, string(readContent))
 	}
 
-	// Attempt to open a non-existent file
+	// Attempt to open a non-existent metaFile
 	_, err = m.Open("/nonexistent_file.txt")
 	if !os.IsNotExist(err) {
-		t.Fatalf("expected ErrNotExist for non-existent file, got %v", err)
+		t.Fatalf("expected ErrNotExist for non-existent metaFile, got %v", err)
 	}
 }
 
@@ -187,8 +187,8 @@ func TestStat(t *testing.T) {
 		t.Fatalf("NewMeta failed: %v", err)
 	}
 
-	// Stat a created file
-	content := "file content"
+	// Stat a created metaFile
+	content := "metaFile content"
 	m.WriteFile("/testfile.txt", bytes.NewReader([]byte(content)), 0644)
 	fileInfo, err := m.Stat("/testfile.txt")
 	if err != nil {

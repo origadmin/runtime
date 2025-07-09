@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestFileBlobStore(t *testing.T) {
+func TestFileStore(t *testing.T) {
 	// Create a temporary directory for the test
 	tempDir, err := os.MkdirTemp("", "blobstore-test")
 	if err != nil {
@@ -18,10 +18,10 @@ func TestFileBlobStore(t *testing.T) {
 	}
 	defer os.RemoveAll(tempDir)
 
-	// Create a new FileBlobStore
-	store, err := NewFileBlobStore(tempDir)
+	// Create a new FileStore
+	store, err := NewFileStore(tempDir)
 	if err != nil {
-		t.Fatalf("Failed to create FileBlobStore: %v", err)
+		t.Fatalf("Failed to create FileStore: %v", err)
 	}
 
 	// Test data

@@ -1,7 +1,7 @@
-// Package meta implements the functions, types, and interfaces for the module.
+// Package blob implements the functions, types, and interfaces for the module.
 package blob
 
-type BlobStore interface {
+type Store interface {
 	Write(data []byte) (string, error)
 	Read(hash string) ([]byte, error)
 	Delete(hash string) error

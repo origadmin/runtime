@@ -13,7 +13,7 @@ import (
 	"github.com/dgraph-io/badger/v3"
 )
 
-func TestFileIndexManager(t *testing.T) {
+func TestFileManager(t *testing.T) {
 	// Create a temporary directory for the test
 	tempDir, err := os.MkdirTemp("", "indexmanager-test")
 	if err != nil {
@@ -21,10 +21,10 @@ func TestFileIndexManager(t *testing.T) {
 	}
 	defer os.RemoveAll(tempDir)
 
-	// Create a new FileIndexManager
-	manager, err := NewFileIndexManager(tempDir)
+	// Create a new FileManager
+	manager, err := NewFileManager(tempDir)
 	if err != nil {
-		t.Fatalf("Failed to create FileIndexManager: %v", err)
+		t.Fatalf("Failed to create FileManager: %v", err)
 	}
 	defer manager.Close()
 
@@ -38,16 +38,16 @@ func TestFileIndexManager(t *testing.T) {
 	}
 
 	// 2. Test CreateNode - Directory
-	dirNode := &IndexNode{
-		ParentID:  rootNode.NodeID,
-		Name:      "my_dir",
-		NodeType:  Directory,
-		Mode:      os.ModeDir | 0755,
-		OwnerID:   "user1",
-		GroupID:   "group1",
-		Atime:     time.Now(),
-		Mtime:     time.Now(),
-		Ctime:     time.Now(),
+	dirNode := &Node{
+		ParentID: rootNode.NodeID,
+		Name:     "my_dir",
+		NodeType: Directory,
+		Mode:     os.ModeDir | 0755,
+		OwnerID:  "user1",
+		GroupID:  "group1",
+		Atime:    time.Now(),
+		Mtime:    time.Now(),
+		Ctime:    time.Now(),
 	}
 	if err := manager.CreateNode(dirNode); err != nil {
 		t.Fatalf("Failed to create directory node: %v", err)
@@ -63,17 +63,17 @@ func TestFileIndexManager(t *testing.T) {
 	}
 
 	// 3. Test CreateNode - File
-	fileNode := &IndexNode{
-		ParentID:  dirNode.NodeID,
-		Name:      "my_file.txt",
-		NodeType:  File,
-		Mode:      0644,
-		OwnerID:   "user1",
-		GroupID:   "group1",
-		Atime:     time.Now(),
-		Mtime:     time.Now(),
-		Ctime:     time.Now(),
-		MetaHash:  "some_meta_hash_123",
+	fileNode := &Node{
+		ParentID: dirNode.NodeID,
+		Name:     "my_file.txt",
+		NodeType: File,
+		Mode:     0644,
+		OwnerID:  "user1",
+		GroupID:  "group1",
+		Atime:    time.Now(),
+		Mtime:    time.Now(),
+		Ctime:    time.Now(),
+		MetaHash: "some_meta_hash_123",
 	}
 	if err := manager.CreateNode(fileNode); err != nil {
 		t.Fatalf("Failed to create file node: %v", err)
@@ -148,16 +148,16 @@ func TestFileIndexManager(t *testing.T) {
 	}
 
 	// 8. Test DeleteNode - Non-empty directory (should fail)
-	childDir := &IndexNode{
-		ParentID:  dirNode.NodeID,
-		Name:      "child_dir",
-		NodeType:  Directory,
-		Mode:      os.ModeDir | 0755,
-		OwnerID:   "user1",
-		GroupID:   "group1",
-		Atime:     time.Now(),
-		Mtime:     time.Now(),
-		Ctime:     time.Now(),
+	childDir := &Node{
+		ParentID: dirNode.NodeID,
+		Name:     "child_dir",
+		NodeType: Directory,
+		Mode:     os.ModeDir | 0755,
+		OwnerID:  "user1",
+		GroupID:  "group1",
+		Atime:    time.Now(),
+		Mtime:    time.Now(),
+		Ctime:    time.Now(),
 	}
 	if err := manager.CreateNode(childDir); err != nil {
 		t.Fatalf("Failed to create child directory: %v", err)
@@ -183,23 +183,23 @@ func TestFileIndexManager(t *testing.T) {
 	}
 
 	// 10. Test CreateNode - Duplicate path (should fail)
-	duplicateFileNode := &IndexNode{
-		ParentID:  rootNode.NodeID,
-		Name:      "duplicate.txt",
-		NodeType:  File,
-		Mode:      0644,
-		MetaHash:  "some_meta_hash_dup",
+	duplicateFileNode := &Node{
+		ParentID: rootNode.NodeID,
+		Name:     "duplicate.txt",
+		NodeType: File,
+		Mode:     0644,
+		MetaHash: "some_meta_hash_dup",
 	}
 	if err := manager.CreateNode(duplicateFileNode); err != nil {
 		t.Fatalf("Failed to create first duplicate file: %v", err)
 	}
 
-	duplicateFileNode2 := &IndexNode{
-		ParentID:  rootNode.NodeID,
-		Name:      "duplicate.txt",
-		NodeType:  File,
-		Mode:      0644,
-		MetaHash:  "some_other_meta_hash_dup",
+	duplicateFileNode2 := &Node{
+		ParentID: rootNode.NodeID,
+		Name:     "duplicate.txt",
+		NodeType: File,
+		Mode:     0644,
+		MetaHash: "some_other_meta_hash_dup",
 	}
 	if err := manager.CreateNode(duplicateFileNode2); err == nil {
 		t.Error("Expected error when creating duplicate path, got nil")

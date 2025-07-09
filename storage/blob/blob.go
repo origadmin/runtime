@@ -73,7 +73,7 @@ func (m blobStorage) getHash(content []byte) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func NewStorage(path string) meta.BlobStore {
+func NewStorage(path string) meta.Store {
 	return &blobStorage{
 		Path: path,
 		Hash: sha256.New,

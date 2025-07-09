@@ -13,25 +13,27 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/google/uuid"
-	"github.com/origadmin/runtime/storage/layout"
-	index_interface "github.com/origadmin/runtime/interfaces/storage/index"
+	indexiface "github.com/origadmin/runtime/interfaces/storage/index"
+	
+	layoutiface "github.com/origadmin/runtime/interfaces/storage/layout"
+	indexiface "github.com/origadmin/runtime/interfaces/storage/index"
 )
 
-const (
+	pathKeyPrefix     = "path:"
 	pathKeyPrefix   = "path:"
 	childrenKeyPrefix = "children:"
 )
 
-// FileIndexManager implements the IndexManager interface using the local filesystem
+// FileManager implements the Manager interface using the local filesystem
 // and BadgerDB for auxiliary indexes.
-type FileIndexManager struct {
+type FileManager struct {
 	layout    layout.ShardedStorage
 	db        *badger.DB
 	indexPath string // Base path for index data (nodes and badger db)
 }
 
-// NewFileIndexManager creates a new FileIndexManager.
-func NewFileIndexManager(indexPath string) (*FileIndexManager, error) {
+// NewFileManager creates a new FileManager.
+func NewFileManager(indexPath string, metaStore metaiface.MetaStore, ls layoutiface.ShardedStorage) (*FileManager, error) {
 	// Ensure the index path exists
 	if err := os.MkdirAll(indexPath, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create index path: %w", err)
@@ -47,12 +49,12 @@ func NewFileIndexManager(indexPath string) (*FileIndexManager, error) {
 
 	// Initialize ShardedStorage for nodes
 	nodesPath := filepath.Join(indexPath, "nodes")
-	ls, err := layout.NewLocalShardedStorage(nodesPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create sharded storage for nodes: %w", err)
-	}
+	// ls, err := layout.NewLocalShardedStorage(nodesPath) // Now injected
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to create sharded storage for nodes: %w", err)
+	// }
 
-	manager := &FileIndexManager{
+	manager := &FileManager{
 		layout:    ls,
 		db:        db,
 		indexPath: indexPath,
@@ -62,16 +64,16 @@ func NewFileIndexManager(indexPath string) (*FileIndexManager, error) {
 	_, err = manager.GetNodeByPath("/")
 	if err != nil && err == badger.ErrKeyNotFound {
 		// Create root node if it doesn't exist
-		rootNode := &IndexNode{
-			NodeID:    uuid.New().String(),
-			ParentID:  "", // Root has no parent
-			Name:      "/",
-			NodeType:  Directory,
-			Mode:      os.ModeDir | 0755,
-			OwnerID:   "", // Placeholder
-			GroupID:   "", // Placeholder
-			Atime:     time.Now(),
-			Mtime:     time.Now(),
+			NodeID:   uuid.New().String(),
+			ParentID: "", // Root has no parent
+			Name:     "/",
+			NodeType: indexiface.Directory,
+			Mode:     os.ModeDir | 0755,
+			OwnerID:  "", // Placeholder
+			GroupID:  "", // Placeholder
+			Atime:    time.Now(),
+			Mtime:    time.Now(),
+			Ctime:    time.Now(),
 			Ctime:     time.Now(),
 		}
 		err = manager.CreateNode(rootNode)
@@ -86,12 +88,12 @@ func NewFileIndexManager(indexPath string) (*FileIndexManager, error) {
 }
 
 // Close closes the underlying BadgerDB.
-func (m *FileIndexManager) Close() error {
+func (m *FileManager) Close() error {
 	return m.db.Close()
 }
 
 // CreateNode creates a new node in the index.
-func (m *FileIndexManager) CreateNode(node *IndexNode) error {
+func (m *FileManager) CreateNode(node *Node) error {
 	if node.NodeID == "" {
 		node.NodeID = uuid.New().String()
 	}
@@ -162,7 +164,7 @@ func (m *FileIndexManager) CreateNode(node *IndexNode) error {
 }
 
 // GetNode retrieves a node by its unique ID.
-func (m *FileIndexManager) GetNode(nodeID string) (*IndexNode, error) {
+func (m *FileManager) GetNode(nodeID string) (*Node, error) {
 	nodeBytes, err := m.layout.Read(nodeID)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -171,7 +173,7 @@ func (m *FileIndexManager) GetNode(nodeID string) (*IndexNode, error) {
 		return nil, fmt.Errorf("failed to read node data: %w", err)
 	}
 
-	var node IndexNode
+	var node Node
 	if err := json.Unmarshal(nodeBytes, &node); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal node: %w", err)
 	}
@@ -179,7 +181,7 @@ func (m *FileIndexManager) GetNode(nodeID string) (*IndexNode, error) {
 }
 
 // GetNodeByPath retrieves a node by its full path.
-func (m *FileIndexManager) GetNodeByPath(path string) (*IndexNode, error) {
+func (m *FileManager) GetNodeByPath(path string) (*Node, error) {
 	var nodeID string
 	err := m.db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte(pathKeyPrefix + path))
@@ -201,7 +203,7 @@ func (m *FileIndexManager) GetNodeByPath(path string) (*IndexNode, error) {
 }
 
 // UpdateNode updates an existing node's data.
-func (m *FileIndexManager) UpdateNode(node *IndexNode) error {
+func (m *FileManager) UpdateNode(node *Node) error {
 	// For simplicity, we only allow updating the node data, not its path or parent.
 	// Changing path/parent would require updating path and children indexes.
 	nodeBytes, err := json.Marshal(node)
@@ -212,7 +214,7 @@ func (m *FileIndexManager) UpdateNode(node *IndexNode) error {
 }
 
 // DeleteNode removes a node from the index.
-func (m *FileIndexManager) DeleteNode(nodeID string) error {
+func (m *FileManager) DeleteNode(nodeID string) error {
 	node, err := m.GetNode(nodeID)
 	if err != nil {
 		return err
@@ -283,7 +285,7 @@ func (m *FileIndexManager) DeleteNode(nodeID string) error {
 }
 
 // ListChildren retrieves all immediate children of a directory node.
-func (m *FileIndexManager) ListChildren(parentID string) ([]*IndexNode, error) {
+func (m *FileManager) ListChildren(parentID string) ([]*Node, error) {
 	childrenKey := []byte(childrenKeyPrefix + parentID)
 	var childIDs []string
 	err := m.db.View(func(txn *badger.Txn) error {
@@ -304,7 +306,7 @@ func (m *FileIndexManager) ListChildren(parentID string) ([]*IndexNode, error) {
 		return nil, fmt.Errorf("failed to get children IDs: %w", err)
 	}
 
-	var childrenNodes []*IndexNode
+	var childrenNodes []*Node
 	for _, id := range childIDs {
 		node, err := m.GetNode(id)
 		if err != nil {
@@ -316,7 +318,7 @@ func (m *FileIndexManager) ListChildren(parentID string) ([]*IndexNode, error) {
 }
 
 // MoveNode moves a node to a new parent directory and/or new name.
-func (m *FileIndexManager) MoveNode(nodeID string, newParentID string, newName string) error {
+func (m *FileManager) MoveNode(nodeID string, newParentID string, newName string) error {
 	// Get the node to move
 	node, err := m.GetNode(nodeID)
 	if err != nil {

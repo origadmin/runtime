@@ -6,16 +6,12 @@
 package metav2
 
 import (
-	"bytes"
-	"io"
 	"time"
-
-	"github.com/origadmin/runtime/interfaces/storage/blob"
 )
 
 const Version = 2
 
-// EmbeddedFileSizeThreshold 定义了小文件直接嵌入元数据的最大大小 (256KB)
+// EmbeddedFileSizeThreshold Defines the maximum size of metadata for small files to be embedded directly (256KB)
 const EmbeddedFileSizeThreshold = 256 * 1024
 
 type FileMetaV2 struct {
@@ -43,14 +39,12 @@ func (f FileMetaV2) ModTime() time.Time {
 	return time.Unix(f.ModifyTime, 0)
 }
 
-func (f FileMetaV2) ContentReader(storage blob.BlobStore) (io.Reader, error) {
-	if len(f.EmbeddedData) > 0 {
-		return bytes.NewReader(f.EmbeddedData), nil
-	} else {
-		return &chunkReader{
-				storage: storage,
-				hashes:  f.BlobHashes,
-			},
-			nil
-	}
+// GetEmbeddedData returns the embedded data of the file.
+func (f FileMetaV2) GetEmbeddedData() []byte {
+	return f.EmbeddedData
+}
+
+// GetShards returns the blob hashes (shards) of the file.
+func (f FileMetaV2) GetShards() []string {
+	return f.BlobHashes
 }
