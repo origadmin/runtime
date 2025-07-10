@@ -5,9 +5,9 @@ import (
 	"errors"
 	"io"
 
-	"github.com/origadmin/runtime/interfaces/storage/blob"
+	blobiface "github.com/origadmin/runtime/interfaces/storage/blob"
 	contentiface "github.com/origadmin/runtime/interfaces/storage/content"
-	"github.com/origadmin/runtime/interfaces/storage/meta"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
 )
 
 // New returns a new content assembler.
@@ -41,7 +41,7 @@ func (a *assembler) NewReader(fileMeta metaiface.FileMeta) (io.Reader, error) {
 	shards := metaV2.GetShards()
 	if len(shards) > 0 {
 		return &chunkReader{
-			storage: blobStore,
+			storage: a.blobStore,
 			hashes:  shards,
 		}, nil
 	}
@@ -51,7 +51,7 @@ func (a *assembler) NewReader(fileMeta metaiface.FileMeta) (io.Reader, error) {
 
 // chunkReader is an io.Reader that reads data from multiple chunks in the BlobStore
 type chunkReader struct {
-	storage blob.Store
+	storage blobiface.Store
 	hashes  []string
 	current int
 	reader  io.Reader

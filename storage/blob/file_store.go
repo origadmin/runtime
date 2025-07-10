@@ -8,7 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	layoutiface "github.com/origadmin/runtime/interfaces/storage/layout"
+	"github.com/origadmin/runtime/storage/layout"
 )
 
 // FileStore implements the BlobStore interface using the local filesystem.
@@ -18,7 +18,11 @@ type FileStore struct {
 }
 
 // NewFileStore creates a new FileStore.
-func NewFileStore(ls layoutiface.ShardedStorage) (*FileStore, error) {
+func NewFileStore(basePath string) (*FileStore, error) {
+	ls, err := layout.NewLocalShardedStorage(basePath)
+	if err != nil {
+		return nil, err
+	}
 	return &FileStore{layout: ls}, nil
 }
 

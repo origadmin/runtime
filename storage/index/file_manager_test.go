@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgraph-io/badger/v3"
+	"github.com/origadmin/runtime/interfaces/storage/index"
 )
 
 func TestFileManager(t *testing.T) {
@@ -22,7 +22,7 @@ func TestFileManager(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Create a new FileManager
-	manager, err := NewFileManager(tempDir)
+	manager, err := NewFileManager(tempDir, nil)
 	if err != nil {
 		t.Fatalf("Failed to create FileManager: %v", err)
 	}
@@ -33,15 +33,15 @@ func TestFileManager(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get root node: %v", err)
 	}
-	if rootNode.Name != "/" || rootNode.NodeType != Directory || rootNode.ParentID != "" {
+	if rootNode.Name != "/" || rootNode.NodeType != index.Directory || rootNode.ParentID != "" {
 		t.Errorf("Root node has incorrect properties: %+v", rootNode)
 	}
 
 	// 2. Test CreateNode - Directory
-	dirNode := &Node{
+	dirNode := &index.Node{
 		ParentID: rootNode.NodeID,
 		Name:     "my_dir",
-		NodeType: Directory,
+		NodeType: index.Directory,
 		Mode:     os.ModeDir | 0755,
 		OwnerID:  "user1",
 		GroupID:  "group1",
@@ -54,7 +54,7 @@ func TestFileManager(t *testing.T) {
 	}
 
 	// Verify directory node by path
-	retrievedDirNode, err := manager.GetNodeByPath("/my_dir")
+	retrievedDirNode, err := manager.GetNodeByPath(filepath.Join(rootNode.Name, dirNode.Name))
 	if err != nil {
 		t.Fatalf("Failed to get directory node by path: %v", err)
 	}
@@ -63,28 +63,27 @@ func TestFileManager(t *testing.T) {
 	}
 
 	// 3. Test CreateNode - File
-	fileNode := &Node{
+	fileNode := &index.Node{
 		ParentID: dirNode.NodeID,
 		Name:     "my_file.txt",
-		NodeType: File,
+		NodeType: index.File,
 		Mode:     0644,
 		OwnerID:  "user1",
 		GroupID:  "group1",
 		Atime:    time.Now(),
 		Mtime:    time.Now(),
 		Ctime:    time.Now(),
-		MetaHash: "some_meta_hash_123",
 	}
 	if err := manager.CreateNode(fileNode); err != nil {
 		t.Fatalf("Failed to create file node: %v", err)
 	}
 
 	// Verify file node by path
-	retrievedFileNode, err := manager.GetNodeByPath("/my_dir/my_file.txt")
+	retrievedFileNode, err := manager.GetNodeByPath(filepath.Join(dirNode.Name, fileNode.Name))
 	if err != nil {
 		t.Fatalf("Failed to get file node by path: %v", err)
 	}
-	if retrievedFileNode.NodeID != fileNode.NodeID || retrievedFileNode.MetaHash != "some_meta_hash_123" {
+	if retrievedFileNode.NodeID != fileNode.NodeID {
 		t.Errorf("Retrieved file node mismatch: %+v", retrievedFileNode)
 	}
 
@@ -118,13 +117,13 @@ func TestFileManager(t *testing.T) {
 	}
 
 	// Verify old path is gone
-	_, err = manager.GetNodeByPath("/my_dir/my_file.txt")
-	if err == nil || err != badger.ErrKeyNotFound {
+	_, err = manager.GetNodeByPath(filepath.Join(dirNode.Name, fileNode.Name))
+	if !os.IsNotExist(err) {
 		t.Errorf("Old file path still exists or unexpected error: %v", err)
 	}
 
 	// Verify new path exists and node is correct
-	movedFileNode, err := manager.GetNodeByPath("/my_dir/new_file_name.txt")
+	movedFileNode, err := manager.GetNodeByPath(filepath.Join(dirNode.Name, newFileName))
 	if err != nil {
 		t.Fatalf("Failed to get moved file by new path: %v", err)
 	}
@@ -139,19 +138,19 @@ func TestFileManager(t *testing.T) {
 
 	// Verify file is gone
 	_, err = manager.GetNode(movedFileNode.NodeID)
-	if err == nil || err != badger.ErrKeyNotFound {
+	if !os.IsNotExist(err) {
 		t.Errorf("Deleted file node still exists or unexpected error: %v", err)
 	}
-	_, err = manager.GetNodeByPath("/my_dir/new_file_name.txt")
-	if err == nil || err != badger.ErrKeyNotFound {
+	_, err = manager.GetNodeByPath(filepath.Join(dirNode.Name, newFileName))
+	if !os.IsNotExist(err) {
 		t.Errorf("Deleted file path still exists or unexpected error: %v", err)
 	}
 
 	// 8. Test DeleteNode - Non-empty directory (should fail)
-	childDir := &Node{
+	childDir := &index.Node{
 		ParentID: dirNode.NodeID,
 		Name:     "child_dir",
-		NodeType: Directory,
+		NodeType: index.Directory,
 		Mode:     os.ModeDir | 0755,
 		OwnerID:  "user1",
 		GroupID:  "group1",
@@ -177,29 +176,27 @@ func TestFileManager(t *testing.T) {
 	}
 
 	// Verify directories are gone
-	_, err = manager.GetNodeByPath("/my_dir")
-	if err == nil || err != badger.ErrKeyNotFound {
+	_, err = manager.GetNodeByPath(filepath.Join(rootNode.Name, dirNode.Name))
+	if !os.IsNotExist(err) {
 		t.Errorf("Deleted directory path still exists or unexpected error: %v", err)
 	}
 
 	// 10. Test CreateNode - Duplicate path (should fail)
-	duplicateFileNode := &Node{
+	duplicateFileNode := &index.Node{
 		ParentID: rootNode.NodeID,
 		Name:     "duplicate.txt",
-		NodeType: File,
+		NodeType: index.File,
 		Mode:     0644,
-		MetaHash: "some_meta_hash_dup",
 	}
 	if err := manager.CreateNode(duplicateFileNode); err != nil {
 		t.Fatalf("Failed to create first duplicate file: %v", err)
 	}
 
-	duplicateFileNode2 := &Node{
+	duplicateFileNode2 := &index.Node{
 		ParentID: rootNode.NodeID,
 		Name:     "duplicate.txt",
-		NodeType: File,
+		NodeType: index.File,
 		Mode:     0644,
-		MetaHash: "some_other_meta_hash_dup",
 	}
 	if err := manager.CreateNode(duplicateFileNode2); err == nil {
 		t.Error("Expected error when creating duplicate path, got nil")

@@ -7,6 +7,7 @@ package meta
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -42,7 +43,7 @@ func (m *Meta) chunkData(r io.Reader) ([]string, int64, error) {
 		}
 
 		data := buf[:n]
-		hash, storeErr := m.blobStorage.Store(data)
+		hash, storeErr := m.blobStorage.Write(data)
 		if storeErr != nil {
 			return nil, 0, storeErr
 		}
@@ -103,7 +104,7 @@ func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
 	// Determine if content should be embedded (for FileMetaV2)
 	if int64(len(contentBytes)) <= metav2.EmbeddedFileSizeThreshold && err == io.EOF { // Check for EOF to ensure it's truly small
 		// It's a small metaFile, embed the content
-		v2Data := &metav2.FileMetaV2{
+		_ = &metav2.FileMetaV2{
 			Version:      metav2.Version,
 			FileSize:     int64(len(contentBytes)),
 			ModifyTime:   time.Now().Unix(),
@@ -112,10 +113,10 @@ func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
 			EmbeddedData: contentBytes,
 			BlobHashes:   nil, // No external blob reference for embedded data
 		}
-		fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
-			Data: v2Data,
-			Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
-		}
+		//fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
+		//	Data: v2Data,
+		//	Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
+		//}
 	} else {
 		// It's a large metaFile, or we couldn't determine size easily, so chunk the rest of the stream.
 		// The teeReader has already consumed some bytes, so chunkData will continue from there.
@@ -125,7 +126,7 @@ func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
 		}
 
 		// Create a FileMetaV2 instance for blob-referenced content
-		v2Data := &metav2.FileMetaV2{
+		_ = &metav2.FileMetaV2{
 			Version:    metav2.Version,
 			FileSize:   totalSize,
 			ModifyTime: time.Now().Unix(),
@@ -133,10 +134,10 @@ func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
 			RefCount:   1,                          // Initial ref count
 			BlobHashes: hashes,
 		}
-		fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
-			Data: v2Data,
-			Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
-		}
+		//fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
+		//	Data: v2Data,
+		//	Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
+		//}
 	}
 
 	// Store metaFile metadata using the injected MetaStore
@@ -164,7 +165,7 @@ func (m *Meta) Open(name string) (fs.File, error) {
 		return nil, err
 	}
 
-	reader, err := m.assembler.NewReader(fileMeta, m.blobStorage)
+	reader, err := m.assembler.NewReader(fileMeta)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +192,7 @@ func (m *Meta) Stat(name string) (fs.FileInfo, error) {
 }
 
 // metaFile implements fs.File for our custom metaFile entries.
-type file struct {
+type metaFile struct {
 	storage blobiface.Store
 	meta    metaiface.FileMeta // Now uses the interface
 	reader  io.Reader
@@ -199,21 +200,21 @@ type file struct {
 	closed  bool
 }
 
-func (f *file) Stat() (fs.FileInfo, error) {
+func (f *metaFile) Stat() (fs.FileInfo, error) {
 	if f.closed {
 		return nil, fs.ErrClosed
 	}
 	return &metaFileInfo{meta: f.meta}, nil
 }
 
-func (f *file) Read(p []byte) (int, error) {
+func (f *metaFile) Read(p []byte) (int, error) {
 	if f.closed {
 		return 0, fs.ErrClosed
 	}
 	return f.reader.Read(p)
 }
 
-func (f *file) Close() error {
+func (f *metaFile) Close() error {
 	f.closed = true
 	return nil
 }

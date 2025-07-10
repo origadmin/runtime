@@ -49,12 +49,9 @@ func Unmarshal(data []byte) (*metav2.FileMetaV2, error) {
 }
 
 func UnmarshalFileMeta(data []byte) (meta.FileMeta, error) {
-	meta, err := Unmarshal(data)
+	metad, err := Unmarshal(data)
 	if err != nil {
 		return nil, err
 	}
-	if fileMeta, ok := meta.(*metav2.FileMeta); ok {
-		return fileMeta, nil
-	}
-	return nil, fmt.Errorf("unexpected meta type: %T", meta)
+	return metad, nil
 }

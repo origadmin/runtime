@@ -59,7 +59,7 @@ func (m *Migration) validate(all bool) error {
 
 	// no validation rules for Enabled
 
-	// no validation rules for path
+	// no validation rules for Path
 
 	// no validation rules for Version
 
@@ -586,7 +586,7 @@ func (m *Memory) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for FileSize
+	// no validation rules for Size
 
 	// no validation rules for Capacity
 
@@ -670,124 +670,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = MemoryValidationError{}
-
-// Validate checks the field values on BadgerDS with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *BadgerDS) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on BadgerDS with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in BadgerDSMultiError, or nil
-// if none found.
-func (m *BadgerDS) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *BadgerDS) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for path
-
-	// no validation rules for SyncWrites
-
-	// no validation rules for ValueLogFileSize
-
-	// no validation rules for InMemory
-
-	if val := m.GetLogLevel(); val < 0 || val > 3 {
-		err := BadgerDSValidationError{
-			field:  "LogLevel",
-			reason: "value must be inside range [0, 3]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return BadgerDSMultiError(errors)
-	}
-
-	return nil
-}
-
-// BadgerDSMultiError is an error wrapping multiple validation errors returned
-// by BadgerDS.ValidateAll() if the designated constraints aren't met.
-type BadgerDSMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m BadgerDSMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m BadgerDSMultiError) AllErrors() []error { return m }
-
-// BadgerDSValidationError is the validation error returned by
-// BadgerDS.Validate if the designated constraints aren't met.
-type BadgerDSValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e BadgerDSValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e BadgerDSValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e BadgerDSValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e BadgerDSValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e BadgerDSValidationError) ErrorName() string { return "BadgerDSValidationError" }
-
-// Error satisfies the builtin error interface
-func (e BadgerDSValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sBadgerDS.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = BadgerDSValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = BadgerDSValidationError{}
 
 // Validate checks the field values on File with the rules defined in the proto
 // definition for this message. If any rules are violated, the first error
@@ -1265,35 +1147,6 @@ func (m *Cache) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetBadger()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, CacheValidationError{
-					field:  "Badger",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, CacheValidationError{
-					field:  "Badger",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetBadger()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return CacheValidationError{
-				field:  "Badger",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
 	if len(errors) > 0 {
 		return CacheMultiError(errors)
 	}
@@ -1531,35 +1384,6 @@ func (m *Storage) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return StorageValidationError{
 				field:  "Redis",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetBadger()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Badger",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Badger",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetBadger()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StorageValidationError{
-				field:  "Badger",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

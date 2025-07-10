@@ -4,7 +4,7 @@
 
 package index
 
-// IndexManager defines the interface for managing the file system's namespace and structure.
+// Manager defines the interface for managing the file system's namespace and structure.
 type Manager interface {
 	// CreateNode creates a new node in the index.
 	CreateNode(node *Node) error

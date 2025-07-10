@@ -465,82 +465,6 @@ func (x *Memory) GetCleanupInterval() int64 {
 	return 0
 }
 
-type BadgerDS struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Path             string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	SyncWrites       bool                   `protobuf:"varint,2,opt,name=sync_writes,proto3" json:"sync_writes,omitempty"`
-	ValueLogFileSize int32                  `protobuf:"varint,3,opt,name=value_log_file_size,proto3" json:"value_log_file_size,omitempty"`
-	InMemory         bool                   `protobuf:"varint,4,opt,name=in_memory,proto3" json:"in_memory,omitempty"`
-	LogLevel         uint32                 `protobuf:"varint,5,opt,name=log_level,proto3" json:"log_level,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *BadgerDS) Reset() {
-	*x = BadgerDS{}
-	mi := &file_config_v1_storage_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *BadgerDS) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BadgerDS) ProtoMessage() {}
-
-func (x *BadgerDS) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BadgerDS.ProtoReflect.Descriptor instead.
-func (*BadgerDS) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *BadgerDS) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *BadgerDS) GetSyncWrites() bool {
-	if x != nil {
-		return x.SyncWrites
-	}
-	return false
-}
-
-func (x *BadgerDS) GetValueLogFileSize() int32 {
-	if x != nil {
-		return x.ValueLogFileSize
-	}
-	return 0
-}
-
-func (x *BadgerDS) GetInMemory() bool {
-	if x != nil {
-		return x.InMemory
-	}
-	return false
-}
-
-func (x *BadgerDS) GetLogLevel() uint32 {
-	if x != nil {
-		return x.LogLevel
-	}
-	return 0
-}
-
 // File
 type File struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -551,7 +475,7 @@ type File struct {
 
 func (x *File) Reset() {
 	*x = File{}
-	mi := &file_config_v1_storage_proto_msgTypes[6]
+	mi := &file_config_v1_storage_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -563,7 +487,7 @@ func (x *File) String() string {
 func (*File) ProtoMessage() {}
 
 func (x *File) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[6]
+	mi := &file_config_v1_storage_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -576,7 +500,7 @@ func (x *File) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use File.ProtoReflect.Descriptor instead.
 func (*File) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{6}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *File) GetRoot() string {
@@ -603,7 +527,7 @@ type Oss struct {
 
 func (x *Oss) Reset() {
 	*x = Oss{}
-	mi := &file_config_v1_storage_proto_msgTypes[7]
+	mi := &file_config_v1_storage_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -615,7 +539,7 @@ func (x *Oss) String() string {
 func (*Oss) ProtoMessage() {}
 
 func (x *Oss) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[7]
+	mi := &file_config_v1_storage_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -628,7 +552,7 @@ func (x *Oss) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Oss.ProtoReflect.Descriptor instead.
 func (*Oss) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{7}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Oss) GetEndpoint() string {
@@ -704,7 +628,7 @@ type Mongo struct {
 
 func (x *Mongo) Reset() {
 	*x = Mongo{}
-	mi := &file_config_v1_storage_proto_msgTypes[8]
+	mi := &file_config_v1_storage_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -716,7 +640,7 @@ func (x *Mongo) String() string {
 func (*Mongo) ProtoMessage() {}
 
 func (x *Mongo) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[8]
+	mi := &file_config_v1_storage_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -729,7 +653,7 @@ func (x *Mongo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mongo.ProtoReflect.Descriptor instead.
 func (*Mongo) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{8}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Mongo) GetUri() string {
@@ -799,16 +723,14 @@ type Cache struct {
 	// Memory cache
 	Memory *Memory `protobuf:"bytes,11,opt,name=memory,proto3" json:"memory,omitempty"`
 	// Redis
-	Redis *Redis `protobuf:"bytes,12,opt,name=redis,proto3" json:"redis,omitempty"`
-	// Badger
-	Badger        *BadgerDS `protobuf:"bytes,13,opt,name=badger,proto3" json:"badger,omitempty"`
+	Redis         *Redis `protobuf:"bytes,12,opt,name=redis,proto3" json:"redis,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Cache) Reset() {
 	*x = Cache{}
-	mi := &file_config_v1_storage_proto_msgTypes[9]
+	mi := &file_config_v1_storage_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -820,7 +742,7 @@ func (x *Cache) String() string {
 func (*Cache) ProtoMessage() {}
 
 func (x *Cache) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[9]
+	mi := &file_config_v1_storage_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -833,7 +755,7 @@ func (x *Cache) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cache.ProtoReflect.Descriptor instead.
 func (*Cache) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{9}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Cache) GetDriver() string {
@@ -871,13 +793,6 @@ func (x *Cache) GetRedis() *Redis {
 	return nil
 }
 
-func (x *Cache) GetBadger() *BadgerDS {
-	if x != nil {
-		return x.Badger
-	}
-	return nil
-}
-
 type Storage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -891,8 +806,6 @@ type Storage struct {
 	File *File `protobuf:"bytes,10,opt,name=file,proto3" json:"file,omitempty"`
 	// Redis
 	Redis *Redis `protobuf:"bytes,11,opt,name=redis,proto3" json:"redis,omitempty"`
-	// Badger
-	Badger *BadgerDS `protobuf:"bytes,12,opt,name=badger,proto3" json:"badger,omitempty"`
 	// Mongo
 	Mongo *Mongo `protobuf:"bytes,13,opt,name=mongo,proto3" json:"mongo,omitempty"`
 	// OSS
@@ -903,7 +816,7 @@ type Storage struct {
 
 func (x *Storage) Reset() {
 	*x = Storage{}
-	mi := &file_config_v1_storage_proto_msgTypes[10]
+	mi := &file_config_v1_storage_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +828,7 @@ func (x *Storage) String() string {
 func (*Storage) ProtoMessage() {}
 
 func (x *Storage) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[10]
+	mi := &file_config_v1_storage_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +841,7 @@ func (x *Storage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Storage.ProtoReflect.Descriptor instead.
 func (*Storage) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{10}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Storage) GetName() string {
@@ -969,13 +882,6 @@ func (x *Storage) GetFile() *File {
 func (x *Storage) GetRedis() *Redis {
 	if x != nil {
 		return x.Redis
-	}
-	return nil
-}
-
-func (x *Storage) GetBadger() *BadgerDS {
-	if x != nil {
-		return x.Badger
 	}
 	return nil
 }
@@ -1041,14 +947,7 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\n" +
 	"expiration\x18\x03 \x01(\x03B\x15\xbaG\x12\x92\x02\x0fexpiration timeR\n" +
 	"expiration\x12D\n" +
-	"\x10cleanup_interval\x18\x04 \x01(\x03B\x18\xbaG\x15\x92\x02\x12clearance intervalR\x10cleanup_interval\"\xa7\x02\n" +
-	"\bBadgerDS\x12\x1e\n" +
-	"\x04path\x18\x01 \x01(\tB\n" +
-	"\xbaG\a\x92\x02\x04pathR\x04path\x12@\n" +
-	"\vsync_writes\x18\x02 \x01(\bB\x1e\xbaG\x1b\x92\x02\x18synchronous write or notR\vsync_writes\x12K\n" +
-	"\x13value_log_file_size\x18\x03 \x01(\x05B\x19\xbaG\x16\x92\x02\x13value log file sizeR\x13value_log_file_size\x124\n" +
-	"\tin_memory\x18\x04 \x01(\bB\x16\xbaG\x13\x92\x02\x10in memory or notR\tin_memory\x126\n" +
-	"\tlog_level\x18\x05 \x01(\rB\x18\xfaB\x06*\x04\x18\x03(\x00\xbaG\f\x92\x02\tlog levelR\tlog_level\"0\n" +
+	"\x10cleanup_interval\x18\x04 \x01(\x03B\x18\xbaG\x15\x92\x02\x12clearance intervalR\x10cleanup_interval\"0\n" +
 	"\x04File\x12(\n" +
 	"\x04root\x18\x01 \x01(\tB\x14\xbaG\x11\x92\x02\x0eroot directoryR\x04root\"\x81\x03\n" +
 	"\x03Oss\x12:\n" +
@@ -1068,7 +967,7 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\vauth_source\x18\x05 \x01(\bR\vauth_source\x12$\n" +
 	"\rmax_pool_size\x18\x06 \x01(\x05R\rmax_pool_size\x12$\n" +
 	"\rmin_pool_size\x18\a \x01(\x05R\rmin_pool_size\x12Y\n" +
-	"\x0fconnect_timeout\x18\b \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\"\xc3\x03\n" +
+	"\x0fconnect_timeout\x18\b \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\"\xf2\x02\n" +
 	"\x05Cache\x12T\n" +
 	"\x06driver\x18\x01 \x01(\tB<\xfaB\"r R\x04noneR\x05redisR\tmemcachedR\x06memory\xbaG\x14\x92\x02\x11cache driver nameR\x06driver\x12$\n" +
 	"\x04name\x18\x02 \x01(\tB\x10\xbaG\r\x92\x02\n" +
@@ -1076,8 +975,7 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\tmemcached\x18\n" +
 	" \x01(\v2\x14.config.v1.MemcachedB#\xbaG \x92\x02\x1dmemcached cache configurationR\tmemcached\x12K\n" +
 	"\x06memory\x18\v \x01(\v2\x11.config.v1.MemoryB \xbaG\x1d\x92\x02\x1amemory cache configurationR\x06memory\x12G\n" +
-	"\x05redis\x18\f \x01(\v2\x10.config.v1.RedisB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\x12O\n" +
-	"\x06badger\x18\r \x01(\v2\x13.config.v1.BadgerDSB\"\xbaG\x1f\x92\x02\x1cbadger storage configurationR\x06badger\"\xbb\x05\n" +
+	"\x05redis\x18\f \x01(\v2\x10.config.v1.RedisB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\"\xea\x04\n" +
 	"\aStorage\x12P\n" +
 	"\x04name\x18\x01 \x01(\tB<\xfaB\x04r\x02\x10\x01\xbaG2\x92\x02/Unique identifier for the storage configurationR\x04name\x12[\n" +
 	"\x04type\x18\x02 \x01(\tBG\xfaB2r0R\x04noneR\x04fileR\x05redisR\x05mongoR\x03ossR\bdatabaseR\x05cache\xbaG\x0f\x92\x02\fstorage typeR\x04type\x12M\n" +
@@ -1085,8 +983,7 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\x05cache\x18\x04 \x01(\v2\x10.config.v1.CacheB\x19\xbaG\x16\x92\x02\x13cache configurationR\x05cache\x12E\n" +
 	"\x04file\x18\n" +
 	" \x01(\v2\x0f.config.v1.FileB \xbaG\x1d\x92\x02\x1afile storage configurationR\x04file\x12I\n" +
-	"\x05redis\x18\v \x01(\v2\x10.config.v1.RedisB!\xbaG\x1e\x92\x02\x1bredis storage configurationR\x05redis\x12O\n" +
-	"\x06badger\x18\f \x01(\v2\x13.config.v1.BadgerDSB\"\xbaG\x1f\x92\x02\x1cbadger storage configurationR\x06badger\x12I\n" +
+	"\x05redis\x18\v \x01(\v2\x10.config.v1.RedisB!\xbaG\x1e\x92\x02\x1bredis storage configurationR\x05redis\x12I\n" +
 	"\x05mongo\x18\r \x01(\v2\x10.config.v1.MongoB!\xbaG\x1e\x92\x02\x1bmongo storage configurationR\x05mongo\x12A\n" +
 	"\x03oss\x18\x0e \x01(\v2\x0e.config.v1.OssB\x1f\xbaG\x1c\x92\x02\x19oss storage configurationR\x03ossB\xa1\x01\n" +
 	"\rcom.config.v1B\fStorageProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
@@ -1104,38 +1001,35 @@ func file_config_v1_storage_proto_rawDescGZIP() []byte {
 	return file_config_v1_storage_proto_rawDescData
 }
 
-var file_config_v1_storage_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_config_v1_storage_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_config_v1_storage_proto_goTypes = []any{
 	(*Migration)(nil), // 0: config.v1.Migration
 	(*Database)(nil),  // 1: config.v1.Database
 	(*Redis)(nil),     // 2: config.v1.Redis
 	(*Memcached)(nil), // 3: config.v1.Memcached
 	(*Memory)(nil),    // 4: config.v1.Memory
-	(*BadgerDS)(nil),  // 5: config.v1.BadgerDS
-	(*File)(nil),      // 6: config.v1.File
-	(*Oss)(nil),       // 7: config.v1.Oss
-	(*Mongo)(nil),     // 8: config.v1.Mongo
-	(*Cache)(nil),     // 9: config.v1.Cache
-	(*Storage)(nil),   // 10: config.v1.Storage
+	(*File)(nil),      // 5: config.v1.File
+	(*Oss)(nil),       // 6: config.v1.Oss
+	(*Mongo)(nil),     // 7: config.v1.Mongo
+	(*Cache)(nil),     // 8: config.v1.Cache
+	(*Storage)(nil),   // 9: config.v1.Storage
 }
 var file_config_v1_storage_proto_depIdxs = []int32{
 	0,  // 0: config.v1.Database.migration:type_name -> config.v1.Migration
 	3,  // 1: config.v1.Cache.memcached:type_name -> config.v1.Memcached
 	4,  // 2: config.v1.Cache.memory:type_name -> config.v1.Memory
 	2,  // 3: config.v1.Cache.redis:type_name -> config.v1.Redis
-	5,  // 4: config.v1.Cache.badger:type_name -> config.v1.BadgerDS
-	1,  // 5: config.v1.Storage.database:type_name -> config.v1.Database
-	9,  // 6: config.v1.Storage.cache:type_name -> config.v1.Cache
-	6,  // 7: config.v1.Storage.file:type_name -> config.v1.File
-	2,  // 8: config.v1.Storage.redis:type_name -> config.v1.Redis
-	5,  // 9: config.v1.Storage.badger:type_name -> config.v1.BadgerDS
-	8,  // 10: config.v1.Storage.mongo:type_name -> config.v1.Mongo
-	7,  // 11: config.v1.Storage.oss:type_name -> config.v1.Oss
-	12, // [12:12] is the sub-list for method output_type
-	12, // [12:12] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	1,  // 4: config.v1.Storage.database:type_name -> config.v1.Database
+	8,  // 5: config.v1.Storage.cache:type_name -> config.v1.Cache
+	5,  // 6: config.v1.Storage.file:type_name -> config.v1.File
+	2,  // 7: config.v1.Storage.redis:type_name -> config.v1.Redis
+	7,  // 8: config.v1.Storage.mongo:type_name -> config.v1.Mongo
+	6,  // 9: config.v1.Storage.oss:type_name -> config.v1.Oss
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_storage_proto_init() }
@@ -1149,7 +1043,7 @@ func file_config_v1_storage_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_storage_proto_rawDesc), len(file_config_v1_storage_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

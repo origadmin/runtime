@@ -11,8 +11,6 @@ import (
 	"hash"
 	"os"
 	"path/filepath"
-
-	"github.com/origadmin/runtime/interfaces/storage/meta"
 )
 
 type blobStorage struct {
@@ -73,7 +71,7 @@ func (m blobStorage) getHash(content []byte) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func NewStorage(path string) meta.Store {
+func New(path string) *blobStorage {
 	return &blobStorage{
 		Path: path,
 		Hash: sha256.New,

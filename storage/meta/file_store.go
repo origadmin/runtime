@@ -11,7 +11,7 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
+	"github.com/origadmin/runtime/interfaces/storage/meta"
 	"github.com/origadmin/runtime/storage/layout"
 	metav1 "github.com/origadmin/runtime/storage/meta/v1"
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
@@ -24,16 +24,20 @@ type FileMetaStore struct {
 }
 
 // Ensure FileMetaStore implements the MetaStore interface.
-var _ metaiface.MetaStore = (*FileMetaStore)(nil)
+var _ meta.Store = (*FileMetaStore)(nil)
 
 // NewFileMetaStore creates a new FileMetaStore.
-func NewFileMetaStore(ls layoutiface.ShardedStorage) (*FileMetaStore, error) {
+func NewFileMetaStore(basePath string) (*FileMetaStore, error) {
+	ls, err := layout.NewLocalShardedStorage(basePath)
+	if err != nil {
+		return nil, err
+	}
 	return &FileMetaStore{layout: ls}, nil
 }
 
 // Create serializes the FileMeta and stores it.
 // It returns the ID (hash) of the stored meta.
-func (s *FileMetaStore) Create(fileMeta metaiface.FileMeta) (string, error) {
+func (s *FileMetaStore) Create(fileMeta meta.FileMeta) (string, error) {
 	var fileMetaData interface{} // Use interface{} to hold FileMetaData[V1] or FileMetaData[V2]
 
 	switch fileMeta.CurrentVersion() {
@@ -51,7 +55,7 @@ func (s *FileMetaStore) Create(fileMeta metaiface.FileMeta) (string, error) {
 		if !ok {
 			return "", fmt.Errorf("expected FileMetaV2 for version %d, got %T", metav2.Version, fileMeta)
 		}
-		fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
+				fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Version: metav2.Version,
 			Data:    actualFileMeta,
 		}
@@ -126,7 +130,7 @@ func (s *FileMetaStore) Update(id string, fileMeta metaiface.FileMeta) error {
 		if !ok {
 			return fmt.Errorf("expected FileMetaV2 for version %d, got %T", metav2.Version, fileMeta)
 		}
-		fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
+				fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Version: metav2.Version,
 			Data:    actualFileMeta,
 		}
@@ -148,12 +152,12 @@ func (s *FileMetaStore) Delete(id string) error {
 }
 
 // BatchGet is not yet implemented.
-func (s *FileMetaStore) BatchGet(ids []string) (map[string]metaiface.FileMeta, error) {
+func (s *FileMetaStore) BatchGet(ids []string) (map[string]meta.FileMeta, error) {
 	return nil, fmt.Errorf("method BatchGet not implemented")
 }
 
 // Migrate is not yet implemented.
-func (s *FileMetaStore) Migrate(id string) (metaiface.FileMeta, error) {
+func (s *FileMetaStore) Migrate(id string) (meta.FileMeta, error) {
 	return nil, fmt.Errorf("method Migrate not implemented")
 }
 
@@ -170,5 +174,6 @@ func (s *FileMetaStore) DefaultVersion() int {
 // calculateHash is a helper to generate a hash for the meta record.
 // This should ideally be consistent with how BlobStore generates its IDs.
 func calculateHash(data []byte) string {
-	return hex.EncodeToString(sha256.Sum256(data)[:])
+	hash := sha256.Sum256(data)
+	return hex.EncodeToString(hash[:])
 }

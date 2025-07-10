@@ -184,33 +184,6 @@ message Memory {
   ];
 }
 
-message BadgerDS {
-  string path = 1 [
-    json_name = "path",
-    (gnostic.openapi.v3.property) = {description: "path"}
-  ];
-  bool sync_writes = 2 [
-    json_name = "sync_writes",
-    (gnostic.openapi.v3.property) = {description: "synchronous write or not"}
-  ];
-  int32 value_log_file_size = 3 [
-    json_name = "value_log_file_size",
-    (gnostic.openapi.v3.property) = {description: "value log file size"}
-  ];
-  bool in_memory = 4 [
-    json_name = "in_memory",
-    (gnostic.openapi.v3.property) = {description: "in memory or not"}
-  ];
-  uint32 log_level = 5 [
-    json_name = "log_level",
-    (validate.rules).uint32 = {
-      gte: 0
-      lte: 3
-    },
-    (gnostic.openapi.v3.property) = {description: "log level"}
-  ];
-}
-
 // File
 message File {
   string root = 1 [
@@ -298,11 +271,6 @@ message Cache {
     json_name = "redis",
     (gnostic.openapi.v3.property) = {description: "redis cache configuration"}
   ];
-  // Badger
-  BadgerDS badger = 13 [
-    json_name = "badger",
-    (gnostic.openapi.v3.property) = {description: "badger storage configuration"}
-  ];
 }
 
 message Storage {
@@ -349,11 +317,6 @@ message Storage {
   Redis redis = 11 [
     json_name = "redis",
     (gnostic.openapi.v3.property) = {description: "redis storage configuration"}
-  ];
-  // Badger
-  BadgerDS badger = 12 [
-    json_name = "badger",
-    (gnostic.openapi.v3.property) = {description: "badger storage configuration"}
   ];
   // Mongo
   Mongo mongo = 13 [
