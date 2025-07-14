@@ -132,6 +132,14 @@
                                 <span>{{ .Size }} bytes</span>
                                 <span>{{ .ModTime.Format "2006-01-02 15:04:05" }}</span>
                                 {{ end }}
+                                <div class="ms-auto">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-path="{{ .Path }}" aria-label="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rename-btn" data-bs-toggle="modal" data-bs-target="#renameModal" data-path="{{ .Path }}" data-name="{{ .Name }}" aria-label="Rename">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
                             </div>
                         </li>
                         {{ else }}
@@ -171,6 +179,7 @@
                             <input type="file" class="form-control" id="uploadFile" name="file" required>
                         </div>
                         <input type="hidden" id="uploadFileName" name="fileName">
+                        <input type="hidden" name="currentPath" value="{{ .CurrentPath }}">
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -201,6 +210,57 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" form="mkdirForm" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete <strong id="deleteFileName"></strong>?
+                    <form action="/delete" method="post" id="deleteForm">
+                        <input type="hidden" name="path" id="deleteFilePath">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="deleteForm" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameModalLabel">Rename File/Directory</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/rename" method="post" id="renameForm">
+                        <div class="mb-3">
+                            <label for="oldName" class="form-label">Old Name</label>
+                            <input type="text" class="form-control" id="oldName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newName" class="form-label">New Name</label>
+                            <input type="text" class="form-control" id="newName" name="newPath" required>
+                        </div>
+                        <input type="hidden" name="oldPath" id="renameOldPath">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="renameForm" class="btn btn-primary">Rename</button>
                 </div>
             </div>
         </div>
@@ -293,6 +353,36 @@
             // Initial truncation and on window resize
             truncateBreadcrumbs();
             window.addEventListener('resize', truncateBreadcrumbs);
+
+            // Delete Modal Logic
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const filePath = button.getAttribute('data-path');
+                const fileName = filePath.split(/(\\|\/)/g).pop();
+
+                const deleteFileNameSpan = deleteModal.querySelector('#deleteFileName');
+                const deleteFilePathInput = deleteModal.querySelector('#deleteFilePath');
+
+                deleteFileNameSpan.textContent = fileName;
+                deleteFilePathInput.value = filePath;
+            });
+
+            // Rename Modal Logic
+            const renameModal = document.getElementById('renameModal');
+            renameModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const filePath = button.getAttribute('data-path');
+                const fileName = button.getAttribute('data-name');
+
+                const oldNameInput = renameModal.querySelector('#oldName');
+                const newNameInput = renameModal.querySelector('#newName');
+                const renameOldPathInput = renameModal.querySelector('#renameOldPath');
+
+                oldNameInput.value = fileName;
+                newNameInput.value = fileName; // Pre-fill new name with old name
+                renameOldPathInput.value = filePath;
+            });
         });
     </script>
 </body>

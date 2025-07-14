@@ -51,6 +51,8 @@ func main() {
 	r.GET("/download", downloadHandler(fs))
 	r.POST("/download-zip", downloadZipHandler(fs))
 	r.POST("/mkdir", mkdirHandler(fs))
+	r.POST("/delete", deleteHandler(fs)) // New handler for delete
+	r.POST("/rename", renameHandler(fs)) // New handler for rename
 
 	port := ":8080"
 	log.Printf("Starting Gin HTTP server on port %s", port)
@@ -117,33 +119,39 @@ func indexHandler(fs storage.FileOperations) gin.HandlerFunc {
 // uploadHandler handles file uploads
 func uploadHandler(fs storage.FileOperations) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		currentPath := c.PostForm("currentPath") // Get current path from form
+		if currentPath == "" {
+			currentPath = "/"
+		}
+
 		fileHeader, err := c.FormFile("file")
 		if err != nil {
-			c.Redirect(http.StatusFound, "/")
+			c.Redirect(http.StatusFound, "/?path="+currentPath)
 			return
 		}
 
 		fileName := c.PostForm("fileName")
 		if fileName == "" {
-			c.Redirect(http.StatusFound, "/")
+			c.Redirect(http.StatusFound, "/?path="+currentPath)
 			return
 		}
-		fileName = path.Clean(fileName) // Normalize path
+		fileName = path.Clean(fileName) // Normalize the full path received from frontend
 
 		src, err := fileHeader.Open()
 		if err != nil {
-			c.Redirect(http.StatusFound, "/")
+			c.Redirect(http.StatusFound, "/?path="+currentPath)
 			return
 		}
 		defer src.Close()
 
+		// Use fileName directly as it's already the full path from the frontend
 		if err := fs.Write(fileName, src, fileHeader.Size); err != nil {
 			log.Printf("Failed to save file: %v", err)
-			c.Redirect(http.StatusFound, "/")
+			c.Redirect(http.StatusFound, "/?path="+currentPath)
 			return
 		}
 
-		c.Redirect(http.StatusFound, "/")
+		c.Redirect(http.StatusFound, "/?path="+currentPath)
 	}
 }
 
@@ -251,6 +259,63 @@ func mkdirHandler(fs storage.FileOperations) gin.HandlerFunc {
 		}
 
 		c.Redirect(http.StatusFound, "/?path="+parentPath)
+	}
+}
+
+// deleteHandler handles file/directory deletion
+func deleteHandler(fs storage.FileOperations) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		targetPath := c.PostForm("path") // Assuming path is sent via form for POST
+		if targetPath == "" {
+			c.Redirect(http.StatusFound, "/") // Redirect to root if no path provided
+			return
+		}
+		targetPath = filepath.ToSlash(targetPath) // Normalize path
+		targetPath = path.Clean(targetPath)       // Clean path
+
+		currentPath := path.Dir(targetPath) // Get current directory for redirection
+		if currentPath == "." {
+			currentPath = "/"
+		}
+
+		if err := fs.Delete(targetPath); err != nil {
+			log.Printf("Failed to delete %s: %v", targetPath, err)
+			// Optionally, add error message to template data
+		}
+		c.Redirect(http.StatusFound, "/?path="+currentPath)
+	}
+}
+
+// renameHandler handles file/directory renaming
+func renameHandler(fs storage.FileOperations) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		oldPath := c.PostForm("oldPath")
+		newFileName := c.PostForm("newPath") // User input: e.g., new_file.txt
+
+		if oldPath == "" || newFileName == "" {
+			c.Redirect(http.StatusFound, "/") // Redirect to root if paths are missing
+			return
+		}
+
+		oldPath = filepath.ToSlash(oldPath) // Normalize path
+		oldPath = path.Clean(oldPath)       // Clean path
+
+		// Get the directory of the old file
+		oldDir := path.Dir(oldPath)
+		// Construct the full new path within the same directory
+		newFullPath := path.Join(oldDir, newFileName) // Use newFileName here
+
+		if err := fs.Rename(oldPath, newFullPath); err != nil {
+			log.Printf("Failed to rename %s to %s: %v", oldPath, newFullPath, err)
+			// Optionally, add error message to template data
+		}
+
+		// Redirect back to the directory where the file was (or is now)
+		currentPath := oldDir
+		if currentPath == "." { // Handle case where path.Dir("/") returns "."
+			currentPath = "/"
+		}
+		c.Redirect(http.StatusFound, "/?path="+currentPath)
 	}
 }
 

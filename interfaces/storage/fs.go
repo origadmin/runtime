@@ -23,4 +23,5 @@ type FileOperations interface {
 	Stat(path string) (FileInfo, error)
 	Mkdir(path string) error
 	Delete(path string) error
+	Rename(oldPath, newPath string) error
 }

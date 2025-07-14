@@ -93,3 +93,10 @@ func (fs *LocalStorage) Mkdir(path string) error {
 func (fs *LocalStorage) Delete(path string) error {
 	return os.RemoveAll(filepath.Join(fs.BasePath, path))
 }
+
+// Rename renames a file or directory.
+func (fs *LocalStorage) Rename(oldPath, newPath string) error {
+	oldFullPath := filepath.Join(fs.BasePath, oldPath)
+	newFullPath := filepath.Join(fs.BasePath, newPath)
+	return os.Rename(oldFullPath, newFullPath)
+}
