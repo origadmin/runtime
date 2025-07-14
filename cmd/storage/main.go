@@ -65,6 +65,8 @@ func indexHandler(fs storage.FileOperations) gin.HandlerFunc {
 		if currentPath == "" {
 			currentPath = "/"
 		}
+		// Normalize currentPath to use forward slashes for path.Dir
+		currentPath = filepath.ToSlash(currentPath)
 		currentPath = path.Clean(currentPath) // Normalize path
 
 		files, err := fs.List(currentPath)
@@ -79,6 +81,9 @@ func indexHandler(fs storage.FileOperations) gin.HandlerFunc {
 					parentPath = "/"
 				}
 			}
+			// --- DEBUG START ---
+			log.Printf("DEBUG: currentPath = %s, calculated parentPath = %s", currentPath, parentPath)
+			// --- DEBUG END ---
 			data = TemplateData{
 				CurrentPath: currentPath,
 				ParentPath:  parentPath,

@@ -21,6 +21,12 @@
         }
 
         /* Breadcrumb styling for long paths */
+        nav[aria-label="breadcrumb"] {
+            overflow: hidden;
+            white-space: nowrap; /* Ensure the nav itself doesn't wrap */
+            min-width: 0; /* Allow flex item to shrink */
+            max-width: 100%; /* Ensure it respects parent width */
+        }
         .breadcrumb {
             list-style: none; /* Remove default list styling */
             padding: 0 0.5rem; /* Add symmetrical horizontal padding */
@@ -33,23 +39,25 @@
         .breadcrumb-item {
             /* padding-right: var(--bs-breadcrumb-item-padding-x);  Add symmetrical right padding */
             /* display: inline-block;  Ensure it respects width */
-            max-width: 150px; /* Example max-width, adjust as needed */
-            overflow: hidden;
-            text-overflow: ellipsis;
+            /* max-width: 150px; */ /* Example max-width, adjust as needed */
+            /* overflow: hidden; */
+            /* text-overflow: ellipsis; */
             font-size: 1rem; /* Set consistent font size */
             /* line-height: 1.2;  Ensure consistent line height */
             /* vertical-align: middle;  Align vertically */
             padding: 0; /* Remove any default padding */
             margin: 0; /* Remove any default margin */
+            /* padding-right: 1rem; */ /* Add spacing between items */
+            flex-shrink: 0; /* Prevent items from shrinking */
         }
         .breadcrumb-item a {
             /* display: inline-block;  Required for text-overflow to work on anchor */
-            max-width: 100%; /* Take full width of parent li */
-            overflow: hidden;
-            text-overflow: ellipsis;
+            /* max-width: 100%; */ /* Take full width of parent li */
+            /* overflow: hidden; */
+            /* text-overflow: ellipsis; */
             font-size: 1rem; /* Set consistent font size */
             /* line-height: 1.2;  Ensure consistent line height */
-            /* vertical-align: middle;  Align vertically */
+            /* vertical-align: middle;  Alignatically */
             padding: 0; /* Remove any default padding */
             margin: 0; /* Remove any default margin */
         }
@@ -71,9 +79,9 @@
         <!-- File List -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span class="d-inline-flex align-items-center">
-                    <nav aria-label="breadcrumb" class="d-inline-block">
-                        <ol class="breadcrumb d-inline-flex align-items-center mb-0 ps-0">
+                <span class="d-flex align-items-center flex-grow-1 overflow-hidden">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb align-items-center mb-0 ps-0">
                             {{ range .PathParts }}
                             <li class="breadcrumb-item">
                                 {{ if .IsLast }}
@@ -240,35 +248,46 @@
             }
 
             function truncateBreadcrumbs() {
-                console.log("--- Truncate Breadcrumbs Start ---");
+                console.log("--- Truncate Breadcrumbs Start (Character Length) ---");
                 console.log("Initial fullPathParts:", fullPathParts);
 
-                // Always start by rendering the full path to get accurate width
-                renderBreadcrumbs(fullPathParts);
+                const MAX_PATH_DISPLAY_LENGTH = 80; // Example character limit
 
-                const containerWidth = breadcrumbContainer.offsetWidth;
-                let currentWidth = breadcrumbList.offsetWidth;
+                // Calculate the total character length of the full path
+                let fullPathString = fullPathParts.map(part => part.Name).join('/');
+                console.log("Full Path String:", fullPathString);
+                console.log("Full Path Length:", fullPathString.length);
 
-                console.log("Container Width:", containerWidth);
-                console.log("Initial Breadcrumb Width:", currentWidth);
-
-                // If it fits, we are done
-                if (currentWidth <= containerWidth) {
-                    console.log("Fits initially. No truncation needed.");
+                if (fullPathString.length <= MAX_PATH_DISPLAY_LENGTH) {
+                    console.log("Fits by character length. No truncation needed.");
+                    renderBreadcrumbs(fullPathParts);
                     return;
                 }
 
-                // If it doesn't fit, truncate to ROOT / ... / LAST
-                console.log("Doesn't fit. Truncating to ROOT / ... / LAST.");
-                const rootPart = fullPathParts[0];
-                const lastPart = fullPathParts[fullPathParts.length - 1];
+                console.log("Doesn't fit by character length. Applying advanced truncation.");
 
-                renderBreadcrumbs([
-                    rootPart,
-                    { Name: '...', Path: '', IsLast: false },
-                    lastPart
-                ]);
-                console.log("--- Truncate Breadcrumbs End ---");
+                let displayParts = [];
+
+                if (fullPathParts.length > 4) {
+                    // Keep first two and last two segments
+                    displayParts.push(fullPathParts[0]);
+                    displayParts.push(fullPathParts[1]);
+                    displayParts.push({ Name: '...', Path: '', IsLast: false });
+                    displayParts.push(fullPathParts[fullPathParts.length - 2]);
+                    displayParts.push(fullPathParts[fullPathParts.length - 1]);
+                } else {
+                    // Fallback to ROOT / ... / LAST if not enough segments for advanced truncation
+                    const rootPart = fullPathParts[0];
+                    const lastPart = fullPathParts[fullPathParts.length - 1];
+                    displayParts.push(rootPart);
+                    if (fullPathParts.length > 2) {
+                        displayParts.push({ Name: '...', Path: '', IsLast: false });
+                    }
+                    displayParts.push(lastPart);
+                }
+
+                renderBreadcrumbs(displayParts);
+                console.log("--- Truncate Breadcrumbs End (Character Length) ---");
             }
 
             // Initial truncation and on window resize
