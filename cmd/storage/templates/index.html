@@ -13,33 +13,91 @@
         .file-entry input[type="checkbox"] { margin-right: 10px; }
         .file-entry a { flex-grow: 1; }
         .file-entry span { margin-left: 15px; font-size: 0.9em; color: #6c757d; }
+
+        /* Custom breadcrumb divider */
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "/";
+            color: var(--bs-breadcrumb-divider-color);
+        }
+
+        /* Breadcrumb styling for long paths */
+        .breadcrumb {
+            list-style: none; /* Remove default list styling */
+            padding: 0 0.5rem; /* Add symmetrical horizontal padding */
+            margin: 0; /* Remove all default margin */
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden; /* Hide overflow */
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Vertically center items */
+        }
+        .breadcrumb-item {
+            /* padding-right: var(--bs-breadcrumb-item-padding-x);  Add symmetrical right padding */
+            /* display: inline-block;  Ensure it respects width */
+            max-width: 150px; /* Example max-width, adjust as needed */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1rem; /* Set consistent font size */
+            /* line-height: 1.2;  Ensure consistent line height */
+            /* vertical-align: middle;  Align vertically */
+            padding: 0; /* Remove any default padding */
+            margin: 0; /* Remove any default margin */
+        }
+        .breadcrumb-item a {
+            /* display: inline-block;  Required for text-overflow to work on anchor */
+            max-width: 100%; /* Take full width of parent li */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 1rem; /* Set consistent font size */
+            /* line-height: 1.2;  Ensure consistent line height */
+            /* vertical-align: middle;  Align vertically */
+            padding: 0; /* Remove any default padding */
+            margin: 0; /* Remove any default margin */
+        }
+        .no-link {
+            color: inherit; /* Inherit color from parent */
+            text-decoration: none; /* Remove underline */
+            cursor: default; /* Change cursor to default */
+        }
+        .no-link:hover {
+            color: inherit; /* Keep color on hover */
+            text-decoration: none; /* Keep no underline on hover */
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="mb-4">Go Storage Manager</h1>
 
-        <!-- Upload Form -->
-        <div class="card mb-4">
-            <div class="card-header">Upload File</div>
-            <div class="card-body">
-                <form action="/upload" method="post" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="file" class="form-label">Select File</label>
-                        <input type="file" class="form-control" id="file" name="file" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="fileName" class="form-label">Target Path (e.g., /myfolder/myfile.txt)</label>
-                        <input type="text" class="form-control" id="fileName" name="fileName" placeholder="/path/to/file.txt" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Upload</button>
-                </form>
-            </div>
-        </div>
-
         <!-- File List -->
         <div class="card mb-4">
-            <div class="card-header">Files in <span id="currentPath">/</span></div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="d-inline-flex align-items-center">
+                    <nav aria-label="breadcrumb" class="d-inline-block">
+                        <ol class="breadcrumb d-inline-flex align-items-center mb-0 ps-0">
+                            {{ range .PathParts }}
+                            <li class="breadcrumb-item">
+                                {{ if .IsLast }}
+                                    {{ .Name }}
+                                {{ else }}
+                                    <a href="/?path={{ .Path }}">{{ .Name }}</a>
+                                {{ end }}
+                            </li>
+                            {{ end }}
+                        </ol>
+                    </nav>
+                </span>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal" aria-label="Upload File">
+                        <i class="bi bi-upload"></i>
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#mkdirModal" aria-label="Create Directory">
+                        <i class="bi bi-folder-plus"></i>
+                    </button>
+                    <button type="submit" form="downloadZipForm" class="btn btn-success btn-sm" aria-label="Download Selected as ZIP">
+                        <i class="bi bi-file-earmark-zip"></i>
+                    </button>
+                </div>
+            </div>
             <div class="card-body">
                 <form id="downloadZipForm" action="/download-zip" method="post">
                     <ul class="list-group mb-3">
@@ -72,7 +130,6 @@
                         <li class="list-group-item">No files found in this directory.</li>
                         {{ end }}
                     </ul>
-                    <button type="submit" class="btn btn-success">Download Selected as ZIP</button>
                 </form>
             </div>
         </div>
@@ -91,16 +148,132 @@
 
     </div>
 
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">Upload File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+                        <div class="mb-3">
+                            <label for="uploadFile" class="form-label">Select File</label>
+                            <input type="file" class="form-control" id="uploadFile" name="file" required>
+                        </div>
+                        <input type="hidden" id="uploadFileName" name="fileName">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="uploadForm" class="btn btn-primary">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mkdir Modal -->
+    <div class="modal fade" id="mkdirModal" tabindex="-1" aria-labelledby="mkdirModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mkdirModalLabel">Create New Directory</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/mkdir" method="post" id="mkdirForm">
+                        <div class="mb-3">
+                            <label for="dirName" class="form-label">Directory Name</label>
+                            <input type="text" class="form-control" id="dirName" name="dirName" required>
+                            <input type="hidden" id="parentPath" name="parentPath" value="{{ .CurrentPath }}">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="mkdirForm" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1b5u/QZ6hW+ALEwIH" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <!-- Bootstrap Icons (optional, for folder/file icons) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script>
-        // Update current path display
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const path = urlParams.get('path') || '/';
-            document.getElementById('currentPath').textContent = path;
+            const currentPath = urlParams.get('path') || '/';
+
+            // Set the fileName for upload
+            document.getElementById('uploadFile').addEventListener('change', function() {
+                const filePath = this.value;
+                const fileName = filePath.split(/(\\|\/)/g).pop();
+                document.getElementById('uploadFileName').value = currentPath === '/' ? '/' + fileName : currentPath + '/' + fileName;
+            });
+
+            const breadcrumbContainer = document.querySelector('.card-header > span');
+            const breadcrumbList = document.querySelector('.breadcrumb');
+            const fullPathParts = JSON.parse(`{{ .PathPartsJSON }}`); // Directly use PathParts from Go template
+
+            // Function to render breadcrumbs based on provided parts
+            function renderBreadcrumbs(partsToRender) {
+                breadcrumbList.innerHTML = ''; // Clear existing breadcrumbs
+                partsToRender.forEach(part => {
+                    const li = document.createElement('li');
+                    li.classList.add('breadcrumb-item');
+                    
+                    if (part.IsLast) {
+                        li.textContent = part.Name; // Render as plain text
+                    } else if (part.Name === '...') {
+                        li.textContent = '...';
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = "/?path=" + part.Path;
+                        a.textContent = part.Name;
+                        li.appendChild(a);
+                    }
+                    breadcrumbList.appendChild(li);
+                });
+            }
+
+            function truncateBreadcrumbs() {
+                console.log("--- Truncate Breadcrumbs Start ---");
+                console.log("Initial fullPathParts:", fullPathParts);
+
+                // Always start by rendering the full path to get accurate width
+                renderBreadcrumbs(fullPathParts);
+
+                const containerWidth = breadcrumbContainer.offsetWidth;
+                let currentWidth = breadcrumbList.offsetWidth;
+
+                console.log("Container Width:", containerWidth);
+                console.log("Initial Breadcrumb Width:", currentWidth);
+
+                // If it fits, we are done
+                if (currentWidth <= containerWidth) {
+                    console.log("Fits initially. No truncation needed.");
+                    return;
+                }
+
+                // If it doesn't fit, truncate to ROOT / ... / LAST
+                console.log("Doesn't fit. Truncating to ROOT / ... / LAST.");
+                const rootPart = fullPathParts[0];
+                const lastPart = fullPathParts[fullPathParts.length - 1];
+
+                renderBreadcrumbs([
+                    rootPart,
+                    { Name: '...', Path: '', IsLast: false },
+                    lastPart
+                ]);
+                console.log("--- Truncate Breadcrumbs End ---");
+            }
+
+            // Initial truncation and on window resize
+            truncateBreadcrumbs();
+            window.addEventListener('resize', truncateBreadcrumbs);
         });
     </script>
 </body>

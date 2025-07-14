@@ -2,39 +2,21 @@ package main
 
 import (
 	"archive/zip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/origadmin/runtime/storage"
+	"github.com/origadmin/runtime/interfaces/storage"
 )
-
-var storageService *storage.Storage
-
-// TemplateData holds data to be passed to the HTML template
-type TemplateData struct {
-	CurrentPath string
-	ParentPath  string
-	Files       []FileInfo
-	Message     string
-	Error       string
-}
-
-// FileInfo holds information about a file or directory for display
-type FileInfo struct {
-	Name    string
-	Path    string
-	IsDir   bool
-	Size    int64
-	ModTime time.Time
-}
 
 func main() {
 	// Setup base path for storage components
@@ -45,10 +27,7 @@ func main() {
 	defer os.RemoveAll(baseDir) // Clean up after test
 
 	// Initialize the storage service
-	cfg := storage.Config{
-		BasePath: baseDir,
-	}
-	storageService, err = storage.New(cfg)
+	fs, err := NewLocalStorage(baseDir)
 	if err != nil {
 		log.Fatalf("Failed to initialize storage service: %v", err)
 	}
@@ -56,254 +35,261 @@ func main() {
 	// Initialize Gin router
 	r := gin.Default()
 
+	// Get the directory of the main.go file
+	_, b, _, _ := runtime.Caller(0)
+	basepath := filepath.Dir(b)
+
 	// Load HTML templates
-	r.LoadHTMLGlob("templates/*")
+	r.LoadHTMLGlob(filepath.Join(basepath, "templates/*"))
 
 	// Serve static files (e.g., Bootstrap CSS/JS)
-	r.Static("/static", "./static")
+	r.Static("/static", filepath.Join(basepath, "static"))
 
 	// HTTP Handlers
-	r.GET("/", indexHandler)
-	r.POST("/upload", uploadHandler)
-	r.GET("/download", downloadHandler)
-	r.POST("/download-zip", downloadZipHandler)
+	r.GET("/", indexHandler(fs))
+	r.POST("/upload", uploadHandler(fs))
+	r.GET("/download", downloadHandler(fs))
+	r.POST("/download-zip", downloadZipHandler(fs))
+	r.POST("/mkdir", mkdirHandler(fs))
 
 	port := ":8080"
 	log.Printf("Starting Gin HTTP server on port %s", port)
+	fmt.Println("Application started. Checking logs...")
 	log.Fatal(r.Run(port))
 }
 
 // indexHandler displays the file list for a given path
-func indexHandler(c *gin.Context) {
-	currentPath := c.Query("path")
-	if currentPath == "" {
-		currentPath = "/"
-	}
-	currentPath = path.Clean(currentPath) // Normalize path
-
-	// Get directory entries from IndexManager
-	var files []FileInfo
-	var err error
-
-	// For simplicity, assuming IndexManager.ListChildren can take a path and return nodes
-	// In a real scenario, you'd get the node for currentPath, then list its children
-	// This part needs proper IndexManager integration.
-	// For now, we'll simulate a flat structure or rely on IndexManager's actual ListChildren
-	// if it can be adapted to list by path.
-	// Assuming IndexManager.ListChildren takes NodeID, we need to get NodeID from path first.
-
-	node, err := storageService.IndexManager.GetNodeByPath(currentPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			data.Error = "Path not found."
-		} else {
-			data.Error = fmt.Sprintf("Error getting path: %v", err)
+func indexHandler(fs storage.FileOperations) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		currentPath := c.Query("path")
+		if currentPath == "" {
+			currentPath = "/"
 		}
-	} else {
-		children, err := storageService.IndexManager.ListChildren(node.ID)
+		currentPath = path.Clean(currentPath) // Normalize path
+
+		files, err := fs.List(currentPath)
+		var data TemplateData
 		if err != nil {
 			data.Error = fmt.Sprintf("Error listing files: %v", err)
 		} else {
-			for _, child := range children {
-				files = append(files, FileInfo{
-					Name:    child.Name,
-					Path:    path.Join(currentPath, child.Name),
-					IsDir:   child.IsDir,
-					Size:    child.Size,
-					ModTime: child.ModTime,
+			parentPath := ""
+			if currentPath != "/" {
+				parentPath = path.Dir(currentPath)
+				if parentPath == "." { // Handle case where path.Dir("/") returns "."
+					parentPath = "/"
+				}
+			}
+			data = TemplateData{
+				CurrentPath: currentPath,
+				ParentPath:  parentPath,
+				Files:       files,
+				PathParts:   generatePathParts(currentPath),
+			}
+
+			// Convert PathParts to JSON for JavaScript
+			pathPartsJSON, err := json.Marshal(data.PathParts)
+			if err != nil {
+				log.Printf("Error marshalling PathParts to JSON: %v", err)
+				data.Error = fmt.Sprintf("Error processing path: %v", err)
+			} else {
+				c.HTML(http.StatusOK, "index.html", gin.H{
+					"CurrentPath":   data.CurrentPath,
+					"ParentPath":    data.ParentPath,
+					"Files":         data.Files,
+					"Message":       data.Message,
+					"Error":         data.Error,
+					"PathParts":     data.PathParts,
+					"PathPartsJSON": string(pathPartsJSON),
 				})
+				return
 			}
 		}
-	}
 
-	parentPath := ""
-	if currentPath != "/" {
-		parentPath = path.Dir(currentPath)
-		if parentPath == "." { // Handle case where path.Dir("/") returns "."
-			parentPath = "/"
-		}
+		c.HTML(http.StatusOK, "index.html", data)
 	}
-
-	data := TemplateData{
-		CurrentPath: currentPath,
-		ParentPath:  parentPath,
-		Files:       files,
-	}
-
-	if msg := c.Flash.Get("message"); msg != nil {
-		data.Message = msg.(string)
-	}
-	if errMsg := c.Flash.Get("error"); errMsg != nil {
-		data.Error = errMsg.(string)
-	}
-
-	c.HTML(http.StatusOK, "index.html", data)
 }
 
 // uploadHandler handles file uploads
-func uploadHandler(c *gin.Context) {
-	fileHeader, err := c.FormFile("file")
-	if err != nil {
-		c.Flash.Add("error", fmt.Sprintf("Failed to get file: %v", err))
-		c.Redirect(http.StatusFound, "/")
-		return
-	}
-
-	fileName := c.PostForm("fileName")
-	if fileName == "" {
-		c.Flash.Add("error", "Target path is required")
-		c.Redirect(http.StatusFound, "/")
-		return
-	}
-	fileName = path.Clean(fileName) // Normalize path
-
-	src, err := fileHeader.Open()
-	if err != nil {
-		c.Flash.Add("error", fmt.Sprintf("Failed to open uploaded file: %v", err))
-		c.Redirect(http.StatusFound, "/")
-		return
-	}
-	defer src.Close()
-
-	// Simulate chunked upload using the new API
-	// Start Upload
-	uploadID, err := storageService.MetaStore.StartUpload(fileName, fileHeader.Size, fileHeader.Header.Get("Content-Type"))
-	if err != nil {
-		c.Flash.Add("error", fmt.Sprintf("Failed to start upload: %v", err))
-		c.Redirect(http.StatusFound, "/")
-		return
-	}
-
-	// Read and upload chunks
-	// Assuming DefaultVersion returns chunk size for MetaStore, which is incorrect.
-	// This needs to be a proper chunk size from configuration or a sensible default.
-	// For now, using a fixed size.
-	chunkSize := int64(4 * 1024 * 1024) // 4MB chunk size
-	buf := make([]byte, chunkSize)
-	chunkIndex := 0
-	for {
-		n, readErr := src.Read(buf)
-		if n > 0 {
-			err = storageService.MetaStore.UploadChunk(uploadID, chunkIndex, buf[:n])
-			if err != nil {
-				storageService.MetaStore.CancelUpload(uploadID) // Attempt to clean up
-				c.Flash.Add("error", fmt.Sprintf("Failed to upload chunk %d: %v", chunkIndex, err))
-				c.Redirect(http.StatusFound, "/")
-				return
-			}
-			chunkIndex++
-		}
-		if readErr == io.EOF {
-			break
-		}
-		if readErr != nil {
-			storageService.MetaStore.CancelUpload(uploadID)
-			c.Flash.Add("error", fmt.Sprintf("Failed to read file for chunking: %v", readErr))
+func uploadHandler(fs storage.FileOperations) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fileHeader, err := c.FormFile("file")
+		if err != nil {
 			c.Redirect(http.StatusFound, "/")
 			return
 		}
-	}
 
-	// Finish Upload
-	_, err = storageService.MetaStore.FinishUpload(uploadID)
-	if err != nil {
-		storageService.MetaStore.CancelUpload(uploadID)
-		c.Flash.Add("error", fmt.Sprintf("Failed to finish upload: %v", err))
+		fileName := c.PostForm("fileName")
+		if fileName == "" {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		fileName = path.Clean(fileName) // Normalize path
+
+		src, err := fileHeader.Open()
+		if err != nil {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		defer src.Close()
+
+		if err := fs.Write(fileName, src, fileHeader.Size); err != nil {
+			log.Printf("Failed to save file: %v", err)
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+
 		c.Redirect(http.StatusFound, "/")
-		return
 	}
-
-	c.Flash.Add("message", fmt.Sprintf("File %s uploaded successfully!", fileName))
-	c.Redirect(http.StatusFound, "/")
 }
 
 // downloadHandler handles single file downloads
-func downloadHandler(c *gin.Context) {
-	fileName := c.Query("path")
-	if fileName == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File path is required"})
-		return
-	}
-	fileName = path.Clean(fileName) // Normalize path
-
-	// Assuming IndexManager has an Open method that returns fs.File
-	// For now, we'll use MetaStore.Open as a placeholder
-	file, err := storageService.MetaStore.Open(fileName)
-	if err != nil {
-		if os.IsNotExist(err) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to open file: %v", err)})
+func downloadHandler(fs storage.FileOperations) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fileName := c.Query("path")
+		if fileName == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "File path is required"})
+			return
 		}
-		return
-	}
-	defer file.Close()
+		fileName = path.Clean(fileName) // Normalize path
 
-	// Set content type and disposition
-	c.Header("Content-Type", "application/octet-stream")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", path.Base(fileName)))
+		file, err := fs.Read(fileName)
+		if err != nil {
+			if os.IsNotExist(err) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to open file: %v", err)})
+			}
+			return
+		}
+		defer file.Close()
 
-	// Stream the file content
-	_, err = io.Copy(c.Writer, file)
-	if err != nil {
-		log.Printf("Error serving file %s: %v", fileName, err)
+		// Set content type and disposition
+		c.Header("Content-Type", "application/octet-stream")
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", path.Base(fileName)))
+
+		// Stream the file content
+		_, err = io.Copy(c.Writer, file)
+		if err != nil {
+			log.Printf("Error serving file %s: %v", fileName, err)
+		}
 	}
 }
 
 // downloadZipHandler handles downloading multiple selected files as a ZIP archive
-func downloadZipHandler(c *gin.Context) {
-	selectedFiles := c.PostFormArray("selectedFiles")
-	if len(selectedFiles) == 0 {
-		c.Flash.Add("error", "No files selected for download.")
-		c.Redirect(http.StatusFound, "/")
-		return
+func downloadZipHandler(fs storage.FileOperations) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		selectedFiles := c.PostFormArray("selectedFiles")
+		if len(selectedFiles) == 0 {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+
+		c.Writer.Header().Set("Content-Type", "application/zip")
+		c.Writer.Header().Set("Content-Disposition", "attachment; filename=\"archive.zip\"")
+
+		zipWriter := zip.NewWriter(c.Writer)
+		defer zipWriter.Close()
+
+		for _, filePath := range selectedFiles {
+			filePath = path.Clean(filePath) // Normalize path
+
+			file, err := fs.Read(filePath)
+			if err != nil {
+				log.Printf("Error opening file %s for zip: %v", filePath, err)
+				continue // Skip this file, but continue with others
+			}
+			defer file.Close()
+
+			info, err := fs.Stat(filePath)
+			if err != nil {
+				log.Printf("Error getting file info for %s: %v", filePath, err)
+				continue
+			}
+
+			header := &zip.FileHeader{
+				Name:     strings.TrimPrefix(filePath, "/"),
+				Method:   zip.Deflate,
+				Modified: info.ModTime,
+			}
+
+			writer, err := zipWriter.CreateHeader(header)
+			if err != nil {
+				log.Printf("Error creating zip header for %s: %v", filePath, err)
+				continue
+			}
+
+			_, err = io.Copy(writer, file)
+			if err != nil {
+				log.Printf("Error writing file %s to zip: %v", filePath, err)
+				continue
+			}
+		}
+	}
+}
+
+// mkdirHandler handles directory creation
+func mkdirHandler(fs storage.FileOperations) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		parentPath := c.PostForm("parentPath")
+		dirName := c.PostForm("dirName")
+
+		if dirName == "" {
+			// Handle error: directory name is required
+			c.Redirect(http.StatusFound, "/?path="+parentPath)
+			return
+		}
+
+		newPath := path.Join(parentPath, dirName)
+		if err := fs.Mkdir(newPath); err != nil {
+			log.Printf("Failed to create directory: %v", err)
+			// Handle error, maybe with a flash message if implemented
+		}
+
+		c.Redirect(http.StatusFound, "/?path="+parentPath)
+	}
+}
+
+func generatePathParts(currentPath string) []PathPart {
+	var parts []PathPart
+
+	// Normalize currentPath to use forward slashes
+	normalizedPath := strings.ReplaceAll(currentPath, "\\", "/")
+
+	// Always add root
+	parts = append(parts, PathPart{
+		Name:   "ROOT",
+		Path:   "/",
+		IsLast: normalizedPath == "/",
+	})
+
+	if normalizedPath == "/" {
+		return parts
 	}
 
-	c.Writer.Header().Set("Content-Type", "application/zip")
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename=\"archive.zip\"")
+	// Split path and build parts
+	split := strings.Split(strings.TrimPrefix(normalizedPath, "/"), "/")
 
-	zipWriter := zip.NewWriter(c.Writer)
-	defer zipWriter.Close()
-
-	for _, filePath := range selectedFiles {
-		filePath = path.Clean(filePath) // Normalize path
-
-		file, err := storageService.MetaStore.Open(filePath) // Use MetaStore.Open for now
-		if err != nil {
-			log.Printf("Error opening file %s for zip: %v", filePath, err)
-			continue // Skip this file, but continue with others
-		}
-		defer file.Close()
-
-		// Get file info for zip header
-		// This part is problematic as MetaStore.Open returns fs.File, not os.File
-		// and fs.File does not have Stat() method directly.
-		// We need to get FileInfo from IndexManager or MetaStore.Stat
-		// For now, we'll create a dummy header or rely on a proper Stat implementation.
-		// Assuming file implements fs.File and has a Stat() method.
-		// For now, we'll use a simplified approach.
-		// Example: fileInfo, err := file.Stat()
-		// if err != nil { log.Printf(...); continue; }
-		// header, err := zip.FileInfoHeader(fileInfo)
-
-		// Placeholder for actual file info
-		header := &zip.FileHeader{
-			Name:     strings.TrimPrefix(filePath, "/"),
-			Method:   zip.Deflate,
-			Modified: time.Now(),
-		}
-		// If we had actual file size, we'd set header.UncompressedSize64
-
-		writer, err := zipWriter.CreateHeader(header)
-		if err != nil {
-			log.Printf("Error creating zip header for %s: %v", filePath, err)
+	cumulativePath := "/"
+	for i, part := range split {
+		if part == "" {
 			continue
 		}
 
-		_, err = io.Copy(writer, file)
-		if err != nil {
-			log.Printf("Error writing file %s to zip: %v", filePath, err)
-			continue
+		cleanPart := strings.ReplaceAll(part, "\\", "/")
+
+		if cumulativePath == "/" {
+			cumulativePath += cleanPart
+		} else {
+			cumulativePath += "/" + cleanPart
 		}
+
+		newPart := PathPart{
+			Name:   cleanPart,
+			Path:   cumulativePath,
+			IsLast: i == len(split)-1,
+		}
+		parts = append(parts, newPart)
 	}
+
+	return parts
 }
