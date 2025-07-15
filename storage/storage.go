@@ -2,10 +2,13 @@ package storage
 
 import (
 	"fmt"
+	"io"
 	"path/filepath"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	indexiface "github.com/origadmin/runtime/interfaces/storage/index"
+	"github.com/origadmin/runtime/log"
 	blobimpl "github.com/origadmin/runtime/storage/blob"
 	contentimpl "github.com/origadmin/runtime/storage/content"
 	indeximpl "github.com/origadmin/runtime/storage/index"
@@ -18,23 +21,186 @@ const (
 	DefaultChunkSize = 4 * 1024 * 1024
 )
 
-// Storage defines the high-level interface for the storage service.
-type Storage interface {
-	GetIndexManager() indexiface.Manager
-	GetMetaStore() *metaimpl.Meta
-}
-
-// storage represents the assembled storage service.
+// storage represents the assembled Store service.
 // It implements the Storage interface.
 type storage struct {
-	IndexManager indexiface.Manager
-	MetaStore    *metaimpl.Meta
+	index     indexiface.Manager
+	metaStore *metaimpl.Meta
 }
 
-// New creates a new Storage service instance based on the provided protobuf configuration.
+// List returns a list of files and directories at the given path.
+func (s *storage) List(path string) ([]storageiface.FileInfo, error) {
+	node, err := s.index.GetNodeByPath(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list path '%s': %w", path, err)
+	}
+	if node.NodeType != indexiface.Directory {
+		return nil, fmt.Errorf("path '%s' is not a directory", path)
+	}
+
+	nodes, err := s.index.ListChildren(node.NodeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list children of path '%s': %w", path, err)
+	}
+	infos := make([]storageiface.FileInfo, 0, len(nodes))
+	for _, node := range nodes {
+		info := storageiface.FileInfo{
+			Name:    node.Name,
+			Path:    filepath.Join(path, node.Name),
+			IsDir:   node.NodeType == indexiface.Directory,
+			ModTime: node.Mtime,
+		}
+
+		// For files, we fetch more accurate metadata from the metaStore.
+		if !info.IsDir && node.MetaHash != "" {
+			stat, err := s.metaStore.Stat(node.MetaHash)
+			if err != nil {
+				// Log the error and skip this file, so one bad file doesn't break the whole listing.
+				log.Warnf("Failed to get metadata for file '%s' (id: %s): %v. Skipping.", info.Path, node.MetaHash, err)
+				continue
+			}
+			//stat, err := fileMeta.Stat()
+			//if err != nil {
+			//	return nil, err
+			//}
+			info.Size = stat.Size()
+			info.ModTime = stat.ModTime() // Use the more accurate content modification time.
+		}
+		infos = append(infos, info)
+	}
+
+	return infos, nil
+}
+
+// Stat returns metadata for a single file or directory.
+func (s *storage) Stat(path string) (storageiface.FileInfo, error) {
+	node, err := s.index.GetNodeByPath(path)
+	if err != nil {
+		return storageiface.FileInfo{}, fmt.Errorf("failed to stat path '%s': %w", path, err)
+	}
+
+	info := storageiface.FileInfo{
+		Name:    node.Name,
+		Path:    path,
+		IsDir:   node.NodeType == indexiface.Directory,
+		ModTime: node.Mtime,
+	}
+
+	if !info.IsDir && node.MetaHash != "" {
+		fileMeta, err := s.metaStore.Stat(node.MetaHash)
+		if err != nil {
+			return storageiface.FileInfo{}, fmt.Errorf("failed to get metadata for file '%s': %w", path, err)
+		}
+		info.Size = fileMeta.Size()
+		info.ModTime = fileMeta.ModTime()
+	}
+
+	return info, nil
+}
+
+// Read opens a file for reading.
+func (s *storage) Read(path string) (io.ReadCloser, error) {
+	// 1. Find the index node to get the content's metadata ID.
+	node, err := s.index.GetNodeByPath(path)
+	if err != nil {
+		return nil, fmt.Errorf("file not found at path '%s': %w", path, err)
+	}
+
+	if node.NodeType != indexiface.File {
+		return nil, fmt.Errorf("path '%s' is a directory, not a file", path)
+	}
+
+	// 2. The metaStore service provides a readable stream, abstracting away the blob assembly.
+	return s.metaStore.Open(node.MetaHash)
+}
+
+// Mkdir creates a new directory.
+func (s *storage) Mkdir(path string) error {
+	// Creating a directory is a pure index operation; it has no content.
+	_, err := s.index.Create(path, indexiface.Directory, "")
+	return err
+}
+
+// Delete removes a file or an empty directory.
+func (s *storage) Delete(path string) error {
+	node, err := s.index.GetNodeByPath(path)
+	if err != nil {
+		return err
+	}
+	if err := s.index.DeleteNode(node.NodeID); err != nil {
+		// This makes the Delete operation idempotent. Deleting a non-existent file is not an error.
+		//if errors.Is(err, indexiface.ErrNodeNotFound) { // Assuming index returns a standard error.
+		//	return nil
+		//}
+		return fmt.Errorf("error looking up '%s' for deletion: %w", path, err)
+	}
+
+	// For directories, ensure it's empty before deleting to prevent accidental data loss.
+	if node.NodeType == indexiface.Directory {
+		node, err := s.index.GetNodeByPath(path)
+		if err != nil {
+			return err
+		}
+		children, err := s.index.ListChildren(node.NodeID)
+		if err != nil {
+			return fmt.Errorf("error checking if directory '%s' is empty: %w", path, err)
+		}
+		if len(children) > 0 {
+			return fmt.Errorf("directory '%s' is not empty", path)
+		}
+	}
+
+	// First, delete the index entry. This makes the file/dir "disappear" from the user's perspective.
+	if err := s.index.DeleteNode(node.NodeID); err != nil {
+		return fmt.Errorf("failed to delete index entry for '%s': %w", path, err)
+	}
+
+	// If it was a file, proceed to delete its content from the meta/blob store.
+	if node.NodeType == indexiface.File && node.MetaHash != "" {
+		if err := s.metaStore.Delete(node.MetaHash); err != nil {
+			// This is a problematic state (orphaned content). Log and return an error.
+			log.Errorf("Index entry for '%s' deleted, but failed to delete content (metaID: %s): %v", path, node.MetaID, err)
+			return fmt.Errorf("index entry for '%s' deleted, but failed to delete content (metaID: %s): %w", path, node.MetaID, err)
+		}
+	}
+
+	return nil
+}
+
+// Rename moves or renames a file or directory.
+func (s *storage) Rename(oldPath, newPath string) error {
+	// Renaming is a pure index operation. The file content itself (and its metaID) is not touched.
+	return s.index.Rename(oldPath, newPath)
+}
+
+// Write creates a new file at the given path with the content from the reader.
+func (s *storage) Write(path string, data io.Reader, size int64) error {
+	// 1. Write the content stream to the metaStore. It handles chunking and blob storage,
+	// returning metadata (including a unique ID) for the stored content.
+	fileMeta, err := s.metaStore.Create(data, size)
+	if err != nil {
+		return fmt.Errorf("failed to write file content: %w", err)
+	}
+
+	// 2. Create an entry in the index to link the path to the newly stored content.
+	_, err = s.index.Create(path, indexiface.File, fileMeta.ID())
+	if err != nil {
+		// IMPORTANT: If creating the index fails, we must clean up the orphaned content.
+		log.Warnf("Failed to create index node for path '%s', attempting to clean up orphaned content (metaID: %s)", path, fileMeta.ID())
+		if cleanupErr := s.metaStore.Delete(fileMeta.ID()); cleanupErr != nil {
+			// This is a critical failure state. The content is now orphaned.
+			log.Errorf("Orphaned content cleanup FAILED for metaID '%s': %v", fileMeta.ID(), cleanupErr)
+		}
+		return fmt.Errorf("failed to create index node for path '%s': %w", path, err)
+	}
+
+	return nil
+}
+
+// NewStorage creates a new Storage service instance based on the provided protobuf configuration.
 // This function acts as the entry point for creating the storage system.
-func New(cfg *configv1.Storage) (Storage, error) {
-	// 3. Add validation logic for the new protobuf config structure
+func NewStorage(cfg *configv1.Storage) (storageiface.Store, error) {
+	// Validation logic for the protobuf config structure
 	if cfg == nil {
 		return nil, fmt.Errorf("storage config cannot be nil")
 	}
@@ -60,12 +226,10 @@ func New(cfg *configv1.Storage) (Storage, error) {
 		return nil, fmt.Errorf("storage config: filestore.local.root (BasePath) cannot be empty")
 	}
 
-	// NOTE: DefaultChunkSize is not part of the proto config.
-	// Using a hardcoded default. Consider adding this to the FileLocal message if needed.
-	// Use the chunk size from the proto config, with a fallback to a sensible default.
-	defaultChunkSize := fsCfg.GetChunkSize()
-	if defaultChunkSize == 0 {
-		defaultChunkSize = 4 * 1024 * 1024 // 4MB default
+	// Use the chunk size from the proto config, with a fallback to the package-level default.
+	chunkSize := fsCfg.GetChunkSize()
+	if chunkSize == 0 {
+		chunkSize = DefaultChunkSize
 	}
 
 	// 1. Create base paths for each component
@@ -79,36 +243,26 @@ func New(cfg *configv1.Storage) (Storage, error) {
 	// 3. Instantiate Content Assembler
 	contentAssembler := contentimpl.New(blobStore)
 
-	// 4. Instantiate Meta Store
-	metaStore, err := metaimpl.NewFileMetaStore(metaBasePath)
+	// 4. Instantiate low-level Meta Store
+	lowLevelMetaStore, err := metaimpl.NewFileMetaStore(metaBasePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create meta store: %w", err)
 	}
 
-	// 5. Instantiate Meta Service (uses MetaStore, BlobStore, ContentAssembler)
-	metaService, err := metaimpl.New(metaStore, blobStore, contentAssembler, defaultChunkSize)
+	// 5. Instantiate high-level Meta Service (uses MetaStore, BlobStore, ContentAssembler)
+	metaService, err := metaimpl.New(lowLevelMetaStore, blobStore, contentAssembler, chunkSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create meta service: %w", err)
 	}
 
 	// 6. Instantiate Index Manager
-	indexManager, err := indeximpl.NewFileManager(indexPath, metaStore)
+	indexManager, err := indeximpl.NewFileManager(indexPath, lowLevelMetaStore)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create index manager: %w", err)
 	}
 
 	return &storage{
-		IndexManager: indexManager,
-		MetaStore:    metaService,
+		index:     indexManager,
+		metaStore: metaService,
 	}, nil
-}
-
-// GetIndexManager returns the index manager component.
-func (s *storage) GetIndexManager() indexiface.Manager {
-	return s.IndexManager
-}
-
-// GetMetaStore returns the meta store component.
-func (s *storage) GetMetaStore() *metaimpl.Meta {
-	return s.MetaStore
 }

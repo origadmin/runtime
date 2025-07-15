@@ -61,7 +61,7 @@ func main() {
 }
 
 // indexHandler displays the file list for a given path
-func indexHandler(fs storage.FileOperations) gin.HandlerFunc {
+func indexHandler(fs storage.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		currentPath := c.Query("path")
 		if currentPath == "" {
@@ -117,7 +117,7 @@ func indexHandler(fs storage.FileOperations) gin.HandlerFunc {
 }
 
 // uploadHandler handles file uploads
-func uploadHandler(fs storage.FileOperations) gin.HandlerFunc {
+func uploadHandler(fs storage.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		currentPath := c.PostForm("currentPath") // Get current path from form
 		if currentPath == "" {
@@ -156,7 +156,7 @@ func uploadHandler(fs storage.FileOperations) gin.HandlerFunc {
 }
 
 // downloadHandler handles single file downloads
-func downloadHandler(fs storage.FileOperations) gin.HandlerFunc {
+func downloadHandler(fs storage.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fileName := c.Query("path")
 		if fileName == "" {
@@ -189,7 +189,7 @@ func downloadHandler(fs storage.FileOperations) gin.HandlerFunc {
 }
 
 // downloadZipHandler handles downloading multiple selected files as a ZIP archive
-func downloadZipHandler(fs storage.FileOperations) gin.HandlerFunc {
+func downloadZipHandler(fs storage.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		selectedFiles := c.PostFormArray("selectedFiles")
 		if len(selectedFiles) == 0 {
@@ -242,7 +242,7 @@ func downloadZipHandler(fs storage.FileOperations) gin.HandlerFunc {
 }
 
 // mkdirHandler handles directory creation
-func mkdirHandler(fs storage.FileOperations) gin.HandlerFunc {
+func mkdirHandler(fs storage.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		parentPath := c.PostForm("parentPath")
 		dirName := c.PostForm("dirName")
@@ -264,7 +264,7 @@ func mkdirHandler(fs storage.FileOperations) gin.HandlerFunc {
 }
 
 // deleteHandler handles file/directory deletion
-func deleteHandler(fs storage.FileOperations) gin.HandlerFunc {
+func deleteHandler(fs storage.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		targetPath := c.PostForm("path") // Assuming path is sent via form for POST
 		if targetPath == "" {
@@ -288,7 +288,7 @@ func deleteHandler(fs storage.FileOperations) gin.HandlerFunc {
 }
 
 // renameHandler handles file/directory renaming
-func renameHandler(fs storage.FileOperations) gin.HandlerFunc {
+func renameHandler(fs storage.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		oldPath := c.PostForm("oldPath")
 		newFileName := c.PostForm("newPath") // User input: e.g., new_file.txt

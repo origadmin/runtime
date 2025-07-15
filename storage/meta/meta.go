@@ -58,8 +58,9 @@ func (m *Meta) chunkData(r io.Reader) ([]string, int64, error) {
 	return hashes, totalSize, nil
 }
 
-// Meta 结构体现在管理文件内容的元数据。
-// 它不再管理目录结构，也不再直接存储文件系统层面的属性（如文件名、权限）。
+// Meta structure is embodied in managing metadata for file content.
+// It no longer manages the directory structure, nor does it directly store filesystem-level attributes (e.g.,
+// file names, permissions).
 type Meta struct {
 	metaStore   metaiface.Store
 	blobStorage blobiface.Store

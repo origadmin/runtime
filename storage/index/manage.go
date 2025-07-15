@@ -25,14 +25,14 @@ const (
 	nodesKeyPrefix    = "nodes"
 )
 
-// FileManager implements the Manager interface using the local filesystem.
-type FileManager struct {
+// Manage implements the Manager interface using the local filesystem.
+type Manage struct {
 	layout    layout.ShardedStorage
 	indexPath string // Base path for index data
 }
 
-// NewFileManager creates a new FileManager.
-func NewFileManager(indexPath string, metaStore metaiface.Store) (*FileManager, error) {
+// NewManage creates a new Manage.
+func NewManage(indexPath string, metaStore metaiface.Store) (*Manage, error) {
 	// Ensure the index path exists
 	if err := os.MkdirAll(indexPath, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create index path: %w", err)
@@ -44,7 +44,7 @@ func NewFileManager(indexPath string, metaStore metaiface.Store) (*FileManager, 
 		return nil, fmt.Errorf("failed to create sharded storage: %w", err)
 	}
 
-	manager := &FileManager{
+	manager := &Manage{
 		layout:    ls,
 		indexPath: indexPath,
 	}
@@ -77,25 +77,25 @@ func NewFileManager(indexPath string, metaStore metaiface.Store) (*FileManager, 
 }
 
 // Close closes the file manager.
-func (m *FileManager) Close() error {
+func (m *Manage) Close() error {
 	// No-op since layout doesn't require explicit closing in this implementation.
 	return nil
 }
 
-func (m *FileManager) pathKey(path string) string {
+func (m *Manage) pathKey(path string) string {
 	return filepath.Join(pathKeyPrefix, path)
 }
 
-func (m *FileManager) childrenKey(nodeID string) string {
+func (m *Manage) childrenKey(nodeID string) string {
 	return filepath.Join(childrenKeyPrefix, nodeID)
 }
 
-func (m *FileManager) nodeKey(nodeID string) string {
+func (m *Manage) nodeKey(nodeID string) string {
 	return filepath.Join(nodesKeyPrefix, nodeID)
 }
 
 // CreateNode creates a new node in the index.
-func (m *FileManager) CreateNode(node *index.Node) error {
+func (m *Manage) CreateNode(node *index.Node) error {
 	if node.NodeID == "" {
 		node.NodeID = uuid.New().String()
 	}
@@ -155,7 +155,7 @@ func (m *FileManager) CreateNode(node *index.Node) error {
 }
 
 // GetNode retrieves a node by its unique ID.
-func (m *FileManager) GetNode(nodeID string) (*index.Node, error) {
+func (m *Manage) GetNode(nodeID string) (*index.Node, error) {
 	nodeBytes, err := m.layout.Read(m.nodeKey(nodeID))
 	if err != nil {
 		return nil, err
@@ -169,7 +169,7 @@ func (m *FileManager) GetNode(nodeID string) (*index.Node, error) {
 }
 
 // GetNodeByPath retrieves a node by its full path.
-func (m *FileManager) GetNodeByPath(path string) (*index.Node, error) {
+func (m *Manage) GetNodeByPath(path string) (*index.Node, error) {
 	nodeIDBytes, err := m.layout.Read(m.pathKey(path))
 	if err != nil {
 		return nil, err
@@ -178,7 +178,7 @@ func (m *FileManager) GetNodeByPath(path string) (*index.Node, error) {
 }
 
 // UpdateNode updates an existing node's data.
-func (m *FileManager) UpdateNode(node *index.Node) error {
+func (m *Manage) UpdateNode(node *index.Node) error {
 	nodeBytes, err := json.Marshal(node)
 	if err != nil {
 		return fmt.Errorf("failed to marshal node for update: %w", err)
@@ -187,7 +187,7 @@ func (m *FileManager) UpdateNode(node *index.Node) error {
 }
 
 // DeleteNode removes a node from the index.
-func (m *FileManager) DeleteNode(nodeID string) error {
+func (m *Manage) DeleteNode(nodeID string) error {
 	node, err := m.GetNode(nodeID)
 	if err != nil {
 		return err
@@ -244,7 +244,7 @@ func (m *FileManager) DeleteNode(nodeID string) error {
 }
 
 // ListChildren retrieves all immediate children of a directory node.
-func (m *FileManager) ListChildren(parentID string) ([]*index.Node, error) {
+func (m *Manage) ListChildren(parentID string) ([]*index.Node, error) {
 	childIDs, err := m.listChildrenIDs(parentID)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -264,7 +264,7 @@ func (m *FileManager) ListChildren(parentID string) ([]*index.Node, error) {
 	return childrenNodes, nil
 }
 
-func (m *FileManager) listChildrenIDs(parentID string) ([]string, error) {
+func (m *Manage) listChildrenIDs(parentID string) ([]string, error) {
 	childrenBytes, err := m.layout.Read(m.childrenKey(parentID))
 	if err != nil {
 		return nil, err
@@ -278,7 +278,7 @@ func (m *FileManager) listChildrenIDs(parentID string) ([]string, error) {
 }
 
 // MoveNode moves a node to a new parent directory and/or new name.
-func (m *FileManager) MoveNode(nodeID string, newParentID string, newName string) error {
+func (m *Manage) MoveNode(nodeID string, newParentID string, newName string) error {
 	node, err := m.GetNode(nodeID)
 	if err != nil {
 		return fmt.Errorf("node not found: %w", err)
@@ -354,7 +354,7 @@ func (m *FileManager) MoveNode(nodeID string, newParentID string, newName string
 	return nil
 }
 
-func (m *FileManager) addChildToParent(childID, parentID string) error {
+func (m *Manage) addChildToParent(childID, parentID string) error {
 	children, err := m.listChildrenIDs(parentID)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
@@ -367,7 +367,7 @@ func (m *FileManager) addChildToParent(childID, parentID string) error {
 	return m.layout.Write(m.childrenKey(parentID), childrenBytes)
 }
 
-func (m *FileManager) removeChildFromParent(childID, parentID string) error {
+func (m *Manage) removeChildFromParent(childID, parentID string) error {
 	children, err := m.listChildrenIDs(parentID)
 	if err != nil {
 		return err
