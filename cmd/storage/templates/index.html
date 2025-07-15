@@ -37,29 +37,15 @@
             align-items: center; /* Vertically center items */
         }
         .breadcrumb-item {
-            /* padding-right: var(--bs-breadcrumb-item-padding-x);  Add symmetrical right padding */
-            /* display: inline-block;  Ensure it respects width */
-            /* max-width: 150px; */ /* Example max-width, adjust as needed */
-            /* overflow: hidden; */
-            /* text-overflow: ellipsis; */
-            font-size: 1rem; /* Set consistent font size */
-            /* line-height: 1.2;  Ensure consistent line height */
-            /* vertical-align: middle;  Align vertically */
-            padding: 0; /* Remove any default padding */
-            margin: 0; /* Remove any default margin */
-            /* padding-right: 1rem; */ /* Add spacing between items */
-            flex-shrink: 0; /* Prevent items from shrinking */
+            font-size: 1rem;
+            padding: 0;
+            margin: 0;
+            flex-shrink: 0;
         }
         .breadcrumb-item a {
-            /* display: inline-block;  Required for text-overflow to work on anchor */
-            /* max-width: 100%; */ /* Take full width of parent li */
-            /* overflow: hidden; */
-            /* text-overflow: ellipsis; */
-            font-size: 1rem; /* Set consistent font size */
-            /* line-height: 1.2;  Ensure consistent line height */
-            /* vertical-align: middle;  Alignatically */
-            padding: 0; /* Remove any default padding */
-            margin: 0; /* Remove any default margin */
+            font-size: 1rem;
+            padding: 0;
+            margin: 0;
         }
         .no-link {
             color: inherit; /* Inherit color from parent */
@@ -308,23 +294,15 @@
             }
 
             function truncateBreadcrumbs() {
-                console.log("--- Truncate Breadcrumbs Start (Character Length) ---");
-                console.log("Initial fullPathParts:", fullPathParts);
-
                 const MAX_PATH_DISPLAY_LENGTH = 80; // Example character limit
 
                 // Calculate the total character length of the full path
                 let fullPathString = fullPathParts.map(part => part.Name).join('/');
-                console.log("Full Path String:", fullPathString);
-                console.log("Full Path Length:", fullPathString.length);
 
                 if (fullPathString.length <= MAX_PATH_DISPLAY_LENGTH) {
-                    console.log("Fits by character length. No truncation needed.");
                     renderBreadcrumbs(fullPathParts);
                     return;
                 }
-
-                console.log("Doesn't fit by character length. Applying advanced truncation.");
 
                 let displayParts = [];
 
@@ -347,7 +325,6 @@
                 }
 
                 renderBreadcrumbs(displayParts);
-                console.log("--- Truncate Breadcrumbs End (Character Length) ---");
             }
 
             // Initial truncation and on window resize

@@ -29,7 +29,7 @@ type Storage struct {
 // This function acts as the entry point for creating the storage system.
 func New(cfg Config) (*Storage, error) {
 	if cfg.BasePath == "" {
-		return nil, fmt.Errorf("storage config: BasePath cannot be empty")
+		return nil, fmt.Errorf("storage config: basePath cannot be empty")
 	}
 
 	// Set default chunk size if not provided
