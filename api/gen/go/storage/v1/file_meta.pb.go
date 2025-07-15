@@ -8,7 +8,6 @@ package storagev1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -112,7 +111,7 @@ var File_storage_v1_file_meta_proto protoreflect.FileDescriptor
 const file_storage_v1_file_meta_proto_rawDesc = "" +
 	"\n" +
 	"\x1astorage/v1/file_meta.proto\x12\n" +
-	"storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\x90\x01\n" +
+	"storage.v1\x1a\x17validate/validate.proto\"\x90\x01\n" +
 	"\bFileMeta\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +

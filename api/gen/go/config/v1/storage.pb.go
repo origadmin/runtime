@@ -465,152 +465,6 @@ func (x *Memory) GetCleanupInterval() int64 {
 	return 0
 }
 
-// File
-type File struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Root          string                 `protobuf:"bytes,1,opt,name=root,proto3" json:"root,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *File) Reset() {
-	*x = File{}
-	mi := &file_config_v1_storage_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *File) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*File) ProtoMessage() {}
-
-func (x *File) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use File.ProtoReflect.Descriptor instead.
-func (*File) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *File) GetRoot() string {
-	if x != nil {
-		return x.Root
-	}
-	return ""
-}
-
-// OSS
-type Oss struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Endpoint        string                 `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	AccessKeyId     string                 `protobuf:"bytes,2,opt,name=access_key_id,proto3" json:"access_key_id,omitempty"`
-	AccessKeySecret string                 `protobuf:"bytes,3,opt,name=access_key_secret,proto3" json:"access_key_secret,omitempty"`
-	Bucket          string                 `protobuf:"bytes,4,opt,name=bucket,proto3" json:"bucket,omitempty"`
-	Region          string                 `protobuf:"bytes,5,opt,name=region,proto3" json:"region,omitempty"`
-	Ssl             bool                   `protobuf:"varint,6,opt,name=ssl,proto3" json:"ssl,omitempty"`
-	ConnectTimeout  int64                  `protobuf:"varint,7,opt,name=connect_timeout,proto3" json:"connect_timeout,omitempty"`
-	ReadTimeout     int64                  `protobuf:"varint,8,opt,name=read_timeout,proto3" json:"read_timeout,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *Oss) Reset() {
-	*x = Oss{}
-	mi := &file_config_v1_storage_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Oss) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Oss) ProtoMessage() {}
-
-func (x *Oss) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Oss.ProtoReflect.Descriptor instead.
-func (*Oss) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *Oss) GetEndpoint() string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return ""
-}
-
-func (x *Oss) GetAccessKeyId() string {
-	if x != nil {
-		return x.AccessKeyId
-	}
-	return ""
-}
-
-func (x *Oss) GetAccessKeySecret() string {
-	if x != nil {
-		return x.AccessKeySecret
-	}
-	return ""
-}
-
-func (x *Oss) GetBucket() string {
-	if x != nil {
-		return x.Bucket
-	}
-	return ""
-}
-
-func (x *Oss) GetRegion() string {
-	if x != nil {
-		return x.Region
-	}
-	return ""
-}
-
-func (x *Oss) GetSsl() bool {
-	if x != nil {
-		return x.Ssl
-	}
-	return false
-}
-
-func (x *Oss) GetConnectTimeout() int64 {
-	if x != nil {
-		return x.ConnectTimeout
-	}
-	return 0
-}
-
-func (x *Oss) GetReadTimeout() int64 {
-	if x != nil {
-		return x.ReadTimeout
-	}
-	return 0
-}
-
 // Mongo
 type Mongo struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
@@ -628,7 +482,7 @@ type Mongo struct {
 
 func (x *Mongo) Reset() {
 	*x = Mongo{}
-	mi := &file_config_v1_storage_proto_msgTypes[7]
+	mi := &file_config_v1_storage_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -640,7 +494,7 @@ func (x *Mongo) String() string {
 func (*Mongo) ProtoMessage() {}
 
 func (x *Mongo) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[7]
+	mi := &file_config_v1_storage_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -653,7 +507,7 @@ func (x *Mongo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mongo.ProtoReflect.Descriptor instead.
 func (*Mongo) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{7}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Mongo) GetUri() string {
@@ -730,7 +584,7 @@ type Cache struct {
 
 func (x *Cache) Reset() {
 	*x = Cache{}
-	mi := &file_config_v1_storage_proto_msgTypes[8]
+	mi := &file_config_v1_storage_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -742,7 +596,7 @@ func (x *Cache) String() string {
 func (*Cache) ProtoMessage() {}
 
 func (x *Cache) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[8]
+	mi := &file_config_v1_storage_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -755,7 +609,7 @@ func (x *Cache) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cache.ProtoReflect.Descriptor instead.
 func (*Cache) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{8}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Cache) GetDriver() string {
@@ -793,30 +647,251 @@ func (x *Cache) GetRedis() *Redis {
 	return nil
 }
 
+// OSS defines the configuration for cloud object storage.
+type Oss struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Endpoint        string                 `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	AccessKeyId     string                 `protobuf:"bytes,2,opt,name=access_key_id,proto3" json:"access_key_id,omitempty"`
+	AccessKeySecret string                 `protobuf:"bytes,3,opt,name=access_key_secret,proto3" json:"access_key_secret,omitempty"`
+	Bucket          string                 `protobuf:"bytes,4,opt,name=bucket,proto3" json:"bucket,omitempty"`
+	Region          string                 `protobuf:"bytes,5,opt,name=region,proto3" json:"region,omitempty"`
+	Ssl             bool                   `protobuf:"varint,6,opt,name=ssl,proto3" json:"ssl,omitempty"`
+	ConnectTimeout  int64                  `protobuf:"varint,7,opt,name=connect_timeout,proto3" json:"connect_timeout,omitempty"`
+	ReadTimeout     int64                  `protobuf:"varint,8,opt,name=read_timeout,proto3" json:"read_timeout,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *Oss) Reset() {
+	*x = Oss{}
+	mi := &file_config_v1_storage_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Oss) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Oss) ProtoMessage() {}
+
+func (x *Oss) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_storage_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Oss.ProtoReflect.Descriptor instead.
+func (*Oss) Descriptor() ([]byte, []int) {
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *Oss) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *Oss) GetAccessKeyId() string {
+	if x != nil {
+		return x.AccessKeyId
+	}
+	return ""
+}
+
+func (x *Oss) GetAccessKeySecret() string {
+	if x != nil {
+		return x.AccessKeySecret
+	}
+	return ""
+}
+
+func (x *Oss) GetBucket() string {
+	if x != nil {
+		return x.Bucket
+	}
+	return ""
+}
+
+func (x *Oss) GetRegion() string {
+	if x != nil {
+		return x.Region
+	}
+	return ""
+}
+
+func (x *Oss) GetSsl() bool {
+	if x != nil {
+		return x.Ssl
+	}
+	return false
+}
+
+func (x *Oss) GetConnectTimeout() int64 {
+	if x != nil {
+		return x.ConnectTimeout
+	}
+	return 0
+}
+
+func (x *Oss) GetReadTimeout() int64 {
+	if x != nil {
+		return x.ReadTimeout
+	}
+	return 0
+}
+
+// FileLocal defines the configuration for local file system storage.
+// Renamed from 'File' to avoid ambiguity.
+type FileLocal struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Root          string                 `protobuf:"bytes,1,opt,name=root,proto3" json:"root,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileLocal) Reset() {
+	*x = FileLocal{}
+	mi := &file_config_v1_storage_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileLocal) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileLocal) ProtoMessage() {}
+
+func (x *FileLocal) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_storage_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileLocal.ProtoReflect.Descriptor instead.
+func (*FileLocal) Descriptor() ([]byte, []int) {
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *FileLocal) GetRoot() string {
+	if x != nil {
+		return x.Root
+	}
+	return ""
+}
+
+// FileStore groups all "file/object storage" type backends into one category.
+// It uses the 'driver' field to determine which specific implementation to use.
+type FileStore struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The 'driver' field determines which configuration block (local or oss) to use.
+	// This field is crucial for ensuring JSON/YAML compatibility.
+	Driver string `protobuf:"bytes,1,opt,name=driver,proto3" json:"driver,omitempty"`
+	// Local file system configuration. Only effective when driver is "local".
+	// The optional keyword clearly indicates that this field may not be present.
+	Local *FileLocal `protobuf:"bytes,2,opt,name=local,proto3,oneof" json:"local,omitempty"`
+	// Cloud object storage configuration. Only effective when driver is "oss".
+	Oss *Oss `protobuf:"bytes,3,opt,name=oss,proto3,oneof" json:"oss,omitempty"`
+	// Chunk size in bytes for splitting large files.
+	// For OSS, this corresponds to the multipart upload part size.
+	// For local storage, it defines the size of individual blob files.
+	// If 0 or not set, a reasonable default (e.g., 4MB) will be used by the implementation.
+	ChunkSize     int64 `protobuf:"varint,4,opt,name=chunk_size,proto3" json:"chunk_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileStore) Reset() {
+	*x = FileStore{}
+	mi := &file_config_v1_storage_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileStore) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileStore) ProtoMessage() {}
+
+func (x *FileStore) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v1_storage_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileStore.ProtoReflect.Descriptor instead.
+func (*FileStore) Descriptor() ([]byte, []int) {
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *FileStore) GetDriver() string {
+	if x != nil {
+		return x.Driver
+	}
+	return ""
+}
+
+func (x *FileStore) GetLocal() *FileLocal {
+	if x != nil {
+		return x.Local
+	}
+	return nil
+}
+
+func (x *FileStore) GetOss() *Oss {
+	if x != nil {
+		return x.Oss
+	}
+	return nil
+}
+
+func (x *FileStore) GetChunkSize() int64 {
+	if x != nil {
+		return x.ChunkSize
+	}
+	return 0
+}
+
+// Storage is the top-level configuration, and its structure is now compatible with all parsers.
 type Storage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Type
+	// The 'type' field determines which storage backend to use (database, cache, or filestore).
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	// Database
-	Database *Database `protobuf:"bytes,3,opt,name=database,proto3" json:"database,omitempty"`
-	// Cache
-	Cache *Cache `protobuf:"bytes,4,opt,name=cache,proto3" json:"cache,omitempty"`
-	// File
-	File *File `protobuf:"bytes,10,opt,name=file,proto3" json:"file,omitempty"`
-	// Redis
-	Redis *Redis `protobuf:"bytes,11,opt,name=redis,proto3" json:"redis,omitempty"`
-	// Mongo
-	Mongo *Mongo `protobuf:"bytes,13,opt,name=mongo,proto3" json:"mongo,omitempty"`
-	// OSS
-	Oss           *Oss `protobuf:"bytes,14,opt,name=oss,proto3" json:"oss,omitempty"`
+	// Database backend configuration. Only effective when type is "database".
+	Database *Database `protobuf:"bytes,3,opt,name=database,proto3,oneof" json:"database,omitempty"`
+	// Cache backend configuration. Only effective when type is "cache".
+	Cache *Cache `protobuf:"bytes,4,opt,name=cache,proto3,oneof" json:"cache,omitempty"`
+	// File storage backend configuration. Only effective when type is "filestore".
+	Filestore     *FileStore `protobuf:"bytes,5,opt,name=filestore,proto3,oneof" json:"filestore,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Storage) Reset() {
 	*x = Storage{}
-	mi := &file_config_v1_storage_proto_msgTypes[9]
+	mi := &file_config_v1_storage_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -828,7 +903,7 @@ func (x *Storage) String() string {
 func (*Storage) ProtoMessage() {}
 
 func (x *Storage) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_storage_proto_msgTypes[9]
+	mi := &file_config_v1_storage_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -841,7 +916,7 @@ func (x *Storage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Storage.ProtoReflect.Descriptor instead.
 func (*Storage) Descriptor() ([]byte, []int) {
-	return file_config_v1_storage_proto_rawDescGZIP(), []int{9}
+	return file_config_v1_storage_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Storage) GetName() string {
@@ -872,30 +947,9 @@ func (x *Storage) GetCache() *Cache {
 	return nil
 }
 
-func (x *Storage) GetFile() *File {
+func (x *Storage) GetFilestore() *FileStore {
 	if x != nil {
-		return x.File
-	}
-	return nil
-}
-
-func (x *Storage) GetRedis() *Redis {
-	if x != nil {
-		return x.Redis
-	}
-	return nil
-}
-
-func (x *Storage) GetMongo() *Mongo {
-	if x != nil {
-		return x.Mongo
-	}
-	return nil
-}
-
-func (x *Storage) GetOss() *Oss {
-	if x != nil {
-		return x.Oss
+		return x.Filestore
 	}
 	return nil
 }
@@ -947,18 +1001,7 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\n" +
 	"expiration\x18\x03 \x01(\x03B\x15\xbaG\x12\x92\x02\x0fexpiration timeR\n" +
 	"expiration\x12D\n" +
-	"\x10cleanup_interval\x18\x04 \x01(\x03B\x18\xbaG\x15\x92\x02\x12clearance intervalR\x10cleanup_interval\"0\n" +
-	"\x04File\x12(\n" +
-	"\x04root\x18\x01 \x01(\tB\x14\xbaG\x11\x92\x02\x0eroot directoryR\x04root\"\x81\x03\n" +
-	"\x03Oss\x12:\n" +
-	"\bendpoint\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18Storage service endpointR\bendpoint\x12$\n" +
-	"\raccess_key_id\x18\x02 \x01(\tR\raccess_key_id\x12,\n" +
-	"\x11access_key_secret\x18\x03 \x01(\tR\x11access_key_secret\x12\x16\n" +
-	"\x06bucket\x18\x04 \x01(\tR\x06bucket\x12\x16\n" +
-	"\x06region\x18\x05 \x01(\tR\x06region\x12\x10\n" +
-	"\x03ssl\x18\x06 \x01(\bR\x03ssl\x12Y\n" +
-	"\x0fconnect_timeout\x18\a \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\x12M\n" +
-	"\fread_timeout\x18\b \x01(\x03B)\xfaB\x04\"\x02(\x00\xbaG\x1f\x92\x02\x1cRead timeout in millisecondsR\fread_timeout\"\xe9\x02\n" +
+	"\x10cleanup_interval\x18\x04 \x01(\x03B\x18\xbaG\x15\x92\x02\x12clearance intervalR\x10cleanup_interval\"\xe9\x02\n" +
 	"\x05Mongo\x12.\n" +
 	"\x03uri\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16MongoDB connection URIR\x03uri\x12/\n" +
 	"\bdatabase\x18\x02 \x01(\tB\x13\xbaG\x10\x92\x02\rDatabase nameR\bdatabase\x12\x1a\n" +
@@ -975,17 +1018,37 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\tmemcached\x18\n" +
 	" \x01(\v2\x14.config.v1.MemcachedB#\xbaG \x92\x02\x1dmemcached cache configurationR\tmemcached\x12K\n" +
 	"\x06memory\x18\v \x01(\v2\x11.config.v1.MemoryB \xbaG\x1d\x92\x02\x1amemory cache configurationR\x06memory\x12G\n" +
-	"\x05redis\x18\f \x01(\v2\x10.config.v1.RedisB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\"\xea\x04\n" +
+	"\x05redis\x18\f \x01(\v2\x10.config.v1.RedisB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\"\x81\x03\n" +
+	"\x03Oss\x12:\n" +
+	"\bendpoint\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18Storage service endpointR\bendpoint\x12$\n" +
+	"\raccess_key_id\x18\x02 \x01(\tR\raccess_key_id\x12,\n" +
+	"\x11access_key_secret\x18\x03 \x01(\tR\x11access_key_secret\x12\x16\n" +
+	"\x06bucket\x18\x04 \x01(\tR\x06bucket\x12\x16\n" +
+	"\x06region\x18\x05 \x01(\tR\x06region\x12\x10\n" +
+	"\x03ssl\x18\x06 \x01(\bR\x03ssl\x12Y\n" +
+	"\x0fconnect_timeout\x18\a \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\x12M\n" +
+	"\fread_timeout\x18\b \x01(\x03B)\xfaB\x04\"\x02(\x00\xbaG\x1f\x92\x02\x1cRead timeout in millisecondsR\fread_timeout\"5\n" +
+	"\tFileLocal\x12(\n" +
+	"\x04root\x18\x01 \x01(\tB\x14\xbaG\x11\x92\x02\x0eroot directoryR\x04root\"\xc0\x01\n" +
+	"\tFileStore\x12)\n" +
+	"\x06driver\x18\x01 \x01(\tB\x11\xfaB\x0er\fR\x05localR\x03ossR\x06driver\x12/\n" +
+	"\x05local\x18\x02 \x01(\v2\x14.config.v1.FileLocalH\x00R\x05local\x88\x01\x01\x12%\n" +
+	"\x03oss\x18\x03 \x01(\v2\x0e.config.v1.OssH\x01R\x03oss\x88\x01\x01\x12\x1e\n" +
+	"\n" +
+	"chunk_size\x18\x04 \x01(\x03R\n" +
+	"chunk_sizeB\b\n" +
+	"\x06_localB\x06\n" +
+	"\x04_oss\"\xd3\x02\n" +
 	"\aStorage\x12P\n" +
-	"\x04name\x18\x01 \x01(\tB<\xfaB\x04r\x02\x10\x01\xbaG2\x92\x02/Unique identifier for the storage configurationR\x04name\x12[\n" +
-	"\x04type\x18\x02 \x01(\tBG\xfaB2r0R\x04noneR\x04fileR\x05redisR\x05mongoR\x03ossR\bdatabaseR\x05cache\xbaG\x0f\x92\x02\fstorage typeR\x04type\x12M\n" +
-	"\bdatabase\x18\x03 \x01(\v2\x13.config.v1.DatabaseB\x1c\xbaG\x19\x92\x02\x16database configurationR\bdatabase\x12A\n" +
-	"\x05cache\x18\x04 \x01(\v2\x10.config.v1.CacheB\x19\xbaG\x16\x92\x02\x13cache configurationR\x05cache\x12E\n" +
-	"\x04file\x18\n" +
-	" \x01(\v2\x0f.config.v1.FileB \xbaG\x1d\x92\x02\x1afile storage configurationR\x04file\x12I\n" +
-	"\x05redis\x18\v \x01(\v2\x10.config.v1.RedisB!\xbaG\x1e\x92\x02\x1bredis storage configurationR\x05redis\x12I\n" +
-	"\x05mongo\x18\r \x01(\v2\x10.config.v1.MongoB!\xbaG\x1e\x92\x02\x1bmongo storage configurationR\x05mongo\x12A\n" +
-	"\x03oss\x18\x0e \x01(\v2\x0e.config.v1.OssB\x1f\xbaG\x1c\x92\x02\x19oss storage configurationR\x03ossB\xa1\x01\n" +
+	"\x04name\x18\x01 \x01(\tB<\xfaB\x04r\x02\x10\x01\xbaG2\x92\x02/Unique identifier for the storage configurationR\x04name\x125\n" +
+	"\x04type\x18\x02 \x01(\tB!\xfaB\x1er\x1cR\bdatabaseR\x05cacheR\tfilestoreR\x04type\x124\n" +
+	"\bdatabase\x18\x03 \x01(\v2\x13.config.v1.DatabaseH\x00R\bdatabase\x88\x01\x01\x12+\n" +
+	"\x05cache\x18\x04 \x01(\v2\x10.config.v1.CacheH\x01R\x05cache\x88\x01\x01\x127\n" +
+	"\tfilestore\x18\x05 \x01(\v2\x14.config.v1.FileStoreH\x02R\tfilestore\x88\x01\x01B\v\n" +
+	"\t_databaseB\b\n" +
+	"\x06_cacheB\f\n" +
+	"\n" +
+	"_filestoreB\xa1\x01\n" +
 	"\rcom.config.v1B\fStorageProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -1001,35 +1064,35 @@ func file_config_v1_storage_proto_rawDescGZIP() []byte {
 	return file_config_v1_storage_proto_rawDescData
 }
 
-var file_config_v1_storage_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_config_v1_storage_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_config_v1_storage_proto_goTypes = []any{
 	(*Migration)(nil), // 0: config.v1.Migration
 	(*Database)(nil),  // 1: config.v1.Database
 	(*Redis)(nil),     // 2: config.v1.Redis
 	(*Memcached)(nil), // 3: config.v1.Memcached
 	(*Memory)(nil),    // 4: config.v1.Memory
-	(*File)(nil),      // 5: config.v1.File
-	(*Oss)(nil),       // 6: config.v1.Oss
-	(*Mongo)(nil),     // 7: config.v1.Mongo
-	(*Cache)(nil),     // 8: config.v1.Cache
-	(*Storage)(nil),   // 9: config.v1.Storage
+	(*Mongo)(nil),     // 5: config.v1.Mongo
+	(*Cache)(nil),     // 6: config.v1.Cache
+	(*Oss)(nil),       // 7: config.v1.Oss
+	(*FileLocal)(nil), // 8: config.v1.FileLocal
+	(*FileStore)(nil), // 9: config.v1.FileStore
+	(*Storage)(nil),   // 10: config.v1.Storage
 }
 var file_config_v1_storage_proto_depIdxs = []int32{
-	0,  // 0: config.v1.Database.migration:type_name -> config.v1.Migration
-	3,  // 1: config.v1.Cache.memcached:type_name -> config.v1.Memcached
-	4,  // 2: config.v1.Cache.memory:type_name -> config.v1.Memory
-	2,  // 3: config.v1.Cache.redis:type_name -> config.v1.Redis
-	1,  // 4: config.v1.Storage.database:type_name -> config.v1.Database
-	8,  // 5: config.v1.Storage.cache:type_name -> config.v1.Cache
-	5,  // 6: config.v1.Storage.file:type_name -> config.v1.File
-	2,  // 7: config.v1.Storage.redis:type_name -> config.v1.Redis
-	7,  // 8: config.v1.Storage.mongo:type_name -> config.v1.Mongo
-	6,  // 9: config.v1.Storage.oss:type_name -> config.v1.Oss
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	0, // 0: config.v1.Database.migration:type_name -> config.v1.Migration
+	3, // 1: config.v1.Cache.memcached:type_name -> config.v1.Memcached
+	4, // 2: config.v1.Cache.memory:type_name -> config.v1.Memory
+	2, // 3: config.v1.Cache.redis:type_name -> config.v1.Redis
+	8, // 4: config.v1.FileStore.local:type_name -> config.v1.FileLocal
+	7, // 5: config.v1.FileStore.oss:type_name -> config.v1.Oss
+	1, // 6: config.v1.Storage.database:type_name -> config.v1.Database
+	6, // 7: config.v1.Storage.cache:type_name -> config.v1.Cache
+	9, // 8: config.v1.Storage.filestore:type_name -> config.v1.FileStore
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_storage_proto_init() }
@@ -1037,13 +1100,15 @@ func file_config_v1_storage_proto_init() {
 	if File_config_v1_storage_proto != nil {
 		return
 	}
+	file_config_v1_storage_proto_msgTypes[9].OneofWrappers = []any{}
+	file_config_v1_storage_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_storage_proto_rawDesc), len(file_config_v1_storage_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

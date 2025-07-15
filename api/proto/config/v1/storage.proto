@@ -12,6 +12,8 @@ option java_outer_classname = "StorageProto";
 option java_package = "com.github.origadmin.api.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
+// The message definition remains the same... (Migration, Database, Redis, Memcached, Memory, Oss, Mongo, Cache)
+
 message Migration {
   bool enabled = 1 [
     json_name = "enabled",
@@ -184,37 +186,6 @@ message Memory {
   ];
 }
 
-// File
-message File {
-  string root = 1 [
-    json_name = "root",
-    (gnostic.openapi.v3.property) = {description: "root directory"}
-  ];
-}
-
-// OSS
-message Oss {
-  string endpoint = 1 [
-    json_name = "endpoint",
-    (gnostic.openapi.v3.property) = {description: "Storage service endpoint"}
-  ];
-  string access_key_id = 2 [json_name = "access_key_id"];
-  string access_key_secret = 3 [json_name = "access_key_secret"];
-  string bucket = 4 [json_name = "bucket"];
-  string region = 5 [json_name = "region"];
-  bool ssl = 6 [json_name = "ssl"];
-  int64 connect_timeout = 7 [
-    json_name = "connect_timeout",
-    (validate.rules).int64.gte = 0,
-    (gnostic.openapi.v3.property) = {description: "Connection timeout in milliseconds"}
-  ];
-  int64 read_timeout = 8 [
-    json_name = "read_timeout",
-    (validate.rules).int64.gte = 0,
-    (gnostic.openapi.v3.property) = {description: "Read timeout in milliseconds"}
-  ];
-}
-
 // Mongo
 message Mongo {
   string uri = 1 [
@@ -273,6 +244,68 @@ message Cache {
   ];
 }
 
+// OSS defines the configuration for cloud object storage.
+message Oss {
+  string endpoint = 1 [
+    json_name = "endpoint",
+    (gnostic.openapi.v3.property) = {description: "Storage service endpoint"}
+  ];
+  string access_key_id = 2 [json_name = "access_key_id"];
+  string access_key_secret = 3 [json_name = "access_key_secret"];
+  string bucket = 4 [json_name = "bucket"];
+  string region = 5 [json_name = "region"];
+  bool ssl = 6 [json_name = "ssl"];
+  int64 connect_timeout = 7 [
+    json_name = "connect_timeout",
+    (validate.rules).int64.gte = 0,
+    (gnostic.openapi.v3.property) = {description: "Connection timeout in milliseconds"}
+  ];
+  int64 read_timeout = 8 [
+    json_name = "read_timeout",
+    (validate.rules).int64.gte = 0,
+    (gnostic.openapi.v3.property) = {description: "Read timeout in milliseconds"}
+  ];
+}
+
+// =================================================================
+//                    REFACTORED CONFIGURATION
+// =================================================================
+
+// FileLocal defines the configuration for local file system storage.
+// Renamed from 'File' to avoid ambiguity.
+message FileLocal {
+  string root = 1 [
+    json_name = "root",
+    (gnostic.openapi.v3.property) = {description: "root directory"}
+  ];
+}
+
+// FileStore groups all "file/object storage" type backends into one category.
+// It uses the 'driver' field to determine which specific implementation to use.
+message FileStore {
+  // The 'driver' field determines which configuration block (local or oss) to use.
+  // This field is crucial for ensuring JSON/YAML compatibility.
+  string driver = 1 [
+    json_name = "driver",
+    (validate.rules).string = {in: ["local", "oss"]}
+  ];
+
+  // Local file system configuration. Only effective when driver is "local".
+  // The optional keyword clearly indicates that this field may not be present.
+  optional FileLocal local = 2 [json_name = "local"];
+
+  // Cloud object storage configuration. Only effective when driver is "oss".
+  optional Oss oss = 3 [json_name = "oss"];
+
+  // Chunk size in bytes for splitting large files.
+  // For OSS, this corresponds to the multipart upload part size.
+  // For local storage, it defines the size of individual blob files.
+  // If 0 or not set, a reasonable default (e.g., 4MB) will be used by the implementation.
+  int64 chunk_size = 4 [json_name = "chunk_size"];
+}
+
+
+// Storage is the top-level configuration, and its structure is now compatible with all parsers.
 message Storage {
   string name = 1 [
     json_name = "name",
@@ -280,52 +313,18 @@ message Storage {
     (gnostic.openapi.v3.property) = {description: "Unique identifier for the storage configuration"}
   ];
 
-  // Type
+  // The 'type' field determines which storage backend to use (database, cache, or filestore).
   string type = 2 [
     json_name = "type",
-    (validate.rules).string = {
-      in: [
-        "none",
-        "file",
-        "redis",
-        "mongo",
-        "oss",
-        "database",
-        "cache"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "storage type"}
+    (validate.rules).string = {in: ["database", "cache", "filestore"]}
   ];
 
-  // Database
-  Database database = 3 [
-    json_name = "database",
-    (gnostic.openapi.v3.property) = {description: "database configuration"}
-  ];
-  // Cache
-  Cache cache = 4 [
-    json_name = "cache",
-    (gnostic.openapi.v3.property) = {description: "cache configuration"}
-  ];
+  // Database backend configuration. Only effective when type is "database".
+  optional Database database = 3 [json_name = "database"];
 
-  // File
-  File file = 10 [
-    json_name = "file",
-    (gnostic.openapi.v3.property) = {description: "file storage configuration"}
-  ];
-  // Redis
-  Redis redis = 11 [
-    json_name = "redis",
-    (gnostic.openapi.v3.property) = {description: "redis storage configuration"}
-  ];
-  // Mongo
-  Mongo mongo = 13 [
-    json_name = "mongo",
-    (gnostic.openapi.v3.property) = {description: "mongo storage configuration"}
-  ];
-  // OSS
-  Oss oss = 14 [
-    json_name = "oss",
-    (gnostic.openapi.v3.property) = {description: "oss storage configuration"}
-  ];
+  // Cache backend configuration. Only effective when type is "cache".
+  optional Cache cache = 4 [json_name = "cache"];
+
+  // File storage backend configuration. Only effective when type is "filestore".
+  optional FileStore filestore = 5 [json_name = "filestore"];
 }

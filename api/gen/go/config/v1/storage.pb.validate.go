@@ -671,238 +671,6 @@ var _ interface {
 	ErrorName() string
 } = MemoryValidationError{}
 
-// Validate checks the field values on File with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
-func (m *File) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on File with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in FileMultiError, or nil if none found.
-func (m *File) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *File) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Root
-
-	if len(errors) > 0 {
-		return FileMultiError(errors)
-	}
-
-	return nil
-}
-
-// FileMultiError is an error wrapping multiple validation errors returned by
-// File.ValidateAll() if the designated constraints aren't met.
-type FileMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m FileMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m FileMultiError) AllErrors() []error { return m }
-
-// FileValidationError is the validation error returned by File.Validate if the
-// designated constraints aren't met.
-type FileValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e FileValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e FileValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e FileValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e FileValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e FileValidationError) ErrorName() string { return "FileValidationError" }
-
-// Error satisfies the builtin error interface
-func (e FileValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sFile.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = FileValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = FileValidationError{}
-
-// Validate checks the field values on Oss with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
-func (m *Oss) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Oss with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in OssMultiError, or nil if none found.
-func (m *Oss) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Oss) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Endpoint
-
-	// no validation rules for AccessKeyId
-
-	// no validation rules for AccessKeySecret
-
-	// no validation rules for Bucket
-
-	// no validation rules for Region
-
-	// no validation rules for Ssl
-
-	if m.GetConnectTimeout() < 0 {
-		err := OssValidationError{
-			field:  "ConnectTimeout",
-			reason: "value must be greater than or equal to 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if m.GetReadTimeout() < 0 {
-		err := OssValidationError{
-			field:  "ReadTimeout",
-			reason: "value must be greater than or equal to 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return OssMultiError(errors)
-	}
-
-	return nil
-}
-
-// OssMultiError is an error wrapping multiple validation errors returned by
-// Oss.ValidateAll() if the designated constraints aren't met.
-type OssMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m OssMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m OssMultiError) AllErrors() []error { return m }
-
-// OssValidationError is the validation error returned by Oss.Validate if the
-// designated constraints aren't met.
-type OssValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e OssValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e OssValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e OssValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e OssValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e OssValidationError) ErrorName() string { return "OssValidationError" }
-
-// Error satisfies the builtin error interface
-func (e OssValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sOss.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = OssValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = OssValidationError{}
-
 // Validate checks the field values on Mongo with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -1231,6 +999,422 @@ var _Cache_Driver_InLookup = map[string]struct{}{
 	"memory":    {},
 }
 
+// Validate checks the field values on Oss with the rules defined in the proto
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
+func (m *Oss) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Oss with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in OssMultiError, or nil if none found.
+func (m *Oss) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Oss) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Endpoint
+
+	// no validation rules for AccessKeyId
+
+	// no validation rules for AccessKeySecret
+
+	// no validation rules for Bucket
+
+	// no validation rules for Region
+
+	// no validation rules for Ssl
+
+	if m.GetConnectTimeout() < 0 {
+		err := OssValidationError{
+			field:  "ConnectTimeout",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetReadTimeout() < 0 {
+		err := OssValidationError{
+			field:  "ReadTimeout",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return OssMultiError(errors)
+	}
+
+	return nil
+}
+
+// OssMultiError is an error wrapping multiple validation errors returned by
+// Oss.ValidateAll() if the designated constraints aren't met.
+type OssMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m OssMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m OssMultiError) AllErrors() []error { return m }
+
+// OssValidationError is the validation error returned by Oss.Validate if the
+// designated constraints aren't met.
+type OssValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e OssValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e OssValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e OssValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e OssValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e OssValidationError) ErrorName() string { return "OssValidationError" }
+
+// Error satisfies the builtin error interface
+func (e OssValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sOss.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = OssValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = OssValidationError{}
+
+// Validate checks the field values on FileLocal with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *FileLocal) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FileLocal with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FileLocalMultiError, or nil
+// if none found.
+func (m *FileLocal) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FileLocal) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Root
+
+	if len(errors) > 0 {
+		return FileLocalMultiError(errors)
+	}
+
+	return nil
+}
+
+// FileLocalMultiError is an error wrapping multiple validation errors returned
+// by FileLocal.ValidateAll() if the designated constraints aren't met.
+type FileLocalMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FileLocalMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FileLocalMultiError) AllErrors() []error { return m }
+
+// FileLocalValidationError is the validation error returned by
+// FileLocal.Validate if the designated constraints aren't met.
+type FileLocalValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FileLocalValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FileLocalValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FileLocalValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FileLocalValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FileLocalValidationError) ErrorName() string { return "FileLocalValidationError" }
+
+// Error satisfies the builtin error interface
+func (e FileLocalValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFileLocal.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FileLocalValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FileLocalValidationError{}
+
+// Validate checks the field values on FileStore with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *FileStore) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FileStore with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FileStoreMultiError, or nil
+// if none found.
+func (m *FileStore) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FileStore) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if _, ok := _FileStore_Driver_InLookup[m.GetDriver()]; !ok {
+		err := FileStoreValidationError{
+			field:  "Driver",
+			reason: "value must be in list [local oss]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for ChunkSize
+
+	if m.Local != nil {
+
+		if all {
+			switch v := interface{}(m.GetLocal()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, FileStoreValidationError{
+						field:  "Local",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, FileStoreValidationError{
+						field:  "Local",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetLocal()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return FileStoreValidationError{
+					field:  "Local",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Oss != nil {
+
+		if all {
+			switch v := interface{}(m.GetOss()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, FileStoreValidationError{
+						field:  "Oss",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, FileStoreValidationError{
+						field:  "Oss",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetOss()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return FileStoreValidationError{
+					field:  "Oss",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return FileStoreMultiError(errors)
+	}
+
+	return nil
+}
+
+// FileStoreMultiError is an error wrapping multiple validation errors returned
+// by FileStore.ValidateAll() if the designated constraints aren't met.
+type FileStoreMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FileStoreMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FileStoreMultiError) AllErrors() []error { return m }
+
+// FileStoreValidationError is the validation error returned by
+// FileStore.Validate if the designated constraints aren't met.
+type FileStoreValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FileStoreValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FileStoreValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FileStoreValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FileStoreValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FileStoreValidationError) ErrorName() string { return "FileStoreValidationError" }
+
+// Error satisfies the builtin error interface
+func (e FileStoreValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFileStore.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FileStoreValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FileStoreValidationError{}
+
+var _FileStore_Driver_InLookup = map[string]struct{}{
+	"local": {},
+	"oss":   {},
+}
+
 // Validate checks the field values on Storage with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -1266,7 +1450,7 @@ func (m *Storage) validate(all bool) error {
 	if _, ok := _Storage_Type_InLookup[m.GetType()]; !ok {
 		err := StorageValidationError{
 			field:  "Type",
-			reason: "value must be in list [none file redis mongo oss database cache]",
+			reason: "value must be in list [database cache filestore]",
 		}
 		if !all {
 			return err
@@ -1274,178 +1458,103 @@ func (m *Storage) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if all {
-		switch v := interface{}(m.GetDatabase()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StorageValidationError{
+	if m.Database != nil {
+
+		if all {
+			switch v := interface{}(m.GetDatabase()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, StorageValidationError{
+						field:  "Database",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, StorageValidationError{
+						field:  "Database",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDatabase()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return StorageValidationError{
 					field:  "Database",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Database",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetDatabase()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StorageValidationError{
-				field:  "Database",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
 	}
 
-	if all {
-		switch v := interface{}(m.GetCache()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StorageValidationError{
+	if m.Cache != nil {
+
+		if all {
+			switch v := interface{}(m.GetCache()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, StorageValidationError{
+						field:  "Cache",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, StorageValidationError{
+						field:  "Cache",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCache()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return StorageValidationError{
 					field:  "Cache",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Cache",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetCache()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StorageValidationError{
-				field:  "Cache",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
 	}
 
-	if all {
-		switch v := interface{}(m.GetFile()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "File",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "File",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetFile()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StorageValidationError{
-				field:  "File",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	if m.Filestore != nil {
 
-	if all {
-		switch v := interface{}(m.GetRedis()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Redis",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+		if all {
+			switch v := interface{}(m.GetFilestore()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, StorageValidationError{
+						field:  "Filestore",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, StorageValidationError{
+						field:  "Filestore",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(m.GetFilestore()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Redis",
+				return StorageValidationError{
+					field:  "Filestore",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetRedis()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StorageValidationError{
-				field:  "Redis",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
-	if all {
-		switch v := interface{}(m.GetMongo()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Mongo",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Mongo",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMongo()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StorageValidationError{
-				field:  "Mongo",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetOss()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Oss",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StorageValidationError{
-					field:  "Oss",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetOss()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StorageValidationError{
-				field:  "Oss",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
 	}
 
 	if len(errors) > 0 {
@@ -1526,11 +1635,7 @@ var _ interface {
 } = StorageValidationError{}
 
 var _Storage_Type_InLookup = map[string]struct{}{
-	"none":     {},
-	"file":     {},
-	"redis":    {},
-	"mongo":    {},
-	"oss":      {},
-	"database": {},
-	"cache":    {},
+	"database":  {},
+	"cache":     {},
+	"filestore": {},
 }
