@@ -203,36 +203,39 @@ func downloadZipHandler(fs storage.FileOperations) gin.HandlerFunc {
 		zipWriter := zip.NewWriter(c.Writer)
 		defer zipWriter.Close()
 
+		// Helper function to add a file to the zip; defined outside the loop for clarity.
+		addFile := func(filePath string) error {
+			file, err := fs.Read(filePath)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			info, err := fs.Stat(filePath)
+			if err != nil {
+				return err
+			}
+
+			header := &zip.FileHeader{
+				Name:     strings.TrimPrefix(filePath, "/"),
+				Method:   zip.Deflate,
+				Modified: info.ModTime,
+			}
+
+			writer, err := zipWriter.CreateHeader(header)
+			if err != nil {
+				return err
+			}
+
+			_, err = io.Copy(writer, file)
+			return err
+		}
+
 		for _, p := range selectedFiles {
 			filePath := path.Clean(p) // Normalize path
-			if err := func() error {
-				file, err := fs.Read(filePath)
-				if err != nil {
-					return err
-				}
-				defer file.Close()
-
-				info, err := fs.Stat(filePath)
-				if err != nil {
-					return err
-				}
-
-				header := &zip.FileHeader{
-					Name:     strings.TrimPrefix(filePath, "/"),
-					Method:   zip.Deflate,
-					Modified: info.ModTime,
-				}
-
-				writer, err := zipWriter.CreateHeader(header)
-				if err != nil {
-					return err
-				}
-
-				_, err = io.Copy(writer, file)
-				return err
-			}(); err != nil {
+			if err := addFile(filePath); err != nil {
 				log.Printf("Failed to add file %s to zip: %v", filePath, err)
-				continue // Continue to the next file if there was an error with this one
+				continue // Continue to the next file
 			}
 		}
 	}
