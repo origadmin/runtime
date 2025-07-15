@@ -203,38 +203,36 @@ func downloadZipHandler(fs storage.FileOperations) gin.HandlerFunc {
 		zipWriter := zip.NewWriter(c.Writer)
 		defer zipWriter.Close()
 
-		for _, filePath := range selectedFiles {
-			filePath = path.Clean(filePath) // Normalize path
+		for _, p := range selectedFiles {
+			filePath := path.Clean(p) // Normalize path
+			if err := func() error {
+				file, err := fs.Read(filePath)
+				if err != nil {
+					return err
+				}
+				defer file.Close()
 
-			file, err := fs.Read(filePath)
-			if err != nil {
-				log.Printf("Error opening file %s for zip: %v", filePath, err)
-				continue // Skip this file, but continue with others
-			}
-			defer file.Close()
+				info, err := fs.Stat(filePath)
+				if err != nil {
+					return err
+				}
 
-			info, err := fs.Stat(filePath)
-			if err != nil {
-				log.Printf("Error getting file info for %s: %v", filePath, err)
-				continue
-			}
+				header := &zip.FileHeader{
+					Name:     strings.TrimPrefix(filePath, "/"),
+					Method:   zip.Deflate,
+					Modified: info.ModTime,
+				}
 
-			header := &zip.FileHeader{
-				Name:     strings.TrimPrefix(filePath, "/"),
-				Method:   zip.Deflate,
-				Modified: info.ModTime,
-			}
+				writer, err := zipWriter.CreateHeader(header)
+				if err != nil {
+					return err
+				}
 
-			writer, err := zipWriter.CreateHeader(header)
-			if err != nil {
-				log.Printf("Error creating zip header for %s: %v", filePath, err)
-				continue
-			}
-
-			_, err = io.Copy(writer, file)
-			if err != nil {
-				log.Printf("Error writing file %s to zip: %v", filePath, err)
-				continue
+				_, err = io.Copy(writer, file)
+				return err
+			}(); err != nil {
+				log.Printf("Failed to add file %s to zip: %v", filePath, err)
+				continue // Continue to the next file if there was an error with this one
 			}
 		}
 	}
