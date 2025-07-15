@@ -31,8 +31,8 @@ type Manage struct {
 	indexPath string // Base path for index data
 }
 
-// NewManage creates a new Manage.
-func NewManage(indexPath string, metaStore metaiface.Store) (*Manage, error) {
+// NewManager creates a new Manage.
+func NewManager(indexPath string, metaStore metaiface.Store) (index.Manager, error) {
 	// Ensure the index path exists
 	if err := os.MkdirAll(indexPath, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create index path: %w", err)

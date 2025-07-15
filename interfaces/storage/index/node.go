@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+var (
+	// ErrNodeNotFound is returned when a node is not found in the index.
+	ErrNodeNotFound = fs.ErrNotExist
+)
+
 // Node represents a single entry in the file system index.
 // It can be a file, a directory, or other types like a symlink.
 type Node struct {

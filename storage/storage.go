@@ -3,7 +3,11 @@ package storage
 import (
 	"fmt"
 	"io"
+	"os"
+	"path"
 	"path/filepath"
+
+	"github.com/origadmin/toolkits/errors"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
@@ -169,15 +173,26 @@ func (s *storage) Delete(path string) error {
 
 // Rename moves or renames a file or directory.
 func (s *storage) Rename(oldPath, newPath string) error {
+	oldNode, err := s.index.GetNodeByPath(oldPath)
+	if err != nil {
+		return err
+	}
+
+	newPath = path.Dir(newPath)
+	newNode, err := s.index.GetNodeByPath(newPath)
+	if err != nil && errors.Is(err, indexiface.ErrNodeNotFound) {
+		return err
+	}
+
 	// Renaming is a pure index operation. The file content itself (and its metaID) is not touched.
-	return s.index.Rename(oldPath, newPath)
+	return s.index.MoveNode(oldNode.NodeID, newNode.NodeID, newNode.Name)
 }
 
 // Write creates a new file at the given path with the content from the reader.
 func (s *storage) Write(path string, data io.Reader, size int64) error {
 	// 1. Write the content stream to the metaStore. It handles chunking and blob storage,
 	// returning metadata (including a unique ID) for the stored content.
-	fileMeta, err := s.metaStore.Create(data, size)
+	err := s.metaStore.WriteFile(path, data, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("failed to write file content: %w", err)
 	}
