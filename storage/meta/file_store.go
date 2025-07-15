@@ -55,7 +55,7 @@ func (s *FileMetaStore) Create(fileMeta meta.FileMeta) (string, error) {
 		if !ok {
 			return "", fmt.Errorf("expected FileMetaV2 for version %d, got %T", metav2.Version, fileMeta)
 		}
-				fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
+		fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Version: metav2.Version,
 			Data:    actualFileMeta,
 		}
@@ -130,7 +130,7 @@ func (s *FileMetaStore) Update(id string, fileMeta metaiface.FileMeta) error {
 		if !ok {
 			return fmt.Errorf("expected FileMetaV2 for version %d, got %T", metav2.Version, fileMeta)
 		}
-				fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
+		fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
 			Version: metav2.Version,
 			Data:    actualFileMeta,
 		}

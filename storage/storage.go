@@ -8,7 +8,6 @@ import (
 	blobimpl "github.com/origadmin/runtime/storage/blob"
 	contentimpl "github.com/origadmin/runtime/storage/content"
 	indeximpl "github.com/origadmin/runtime/storage/index"
-	layoutimpl "github.com/origadmin/runtime/storage/layout"
 	metaimpl "github.com/origadmin/runtime/storage/meta"
 )
 
@@ -43,10 +42,7 @@ func New(cfg Config) (*Storage, error) {
 	indexPath := filepath.Join(cfg.BasePath, "index")
 
 	// 2. Instantiate Blob Store
-	blobStore, err := blobimpl.New(blobBasePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create blob store: %w", err)
-	}
+	blobStore := blobimpl.New(blobBasePath)
 
 	// 3. Instantiate Content Assembler
 	contentAssembler := contentimpl.New(blobStore)
