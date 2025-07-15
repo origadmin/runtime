@@ -19,13 +19,13 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationStorageServiceDelete = "/runtime.storage.v1.StorageService/Delete"
-const OperationStorageServiceFinalizeUpload = "/runtime.storage.v1.StorageService/FinalizeUpload"
-const OperationStorageServiceInitiateUpload = "/runtime.storage.v1.StorageService/InitiateUpload"
-const OperationStorageServiceList = "/runtime.storage.v1.StorageService/List"
-const OperationStorageServiceMkdir = "/runtime.storage.v1.StorageService/Mkdir"
-const OperationStorageServiceRename = "/runtime.storage.v1.StorageService/Rename"
-const OperationStorageServiceStat = "/runtime.storage.v1.StorageService/Stat"
+const OperationStorageServiceDelete = "/storage.v1.StorageService/Delete"
+const OperationStorageServiceFinalizeUpload = "/storage.v1.StorageService/FinalizeUpload"
+const OperationStorageServiceInitiateUpload = "/storage.v1.StorageService/InitiateUpload"
+const OperationStorageServiceList = "/storage.v1.StorageService/List"
+const OperationStorageServiceMkdir = "/storage.v1.StorageService/Mkdir"
+const OperationStorageServiceRename = "/storage.v1.StorageService/Rename"
+const OperationStorageServiceStat = "/storage.v1.StorageService/Stat"
 
 type StorageServiceHTTPServer interface {
 	// Delete Delete a file or directory.

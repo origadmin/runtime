@@ -1180,7 +1180,8 @@ var File_storage_v1_fs_proto protoreflect.FileDescriptor
 
 const file_storage_v1_fs_proto_rawDesc = "" +
 	"\n" +
-	"\x13storage/v1/fs.proto\x12\x12runtime.storage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x94\x01\n" +
+	"\x13storage/v1/fs.proto\x12\n" +
+	"storage.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x94\x01\n" +
 	"\bFileInfo\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04path\x18\x02 \x01(\tR\x04path\x12\x15\n" +
@@ -1188,13 +1189,13 @@ const file_storage_v1_fs_proto_rawDesc = "" +
 	"\x04size\x18\x04 \x01(\x03R\x04size\x125\n" +
 	"\bmod_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\amodTime\"!\n" +
 	"\vListRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\"B\n" +
-	"\fListResponse\x122\n" +
-	"\x05files\x18\x01 \x03(\v2\x1c.runtime.storage.v1.FileInfoR\x05files\"!\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path\":\n" +
+	"\fListResponse\x12*\n" +
+	"\x05files\x18\x01 \x03(\v2\x14.storage.v1.FileInfoR\x05files\"!\n" +
 	"\vStatRequest\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\"@\n" +
-	"\fStatResponse\x120\n" +
-	"\x04file\x18\x01 \x01(\v2\x1c.runtime.storage.v1.FileInfoR\x04file\"\"\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path\"8\n" +
+	"\fStatResponse\x12(\n" +
+	"\x04file\x18\x01 \x01(\v2\x14.storage.v1.FileInfoR\x04file\"\"\n" +
 	"\fMkdirRequest\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\"\x0f\n" +
 	"\rMkdirResponse\"A\n" +
@@ -1209,9 +1210,9 @@ const file_storage_v1_fs_proto_rawDesc = "" +
 	"\vReadRequest\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\"$\n" +
 	"\fReadResponse\x12\x14\n" +
-	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"v\n" +
-	"\fWriteRequest\x12F\n" +
-	"\bmetadata\x18\x01 \x01(\v2(.runtime.storage.v1.WriteRequestMetadataH\x00R\bmetadata\x12\x16\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"n\n" +
+	"\fWriteRequest\x12>\n" +
+	"\bmetadata\x18\x01 \x01(\v2 .storage.v1.WriteRequestMetadataH\x00R\bmetadata\x12\x16\n" +
 	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +
 	"\x04data\"*\n" +
 	"\x14WriteRequestMetadata\x12\x12\n" +
@@ -1222,9 +1223,9 @@ const file_storage_v1_fs_proto_rawDesc = "" +
 	"\x15InitiateUploadRequest\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\"5\n" +
 	"\x16InitiateUploadResponse\x12\x1b\n" +
-	"\tupload_id\x18\x01 \x01(\tR\buploadId\"{\n" +
-	"\x12UploadChunkRequest\x12E\n" +
-	"\bmetadata\x18\x01 \x01(\v2'.runtime.storage.v1.UploadChunkMetadataH\x00R\bmetadata\x12\x16\n" +
+	"\tupload_id\x18\x01 \x01(\tR\buploadId\"s\n" +
+	"\x12UploadChunkRequest\x12=\n" +
+	"\bmetadata\x18\x01 \x01(\v2\x1f.storage.v1.UploadChunkMetadataH\x00R\bmetadata\x12\x16\n" +
 	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +
 	"\x04data\"J\n" +
 	"\x13UploadChunkMetadata\x12\x1b\n" +
@@ -1235,21 +1236,23 @@ const file_storage_v1_fs_proto_rawDesc = "" +
 	"\fwritten_size\x18\x02 \x01(\x03R\vwrittenSize\"[\n" +
 	"\x15FinalizeUploadRequest\x12\x1b\n" +
 	"\tupload_id\x18\x01 \x01(\tR\buploadId\x12%\n" +
-	"\x0econtent_sha256\x18\x02 \x01(\tR\rcontentSha256\"J\n" +
-	"\x16FinalizeUploadResponse\x120\n" +
-	"\x04file\x18\x01 \x01(\v2\x1c.runtime.storage.v1.FileInfoR\x04file2\xe9\b\n" +
-	"\x0eStorageService\x12c\n" +
-	"\x04List\x12\x1f.runtime.storage.v1.ListRequest\x1a .runtime.storage.v1.ListResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/storage/list\x12c\n" +
-	"\x04Stat\x12\x1f.runtime.storage.v1.StatRequest\x1a .runtime.storage.v1.StatResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/storage/stat\x12j\n" +
-	"\x05Mkdir\x12 .runtime.storage.v1.MkdirRequest\x1a!.runtime.storage.v1.MkdirResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/storage/mkdir\x12n\n" +
-	"\x06Delete\x12!.runtime.storage.v1.DeleteRequest\x1a\".runtime.storage.v1.DeleteResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/storage/delete\x12n\n" +
-	"\x06Rename\x12!.runtime.storage.v1.RenameRequest\x1a\".runtime.storage.v1.RenameResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/storage/rename\x12e\n" +
-	"\x04Read\x12\x1f.runtime.storage.v1.ReadRequest\x1a .runtime.storage.v1.ReadResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/storage/read0\x01\x12P\n" +
-	"\x05Write\x12 .runtime.storage.v1.WriteRequest\x1a!.runtime.storage.v1.WriteResponse\"\x00(\x01\x12\x90\x01\n" +
-	"\x0eInitiateUpload\x12).runtime.storage.v1.InitiateUploadRequest\x1a*.runtime.storage.v1.InitiateUploadResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/v1/storage/uploads:initiate\x12b\n" +
-	"\vUploadChunk\x12&.runtime.storage.v1.UploadChunkRequest\x1a'.runtime.storage.v1.UploadChunkResponse\"\x00(\x01\x12\x90\x01\n" +
-	"\x0eFinalizeUpload\x12).runtime.storage.v1.FinalizeUploadRequest\x1a*.runtime.storage.v1.FinalizeUploadResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/v1/storage/uploads:finalizeB\xc9\x01\n" +
-	"\x16com.runtime.storage.v1B\aFsProtoP\x01Z<github.com/origadmin/runtime/api/gen/go/storage/v1;storagev1\xa2\x02\x03RSX\xaa\x02\x12Runtime.Storage.V1\xca\x02\x12Runtime\\Storage\\V1\xe2\x02\x1eRuntime\\Storage\\V1\\GPBMetadata\xea\x02\x14Runtime::Storage::V1b\x06proto3"
+	"\x0econtent_sha256\x18\x02 \x01(\tR\rcontentSha256\"B\n" +
+	"\x16FinalizeUploadResponse\x12(\n" +
+	"\x04file\x18\x01 \x01(\v2\x14.storage.v1.FileInfoR\x04file2\xc9\a\n" +
+	"\x0eStorageService\x12S\n" +
+	"\x04List\x12\x17.storage.v1.ListRequest\x1a\x18.storage.v1.ListResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/storage/list\x12S\n" +
+	"\x04Stat\x12\x17.storage.v1.StatRequest\x1a\x18.storage.v1.StatResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/storage/stat\x12Z\n" +
+	"\x05Mkdir\x12\x18.storage.v1.MkdirRequest\x1a\x19.storage.v1.MkdirResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/storage/mkdir\x12^\n" +
+	"\x06Delete\x12\x19.storage.v1.DeleteRequest\x1a\x1a.storage.v1.DeleteResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/storage/delete\x12^\n" +
+	"\x06Rename\x12\x19.storage.v1.RenameRequest\x1a\x1a.storage.v1.RenameResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/v1/storage/rename\x12U\n" +
+	"\x04Read\x12\x17.storage.v1.ReadRequest\x1a\x18.storage.v1.ReadResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/storage/read0\x01\x12@\n" +
+	"\x05Write\x12\x18.storage.v1.WriteRequest\x1a\x19.storage.v1.WriteResponse\"\x00(\x01\x12\x80\x01\n" +
+	"\x0eInitiateUpload\x12!.storage.v1.InitiateUploadRequest\x1a\".storage.v1.InitiateUploadResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/v1/storage/uploads:initiate\x12R\n" +
+	"\vUploadChunk\x12\x1e.storage.v1.UploadChunkRequest\x1a\x1f.storage.v1.UploadChunkResponse\"\x00(\x01\x12\x80\x01\n" +
+	"\x0eFinalizeUpload\x12!.storage.v1.FinalizeUploadRequest\x1a\".storage.v1.FinalizeUploadResponse\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/v1/storage/uploads:finalizeB\xa0\x01\n" +
+	"\x0ecom.storage.v1B\aFsProtoP\x01Z<github.com/origadmin/runtime/api/gen/go/storage/v1;storagev1\xa2\x02\x03SXX\xaa\x02\n" +
+	"Storage.V1\xca\x02\n" +
+	"Storage\\V1\xe2\x02\x16Storage\\V1\\GPBMetadata\xea\x02\vStorage::V1b\x06proto3"
 
 var (
 	file_storage_v1_fs_proto_rawDescOnce sync.Once
@@ -1265,58 +1268,58 @@ func file_storage_v1_fs_proto_rawDescGZIP() []byte {
 
 var file_storage_v1_fs_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_storage_v1_fs_proto_goTypes = []any{
-	(*FileInfo)(nil),               // 0: runtime.storage.v1.FileInfo
-	(*ListRequest)(nil),            // 1: runtime.storage.v1.ListRequest
-	(*ListResponse)(nil),           // 2: runtime.storage.v1.ListResponse
-	(*StatRequest)(nil),            // 3: runtime.storage.v1.StatRequest
-	(*StatResponse)(nil),           // 4: runtime.storage.v1.StatResponse
-	(*MkdirRequest)(nil),           // 5: runtime.storage.v1.MkdirRequest
-	(*MkdirResponse)(nil),          // 6: runtime.storage.v1.MkdirResponse
-	(*DeleteRequest)(nil),          // 7: runtime.storage.v1.DeleteRequest
-	(*DeleteResponse)(nil),         // 8: runtime.storage.v1.DeleteResponse
-	(*RenameRequest)(nil),          // 9: runtime.storage.v1.RenameRequest
-	(*RenameResponse)(nil),         // 10: runtime.storage.v1.RenameResponse
-	(*ReadRequest)(nil),            // 11: runtime.storage.v1.ReadRequest
-	(*ReadResponse)(nil),           // 12: runtime.storage.v1.ReadResponse
-	(*WriteRequest)(nil),           // 13: runtime.storage.v1.WriteRequest
-	(*WriteRequestMetadata)(nil),   // 14: runtime.storage.v1.WriteRequestMetadata
-	(*WriteResponse)(nil),          // 15: runtime.storage.v1.WriteResponse
-	(*InitiateUploadRequest)(nil),  // 16: runtime.storage.v1.InitiateUploadRequest
-	(*InitiateUploadResponse)(nil), // 17: runtime.storage.v1.InitiateUploadResponse
-	(*UploadChunkRequest)(nil),     // 18: runtime.storage.v1.UploadChunkRequest
-	(*UploadChunkMetadata)(nil),    // 19: runtime.storage.v1.UploadChunkMetadata
-	(*UploadChunkResponse)(nil),    // 20: runtime.storage.v1.UploadChunkResponse
-	(*FinalizeUploadRequest)(nil),  // 21: runtime.storage.v1.FinalizeUploadRequest
-	(*FinalizeUploadResponse)(nil), // 22: runtime.storage.v1.FinalizeUploadResponse
+	(*FileInfo)(nil),               // 0: storage.v1.FileInfo
+	(*ListRequest)(nil),            // 1: storage.v1.ListRequest
+	(*ListResponse)(nil),           // 2: storage.v1.ListResponse
+	(*StatRequest)(nil),            // 3: storage.v1.StatRequest
+	(*StatResponse)(nil),           // 4: storage.v1.StatResponse
+	(*MkdirRequest)(nil),           // 5: storage.v1.MkdirRequest
+	(*MkdirResponse)(nil),          // 6: storage.v1.MkdirResponse
+	(*DeleteRequest)(nil),          // 7: storage.v1.DeleteRequest
+	(*DeleteResponse)(nil),         // 8: storage.v1.DeleteResponse
+	(*RenameRequest)(nil),          // 9: storage.v1.RenameRequest
+	(*RenameResponse)(nil),         // 10: storage.v1.RenameResponse
+	(*ReadRequest)(nil),            // 11: storage.v1.ReadRequest
+	(*ReadResponse)(nil),           // 12: storage.v1.ReadResponse
+	(*WriteRequest)(nil),           // 13: storage.v1.WriteRequest
+	(*WriteRequestMetadata)(nil),   // 14: storage.v1.WriteRequestMetadata
+	(*WriteResponse)(nil),          // 15: storage.v1.WriteResponse
+	(*InitiateUploadRequest)(nil),  // 16: storage.v1.InitiateUploadRequest
+	(*InitiateUploadResponse)(nil), // 17: storage.v1.InitiateUploadResponse
+	(*UploadChunkRequest)(nil),     // 18: storage.v1.UploadChunkRequest
+	(*UploadChunkMetadata)(nil),    // 19: storage.v1.UploadChunkMetadata
+	(*UploadChunkResponse)(nil),    // 20: storage.v1.UploadChunkResponse
+	(*FinalizeUploadRequest)(nil),  // 21: storage.v1.FinalizeUploadRequest
+	(*FinalizeUploadResponse)(nil), // 22: storage.v1.FinalizeUploadResponse
 	(*timestamppb.Timestamp)(nil),  // 23: google.protobuf.Timestamp
 }
 var file_storage_v1_fs_proto_depIdxs = []int32{
-	23, // 0: runtime.storage.v1.FileInfo.mod_time:type_name -> google.protobuf.Timestamp
-	0,  // 1: runtime.storage.v1.ListResponse.files:type_name -> runtime.storage.v1.FileInfo
-	0,  // 2: runtime.storage.v1.StatResponse.file:type_name -> runtime.storage.v1.FileInfo
-	14, // 3: runtime.storage.v1.WriteRequest.metadata:type_name -> runtime.storage.v1.WriteRequestMetadata
-	19, // 4: runtime.storage.v1.UploadChunkRequest.metadata:type_name -> runtime.storage.v1.UploadChunkMetadata
-	0,  // 5: runtime.storage.v1.FinalizeUploadResponse.file:type_name -> runtime.storage.v1.FileInfo
-	1,  // 6: runtime.storage.v1.StorageService.List:input_type -> runtime.storage.v1.ListRequest
-	3,  // 7: runtime.storage.v1.StorageService.Stat:input_type -> runtime.storage.v1.StatRequest
-	5,  // 8: runtime.storage.v1.StorageService.Mkdir:input_type -> runtime.storage.v1.MkdirRequest
-	7,  // 9: runtime.storage.v1.StorageService.Delete:input_type -> runtime.storage.v1.DeleteRequest
-	9,  // 10: runtime.storage.v1.StorageService.Rename:input_type -> runtime.storage.v1.RenameRequest
-	11, // 11: runtime.storage.v1.StorageService.Read:input_type -> runtime.storage.v1.ReadRequest
-	13, // 12: runtime.storage.v1.StorageService.Write:input_type -> runtime.storage.v1.WriteRequest
-	16, // 13: runtime.storage.v1.StorageService.InitiateUpload:input_type -> runtime.storage.v1.InitiateUploadRequest
-	18, // 14: runtime.storage.v1.StorageService.UploadChunk:input_type -> runtime.storage.v1.UploadChunkRequest
-	21, // 15: runtime.storage.v1.StorageService.FinalizeUpload:input_type -> runtime.storage.v1.FinalizeUploadRequest
-	2,  // 16: runtime.storage.v1.StorageService.List:output_type -> runtime.storage.v1.ListResponse
-	4,  // 17: runtime.storage.v1.StorageService.Stat:output_type -> runtime.storage.v1.StatResponse
-	6,  // 18: runtime.storage.v1.StorageService.Mkdir:output_type -> runtime.storage.v1.MkdirResponse
-	8,  // 19: runtime.storage.v1.StorageService.Delete:output_type -> runtime.storage.v1.DeleteResponse
-	10, // 20: runtime.storage.v1.StorageService.Rename:output_type -> runtime.storage.v1.RenameResponse
-	12, // 21: runtime.storage.v1.StorageService.Read:output_type -> runtime.storage.v1.ReadResponse
-	15, // 22: runtime.storage.v1.StorageService.Write:output_type -> runtime.storage.v1.WriteResponse
-	17, // 23: runtime.storage.v1.StorageService.InitiateUpload:output_type -> runtime.storage.v1.InitiateUploadResponse
-	20, // 24: runtime.storage.v1.StorageService.UploadChunk:output_type -> runtime.storage.v1.UploadChunkResponse
-	22, // 25: runtime.storage.v1.StorageService.FinalizeUpload:output_type -> runtime.storage.v1.FinalizeUploadResponse
+	23, // 0: storage.v1.FileInfo.mod_time:type_name -> google.protobuf.Timestamp
+	0,  // 1: storage.v1.ListResponse.files:type_name -> storage.v1.FileInfo
+	0,  // 2: storage.v1.StatResponse.file:type_name -> storage.v1.FileInfo
+	14, // 3: storage.v1.WriteRequest.metadata:type_name -> storage.v1.WriteRequestMetadata
+	19, // 4: storage.v1.UploadChunkRequest.metadata:type_name -> storage.v1.UploadChunkMetadata
+	0,  // 5: storage.v1.FinalizeUploadResponse.file:type_name -> storage.v1.FileInfo
+	1,  // 6: storage.v1.StorageService.List:input_type -> storage.v1.ListRequest
+	3,  // 7: storage.v1.StorageService.Stat:input_type -> storage.v1.StatRequest
+	5,  // 8: storage.v1.StorageService.Mkdir:input_type -> storage.v1.MkdirRequest
+	7,  // 9: storage.v1.StorageService.Delete:input_type -> storage.v1.DeleteRequest
+	9,  // 10: storage.v1.StorageService.Rename:input_type -> storage.v1.RenameRequest
+	11, // 11: storage.v1.StorageService.Read:input_type -> storage.v1.ReadRequest
+	13, // 12: storage.v1.StorageService.Write:input_type -> storage.v1.WriteRequest
+	16, // 13: storage.v1.StorageService.InitiateUpload:input_type -> storage.v1.InitiateUploadRequest
+	18, // 14: storage.v1.StorageService.UploadChunk:input_type -> storage.v1.UploadChunkRequest
+	21, // 15: storage.v1.StorageService.FinalizeUpload:input_type -> storage.v1.FinalizeUploadRequest
+	2,  // 16: storage.v1.StorageService.List:output_type -> storage.v1.ListResponse
+	4,  // 17: storage.v1.StorageService.Stat:output_type -> storage.v1.StatResponse
+	6,  // 18: storage.v1.StorageService.Mkdir:output_type -> storage.v1.MkdirResponse
+	8,  // 19: storage.v1.StorageService.Delete:output_type -> storage.v1.DeleteResponse
+	10, // 20: storage.v1.StorageService.Rename:output_type -> storage.v1.RenameResponse
+	12, // 21: storage.v1.StorageService.Read:output_type -> storage.v1.ReadResponse
+	15, // 22: storage.v1.StorageService.Write:output_type -> storage.v1.WriteResponse
+	17, // 23: storage.v1.StorageService.InitiateUpload:output_type -> storage.v1.InitiateUploadResponse
+	20, // 24: storage.v1.StorageService.UploadChunk:output_type -> storage.v1.UploadChunkResponse
+	22, // 25: storage.v1.StorageService.FinalizeUpload:output_type -> storage.v1.FinalizeUploadResponse
 	16, // [16:26] is the sub-list for method output_type
 	6,  // [6:16] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name

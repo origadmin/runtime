@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	StorageService_List_FullMethodName           = "/runtime.storage.v1.StorageService/List"
-	StorageService_Stat_FullMethodName           = "/runtime.storage.v1.StorageService/Stat"
-	StorageService_Mkdir_FullMethodName          = "/runtime.storage.v1.StorageService/Mkdir"
-	StorageService_Delete_FullMethodName         = "/runtime.storage.v1.StorageService/Delete"
-	StorageService_Rename_FullMethodName         = "/runtime.storage.v1.StorageService/Rename"
-	StorageService_Read_FullMethodName           = "/runtime.storage.v1.StorageService/Read"
-	StorageService_Write_FullMethodName          = "/runtime.storage.v1.StorageService/Write"
-	StorageService_InitiateUpload_FullMethodName = "/runtime.storage.v1.StorageService/InitiateUpload"
-	StorageService_UploadChunk_FullMethodName    = "/runtime.storage.v1.StorageService/UploadChunk"
-	StorageService_FinalizeUpload_FullMethodName = "/runtime.storage.v1.StorageService/FinalizeUpload"
+	StorageService_List_FullMethodName           = "/storage.v1.StorageService/List"
+	StorageService_Stat_FullMethodName           = "/storage.v1.StorageService/Stat"
+	StorageService_Mkdir_FullMethodName          = "/storage.v1.StorageService/Mkdir"
+	StorageService_Delete_FullMethodName         = "/storage.v1.StorageService/Delete"
+	StorageService_Rename_FullMethodName         = "/storage.v1.StorageService/Rename"
+	StorageService_Read_FullMethodName           = "/storage.v1.StorageService/Read"
+	StorageService_Write_FullMethodName          = "/storage.v1.StorageService/Write"
+	StorageService_InitiateUpload_FullMethodName = "/storage.v1.StorageService/InitiateUpload"
+	StorageService_UploadChunk_FullMethodName    = "/storage.v1.StorageService/UploadChunk"
+	StorageService_FinalizeUpload_FullMethodName = "/storage.v1.StorageService/FinalizeUpload"
 )
 
 // StorageServiceClient is the client API for StorageService service.
@@ -432,7 +432,7 @@ func _StorageService_FinalizeUpload_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var StorageService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "runtime.storage.v1.StorageService",
+	ServiceName: "storage.v1.StorageService",
 	HandlerType: (*StorageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

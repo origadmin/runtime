@@ -17,16 +17,22 @@ type Config struct {
 	DefaultChunkSize int64 // New: Default chunk size for file operations
 }
 
-// Storage represents the assembled storage service.
-// In a full implementation, this might be a facade implementing a higher-level Storage interface.
-type Storage struct {
+// Storage defines the high-level interface for the storage service.
+type Storage interface {
+	GetIndexManager() indexiface.Manager
+	GetMetaStore() *metaimpl.Meta
+}
+
+// storage represents the assembled storage service.
+// It implements the Storage interface.
+type storage struct {
 	IndexManager indexiface.Manager
-	MetaStore    *metaimpl.Meta // New: Expose the Meta service
+	MetaStore    *metaimpl.Meta
 }
 
 // New creates a new Storage service instance based on the provided configuration.
 // This function acts as the entry point for creating the storage system.
-func New(cfg Config) (*Storage, error) {
+func New(cfg Config) (Storage, error) {
 	if cfg.BasePath == "" {
 		return nil, fmt.Errorf("storage config: basePath cannot be empty")
 	}
@@ -65,8 +71,18 @@ func New(cfg Config) (*Storage, error) {
 		return nil, fmt.Errorf("failed to create index manager: %w", err)
 	}
 
-	return &Storage{
+	return &storage{
 		IndexManager: indexManager,
 		MetaStore:    metaService,
 	}, nil
+}
+
+// GetIndexManager returns the index manager component.
+func (s *storage) GetIndexManager() indexiface.Manager {
+	return s.IndexManager
+}
+
+// GetMetaStore returns the meta store component.
+func (s *storage) GetMetaStore() *metaimpl.Meta {
+	return s.MetaStore
 }
