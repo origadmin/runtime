@@ -7,23 +7,15 @@ package meta
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
-	"path"
 	"time"
 
 	blobiface "github.com/origadmin/runtime/interfaces/storage/blob"
 	contentiface "github.com/origadmin/runtime/interfaces/storage/content"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
-)
-
-const (
-	// DefaultBlockSize is a general constant, not directly tied to meta.go's logic now.
-	DefaultBlockSize = 4 * 1024 * 1024 // 4MB
 )
 
 // chunkData reads from the reader and splits the content into blocks of a fixed size.
@@ -34,8 +26,8 @@ func (m *Meta) chunkData(r io.Reader) ([]string, int64, error) {
 	buf := make([]byte, m.chunkSize)
 
 	for {
-		n, err := io.ReadFull(r, buf)
-		if err != nil && err != io.EOF && !errors.Is(err, io.ErrUnexpectedEOF) {
+		n, err := r.Read(buf)
+		if err != nil && err != io.EOF {
 			return nil, 0, err
 		}
 		if n == 0 {
@@ -50,7 +42,7 @@ func (m *Meta) chunkData(r io.Reader) ([]string, int64, error) {
 		hashes = append(hashes, hash)
 		totalSize += int64(n)
 
-		if err == io.EOF || errors.Is(err, io.ErrUnexpectedEOF) {
+		if err == io.EOF {
 			break
 		}
 	}
@@ -58,110 +50,133 @@ func (m *Meta) chunkData(r io.Reader) ([]string, int64, error) {
 	return hashes, totalSize, nil
 }
 
-// Meta structure is embodied in managing metadata for file content.
-// It no longer manages the directory structure, nor does it directly store filesystem-level attributes (e.g.,
-// file names, permissions).
+// Meta is a high-level service for managing file content and its metadata.
+// It orchestrates interactions between the metadata store (metaStore) and the blob store (blobStorage).
+// It is stateless and operates on content IDs (metaID), not paths.
 type Meta struct {
 	metaStore   metaiface.Store
 	blobStorage blobiface.Store
 	assembler   contentiface.Assembler
-	files       map[string]metaiface.FileMeta // Stores metaFile metadata by its full path (for in-memory simulation)
-	chunkSize   int64                         // Configurable chunk size for writing large files
+	chunkSize   int64 // Configurable chunk size for writing large files
 }
 
 // New creates a new Meta instance.
 func New(metaStore metaiface.Store, blobStorage blobiface.Store, assembler contentiface.Assembler, chunkSize int64) (*Meta, error) {
+	if chunkSize <= 0 {
+		chunkSize = metav2.EmbeddedFileSizeThreshold // Use a sensible default if not provided
+	}
 	m := &Meta{
 		metaStore:   metaStore,
 		blobStorage: blobStorage,
 		assembler:   assembler,
-		files:       make(map[string]metaiface.FileMeta),
 		chunkSize:   chunkSize,
 	}
 	return m, nil
 }
 
-// WriteFile writes content to a metaFile, creating or updating its metadata.
-// It handles small files by embedding content directly into FileMetaV2.
-func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) (metaiface.FileMeta, error) {
-	// Path validation should ideally happen at a higher layer (e.g., Index)
-	// if !path.IsAbs(name) {
-	// 	return fmt.Errorf("path must be absolute: %s", name)
-	// }
-
+// Create reads content from a reader, stores it (either embedded or as sharded blobs),
+// persists the metadata, and returns the unique metadata ID.
+// It optimizes based on whether the input `size` is known.
+func (m *Meta) Create(r io.Reader, size int64) (string, error) {
 	var fileMeta metaiface.FileMeta
+	var isLargeFile bool
 
-	// Use a bytes.Buffer to peek at the content and determine if it's embedded or sharded.
-	// This allows us to read the content once.
-	buf := new(bytes.Buffer)
-	teeReader := io.TeeReader(r, buf) // Read from r, and also write to buf
-
-	// Try to read up to the embedded size threshold + 1 byte to determine if it's larger
-	_, err := io.CopyN(io.Discard, teeReader, metav2.EmbeddedFileSizeThreshold+1)
-
-	// The actual content read so far is in buf.Bytes()
-	contentBytes := buf.Bytes()
-
-	// Determine if content should be embedded (for FileMetaV2)
-	if int64(len(contentBytes)) <= metav2.EmbeddedFileSizeThreshold && err == io.EOF { // Check for EOF to ensure it's truly small
-		// It's a small metaFile, embed the content
-		_ = &metav2.FileMetaV2{
-			Version:      metav2.Version,
-			FileSize:     int64(len(contentBytes)),
-			ModifyTime:   time.Now().Unix(),
-			MimeType:     "application/octet-stream", // Default MIME type
-			RefCount:     1,                          // Initial ref count
-			EmbeddedData: contentBytes,
-			BlobHashes:   nil, // No external blob reference for embedded data
+	if size > 0 { // Case 1: Size is known
+		if size <= metav2.EmbeddedFileSizeThreshold {
+			// Known small file: read exact size and embed.
+			contentBytes := make([]byte, size)
+			if _, err := io.ReadFull(r, contentBytes); err != nil {
+				return "", fmt.Errorf("failed to read content for known small file: %w", err)
+			}
+			fileMeta = &metav2.FileMetaV2{
+				FileSize:     size,
+				ModifyTime:   time.Now().Unix(),
+				MimeType:     "application/octet-stream",
+				RefCount:     1,
+				EmbeddedData: contentBytes,
+			}
+		} else {
+			// Known large file: chunk directly.
+			isLargeFile = true
+			hashes, totalSize, chunkErr := m.chunkData(r)
+			if chunkErr != nil {
+				return "", fmt.Errorf("failed to chunk and store data for known large file: %w", chunkErr)
+			}
+			// Sanity check
+			if totalSize != size {
+				// Cleanup blobs if size doesn't match
+				for _, h := range hashes {
+					_ = m.blobStorage.Delete(h)
+				}
+				return "", fmt.Errorf("stream size mismatch: provided size %d, but read %d", size, totalSize)
+			}
+			fileMeta = &metav2.FileMetaV2{
+				FileSize:   totalSize,
+				ModifyTime: time.Now().Unix(),
+				MimeType:   "application/octet-stream",
+				RefCount:   1,
+				BlobHashes: hashes,
+			}
 		}
-		//fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
-		//	Data: v2Data,
-		//	Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
-		//}
-	} else {
-		// It's a large metaFile, or we couldn't determine size easily, so chunk the rest of the stream.
-		// The teeReader has already consumed some bytes, so chunkData will continue from there.
-		hashes, totalSize, chunkErr := m.chunkData(io.MultiReader(bytes.NewReader(contentBytes), r))
-		if chunkErr != nil {
-			return nil, fmt.Errorf("failed to chunk and store data: %w", chunkErr)
+	} else { // Case 2: Size is unknown, fall back to peeking.
+		buf := new(bytes.Buffer)
+		tee := io.TeeReader(r, buf)
+		_, err := io.CopyN(io.Discard, tee, metav2.EmbeddedFileSizeThreshold+1)
+		if err != nil && err != io.EOF {
+			return "", err
 		}
 
-		// Create a FileMetaV2 instance for blob-referenced content
-		_ = &metav2.FileMetaV2{
-			Version:    metav2.Version,
-			FileSize:   totalSize,
-			ModifyTime: time.Now().Unix(),
-			MimeType:   "application/octet-stream", // Default MIME type
-			RefCount:   1,                          // Initial ref count
-			BlobHashes: hashes,
+		contentBytes := buf.Bytes()
+		if err == io.EOF { // It's a small file
+			fileMeta = &metav2.FileMetaV2{
+				FileSize:     int64(len(contentBytes)),
+				ModifyTime:   time.Now().Unix(),
+				MimeType:     "application/octet-stream",
+				RefCount:     1,
+				EmbeddedData: contentBytes,
+			}
+		} else { // It's a large file
+			isLargeFile = true
+			fullStream := io.MultiReader(bytes.NewReader(contentBytes), r)
+			hashes, totalSize, chunkErr := m.chunkData(fullStream)
+			if chunkErr != nil {
+				return "", fmt.Errorf("failed to chunk and store data for unknown size file: %w", chunkErr)
+			}
+			fileMeta = &metav2.FileMetaV2{
+				FileSize:   totalSize,
+				ModifyTime: time.Now().Unix(),
+				MimeType:   "application/octet-stream",
+				RefCount:   1,
+				BlobHashes: hashes,
+			}
 		}
-		//fileMeta = &metaiface.FileMetaData[metav2.FileMetaV2]{
-		//	Data: v2Data,
-		//	Info: &metaFileInfo{meta: v2Data}, // Placeholder for FileInfo
-		//}
 	}
 
-	// Store metaFile metadata using the injected MetaStore
-	_, err = m.metaStore.Create(fileMeta)
+	// Persist the metadata using the underlying metaStore
+	id, err := m.metaStore.Create(fileMeta)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create metaFile meta in store: %w", err)
+		// If persisting metadata fails, we must clean up any blobs we just created.
+		if isLargeFile {
+			if v2, ok := fileMeta.(*metav2.FileMetaV2); ok {
+				for _, h := range v2.BlobHashes {
+					_ = m.blobStorage.Delete(h) // Best-effort cleanup
+				}
+			}
+		}
+		return "", fmt.Errorf("failed to create meta in store: %w", err)
 	}
 
-	// Store metaFile metadata directly by its full path (in-memory simulation) - This part might be removed later if Index handles it
-	m.files[name] = fileMeta
-
-	return fileMeta, nil
-
+	return id, nil
 }
 
-// Open opens a metaFile for reading.
-func (m *Meta) Open(name string) (fs.File, error) {
-	// Path validation should ideally happen at a higher layer (e.g., Index)
-	// if !path.IsAbs(name) {
-	// 	return nil, fmt.Errorf("path must be absolute: %s", name)
-	// }
+// Get retrieves file metadata by its ID.
+func (m *Meta) Get(id string) (metaiface.FileMeta, error) {
+	return m.metaStore.Get(id)
+}
 
-	fileMeta, err := m.metaStore.Get(name) // Assuming name can be used as ID
+// Read creates a reader for a file's content by its metadata ID.
+func (m *Meta) Read(id string) (io.ReadCloser, error) {
+	fileMeta, err := m.metaStore.Get(id)
 	if err != nil {
 		return nil, err
 	}
@@ -170,119 +185,33 @@ func (m *Meta) Open(name string) (fs.File, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return &metaFile{
-		meta:   fileMeta,
-		reader: reader,
-	}, nil
+	// The assembler's reader is not necessarily a ReadCloser, so we wrap it.
+	return io.NopCloser(reader), nil
 }
 
-// Stat returns metaFile information.
-func (m *Meta) Stat(name string) (fs.FileInfo, error) {
-	if !path.IsAbs(name) {
-		return nil, fmt.Errorf("path must be absolute: %s", name)
+// Delete orchestrates the deletion of file content (blobs) and the metadata record.
+func (m *Meta) Delete(id string) error {
+	// 1. Get metadata to find blob hashes for large files.
+	fileMeta, err := m.metaStore.Get(id)
+	if err != nil {
+		if os.IsNotExist(err) { // Or a more specific error from the layout store
+			return nil // Idempotent: if it's already gone, we're done.
+		}
+		return fmt.Errorf("failed to get metadata for deletion (id: %s): %w", id, err)
 	}
 
-	fileMeta, ok := m.files[name]
-	if !ok {
-		return nil, os.ErrNotExist
+	// 2. If it's a large file with sharded blobs, delete them.
+	if v2, ok := fileMeta.(*metav2.FileMetaV2); ok {
+		if len(v2.BlobHashes) > 0 {
+			// TODO: Consider collecting errors and continuing instead of stopping on the first one.
+			for _, blobHash := range v2.BlobHashes {
+				if err := m.blobStorage.Delete(blobHash); err != nil && !os.IsNotExist(err) {
+					return fmt.Errorf("failed to delete blob %s for meta %s: %w", blobHash, id, err)
+				}
+			}
+		}
 	}
 
-	// Return a metaFileInfo that wraps the FileMeta interface
-	return &metaFileInfo{meta: fileMeta}, nil
-}
-
-// metaFile implements fs.File for our custom metaFile entries.
-type metaFile struct {
-	storage blobiface.Store
-	meta    metaiface.FileMeta // Now uses the interface
-	reader  io.Reader
-	offset  int64
-	closed  bool
-}
-
-func (f *metaFile) Stat() (fs.FileInfo, error) {
-	if f.closed {
-		return nil, fs.ErrClosed
-	}
-	return &metaFileInfo{meta: f.meta}, nil
-}
-
-func (f *metaFile) Read(p []byte) (int, error) {
-	if f.closed {
-		return 0, fs.ErrClosed
-	}
-	return f.reader.Read(p)
-}
-
-func (f *metaFile) Close() error {
-	f.closed = true
-	return nil
-}
-
-// metaFileInfo implements fs.FileInfo for our custom file entries.
-type metaFileInfo struct {
-	meta metaiface.FileMeta // Now uses the interface
-}
-
-func (m metaFileInfo) Name() string {
-	// Name is not part of FileMeta interface, it belongs to DirEntry.
-	// For now, return a placeholder. This will be handled by Index module.
-	return ""
-}
-
-func (m metaFileInfo) Size() int64 {
-	return m.meta.Size()
-}
-
-func (m metaFileInfo) Mode() fs.FileMode {
-	// Mode is not part of FileMeta interface, it belongs to DirEntry.
-	// For now, return a placeholder. This will be handled by Index module.
-	return 0
-}
-
-func (m metaFileInfo) ModTime() time.Time {
-	return m.meta.ModTime()
-}
-
-func (m metaFileInfo) IsDir() bool {
-	return false // FileMeta always represents a metaFile, not a directory
-}
-
-func (m metaFileInfo) Sys() any {
-	return nil
-}
-
-// ReadDir is not supported for metaFile-only meta.
-func (m *Meta) ReadDir(p string) ([]fs.DirEntry, error) {
-	return nil, fmt.Errorf("ReadDir not supported for metaFile-only meta")
-}
-
-// Mkdir is not supported for metaFile-only meta.
-func (m *Meta) Mkdir(p string, perm fs.FileMode) error {
-	return fmt.Errorf("Mkdir not supported for file-only meta")
-}
-
-// StartUpload initiates a new file upload session for chunked uploads.
-func (m *Meta) StartUpload(fileName string, totalSize int64, mimeType string) (uploadID string, err error) {
-	// Placeholder implementation
-	return "", fmt.Errorf("StartUpload not yet implemented")
-}
-
-// UploadChunk uploads a single chunk of a file.
-func (m *Meta) UploadChunk(uploadID string, chunkIndex int, chunkData []byte) (err error) {
-	// Placeholder implementation
-	return fmt.Errorf("UploadChunk not yet implemented")
-}
-
-// FinishUpload finalizes a file upload session.
-func (m *Meta) FinishUpload(uploadID string) (fileMetaID string, err error) {
-	// Placeholder implementation
-	return "", fmt.Errorf("FinishUpload not yet implemented")
-}
-
-// CancelUpload cancels a file upload session and cleans up temporary data.
-func (m *Meta) CancelUpload(uploadID string) (err error) {
-	// Placeholder implementation
-	return fmt.Errorf("CancelUpload not yet implemented")
+	// 3. Finally, delete the metadata record itself.
+	return m.metaStore.Delete(id)
 }
