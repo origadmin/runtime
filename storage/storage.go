@@ -284,7 +284,7 @@ func NewStorage(cfg *configv1.Storage) (storageiface.Store, error) {
 	contentAssembler := contentimpl.New(blobStore)
 
 	// 4. Instantiate low-level Meta Store
-	lowLevelMetaStore, err := metaimpl.NewFileMetaStore(metaBasePath)
+	lowLevelMetaStore, err := metaimpl.NewStore(metaBasePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create meta store: %w", err)
 	}
