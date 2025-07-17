@@ -11,7 +11,7 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
-	"github.com/origadmin/runtime/interfaces/storage/meta"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
 	"github.com/origadmin/runtime/storage/layout"
 	metav1 "github.com/origadmin/runtime/storage/meta/v1"
 	metav2 "github.com/origadmin/runtime/storage/meta/v2"
@@ -24,7 +24,7 @@ type FileMetaStore struct {
 }
 
 // Ensure FileMetaStore implements the MetaStore interface.
-var _ meta.Store = (*FileMetaStore)(nil)
+var _ metaiface.Store = (*FileMetaStore)(nil)
 
 // NewFileMetaStore creates a new FileMetaStore.
 func NewFileMetaStore(basePath string) (*FileMetaStore, error) {
@@ -37,7 +37,7 @@ func NewFileMetaStore(basePath string) (*FileMetaStore, error) {
 
 // Create serializes the FileMeta and stores it.
 // It returns the ID (hash) of the stored meta.
-func (s *FileMetaStore) Create(fileMeta meta.FileMeta) (string, error) {
+func (s *FileMetaStore) Create(fileMeta metaiface.FileMeta) (string, error) {
 	var fileMetaData interface{} // Use interface{} to hold FileMetaData[V1] or FileMetaData[V2]
 
 	switch fileMeta.CurrentVersion() {
@@ -69,7 +69,6 @@ func (s *FileMetaStore) Create(fileMeta meta.FileMeta) (string, error) {
 	}
 
 	id := calculateHash(data)
-
 	err = s.layout.Write(id, data)
 	if err != nil {
 		return "", fmt.Errorf("failed to write FileMeta to layout: %w", err)
@@ -152,23 +151,19 @@ func (s *FileMetaStore) Delete(id string) error {
 }
 
 // BatchGet is not yet implemented.
-func (s *FileMetaStore) BatchGet(ids []string) (map[string]meta.FileMeta, error) {
+func (s *FileMetaStore) BatchGet(ids []string) (map[string]metaiface.FileMeta, error) {
 	return nil, fmt.Errorf("method BatchGet not implemented")
 }
 
 // Migrate is not yet implemented.
-func (s *FileMetaStore) Migrate(id string) (meta.FileMeta, error) {
+func (s *FileMetaStore) Migrate(id string) (metaiface.FileMeta, error) {
 	return nil, fmt.Errorf("method Migrate not implemented")
 }
 
-// SupportedVersions returns the supported meta versions.
-func (s *FileMetaStore) SupportedVersions() []int {
-	return []int{metav1.Version, metav2.Version}
-}
-
-// DefaultVersion returns the default meta version.
-func (s *FileMetaStore) DefaultVersion() int {
-	return metav2.Version // Default to the latest version
+// CurrentVersion returns the version number used for writing new metadata.
+// The system maintains backward compatibility for reading older, supported versions.
+func (s *FileMetaStore) CurrentVersion() int {
+	return metav2.Version // Always write the latest version for new metadata.
 }
 
 // calculateHash is a helper to generate a hash for the meta record.

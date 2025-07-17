@@ -9,13 +9,14 @@ import (
 	"time"
 )
 
+// Version defines the version of the metadata format.
 const Version = 2
 
 // EmbeddedFileSizeThreshold Defines the maximum size of metadata for small files to be embedded directly (256KB)
 const EmbeddedFileSizeThreshold = 256 * 1024
 
+// FileMetaV2 represents the metadata of a file.
 type FileMetaV2 struct {
-	Version    int32  `msgpack:"v"` // File meta version
 	FileSize   int64  `msgpack:"s"` // File size
 	ModifyTime int64  `msgpack:"t"` // Modify time
 	MimeType   string `msgpack:"m"` // File mime type

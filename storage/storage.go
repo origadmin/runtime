@@ -6,7 +6,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/origadmin/toolkits/errors"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
@@ -119,10 +121,23 @@ func (s *storage) Read(path string) (io.ReadCloser, error) {
 }
 
 // Mkdir creates a new directory.
-func (s *storage) Mkdir(path string) error {
+func (s *storage) Mkdir(filepath string) error {
 	// Creating a directory is a pure index operation; it has no content.
-	_, err := s.index.Create(path, indexiface.Directory, "")
-	return err
+	dir, name := path.Split(filepath)
+	node, err := s.index.GetNodeByPath(dir)
+	if err != nil {
+		return err
+	}
+	if err := s.index.CreateNode(&indexiface.Node{
+		NodeID:   uuid.Must(uuid.NewRandom()).String(),
+		ParentID: node.NodeID,
+		Name:     name,
+		NodeType: indexiface.Directory,
+		Mtime:    time.Now(),
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Delete removes a file or an empty directory.
@@ -189,17 +204,27 @@ func (s *storage) Rename(oldPath, newPath string) error {
 }
 
 // Write creates a new file at the given path with the content from the reader.
-func (s *storage) Write(path string, data io.Reader, size int64) error {
+func (s *storage) Write(filepath string, data io.Reader, size int64) error {
+	dir, name := path.Split(filepath)
 	// 1. Write the content stream to the metaStore. It handles chunking and blob storage,
 	// returning metadata (including a unique ID) for the stored content.
-	err := s.metaStore.WriteFile(path, data, os.ModePerm)
+	err := s.metaStore.WriteFile(name, data, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("failed to write file content: %w", err)
 	}
-
-	// 2. Create an entry in the index to link the path to the newly stored content.
-	_, err = s.index.Create(path, indexiface.File, fileMeta.ID())
+	node, err := s.index.GetNodeByPath(dir)
 	if err != nil {
+		return err
+	}
+	// 2. Create an entry in the index to link the path to the newly stored content.
+	if err := s.index.CreateNode(&indexiface.Node{
+		NodeID:   uuid.Must(uuid.NewRandom()).String(),
+		ParentID: node.NodeID,
+		Name:     name,
+		NodeType: indexiface.File,
+		Mtime:    time.Now(),
+		MetaHash: s.metaStore.GetMetaID(),
+	}); err != nil {
 		// IMPORTANT: If creating the index fails, we must clean up the orphaned content.
 		log.Warnf("Failed to create index node for path '%s', attempting to clean up orphaned content (metaID: %s)", path, fileMeta.ID())
 		if cleanupErr := s.metaStore.Delete(fileMeta.ID()); cleanupErr != nil {

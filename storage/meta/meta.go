@@ -83,7 +83,7 @@ func New(metaStore metaiface.Store, blobStorage blobiface.Store, assembler conte
 
 // WriteFile writes content to a metaFile, creating or updating its metadata.
 // It handles small files by embedding content directly into FileMetaV2.
-func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
+func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) (metaiface.FileMeta, error) {
 	// Path validation should ideally happen at a higher layer (e.g., Index)
 	// if !path.IsAbs(name) {
 	// 	return fmt.Errorf("path must be absolute: %s", name)
@@ -123,7 +123,7 @@ func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
 		// The teeReader has already consumed some bytes, so chunkData will continue from there.
 		hashes, totalSize, chunkErr := m.chunkData(io.MultiReader(bytes.NewReader(contentBytes), r))
 		if chunkErr != nil {
-			return fmt.Errorf("failed to chunk and store data: %w", chunkErr)
+			return nil, fmt.Errorf("failed to chunk and store data: %w", chunkErr)
 		}
 
 		// Create a FileMetaV2 instance for blob-referenced content
@@ -144,13 +144,13 @@ func (m *Meta) WriteFile(name string, r io.Reader, perm fs.FileMode) error {
 	// Store metaFile metadata using the injected MetaStore
 	_, err = m.metaStore.Create(fileMeta)
 	if err != nil {
-		return fmt.Errorf("failed to create metaFile meta in store: %w", err)
+		return nil, fmt.Errorf("failed to create metaFile meta in store: %w", err)
 	}
 
 	// Store metaFile metadata directly by its full path (in-memory simulation) - This part might be removed later if Index handles it
 	m.files[name] = fileMeta
 
-	return nil
+	return fileMeta, nil
 
 }
 

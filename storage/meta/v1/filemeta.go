@@ -9,10 +9,11 @@ import (
 	"time"
 )
 
+// Version is the current version of the file meta.
 const Version = 1
 
+// FileMetaV1 represents the file meta information.
 type FileMetaV1 struct {
-	Version    int32  `msgpack:"v"` // File meta version
 	FileSize   int64  `msgpack:"s"` // File size
 	MimeType   string `msgpack:"m"` // MIME type
 	ModifyTime int64  `msgpack:"t"` // Modify time
