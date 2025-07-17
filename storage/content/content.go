@@ -25,20 +25,13 @@ func (a *assembler) NewReader(fileMeta metaiface.FileMeta) (io.Reader, error) {
 		return nil, errors.New("file meta is nil")
 	}
 
-	metaV2, ok := fileMeta.(interface {
-		GetEmbeddedData() []byte
-		GetShards() []string
-	})
-	if !ok {
-		return nil, errors.New("unsupported FileMeta type")
-	}
-
-	embeddedData := metaV2.GetEmbeddedData()
+	// No longer need type assertion. We can use the interface methods directly.
+	embeddedData := fileMeta.GetEmbeddedData()
 	if len(embeddedData) > 0 {
 		return bytes.NewReader(embeddedData), nil
 	}
 
-	shards := metaV2.GetShards()
+	shards := fileMeta.GetShards()
 	if len(shards) > 0 {
 		return &chunkReader{
 			storage: a.blobStore,

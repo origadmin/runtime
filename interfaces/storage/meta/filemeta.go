@@ -16,6 +16,12 @@ type FileMeta interface {
 	Size() int64
 	// ModTime returns when the contents of the file itself were last modified.
 	ModTime() time.Time
+	// GetEmbeddedData returns the raw byte data if the file content is embedded directly in the metadata.
+	// It returns nil if the content is not embedded.
+	GetEmbeddedData() []byte
+	// GetShards returns a list of blob hashes if the file content is stored in external blobs (shards).
+	// It returns nil if the content is embedded or the file is empty.
+	GetShards() []string
 }
 
 type FileMetaVersion struct {

@@ -31,7 +31,7 @@ const (
 // It implements the Storage interface.
 type storage struct {
 	index     indexiface.Manager
-	metaStore *metaimpl.Meta
+	metaStore *metaimpl.Service
 }
 
 // List returns a list of files and directories at the given path.
@@ -290,13 +290,13 @@ func NewStorage(cfg *configv1.Storage) (storageiface.Store, error) {
 	}
 
 	// 5. Instantiate high-level Meta Service (uses MetaStore, BlobStore, ContentAssembler)
-	metaService, err := metaimpl.New(lowLevelMetaStore, blobStore, contentAssembler, chunkSize)
+	metaService, err := metaimpl.NewService(lowLevelMetaStore, blobStore, contentAssembler, chunkSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create meta service: %w", err)
 	}
 
 	// 6. Instantiate Index Manager
-	indexManager, err := indeximpl.NewFileManager(indexPath, lowLevelMetaStore)
+	indexManager, err := indeximpl.NewManager(indexPath, lowLevelMetaStore)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create index manager: %w", err)
 	}

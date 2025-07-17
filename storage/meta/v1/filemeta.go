@@ -31,3 +31,13 @@ func (f FileMetaV1) Size() int64 {
 func (f FileMetaV1) ModTime() time.Time {
 	return time.Unix(f.ModifyTime, 0)
 }
+
+// GetEmbeddedData returns nil as V1 does not support embedded data.
+func (f FileMetaV1) GetEmbeddedData() []byte {
+	return nil
+}
+
+// GetShards returns nil as V1 does not have a concept of sharded blobs in its structure.
+func (f FileMetaV1) GetShards() []string {
+	return nil
+}
