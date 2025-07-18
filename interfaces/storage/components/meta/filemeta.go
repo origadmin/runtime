@@ -32,7 +32,27 @@ func (f FileMetaVersion) CurrentVersion() int32 {
 	return f.Version
 }
 
-type FileMetaData[T any] struct {
+type FileMetaData[T FileMeta] struct {
 	Version int32 `json:"version" msgpack:"v"`
-	Data    *T    `json:"data" msgpack:"d"`
+	Data    T     `json:"data" msgpack:"d"`
+}
+
+func (f FileMetaData[T]) CurrentVersion() int32 {
+	return f.Version
+}
+
+func (f FileMetaData[T]) Size() int64 {
+	return f.Data.Size()
+}
+
+func (f FileMetaData[T]) ModTime() time.Time {
+	return f.Data.ModTime()
+}
+
+func (f FileMetaData[T]) GetEmbeddedData() []byte {
+	return f.Data.GetEmbeddedData()
+}
+
+func (f FileMetaData[T]) GetShards() []string {
+	return f.Data.GetShards()
 }

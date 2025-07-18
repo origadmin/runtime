@@ -24,7 +24,7 @@ type file struct {
 
 // NewFile creates a new fs.File instance.
 // It takes an io.Reader for the file content, the IndexNode, and the FileMeta.
-func NewFile(node *indexiface.Node, fileMeta metaiface.FileMeta, blobStore blob_interface.Store, assembler contentiface.Assembler) (fs.File, error) {
+func NewFile(node *indexiface.Node, fileMeta metaiface.FileMeta, blobStore blobiface.Store, assembler contentiface.Assembler) (fs.File, error) {
 	reader, err := assembler.NewReader(fileMeta)
 	if err != nil {
 		return nil, err

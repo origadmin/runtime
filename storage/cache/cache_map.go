@@ -5,7 +5,12 @@ import (
 	"sync"
 	"time"
 
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
+)
+
+const (
+	DefaultCleanupInterval = 5 * time.Minute
 )
 
 var (
@@ -118,7 +123,12 @@ func (s *mapCache) putElement(elem *element) {
 	s.elems.Put(elem)
 }
 
-func NewMemoryCache() storageiface.Cache {
+func NewMemoryCache(cfg *configv1.Memory) storageiface.Cache {
+	interval := DefaultCleanupInterval // Default cleanup interval
+	if cfg != nil && cfg.CleanupInterval > 0 {
+		interval = time.Duration(cfg.CleanupInterval) * time.Second
+	}
+
 	mc := &mapCache{
 		elems: &sync.Pool{
 			New: func() any {
@@ -126,7 +136,7 @@ func NewMemoryCache() storageiface.Cache {
 			},
 		},
 		maps:            &sync.Map{},
-		cleanupInterval: 5 * time.Minute, // Default cleanup interval
+		cleanupInterval: interval,
 		stopCleanup:     make(chan struct{}),
 	}
 	go mc.cleanupLoop()

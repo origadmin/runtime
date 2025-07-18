@@ -29,7 +29,7 @@ func WithCache(c cache.Cache) StorageOption {
 
 // tokenCacheStorage is the implementation of CacheStorage interface
 type tokenCacheStorage struct {
-	c cache.Cache
+	c storageiface.Cache
 }
 
 func (obj *tokenCacheStorage) Store(ctx context.Context, tokenStr string, duration time.Duration) error {

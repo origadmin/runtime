@@ -915,6 +915,8 @@ func (m *Cache) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for CleanupInterval
+
 	if len(errors) > 0 {
 		return CacheMultiError(errors)
 	}

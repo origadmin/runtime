@@ -196,11 +196,11 @@ message Mongo {
     json_name = "database",
     (gnostic.openapi.v3.property) = {description: "Database name"}
   ];
-  string username = 3 [json_name = "username"];
-  string password = 4 [json_name = "password"];
-  bool auth_source = 5 [json_name = "auth_source"];
-  int32 max_pool_size = 6 [json_name = "max_pool_size"];
-  int32 min_pool_size = 7 [json_name = "min_pool_size"];
+  string username = 3 [json_name = "username", (gnostic.openapi.v3.property) = {description: "username"}];
+  string password = 4 [json_name = "password", (gnostic.openapi.v3.property) = {description: "password"}];
+  bool auth_source = 5 [json_name = "auth_source", (gnostic.openapi.v3.property) = {description: "auth source"}];
+  int32 max_pool_size = 6 [json_name = "max_pool_size", (gnostic.openapi.v3.property) = {description: "max pool size"}];
+  int32 min_pool_size = 7 [json_name = "min_pool_size", (gnostic.openapi.v3.property) = {description: "min pool size"}];
   int64 connect_timeout = 8 [
     json_name = "connect_timeout",
     (validate.rules).int64.gte = 0,
@@ -241,6 +241,12 @@ message Cache {
   Redis redis = 12 [
     json_name = "redis",
     (gnostic.openapi.v3.property) = {description: "redis cache configuration"}
+  ];
+  // Cleanup interval for memory cache in seconds.
+  // If 0 or not set, a default (e.g., 5 minutes) will be used.
+  int64 cleanup_interval = 13 [
+    json_name = "cleanup_interval",
+    (gnostic.openapi.v3.property) = {description: "Cleanup interval for memory cache in seconds."}
   ];
 }
 
@@ -287,37 +293,39 @@ message FileStore {
   // This field is crucial for ensuring JSON/YAML compatibility.
   string driver = 1 [
     json_name = "driver",
-    (validate.rules).string = {in: ["local", "oss"]}
+    (validate.rules).string = {in: ["local", "oss"]},
+    (gnostic.openapi.v3.property) = {description: "file store driver name"}
   ];
 
   // Local file system configuration. Only effective when driver is "local".
   // The optional keyword clearly indicates that this field may not be present.
-  optional FileLocal local = 2 [json_name = "local"];
+  optional FileLocal local = 2 [json_name = "local", (gnostic.openapi.v3.property) = {description: "local file system configuration"}];
 
   // Cloud object storage configuration. Only effective when driver is "oss".
-  optional Oss oss = 3 [json_name = "oss"];
+  optional Oss oss = 3 [json_name = "oss", (gnostic.openapi.v3.property) = {description: "cloud object storage configuration}
+}];
 
   // Chunk size in bytes for splitting large files.
   // For OSS, this corresponds to the multipart upload part size.
   // For local storage, it defines the size of individual blob files.
   // If 0 or not set, a reasonable default (e.g., 4MB) will be used by the implementation.
-  int64 chunk_size = 4 [json_name = "chunk_size"];
+  int64 chunk_size = 4 [json_name = "chunk_size", (gnostic.openapi.v3.property) = {description: "chunk size in bytes"}];
 }
 
 
 // Storage is the top-level configuration, and its structure is now compatible with all parsers.
 message Storage {
   // Map of named FileStore configurations.
-  map<string, FileStore> filestores = 1;
+  map<string, FileStore> filestores = 1 [json_name = "filestores", (gnostic.openapi.v3.property) = {description: "map of named FileStore configurations"}];
 
   // Map of named Cache configurations.
-  map<string, Cache> caches = 2;
+  map<string, Cache> caches = 2 [json_name = "caches", (gnostic.openapi.v3.property) = {description: "map of named Cache configurations"}];
 
   // Map of named Database configurations.
-  map<string, Database> databases = 3;
+  map<string, Database> databases = 3 [json_name = "databases", (gnostic.openapi.v3.property) = {description: "map of named Database configurations"}];
 
   // Optional: Default instance names for each type.
-  optional string default_filestore = 4;
-  optional string default_cache = 5;
-  optional string default_database = 6;
+  optional string default_filestore = 4 [json_name = "default_filestore", (gnostic.openapi.v3.property) = {description: "default filestore name"}];
+  optional string default_cache = 5 [json_name = "default_cache", (gnostic.openapi.v3.property) = {description: "default cache name"}];
+  optional string default_database = 6 [json_name = "default_database", (gnostic.openapi.v3.property) = {description: "default database name"}];
 }

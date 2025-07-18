@@ -577,9 +577,12 @@ type Cache struct {
 	// Memory cache
 	Memory *Memory `protobuf:"bytes,11,opt,name=memory,proto3" json:"memory,omitempty"`
 	// Redis
-	Redis         *Redis `protobuf:"bytes,12,opt,name=redis,proto3" json:"redis,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Redis *Redis `protobuf:"bytes,12,opt,name=redis,proto3" json:"redis,omitempty"`
+	// Cleanup interval for memory cache in seconds.
+	// If 0 or not set, a default (e.g., 5 minutes) will be used.
+	CleanupInterval int64 `protobuf:"varint,13,opt,name=cleanup_interval,proto3" json:"cleanup_interval,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Cache) Reset() {
@@ -645,6 +648,13 @@ func (x *Cache) GetRedis() *Redis {
 		return x.Redis
 	}
 	return nil
+}
+
+func (x *Cache) GetCleanupInterval() int64 {
+	if x != nil {
+		return x.CleanupInterval
+	}
+	return 0
 }
 
 // OSS defines the configuration for cloud object storage.
@@ -1018,7 +1028,7 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\vauth_source\x18\x05 \x01(\bR\vauth_source\x12$\n" +
 	"\rmax_pool_size\x18\x06 \x01(\x05R\rmax_pool_size\x12$\n" +
 	"\rmin_pool_size\x18\a \x01(\x05R\rmin_pool_size\x12Y\n" +
-	"\x0fconnect_timeout\x18\b \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\"\xf2\x02\n" +
+	"\x0fconnect_timeout\x18\b \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\"\xd3\x03\n" +
 	"\x05Cache\x12T\n" +
 	"\x06driver\x18\x01 \x01(\tB<\xfaB\"r R\x04noneR\x05redisR\tmemcachedR\x06memory\xbaG\x14\x92\x02\x11cache driver nameR\x06driver\x12$\n" +
 	"\x04name\x18\x02 \x01(\tB\x10\xbaG\r\x92\x02\n" +
@@ -1026,7 +1036,8 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\tmemcached\x18\n" +
 	" \x01(\v2\x14.config.v1.MemcachedB#\xbaG \x92\x02\x1dmemcached cache configurationR\tmemcached\x12K\n" +
 	"\x06memory\x18\v \x01(\v2\x11.config.v1.MemoryB \xbaG\x1d\x92\x02\x1amemory cache configurationR\x06memory\x12G\n" +
-	"\x05redis\x18\f \x01(\v2\x10.config.v1.RedisB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\"\x81\x03\n" +
+	"\x05redis\x18\f \x01(\v2\x10.config.v1.RedisB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\x12_\n" +
+	"\x10cleanup_interval\x18\r \x01(\x03B3\xbaG0\x92\x02-Cleanup interval for memory cache in seconds.R\x10cleanup_interval\"\x81\x03\n" +
 	"\x03Oss\x12:\n" +
 	"\bendpoint\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18Storage service endpointR\bendpoint\x12$\n" +
 	"\raccess_key_id\x18\x02 \x01(\tR\raccess_key_id\x12,\n" +
