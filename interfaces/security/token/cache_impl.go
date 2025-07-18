@@ -11,7 +11,7 @@ import (
 
 	"github.com/goexts/generic/settings"
 
-	"github.com/origadmin/runtime/interfaces/storage/cache"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
 const (
@@ -58,7 +58,7 @@ func (obj *tokenCacheStorage) Close(ctx context.Context) error {
 func New(ss ...StorageOption) CacheStorage {
 	service := settings.ApplyZero(ss)
 	if service.c == nil {
-		service.c = cache.NewMemoryCache()
+		service.c = storage.NewMemoryCache()
 	}
 	return service
 }
