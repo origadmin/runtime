@@ -23,13 +23,13 @@ func Unmarshal(data []byte) (meta.FileMeta, error) {
 
 	switch versionOnly.Version {
 	case metav1.Version:
-		var fileMetaData meta.FileMetaData[metav1.FileMetaV1]
+		var fileMetaData meta.StoreMeta[metav1.FileMetaV1]
 		if err := msgpack.Unmarshal(data, &fileMetaData); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal FileMetaV1: %w", err)
 		}
 		return fileMetaData.Data, nil
 	case metav2.Version:
-		var fileMetaData meta.FileMetaData[metav2.FileMetaV2]
+		var fileMetaData meta.StoreMeta[metav2.FileMetaV2]
 		if err := msgpack.Unmarshal(data, &fileMetaData); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal FileMetaV2: %w", err)
 		}

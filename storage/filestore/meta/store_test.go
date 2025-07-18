@@ -30,7 +30,7 @@ func TestFileMetaStore(t *testing.T) {
 
 	// Test FileMetaV2 with embedded data
 	embeddedData := []byte("this is some embedded metaFile content")
-	metaV2Embedded := &metaiface.FileMetaData[metav2.FileMetaV2]{
+	metaV2Embedded := &metaiface.StoreMeta[metav2.FileMetaV2]{
 		Version: metav2.Version,
 		Info: &metaiface.FileMetaInfo{
 			Name: "test_embedded.txt",
@@ -59,9 +59,9 @@ func TestFileMetaStore(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Get embedded failed: %v", err)
 	}
-	retrievedMetaV2Embedded, ok := retrievedMetaEmbedded.(*metaiface.FileMetaData[metav2.FileMetaV2])
+	retrievedMetaV2Embedded, ok := retrievedMetaEmbedded.(*metaiface.StoreMeta[metav2.FileMetaV2])
 	if !ok {
-		t.Fatalf("Retrieved meta is not FileMetaData[FileMetaV2] type")
+		t.Fatalf("Retrieved meta is not StoreMeta[FileMetaV2] type")
 	}
 	if string(retrievedMetaV2Embedded.Data.EmbeddedData) != string(embeddedData) {
 		t.Errorf("Embedded data mismatch. got %s, want %s", retrievedMetaV2Embedded.Data.EmbeddedData, embeddedData)
@@ -72,7 +72,7 @@ func TestFileMetaStore(t *testing.T) {
 
 	// Test FileMetaV2 with blob hashes (no embedded data)
 	blobHashes := []string{"hash1", "hash2", "hash3"}
-	metaV2Blob := &metaiface.FileMetaData[metav2.FileMetaV2]{
+	metaV2Blob := &metaiface.StoreMeta[metav2.FileMetaV2]{
 		Version: metav2.Version,
 		Info: &metaiface.FileMetaInfo{
 			Name: "test_blob.bin",
@@ -101,9 +101,9 @@ func TestFileMetaStore(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Get blob failed: %v", err)
 	}
-	retrievedMetaV2Blob, ok := retrievedMetaBlob.(*metaiface.FileMetaData[metav2.FileMetaV2])
+	retrievedMetaV2Blob, ok := retrievedMetaBlob.(*metaiface.StoreMeta[metav2.FileMetaV2])
 	if !ok {
-		t.Fatalf("Retrieved meta is not FileMetaData[FileMetaV2] type")
+		t.Fatalf("Retrieved meta is not StoreMeta[FileMetaV2] type")
 	}
 	if len(retrievedMetaV2Blob.Data.BlobHashes) != len(blobHashes) {
 		t.Errorf("Blob hashes count mismatch. got %d, want %d", len(retrievedMetaV2Blob.Data.BlobHashes), len(blobHashes))
@@ -127,9 +127,9 @@ func TestFileMetaStore(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Get after update failed: %v", err)
 	}
-	updatedMetaV2Embedded, ok := updatedMetaEmbedded.(*metaiface.FileMetaData[metav2.FileMetaV2])
+	updatedMetaV2Embedded, ok := updatedMetaEmbedded.(*metaiface.StoreMeta[metav2.FileMetaV2])
 	if !ok {
-		t.Fatalf("Updated meta is not FileMetaData[FileMetaV2] type")
+		t.Fatalf("Updated meta is not StoreMeta[FileMetaV2] type")
 	}
 	if updatedMetaV2Embedded.Data.Size != 200 {
 		t.Errorf("Updated size mismatch. got %d, want %d", updatedMetaV2Embedded.Data.Size, 200)

@@ -44,7 +44,7 @@ func (s *Store) Create(id string, fileMeta metaiface.FileMeta) error {
 	}
 
 	// Serialize the metadata object for storage.
-	fileMetaData := &metaiface.FileMetaData[metav2.FileMetaV2]{
+	fileMetaData := &metaiface.StoreMeta[metav2.FileMetaV2]{
 		Version: metav2.Version,
 		Data:    *v2Meta,
 	}
@@ -72,14 +72,14 @@ func (s *Store) Get(id string) (metaiface.FileMeta, error) {
 
 	switch versionOnly.Version {
 	case metav1.Version:
-		var fileMetaData metaiface.FileMetaData[metav1.FileMetaV1]
+		var fileMetaData metaiface.StoreMeta[metav1.FileMetaV1]
 		err = msgpack.Unmarshal(data, &fileMetaData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal FileMetaV1: %w", err)
 		}
 		return fileMetaData.Data, nil
 	case metav2.Version:
-		var fileMetaData metaiface.FileMetaData[metav2.FileMetaV2]
+		var fileMetaData metaiface.StoreMeta[metav2.FileMetaV2]
 		err = msgpack.Unmarshal(data, &fileMetaData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unmarshal FileMetaV2: %w", err)
@@ -99,7 +99,7 @@ func (s *Store) Update(id string, fileMeta metaiface.FileMeta) error {
 		return fmt.Errorf("unsupported FileMeta type for update, expected *metav2.FileMetaV2, got %T", fileMeta)
 	}
 
-	fileMetaData := &metaiface.FileMetaData[metav2.FileMetaV2]{
+	fileMetaData := &metaiface.StoreMeta[metav2.FileMetaV2]{
 		Version: metav2.Version,
 		Data:    *v2Meta,
 	}

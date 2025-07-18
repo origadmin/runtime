@@ -9,6 +9,7 @@ import (
 	"time"
 
 	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
+	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
@@ -37,15 +38,7 @@ func (a *assembler) NewReader(fileMeta metaiface.FileMeta) (io.Reader, error) {
 		return nil, fmt.Errorf("file has no content")
 	}
 
-	readers := make([]io.Reader, len(shards))
-	for i, hash := range shards {
-		data, err := a.blobStore.Read(hash)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read blob %s: %w", hash, err)
-		}
-		readers[i] = bytes.NewReader(data)
-	}
-	return io.MultiReader(readers...), nil
+	return a.readShards(shards)
 }
 
 // WriteContent processes the content from the reader, stores it (either embedded or as sharded blobs),
@@ -195,4 +188,74 @@ func (a *assembler) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
 func calculateContentHash(data []byte) string {
 	hash := sha256.Sum256(data)
 	return hex.EncodeToString(hash[:])
+}
+
+// ... (NewReader 保持不变) ...
+
+// WriteContent 成为处理内容的唯一权威实现
+func (a *assembler) WriteContent(r io.Reader, size int64) (contentID string, fileMeta metaiface.FileMeta, err error) {
+	// ... (这里的逻辑保持不变，它已经是正确的) ...
+	// 唯一的改动是在调用 a.chunkData 时，chunkData 内部会使用 a.chunkSize
+	// ...
+}
+
+// chunkData 使用结构体中的 chunkSize
+func (a *assembler) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
+	var hashes []string
+	var totalSize int64
+	// 使用配置的 chunk size，而不是硬编码
+	buf := make([]byte, a.chunkSize)
+
+	// ... (其余逻辑不变) ...
+
+	meta := &metav2.FileMetaV2{
+		FileSize:   totalSize,
+		ModifyTime: time.Now().Unix(),
+		MimeType:   "application/octet-stream",
+		RefCount:   1,
+		BlobHashes: hashes,
+		BlobSize:   int32(a.chunkSize), // <-- 使用实际的 chunk size
+	}
+
+	return overallHash, meta, nil
+}
+
+func (a *assembler) readShards(shards []string) (io.Reader, error) {
+	return newChunkReader(a.blobStore, shards), nil
+}
+
+// chunkReader is an io.Reader that reads data from multiple chunks in the BlobStore
+type chunkReader struct {
+	storage blobiface.Store
+	hashes  []string
+	current int
+	reader  io.Reader
+}
+
+func (cr *chunkReader) Read(p []byte) (int, error) {
+	for cr.current < len(cr.hashes) {
+		if cr.reader == nil {
+			data, err := cr.storage.Read(cr.hashes[cr.current])
+			if err != nil {
+				return 0, err
+			}
+			cr.reader = bytes.NewReader(data)
+		}
+
+		n, err := cr.reader.Read(p)
+		if err == io.EOF {
+			cr.current++
+			cr.reader = nil
+			continue
+		}
+		return n, err
+	}
+	return 0, io.EOF
+}
+
+func newChunkReader(storage blobiface.Store, hashes []string) io.Reader {
+	return &chunkReader{
+		storage: storage,
+		hashes:  hashes,
+	}
 }

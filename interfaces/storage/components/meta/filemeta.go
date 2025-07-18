@@ -24,6 +24,13 @@ type FileMeta interface {
 	GetShards() []string
 }
 
+// A File is a domain object that represents a fully managed file.
+// It brings together the file's ID and its metadata.
+type File struct {
+	ID   string
+	Meta FileMeta
+}
+
 type FileMetaVersion struct {
 	Version int32 `msgpack:"v"`
 }
@@ -32,27 +39,27 @@ func (f FileMetaVersion) CurrentVersion() int32 {
 	return f.Version
 }
 
-type FileMetaData[T FileMeta] struct {
+type StoreMeta[T FileMeta] struct {
 	Version int32 `json:"version" msgpack:"v"`
 	Data    T     `json:"data" msgpack:"d"`
 }
 
-func (f FileMetaData[T]) CurrentVersion() int32 {
+func (f StoreMeta[T]) CurrentVersion() int32 {
 	return f.Version
 }
 
-func (f FileMetaData[T]) Size() int64 {
+func (f StoreMeta[T]) Size() int64 {
 	return f.Data.Size()
 }
 
-func (f FileMetaData[T]) ModTime() time.Time {
+func (f StoreMeta[T]) ModTime() time.Time {
 	return f.Data.ModTime()
 }
 
-func (f FileMetaData[T]) GetEmbeddedData() []byte {
+func (f StoreMeta[T]) GetEmbeddedData() []byte {
 	return f.Data.GetEmbeddedData()
 }
 
-func (f FileMetaData[T]) GetShards() []string {
+func (f StoreMeta[T]) GetShards() []string {
 	return f.Data.GetShards()
 }
