@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestFileStore(t *testing.T) {
+func TestBlobStore(t *testing.T) {
 	// Create a temporary directory for the test
 	tempDir, err := os.MkdirTemp("", "blobstore-test")
 	if err != nil {
@@ -18,10 +18,10 @@ func TestFileStore(t *testing.T) {
 	}
 	defer os.RemoveAll(tempDir)
 
-	// Create a new FileStore
+	// Create a new BlobStore
 	store, err := New(tempDir)
 	if err != nil {
-		t.Fatalf("Failed to create FileStore: %v", err)
+		t.Fatalf("Failed to create BlobStore: %v", err)
 	}
 
 	// Test data
@@ -41,7 +41,7 @@ func TestFileStore(t *testing.T) {
 	// Check that the file was created in the correct sharded path
 	expectedPath := filepath.Join(tempDir, expectedID[:2], expectedID[2:4], expectedID)
 	if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
-		t.Errorf("File not found at expected path: %v", expectedPath)
+		t.Errorf("Blob not found at expected path: %v", expectedPath)
 	}
 
 	// Test Exists

@@ -16,21 +16,19 @@ import (
 
 	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
 	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
-	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/lay
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
-ta"
-	blobimpl "github.com/origadmin/runtime/storage/filestore/bl
-	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
+	blobimpl "github.com/origadmin/runtime/storage/filestore/blob"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 // Service is a high-level service for managing file content and its metadata.
-// It orchestrates interactions between the metadata store (metaStore) and the blob store (blobStorage).
+// It orchestrates interactions between the metadata store (metaStore) and the blob store (blobStore).
 // It is stateless and operates on content IDs (metaID), not paths.
 type Service struct {
-	metaStore   metaiface.Store
-	blobStorage blobiface.Store
-	assembler   contentiface.Assembler
-	chunkSize   int64 // Configurable chunk size for writing large files
+	metaStore metaiface.Store
+	blobStore blobiface.Store
+	assembler contentiface.Assembler
+	chunkSize int64 // Configurable chunk size for writing large files
 }
 
 // calculateContentHash is a helper to generate a hash from byte data.
@@ -64,7 +62,7 @@ func (s *Service) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
 
 		data := buf[:n]
 		// Write the chunk to the blob storage. The blob store will return the hash of this chunk.
-		blobHash, storeErr := s.blobStorage.Write(data)
+		blobHash, storeErr := s.blobStore.Write(data)
 		if storeErr != nil {
 			return "", nil, storeErr
 		}
@@ -98,16 +96,16 @@ func NewService(metaStore metaiface.Store, basePath string, assembler contentifa
 	}
 
 	// Instantiate layout internally
-	ls, err := layout.NewLocalShardedStorage(basePath)
+	bstore, err := blobimpl.New(basePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create local sharded storage for meta service: %w", err)
 	}
 
 	s := &Service{
-		metaStore:   metaStore,
-		blobStorage: blobimpl.New(ls), // Pass the layout to blob.New
-		assembler:   assembler,
-		chunkSize:   chunkSize,
+		metaStore: metaStore,
+		blobStore: bstore, // Pass the layout to blob.New
+		assembler: assembler,
+		chunkSize: chunkSize,
 	}
 	return s, nil
 }
@@ -147,7 +145,7 @@ func (s *Service) Create(r io.Reader, size int64) (string, error) {
 			if meta.FileSize != size {
 				// Cleanup blobs if size doesn't match
 				for _, h := range meta.BlobHashes {
-					_ = s.blobStorage.Delete(h)
+					_ = s.blobStore.Delete(h)
 				}
 				return "", fmt.Errorf("stream size mismatch: provided size %d, but read %d", size, meta.FileSize)
 			}
@@ -203,7 +201,7 @@ func (s *Service) Create(r io.Reader, size int64) (string, error) {
 		if isLargeFile {
 			if v2, ok := fileMeta.(*metav2.FileMetaV2); ok {
 				for _, h := range v2.BlobHashes {
-					_ = s.blobStorage.Delete(h) // Best-effort cleanup
+					_ = s.blobStore.Delete(h) // Best-effort cleanup
 				}
 			}
 		}
@@ -249,7 +247,7 @@ func (s *Service) Delete(id string) error {
 		if len(v2.BlobHashes) > 0 {
 			// TODO: Consider collecting errors and continuing instead of stopping on the first one.
 			for _, blobHash := range v2.BlobHashes {
-				if err := s.blobStorage.Delete(blobHash); err != nil && !os.IsNotExist(err) {
+				if err := s.blobStore.Delete(blobHash); err != nil && !os.IsNotExist(err) {
 					return fmt.Errorf("failed to delete blob %s for meta %s: %w", blobHash, id, err)
 				}
 			}
