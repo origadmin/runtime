@@ -2,20 +2,18 @@
 
 ## 1. 概述
 
-本文档描述了一个基于 Go 的文件存储系统设计，该系统兼容 Go 标准库的 `fs` 接口，并采用模块化设计以支持高性能和未来扩展。
-
+本文档描述了一个基于 Go 的文件存储系统设计，该系统采用模块化设计以支持高性能和未来扩展，并提供了一个兼容 `fs.FS` 的接口。
 ## 2. 设计目标
 
 - 兼容 Go 的 `fs.FS` 接口
 - 模块化设计，易于维护和扩展
 - 高性能存储和检索
-- 支持文件元数据管理
-- 支持文件路径索引
+- 支持文件元数据管理和版本兼容
+- 支持文件路径索引和内容寻址
 
 ## 3. 架构设计
 
-系统分为四个核心模块：Index, Meta, Blob 以及一个通用的 Layout 模块。
-
+系统分为四个核心模块：**Index**, **Meta**, **Blob**, **Content**，以及一个通用的 **Layout** 模块。
 ```mermaid
 graph TD;
     subgraph "Storage Service"
@@ -34,7 +32,7 @@ graph TD;
     C -- "uses" --> F;
 
 ```
-> **注：** 上图展示了模块间的逻辑关系和实现依赖。读取文件时的主要数据流为 `Index -> Meta -> Blob`。当采用基于文件的后端实现时，所有上层模块都将依赖于一个通用的 `Sharded Layout` 模块来处理物理文件存储。
+> 注： 上图展示了模块间的逻辑关系和实现依赖。读取文件时的主要数据流为 Index -> Meta -> Blob。当采用基于文件的后端实现时，所有上层模块都将依赖于一个通用的 Sharded Layout 模块来处理物理文件存储。 +> 注： 上图展示了模块间的逻辑关系和实现依赖。Storage Service 是面向用户的最高层服务，它编排 Index 和 Meta 服务。Meta Service 负责核心的文件内容处理逻辑，它依赖底层的 Meta Store 和 Blob Store 进行持久化。
 
 ### 3.1 模块职责
 
@@ -46,7 +44,15 @@ graph TD;
 #### 3.1.2 Meta 模块
 - **职责**: 负责文件内容级别的元数据（`FileMeta`）管理。
 - **核心功能**: 提供基于内容哈希（ID）的 `FileMeta` 对象的 `CRUD` 接口。`FileMeta` 包含文件大小、修改时间、数据块哈希列表、引用计数等信息。
-- **关注点**: 文件的版本管理、小文件优化（嵌入）、大文件分块逻辑。
+- **关注点**: 文件的版本管理、小文件优化（嵌入）、大文件分块逻辑。此模块内部分为两层： 
+- meta.Service (高层服务)
+   • 职责: 负责文件内容级别的业务逻辑编排。
+   • 核心功能: 处理 io.Reader 数据流，进行分块、计算内容哈希ID、调用 Blob 模块存储数据块，并最终调用 meta.Store 持久化元数据。
+   • 关注点: 文件的版本管理、小文件优化（嵌入）、大文件分块逻辑、内容ID的生成。 
+  - meta.Store (底层存储)
+   • 职责: 负责 FileMeta 对象的持久化。
+   • 核心功能: 提供基于ID的 FileMeta 对象的 CRUD 接口。
+   • 关注点: 序列化/反序列化元数据，与物理存储（如 Sharded Layout）交互。
 
 #### 3.1.3 Index 模块
 - **职责**: 负责文件系统的目录结构和命名空间管理。
@@ -84,8 +90,8 @@ type Storage interface {
 }
 ```
 
-### 4.2 Blob 存储接口
-(接口定义保持不变)
+### 4.2 元数据存储接口 (`metaiface.Store`)
+
 ```go
 type Store interface {
     Write(data []byte) (string, error)
@@ -95,7 +101,7 @@ type Store interface {
 }
 ```
 
-### 4.3 Meta 存储接口
+### 4.3 文件元数据接口 (metaiface.FileMeta)
 (接口定义保持不变)
 ```go
 type MetaStore interface {
@@ -107,7 +113,7 @@ type MetaStore interface {
 }
 ```
 
-### 4.4 Index 管理接口 (新设计)
+### 4.4 Meta 存储接口
 
 ```go
 // IndexManager defines the interface for managing the file system's namespace and structure.

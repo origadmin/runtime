@@ -1436,125 +1436,154 @@ func (m *Storage) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := StorageValidationError{
-			field:  "Name",
-			reason: "value length must be at least 1 runes",
+	{
+		sorted_keys := make([]string, len(m.GetFilestores()))
+		i := 0
+		for key := range m.GetFilestores() {
+			sorted_keys[i] = key
+			i++
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetFilestores()[key]
+			_ = val
 
-	if _, ok := _Storage_Type_InLookup[m.GetType()]; !ok {
-		err := StorageValidationError{
-			field:  "Type",
-			reason: "value must be in list [database cache filestore]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+			// no validation rules for Filestores[key]
 
-	if m.Database != nil {
-
-		if all {
-			switch v := interface{}(m.GetDatabase()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, StorageValidationError{
-						field:  "Database",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, StorageValidationError{
+							field:  fmt.Sprintf("Filestores[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, StorageValidationError{
+							field:  fmt.Sprintf("Filestores[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
 				}
-			case interface{ Validate() error }:
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
 				if err := v.Validate(); err != nil {
-					errors = append(errors, StorageValidationError{
-						field:  "Database",
+					return StorageValidationError{
+						field:  fmt.Sprintf("Filestores[%v]", key),
 						reason: "embedded message failed validation",
 						cause:  err,
-					})
+					}
 				}
 			}
-		} else if v, ok := interface{}(m.GetDatabase()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return StorageValidationError{
-					field:  "Database",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
 
+		}
 	}
 
-	if m.Cache != nil {
-
-		if all {
-			switch v := interface{}(m.GetCache()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, StorageValidationError{
-						field:  "Cache",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, StorageValidationError{
-						field:  "Cache",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetCache()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return StorageValidationError{
-					field:  "Cache",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
+	{
+		sorted_keys := make([]string, len(m.GetCaches()))
+		i := 0
+		for key := range m.GetCaches() {
+			sorted_keys[i] = key
+			i++
 		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetCaches()[key]
+			_ = val
 
+			// no validation rules for Caches[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, StorageValidationError{
+							field:  fmt.Sprintf("Caches[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, StorageValidationError{
+							field:  fmt.Sprintf("Caches[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return StorageValidationError{
+						field:  fmt.Sprintf("Caches[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
+			}
+
+		}
 	}
 
-	if m.Filestore != nil {
-
-		if all {
-			switch v := interface{}(m.GetFilestore()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, StorageValidationError{
-						field:  "Filestore",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, StorageValidationError{
-						field:  "Filestore",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetFilestore()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return StorageValidationError{
-					field:  "Filestore",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
+	{
+		sorted_keys := make([]string, len(m.GetDatabases()))
+		i := 0
+		for key := range m.GetDatabases() {
+			sorted_keys[i] = key
+			i++
 		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetDatabases()[key]
+			_ = val
 
+			// no validation rules for Databases[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, StorageValidationError{
+							field:  fmt.Sprintf("Databases[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, StorageValidationError{
+							field:  fmt.Sprintf("Databases[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return StorageValidationError{
+						field:  fmt.Sprintf("Databases[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
+			}
+
+		}
+	}
+
+	if m.DefaultFilestore != nil {
+		// no validation rules for DefaultFilestore
+	}
+
+	if m.DefaultCache != nil {
+		// no validation rules for DefaultCache
+	}
+
+	if m.DefaultDatabase != nil {
+		// no validation rules for DefaultDatabase
 	}
 
 	if len(errors) > 0 {
@@ -1633,9 +1662,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = StorageValidationError{}
-
-var _Storage_Type_InLookup = map[string]struct{}{
-	"database":  {},
-	"cache":     {},
-	"filestore": {},
-}

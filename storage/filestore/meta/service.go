@@ -14,10 +14,10 @@ import (
 	"os"
 	"time"
 
-	blobiface "github.com/origadmin/runtime/interfaces/storage/blob"
-	contentiface "github.com/origadmin/runtime/interfaces/storage/content"
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
-	metav2 "github.com/origadmin/runtime/storage/meta/v2"
+	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
+	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 // Service is a high-level service for managing file content and its metadata.

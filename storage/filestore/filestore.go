@@ -1,4 +1,4 @@
-package storage
+package filestore
 
 import (
 	"fmt"
@@ -13,12 +13,12 @@ import (
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
-	indexiface "github.com/origadmin/runtime/interfaces/storage/index"
+	indexiface "github.com/origadmin/runtime/interfaces/storage/components/index"
 	"github.com/origadmin/runtime/log"
-	blobimpl "github.com/origadmin/runtime/storage/blob"
-	contentimpl "github.com/origadmin/runtime/storage/content"
-	indeximpl "github.com/origadmin/runtime/storage/index"
-	metaimpl "github.com/origadmin/runtime/storage/meta"
+	blobimpl "github.com/origadmin/runtime/storage/filestore/blob"
+	contentimpl "github.com/origadmin/runtime/storage/filestore/content"
+	indeximpl "github.com/origadmin/runtime/storage/filestore/index"
+	metaimpl "github.com/origadmin/runtime/storage/filestore/meta"
 )
 
 const (
@@ -239,24 +239,13 @@ func (s *storage) Write(filepath string, data io.Reader, size int64) error {
 
 // NewStorage creates a new Storage service instance based on the provided protobuf configuration.
 // This function acts as the entry point for creating the storage system.
-func NewStorage(cfg *configv1.Storage) (storageiface.Store, error) {
-	// Validation logic for the protobuf config structure
-	if cfg == nil {
-		return nil, fmt.Errorf("storage config cannot be nil")
-	}
-	if cfg.GetType() != "filestore" {
-		return nil, fmt.Errorf("this New function only supports 'filestore' type, got '%s'", cfg.GetType())
+func New(cfg *configv1.FileStore) (storageiface.FileStore, error) {
+
+	if cfg.GetDriver() != "local" {
+		return nil, fmt.Errorf("this New function only supports 'local' filestore driver, got '%s'", cfg.GetDriver())
 	}
 
-	fsCfg := cfg.GetFilestore()
-	if fsCfg == nil {
-		return nil, fmt.Errorf("filestore config block is missing")
-	}
-	if fsCfg.GetDriver() != "local" {
-		return nil, fmt.Errorf("this New function only supports 'local' filestore driver, got '%s'", fsCfg.GetDriver())
-	}
-
-	localCfg := fsCfg.GetLocal()
+	localCfg := cfg.GetLocal()
 	if localCfg == nil {
 		return nil, fmt.Errorf("local config block is missing for filestore driver 'local'")
 	}
@@ -267,7 +256,7 @@ func NewStorage(cfg *configv1.Storage) (storageiface.Store, error) {
 	}
 
 	// Use the chunk size from the proto config, with a fallback to the package-level default.
-	chunkSize := fsCfg.GetChunkSize()
+	chunkSize := cfg.GetChunkSize()
 	if chunkSize == 0 {
 		chunkSize = DefaultChunkSize
 	}

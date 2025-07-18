@@ -10,9 +10,9 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
-	"github.com/origadmin/runtime/interfaces/storage/meta"
-	metav1 "github.com/origadmin/runtime/storage/meta/v1"
-	metav2 "github.com/origadmin/runtime/storage/meta/v2"
+	"github.com/origadmin/runtime/interfaces/storage/components/meta"
+	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 func Unmarshal(data []byte) (*metav2.FileMetaV2, error) {

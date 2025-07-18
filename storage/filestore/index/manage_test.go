@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/origadmin/runtime/interfaces/storage/index"
+	"github.com/origadmin/runtime/interfaces/storage/components/index"
 )
 
 func TestManage(t *testing.T) {

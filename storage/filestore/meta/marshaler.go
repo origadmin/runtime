@@ -10,8 +10,8 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
-	metav1 "github.com/origadmin/runtime/storage/meta/v1"
-	metav2 "github.com/origadmin/runtime/storage/meta/v2"
+	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 func MarshalFileMeta(meta any) ([]byte, error) {

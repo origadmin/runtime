@@ -14,9 +14,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/origadmin/runtime/interfaces/storage/index"
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
-	"github.com/origadmin/runtime/storage/layout"
+	"github.com/origadmin/runtime/interfaces/storage/components/index"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
+	"github.com/origadmin/runtime/storage/filestore/layout"
 )
 
 const (

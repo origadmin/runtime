@@ -8,8 +8,8 @@ import (
 	"io/fs"
 	"time"
 
-	indexiface "github.com/origadmin/runtime/interfaces/storage/index"
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
+	indexiface "github.com/origadmin/runtime/interfaces/storage/components/index"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 )
 
 // fileInfo implements fs.FileInfo by combining IndexNode and FileMeta.

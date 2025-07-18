@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
-	metav2 "github.com/origadmin/runtime/storage/meta/v2"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 func TestFileMetaStore(t *testing.T) {

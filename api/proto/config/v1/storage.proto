@@ -307,24 +307,17 @@ message FileStore {
 
 // Storage is the top-level configuration, and its structure is now compatible with all parsers.
 message Storage {
-  string name = 1 [
-    json_name = "name",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "Unique identifier for the storage configuration"}
-  ];
+  // Map of named FileStore configurations.
+  map<string, FileStore> filestores = 1;
 
-  // The 'type' field determines which storage backend to use (database, cache, or filestore).
-  string type = 2 [
-    json_name = "type",
-    (validate.rules).string = {in: ["database", "cache", "filestore"]}
-  ];
+  // Map of named Cache configurations.
+  map<string, Cache> caches = 2;
 
-  // Database backend configuration. Only effective when type is "database".
-  optional Database database = 3 [json_name = "database"];
+  // Map of named Database configurations.
+  map<string, Database> databases = 3;
 
-  // Cache backend configuration. Only effective when type is "cache".
-  optional Cache cache = 4 [json_name = "cache"];
-
-  // File storage backend configuration. Only effective when type is "filestore".
-  optional FileStore filestore = 5 [json_name = "filestore"];
+  // Optional: Default instance names for each type.
+  optional string default_filestore = 4;
+  optional string default_cache = 5;
+  optional string default_database = 6;
 }

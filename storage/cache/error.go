@@ -40,13 +40,6 @@ func (c *cacheError) Is(err error) bool {
 	return ok
 }
 
-var (
-	ErrClosed         error = &cacheError{msg: "cache closed"}
-	ErrNotFound       error = &cacheError{msg: "cache not found"}
-	ErrInvalidElement error = &cacheError{msg: "invalid cache element"}
-	ErrExpired        error = &cacheError{msg: "cache expired"}
-)
-
 func NewError(msg string) error {
 	return &cacheError{msg: msg}
 }

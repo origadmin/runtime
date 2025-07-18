@@ -8,10 +8,10 @@ import (
 	"io"
 	"io/fs"
 
-	blobiface "github.com/origadmin/runtime/interfaces/storage/blob"
-	contentiface "github.com/origadmin/runtime/interfaces/storage/content"
-	indexiface "github.com/origadmin/runtime/interfaces/storage/index"
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
+	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
+	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
+	indexiface "github.com/origadmin/runtime/interfaces/storage/components/index"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 )
 
 // file implements fs.File interface.
@@ -25,7 +25,7 @@ type file struct {
 // NewFile creates a new fs.File instance.
 // It takes an io.Reader for the file content, the IndexNode, and the FileMeta.
 func NewFile(node *indexiface.Node, fileMeta metaiface.FileMeta, blobStore blob_interface.Store, assembler contentiface.Assembler) (fs.File, error) {
-	reader, err := assembler.NewReader(fileMeta, blobStore)
+	reader, err := assembler.NewReader(fileMeta)
 	if err != nil {
 		return nil, err
 	}

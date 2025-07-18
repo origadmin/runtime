@@ -8,7 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/origadmin/runtime/storage/layout"
+	"github.com/origadmin/runtime/storage/filestore/layout"
 )
 
 // FileStore implements the BlobStore interface using the local filesystem.

@@ -8,7 +8,7 @@ package storage
 import (
 	"fmt"
 
-	"github.com/origadmin/runtime/interfaces/storage/cache"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
@@ -22,7 +22,7 @@ type (
 	Cache = cache.Cache
 )
 
-func OpenCache(cfg *configv1.Storage) (Cache, error) {
+func OpenCache(cfg *configv1.Storage) (storageiface.Cache, error) {
 	if cfg == nil {
 		return nil, ErrCacheConfigNil
 	}

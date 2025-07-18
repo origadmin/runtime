@@ -876,17 +876,18 @@ func (x *FileStore) GetChunkSize() int64 {
 // Storage is the top-level configuration, and its structure is now compatible with all parsers.
 type Storage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The 'type' field determines which storage backend to use (database, cache, or filestore).
-	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	// Database backend configuration. Only effective when type is "database".
-	Database *Database `protobuf:"bytes,3,opt,name=database,proto3,oneof" json:"database,omitempty"`
-	// Cache backend configuration. Only effective when type is "cache".
-	Cache *Cache `protobuf:"bytes,4,opt,name=cache,proto3,oneof" json:"cache,omitempty"`
-	// File storage backend configuration. Only effective when type is "filestore".
-	Filestore     *FileStore `protobuf:"bytes,5,opt,name=filestore,proto3,oneof" json:"filestore,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Map of named FileStore configurations.
+	Filestores map[string]*FileStore `protobuf:"bytes,1,rep,name=filestores,proto3" json:"filestores,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Map of named Cache configurations.
+	Caches map[string]*Cache `protobuf:"bytes,2,rep,name=caches,proto3" json:"caches,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Map of named Database configurations.
+	Databases map[string]*Database `protobuf:"bytes,3,rep,name=databases,proto3" json:"databases,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Optional: Default instance names for each type.
+	DefaultFilestore *string `protobuf:"bytes,4,opt,name=default_filestore,json=defaultFilestore,proto3,oneof" json:"default_filestore,omitempty"`
+	DefaultCache     *string `protobuf:"bytes,5,opt,name=default_cache,json=defaultCache,proto3,oneof" json:"default_cache,omitempty"`
+	DefaultDatabase  *string `protobuf:"bytes,6,opt,name=default_database,json=defaultDatabase,proto3,oneof" json:"default_database,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Storage) Reset() {
@@ -919,39 +920,46 @@ func (*Storage) Descriptor() ([]byte, []int) {
 	return file_config_v1_storage_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *Storage) GetName() string {
+func (x *Storage) GetFilestores() map[string]*FileStore {
 	if x != nil {
-		return x.Name
+		return x.Filestores
+	}
+	return nil
+}
+
+func (x *Storage) GetCaches() map[string]*Cache {
+	if x != nil {
+		return x.Caches
+	}
+	return nil
+}
+
+func (x *Storage) GetDatabases() map[string]*Database {
+	if x != nil {
+		return x.Databases
+	}
+	return nil
+}
+
+func (x *Storage) GetDefaultFilestore() string {
+	if x != nil && x.DefaultFilestore != nil {
+		return *x.DefaultFilestore
 	}
 	return ""
 }
 
-func (x *Storage) GetType() string {
-	if x != nil {
-		return x.Type
+func (x *Storage) GetDefaultCache() string {
+	if x != nil && x.DefaultCache != nil {
+		return *x.DefaultCache
 	}
 	return ""
 }
 
-func (x *Storage) GetDatabase() *Database {
-	if x != nil {
-		return x.Database
+func (x *Storage) GetDefaultDatabase() string {
+	if x != nil && x.DefaultDatabase != nil {
+		return *x.DefaultDatabase
 	}
-	return nil
-}
-
-func (x *Storage) GetCache() *Cache {
-	if x != nil {
-		return x.Cache
-	}
-	return nil
-}
-
-func (x *Storage) GetFilestore() *FileStore {
-	if x != nil {
-		return x.Filestore
-	}
-	return nil
+	return ""
 }
 
 var File_config_v1_storage_proto protoreflect.FileDescriptor
@@ -1038,17 +1046,28 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"chunk_size\x18\x04 \x01(\x03R\n" +
 	"chunk_sizeB\b\n" +
 	"\x06_localB\x06\n" +
-	"\x04_oss\"\xd3\x02\n" +
-	"\aStorage\x12P\n" +
-	"\x04name\x18\x01 \x01(\tB<\xfaB\x04r\x02\x10\x01\xbaG2\x92\x02/Unique identifier for the storage configurationR\x04name\x125\n" +
-	"\x04type\x18\x02 \x01(\tB!\xfaB\x1er\x1cR\bdatabaseR\x05cacheR\tfilestoreR\x04type\x124\n" +
-	"\bdatabase\x18\x03 \x01(\v2\x13.config.v1.DatabaseH\x00R\bdatabase\x88\x01\x01\x12+\n" +
-	"\x05cache\x18\x04 \x01(\v2\x10.config.v1.CacheH\x01R\x05cache\x88\x01\x01\x127\n" +
-	"\tfilestore\x18\x05 \x01(\v2\x14.config.v1.FileStoreH\x02R\tfilestore\x88\x01\x01B\v\n" +
-	"\t_databaseB\b\n" +
-	"\x06_cacheB\f\n" +
+	"\x04_oss\"\x84\x05\n" +
+	"\aStorage\x12B\n" +
 	"\n" +
-	"_filestoreB\xa1\x01\n" +
+	"filestores\x18\x01 \x03(\v2\".config.v1.Storage.FilestoresEntryR\n" +
+	"filestores\x126\n" +
+	"\x06caches\x18\x02 \x03(\v2\x1e.config.v1.Storage.CachesEntryR\x06caches\x12?\n" +
+	"\tdatabases\x18\x03 \x03(\v2!.config.v1.Storage.DatabasesEntryR\tdatabases\x120\n" +
+	"\x11default_filestore\x18\x04 \x01(\tH\x00R\x10defaultFilestore\x88\x01\x01\x12(\n" +
+	"\rdefault_cache\x18\x05 \x01(\tH\x01R\fdefaultCache\x88\x01\x01\x12.\n" +
+	"\x10default_database\x18\x06 \x01(\tH\x02R\x0fdefaultDatabase\x88\x01\x01\x1aS\n" +
+	"\x0fFilestoresEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.config.v1.FileStoreR\x05value:\x028\x01\x1aK\n" +
+	"\vCachesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12&\n" +
+	"\x05value\x18\x02 \x01(\v2\x10.config.v1.CacheR\x05value:\x028\x01\x1aQ\n" +
+	"\x0eDatabasesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12)\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.config.v1.DatabaseR\x05value:\x028\x01B\x14\n" +
+	"\x12_default_filestoreB\x10\n" +
+	"\x0e_default_cacheB\x13\n" +
+	"\x11_default_databaseB\xa1\x01\n" +
 	"\rcom.config.v1B\fStorageProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -1064,7 +1083,7 @@ func file_config_v1_storage_proto_rawDescGZIP() []byte {
 	return file_config_v1_storage_proto_rawDescData
 }
 
-var file_config_v1_storage_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_config_v1_storage_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_config_v1_storage_proto_goTypes = []any{
 	(*Migration)(nil), // 0: config.v1.Migration
 	(*Database)(nil),  // 1: config.v1.Database
@@ -1077,22 +1096,28 @@ var file_config_v1_storage_proto_goTypes = []any{
 	(*FileLocal)(nil), // 8: config.v1.FileLocal
 	(*FileStore)(nil), // 9: config.v1.FileStore
 	(*Storage)(nil),   // 10: config.v1.Storage
+	nil,               // 11: config.v1.Storage.FilestoresEntry
+	nil,               // 12: config.v1.Storage.CachesEntry
+	nil,               // 13: config.v1.Storage.DatabasesEntry
 }
 var file_config_v1_storage_proto_depIdxs = []int32{
-	0, // 0: config.v1.Database.migration:type_name -> config.v1.Migration
-	3, // 1: config.v1.Cache.memcached:type_name -> config.v1.Memcached
-	4, // 2: config.v1.Cache.memory:type_name -> config.v1.Memory
-	2, // 3: config.v1.Cache.redis:type_name -> config.v1.Redis
-	8, // 4: config.v1.FileStore.local:type_name -> config.v1.FileLocal
-	7, // 5: config.v1.FileStore.oss:type_name -> config.v1.Oss
-	1, // 6: config.v1.Storage.database:type_name -> config.v1.Database
-	6, // 7: config.v1.Storage.cache:type_name -> config.v1.Cache
-	9, // 8: config.v1.Storage.filestore:type_name -> config.v1.FileStore
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	0,  // 0: config.v1.Database.migration:type_name -> config.v1.Migration
+	3,  // 1: config.v1.Cache.memcached:type_name -> config.v1.Memcached
+	4,  // 2: config.v1.Cache.memory:type_name -> config.v1.Memory
+	2,  // 3: config.v1.Cache.redis:type_name -> config.v1.Redis
+	8,  // 4: config.v1.FileStore.local:type_name -> config.v1.FileLocal
+	7,  // 5: config.v1.FileStore.oss:type_name -> config.v1.Oss
+	11, // 6: config.v1.Storage.filestores:type_name -> config.v1.Storage.FilestoresEntry
+	12, // 7: config.v1.Storage.caches:type_name -> config.v1.Storage.CachesEntry
+	13, // 8: config.v1.Storage.databases:type_name -> config.v1.Storage.DatabasesEntry
+	9,  // 9: config.v1.Storage.FilestoresEntry.value:type_name -> config.v1.FileStore
+	6,  // 10: config.v1.Storage.CachesEntry.value:type_name -> config.v1.Cache
+	1,  // 11: config.v1.Storage.DatabasesEntry.value:type_name -> config.v1.Database
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_storage_proto_init() }
@@ -1108,7 +1133,7 @@ func file_config_v1_storage_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_storage_proto_rawDesc), len(file_config_v1_storage_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

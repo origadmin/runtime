@@ -9,8 +9,8 @@ import (
 	"github.com/origadmin/toolkits/errors"
 
 	storagev1 "github.com/origadmin/runtime/api/gen/go/storage/v1"
-	metav1 "github.com/origadmin/runtime/storage/meta/v1"
-	metav2 "github.com/origadmin/runtime/storage/meta/v2"
+	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 const ErrUnknownFileMetaType = errors.String("storage: unknown file meta type")

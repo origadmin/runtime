@@ -5,9 +5,9 @@ import (
 	"errors"
 	"io"
 
-	blobiface "github.com/origadmin/runtime/interfaces/storage/blob"
-	contentiface "github.com/origadmin/runtime/interfaces/storage/content"
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
+	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
+	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 )
 
 // New returns a new content assembler.
