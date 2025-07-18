@@ -1,15 +1,11 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-package cache
+package storage
 
 import (
 	"context"
 	"time"
 )
 
-// Cache is the interface that wraps the basic Get, Set, and Delete methods.
+// Cache defines the interface for a key-value cache.
 // It uses string as the value type, allowing for flexible conversion to []byte
 // and zero-copy resource optimization after go1.22.
 type Cache interface {

@@ -49,9 +49,9 @@ type MultipartUpload interface {
 	UploadID() string
 }
 
-// Store defines a standard, universal interface for file and object storage systems.
+// FileStore defines a standard, universal interface for file and object storage systems.
 // It provides both simple, one-shot operations and advanced, stateful multipart operations.
-type Store interface {
+type FileStore interface {
 	// --- Simple, Stateless Operations ---
 
 	List(path string) ([]FileInfo, error)

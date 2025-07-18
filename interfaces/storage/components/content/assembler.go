@@ -3,7 +3,7 @@ package content
 import (
 	"io"
 
-	metaiface "github.com/origadmin/runtime/interfaces/storage/meta"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 )
 
 // Assembler is responsible for assembling file content from metadata and blob storage.
