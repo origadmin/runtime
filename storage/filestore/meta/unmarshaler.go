@@ -15,43 +15,30 @@ import (
 	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
-func Unmarshal(data []byte) (*metav2.FileMetaV2, error) {
-	var version meta.FileMetaVersion
-	if err := msgpack.Unmarshal(data, &version); err != nil {
+func Unmarshal(data []byte) (meta.FileMeta, error) {
+	var versionOnly meta.FileMetaVersion
+	if err := msgpack.Unmarshal(data, &versionOnly); err != nil {
 		return nil, err
 	}
 
-	switch version.Version {
-	case 1:
-		var metadata metav1.FileMetaV1
-		if err := msgpack.Unmarshal(data, &metadata); err != nil {
-			return nil, err
+	switch versionOnly.Version {
+	case metav1.Version:
+		var fileMetaData meta.FileMetaData[metav1.FileMetaV1]
+		if err := msgpack.Unmarshal(data, &fileMetaData); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal FileMetaV1: %w", err)
 		}
-		return &metav2.FileMetaV2{
-			Version:      metav2.Version,
-			FileSize:     metadata.FileSize,
-			ModifyTime:   metadata.ModifyTime,
-			MimeType:     metadata.MimeType,
-			RefCount:     metadata.RefCount,
-			BlobSize:     0,
-			BlobHashes:   nil,
-			EmbeddedData: nil,
-		}, nil
-	case 2:
-		var metadata metav2.FileMetaV2
-		if err := msgpack.Unmarshal(data, &metadata); err != nil {
-			return nil, err
+		return fileMetaData.Data, nil
+	case metav2.Version:
+		var fileMetaData meta.FileMetaData[metav2.FileMetaV2]
+		if err := msgpack.Unmarshal(data, &fileMetaData); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal FileMetaV2: %w", err)
 		}
-		return &metadata, nil
+		return fileMetaData.Data, nil
 	default:
-		return nil, fmt.Errorf("unsupported metaFile meta version: %d", version.Version)
+		return nil, fmt.Errorf("unsupported metaFile meta version: %d", versionOnly.Version)
 	}
 }
 
 func UnmarshalFileMeta(data []byte) (meta.FileMeta, error) {
-	metad, err := Unmarshal(data)
-	if err != nil {
-		return nil, err
-	}
-	return metad, nil
+	return Unmarshal(data) // Simply call the main Unmarshal function
 }

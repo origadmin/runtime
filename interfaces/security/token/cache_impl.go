@@ -7,11 +7,14 @@ package token
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/goexts/generic/settings"
 
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/storage"
 )
 
 const (
@@ -21,7 +24,7 @@ const (
 
 type StorageOption = func(*tokenCacheStorage)
 
-func WithCache(c cache.Cache) StorageOption {
+func WithCache(c storageiface.Cache) StorageOption {
 	return func(o *tokenCacheStorage) {
 		o.c = c
 	}
@@ -58,7 +61,16 @@ func (obj *tokenCacheStorage) Close(ctx context.Context) error {
 func New(ss ...StorageOption) CacheStorage {
 	service := settings.ApplyZero(ss)
 	if service.c == nil {
-		service.c = storage.NewMemoryCache()
+		defaultCacheConfig := &configv1.Cache{
+			Driver: "memory",
+			Memory: &configv1.Memory{},
+		}
+		c, err := storage.New(defaultCacheConfig)
+		if err != nil {
+			// Handle error, perhaps log it or panic if cache is critical
+			panic(fmt.Sprintf("failed to create default memory cache: %v", err))
+		}
+		service.c = c
 	}
 	return service
 }

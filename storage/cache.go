@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package storage implements the functions, types, and interfaces for the module.
 package storage
 
 import (
@@ -12,21 +7,27 @@ import (
 	"github.com/origadmin/toolkits/errors"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/storage/cache"
 )
 
 const (
 	ErrCacheConfigNil = errors.String("cache: config is nil")
 )
 
-type (
-	Cache = cache.Cache
-)
-
-func OpenCache(cfg *configv1.Storage) (storageiface.Cache, error) {
+// New creates a new cache instance based on the provided configuration.
+func New(cfg *configv1.Cache) (storageiface.Cache, error) {
 	if cfg == nil {
 		return nil, ErrCacheConfigNil
 	}
-	cacheCfg := cfg.GetCache()
-	fmt.Println(cacheCfg)
-	return nil, errors.String("cache: unknown cache type")
+
+	switch cfg.GetDriver() {
+	case "memory":
+		return cache.NewMemoryCache(cfg.GetMemory()), nil // Pass the Memory config
+	// case "redis":
+	//     return redis.New(cfg.GetRedis()), nil
+	// case "memcached":
+	//     return memcached.New(cfg.GetMemcached()), nil
+	default:
+		return nil, fmt.Errorf("unsupported cache driver: %s", cfg.GetDriver())
+	}
 }

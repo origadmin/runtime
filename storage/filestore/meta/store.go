@@ -45,7 +45,7 @@ func (s *Store) Create(id string, fileMeta metaiface.FileMeta) error {
 	// Serialize the metadata object for storage.
 	fileMetaData := &metaiface.FileMetaData[metav2.FileMetaV2]{
 		Version: metav2.Version,
-		Data:    v2Meta,
+		Data:    *v2Meta,
 	}
 	data, err := msgpack.Marshal(fileMetaData)
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *Store) Update(id string, fileMeta metaiface.FileMeta) error {
 
 	fileMetaData := &metaiface.FileMetaData[metav2.FileMetaV2]{
 		Version: metav2.Version,
-		Data:    v2Meta,
+		Data:    *v2Meta,
 	}
 
 	data, err := msgpack.Marshal(fileMetaData)

@@ -10,24 +10,37 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
 	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
-func MarshalFileMeta(meta any) ([]byte, error) {
+func MarshalFileMeta(meta metaiface.FileMeta) ([]byte, error) {
+	var fileMetaData interface{} // Use interface{} to hold the concrete FileMetaData[T] type
+
 	switch v := meta.(type) {
 	case *metav1.FileMetaV1:
-		v.Version = 1
+		fileMetaData = &metaiface.FileMetaData[*metav1.FileMetaV1]{
+			Version: metav1.Version,
+			Data:    v,
+		}
 	case metav1.FileMetaV1:
-		v.Version = 1
-		meta = &v
+		fileMetaData = &metaiface.FileMetaData[metav1.FileMetaV1]{
+			Version: metav1.Version,
+			Data:    v,
+		}
 	case *metav2.FileMetaV2:
-		v.Version = 2
+		fileMetaData = &metaiface.FileMetaData[*metav2.FileMetaV2]{
+			Version: metav2.Version,
+			Data:    v,
+		}
 	case metav2.FileMetaV2:
-		v.Version = 2
-		meta = &v
+		fileMetaData = &metaiface.FileMetaData[metav2.FileMetaV2]{
+			Version: metav2.Version,
+			Data:    v,
+		}
 	default:
-		return nil, fmt.Errorf("unknown meta type: %T", v)
+		return nil, fmt.Errorf("unknown meta type: %T", meta)
 	}
-	return msgpack.Marshal(meta)
+	return msgpack.Marshal(fileMetaData)
 }

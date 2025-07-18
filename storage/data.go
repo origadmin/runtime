@@ -9,47 +9,17 @@ import (
 	"github.com/origadmin/toolkits/errors"
 
 	storagev1 "github.com/origadmin/runtime/api/gen/go/storage/v1"
-	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
-	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 )
 
 const ErrUnknownFileMetaType = errors.String("storage: unknown file meta type")
 
-func FromFileMeta(meta interface{}) (*storagev1.FileMeta, error) {
-	switch v := meta.(type) {
-	case *metav1.FileMeta:
-		return &storagev1.FileMeta{
-			Name:     v.Info.Name,
-			Hash:     v.Info.Hash,
-			Size:     v.Data.Size,
-			MimeType: v.Data.MimeType,
-			ModTime:  v.Data.ModTime,
-		}, nil
-	case metav1.FileMeta:
-		return &storagev1.FileMeta{
-			Name:     v.Info.Name,
-			Hash:     v.Info.Hash,
-			Size:     v.Data.Size,
-			MimeType: v.Data.MimeType,
-			ModTime:  v.Data.ModTime,
-		}, nil
-	case *metav2.FileMeta:
-		return &storagev1.FileMeta{
-			Name:     v.Info.Name,
-			Hash:     v.Info.Hash,
-			Size:     v.Data.Size,
-			MimeType: v.Data.MimeType,
-			ModTime:  v.Data.ModTime,
-		}, nil
-	case metav2.FileMeta:
-		return &storagev1.FileMeta{
-			Name:     v.Info.Name,
-			Hash:     v.Info.Hash,
-			Size:     v.Data.Size,
-			MimeType: v.Data.MimeType,
-			ModTime:  v.Data.ModTime,
-		}, nil
-	default:
-		return nil, ErrUnknownFileMetaType
-	}
+func FromFileMeta(meta metaiface.FileMeta) (*storagev1.FileMeta, error) {
+	return &storagev1.FileMeta{
+		Name:     "", // Name is not directly available from FileMeta interface
+		Hash:     "", // Hash is not directly available from FileMeta interface
+		Size:     meta.Size(),
+		MimeType: "", // MimeType is not directly available from FileMeta interface
+		ModTime:  meta.ModTime().Unix(),
+	}, nil
 }

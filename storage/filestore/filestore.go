@@ -3,7 +3,6 @@ package filestore
 import (
 	"fmt"
 	"io"
-	"os"
 	"path"
 	"path/filepath"
 	"time"
@@ -59,18 +58,14 @@ func (s *storage) List(path string) ([]storageiface.FileInfo, error) {
 
 		// For files, we fetch more accurate metadata from the metaStore.
 		if !info.IsDir && node.MetaHash != "" {
-			stat, err := s.metaStore.Stat(node.MetaHash)
+			fileMeta, err := s.metaStore.Get(node.MetaHash)
 			if err != nil {
 				// Log the error and skip this file, so one bad file doesn't break the whole listing.
 				log.Warnf("Failed to get metadata for file '%s' (id: %s): %v. Skipping.", info.Path, node.MetaHash, err)
 				continue
 			}
-			//stat, err := fileMeta.Stat()
-			//if err != nil {
-			//	return nil, err
-			//}
-			info.Size = stat.Size()
-			info.ModTime = stat.ModTime() // Use the more accurate content modification time.
+			info.Size = fileMeta.Size()
+			info.ModTime = fileMeta.ModTime() // Use the more accurate content modification time.
 		}
 		infos = append(infos, info)
 	}
@@ -93,7 +88,7 @@ func (s *storage) Stat(path string) (storageiface.FileInfo, error) {
 	}
 
 	if !info.IsDir && node.MetaHash != "" {
-		fileMeta, err := s.metaStore.Stat(node.MetaHash)
+		fileMeta, err := s.metaStore.Get(node.MetaHash)
 		if err != nil {
 			return storageiface.FileInfo{}, fmt.Errorf("failed to get metadata for file '%s': %w", path, err)
 		}
@@ -117,7 +112,7 @@ func (s *storage) Read(path string) (io.ReadCloser, error) {
 	}
 
 	// 2. The metaStore service provides a readable stream, abstracting away the blob assembly.
-	return s.metaStore.Open(node.MetaHash)
+	return s.metaStore.Read(node.MetaHash)
 }
 
 // Mkdir creates a new directory.
@@ -178,8 +173,8 @@ func (s *storage) Delete(path string) error {
 	if node.NodeType == indexiface.File && node.MetaHash != "" {
 		if err := s.metaStore.Delete(node.MetaHash); err != nil {
 			// This is a problematic state (orphaned content). Log and return an error.
-			log.Errorf("Index entry for '%s' deleted, but failed to delete content (metaID: %s): %v", path, node.MetaID, err)
-			return fmt.Errorf("index entry for '%s' deleted, but failed to delete content (metaID: %s): %w", path, node.MetaID, err)
+			log.Errorf("Index entry for '%s' deleted, but failed to delete content (metaID: %s): %v", path, node.MetaHash, err)
+			return fmt.Errorf("index entry for '%s' deleted, but failed to delete content (metaID: %s): %w", path, node.MetaHash, err)
 		}
 	}
 
@@ -208,7 +203,7 @@ func (s *storage) Write(filepath string, data io.Reader, size int64) error {
 	dir, name := path.Split(filepath)
 	// 1. Write the content stream to the metaStore. It handles chunking and blob storage,
 	// returning metadata (including a unique ID) for the stored content.
-	err := s.metaStore.WriteFile(name, data, os.ModePerm)
+	metaID, err := s.metaStore.Create(data, size)
 	if err != nil {
 		return fmt.Errorf("failed to write file content: %w", err)
 	}
@@ -223,15 +218,15 @@ func (s *storage) Write(filepath string, data io.Reader, size int64) error {
 		Name:     name,
 		NodeType: indexiface.File,
 		Mtime:    time.Now(),
-		MetaHash: s.metaStore.GetMetaID(),
+		MetaHash: metaID,
 	}); err != nil {
 		// IMPORTANT: If creating the index fails, we must clean up the orphaned content.
-		log.Warnf("Failed to create index node for path '%s', attempting to clean up orphaned content (metaID: %s)", path, fileMeta.ID())
-		if cleanupErr := s.metaStore.Delete(fileMeta.ID()); cleanupErr != nil {
+		log.Warnf("Failed to create index node for path '%s', attempting to clean up orphaned content (metaID: %s)", filepath, metaID)
+		if cleanupErr := s.metaStore.Delete(metaID); cleanupErr != nil {
 			// This is a critical failure state. The content is now orphaned.
-			log.Errorf("Orphaned content cleanup FAILED for metaID '%s': %v", fileMeta.ID(), cleanupErr)
+			log.Errorf("Orphaned content cleanup FAILED for metaID '%s': %v", metaID, cleanupErr)
 		}
-		return fmt.Errorf("failed to create index node for path '%s': %w", path, err)
+		return fmt.Errorf("failed to create index node for path '%s': %w", filepath, err)
 	}
 
 	return nil
