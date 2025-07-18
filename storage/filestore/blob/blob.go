@@ -1,79 +1,60 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package meta implements the functions, types, and interfaces for the module.
 package blob
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"hash"
-	"os"
-	"path/filepath"
+	"fmt"
+
+	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
+	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
+	"github.com/origadmin/runtime/storage/filestore/layout"
 )
 
-type blobStorage struct {
-	Path string
-	Hash func() hash.Hash
+type blobStore struct {
+	layout layoutiface.ShardedStorage // Use the concrete layout type
 }
 
-func (m blobStorage) Write(data []byte) (string, error) {
-	encodeHash := m.getHash(data)
-	path := hashPath(m.Path, encodeHash)
-
-	// Ensure the directory for the blob exists.
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return "", err
-	}
-
-	if err := atomicWrite(path, data); err != nil {
-		return "", err
-	}
-	return encodeHash, nil
-}
-
-func (m blobStorage) Read(hash string) ([]byte, error) {
-	path := hashPath(m.Path, hash)
-	return os.ReadFile(path)
-}
-
-func (m blobStorage) Delete(hash string) error {
-	path := hashPath(m.Path, hash)
-	return os.Remove(path)
-}
-
-func (m blobStorage) Exists(hash string) (bool, error) {
-	path := hashPath(m.Path, hash)
-	stat, err := os.Stat(path)
+// New creates a new BlobStore implementation that uses a ShardedStorage for persistence.
+func New(basePath string) (blobiface.Store, error) { // Accept basePath
+	ls, err := layout.NewLocalShardedStorage(basePath) // Instantiate layout internally
 	if err != nil {
-		return false, err
+		// Handle error: This should ideally be a panic or a fatal log,
+		// as a failure to initialize the underlying storage is critical.
+		// For now, we'll just panic for simplicity.
+		return nil, fmt.Errorf("failed to create blob store: %w", err)
 	}
-	return !stat.IsDir(), nil
+	return &blobStore{
+		layout: ls,
+	}, nil
 }
 
-func hashPath(path, hash string) string {
-	return path + "/" + hash[:2] + "/" + hash[2:4] + "/" + hash
-}
+// Ensure blobStore implements the BlobStore interface.
+var _ blobiface.Store = (*blobStore)(nil)
 
-func atomicWrite(path string, content []byte) error {
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, content, 0644); err != nil {
-		return err
+// Write calculates the SHA256 hash of the data and uses it as the ID.
+// It then delegates the writing to the sharded layout manager.
+func (s *blobStore) Write(data []byte) (string, error) {
+	hashBytes := sha256.Sum256(data)
+	hashString := hex.EncodeToString(hashBytes[:])
+
+	err := s.layout.Write(hashString, data)
+	if err != nil {
+		return "", fmt.Errorf("failed to write blob to layout: %w", err)
 	}
-	return os.Rename(tmp, path)
+	return hashString, nil
 }
 
-func (m blobStorage) getHash(content []byte) string {
-	h := m.Hash()
-	h.Write(content)
-	return hex.EncodeToString(h.Sum(nil))
+// Read delegates reading to the sharded layout manager.
+func (s *blobStore) Read(id string) ([]byte, error) {
+	return s.layout.Read(id)
 }
 
-func New(path string) *blobStorage {
-	return &blobStorage{
-		Path: path,
-		Hash: sha256.New,
-	}
+// Exists delegates existence check to the sharded layout manager.
+func (s *blobStore) Exists(id string) (bool, error) {
+	return s.layout.Exists(id)
+}
+
+// Delete delegates deletion to the sharded layout manager.
+func (s *blobStore) Delete(id string) error {
+	return s.layout.Delete(id)
 }

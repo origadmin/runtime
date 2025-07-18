@@ -16,8 +16,11 @@ import (
 
 	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
 	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
+	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/lay
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
-	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
+ta"
+	blobimpl "github.com/origadmin/runtime/storage/filestore/bl
+	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
 )
 
 // Service is a high-level service for managing file content and its metadata.
@@ -89,13 +92,20 @@ func (s *Service) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
 }
 
 // NewService creates a new Service instance.
-func NewService(metaStore metaiface.Store, blobStorage blobiface.Store, assembler contentiface.Assembler, chunkSize int64) (*Service, error) {
+func NewService(metaStore metaiface.Store, basePath string, assembler contentiface.Assembler, chunkSize int64) (*Service, error) {
 	if chunkSize <= 0 {
 		chunkSize = metav2.EmbeddedFileSizeThreshold // Use a sensible default if not provided
 	}
+
+	// Instantiate layout internally
+	ls, err := layout.NewLocalShardedStorage(basePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create local sharded storage for meta service: %w", err)
+	}
+
 	s := &Service{
 		metaStore:   metaStore,
-		blobStorage: blobStorage,
+		blobStorage: blobimpl.New(ls), // Pass the layout to blob.New
 		assembler:   assembler,
 		chunkSize:   chunkSize,
 	}

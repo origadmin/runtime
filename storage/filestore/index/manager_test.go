@@ -13,7 +13,7 @@ import (
 	"github.com/origadmin/runtime/interfaces/storage/components/index"
 )
 
-func TestManage(t *testing.T) {
+func TestManager(t *testing.T) {
 	// Create a temporary directory for the test
 	tempDir, err := os.MkdirTemp("", "indexmanager-test")
 	if err != nil {
@@ -22,7 +22,7 @@ func TestManage(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Create a new Manage
-	manager, err := NewManage(tempDir, nil)
+	manager, err := NewManager(tempDir, nil)
 	if err != nil {
 		t.Fatalf("Failed to create Manage: %v", err)
 	}

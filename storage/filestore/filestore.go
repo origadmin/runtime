@@ -17,7 +17,8 @@ import (
 	blobimpl "github.com/origadmin/runtime/storage/filestore/blob"
 	contentimpl "github.com/origadmin/runtime/storage/filestore/content"
 	indeximpl "github.com/origadmin/runtime/storage/filestore/index"
-	metaimpl "github.com/origadmin/runtime/storage/filestore/meta"
+	layoutimpl "github.com/origadmin/runtime/storage/filestore/layout"
+	
 )
 
 const (
@@ -261,25 +262,31 @@ func New(cfg *configv1.FileStore) (storageiface.FileStore, error) {
 	metaBasePath := filepath.Join(basePath, "meta")
 	indexPath := filepath.Join(basePath, "index")
 
-	// 2. Instantiate Blob Store
-	blobStore := blobimpl.New(blobBasePath)
+	// 2. Instantiate Layout for Blob Store
+	blobLayout, err := layoutimpl.NewLocalShardedStorage(blobBasePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create blob layout: %w", err)
+	}
 
-	// 3. Instantiate Content Assembler
+	// 3. Instantiate Blob Store
+	blobStore := blobimpl.New(blobLayout)
+
+	// 4. Instantiate Content Assembler
 	contentAssembler := contentimpl.New(blobStore)
 
-	// 4. Instantiate low-level Meta Store
+	// 5. Instantiate low-level Meta Store
 	lowLevelMetaStore, err := metaimpl.NewStore(metaBasePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create meta store: %w", err)
 	}
 
-	// 5. Instantiate high-level Meta Service (uses MetaStore, BlobStore, ContentAssembler)
-	metaService, err := metaimpl.NewService(lowLevelMetaStore, blobStore, contentAssembler, chunkSize)
+	// 6. Instantiate high-level Meta Service (uses MetaStore, BlobStore, ContentAssembler)
+	metaService, err := metaimpl.NewService(lowLevelMetaStore, blobLayout, contentAssembler, chunkSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create meta service: %w", err)
 	}
 
-	// 6. Instantiate Index Manager
+	// 7. Instantiate Index Manager
 	indexManager, err := indeximpl.NewManager(indexPath, lowLevelMetaStore)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create index manager: %w", err)

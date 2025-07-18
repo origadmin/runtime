@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/origadmin/runtime/interfaces/storage/components/index"
+	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 	"github.com/origadmin/runtime/storage/filestore/layout"
 )
@@ -27,7 +28,7 @@ const (
 
 // Manage implements the Manager interface using the local filesystem.
 type Manage struct {
-	layout    layout.ShardedStorage
+	layout    layoutiface.ShardedStorage
 	indexPath string // Base path for index data
 }
 
@@ -125,7 +126,10 @@ func (m *Manage) CreateNode(node *index.Node) error {
 
 	// Update path index (path -> nodeID)
 	if err := m.layout.Write(m.pathKey(fullPath), []byte(node.NodeID)); err != nil {
-		m.layout.Delete(m.nodeKey(node.NodeID))
+		err := m.layout.Delete(m.nodeKey(node.NodeID))
+		if err != nil {
+			return err
+		}
 		return fmt.Errorf("failed to update path index: %w", err)
 	}
 

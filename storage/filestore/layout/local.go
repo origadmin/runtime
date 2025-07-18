@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
+	
 )
 
 // localShardedStorage implements ShardedStorage for the local filesystem.
@@ -16,7 +19,7 @@ type localShardedStorage struct {
 }
 
 // NewLocalShardedStorage creates a new instance.
-func NewLocalShardedStorage(basePath string) (ShardedStorage, error) {
+func NewLocalShardedStorage(basePath string) (layoutiface.ShardedStorage, error) {
 	// Ensure the base path exists
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		return nil, err
@@ -44,7 +47,7 @@ func (s *localShardedStorage) Write(id string, data []byte) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	return fileutil.AtomicWrite(path, data)
 }
 
 func (s *localShardedStorage) Read(id string) ([]byte, error) {

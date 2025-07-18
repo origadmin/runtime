@@ -9,6 +9,7 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
+	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 	"github.com/origadmin/runtime/storage/filestore/layout"
 	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
@@ -18,7 +19,7 @@ import (
 // Store implements the metaiface.Store interface using the local filesystem.
 // It relies on a ShardedStorage layout to manage the physical files.
 type Store struct {
-	layout layout.ShardedStorage
+	layout layoutiface.ShardedStorage
 }
 
 // Ensure Store implements the metaiface.Store interface.

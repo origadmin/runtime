@@ -19,7 +19,7 @@ func TestFileStore(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Create a new FileStore
-	store, err := NewFileStore(tempDir)
+	store, err := New(tempDir)
 	if err != nil {
 		t.Fatalf("Failed to create FileStore: %v", err)
 	}
