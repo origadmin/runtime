@@ -21,8 +21,6 @@ type (
 	KResolver = kratosconfig.Resolver
 	KSource   = kratosconfig.Source
 	KOption   = kratosconfig.Option
-	KConfig   = kratosconfig.Config
-	KValue    = kratosconfig.Value
 	KWatcher  = kratosconfig.Watcher
 )
 
@@ -32,31 +30,31 @@ var (
 )
 
 // NewSourceConfig returns a new config instance
-func NewSourceConfig(opts ...KOption) KConfig {
+func NewSourceConfig(opts ...KOption) kratosconfig.Config {
 	return kratosconfig.New(opts...)
 }
 
 // WithDecoder sets the decoder
-func WithDecoder(d KDecoder) KOption {
+func WithDecoder(d KDecoder) kratosconfig.Option {
 	return kratosconfig.WithDecoder(d)
 }
 
 // WithMergeFunc sets the merge function
-func WithMergeFunc(m KMerge) KOption {
+func WithMergeFunc(m KMerge) kratosconfig.Option {
 	return kratosconfig.WithMergeFunc(m)
 }
 
 // WithResolveActualTypes enables resolving actual types
-func WithResolveActualTypes(enableConvertToType bool) KOption {
+func WithResolveActualTypes(enableConvertToType bool) kratosconfig.Option {
 	return kratosconfig.WithResolveActualTypes(enableConvertToType)
 }
 
 // WithResolver sets the resolver
-func WithResolver(r KResolver) KOption {
+func WithResolver(r KResolver) kratosconfig.Option {
 	return kratosconfig.WithResolver(r)
 }
 
 // WithSource sets the sourceConfig
-func WithSource(s ...KSource) KOption {
+func WithSource(s ...KSource) kratosconfig.Option {
 	return kratosconfig.WithSource(s...)
 }

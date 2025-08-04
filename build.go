@@ -19,34 +19,8 @@ import (
 	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/runtime/service/grpc"
 	"github.com/origadmin/runtime/service/http"
+	"github.com/origadmin/runtime/interfaces"
 )
-
-type Builder interface {
-	Config() config.Builder
-	Registry() registry.Builder
-	Service() service.ServerBuilder
-	Middleware() middleware.Builder
-	NewMiddlewareClient(name string, config *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error)
-	NewMiddlewareServer(name string, config *middlewarev1.Middleware, ss ...middleware.Option) (middleware.KMiddleware, error)
-	NewMiddlewaresClient(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware
-	NewMiddlewaresServer(config *middlewarev1.Middleware, ss ...middleware.Option) []middleware.KMiddleware
-	RegisterMiddlewareBuilder(name string, builder middleware.Factory)
-	NewRegistrar(cfg *configv1.Discovery, ss ...registry.Option) (registry.KRegistrar, error)
-	NewDiscovery(cfg *configv1.Discovery, ss ...registry.Option) (registry.KDiscovery, error)
-	RegisterRegistryBuilder(name string, factory registry.Factory)
-	RegisterRegistryFunc(name string, registryBuilder registry.RegistrarBuildFunc, discoveryBuilder registry.DiscoveryBuildFunc)
-	NewConfig(sourceConfig *configv1.SourceConfig, options ...config.Option) (config.KConfig, error)
-	RegisterConfigBuilder(s string, factory config.Factory)
-	NewServer(name string, c *configv1.Service, options ...service.ServerOption) (transport.Server, error)
-	NewGRPCServer(c *configv1.Service, options ...service.GRPCOption) (*service.GRPCServer, error)
-	NewHTTPServer(c *configv1.Service, options ...service.HTTPOption) (*service.HTTPServer, error)
-	NewGRPCClient(c context.Context, c2 *configv1.Service, options ...service.GRPCOption) (*service.GRPCClient, error)
-	NewHTTPClient(c context.Context, c2 *configv1.Service, options ...service.HTTPOption) (*service.HTTPClient, error)
-	RegisterServiceBuilder(name string, factory service.ServerFactory)
-	SyncConfig(cfg *configv1.SourceConfig, v any, ss ...config.Option) error
-	RegisterConfigSyncer(name string, configSyncer config.Syncer)
-	RegisterConfigSync(name string, configSyncer config.Syncer)
-}
 
 // builder is a struct that holds a map of ConfigBuilders and a map of RegistryBuilders.
 type builder struct {
@@ -58,7 +32,7 @@ type builder struct {
 	MiddlewareBuilder middleware.Builder
 }
 
-func (b *builder) Config() config.Builder {
+func (b *builder) Config() interfaces.ConfigBuilder {
 	return b.ConfigBuilder
 }
 

@@ -9,19 +9,22 @@ import (
 	"fmt"
 	"sync"
 
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
+
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/interfaces"
 )
 
 type Loader struct {
 	cfg          *configv1.SourceConfig
-	builder      Builder
-	sourceConfig KConfig
-	resolver     Resolver
-	resolved     Resolved
+	builder      interfaces.ConfigBuilder
+	sourceConfig kratosconfig.Config
+	resolver     interfaces.Resolver
+	resolved     interfaces.Resolved
 	mu           sync.RWMutex
 }
 
-func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...Option) error {
+func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...interfaces.Option) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.sourceConfig != nil {
@@ -48,7 +51,7 @@ func (c *Loader) Load(cfg *configv1.SourceConfig, opts ...Option) error {
 	return nil
 }
 
-func (c *Loader) Resolve(config KConfig) error {
+func (c *Loader) Resolve(config kratosconfig.Config) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.resolver == nil {
@@ -68,25 +71,25 @@ func (c *Loader) GetConfig() (*configv1.SourceConfig, error) {
 	return c.cfg, nil
 }
 
-func (c *Loader) GetSource() (KConfig, error) {
+func (c *Loader) GetSource() (kratosconfig.Config, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.sourceConfig, nil
 }
 
-func (c *Loader) GetResolved() (Resolved, error) {
+func (c *Loader) GetResolved() (interfaces.Resolved, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.resolved, nil
 }
 
-func (c *Loader) GetResolver() (Resolver, error) {
+func (c *Loader) GetResolver() (interfaces.Resolver, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.resolver, nil
 }
 
-func (c *Loader) SetResolver(resolver Resolver) error {
+func (c *Loader) SetResolver(resolver interfaces.Resolver) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.resolver = resolver
@@ -97,7 +100,7 @@ func New() *Loader {
 	return NewWithBuilder(DefaultBuilder)
 }
 
-func NewWithBuilder(builder Builder) *Loader {
+func NewWithBuilder(builder interfaces.ConfigBuilder) *Loader {
 	return &Loader{
 		builder: builder,
 	}

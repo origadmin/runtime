@@ -7,6 +7,8 @@ type Store interface {
 	Create(id string, fileMeta FileMeta) error
 	// Get retrieves a FileMeta object by its ID. It must handle different versions for backward compatibility.
 	Get(id string) (FileMeta, error)
+	// Exists checks if a FileMeta object with the given ID exists.
+	Exists(id string) (bool, error)
 	// Update overwrites an existing FileMeta object.
 	Update(id string, fileMeta FileMeta) error
 	// Delete removes a FileMeta object by its ID.

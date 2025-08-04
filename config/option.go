@@ -5,15 +5,20 @@
 // Package config implements the functions, types, and interfaces for the module.
 package config
 
+import (
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
+	"github.com/origadmin/runtime/interfaces"
+)
+
 type Options struct {
 	ConfigName    string
 	ServiceName   string
 	ResolverName  string
 	EnvPrefixes   []string
-	Sources       []KSource
-	ConfigOptions []KOption
-	Decoder       KDecoder
-	Encoder       Encoder
+	Sources       []kratosconfig.Source
+	ConfigOptions []kratosconfig.Option
+	Decoder       kratosconfig.Decoder
+	Encoder       interfaces.Encoder
 	ForceReload   bool
 }
 
@@ -24,27 +29,27 @@ type Encoder func(v any) ([]byte, error)
 type Option = func(s *Options)
 
 // WithOptions sets the options field of the KOption struct.
-func WithOptions(options ...KOption) Option {
+func WithOptions(options ...kratosconfig.Option) Option {
 	return func(option *Options) {
 		option.ConfigOptions = options
 	}
 }
 
-func AppendOptions(options ...KOption) Option {
+func AppendOptions(options ...kratosconfig.Option) Option {
 	return func(option *Options) {
 		option.ConfigOptions = append(option.ConfigOptions, options...)
 	}
 }
 
 // WithDecoderOption sets the decoder field of the KOption struct.
-func WithDecoderOption(decoder KDecoder) Option {
+func WithDecoderOption(decoder kratosconfig.Decoder) Option {
 	return func(option *Options) {
 		option.Decoder = decoder
 	}
 }
 
 // WithEncoderOption sets the encoder field of the KOption struct.
-func WithEncoderOption(encoder Encoder) Option {
+func WithEncoderOption(encoder interfaces.Encoder) Option {
 	return func(option *Options) {
 		option.Encoder = encoder
 	}

@@ -9,15 +9,9 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/interfaces/factory"
 )
 
 type (
-	// Builder is an interface that defines a method for registering a config Builder.
-	Builder interface {
-		factory.Registry[Factory]
-		NewConfig(*configv1.SourceConfig, ...Option) (KConfig, error)
-	}
 	// Factory is an interface that defines a method for creating a new config.
 	Factory interface {
 		// NewSource creates a new config using the given KConfig and a list of Options.

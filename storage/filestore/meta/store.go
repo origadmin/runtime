@@ -127,3 +127,7 @@ func (s *Store) Migrate(id string) (metaiface.FileMeta, error) {
 func (s *Store) CurrentVersion() int {
 	return metav2.Version // Always write the latest version for new metadata.
 }
+
+func (s *Store) Exists(embedded string) (bool, error) {
+	return s.layout.Exists(embedded)
+}

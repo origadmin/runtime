@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package config implements the functions, types, and interfaces for the module.
 package config
 
 import (
@@ -11,7 +6,10 @@ import (
 	configenv "github.com/go-kratos/kratos/v2/config/env"
 	"github.com/goexts/generic/settings"
 
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
+
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/log"
 )
@@ -21,7 +19,7 @@ var (
 )
 
 type configBuilder struct {
-	factory.Registry[Factory]
+	factory.Registry[interfaces.ConfigFactory]
 }
 
 // RegisterConfigFunc registers a new ConfigBuilder with the given name and function.
@@ -30,29 +28,29 @@ func (b *configBuilder) RegisterConfigFunc(name string, buildFunc BuildFunc) {
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
-type BuildFunc func(*configv1.SourceConfig, *Options) (KSource, error)
+type BuildFunc func(*configv1.SourceConfig, *interfaces.Options) (kratosconfig.Source, error)
 
 // NewSource is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *Options) (KSource, error) {
+func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *interfaces.Options) (kratosconfig.Source, error) {
 	// Call the function with the given KConfig and a list of Options.
 	return fn(cfg, opts)
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...Option) (KConfig, error) {
+func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
 	options := settings.ApplyZero(opts)
 	sources := options.Sources
 	if sources == nil {
-		sources = make([]KSource, 0)
+		sources = make([]kratosconfig.Source, 0)
 	}
 
 	for _, t := range cfg.Types {
-		b, ok := b.Get(t)
+		bld, ok := b.Get(t)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", t)
 		}
 		log.Infof("registering type: %s", t)
-		source, err := b.NewSource(cfg, options)
+		source, err := bld.NewSource(cfg, options)
 		if err != nil {
 			return nil, err
 		}
@@ -67,8 +65,8 @@ func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...Option) (K
 	return NewSourceConfig(options.ConfigOptions...), nil
 }
 
-func NewBuilder() Builder {
+func NewBuilder() interfaces.ConfigBuilder {
 	return &configBuilder{
-		Registry: factory.New[Factory](),
+		Registry: factory.New[interfaces.ConfigFactory](),
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/origadmin/toolkits/errors"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
@@ -17,8 +18,7 @@ import (
 	blobimpl "github.com/origadmin/runtime/storage/filestore/blob"
 	contentimpl "github.com/origadmin/runtime/storage/filestore/content"
 	indeximpl "github.com/origadmin/runtime/storage/filestore/index"
-	layoutimpl "github.com/origadmin/runtime/storage/filestore/layout"
-	
+	metaimpl "github.com/origadmin/runtime/storage/filestore/meta"
 )
 
 const (
@@ -262,17 +262,14 @@ func New(cfg *configv1.FileStore) (storageiface.FileStore, error) {
 	metaBasePath := filepath.Join(basePath, "meta")
 	indexPath := filepath.Join(basePath, "index")
 
-	// 2. Instantiate Layout for Blob Store
-	blobLayout, err := layoutimpl.NewLocalShardedStorage(blobBasePath)
+	// 3. Instantiate Blob Store
+	blobStore, err := blobimpl.New(blobBasePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create blob layout: %w", err)
+		return nil, fmt.Errorf("failed to create blob store: %w", err)
 	}
 
-	// 3. Instantiate Blob Store
-	blobStore := blobimpl.New(blobLayout)
-
 	// 4. Instantiate Content Assembler
-	contentAssembler := contentimpl.New(blobStore)
+	contentAssembler := contentimpl.New(blobStore, int(chunkSize))
 
 	// 5. Instantiate low-level Meta Store
 	lowLevelMetaStore, err := metaimpl.NewStore(metaBasePath)
@@ -281,7 +278,7 @@ func New(cfg *configv1.FileStore) (storageiface.FileStore, error) {
 	}
 
 	// 6. Instantiate high-level Meta Service (uses MetaStore, BlobStore, ContentAssembler)
-	metaService, err := metaimpl.NewService(lowLevelMetaStore, blobLayout, contentAssembler, chunkSize)
+	metaService, err := metaimpl.NewService(lowLevelMetaStore, blobBasePath, contentAssembler, chunkSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create meta service: %w", err)
 	}

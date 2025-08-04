@@ -11,30 +11,16 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
+
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	"github.com/origadmin/runtime/interfaces"
 )
 
-type Resolver interface {
-	Resolve(config KConfig) (Resolved, error)
-}
+type ResolveFunc func(config kratosconfig.Config) (interfaces.Resolved, error)
 
-type Resolved interface {
-	WithDecode(name string, v any, decode func([]byte, any) error) error
-	Value(name string) (any, error)
-	Middleware() *middlewarev1.Middleware
-	Services() []*configv1.Service
-	Logger() *configv1.Logger
-	Discovery() *configv1.Discovery
-}
-
-type ResolveObserver interface {
-	Observer(string, KValue)
-}
-
-type ResolveFunc func(config KConfig) (Resolved, error)
-
-func (r ResolveFunc) Resolve(config KConfig) (Resolved, error) {
+func (r ResolveFunc) Resolve(config kratosconfig.Config) (interfaces.Resolved, error) {
 	return r(config)
 }
 
@@ -113,7 +99,7 @@ func (r resolver) loadConfig(key string, target interface{}) bool {
 	return mapstructure.Decode(v, target) == nil
 }
 
-var DefaultResolver Resolver = ResolveFunc(func(config KConfig) (Resolved, error) {
+var DefaultResolver interfaces.Resolver = ResolveFunc(func(config kratosconfig.Config) (interfaces.Resolved, error) {
 	var r resolver
 	err := config.Scan(&r.values)
 	if err != nil {

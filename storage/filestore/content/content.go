@@ -17,12 +17,20 @@ import (
 // assembler implements the Assembler interface.
 type assembler struct {
 	blobStore blobiface.Store
+	chunkSize int // Added chunkSize field
+}
+
+func (a *assembler) NewWriter(r io.Reader) (contentiface.Writer, error) {
+	return &chunkWriter{
+		reader: r,
+	}, nil
 }
 
 // New creates a new Assembler instance.
-func New(blobStore blobiface.Store) *assembler {
+func New(blobStore blobiface.Store, chunkSize int) contentiface.Assembler { // Added chunkSize parameter
 	return &assembler{
 		blobStore: blobStore,
+		chunkSize: chunkSize, // Assign chunkSize
 	}
 }
 
@@ -44,7 +52,6 @@ func (a *assembler) NewReader(fileMeta metaiface.FileMeta) (io.Reader, error) {
 // WriteContent processes the content from the reader, stores it (either embedded or as sharded blobs),
 // and returns the content ID and the generated FileMeta object.
 func (a *assembler) WriteContent(r io.Reader, size int64) (contentID string, fileMeta metaiface.FileMeta, err error) {
-	var isLargeFile bool
 
 	if size > 0 { // Case 1: Size is known
 		if size <= metav2.EmbeddedFileSizeThreshold {
@@ -63,7 +70,6 @@ func (a *assembler) WriteContent(r io.Reader, size int64) (contentID string, fil
 			}
 		} else {
 			// Known large file: chunk directly.
-			isLargeFile = true
 			chunkID, meta, chunkErr := a.chunkData(r)
 			if chunkErr != nil {
 				// Note: chunkData does not return partial blob hashes, so no cleanup needed here.
@@ -99,7 +105,6 @@ func (a *assembler) WriteContent(r io.Reader, size int64) (contentID string, fil
 				EmbeddedData: contentBytes,
 			}
 		} else {
-			isLargeFile = true
 			fullStream := io.MultiReader(bytes.NewReader(contentBytes), r)
 			chunkID, meta, chunkErr := a.chunkData(fullStream)
 			if chunkErr != nil {
@@ -136,9 +141,9 @@ func (a *assembler) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
 	var hashes []string
 	var totalSize int64
 	// Use a default chunk size if not configured, or pass it from the service
-	chunkSize := 4 * 1024 * 1024 // DefaultChunkSize, should come from config
+	// chunkSize := 4 * 1024 * 1024 // DefaultChunkSize, should come from config // Removed hardcoded chunkSize
 
-	buf := make([]byte, chunkSize)
+	buf := make([]byte, a.chunkSize) // Used a.chunkSize
 
 	// Create a hasher that will calculate the hash of the entire stream.
 	streamHasher := sha256.New()
@@ -178,7 +183,7 @@ func (a *assembler) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
 		MimeType:   "application/octet-stream",
 		RefCount:   1,
 		BlobHashes: hashes,
-		BlobSize:   int32(chunkSize), // Use the actual chunk size
+		BlobSize:   int32(a.chunkSize), // Used a.chunkSize
 	}
 
 	return overallHash, meta, nil
@@ -188,36 +193,6 @@ func (a *assembler) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
 func calculateContentHash(data []byte) string {
 	hash := sha256.Sum256(data)
 	return hex.EncodeToString(hash[:])
-}
-
-// ... (NewReader 保持不变) ...
-
-// WriteContent 成为处理内容的唯一权威实现
-func (a *assembler) WriteContent(r io.Reader, size int64) (contentID string, fileMeta metaiface.FileMeta, err error) {
-	// ... (这里的逻辑保持不变，它已经是正确的) ...
-	// 唯一的改动是在调用 a.chunkData 时，chunkData 内部会使用 a.chunkSize
-	// ...
-}
-
-// chunkData 使用结构体中的 chunkSize
-func (a *assembler) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
-	var hashes []string
-	var totalSize int64
-	// 使用配置的 chunk size，而不是硬编码
-	buf := make([]byte, a.chunkSize)
-
-	// ... (其余逻辑不变) ...
-
-	meta := &metav2.FileMetaV2{
-		FileSize:   totalSize,
-		ModifyTime: time.Now().Unix(),
-		MimeType:   "application/octet-stream",
-		RefCount:   1,
-		BlobHashes: hashes,
-		BlobSize:   int32(a.chunkSize), // <-- 使用实际的 chunk size
-	}
-
-	return overallHash, meta, nil
 }
 
 func (a *assembler) readShards(shards []string) (io.Reader, error) {
@@ -258,4 +233,31 @@ func newChunkReader(storage blobiface.Store, hashes []string) io.Reader {
 		storage: storage,
 		hashes:  hashes,
 	}
+}
+
+type chunkWriter struct {
+	storage blobiface.Store
+	hashes  []string
+	current int
+	reader  io.Reader
+}
+
+func (c *chunkWriter) Write(p []byte) (n int, err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *chunkWriter) Close() error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *chunkWriter) Commit() (*contentiface.Receipt, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *chunkWriter) Abort() error {
+	//TODO implement me
+	panic("implement me")
 }
