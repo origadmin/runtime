@@ -33,7 +33,7 @@ type file struct {
 }
 
 // NewSource new a file source.
-func NewSource(path string, opts ...Option) config.Source {
+func NewSource(path string, opts ...FileOption) config.Source {
 	f := &file{
 		path:      path,
 		ignores:   defaultIgnores,
