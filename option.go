@@ -1,14 +1,10 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package runtime implements the functions, types, and interfaces for the module.
 package runtime
 
 import (
 	"os"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/transport"
 
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
@@ -21,6 +17,7 @@ type Options struct {
 	Logger        log.Logger
 	Signals       []os.Signal
 	Resolver      config.Resolver
+	Servers       []transport.Server
 }
 
 type Option func(*Options)
@@ -65,5 +62,11 @@ func WithDefaultOptions() Option {
 func WithContext(ctx context.Context) Option {
 	return func(o *Options) {
 		o.Context = ctx
+	}
+}
+
+func WithServers(servers ...transport.Server) Option {
+	return func(o *Options) {
+		o.Servers = append(o.Servers, servers...)
 	}
 }

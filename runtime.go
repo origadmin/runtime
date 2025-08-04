@@ -54,8 +54,9 @@ type Runtime interface {
 	Client() Runtime
 	Builder() Builder
 	Context() context.Context
-	Load(opts ...config.Option) error
-	CreateApp(...transport.Server) *kratos.App
+	Load(bs *bootstrap.Bootstrap, opts ...Option) error
+	Run() error
+	Stop() error
 	WithLoggerAttrs(kvs ...any) Runtime
 	SetRegistry(registrar registry.KRegistrar)
 }
@@ -65,12 +66,13 @@ type runtime struct {
 	loaded    *atomic.Bool
 	prefix    string
 	signals   []os.Signal
-	source    *configv1.SourceConfig
 	bootstrap *bootstrap.Bootstrap
 	logger    log.KLogger
 	loader    *config.Loader
 	registrar registry.KRegistrar
 	client    bool
+	app       *kratos.App
+	servers   []transport.Server
 }
 
 func (r *runtime) SetRegistry(registrar registry.KRegistrar) {
@@ -120,19 +122,43 @@ func (r *runtime) SetSignals(signals []os.Signal) {
 	r.signals = signals
 }
 
-func (r *runtime) IsLoaded() bool {
-	return r.loaded.Load()
-}
-
-func (r *runtime) Load(opts ...config.Option) error {
-	if r.IsLoaded() {
+func (r *runtime) Load(bs *bootstrap.Bootstrap, opts ...Option) error {
+	if r.loaded.Load() {
 		return nil
 	}
+
+	r.bootstrap = bs
+
+	options := settings.ApplyZero(opts)
+	r.servers = options.Servers
+
+	if options.Context != nil {
+		r.ctx = options.Context
+	}
+	if options.Prefix != "" {
+		r.prefix = options.Prefix
+	}
+	if options.Logger != nil {
+		r.logger = options.Logger
+	}
+	if len(options.Signals) > 0 {
+		r.signals = options.Signals
+	}
+	if options.Resolver != nil {
+		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
+		if err := r.loader.SetResolver(options.Resolver); err != nil {
+			return err
+		}
+	} else {
+		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
+	}
+
 	sourceConfig, err := bootstrap.LoadSourceConfig(r.bootstrap.ConfigFilePath())
 	if err != nil {
 		return errors.Wrap(err, "load source config")
 	}
 	log.NewHelper(log.GetLogger()).Infof("loading config: %+v", sourceConfig)
+
 	opts = append(opts, config.WithServiceName(r.bootstrap.ServiceName()))
 	if sourceConfig.Env {
 		err := envsetup.SetWithPrefix(r.prefix, sourceConfig.EnvArgs)
@@ -149,6 +175,7 @@ func (r *runtime) Load(opts ...config.Option) error {
 	if err != nil {
 		return err
 	}
+
 	// Initialize the logs
 	if r.logger == nil {
 		if err := r.initLogger(resolved.Logger()); err != nil {
@@ -156,8 +183,38 @@ func (r *runtime) Load(opts ...config.Option) error {
 		}
 	}
 
+	// Build registrar
+	rr, err := r.buildRegistrar()
+	if err != nil {
+		_ = r.WithLoggerAttrs("module", "runtime").Log(log.LevelError, "create registrar failed", err)
+	} else if rr != nil {
+		r.registrar = rr
+	}
+
+	// Create Kratos App
+	r.app = r.createKratosApp()
+
 	r.loaded.Store(true)
 	return nil
+}
+
+func (r *runtime) createKratosApp() *kratos.App {
+	opts := buildServiceOptions(r.bootstrap.ServiceInfo())
+	opts = append(opts,
+		kratos.Context(r.ctx),
+		kratos.Logger(r.WithLoggerAttrs("module", "server")),
+		kratos.Signal(r.signals...),
+	)
+
+	if r.registrar != nil {
+		opts = append(opts, kratos.Registrar(r.registrar))
+	}
+
+	if len(r.servers) > 0 {
+		opts = append(opts, kratos.Server(r.servers...))
+	}
+
+	return kratos.New(opts...)
 }
 
 func (r *runtime) buildRegistrar() (registry.KRegistrar, error) {
@@ -175,39 +232,12 @@ func (r *runtime) buildRegistrar() (registry.KRegistrar, error) {
 	return registrar, nil
 }
 
-func (r *runtime) Resolve(fn func(kConfig config.KConfig) error) error {
-	if fn == nil {
-		return errors.New("resolve function is nil")
+func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
+	if loggingCfg == nil {
+		return errors.New("logger config is nil")
 	}
-	if err := r.Load(); err != nil {
-		return err
-	}
-	source, err := r.loader.GetSource()
-	if err != nil {
-		return err
-	}
-	return fn(source)
-}
-
-func (r *runtime) CreateApp(ss ...transport.Server) *kratos.App {
-	opts := buildServiceOptions(r.bootstrap.ServiceInfo())
-	opts = append(opts,
-		kratos.Context(r.ctx),
-		kratos.Logger(r.WithLogger("module", "server")),
-		kratos.Signal(r.signals...),
-	)
-	rr, err := r.buildRegistrar()
-	if err != nil {
-		_ = r.WithLogger("module", "runtime").Log(log.LevelError, "create registrar failed", err)
-	} else if rr != nil {
-		opts = append(opts, kratos.Registrar(rr))
-	}
-
-	if len(ss) > 0 {
-		opts = append(opts, kratos.Server(ss...))
-	}
-
-	return kratos.New(opts...)
+	r.logger = log.New(loggingCfg)
+	return nil
 }
 
 func buildServiceOptions(info bootstrap.ServiceInfo) []kratos.Option {
@@ -219,24 +249,27 @@ func buildServiceOptions(info bootstrap.ServiceInfo) []kratos.Option {
 	}
 }
 
-func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
-	if loggingCfg == nil {
-		return errors.New("logger config is nil")
+func defaultSignals() []os.Signal {
+	return []os.Signal{
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
 	}
-
-	r.logger = log.New(loggingCfg)
-	return nil
 }
 
-func (r *runtime) reload(bs *bootstrap.Bootstrap, opts []config.Option) error {
-	r.loaded.Store(false)
-	r.bootstrap = bs
-
-	if err := r.Load(opts...); err != nil {
-		return err
+func (r *runtime) Run() error {
+	if r.app == nil {
+		return errors.New("kratos app is not created, call Load first")
 	}
+	return r.app.Run()
+}
 
-	return nil
+func (r *runtime) Stop() error {
+	if r.app == nil {
+		return nil
+	}
+	return r.app.Stop()
 }
 
 // Global function returns the interface type
@@ -263,38 +296,8 @@ func newRuntime() *runtime {
 func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
 	r := newRuntime()
 	options := settings.ApplyZero(opts)
-
-	if options.Context != nil {
-		r.ctx = options.Context
-	}
-	if options.Prefix != "" {
-		r.prefix = options.Prefix
-	}
-	if options.Logger != nil {
-		r.logger = options.Logger
-	}
-	if len(options.Signals) > 0 {
-		r.signals = options.Signals
-	}
-	if options.Resolver != nil {
-		//r.resolver = options.Resolver
-		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
-		if err := r.loader.SetResolver(options.Resolver); err != nil {
-			return nil, err
-		}
-	}
-
-	if err := r.reload(bs, options.ConfigOptions); err != nil {
+	if err := r.Load(bs, options.ConfigOptions...); err != nil {
 		return nil, err
 	}
 	return r, nil
-}
-
-func defaultSignals() []os.Signal {
-	return []os.Signal{
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT,
-	}
 }
