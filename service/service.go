@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package service implements the functions, types, and interfaces for the module.
 package service
 
 import (
@@ -12,6 +7,12 @@ import (
 	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
+
+// ServiceInfo is a service info.
+type ServiceInfo struct {
+	Name    string
+	Version string
+}
 
 type ServerBuilder interface {
 	factory.Registry[ServerFactory]

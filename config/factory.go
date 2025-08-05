@@ -38,7 +38,7 @@ func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *interfaces.Optio
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
 func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
-	options := settings.ApplyZero(opts)
+	options := settings.Apply(&interfaces.Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 	sources := options.Sources
 	if sources == nil {
 		sources = make([]kratosconfig.Source, 0)

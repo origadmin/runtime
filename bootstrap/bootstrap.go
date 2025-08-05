@@ -18,6 +18,10 @@ const (
 	DefaultWorkDir    = "."
 )
 
+var (
+	buildEnv = defaultEnv
+)
+
 // Bootstrap struct to hold bootstrap information
 type Bootstrap struct {
 	daemon      bool
@@ -115,10 +119,6 @@ func (b *Bootstrap) SetServiceID(serviceID string) {
 func (b *Bootstrap) SetServiceName(serviceName string) {
 	b.serviceName = serviceName
 }
-
-var (
-	buildEnv = defaultEnv
-)
 
 func (b *Bootstrap) SetEnv(env string) {
 	b.env = env

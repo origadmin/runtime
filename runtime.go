@@ -1,570 +1,138 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package runtime provides functions for loading configurations and registering services.
 package runtime
 
 import (
+	"context"
 	"os"
-	"sync/atomic"
-	"syscall"
 
 	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/settings"
+	"github.com/google/uuid"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/config/envsetup"
-	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/registry"
-	"github.com/origadmin/toolkits/errors"
+	"github.com/origadmin/runtime/service"
 )
 
-const (
-	DefaultEnvPrefix = "ORIGADMIN_RUNTIME_SERVICE"
-)
-
-// build is a global variable that holds an instance of the builder struct.
-var (
-	//globalRuntime  = newRuntime()
-	runtimeBuilder = NewBuilder()
-)
-
-// ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
-var ErrNotFound = errors.String("not found")
-
-type Logger interface {
-	Logger() log.KLogger
-	SetLogger(kvs ...any)
-	WithLogger(kvs ...any) log.KLogger
+// App is a kratos app.
+type App struct {
+	kratosApp    *kratos.App
+	configLoader *config.Loader
 }
 
-type SignalHandler interface {
-	Signals() []os.Signal
-	SetSignals([]os.Signal)
-}
+// NewApp creates a new kratos app.
+func NewApp(ctx context.Context, srv *service.ServiceInfo, opts ...Option) (*App, error) {
+	o := settings.Apply(&options{
+		id:      uuid.New().String(),
+		name:    srv.Name,
+		version: srv.Version,
+		sigs:    []os.Signal{os.Interrupt, os.Kill},
+		ctx:     ctx,
+		logger:  log.DefaultLogger,
+	}, opts)
 
-type Runtime interface {
-	Logger
-	SignalHandler
-	Client() Runtime
-	Builder() Builder
-	Context() context.Context
-	Load(bs *bootstrap.Bootstrap, opts ...Option) error
-	Run() error
-	Stop() error
-	WithLoggerAttrs(kvs ...any) Runtime
-	SetRegistry(registrar registry.KRegistrar)
-}
-
-type runtime struct {
-	ctx       context.Context
-	loaded    *atomic.Bool
-	prefix    string
-	signals   []os.Signal
-	bootstrap *bootstrap.Bootstrap
-	logger    log.KLogger
-	loader    *config.Loader
-	registrar registry.KRegistrar
-	client    bool
-	app       *kratos.App
-	servers   []transport.Server
-}
-
-func (r *runtime) SetRegistry(registrar registry.KRegistrar) {
-	r.registrar = registrar
-}
-
-func (r *runtime) Builder() Builder {
-	return runtimeBuilder
-}
-
-func (r *runtime) Context() context.Context {
-	return r.ctx
-}
-
-func (r *runtime) Client() Runtime {
-	rr := *r
-	rr.client = true
-	return &rr
-}
-
-func (r *runtime) WithLoggerAttrs(kvs ...any) Runtime {
-	rr := *r
-	rr.logger = log.With(rr.logger, kvs...)
-	return &rr
-}
-
-import (
-"os"
-"sync/atomic"
-"syscall"
-
-"github.com/go-kratos/kratos/v2"
-"github.com/go-kratos/kratos/v2/transport"
-"github.com/goexts/generic/settings"
-
-configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-"github.com/origadmin/runtime/bootstrap"
-"github.com/origadmin/runtime/config"
-"github.com/origadmin/runtime/config/envsetup"
-"github.com/origadmin/runtime/context"
-"github.com/origadmin/runtime/log"
-"github.com/origadmin/runtime/registry"
-"github.com/origadmin/toolkits/errors"
-"github.com/origadmin/runtime/interfaces"
-)
-
-const (
-	DefaultEnvPrefix = "ORIGADMIN_RUNTIME_SERVICE"
-)
-
-// build is a global variable that holds an instance of the builder struct.
-var (
-	//globalRuntime  = newRuntime()
-	runtimeBuilder = NewBuilder()
-)
-
-// ErrNotFound is an error that is returned when a ConfigBuilder or RegistryBuilder is not found.
-var ErrNotFound = errors.String("not found")
-
-type runtime struct {
-	ctx       context.Context
-	loaded    *atomic.Bool
-	prefix    string
-	signals   []os.Signal
-	bootstrap *bootstrap.Bootstrap
-	logger    log.KLogger
-	loader    *config.Loader
-	registrar registry.KRegistrar
-	client    bool
-	app       *kratos.App
-	servers   []transport.Server
-}
-
-func (r *runtime) SetRegistry(registrar registry.KRegistrar) {
-	r.registrar = registrar
-}
-
-func (r *runtime) Builder() interfaces.Builder {
-	return runtimeBuilder
-}
-
-func (r *runtime) Context() context.Context {
-	return r.ctx
-}
-
-func (r *runtime) Client() interfaces.Runtime {
-	rr := *r
-	rr.client = true
-	return &rr
-}
-
-func (r *runtime) WithLoggerAttrs(kvs ...any) interfaces.Runtime {
-	rr := *r
-	rr.logger = log.With(rr.logger, kvs...)
-	return &rr
-}
-
-func (r *runtime) Logger() log.KLogger {
-	if r.logger == nil {
-		r.logger = log.DefaultLogger
-	}
-	return r.logger
-}
-
-func (r *runtime) SetLogger(kvs ...any) {
-	r.logger = log.With(r.logger, kvs...)
-}
-
-func (r *runtime) WithLogger(kvs ...any) log.KLogger {
-	return log.With(r.Logger(), kvs...)
-}
-
-func (r *runtime) Signals() []os.Signal {
-	return r.signals
-}
-
-func (r *runtime) SetSignals(signals []os.Signal) {
-	r.signals = signals
-}
-
-func (r *runtime) Load(bs *bootstrap.Bootstrap, opts ...Option) error {
-	if r.loaded.Load() {
-		return nil
-	}
-
-	r.bootstrap = bs
-
-	options := settings.ApplyZero(opts)
-	r.servers = options.Servers
-
-	if options.Context != nil {
-		r.ctx = options.Context
-	}
-	if options.Prefix != "" {
-		r.prefix = options.Prefix
-	}
-	if options.Logger != nil {
-		r.logger = options.Logger
-	}
-	if len(options.Signals) > 0 {
-		r.signals = options.Signals
-	}
-	if options.Resolver != nil {
-		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
-		if err := r.loader.SetResolver(options.Resolver); err != nil {
-			return err
-		}
-	} else {
-		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
-	}
-
-	sourceConfig, err := bootstrap.LoadSourceConfig(r.bootstrap.ConfigFilePath())
-	if err != nil {
-		return errors.Wrap(err, "load source config")
-	}
-	log.NewHelper(log.GetLogger()).Infof("loading config: %+v", sourceConfig)
-
-	opts = append(opts, config.WithServiceName(r.bootstrap.ServiceName()))
-	if sourceConfig.Env {
-		err := envsetup.SetWithPrefix(r.prefix, sourceConfig.EnvArgs)
-		if err != nil {
-			return errors.Wrap(err, "set env")
-		}
-		opts = append(opts, config.WithEnvPrefixes(sourceConfig.EnvPrefixes...))
-	}
-
-	if err := r.loader.Load(sourceConfig, opts...); err != nil {
-		return err
-	}
-	resolved, err := r.loader.GetResolved()
-	if err != nil {
-		return err
-	}
-
-	// Initialize the logs
-	if r.logger == nil {
-		if err := r.initLogger(resolved.Logger()); err != nil {
-			return errors.Wrap(err, "init logger")
+	// Initialize and load configuration
+	var loader *config.Loader
+	if o.configSource != nil {
+		loader = config.New() // Use the default builder
+		if err := loader.Load(o.configSource); err != nil {
+			return nil, err
 		}
 	}
 
-	// Build registrar
-	rr, err := r.buildRegistrar()
-	if err != nil {
-		_ = r.WithLoggerAttrs("module", "runtime").Log(log.LevelError, "create registrar failed", err)
-	} else if rr != nil {
-		r.registrar = rr
-	}
-
-	// Create Kratos App
-	r.app = r.createKratosApp()
-
-	r.loaded.Store(true)
-	return nil
-}
-
-func (r *runtime) createKratosApp() *kratos.App {
-	opts := buildServiceOptions(r.bootstrap.ServiceInfo())
-	opts = append(opts,
-		kratos.Context(r.ctx),
-		kratos.Logger(r.WithLoggerAttrs("module", "server")),
-		kratos.Signal(r.signals...),
+	kratosApp := kratos.New(
+		kratos.ID(o.id),
+		kratos.Name(o.name),
+		kratos.Version(o.version),
+		kratos.Metadata(o.metadata),
+		kratos.Server(o.servers...),
+		kratos.Signal(o.sigs...),
+		kratos.Context(o.ctx),
+		kratos.Logger(o.logger),
+		kratos.Registrar(o.registrar),
 	)
 
-	if r.registrar != nil {
-		opts = append(opts, kratos.Registrar(r.registrar))
-	}
-
-	if len(r.servers) > 0 {
-		opts = append(opts, kratos.Server(r.servers...))
-	}
-
-	return kratos.New(opts...)
+	return &App{kratosApp: kratosApp, configLoader: loader}, nil
 }
 
-func (r *runtime) buildRegistrar() (registry.KRegistrar, error) {
-	if r.client {
-		return nil, nil
-	}
-	resolved, err := r.loader.GetResolved()
-	if err != nil {
-		return nil, err
-	}
-	registrar, err := runtimeBuilder.NewRegistrar(resolved.Discovery())
-	if err != nil {
-		return nil, err
-	}
-	return registrar, nil
+// Run starts the application and waits for a stop signal.
+func (a *App) Run() error {
+	return a.kratosApp.Run()
 }
 
-func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
-	if loggingCfg == nil {
-		return errors.New("logger config is nil")
-	}
-	r.logger = log.New(loggingCfg)
-	return nil
+// Stop stops the application.
+func (a *App) Stop() error {
+	return a.kratosApp.Stop()
 }
 
-func buildServiceOptions(info bootstrap.ServiceInfo) []kratos.Option {
-	return []kratos.Option{
-		kratos.ID(info.ID),
-		kratos.Name(info.Name),
-		kratos.Version(info.Version),
-		kratos.Metadata(info.Metadata),
-	}
+// GetConfigLoader returns the config loader.
+func (a *App) GetConfigLoader() *config.Loader {
+	return a.configLoader
 }
 
-func defaultSignals() []os.Signal {
-	return []os.Signal{
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT,
+// Option is an app option.
+type Option func(*options)
+
+type options struct {
+	id           string
+	name         string
+	version      string
+	metadata     map[string]string
+	servers      []transport.Server
+	sigs         []os.Signal
+	ctx          context.Context
+	logger       log.Logger
+	registrar    registry.Registrar
+	configSource *configv1.SourceConfig
+}
+
+// WithID sets the app id.
+func WithID(id string) Option {
+	return func(o *options) {
+		o.id = id
 	}
 }
 
-func (r *runtime) Run() error {
-	if r.app == nil {
-		return errors.New("kratos app is not created, call Load first")
-	}
-	return r.app.Run()
-}
-
-func (r *runtime) Stop() error {
-	if r.app == nil {
-		return nil
-	}
-	return r.app.Stop()
-}
-
-// Global function returns the interface type
-func Global() interfaces.Runtime {
-	return newRuntime()
-}
-
-// GlobalBuilder returns the global Builder instance.
-func GlobalBuilder() interfaces.Builder {
-	return runtimeBuilder
-}
-
-func newRuntime() *runtime {
-	return &runtime{
-		ctx:     context.Background(),
-		loaded:  new(atomic.Bool),
-		prefix:  DefaultEnvPrefix,
-		signals: defaultSignals(),
+// WithVersion sets the app version.
+func WithVersion(version string) Option {
+	return func(o *options) {
+		o.version = version
 	}
 }
 
-// Load uses the global Runtime instance to load configurations and other resources
-// with the provided bootstrap settings. It returns an error if the loading process fails.
-func Load(bs *bootstrap.Bootstrap, opts ...Option) (interfaces.Runtime, error) {
-	r := newRuntime()
-	options := settings.ApplyZero(opts)
-	if err := r.Load(bs, options.ConfigOptions...); err != nil {
-		return nil, err
-	}
-	return r, nil
-}
-
-func (r *runtime) SetLogger(kvs ...any) {
-	r.logger = log.With(r.logger, kvs...)
-}
-
-func (r *runtime) WithLogger(kvs ...any) log.KLogger {
-	return log.With(r.Logger(), kvs...)
-}
-
-func (r *runtime) Signals() []os.Signal {
-	return r.signals
-}
-
-func (r *runtime) SetSignals(signals []os.Signal) {
-	r.signals = signals
-}
-
-func (r *runtime) Load(bs *bootstrap.Bootstrap, opts ...Option) error {
-	if r.loaded.Load() {
-		return nil
-	}
-
-	r.bootstrap = bs
-
-	options := settings.ApplyZero(opts)
-	r.servers = options.Servers
-
-	if options.Context != nil {
-		r.ctx = options.Context
-	}
-	if options.Prefix != "" {
-		r.prefix = options.Prefix
-	}
-	if options.Logger != nil {
-		r.logger = options.Logger
-	}
-	if len(options.Signals) > 0 {
-		r.signals = options.Signals
-	}
-	if options.Resolver != nil {
-		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
-		if err := r.loader.SetResolver(options.Resolver); err != nil {
-			return err
-		}
-	} else {
-		r.loader = config.NewWithBuilder(runtimeBuilder.Config())
-	}
-
-	sourceConfig, err := bootstrap.LoadSourceConfig(r.bootstrap.ConfigFilePath())
-	if err != nil {
-		return errors.Wrap(err, "load source config")
-	}
-	log.NewHelper(log.GetLogger()).Infof("loading config: %+v", sourceConfig)
-
-	opts = append(opts, config.WithServiceName(r.bootstrap.ServiceName()))
-	if sourceConfig.Env {
-		err := envsetup.SetWithPrefix(r.prefix, sourceConfig.EnvArgs)
-		if err != nil {
-			return errors.Wrap(err, "set env")
-		}
-		opts = append(opts, config.WithEnvPrefixes(sourceConfig.EnvPrefixes...))
-	}
-
-	if err := r.loader.Load(sourceConfig, opts...); err != nil {
-		return err
-	}
-	resolved, err := r.loader.GetResolved()
-	if err != nil {
-		return err
-	}
-
-	// Initialize the logs
-	if r.logger == nil {
-		if err := r.initLogger(resolved.Logger()); err != nil {
-			return errors.Wrap(err, "init logger")
-		}
-	}
-
-	// Build registrar
-	rr, err := r.buildRegistrar()
-	if err != nil {
-		_ = r.WithLoggerAttrs("module", "runtime").Log(log.LevelError, "create registrar failed", err)
-	} else if rr != nil {
-		r.registrar = rr
-	}
-
-	// Create Kratos App
-	r.app = r.createKratosApp()
-
-	r.loaded.Store(true)
-	return nil
-}
-
-func (r *runtime) createKratosApp() *kratos.App {
-	opts := buildServiceOptions(r.bootstrap.ServiceInfo())
-	opts = append(opts,
-		kratos.Context(r.ctx),
-		kratos.Logger(r.WithLoggerAttrs("module", "server")),
-		kratos.Signal(r.signals...),
-	)
-
-	if r.registrar != nil {
-		opts = append(opts, kratos.Registrar(r.registrar))
-	}
-
-	if len(r.servers) > 0 {
-		opts = append(opts, kratos.Server(r.servers...))
-	}
-
-	return kratos.New(opts...)
-}
-
-func (r *runtime) buildRegistrar() (registry.KRegistrar, error) {
-	if r.client {
-		return nil, nil
-	}
-	resolved, err := r.loader.GetResolved()
-	if err != nil {
-		return nil, err
-	}
-	registrar, err := runtimeBuilder.NewRegistrar(resolved.Discovery())
-	if err != nil {
-		return nil, err
-	}
-	return registrar, nil
-}
-
-func (r *runtime) initLogger(loggingCfg *configv1.Logger) error {
-	if loggingCfg == nil {
-		return errors.New("logger config is nil")
-	}
-	r.logger = log.New(loggingCfg)
-	return nil
-}
-
-func buildServiceOptions(info bootstrap.ServiceInfo) []kratos.Option {
-	return []kratos.Option{
-		kratos.ID(info.ID),
-		kratos.Name(info.Name),
-		kratos.Version(info.Version),
-		kratos.Metadata(info.Metadata),
+// WithMetadata sets the app metadata.
+func WithMetadata(md map[string]string) Option {
+	return func(o *options) {
+		o.metadata = md
 	}
 }
 
-func defaultSignals() []os.Signal {
-	return []os.Signal{
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT,
+// WithServer sets the app servers.
+func WithServer(srv ...transport.Server) Option {
+	return func(o *options) {
+		o.servers = srv
 	}
 }
 
-func (r *runtime) Run() error {
-	if r.app == nil {
-		return errors.New("kratos app is not created, call Load first")
-	}
-	return r.app.Run()
-}
-
-func (r *runtime) Stop() error {
-	if r.app == nil {
-		return nil
-	}
-	return r.app.Stop()
-}
-
-// Global function returns the interface type
-func Global() Runtime {
-	return newRuntime()
-}
-
-// GlobalBuilder returns the global Builder instance.
-func GlobalBuilder() Builder {
-	return runtimeBuilder
-}
-
-func newRuntime() *runtime {
-	return &runtime{
-		ctx:     context.Background(),
-		loaded:  new(atomic.Bool),
-		prefix:  DefaultEnvPrefix,
-		signals: defaultSignals(),
+// WithSignal sets the app signals.
+func WithSignal(sigs ...os.Signal) Option {
+	return func(o *options) {
+		o.sigs = sigs
 	}
 }
 
-// Load uses the global Runtime instance to load configurations and other resources
-// with the provided bootstrap settings. It returns an error if the loading process fails.
-func Load(bs *bootstrap.Bootstrap, opts ...Option) (Runtime, error) {
-	r := newRuntime()
-	options := settings.ApplyZero(opts)
-	if err := r.Load(bs, options.ConfigOptions...); err != nil {
-		return nil, err
+// WithLogger sets the app logger.
+func WithLogger(logger log.Logger) Option {
+	return func(o *options) {
+		o.logger = logger
 	}
-	return r, nil
+}
+
+// WithRegistrar sets the app registrar.
+func WithRegistrar(r registry.Registrar) Option {
+	return func(o *options) {
+		o.registrar = r
+	}
 }

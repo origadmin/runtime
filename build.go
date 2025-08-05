@@ -8,25 +8,26 @@ package runtime
 import (
 	"sync"
 
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/transport"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/context"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
 	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/runtime/service/grpc"
 	"github.com/origadmin/runtime/service/http"
-	"github.com/origadmin/runtime/interfaces"
 )
 
 // builder is a struct that holds a map of ConfigBuilders and a map of RegistryBuilders.
 type builder struct {
 	syncMux           sync.RWMutex
 	syncs             map[string]config.Syncer
-	ConfigBuilder     config.Builder
+	ConfigBuilder     interfaces.ConfigBuilder
 	RegistryBuilder   registry.Builder
 	ServiceBuilder    service.ServerBuilder
 	MiddlewareBuilder middleware.Builder
@@ -48,7 +49,8 @@ func (b *builder) Middleware() middleware.Builder {
 	return b.MiddlewareBuilder
 }
 
-func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, options ...config.Option) (config.KConfig, error) {
+func (b *builder) NewConfig(sourceConfig *configv1.SourceConfig, options ...config.Option) (kratosconfig.Config,
+	error) {
 	return b.ConfigBuilder.NewConfig(sourceConfig, options...)
 }
 
