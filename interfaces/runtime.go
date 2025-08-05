@@ -6,7 +6,6 @@ import (
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/registry"
 )
 
 type Logger interface {
@@ -30,5 +29,4 @@ type Runtime interface {
 	Run() error
 	Stop() error
 	WithLoggerAttrs(kvs ...any) Runtime
-	SetRegistry(registrar registry.KRegistrar)
 }

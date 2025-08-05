@@ -13,13 +13,16 @@ import (
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/interfaces"
+	// logpkg "github.com/origadmin/runtime/log" // Alias for runtime/log
+	// middlewarepkg "github.com/origadmin/runtime/middleware" // Alias for runtime/middleware
 	"github.com/origadmin/runtime/service"
 )
 
 // App is a kratos app.
 type App struct {
 	kratosApp    *kratos.App
-	configLoader *config.Loader
+	resolvedConfig interfaces.Resolved // Add resolvedConfig field
 }
 
 // NewApp creates a new kratos app.
@@ -34,13 +37,36 @@ func NewApp(ctx context.Context, srv *service.ServiceInfo, opts ...Option) (*App
 	}, opts)
 
 	// Initialize and load configuration
-	var loader *config.Loader
+	var resolved interfaces.Resolved
 	if o.configSource != nil {
-		loader = config.New() // Use the default builder
+		loader := config.NewWithBuilder(defaultManager.ConfigBuilder) // Use defaultManager.ConfigBuilder
 		if err := loader.Load(o.configSource); err != nil {
 			return nil, err
 		}
+		resolved, _ = loader.GetResolved()
 	}
+
+	// Initialize and set logger
+	// if resolved != nil && resolved.Logger() != nil {
+	// 	o.logger = logpkg.New(resolved.Logger())
+	// 	log.SetLogger(o.logger)
+	// }
+
+	// Build server middlewares
+	// var serverMiddlewares []kratosmiddleware.Middleware
+	// if resolved != nil && resolved.Middleware() != nil {
+	// 	serverMiddlewares = defaultManager.MiddlewareProvider.BuildServer(resolved.Middleware())
+	// }
+
+	// Apply middlewares to servers
+	// for i, s := range o.servers {
+	// 	if hs, ok := s.(*http.Server); ok {
+	// 		hs.Use(serverMiddlewares...)
+	// 	} else if gs, ok := s.(*grpc.Server); ok {
+	// 		gs.Use(serverMiddlewares...)
+	// 	}
+	// 	o.servers[i] = s
+	// }
 
 	kratosApp := kratos.New(
 		kratos.ID(o.id),
@@ -54,7 +80,7 @@ func NewApp(ctx context.Context, srv *service.ServiceInfo, opts ...Option) (*App
 		kratos.Registrar(o.registrar),
 	)
 
-	return &App{kratosApp: kratosApp, configLoader: loader}, nil
+	return &App{kratosApp: kratosApp, resolvedConfig: resolved}, nil
 }
 
 // Run starts the application and waits for a stop signal.
@@ -67,9 +93,9 @@ func (a *App) Stop() error {
 	return a.kratosApp.Stop()
 }
 
-// GetConfigLoader returns the config loader.
-func (a *App) GetConfigLoader() *config.Loader {
-	return a.configLoader
+// GetResolvedConfig returns the resolved configuration.
+func (a *App) GetResolvedConfig() interfaces.Resolved {
+	return a.resolvedConfig
 }
 
 // Option is an app option.
@@ -134,5 +160,12 @@ func WithLogger(logger log.Logger) Option {
 func WithRegistrar(r registry.Registrar) Option {
 	return func(o *options) {
 		o.registrar = r
+	}
+}
+
+// WithConfigSource sets the config source for the app.
+func WithConfigSource(cfg *configv1.SourceConfig) Option {
+	return func(o *options) {
+		o.configSource = cfg
 	}
 }

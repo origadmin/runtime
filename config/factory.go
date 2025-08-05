@@ -65,6 +65,12 @@ func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces
 	return NewSourceConfig(options.ConfigOptions...), nil
 }
 
+func (b *configBuilder) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...interfaces.Option) error {
+	// This method is a placeholder. Actual synchronization logic would go here.
+	// For now, we'll just return nil or an error if needed.
+	return nil
+}
+
 func NewBuilder() interfaces.ConfigBuilder {
 	return &configBuilder{
 		Registry: factory.New[interfaces.ConfigFactory](),

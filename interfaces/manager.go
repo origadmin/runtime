@@ -1,18 +1,17 @@
 package interfaces
 
 import (
-	"github.com/go-kratos/kratos/v2"
-
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
-	"github.com/origadmin/runtime/middleware"
+	kratosmiddleware "github.com/go-kratos/kratos/v2/middleware" // Alias for kratos middleware
+	"github.com/go-kratos/kratos/v2/transport"
 )
 
 type MiddlewareProvider interface {
-	BuildClient(cfg *middlewarev1.Middleware, opts ...middleware.Option) []middleware.KMiddleware
-	BuildServer(cfg *middlewarev1.Middleware, opts ...middleware.KMiddleware) []middleware.KMiddleware
+	BuildClient(cfg MiddlewareConfig, opts ...interface{}) []kratosmiddleware.Middleware
+	BuildServer(cfg MiddlewareConfig, opts ...interface{}) []kratosmiddleware.Middleware
 }
 
-type ServiceProvider interface {
-	CreateService(cfg *configv1.Service) (*kratos.App, error)
+// ServerBuilder is an interface for building transport servers (HTTP, gRPC).
+type ServerBuilder interface {
+	DefaultBuild(ServiceConfig, ...interface{}) (transport.Server, error)
+	Build(string, ServiceConfig, ...interface{}) (transport.Server, error)
 }

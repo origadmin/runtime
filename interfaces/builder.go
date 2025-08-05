@@ -2,7 +2,7 @@ package interfaces
 
 type Builder interface {
 	Config() ConfigBuilder
-	//Registry() RegistryBuilder
+	Registry() RegistryBuilder
 	//Service() ServerBuilder
 	//Middleware() MiddlewareBuilder
 }

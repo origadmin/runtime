@@ -1,13 +1,9 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package config implements the functions, types, and interfaces for the module.
 package config
 
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/mitchellh/mapstructure"
 
@@ -16,6 +12,7 @@ import (
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/log"
 )
 
 type ResolveFunc func(config kratosconfig.Config) (interfaces.Resolved, error)
@@ -26,30 +23,44 @@ func (r ResolveFunc) Resolve(config kratosconfig.Config) (interfaces.Resolved, e
 
 type resolver struct {
 	values map[string]any
+
+	// Cached decoded values
+	servicesOnce   sync.Once
+	cachedServices interfaces.ServiceConfig
+
+	discoveryOnce   sync.Once
+	cachedDiscovery interfaces.DiscoveryConfig
+
+	middlewareOnce   sync.Once
+	cachedMiddleware interfaces.MiddlewareConfig
+
+	loggerOnce   sync.Once
+	cachedLogger interfaces.LoggerConfig
 }
 
-func (r resolver) Services() []*configv1.Service {
-	var ss []*configv1.Service
-	if r.loadConfig("service", &ss) {
-		return ss
-	}
-	return nil
+func (r *resolver) Services() interfaces.ServiceConfig {
+	r.servicesOnce.Do(func() {
+		var ss configv1.Service
+		if !r.decodeConfig("service", &ss) {
+			log.Warnf("Failed to load 'service' configuration or it does not exist.")
+		}
+		r.cachedServices = &ss
+	})
+	return r.cachedServices
 }
 
-func (r resolver) Discovery() *configv1.Discovery {
-	v, ok := r.values["discovery"]
-	if !ok {
-		return nil
-	}
-	var discovery configv1.Discovery
-	err := mapstructure.Decode(v, &discovery)
-	if err != nil {
-		return nil
-	}
-	return &discovery
+func (r *resolver) Discovery() interfaces.DiscoveryConfig {
+	r.discoveryOnce.Do(func() {
+		var discovery configv1.Discovery
+		if !r.decodeConfig("discovery", &discovery) {
+			log.Warnf("Failed to load 'discovery' configuration or it does not exist.")
+		}
+		r.cachedDiscovery = &discovery
+	})
+	return r.cachedDiscovery
 }
 
-func (r resolver) WithDecode(name string, v any, decode func([]byte, any) error) error {
+func (r *resolver) WithDecode(name string, v any, decode func([]byte, any) error) error {
 	if v == nil {
 		return fmt.Errorf("value %s is nil", name)
 	}
@@ -67,7 +78,7 @@ func (r resolver) WithDecode(name string, v any, decode func([]byte, any) error)
 	return decode(marshal, v)
 }
 
-func (r resolver) Value(name string) (any, error) {
+func (r *resolver) Value(name string) (any, error) {
 	v, ok := r.values[name]
 	if !ok {
 		return nil, fmt.Errorf("value %s not found", name)
@@ -75,28 +86,38 @@ func (r resolver) Value(name string) (any, error) {
 	return v, nil
 }
 
-func (r resolver) Middleware() *middlewarev1.Middleware {
-	var m middlewarev1.Middleware
-	if r.loadConfig("middleware", &m) {
-		return &m
-	}
-	return nil
+func (r *resolver) Middleware() interfaces.MiddlewareConfig {
+	r.middlewareOnce.Do(func() {
+		var m middlewarev1.Middleware
+		if !r.decodeConfig("middleware", &m) {
+			log.Warnf("Failed to load 'middleware' configuration or it does not exist.")
+		}
+		r.cachedMiddleware = &m
+	})
+	return r.cachedMiddleware
 }
 
-func (r resolver) Logger() *configv1.Logger {
-	var l configv1.Logger
-	if r.loadConfig("logger", &l) {
-		return &l
-	}
-	return nil
+func (r *resolver) Logger() interfaces.LoggerConfig {
+	r.loggerOnce.Do(func() {
+		var l configv1.Logger
+		if !r.decodeConfig("logger", &l) {
+			log.Warnf("Failed to load 'logger' configuration or it does not exist.")
+		}
+		r.cachedLogger = &l
+	})
+	return r.cachedLogger
 }
 
-func (r resolver) loadConfig(key string, target interface{}) bool {
+func (r *resolver) decodeConfig(key string, target interface{}) bool {
 	v, ok := r.values[key]
 	if !ok {
 		return false
 	}
-	return mapstructure.Decode(v, target) == nil
+	if err := mapstructure.Decode(v, target); err != nil {
+		log.Errorf("Failed to decode config key '%s': %v", key, err)
+		return false
+	}
+	return true
 }
 
 var DefaultResolver interfaces.Resolver = ResolveFunc(func(config kratosconfig.Config) (interfaces.Resolved, error) {
@@ -105,5 +126,5 @@ var DefaultResolver interfaces.Resolver = ResolveFunc(func(config kratosconfig.C
 	if err != nil {
 		return nil, err
 	}
-	return r, nil
+	return &r, nil // Return pointer to resolver
 })

@@ -2,22 +2,75 @@ package interfaces
 
 import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 )
 
-type Resolver interface {
-	Resolve(config kratosconfig.Config) (Resolved, error)
+type ServiceConfig interface {
+	GetType() string
+	// Add other methods from configv1.Service that are needed by Resolved
+}
+
+type LoggerConfig interface {
+	GetDisabled() bool
+	GetFile() *LoggerFileConfig
+	GetStdout() bool
+	GetFormat() string
+	GetLevel() string
+	// Add other methods from configv1.Logger that are needed by Resolved
+}
+
+type LoggerFileConfig interface {
+	GetPath() string
+	GetLumberjack() bool
+	GetMaxSize() int32
+	GetMaxAge() int32
+	GetMaxBackups() int32
+	GetLocalTime() bool
+	GetCompress() bool
+	// Add other methods from configv1.Logger.File that are needed by Resolved
+}
+
+type MiddlewareConfig interface {
+	GetEnabledMiddlewares() []string
+	GetJwt() *MiddlewareJwtConfig
+	GetSelector() *MiddlewareSelectorConfig
+	GetMetadata() *MiddlewareMetadataConfig
+	GetRateLimiter() *MiddlewareRateLimiterConfig
+	GetValidator() *MiddlewareValidatorConfig
+	// Add other methods from middlewarev1.Middleware that are needed by Resolved
+}
+
+type MiddlewareJwtConfig interface {
+	GetEnabled() bool
+	// Add other methods from middlewarev1.Middleware.Jwt that are needed by Resolved
+}
+
+type MiddlewareSelectorConfig interface {
+	GetEnabled() bool
+	// Add other methods from middlewarev1.Middleware.Selector that are needed by Resolved
+}
+
+type MiddlewareMetadataConfig interface {
+	GetEnabled() bool
+	// Add other methods from middlewarev1.Middleware.Metadata that are needed by Resolved
+}
+
+type MiddlewareRateLimiterConfig interface {
+	GetEnabled() bool
+	// Add other methods from middlewarev1.Middleware.RateLimiter that are needed by Resolved
+}
+
+type MiddlewareValidatorConfig interface {
+	GetEnabled() bool
+	// Add other methods from middlewarev1.Middleware.Validator that are needed by Resolved
 }
 
 type Resolved interface {
 	WithDecode(name string, v any, decode func([]byte, any) error) error
 	Value(name string) (any, error)
-	Middleware() *middlewarev1.Middleware
-	Services() []*configv1.Service
-	Logger() *configv1.Logger
-	Discovery() *configv1.Discovery
+	Middleware() MiddlewareConfig
+	Services() []ServiceConfig
+	Logger() LoggerConfig
+	Discovery() DiscoveryConfig
 }
 
 type ResolveObserver interface {

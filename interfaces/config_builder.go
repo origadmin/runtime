@@ -11,6 +11,7 @@ import (
 type ConfigBuilder interface {
 	factory.Registry[ConfigFactory]
 	NewConfig(*configv1.SourceConfig, ...Option) (kratosconfig.Config, error)
+	SyncConfig(*configv1.SourceConfig, any, ...Option) error // Add SyncConfig method
 }
 
 type ConfigFactory interface {
@@ -24,4 +25,10 @@ type ConfigSyncer interface {
 
 type ConfigProtoSyncer interface {
 	SyncConfig(*configv1.SourceConfig, string, proto.Message, *Options) error
+}
+
+type FileConfig func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
+
+func (f FileConfig) NewSource(sourceConfig *configv1.SourceConfig, opts *Options) (kratosconfig.Source, error) {
+	return f(sourceConfig, opts)
 }

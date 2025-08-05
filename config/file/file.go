@@ -6,11 +6,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-kratos/kratos/v2/config"
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
+	kratoskratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/goexts/generic/settings"
+
+	kratosconfigv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/interfaces"
 )
 
-var _ config.Source = (*file)(nil)
+var _ kratoskratosconfig.Source = (*file)(nil)
 
 // Temporary file suffixes that are ignored by default
 var defaultIgnores = []string{
@@ -33,7 +37,7 @@ type file struct {
 }
 
 // NewSource new a file source.
-func NewSource(path string, opts ...FileOption) config.Source {
+func NewSource(path string, opts ...FileOption) kratosconfig.Source {
 	f := &file{
 		path:      path,
 		ignores:   defaultIgnores,
@@ -42,7 +46,7 @@ func NewSource(path string, opts ...FileOption) config.Source {
 	return settings.Apply(f, opts)
 }
 
-func (f *file) loadFile(path string) (*config.KeyValue, error) {
+func (f *file) loadFile(path string) (*kratosconfig.KeyValue, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -59,7 +63,7 @@ func (f *file) loadFile(path string) (*config.KeyValue, error) {
 	if f.formatter != nil {
 		return f.formatter(info.Name(), data)
 	}
-	return &config.KeyValue{
+	return &kratosconfig.KeyValue{
 		Key:    info.Name(),
 		Format: format(info.Name()),
 		Value:  data,
@@ -79,7 +83,7 @@ func (f *file) shouldIgnore(filename string) bool {
 	return false
 }
 
-func (f *file) loadDir(path string) (kvs []*config.KeyValue, err error) {
+func (f *file) loadDir(path string) (kvs []*kratosconfig.KeyValue, err error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -98,7 +102,7 @@ func (f *file) loadDir(path string) (kvs []*config.KeyValue, err error) {
 	return
 }
 
-func (f *file) Load() (kvs []*config.KeyValue, err error) {
+func (f *file) Load() (kvs []*kratosconfig.KeyValue, err error) {
 	fi, err := os.Stat(f.path)
 	if err != nil {
 		return nil, err
@@ -114,17 +118,21 @@ func (f *file) Load() (kvs []*config.KeyValue, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return []*config.KeyValue{kv}, nil
+	return []*kratosconfig.KeyValue{kv}, nil
 }
 
-func (f *file) Watch() (config.Watcher, error) {
+func (f *file) Watch() (kratosconfig.Watcher, error) {
 	return newWatcher(f)
 }
 
-func defaultFormatter(key string, value []byte) (*config.KeyValue, error) {
-	return &config.KeyValue{
+func defaultFormatter(key string, value []byte) (*kratosconfig.KeyValue, error) {
+	return &kratosconfig.KeyValue{
 		Key:    key,
 		Format: format(key),
 		Value:  value,
 	}, nil
+}
+
+func NewConfigSource(cfg *kratosconfigv1.SourceConfig, opts *interfaces.Options) (kratoskratosconfig.Source, error) {
+	return NewSource(cfg.GetPath()), nil
 }
