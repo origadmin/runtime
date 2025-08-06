@@ -44,11 +44,11 @@ graph TD;
 #### 3.1.2 Meta 模块
 - **职责**: 负责文件内容级别的元数据（`FileMeta`）管理。
 - **核心功能**: 提供基于内容哈希（ID）的 `FileMeta` 对象的 `CRUD` 接口。`FileMeta` 包含文件大小、修改时间、数据块哈希列表、引用计数等信息。
-- **关注点**: 文件的版本管理、小文件优化（嵌入）、大文件分块逻辑。此模块内部分为两层： 
+- **关注点**: 文件的版本管理、小文件优化（嵌入）、大文件分块逻辑。此模块内部分为两层：
 - meta.Service (高层服务)
    • 职责: 负责文件内容级别的业务逻辑编排。
    • 核心功能: 处理 io.Reader 数据流，进行分块、计算内容哈希ID、调用 Blob 模块存储数据块，并最终调用 meta.Store 持久化元数据。
-   • 关注点: 文件的版本管理、小文件优化（嵌入）、大文件分块逻辑、内容ID的生成。 
+  • 关注点: 文件的版本管理、小文件优化（嵌入）、大文件分块逻辑、内容ID的生成。
   - meta.Store (底层存储)
    • 职责: 负责 FileMeta 对象的持久化。
    • 核心功能: 提供基于ID的 FileMeta 对象的 CRUD 接口。
@@ -82,7 +82,7 @@ type Storage interface {
     fs.FS
     fs.ReadDirFS
     fs.StatFS
-    
+
     // 扩展接口
     Write(name string, data []byte) error
     Remove(name string) error
@@ -137,7 +137,7 @@ type Manager interface {
 
     // ListChildren retrieves all immediate children of a directory node.
     ListChildren(parentID string) ([]*Node, error)
-    
+
     // MoveNode moves a node to a new parent directory and/or new name.
     MoveNode(nodeID string, newParentID string, newName string) error
 }

@@ -134,5 +134,8 @@ func defaultFormatter(key string, value []byte) (*kratosconfig.KeyValue, error) 
 }
 
 func NewConfigSource(cfg *kratosconfigv1.SourceConfig, opts *interfaces.Options) (kratoskratosconfig.Source, error) {
-	return NewSource(cfg.GetPath()), nil
+	if cfg.GetFile() == nil {
+		return nil, nil // Or return an error if a file source is expected
+	}
+	return NewSource(cfg.GetFile().GetPath()), nil
 }

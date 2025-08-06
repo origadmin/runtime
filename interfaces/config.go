@@ -31,50 +31,38 @@ type LoggerFileConfig interface {
 
 type MiddlewareConfig interface {
 	GetEnabledMiddlewares() []string
-	GetJwt() *MiddlewareJwtConfig
-	GetSelector() *MiddlewareSelectorConfig
-	GetMetadata() *MiddlewareMetadataConfig
-	GetRateLimiter() *MiddlewareRateLimiterConfig
-	GetValidator() *MiddlewareValidatorConfig
-	// Add other methods from middlewarev1.Middleware that are needed by Resolved
+	GetJwt() MiddlewareJwtConfig
+	GetSelector() MiddlewareSelectorConfig
+	GetMetadata() MiddlewareMetadataConfig
+	GetRateLimiter() MiddlewareRateLimiterConfig
+	GetMetrics() MiddlewareMetricsConfig
+	GetValidator() MiddlewareValidatorConfig
 }
 
 type MiddlewareJwtConfig interface {
 	GetEnabled() bool
-	// Add other methods from middlewarev1.Middleware.Jwt that are needed by Resolved
 }
 
 type MiddlewareSelectorConfig interface {
 	GetEnabled() bool
-	// Add other methods from middlewarev1.Middleware.Selector that are needed by Resolved
 }
 
 type MiddlewareMetadataConfig interface {
 	GetEnabled() bool
-	// Add other methods from middlewarev1.Middleware.Metadata that are needed by Resolved
+	GetPrefixes() []string
+	GetData() map[string]string
 }
 
 type MiddlewareRateLimiterConfig interface {
 	GetEnabled() bool
-	// Add other methods from middlewarev1.Middleware.RateLimiter that are needed by Resolved
+}
+
+type MiddlewareMetricsConfig interface {
+	GetEnabled() bool
 }
 
 type MiddlewareValidatorConfig interface {
 	GetEnabled() bool
-	// Add other methods from middlewarev1.Middleware.Validator that are needed by Resolved
-}
-
-type Resolved interface {
-	WithDecode(name string, v any, decode func([]byte, any) error) error
-	Value(name string) (any, error)
-	Middleware() MiddlewareConfig
-	Services() []ServiceConfig
-	Logger() LoggerConfig
-	Discovery() DiscoveryConfig
-}
-
-type ResolveObserver interface {
-	Observer(string, kratosconfig.Value)
 }
 
 type Options struct {

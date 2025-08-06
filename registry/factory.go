@@ -41,4 +41,3 @@ func NewBuilder() RegistryBuilder {
 
 // Ensure buildImpl implements interfaces.RegistryBuilder
 var _ interfaces.RegistryBuilder = (*buildImpl)(nil)
-

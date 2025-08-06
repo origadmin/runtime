@@ -7,8 +7,10 @@ package config
 
 import (
 	"github.com/origadmin/toolkits/errors"
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
 )
 
 var (
 	ErrInvalidConfigType = errors.New("invalid config type")
+	ErrNotFound = kratosconfig.ErrNotFound
 )

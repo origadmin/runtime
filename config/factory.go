@@ -15,16 +15,18 @@ import (
 )
 
 var (
-	DefaultBuilder = NewBuilder()
+	// defaultConfigFactory is the default config factory.
+	defaultConfigFactory = NewFactory()
 )
 
-type configBuilder struct {
+// configFactory is a config factory that implements interfaces.ConfigBuilder.
+type configFactory struct {
 	factory.Registry[interfaces.ConfigFactory]
 }
 
 // RegisterConfigFunc registers a new ConfigBuilder with the given name and function.
-func (b *configBuilder) RegisterConfigFunc(name string, buildFunc BuildFunc) {
-	b.Register(name, buildFunc)
+func (f *configFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
+	f.Register(name, buildFunc)
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
@@ -37,7 +39,7 @@ func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *interfaces.Optio
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
+func (f *configFactory) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
 	options := settings.Apply(&interfaces.Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 	sources := options.Sources
 	if sources == nil {
@@ -45,7 +47,7 @@ func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces
 	}
 
 	for _, t := range cfg.Types {
-		bld, ok := b.Get(t)
+		bld, ok := f.Get(t)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", t)
 		}
@@ -61,18 +63,19 @@ func (b *configBuilder) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces
 		sources = append(sources, configenv.NewSource(options.EnvPrefixes...))
 	}
 
-	options.ConfigOptions = append(options.ConfigOptions, WithSource(sources...))
-	return NewSourceConfig(options.ConfigOptions...), nil
+	options.ConfigOptions = append(options.ConfigOptions, kratosconfig.WithSource(sources...))
+	return kratosconfig.New(options.ConfigOptions...), nil
 }
 
-func (b *configBuilder) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...interfaces.Option) error {
+func (f *configFactory) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...interfaces.Option) error {
 	// This method is a placeholder. Actual synchronization logic would go here.
 	// For now, we'll just return nil or an error if needed.
 	return nil
 }
 
-func NewBuilder() interfaces.ConfigBuilder {
-	return &configBuilder{
+// NewFactory creates a new config factory.
+func NewFactory() interfaces.ConfigBuilder {
+	return &configFactory{
 		Registry: factory.New[interfaces.ConfigFactory](),
 	}
 }

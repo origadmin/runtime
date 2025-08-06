@@ -14,6 +14,12 @@ type ConfigBuilder interface {
 	SyncConfig(*configv1.SourceConfig, any, ...Option) error // Add SyncConfig method
 }
 
+type ConfigFunc func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
+
+func (c ConfigFunc) NewSource(config *configv1.SourceConfig, options *Options) (kratosconfig.Source, error) {
+	return c(config, options)
+}
+
 type ConfigFactory interface {
 	// NewSource creates a new config using the given KConfig and a list of Options.
 	NewSource(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)

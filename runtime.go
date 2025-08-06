@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/go-kratos/kratos/v2"
@@ -13,6 +14,7 @@ import (
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/config/resolver"
 	"github.com/origadmin/runtime/interfaces"
 	// logpkg "github.com/origadmin/runtime/log" // Alias for runtime/log
 	// middlewarepkg "github.com/origadmin/runtime/middleware" // Alias for runtime/middleware
@@ -21,7 +23,7 @@ import (
 
 // App is a kratos app.
 type App struct {
-	kratosApp    *kratos.App
+	kratosApp      *kratos.App
 	resolvedConfig interfaces.Resolved // Add resolvedConfig field
 }
 
@@ -39,11 +41,16 @@ func NewApp(ctx context.Context, srv *service.ServiceInfo, opts ...Option) (*App
 	// Initialize and load configuration
 	var resolved interfaces.Resolved
 	if o.configSource != nil {
-		loader := config.NewWithBuilder(defaultManager.ConfigBuilder) // Use defaultManager.ConfigBuilder
-		if err := loader.Load(o.configSource); err != nil {
-			return nil, err
+		kcfg, err := config.New(o.configSource)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create config: %w", err)
 		}
-		resolved, _ = loader.GetResolved()
+
+		if err := kcfg.Load(); err != nil {
+			return nil, fmt.Errorf("failed to load config: %w", err)
+		}
+
+		resolved = resolver.New(kcfg)
 	}
 
 	// Initialize and set logger

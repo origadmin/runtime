@@ -2,30 +2,23 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package config implements the functions, types, and interfaces for the module.
 package config
 
 import (
-	"google.golang.org/protobuf/proto"
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/interfaces" // Import interfaces package
+	"github.com/origadmin/runtime/interfaces"
 )
 
-type (
-	SyncFunc func(*configv1.SourceConfig, string, any, *interfaces.Options) error
+const Type = "config"
 
-	// Syncer is an interface that defines a method for synchronizing a config.
-	Syncer interface {
-		SyncConfig(*configv1.SourceConfig, string, any, *interfaces.Options) error
-	}
+// NewConfig creates a new config instance.
+func NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
+	return defaultConfigFactory.NewConfig(cfg, opts...)
+}
 
-	// ProtoSyncer is an interface that defines a method for synchronizing a protobuf message.
-	ProtoSyncer interface {
-		SyncConfig(*configv1.SourceConfig, string, proto.Message, *interfaces.Options) error
-	}
-)
-
-func (fn SyncFunc) SyncConfig(cfg *configv1.SourceConfig, key string, value any, opts *interfaces.Options) error {
-	return fn(cfg, key, value, opts)
+// Register registers a config factory.
+func Register(name string, factory interfaces.ConfigFactory) {
+	defaultConfigFactory.Register(name, factory)
 }
