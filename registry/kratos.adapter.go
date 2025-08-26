@@ -6,14 +6,12 @@
 package registry
 
 import (
-	middleware "github.com/go-kratos/kratos/v2/middleware"
+	registry "github.com/go-kratos/kratos/v2/registry"
 )
 
 type (
-	KratosHandler    = middleware.Handler
-	KratosMiddleware = middleware.Middleware
+	KratosDiscovery       = registry.Discovery
+	KratosRegistrar       = registry.Registrar
+	KratosServiceInstance = registry.ServiceInstance
+	KratosWatcher         = registry.Watcher
 )
-
-func KratosChain(m ...middleware.Middleware) middleware.Middleware {
-	return middleware.Chain(m...)
-}

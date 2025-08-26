@@ -14,6 +14,6 @@ type (
 	KratosMiddleware = middleware.Middleware
 )
 
-func Chain(m ...middleware.Middleware) middleware.Middleware {
+func KratosChain(m ...middleware.Middleware) middleware.Middleware {
 	return middleware.Chain(m...)
 }
