@@ -7,49 +7,44 @@ package config
 
 import (
 	config "github.com/go-kratos/kratos/v2/config"
-	_ "github.com/go-kratos/kratos/v2/encoding/json"
-	_ "github.com/go-kratos/kratos/v2/encoding/proto"
-	_ "github.com/go-kratos/kratos/v2/encoding/xml"
-	_ "github.com/go-kratos/kratos/v2/encoding/yaml"
-	// init encoding
 )
 
 var ErrNotFound = config.ErrNotFound
 
 type (
-	Config   = config.Config
-	Decoder  = config.Decoder
-	KeyValue = config.KeyValue
-	Merge    = config.Merge
-	Observer = config.Observer
-	Option   = config.Option
-	Reader   = config.Reader
-	Resolver = config.Resolver
-	Source   = config.Source
-	Value    = config.Value
-	Watcher  = config.Watcher
+	KratosConfig   = config.Config
+	KratosDecoder  = config.Decoder
+	KratosKeyValue = config.KeyValue
+	KratosMerge    = config.Merge
+	KratosObserver = config.Observer
+	KratosOption   = config.Option
+	KratosReader   = config.Reader
+	KratosResolver = config.Resolver
+	KratosSource   = config.Source
+	KratosValue    = config.Value
+	KratosWatcher  = config.Watcher
 )
 
-func New(opts ...config.Option) config.Config {
-	return config.New(opts...)
-}
-
-func WithDecoder(d config.Decoder) config.Option {
+func KratosWithDecoder(d config.Decoder) config.Option {
 	return config.WithDecoder(d)
 }
 
-func WithMergeFunc(m config.Merge) config.Option {
+func KratosWithMergeFunc(m config.Merge) config.Option {
 	return config.WithMergeFunc(m)
 }
 
-func WithResolveActualTypes(enableConvertToType bool) config.Option {
+func KratosWithResolveActualTypes(enableConvertToType bool) config.Option {
 	return config.WithResolveActualTypes(enableConvertToType)
 }
 
-func WithResolver(r config.Resolver) config.Option {
+func KratosWithResolver(r config.Resolver) config.Option {
 	return config.WithResolver(r)
 }
 
-func WithSource(s ...config.Source) config.Option {
+func KratosWithSource(s ...config.Source) config.Option {
 	return config.WithSource(s...)
+}
+
+func NewKratosConfig(opts ...config.Option) config.Config {
+	return config.New(opts...)
 }

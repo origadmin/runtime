@@ -15,6 +15,19 @@ import (
 	"google.golang.org/grpc"
 )
 
+//go:generate adptool .
+//go:adapter:package github.com/go-kratos/kratos/v2/transport/grpc transgrpc
+//go:adapter:ignore NewWrappedStream
+//go:adapter:package:type *
+//go:adapter:package:type:suffix GRPC
+//go:adapter:package:func *
+//go:adapter:package:func:suffix GRPC
+//go:adapter:package github.com/go-kratos/kratos/v2/transport/http transhttp
+//go:adapter:package:type *
+//go:adapter:package:type:suffix HTTP
+//go:adapter:package:func *
+//go:adapter:package:func:suffix HTTP
+
 const DefaultTimeout = 5 * time.Second
 
 type (

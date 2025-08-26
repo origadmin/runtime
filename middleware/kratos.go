@@ -16,7 +16,9 @@ type (
 	KMiddleware = middleware.Middleware
 )
 
-// Chain returns a middleware that executes a chain of middleware.
-func Chain(m ...KMiddleware) KMiddleware {
-	return middleware.Chain(m...)
-}
+//go:generate adptool .
+//go:adapter:package github.com/go-kratos/kratos/v2/middleware
+//go:adapter:package:type *
+//go:adapter:package:type:prefix Kratos
+//go:adapter:package:func *
+//go:adapter:package:func:prefix Kratos
