@@ -15,9 +15,9 @@ import (
 	"github.com/origadmin/toolkits/slogx"
 )
 
-// New creates a new kratos logger based on the provided configuration.
+// NewLogger creates a new kratos logger based on the provided configuration.
 // It uses slog as the underlying logging library and slog-kratos as an adapter.
-func New(cfg *configv1.Logger) log.Logger {
+func NewLogger(cfg *configv1.Logger) log.Logger {
 	if cfg == nil || cfg.GetDisabled() {
 		return NewDiscard()
 	}
