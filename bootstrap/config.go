@@ -24,7 +24,7 @@ func decodeFile(path string, cfg any) error {
 
 	// Decode the file into the config struct
 	if err := codec.DecodeFromFile(path, cfg); err != nil {
-		return errors.Wrapf(err, "failed to parse config file %s", path)
+		return errors.PkgWrapf(err, "failed to parse config file %s", path)
 	}
 	return nil
 }
@@ -34,7 +34,7 @@ func decodeDirWithDepth(path string, cfg any, ignores []string, depth int) error
 	var ignore string
 	err := filepath.WalkDir(path, func(walkpath string, d os.DirEntry, err error) error {
 		if err != nil {
-			return errors.Wrapf(err, "failed to get config file %s", walkpath)
+			return errors.PkgWrapf(err, "failed to get config file %s", walkpath)
 		}
 		if d.IsDir() && depth > 0 {
 			return decodeDirWithDepth(walkpath, cfg, ignores, depth-1)
@@ -54,7 +54,7 @@ func decodeDirWithDepth(path string, cfg any, ignores []string, depth int) error
 		return nil
 	})
 	if err != nil {
-		return errors.Wrap(err, "load config error")
+		return errors.PkgWrap(err, "load config error")
 	}
 	if !found {
 		return errors.New("no config file found in " + path)
@@ -67,7 +67,7 @@ func decodeDir(path string, cfg any, ignores []string) error {
 	found := false
 	err := filepath.WalkDir(path, func(walkpath string, d os.DirEntry, err error) error {
 		if err != nil {
-			return errors.Wrapf(err, "failed to get config file %s", walkpath)
+			return errors.PkgWrapf(err, "failed to get config file %s", walkpath)
 		}
 		if d.IsDir() {
 			return decodeDirWithDepth(walkpath, cfg, ignores, 3)
@@ -81,7 +81,7 @@ func decodeDir(path string, cfg any, ignores []string) error {
 		return nil
 	})
 	if err != nil {
-		return errors.Wrap(err, "load config error")
+		return errors.PkgWrap(err, "load config error")
 	}
 	if !found {
 		return errors.New("no config file found in " + path)
@@ -93,7 +93,7 @@ func decodeConfig(path string, cfg any) error {
 	// Check if the path is a directory
 	info, err := os.Stat(path)
 	if err != nil {
-		return errors.Wrapf(err, "failed to get config file %s", path)
+		return errors.PkgWrapf(err, "failed to get config file %s", path)
 	}
 	if info.IsDir() {
 		return errors.New("config path is a directory")
@@ -122,7 +122,7 @@ func LoadSourceConfig(path string) (*configv1.SourceConfig, error) {
 	// Get the file info from the path
 	info, err := os.Stat(path)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed locate to config path %s", path)
+		return nil, errors.PkgWrapf(err, "failed locate to config path %s", path)
 	}
 	if info.IsDir() {
 		return nil, errors.New("config path is a directory")

@@ -21,13 +21,16 @@ type Sampler struct {
 	rate      float64
 	counter   int
 	pcgSource *rand.PCG
+	rand      *rand.Rand
 	mu        sync.Mutex
 }
 
 func NewSampler(rate float64) *Sampler {
+	pcg := rand.NewPCG(mustCryptoSeed())
 	return &Sampler{
 		rate:      rate,
-		pcgSource: rand.NewPCG(mustCryptoSeed()),
+		pcgSource: pcg,
+		rand:      rand.New(pcg),
 	}
 }
 
@@ -40,7 +43,7 @@ func (s *Sampler) ShouldLog() bool {
 		s.counter = 0
 		s.pcgSource.Seed(mustCryptoSeed())
 	}
-	return rand.New(s.pcgSource).Float64() < s.rate
+	return s.rand.Float64() < s.rate
 }
 
 type LoggerWithSampling struct {
@@ -59,10 +62,12 @@ type LevelSampling struct {
 	rates         map[log.Level]float64
 	burstCounters map[log.Level]int
 	pcgSource     *rand.PCG
+	rand          *rand.Rand
 	mu            sync.Mutex
 }
 
 func NewLevelSampling(defaultRate float64) *LevelSampling {
+	pcg := rand.NewPCG(mustCryptoSeed())
 	return &LevelSampling{
 		rates: map[log.Level]float64{
 			log.LevelDebug: defaultRate,
@@ -71,7 +76,8 @@ func NewLevelSampling(defaultRate float64) *LevelSampling {
 			log.LevelError: 1.0,
 		},
 		burstCounters: make(map[log.Level]int),
-		pcgSource:     rand.NewPCG(mustCryptoSeed()),
+		pcgSource:     pcg,
+		rand:          rand.New(pcg),
 	}
 }
 
@@ -89,7 +95,7 @@ func (ls *LevelSampling) ShouldSample(level log.Level) bool {
 		ls.pcgSource.Seed(mustCryptoSeed())
 	}
 	ls.burstCounters[level]++
-	return rand.New(ls.pcgSource).Float64() < rate
+	return ls.rand.Float64() < rate
 }
 
 func (ls *LevelSampling) GetRate(level log.Level) float64 {
@@ -105,8 +111,7 @@ type LevelSampler struct {
 }
 
 func (l *LevelSampler) Log(level log.Level, keyvals ...any) error {
-	rate := l.sampler.GetRate(level)
-	if rand.Float64() > rate {
+	if !l.sampler.ShouldSample(level) {
 		return nil
 	}
 	return l.logger.Log(level, keyvals...)
@@ -133,7 +138,7 @@ func cryptoSeed() (uint64, uint64, error) {
 	}()
 
 	if _, err := cryptorand.Read(buf[:]); err != nil {
-		return 0, 0, errors.Wrap(err, "crypto/rand failure")
+		return 0, 0, errors.PkgWrapf(err, "crypto/rand failure")
 	}
 
 	return binary.BigEndian.Uint64(buf[0:8]),
