@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/internal/matcher"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -95,8 +96,8 @@ func ListenerGRPC(lis net.Listener) transgrpc.ServerOption {
 	return transgrpc.Listener(lis)
 }
 
-func LoggerGRPC(l log.Logger) transgrpc.ServerOption {
-	return transgrpc.Logger(l)
+func LoggerGRPC(log.Logger) transgrpc.ServerOption {
+	return transgrpc.Logger()
 }
 
 func MiddlewareGRPC(m ...middleware.Middleware) transgrpc.ServerOption {
@@ -109,6 +110,10 @@ func NetworkGRPC(network string) transgrpc.ServerOption {
 
 func NewServerGRPC(opts ...transgrpc.ServerOption) *transgrpc.Server {
 	return transgrpc.NewServer(opts...)
+}
+
+func NewWrappedStreamGRPC(ctx context.Context, stream grpc.ServerStream, m matcher.Matcher) grpc.ServerStream {
+	return transgrpc.NewWrappedStream(ctx, stream, m)
 }
 
 func OptionsGRPC(opts ...grpc.ServerOption) transgrpc.ServerOption {
@@ -147,8 +152,8 @@ func WithHealthCheckGRPC(healthCheck bool) transgrpc.ClientOption {
 	return transgrpc.WithHealthCheck(healthCheck)
 }
 
-func WithLoggerGRPC(l log.Logger) transgrpc.ClientOption {
-	return transgrpc.WithLogger(l)
+func WithLoggerGRPC(log.Logger) transgrpc.ClientOption {
+	return transgrpc.WithLogger()
 }
 
 func WithMiddlewareGRPC(m ...middleware.Middleware) transgrpc.ClientOption {
@@ -203,8 +208,8 @@ func ContentTypeHTTP(contentType string) transhttp.CallOption {
 	return transhttp.ContentType(contentType)
 }
 
-func DefaultErrorDecoderHTTP(ctx context.Context, res *http.Response) error {
-	return transhttp.DefaultErrorDecoder(ctx, res)
+func DefaultErrorDecoderHTTP(_ context.Context, res *http.Response) error {
+	return transhttp.DefaultErrorDecoder(_, res)
 }
 
 func DefaultErrorEncoderHTTP(w http.ResponseWriter, r *http.Request, err error) {
@@ -215,8 +220,8 @@ func DefaultRequestDecoderHTTP(r *http.Request, v any) error {
 	return transhttp.DefaultRequestDecoder(r, v)
 }
 
-func DefaultRequestEncoderHTTP(ctx context.Context, contentType string, in any) ([]byte, error) {
-	return transhttp.DefaultRequestEncoder(ctx, contentType, in)
+func DefaultRequestEncoderHTTP(_ context.Context, contentType string, in any) ([]byte, error) {
+	return transhttp.DefaultRequestEncoder(_, contentType, in)
 }
 
 func DefaultRequestQueryHTTP(r *http.Request, v any) error {
@@ -227,8 +232,8 @@ func DefaultRequestVarsHTTP(r *http.Request, v any) error {
 	return transhttp.DefaultRequestVars(r, v)
 }
 
-func DefaultResponseDecoderHTTP(ctx context.Context, res *http.Response, v any) error {
-	return transhttp.DefaultResponseDecoder(ctx, res, v)
+func DefaultResponseDecoderHTTP(_ context.Context, res *http.Response, v any) error {
+	return transhttp.DefaultResponseDecoder(_, res, v)
 }
 
 func DefaultResponseEncoderHTTP(w http.ResponseWriter, r *http.Request, v any) error {
@@ -259,8 +264,8 @@ func ListenerHTTP(lis net.Listener) transhttp.ServerOption {
 	return transhttp.Listener(lis)
 }
 
-func LoggerHTTP(l log.Logger) transhttp.ServerOption {
-	return transhttp.Logger(l)
+func LoggerHTTP(log.Logger) transhttp.ServerOption {
+	return transhttp.Logger()
 }
 
 func MethodNotAllowedHandlerHTTP(handler http.Handler) transhttp.ServerOption {
