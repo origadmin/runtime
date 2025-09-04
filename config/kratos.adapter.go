@@ -12,39 +12,39 @@ import (
 var ErrNotFound = config.ErrNotFound
 
 type (
-	KratosConfig   = config.Config
-	KratosDecoder  = config.Decoder
-	KratosKeyValue = config.KeyValue
-	KratosMerge    = config.Merge
-	KratosObserver = config.Observer
-	KratosOption   = config.Option
-	KratosReader   = config.Reader
-	KratosResolver = config.Resolver
-	KratosSource   = config.Source
-	KratosValue    = config.Value
-	KratosWatcher  = config.Watcher
+	KConfig   = config.Config
+	KDecoder  = config.Decoder
+	KKeyValue = config.KeyValue
+	KMerge    = config.Merge
+	KObserver = config.Observer
+	KOption   = config.Option
+	KReader   = config.Reader
+	KResolver = config.Resolver
+	KSource   = config.Source
+	KValue    = config.Value
+	KWatcher  = config.Watcher
 )
 
-func KratosWithDecoder(d config.Decoder) config.Option {
+func KWithDecoder(d config.Decoder) config.Option {
 	return config.WithDecoder(d)
 }
 
-func KratosWithMergeFunc(m config.Merge) config.Option {
+func KWithMergeFunc(m config.Merge) config.Option {
 	return config.WithMergeFunc(m)
 }
 
-func KratosWithResolveActualTypes(enableConvertToType bool) config.Option {
+func KWithResolveActualTypes(enableConvertToType bool) config.Option {
 	return config.WithResolveActualTypes(enableConvertToType)
 }
 
-func KratosWithResolver(r config.Resolver) config.Option {
+func KWithResolver(r config.Resolver) config.Option {
 	return config.WithResolver(r)
 }
 
-func KratosWithSource(s ...config.Source) config.Option {
+func KWithSource(s ...config.Source) config.Option {
 	return config.WithSource(s...)
 }
 
-func NewKratosConfig(opts ...config.Option) config.Config {
+func NewKConfig(opts ...config.Option) config.Config {
 	return config.New(opts...)
 }

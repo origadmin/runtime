@@ -10,10 +10,10 @@ import (
 )
 
 type (
-	KratosHandler    = middleware.Handler
-	KratosMiddleware = middleware.Middleware
+	KHandler    = middleware.Handler
+	KMiddleware = middleware.Middleware
 )
 
-func KratosChain(m ...middleware.Middleware) middleware.Middleware {
+func KChain(m ...middleware.Middleware) middleware.Middleware {
 	return middleware.Chain(m...)
 }

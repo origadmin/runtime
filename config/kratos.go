@@ -12,8 +12,8 @@ import (
 //go:generate adptool ./kratos.go
 //go:adapter:package github.com/go-kratos/kratos/v2/config
 //go:adapter:package:type *
-//go:adapter:package:type:prefix Kratos
+//go:adapter:package:type:prefix K
 //go:adapter:package:func *
-//go:adapter:package:func:prefix Kratos
+//go:adapter:package:func:prefix K
 //go:adapter:package:func New
-//go:adapter:package:func:rename NewKratosConfig
+//go:adapter:package:func:rename NewKConfig

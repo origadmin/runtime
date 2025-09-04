@@ -10,8 +10,8 @@ import (
 )
 
 type (
-	KratosDiscovery       = registry.Discovery
-	KratosRegistrar       = registry.Registrar
-	KratosServiceInstance = registry.ServiceInstance
-	KratosWatcher         = registry.Watcher
+	KDiscovery       = registry.Discovery
+	KRegistrar       = registry.Registrar
+	KServiceInstance = registry.ServiceInstance
+	KWatcher         = registry.Watcher
 )

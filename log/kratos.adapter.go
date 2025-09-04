@@ -29,156 +29,164 @@ var (
 )
 
 type (
-	Filter         = klog.Filter
-	FilterOption   = klog.FilterOption
-	Helper         = klog.Helper
-	Level          = klog.Level
-	Logger         = klog.Logger
-	Option         = klog.Option
-	Valuer         = klog.Valuer
-	WriterOptionFn = klog.WriterOptionFn
+	KFilter         = klog.Filter
+	KFilterOption   = klog.FilterOption
+	KHelper         = klog.Helper
+	KLevel          = klog.Level
+	KLogger         = klog.Logger
+	KOption         = klog.Option
+	KValuer         = klog.Valuer
+	KWriterOptionFn = klog.WriterOptionFn
 )
 
-func Caller(depth int) klog.Valuer {
+func KCaller(depth int) klog.Valuer {
 	return klog.Caller(depth)
 }
 
-func Context(ctx context.Context) *klog.Helper {
+func KContext(ctx context.Context) *klog.Helper {
 	return klog.Context(ctx)
 }
 
-func Debug(a ...any) {
+func KDebug(a ...any) {
 	klog.Debug(a...)
 }
 
-func Debugf(format string, a ...any) {
+func KDebugf(format string, a ...any) {
 	klog.Debugf(format, a...)
 }
 
-func Debugw(keyvals ...any) {
+func KDebugw(keyvals ...any) {
 	klog.Debugw(keyvals...)
 }
 
-func Error(a ...any) {
+func KError(a ...any) {
 	klog.Error(a...)
 }
 
-func Errorf(format string, a ...any) {
+func KErrorf(format string, a ...any) {
 	klog.Errorf(format, a...)
 }
 
-func Errorw(keyvals ...any) {
+func KErrorw(keyvals ...any) {
 	klog.Errorw(keyvals...)
 }
 
-func Fatal(a ...any) {
+func KFatal(a ...any) {
 	klog.Fatal(a...)
 }
 
-func Fatalf(format string, a ...any) {
+func KFatalf(format string, a ...any) {
 	klog.Fatalf(format, a...)
 }
 
-func Fatalw(keyvals ...any) {
+func KFatalw(keyvals ...any) {
 	klog.Fatalw(keyvals...)
 }
 
-func FilterKey(key ...string) klog.FilterOption {
+func KFilterFunc(f func(level klog.Level, keyvals ...any) bool) klog.FilterOption {
+	return klog.FilterFunc(f)
+}
+
+func KFilterKey(key ...string) klog.FilterOption {
 	return klog.FilterKey(key...)
 }
 
-func FilterLevel(level klog.Level) klog.FilterOption {
+func KFilterLevel(level klog.Level) klog.FilterOption {
 	return klog.FilterLevel(level)
 }
 
-func FilterValue(value ...string) klog.FilterOption {
+func KFilterValue(value ...string) klog.FilterOption {
 	return klog.FilterValue(value...)
 }
 
-func GetLogger() klog.Logger {
+func KGetLogger() klog.Logger {
 	return klog.GetLogger()
 }
 
-func Info(a ...any) {
+func KInfo(a ...any) {
 	klog.Info(a...)
 }
 
-func Infof(format string, a ...any) {
+func KInfof(format string, a ...any) {
 	klog.Infof(format, a...)
 }
 
-func Infow(keyvals ...any) {
+func KInfow(keyvals ...any) {
 	klog.Infow(keyvals...)
 }
 
-func Log(level klog.Level, keyvals ...any) {
+func KLog(level klog.Level, keyvals ...any) {
 	klog.Log(level, keyvals...)
 }
 
-func NewFilter(logger klog.Logger, opts ...klog.FilterOption) *klog.Filter {
+func KNewFilter(logger klog.Logger, opts ...klog.FilterOption) *klog.Filter {
 	return klog.NewFilter(logger, opts...)
 }
 
-func NewHelper(logger klog.Logger, opts ...klog.Option) *klog.Helper {
+func KNewHelper(logger klog.Logger, opts ...klog.Option) *klog.Helper {
 	return klog.NewHelper(logger, opts...)
 }
 
-func NewStdLogger(w io.Writer) klog.Logger {
+func KNewStdLogger(w io.Writer) klog.Logger {
 	return klog.NewStdLogger(w)
 }
 
-func NewWriter(logger klog.Logger, opts ...klog.WriterOptionFn) io.Writer {
+func KNewWriter(logger klog.Logger, opts ...klog.WriterOptionFn) io.Writer {
 	return klog.NewWriter(logger, opts...)
 }
 
-func ParseLevel(s string) klog.Level {
+func KParseLevel(s string) klog.Level {
 	return klog.ParseLevel(s)
 }
 
-func SetLogger(logger klog.Logger) {
+func KSetLogger(logger klog.Logger) {
 	klog.SetLogger(logger)
 }
 
-func Timestamp(layout string) klog.Valuer {
+func KTimestamp(layout string) klog.Valuer {
 	return klog.Timestamp(layout)
 }
 
-func Value(ctx context.Context, v any) any {
+func KValue(ctx context.Context, v any) any {
 	return klog.Value(ctx, v)
 }
 
-func Warn(a ...any) {
+func KWarn(a ...any) {
 	klog.Warn(a...)
 }
 
-func Warnf(format string, a ...any) {
+func KWarnf(format string, a ...any) {
 	klog.Warnf(format, a...)
 }
 
-func Warnw(keyvals ...any) {
+func KWarnw(keyvals ...any) {
 	klog.Warnw(keyvals...)
 }
 
-func With(l klog.Logger, kv ...any) klog.Logger {
+func KWith(l klog.Logger, kv ...any) klog.Logger {
 	return klog.With(l, kv...)
 }
 
-func WithContext(ctx context.Context, l klog.Logger) klog.Logger {
+func KWithContext(ctx context.Context, l klog.Logger) klog.Logger {
 	return klog.WithContext(ctx, l)
 }
 
-func WithMessageKey(k string) klog.Option {
+func KWithMessageKey(k string) klog.Option {
 	return klog.WithMessageKey(k)
 }
 
-func WithSprint(sprint func(...any) string) klog.Option {
+func KWithSprint(sprint func(...any) string) klog.Option {
 	return klog.WithSprint(sprint)
 }
 
-func WithWriteMessageKey(key string) klog.WriterOptionFn {
+func KWithSprintf(sprintf func(format string, a ...any) string) klog.Option {
+	return klog.WithSprintf(sprintf)
+}
+
+func KWithWriteMessageKey(key string) klog.WriterOptionFn {
 	return klog.WithWriteMessageKey(key)
 }
 
-func WithWriterLevel(level klog.Level) klog.WriterOptionFn {
+func KWithWriterLevel(level klog.Level) klog.WriterOptionFn {
 	return klog.WithWriterLevel(level)
 }
