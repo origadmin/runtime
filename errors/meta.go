@@ -48,3 +48,35 @@ func LookupMeta(err error, key string) (string, bool) {
 	val, ok := ke.Metadata[key]
 	return val, ok
 }
+
+// --- Metadata Classification Helpers ---
+
+// WithErrorOrigin adds the 'error_origin' metadata to an error.
+// Example: WithErrorOrigin(err, "database"), WithErrorOrigin(err, "network")
+func WithErrorOrigin(err error, origin string) *kerrors.Error {
+	return WithField(err, "error_origin", origin)
+}
+
+// WithRecoverability adds the 'recoverability' metadata to an error.
+// Example: WithRecoverability(err, "retriable"), WithRecoverability(err, "non_retriable")
+func WithRecoverability(err error, status string) *kerrors.Error {
+	return WithField(err, "recoverability", status)
+}
+
+// WithImpact adds the 'impact' metadata to an error.
+// Example: WithImpact(err, "fatal"), WithImpact(err, "critical"), WithImpact(err, "minor")
+func WithImpact(err error, impact string) *kerrors.Error {
+	return WithField(err, "impact", impact)
+}
+
+// WithAudience adds the 'audience' metadata to an error.
+// Example: WithAudience(err, "user"), WithAudience(err, "developer"), WithAudience(err, "operator")
+func WithAudience(err error, audience string) *kerrors.Error {
+	return WithField(err, "audience", audience)
+}
+
+// WithBusinessDomain adds the 'business_domain' metadata to an error.
+// Example: WithBusinessDomain(err, "user_management"), WithBusinessDomain(err, "order_processing")
+func WithBusinessDomain(err error, domain string) *kerrors.Error {
+	return WithField(err, "business_domain", domain)
+}
