@@ -50,10 +50,6 @@ type (
 	GRPCClientOption = transgrpc.ClientOption
 	// HTTPClientOption define the HTTP client options
 	HTTPClientOption = transhttp.ClientOption
-
-	Option interface {
-		GRPCServerOption | HTTPServerOption | GRPCClientOption | HTTPClientOption
-	}
 )
 
 type (
