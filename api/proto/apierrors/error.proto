@@ -6,7 +6,7 @@ import "errors/errors.proto";
 
 // The go_package option specifies the import path for the generated Go code.
 // It should point to the `gen/go` directory, which is the standard output for generated files.
-option go_package = "github.com/origadmin/framework/runtime/api/gen/go/apierrors;apierrors";
+option go_package = "github.com/origadmin/runtime/api/gen/go/apierrors;apierrors";
 
 // ErrorReason defines the application's error codes.
 // These codes are mapped to HTTP status codes and are consistent across all services.
@@ -60,7 +60,6 @@ enum ErrorReason {
   // The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server.
   // Maps to HTTP 504.
   GATEWAY_TIMEOUT = 9 [(errors.code) = 504];
-
 
   // --- Authentication & Authorization Errors (1000-1999) ---
 

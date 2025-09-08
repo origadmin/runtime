@@ -146,9 +146,9 @@ const file_apierrors_error_proto_rawDesc = "" +
 	"\x13SERVICE_UNAVAILABLE\x10\b\x1a\x04\xa8E\xf7\x03\x12\x19\n" +
 	"\x0fGATEWAY_TIMEOUT\x10\t\x1a\x04\xa8E\xf8\x03\x12\x1a\n" +
 	"\x0fUNAUTHENTICATED\x10\xe8\a\x1a\x04\xa8E\x91\x03\x12\x14\n" +
-	"\tFORBIDDEN\x10\xe9\a\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B\x84\x02\n" +
+	"\tFORBIDDEN\x10\xe9\a\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B\xfa\x01\n" +
 	"\x1fcom.runtime.api.proto.apierrorsB\n" +
-	"ErrorProtoP\x01ZEgithub.com/origadmin/framework/runtime/api/gen/go/apierrors;apierrors\xa2\x02\x04RAPA\xaa\x02\x1bRuntime.Api.Proto.Apierrors\xca\x02\x1bRuntime\\Api\\Proto\\Apierrors\xe2\x02'Runtime\\Api\\Proto\\Apierrors\\GPBMetadata\xea\x02\x1eRuntime::Api::Proto::Apierrorsb\x06proto3"
+	"ErrorProtoP\x01Z;github.com/origadmin/runtime/api/gen/go/apierrors;apierrors\xa2\x02\x04RAPA\xaa\x02\x1bRuntime.Api.Proto.Apierrors\xca\x02\x1bRuntime\\Api\\Proto\\Apierrors\xe2\x02'Runtime\\Api\\Proto\\Apierrors\\GPBMetadata\xea\x02\x1eRuntime::Api::Proto::Apierrorsb\x06proto3"
 
 var (
 	file_apierrors_error_proto_rawDescOnce sync.Once
