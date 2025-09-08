@@ -6,9 +6,8 @@
 package middleware
 
 import (
-	"github.com/goexts/generic/settings"
+	"github.com/goexts/generic/configure"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/log"
@@ -40,7 +39,7 @@ func (b *middlewareBuilder) BuildClient(cfg interfaces.MiddlewareConfig, options
 	if cfg == nil {
 		return middlewares
 	}
-	option := settings.Apply(&Options{
+	option := configure.Apply(&Options{
 		Logger: log.DefaultLogger,
 	}, options)
 	log.Infof("build middleware client")
@@ -67,7 +66,7 @@ func (b *middlewareBuilder) BuildServer(cfg interfaces.MiddlewareConfig, options
 	if cfg == nil {
 		return middlewares
 	}
-	option := settings.Apply(&Options{
+	option := configure.Apply(&Options{
 		Logger: log.DefaultLogger,
 	}, options)
 	log.Infof("build middleware server")

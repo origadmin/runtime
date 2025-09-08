@@ -8,7 +8,7 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	kratoskratosconfig "github.com/go-kratos/kratos/v2/config"
-	"github.com/goexts/generic/settings"
+	"github.com/goexts/generic/configure"
 
 	kratosconfigv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces"
@@ -43,7 +43,7 @@ func NewSource(path string, opts ...FileOption) kratosconfig.Source {
 		ignores:   defaultIgnores,
 		formatter: defaultFormatter,
 	}
-	return settings.Apply(f, opts)
+	return configure.Apply(f, opts)
 }
 
 func (f *file) loadFile(path string) (*kratosconfig.KeyValue, error) {

@@ -1,75 +1,55 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
 package http
 
 import (
-	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/registry"
-	"github.com/go-kratos/kratos/v2/selector"
+	"context"
+
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
+
+	"github.com/origadmin/framework/runtime/service"
 )
 
-type EndpointFunc = func(scheme string, host string, addr string) (string, error)
+// optionsKey is a private key type to avoid collisions in context.
+type (
+	httpServerOptionsKey struct{}
+	httpClientOptionsKey struct{}
+)
 
-type Options struct {
-	Prefix        string
-	HostIp        string
-	ServiceName   string
-	Discovery     registry.Discovery
-	NodeFilters   []selector.NodeFilter
-	Middlewares   []middleware.Middleware
-	EndpointFunc  EndpointFunc
-	ClientOptions []transhttp.ClientOption
-	ServerOptions []transhttp.ServerOption
-}
-
-type Option = func(o *Options)
-
-func WithNodeFilter(filters ...selector.NodeFilter) Option {
-	return func(o *Options) {
-		o.NodeFilters = append(o.NodeFilters, filters...)
+// WithServerOption is an option to add a transhttp.ServerOption to the context.
+func WithServerOption(opt ...transhttp.ServerOption) service.Option {
+	return func(o *service.Options) {
+		if o.Context == nil {
+			o.Context = context.Background()
+		}
+		opts, _ := o.Context.Value(httpServerOptionsKey{}).([]transhttp.ServerOption)
+		o.Context = context.WithValue(o.Context, httpServerOptionsKey{}, append(opts, opt...))
 	}
 }
 
-func WithDiscovery(serviceName string, discovery registry.Discovery) Option {
-	return func(o *Options) {
-		o.ServiceName = serviceName
-		o.Discovery = discovery
-	}
-}
-func WithMiddlewares(middlewares ...middleware.Middleware) Option {
-	return func(o *Options) {
-		o.Middlewares = append(o.Middlewares, middlewares...)
-	}
-}
-
-func WithEndpointFunc(endpointFunc EndpointFunc) Option {
-	return func(o *Options) {
-		o.EndpointFunc = endpointFunc
+// WithClientOption is an option to add a transhttp.ClientOption to the context.
+func WithClientOption(opt ...transhttp.ClientOption) service.Option {
+	return func(o *service.Options) {
+		if o.Context == nil {
+			o.Context = context.Background()
+		}
+		opts, _ := o.Context.Value(httpClientOptionsKey{}).([]transhttp.ClientOption)
+		o.Context = context.WithValue(o.Context, httpClientOptionsKey{}, append(opts, opt...))
 	}
 }
 
-func WithPrefix(prefix string) Option {
-	return func(o *Options) {
-		o.Prefix = prefix
+// FromServerOptions returns the collected transhttp.ServerOption from the service.Options' Context.
+func FromServerOptions(o *service.Options) []transhttp.ServerOption {
+	if o == nil || o.Context == nil {
+		return nil
 	}
+	opts, _ := o.Context.Value(httpServerOptionsKey{}).([]transhttp.ServerOption)
+	return opts
 }
 
-func WithHostIp(hostIp string) Option {
-	return func(o *Options) {
-		o.HostIp = hostIp
+// FromClientOptions returns the collected transhttp.ClientOption from the service.Options' Context.
+func FromClientOptions(o *service.Options) []transhttp.ClientOption {
+	if o == nil || o.Context == nil {
+		return nil
 	}
-}
-
-func WithClientOptions(options ...transhttp.ClientOption) Option {
-	return func(o *Options) {
-		o.ClientOptions = append(o.ClientOptions, options...)
-	}
-}
-func WithServerOptions(options ...transhttp.ServerOption) Option {
-	return func(o *Options) {
-		o.ServerOptions = append(o.ServerOptions, options...)
-	}
+	opts, _ := o.Context.Value(httpClientOptionsKey{}).([]transhttp.ClientOption)
+	return opts
 }

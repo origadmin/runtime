@@ -7,6 +7,7 @@
 package errors
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -18,24 +19,23 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
-	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/log"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // RequestTimeout creates a 408 Request Timeout error.
 func RequestTimeout(reason, message string) *kerrors.Error {
-	return New(http.StatusRequestTimeout, reason, message)
+	return kerrors.New(http.StatusRequestTimeout, reason, message)
 }
 
 // MethodNotAllowed creates a 405 Method Not Allowed error.
 func MethodNotAllowed(reason, message string) *kerrors.Error {
-	return New(http.StatusMethodNotAllowed, reason, message)
+	return kerrors.New(http.StatusMethodNotAllowed, reason, message)
 }
 
 // TooManyRequests creates a 429 Too Many Requests error.
 func TooManyRequests(reason, message string) *kerrors.Error {
-	return New(http.StatusTooManyRequests, reason, message)
+	return kerrors.New(http.StatusTooManyRequests, reason, message)
 }
 
 // TaggedError is an error that carries a specific ErrorReason.
@@ -68,57 +68,101 @@ func WithReason(err error, reason apierrors.ErrorReason) error {
 // FromReason creates a Kratos error from a predefined error reason from the .proto file.
 // This is the primary and consistent way to create standard application errors.
 func FromReason(reason apierrors.ErrorReason) *kerrors.Error {
-	// The message is a generic default. It can be overridden by using WithMessage().
+	// The message is a generic default. It can be overridden by setting the Message field directly.
 	switch reason {
 	// --- General --- 
 	case apierrors.ErrorReason_VALIDATION_ERROR: 
-		return BadRequest(reason.String(), "Request validation failed")
+		return kerrors.BadRequest(reason.String(), "Request validation failed")
 	case apierrors.ErrorReason_NOT_FOUND:
-		return NotFound(reason.String(), "Resource not found")
+		return kerrors.NotFound(reason.String(), "Resource not found")
 	case apierrors.ErrorReason_INTERNAL_SERVER_ERROR:
-		return InternalServer(reason.String(), "Internal server error")
+		return kerrors.InternalServer(reason.String(), "Internal server error")
 	case apierrors.ErrorReason_METHOD_NOT_ALLOWED:
 		return MethodNotAllowed(reason.String(), "Method not allowed")
 	case apierrors.ErrorReason_REQUEST_TIMEOUT:
 		return RequestTimeout(reason.String(), "Request timeout")
 	case apierrors.ErrorReason_CONFLICT:
-		return Conflict(reason.String(), "Resource conflict")
+		return kerrors.Conflict(reason.String(), "Resource conflict")
 	case apierrors.ErrorReason_TOO_MANY_REQUESTS:
 		return TooManyRequests(reason.String(), "Too many requests")
 	case apierrors.ErrorReason_SERVICE_UNAVAILABLE:
-		return ServiceUnavailable(reason.String(), "Service unavailable")
+		return kerrors.ServiceUnavailable(reason.String(), "Service unavailable")
 	case apierrors.ErrorReason_GATEWAY_TIMEOUT:
-		return GatewayTimeout(reason.String(), "Gateway timeout")
+		return kerrors.GatewayTimeout(reason.String(), "Gateway timeout")
 
 	// --- Auth --- 
 	case apierrors.ErrorReason_UNAUTHENTICATED, apierrors.ErrorReason_INVALID_CREDENTIALS, apierrors.ErrorReason_TOKEN_EXPIRED, apierrors.ErrorReason_TOKEN_INVALID, apierrors.ErrorReason_TOKEN_MISSING:
-		return Unauthorized(reason.String(), "Authentication error")
+		return kerrors.Unauthorized(reason.String(), "Authentication error")
 	case apierrors.ErrorReason_FORBIDDEN:
-		return Forbidden(reason.String(), "Permission denied")
+		return kerrors.Forbidden(reason.String(), "Permission denied")
 
 	// --- Database --- 
 	case apierrors.ErrorReason_DATABASE_ERROR:
-		return InternalServer(reason.String(), "Database error")
+		return kerrors.InternalServer(reason.String(), "Database error")
 	case apierrors.ErrorReason_RECORD_NOT_FOUND:
-		return NotFound(reason.String(), "Record not found")
+		return kerrors.NotFound(reason.String(), "Record not found")
 	case apierrors.ErrorReason_CONSTRAINT_VIOLATION, apierrors.ErrorReason_DUPLICATE_KEY:
-		return Conflict(reason.String(), "Database constraint violation")
+		return kerrors.Conflict(reason.String(), "Database constraint violation")
 	case apierrors.ErrorReason_DATABASE_CONNECTION_FAILED:
-		return ServiceUnavailable(reason.String(), "Database connection failed")
+		return kerrors.ServiceUnavailable(reason.String(), "Database connection failed")
 
 	// --- Business --- 
 	case apierrors.ErrorReason_INVALID_STATE, apierrors.ErrorReason_MISSING_PARAMETER, apierrors.ErrorReason_INVALID_PARAMETER:
-		return BadRequest(reason.String(), "Invalid business parameter")
+		return kerrors.BadRequest(reason.String(), "Invalid business parameter")
 	case apierrors.ErrorReason_RESOURCE_EXISTS, apierrors.ErrorReason_RESOURCE_IN_USE, apierrors.ErrorReason_ABORTED:
-		return Conflict(reason.String(), "Business resource conflict")
+		return kerrors.Conflict(reason.String(), "Business resource conflict")
 	case apierrors.ErrorReason_CANCELLED:
-		return ClientClosed(reason.String(), "Operation was cancelled")
+		return kerrors.ClientClosed(reason.String(), "Operation was cancelled")
 	case apierrors.ErrorReason_OPERATION_NOT_ALLOWED:
-		return Forbidden(reason.String(), "Operation not allowed")
+		return kerrors.Forbidden(reason.String(), "Operation not allowed")
+	
+	// --- Registry Errors (6000-6999) ---
+	case apierrors.ErrorReason_REGISTRY_NOT_FOUND:
+		return kerrors.NotFound(reason.String(), "Registry entry not found")
+	case apierrors.ErrorReason_INVALID_REGISTRY_CONFIG:
+		return kerrors.BadRequest(reason.String(), "Invalid registry configuration")
+	case apierrors.ErrorReason_REGISTRY_CREATION_FAILURE:
+		return kerrors.InternalServer(reason.String(), "Registry creation failed")
 
 	default:
-		return InternalServer(apierrors.ErrorReason_UNKNOWN_ERROR.String(), "An unknown error occurred")
+		return kerrors.InternalServer(apierrors.ErrorReason_UNKNOWN_ERROR.String(), "An unknown error occurred")
 	}
+}
+
+// NewMessage creates a Kratos error from a predefined error reason, with a formatted message.
+func NewMessage(reason apierrors.ErrorReason, format string, a ...interface{}) *kerrors.Error {
+	err := FromReason(reason)
+	err.Message = fmt.Sprintf(format, a...) // Directly set the message
+	return err
+}
+
+// NewMessageWithMeta creates a Kratos error from a predefined error reason,
+// with a formatted message and specified metadata.
+func NewMessageWithMeta(reason apierrors.ErrorReason, metadata map[string]string, format string, a ...interface{}) *kerrors.Error {
+	err := FromReason(reason)
+	err.Message = fmt.Sprintf(format, a...) // Directly set the message
+	if err.Metadata == nil {
+		err.Metadata = make(map[string]string)
+	}
+	for k, v := range metadata {
+		err.Metadata[k] = v // Directly set metadata
+	}
+	return err
+}
+
+// WrapAndConvert wraps an original error with a reason, converts it to a Kratos error,
+// and sets a formatted message.
+func WrapAndConvert(originalErr error, reason apierrors.ErrorReason, format string, a ...interface{}) *kerrors.Error {
+	// 1. Wrap the original error with the specified reason
+	taggedErr := WithReason(originalErr, reason)
+
+	// 2. Convert the tagged error to a Kratos error
+	convertedErr := Convert(taggedErr)
+
+	// 3. Set the formatted message
+	convertedErr.Message = fmt.Sprintf(format, a...)
+
+	return convertedErr
 }
 
 // Convert takes any standard Go error and converts it into a structured Kratos error.
@@ -127,17 +171,48 @@ func Convert(err error) *kerrors.Error {
 		return nil
 	}
 
-	var ke *kerrors.Error
-	if errors.As(err, &ke) {
+	// 1. Check if the error is a TaggedError (explicitly mapped by developer)
+	var taggedErr *TaggedError
+	if errors.As(err, &taggedErr) {
+		// Use the tagged reason, and preserve the original error message
+		ke := FromReason(taggedErr.Reason)
+		ke.Message = fmt.Sprintf("%s", taggedErr.Error()) // Directly set the message
 		return ke
 	}
 
-	// Check if the error is a TaggedError, allowing explicit mapping.
-	var taggedErr *TaggedError
-	if errors.As(err, &taggedErr) {
-		return WithMessage(FromReason(taggedErr.Reason), taggedErr.Error())
+	// 2. Check if the error is already a Kratos error (from Kratos itself or a plugin)
+	var ke *kerrors.Error
+	if errors.As(err, &ke) {
+		// Try to map the existing Kratos error's Reason to our apierrors.ErrorReason
+		parsedReason, ok := apierrors.ErrorReason_value[ke.Reason]
+		if ok {
+			// If the reason matches one of our predefined reasons, use our FromReason
+			// to ensure consistency (e.g., default message, code from our proto)
+			// and merge metadata.
+			newKe := FromReason(apierrors.ErrorReason(parsedReason))
+			newKe.Message = fmt.Sprintf("%s", ke.Message) // Directly set the message
+			if newKe.Metadata == nil {
+				newKe.Metadata = make(map[string]string)
+			}
+			for k, v := range ke.Metadata {
+				newKe.Metadata[k] = v // Directly set metadata
+			}
+			return newKe
+		}
+		// If the reason does not match our predefined reasons,
+		// it's an external Kratos error with an unknown reason.
+		// Convert it to a generic external service error, and put the original reason and code into metadata.
+		newKe := FromReason(apierrors.ErrorReason_EXTERNAL_SERVICE_ERROR)
+		newKe.Message = fmt.Sprintf("External Kratos error: %s", ke.Message) // Directly set the message
+		if newKe.Metadata == nil {
+			newKe.Metadata = make(map[string]string)
+		}
+		newKe.Metadata["original_reason"] = ke.Reason
+		newKe.Metadata["original_code"] = fmt.Sprintf("%d", ke.Code)
+		return newKe
 	}
 
+	// 3. Handle specific standard library errors (implicit mapping)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
 		return FromReason(apierrors.ErrorReason_RECORD_NOT_FOUND)
@@ -149,8 +224,10 @@ func Convert(err error) *kerrors.Error {
 		return FromReason(apierrors.ErrorReason_VALIDATION_ERROR)
 	}
 
-	// For unknown errors, create a standard internal error but preserve the original message.
-	return WithMessage(FromReason(apierrors.ErrorReason_INTERNAL_SERVER_ERROR), err.Error())
+	// 4. Default to INTERNAL_SERVER_ERROR for any other unhandled error
+	ke = FromReason(apierrors.ErrorReason_INTERNAL_SERVER_ERROR)
+	ke.Message = fmt.Sprintf("%s", err.Error()) // Directly set the message
+	return ke
 }
 
 // NewErrorEncoder returns a new transhttp.EncodeErrorFunc for centralized logging and error conversion.

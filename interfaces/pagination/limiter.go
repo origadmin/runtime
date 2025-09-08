@@ -6,7 +6,7 @@
 package pagination
 
 import (
-	"github.com/goexts/generic/settings"
+	"github.com/goexts/generic/configure"
 	"github.com/goexts/generic/types"
 )
 

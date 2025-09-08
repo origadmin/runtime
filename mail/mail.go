@@ -6,12 +6,11 @@
 package mail
 
 import (
+	"fmt"
 	"sync"
 
-	// 移除对 github.com/origadmin/toolkits/mail 的直接导入，因为 Sender 接口将在此处定义
-	// "github.com/origadmin/toolkits/mail" 
-
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/container" // Import the new container package
 )
 
 // Message represents a generic email message.
@@ -33,29 +32,36 @@ type Sender interface {
 }
 
 type (
-	Builder = func(cfg *configv1.Mail) Sender // Builder 现在返回此包定义的 Sender 接口
+	// Builder is a function type that takes a Mail configuration and returns a Sender.
+	// This allows external packages to provide their specific Sender implementations.
+	Builder = func(cfg *configv1.Mail) Sender
 )
 
-var (
-	builder Builder
-	sender  Sender // sender 现在是此包定义的 Sender 接口类型
-	once    = &sync.Once{}
-)
+// mailInitOnce ensures that the mail sender is initialized only once.
+var mailInitOnce sync.Once
 
-// Register registers a mail sender builder.
-func Register(b Builder) {
-	if builder != nil {
-		panic("mail: Register called twice")
-	}
-	builder = b
+// Init initializes the mail sender and registers it with the global container.
+// This function should be called during the application's bootstrap phase.
+func Init(cfg *configv1.Mail, mailBuilder Builder) {
+	mailInitOnce.Do(func() {
+		if mailBuilder == nil {
+			panic("mail: mailBuilder cannot be nil during initialization")
+		}
+		senderInstance := mailBuilder(cfg)
+		container.GlobalContainer.Register("mail.Sender", senderInstance)
+	})
 }
 
-// New returns a new mail sender.
-func New(cfg *configv1.Mail) Sender { // New 现在返回此包定义的 Sender 接口
-	once.Do(func() {
-		if sender == nil {
-			sender = builder(cfg)
-		}
-	})
+// GetSender retrieves the mail sender from the global container.
+// It panics if the mail sender has not been initialized or registered.
+func GetSender() Sender {
+	cap, ok := container.GlobalContainer.Get("mail.Sender")
+	if !ok {
+		panic("mail: mail.Sender not initialized or registered in container")
+	}
+	sender, ok := cap.(Sender)
+	if !ok {
+		panic(fmt.Sprintf("mail: registered capability 'mail.Sender' is not of type Sender, got %T", cap))
+	}
 	return sender
 }

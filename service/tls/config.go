@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package service implements the functions, types, and interfaces for the module.
+// Package tls implements the functions, types, and interfaces for the module.
 package tls
 
 import (
@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/goexts/generic/settings"
+	"github.com/goexts/generic/configure"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/toolkits/errors"
@@ -54,7 +54,7 @@ func NewServerTLSConfigFromPem(key []byte, cert []byte, ca []byte, options ...Op
 		return nil, fmt.Errorf("KeyPEMBlock and CertPEMBlock must both be present[key: %v, cert: %v]", key, cert)
 	}
 
-	cfg := settings.Apply(&tls.Config{}, options)
+	cfg := configure.Apply(&tls.Config{}, options)
 	tlsCert, err := tls.X509KeyPair(cert, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "load x509 key pair error")
@@ -83,7 +83,7 @@ func NewServerTLSConfigFromFile(keyFile, certFile, caFile string, options ...Opt
 		return nil, errors.Errorf("KeyFile and CertFile must both be present[key: %v, cert: %v]", keyFile, certFile)
 	}
 
-	cfg := settings.Apply(&tls.Config{}, options)
+	cfg := configure.Apply(&tls.Config{}, options)
 	tlsCert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "load x509 key pair error")
@@ -144,7 +144,7 @@ func NewClientTLSConfigFromPem(key []byte, cert []byte, ca []byte, options ...Op
 		return nil, errors.Errorf("KeyPEMBlock and CertPEMBlock must both be present[key: %v, cert: %v]", key, cert)
 	}
 
-	cfg := settings.Apply(&tls.Config{}, options)
+	cfg := configure.Apply(&tls.Config{}, options)
 	tlsCert, err := tls.X509KeyPair(cert, key)
 	if err != nil {
 		return nil, errors.Wrap(err, "load x509 key pair error")
@@ -163,7 +163,7 @@ func NewClientTLSConfigFromPem(key []byte, cert []byte, ca []byte, options ...Op
 }
 
 func NewClientTLSConfigFromFile(key string, cert string, ca string, options ...Option) (*tls.Config, error) {
-	cfg := settings.Apply(&tls.Config{}, options)
+	cfg := configure.Apply(&tls.Config{}, options)
 	if key == "" || cert == "" {
 		return cfg, nil
 	}

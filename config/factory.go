@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	configenv "github.com/go-kratos/kratos/v2/config/env"
-	"github.com/goexts/generic/settings"
+	"github.com/goexts/generic/configure"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
@@ -40,7 +40,7 @@ func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *interfaces.Optio
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
 func (f *configFactory) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
-	options := settings.Apply(&interfaces.Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
+	options := configure.Apply(&interfaces.Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 	sources := options.Sources
 	if sources == nil {
 		sources = make([]kratosconfig.Source, 0)

@@ -65,17 +65,7 @@ type MiddlewareValidatorConfig interface {
 	GetEnabled() bool
 }
 
-type Options struct {
-	ConfigName    string
-	ServiceName   string
-	ResolverName  string
-	EnvPrefixes   []string
-	Sources       []kratosconfig.Source
-	ConfigOptions []kratosconfig.Option
-	Decoder       kratosconfig.Decoder
-	Encoder       Encoder
-	ForceReload   bool
+// ConfigLoader defines the interface for loading application configuration.
+type ConfigLoader interface {
+	Load(configPath string, bootstrapConfig interface{}) (kratosconfig.Config, error)
 }
-
-// Option is a function that takes a pointer to a KOption struct and modifies it.
-type Option = func(s *Options)

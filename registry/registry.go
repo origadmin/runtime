@@ -6,7 +6,9 @@
 package registry
 
 import (
+	"context"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/framework/runtime/interfaces"
 )
 
 // --- Error Definitions ---
@@ -21,8 +23,8 @@ import (
 // The concrete implementation is in factory.go.
 type Builder interface {
 	Register(name string, factory Factory)
-	NewRegistrar(cfg *configv1.Discovery, opts ...Option) (KRegistrar, error)
-	NewDiscovery(cfg *configv1.Discovery, opts ...Option) (KDiscovery, error)
+	NewRegistrar(cfg *configv1.Discovery, opts *Options) (KRegistrar, error)
+	NewDiscovery(cfg *configv1.Discovery, opts *Options) (KDiscovery, error)
 }
 
 // --- Top-Level API ---
@@ -35,10 +37,14 @@ func Register(name string, factory Factory) {
 
 // NewRegistrar creates a new KRegistrar instance using the DefaultBuilder.
 func NewRegistrar(cfg *configv1.Discovery, opts ...Option) (KRegistrar, error) {
-	return DefaultBuilder().NewRegistrar(cfg, opts...)
+	registryOpts := &Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
+	ApplyOptions(registryOpts, opts...)
+	return DefaultBuilder().NewRegistrar(cfg, registryOpts)
 }
 
 // NewDiscovery creates a new KDiscovery instance using the DefaultBuilder.
 func NewDiscovery(cfg *configv1.Discovery, opts ...Option) (KDiscovery, error) {
-	return DefaultBuilder().NewDiscovery(cfg, opts...)
+	registryOpts := &Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
+	ApplyOptions(registryOpts, opts...)
+	return DefaultBuilder().NewDiscovery(cfg, registryOpts)
 }

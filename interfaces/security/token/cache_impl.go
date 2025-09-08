@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goexts/generic/settings"
+	"github.com/goexts/generic/configure"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"

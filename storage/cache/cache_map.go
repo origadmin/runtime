@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
+	oer "github.com/origadmin/framework/runtime/errors"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
@@ -15,7 +17,8 @@ const (
 
 var (
 	ErrClosed         error = &cacheError{msg: "cache closed"}
-	ErrNotFound       error = &cacheError{msg: "cache not found"}
+	// ErrNotFound is now a standard framework error, ensuring consistency across the application.
+	ErrNotFound       error = oer.FromReason(apierrors.ErrorReason_NOT_FOUND)
 	ErrInvalidElement error = &cacheError{msg: "invalid cache element"}
 	ErrExpired        error = &cacheError{msg: "cache expired"}
 )

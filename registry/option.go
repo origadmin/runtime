@@ -7,19 +7,22 @@ package registry
 import (
 	"context"
 	"time"
+
+	"github.com/origadmin/framework/runtime/configure"
+	"github.com/origadmin/framework/runtime/interfaces"
 )
 
 // Options contains the options for creating registry components.
-// It uses a context to carry implementation-specific values.
+// It embeds interfaces.ContextOptions for common context handling.
 type Options struct {
-	Context context.Context
-	Addrs   []string
-	Timeout time.Duration
-	Secure  bool
+	interfaces.ContextOptions // Anonymous embedding
+	Addrs                     []string
+	Timeout                   time.Duration
+	Secure                    bool
 }
 
-// Option is a function that configures Options.
-type Option func(o *Options)
+// Option is a function that configures registry.Options.
+type Option configure.Option[*Options]
 
 // WithContext sets the context for the options.
 func WithContext(ctx context.Context) Option {

@@ -1,6 +1,6 @@
 module github.com/origadmin/runtime
 
-go 1.23.10
+go 1.23.1
 
 require (
 	buf.build/go/protovalidate v0.13.1
@@ -8,7 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-kratos/kratos/v2 v2.8.4
-	github.com/goexts/generic v0.3.0
+	github.com/goexts/generic v0.4.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/gnostic v0.7.0
 	github.com/google/uuid v1.6.0

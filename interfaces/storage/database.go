@@ -1,6 +1,14 @@
 package storage
 
+import (
+	"database/sql"
+)
+
 // Database defines the interface for a database service.
 type Database interface {
-	// TODO: Add database specific methods here (e.g., Connect, Disconnect, Query, Execute)
+	// DB returns the underlying *sql.DB instance.
+	DB() *sql.DB
+
+	// Close closes the database connection.
+	Close() error
 }
