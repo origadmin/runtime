@@ -698,3 +698,53 @@ func IsExternalServiceOverloaded(err error) bool {
 func ErrorExternalServiceOverloaded(format string, args ...interface{}) *errors.Error {
 	return errors.New(503, ErrorReason_EXTERNAL_SERVICE_OVERLOADED.String(), fmt.Sprintf(format, args...))
 }
+
+// --- Registry Errors (6000-6999) ---
+// The requested registry entry was not found.
+// Maps to HTTP 404.
+func IsRegistryNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_REGISTRY_NOT_FOUND.String() && e.Code == 404
+}
+
+// --- Registry Errors (6000-6999) ---
+// The requested registry entry was not found.
+// Maps to HTTP 404.
+func ErrorRegistryNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, ErrorReason_REGISTRY_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// The provided configuration for the registry is invalid.
+// Maps to HTTP 400.
+func IsInvalidRegistryConfig(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_INVALID_REGISTRY_CONFIG.String() && e.Code == 400
+}
+
+// The provided configuration for the registry is invalid.
+// Maps to HTTP 400.
+func ErrorInvalidRegistryConfig(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_INVALID_REGISTRY_CONFIG.String(), fmt.Sprintf(format, args...))
+}
+
+// Failed to create a registry instance.
+// Maps to HTTP 500.
+func IsRegistryCreationFailure(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_REGISTRY_CREATION_FAILURE.String() && e.Code == 500
+}
+
+// Failed to create a registry instance.
+// Maps to HTTP 500.
+func ErrorRegistryCreationFailure(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_REGISTRY_CREATION_FAILURE.String(), fmt.Sprintf(format, args...))
+}

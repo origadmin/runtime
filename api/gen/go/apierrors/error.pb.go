@@ -229,6 +229,16 @@ const (
 	// The external service is currently overloaded.
 	// Maps to HTTP 503.
 	ErrorReason_EXTERNAL_SERVICE_OVERLOADED ErrorReason = 4013
+	// --- Registry Errors (6000-6999) ---
+	// The requested registry entry was not found.
+	// Maps to HTTP 404.
+	ErrorReason_REGISTRY_NOT_FOUND ErrorReason = 6000
+	// The provided configuration for the registry is invalid.
+	// Maps to HTTP 400.
+	ErrorReason_INVALID_REGISTRY_CONFIG ErrorReason = 6001
+	// Failed to create a registry instance.
+	// Maps to HTTP 500.
+	ErrorReason_REGISTRY_CREATION_FAILURE ErrorReason = 6002
 )
 
 // Enum value maps for ErrorReason.
@@ -277,6 +287,9 @@ var (
 		4011: "EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED",
 		4012: "EXTERNAL_SERVICE_INVALID_REQUEST",
 		4013: "EXTERNAL_SERVICE_OVERLOADED",
+		6000: "REGISTRY_NOT_FOUND",
+		6001: "INVALID_REGISTRY_CONFIG",
+		6002: "REGISTRY_CREATION_FAILURE",
 	}
 	ErrorReason_value = map[string]int32{
 		"UNKNOWN_ERROR":                            0,
@@ -322,6 +335,9 @@ var (
 		"EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED": 4011,
 		"EXTERNAL_SERVICE_INVALID_REQUEST":         4012,
 		"EXTERNAL_SERVICE_OVERLOADED":              4013,
+		"REGISTRY_NOT_FOUND":                       6000,
+		"INVALID_REGISTRY_CONFIG":                  6001,
+		"REGISTRY_CREATION_FAILURE":                6002,
 	}
 )
 
@@ -423,7 +439,7 @@ const file_apierrors_error_proto_rawDesc = "" +
 	"\x0eAUTHENTICATION\x10\x01\x12\f\n" +
 	"\bDATABASE\x10\x02\x12\f\n" +
 	"\bBUSINESS\x10\x03\x12\x14\n" +
-	"\x10EXTERNAL_SERVICE\x10\x04*\x84\v\n" +
+	"\x10EXTERNAL_SERVICE\x10\x04*\xed\v\n" +
 	"\vErrorReason\x12\x17\n" +
 	"\rUNKNOWN_ERROR\x10\x00\x1a\x04\xa8E\xf4\x03\x12\x1a\n" +
 	"\x10VALIDATION_ERROR\x10\x01\x1a\x04\xa8E\x90\x03\x12\x13\n" +
@@ -467,7 +483,10 @@ const file_apierrors_error_proto_rawDesc = "" +
 	"!EXTERNAL_SERVICE_INVALID_RESPONSE\x10\xaa\x1f\x1a\x04\xa8E\xf6\x03\x123\n" +
 	"(EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED\x10\xab\x1f\x1a\x04\xa8E\x91\x03\x12+\n" +
 	" EXTERNAL_SERVICE_INVALID_REQUEST\x10\xac\x1f\x1a\x04\xa8E\x90\x03\x12&\n" +
-	"\x1bEXTERNAL_SERVICE_OVERLOADED\x10\xad\x1f\x1a\x04\xa8E\xf7\x03\x1a\x04\xa0E\xf4\x03B\xfa\x01\n" +
+	"\x1bEXTERNAL_SERVICE_OVERLOADED\x10\xad\x1f\x1a\x04\xa8E\xf7\x03\x12\x1d\n" +
+	"\x12REGISTRY_NOT_FOUND\x10\xf0.\x1a\x04\xa8E\x94\x03\x12\"\n" +
+	"\x17INVALID_REGISTRY_CONFIG\x10\xf1.\x1a\x04\xa8E\x90\x03\x12$\n" +
+	"\x19REGISTRY_CREATION_FAILURE\x10\xf2.\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x03B\xfa\x01\n" +
 	"\x1fcom.runtime.api.proto.apierrorsB\n" +
 	"ErrorProtoP\x01Z;github.com/origadmin/runtime/api/gen/go/apierrors;apierrors\xa2\x02\x04RAPA\xaa\x02\x1bRuntime.Api.Proto.Apierrors\xca\x02\x1bRuntime\\Api\\Proto\\Apierrors\xe2\x02'Runtime\\Api\\Proto\\Apierrors\\GPBMetadata\xea\x02\x1eRuntime::Api::Proto::Apierrorsb\x06proto3"
 

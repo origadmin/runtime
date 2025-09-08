@@ -229,4 +229,17 @@ enum ErrorReason {
   // The external service is currently overloaded.
   // Maps to HTTP 503.
   EXTERNAL_SERVICE_OVERLOADED = 4013 [(errors.code) = 503];
+
+  // --- Registry Errors (6000-6999) ---
+  // The requested registry entry was not found.
+  // Maps to HTTP 404.
+  REGISTRY_NOT_FOUND = 6000 [(errors.code) = 404];
+
+  // The provided configuration for the registry is invalid.
+  // Maps to HTTP 400.
+  INVALID_REGISTRY_CONFIG = 6001 [(errors.code) = 400];
+
+  // Failed to create a registry instance.
+  // Maps to HTTP 500.
+  REGISTRY_CREATION_FAILURE = 6002 [(errors.code) = 500];
 }
