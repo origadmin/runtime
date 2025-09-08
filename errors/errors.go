@@ -23,6 +23,11 @@ import (
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
+// RequestTimeout creates a 408 Request Timeout error.
+func RequestTimeout(reason, message string) *kerrors.Error {
+	return New(http.StatusRequestTimeout, reason, message)
+}
+
 // MethodNotAllowed creates a 405 Method Not Allowed error.
 func MethodNotAllowed(reason, message string) *kerrors.Error {
 	return New(http.StatusMethodNotAllowed, reason, message)
@@ -33,9 +38,31 @@ func TooManyRequests(reason, message string) *kerrors.Error {
 	return New(http.StatusTooManyRequests, reason, message)
 }
 
-// RequestTimeout creates a 408 Request Timeout error.
-func RequestTimeout(reason, message string) *kerrors.Error {
-	return New(http.StatusRequestTimeout, reason, message)
+// TaggedError is an error that carries a specific ErrorReason.
+// This allows for explicit mapping of generic errors to predefined reasons.
+type TaggedError struct {
+	Err    error
+	Reason apierrors.ErrorReason
+}
+
+func (e *TaggedError) Error() string {
+	if e.Err != nil {
+		return e.Err.Error()
+	}
+	return e.Reason.String() // Fallback if no wrapped error
+}
+
+func (e *TaggedError) Unwrap() error {
+	return e.Err
+}
+
+// WithReason tags a generic error with a specific ErrorReason.
+// This allows Convert to map it to a specific Kratos error type.
+func WithReason(err error, reason apierrors.ErrorReason) error {
+	if err == nil {
+		return nil
+	}
+	return &TaggedError{Err: err, Reason: reason}
 }
 
 // FromReason creates a Kratos error from a predefined error reason from the .proto file.
@@ -103,6 +130,12 @@ func Convert(err error) *kerrors.Error {
 	var ke *kerrors.Error
 	if errors.As(err, &ke) {
 		return ke
+	}
+
+	// Check if the error is a TaggedError, allowing explicit mapping.
+	var taggedErr *TaggedError
+	if errors.As(err, &taggedErr) {
+		return WithMessage(FromReason(taggedErr.Reason), taggedErr.Error())
 	}
 
 	switch {

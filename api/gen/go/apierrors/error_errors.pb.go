@@ -202,3 +202,499 @@ func IsForbidden(err error) bool {
 func ErrorForbidden(format string, args ...interface{}) *errors.Error {
 	return errors.New(403, ErrorReason_FORBIDDEN.String(), fmt.Sprintf(format, args...))
 }
+
+// The provided credentials are invalid.
+// Maps to HTTP 401.
+func IsInvalidCredentials(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_INVALID_CREDENTIALS.String() && e.Code == 401
+}
+
+// The provided credentials are invalid.
+// Maps to HTTP 401.
+func ErrorInvalidCredentials(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, ErrorReason_INVALID_CREDENTIALS.String(), fmt.Sprintf(format, args...))
+}
+
+// The authentication token has expired.
+// Maps to HTTP 401.
+func IsTokenExpired(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_TOKEN_EXPIRED.String() && e.Code == 401
+}
+
+// The authentication token has expired.
+// Maps to HTTP 401.
+func ErrorTokenExpired(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, ErrorReason_TOKEN_EXPIRED.String(), fmt.Sprintf(format, args...))
+}
+
+// The authentication token is invalid.
+// Maps to HTTP 401.
+func IsTokenInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_TOKEN_INVALID.String() && e.Code == 401
+}
+
+// The authentication token is invalid.
+// Maps to HTTP 401.
+func ErrorTokenInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, ErrorReason_TOKEN_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+// The authentication token is missing.
+// Maps to HTTP 401.
+func IsTokenMissing(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_TOKEN_MISSING.String() && e.Code == 401
+}
+
+// The authentication token is missing.
+// Maps to HTTP 401.
+func ErrorTokenMissing(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, ErrorReason_TOKEN_MISSING.String(), fmt.Sprintf(format, args...))
+}
+
+// The database operation failed.
+// Maps to HTTP 500.
+func IsDatabaseError(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_DATABASE_ERROR.String() && e.Code == 500
+}
+
+// The database operation failed.
+// Maps to HTTP 500.
+func ErrorDatabaseError(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_DATABASE_ERROR.String(), fmt.Sprintf(format, args...))
+}
+
+// A database record was not found.
+// Maps to HTTP 404.
+func IsRecordNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_RECORD_NOT_FOUND.String() && e.Code == 404
+}
+
+// A database record was not found.
+// Maps to HTTP 404.
+func ErrorRecordNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, ErrorReason_RECORD_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// A database constraint was violated.
+// Maps to HTTP 409.
+func IsConstraintViolation(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_CONSTRAINT_VIOLATION.String() && e.Code == 409
+}
+
+// A database constraint was violated.
+// Maps to HTTP 409.
+func ErrorConstraintViolation(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_CONSTRAINT_VIOLATION.String(), fmt.Sprintf(format, args...))
+}
+
+// A duplicate key was found in the database.
+// Maps to HTTP 409.
+func IsDuplicateKey(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_DUPLICATE_KEY.String() && e.Code == 409
+}
+
+// A duplicate key was found in the database.
+// Maps to HTTP 409.
+func ErrorDuplicateKey(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_DUPLICATE_KEY.String(), fmt.Sprintf(format, args...))
+}
+
+// The database connection failed.
+// Maps to HTTP 503.
+func IsDatabaseConnectionFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_DATABASE_CONNECTION_FAILED.String() && e.Code == 503
+}
+
+// The database connection failed.
+// Maps to HTTP 503.
+func ErrorDatabaseConnectionFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(503, ErrorReason_DATABASE_CONNECTION_FAILED.String(), fmt.Sprintf(format, args...))
+}
+
+// The operation is not allowed in the current state.
+// Maps to HTTP 400.
+func IsInvalidState(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_INVALID_STATE.String() && e.Code == 400
+}
+
+// The operation is not allowed in the current state.
+// Maps to HTTP 400.
+func ErrorInvalidState(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_INVALID_STATE.String(), fmt.Sprintf(format, args...))
+}
+
+// The resource already exists.
+// Maps to HTTP 409.
+func IsResourceExists(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_RESOURCE_EXISTS.String() && e.Code == 409
+}
+
+// The resource already exists.
+// Maps to HTTP 409.
+func ErrorResourceExists(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_RESOURCE_EXISTS.String(), fmt.Sprintf(format, args...))
+}
+
+// The resource is in use and cannot be deleted.
+// Maps to HTTP 409.
+func IsResourceInUse(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_RESOURCE_IN_USE.String() && e.Code == 409
+}
+
+// The resource is in use and cannot be deleted.
+// Maps to HTTP 409.
+func ErrorResourceInUse(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_RESOURCE_IN_USE.String(), fmt.Sprintf(format, args...))
+}
+
+// The operation was canceled.
+// Maps to HTTP 499.
+func IsCancelled(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_CANCELLED.String() && e.Code == 499
+}
+
+// The operation was canceled.
+// Maps to HTTP 499.
+func ErrorCancelled(format string, args ...interface{}) *errors.Error {
+	return errors.New(499, ErrorReason_CANCELLED.String(), fmt.Sprintf(format, args...))
+}
+
+// The operation was aborted.
+// Maps to HTTP 409.
+func IsAborted(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_ABORTED.String() && e.Code == 409
+}
+
+// The operation was aborted.
+// Maps to HTTP 409.
+func ErrorAborted(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_ABORTED.String(), fmt.Sprintf(format, args...))
+}
+
+// The request is missing required parameters.
+// Maps to HTTP 400.
+func IsMissingParameter(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_MISSING_PARAMETER.String() && e.Code == 400
+}
+
+// The request is missing required parameters.
+// Maps to HTTP 400.
+func ErrorMissingParameter(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_MISSING_PARAMETER.String(), fmt.Sprintf(format, args...))
+}
+
+// The request contains an invalid parameter value.
+// Maps to HTTP 400.
+func IsInvalidParameter(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_INVALID_PARAMETER.String() && e.Code == 400
+}
+
+// The request contains an invalid parameter value.
+// Maps to HTTP 400.
+func ErrorInvalidParameter(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_INVALID_PARAMETER.String(), fmt.Sprintf(format, args...))
+}
+
+// The request is not allowed in the current context.
+// Maps to HTTP 403.
+func IsOperationNotAllowed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_OPERATION_NOT_ALLOWED.String() && e.Code == 403
+}
+
+// The request is not allowed in the current context.
+// Maps to HTTP 403.
+func ErrorOperationNotAllowed(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_OPERATION_NOT_ALLOWED.String(), fmt.Sprintf(format, args...))
+}
+
+// An external service is unavailable.
+// Maps to HTTP 503.
+func IsExternalServiceUnavailable(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_UNAVAILABLE.String() && e.Code == 503
+}
+
+// An external service is unavailable.
+// Maps to HTTP 503.
+func ErrorExternalServiceUnavailable(format string, args ...interface{}) *errors.Error {
+	return errors.New(503, ErrorReason_EXTERNAL_SERVICE_UNAVAILABLE.String(), fmt.Sprintf(format, args...))
+}
+
+// An external service returned an error.
+// Maps to HTTP 502.
+func IsExternalServiceError(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_ERROR.String() && e.Code == 502
+}
+
+// An external service returned an error.
+// Maps to HTTP 502.
+func ErrorExternalServiceError(format string, args ...interface{}) *errors.Error {
+	return errors.New(502, ErrorReason_EXTERNAL_SERVICE_ERROR.String(), fmt.Sprintf(format, args...))
+}
+
+// An external service timed out.
+// Maps to HTTP 504.
+func IsExternalServiceTimeout(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_TIMEOUT.String() && e.Code == 504
+}
+
+// An external service timed out.
+// Maps to HTTP 504.
+func ErrorExternalServiceTimeout(format string, args ...interface{}) *errors.Error {
+	return errors.New(504, ErrorReason_EXTERNAL_SERVICE_TIMEOUT.String(), fmt.Sprintf(format, args...))
+}
+
+// The request to an external service was invalid.
+// Maps to HTTP 400.
+func IsExternalServiceBadRequest(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_BAD_REQUEST.String() && e.Code == 400
+}
+
+// The request to an external service was invalid.
+// Maps to HTTP 400.
+func ErrorExternalServiceBadRequest(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_EXTERNAL_SERVICE_BAD_REQUEST.String(), fmt.Sprintf(format, args...))
+}
+
+// The request to an external service was unauthorized.
+// Maps to HTTP 401.
+func IsExternalServiceUnauthorized(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_UNAUTHORIZED.String() && e.Code == 401
+}
+
+// The request to an external service was unauthorized.
+// Maps to HTTP 401.
+func ErrorExternalServiceUnauthorized(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, ErrorReason_EXTERNAL_SERVICE_UNAUTHORIZED.String(), fmt.Sprintf(format, args...))
+}
+
+// The request to an external service was forbidden.
+// Maps to HTTP 403.
+func IsExternalServiceForbidden(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_FORBIDDEN.String() && e.Code == 403
+}
+
+// The request to an external service was forbidden.
+// Maps to HTTP 403.
+func ErrorExternalServiceForbidden(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_EXTERNAL_SERVICE_FORBIDDEN.String(), fmt.Sprintf(format, args...))
+}
+
+// The requested resource was not found in the external service.
+// Maps to HTTP 404.
+func IsExternalServiceNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_NOT_FOUND.String() && e.Code == 404
+}
+
+// The requested resource was not found in the external service.
+// Maps to HTTP 404.
+func ErrorExternalServiceNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, ErrorReason_EXTERNAL_SERVICE_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+}
+
+// The external service is rate limiting requests.
+// Maps to HTTP 429.
+func IsExternalServiceRateLimit(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_RATE_LIMIT.String() && e.Code == 429
+}
+
+// The external service is rate limiting requests.
+// Maps to HTTP 429.
+func ErrorExternalServiceRateLimit(format string, args ...interface{}) *errors.Error {
+	return errors.New(429, ErrorReason_EXTERNAL_SERVICE_RATE_LIMIT.String(), fmt.Sprintf(format, args...))
+}
+
+// The external service returned an unexpected response.
+// Maps to HTTP 502.
+func IsExternalServiceUnexpectedResponse(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_UNEXPECTED_RESPONSE.String() && e.Code == 502
+}
+
+// The external service returned an unexpected response.
+// Maps to HTTP 502.
+func ErrorExternalServiceUnexpectedResponse(format string, args ...interface{}) *errors.Error {
+	return errors.New(502, ErrorReason_EXTERNAL_SERVICE_UNEXPECTED_RESPONSE.String(), fmt.Sprintf(format, args...))
+}
+
+// The external service is not configured correctly.
+// Maps to HTTP 500.
+func IsExternalServiceMisconfigured(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_MISCONFIGURED.String() && e.Code == 500
+}
+
+// The external service is not configured correctly.
+// Maps to HTTP 500.
+func ErrorExternalServiceMisconfigured(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_EXTERNAL_SERVICE_MISCONFIGURED.String(), fmt.Sprintf(format, args...))
+}
+
+// The external service returned a response that could not be processed.
+// Maps to HTTP 502.
+func IsExternalServiceInvalidResponse(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_INVALID_RESPONSE.String() && e.Code == 502
+}
+
+// The external service returned a response that could not be processed.
+// Maps to HTTP 502.
+func ErrorExternalServiceInvalidResponse(format string, args ...interface{}) *errors.Error {
+	return errors.New(502, ErrorReason_EXTERNAL_SERVICE_INVALID_RESPONSE.String(), fmt.Sprintf(format, args...))
+}
+
+// The external service requires authentication.
+// Maps to HTTP 401.
+func IsExternalServiceAuthenticationRequired(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED.String() && e.Code == 401
+}
+
+// The external service requires authentication.
+// Maps to HTTP 401.
+func ErrorExternalServiceAuthenticationRequired(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, ErrorReason_EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED.String(), fmt.Sprintf(format, args...))
+}
+
+// The external service request was rejected due to invalid parameters.
+// Maps to HTTP 400.
+func IsExternalServiceInvalidRequest(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_INVALID_REQUEST.String() && e.Code == 400
+}
+
+// The external service request was rejected due to invalid parameters.
+// Maps to HTTP 400.
+func ErrorExternalServiceInvalidRequest(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_EXTERNAL_SERVICE_INVALID_REQUEST.String(), fmt.Sprintf(format, args...))
+}
+
+// The external service is currently overloaded.
+// Maps to HTTP 503.
+func IsExternalServiceOverloaded(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_EXTERNAL_SERVICE_OVERLOADED.String() && e.Code == 503
+}
+
+// The external service is currently overloaded.
+// Maps to HTTP 503.
+func ErrorExternalServiceOverloaded(format string, args ...interface{}) *errors.Error {
+	return errors.New(503, ErrorReason_EXTERNAL_SERVICE_OVERLOADED.String(), fmt.Sprintf(format, args...))
+}

@@ -22,13 +22,81 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ErrorCategory defines the category of an error.
+// This helps in grouping related errors together.
+type ErrorCategory int32
+
+const (
+	// General errors not specific to any category.
+	ErrorCategory_GENERAL ErrorCategory = 0
+	// Authentication and authorization related errors.
+	ErrorCategory_AUTHENTICATION ErrorCategory = 1
+	// Database related errors.
+	ErrorCategory_DATABASE ErrorCategory = 2
+	// Business logic related errors.
+	ErrorCategory_BUSINESS ErrorCategory = 3
+	// External service related errors.
+	ErrorCategory_EXTERNAL_SERVICE ErrorCategory = 4
+)
+
+// Enum value maps for ErrorCategory.
+var (
+	ErrorCategory_name = map[int32]string{
+		0: "GENERAL",
+		1: "AUTHENTICATION",
+		2: "DATABASE",
+		3: "BUSINESS",
+		4: "EXTERNAL_SERVICE",
+	}
+	ErrorCategory_value = map[string]int32{
+		"GENERAL":          0,
+		"AUTHENTICATION":   1,
+		"DATABASE":         2,
+		"BUSINESS":         3,
+		"EXTERNAL_SERVICE": 4,
+	}
+)
+
+func (x ErrorCategory) Enum() *ErrorCategory {
+	p := new(ErrorCategory)
+	*p = x
+	return p
+}
+
+func (x ErrorCategory) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ErrorCategory) Descriptor() protoreflect.EnumDescriptor {
+	return file_apierrors_error_proto_enumTypes[0].Descriptor()
+}
+
+func (ErrorCategory) Type() protoreflect.EnumType {
+	return &file_apierrors_error_proto_enumTypes[0]
+}
+
+func (x ErrorCategory) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ErrorCategory.Descriptor instead.
+func (ErrorCategory) EnumDescriptor() ([]byte, []int) {
+	return file_apierrors_error_proto_rawDescGZIP(), []int{0}
+}
+
 // ErrorReason defines the application's error codes.
 // These codes are mapped to HTTP status codes and are consistent across all services.
 //
 // The enum values are structured to allow for future expansion.
 // - 0-999: General framework errors
 // - 1000-1999: User and authentication related errors
-// - 2000+: Plugin-specific errors (to be defined by plugins themselves)
+// - 2000-2999: Database related errors
+// - 3000-3999: Business logic errors
+// - 4000-4999: External service errors
+// - 5000+: Plugin-specific errors (to be defined by plugins themselves)
+//
+// Each error has an associated HTTP status code and can include additional metadata.
+// The error messages should be user-friendly and provide enough context for debugging.
 type ErrorReason int32
 
 const (
@@ -68,6 +136,99 @@ const (
 	// The user is authenticated but does not have permission to perform the action.
 	// Maps to HTTP 403.
 	ErrorReason_FORBIDDEN ErrorReason = 1001
+	// The provided credentials are invalid.
+	// Maps to HTTP 401.
+	ErrorReason_INVALID_CREDENTIALS ErrorReason = 1002
+	// The authentication token has expired.
+	// Maps to HTTP 401.
+	ErrorReason_TOKEN_EXPIRED ErrorReason = 1003
+	// The authentication token is invalid.
+	// Maps to HTTP 401.
+	ErrorReason_TOKEN_INVALID ErrorReason = 1004
+	// The authentication token is missing.
+	// Maps to HTTP 401.
+	ErrorReason_TOKEN_MISSING ErrorReason = 1005
+	// The database operation failed.
+	// Maps to HTTP 500.
+	ErrorReason_DATABASE_ERROR ErrorReason = 2000
+	// A database record was not found.
+	// Maps to HTTP 404.
+	ErrorReason_RECORD_NOT_FOUND ErrorReason = 2001
+	// A database constraint was violated.
+	// Maps to HTTP 409.
+	ErrorReason_CONSTRAINT_VIOLATION ErrorReason = 2002
+	// A duplicate key was found in the database.
+	// Maps to HTTP 409.
+	ErrorReason_DUPLICATE_KEY ErrorReason = 2003
+	// The database connection failed.
+	// Maps to HTTP 503.
+	ErrorReason_DATABASE_CONNECTION_FAILED ErrorReason = 2004
+	// The operation is not allowed in the current state.
+	// Maps to HTTP 400.
+	ErrorReason_INVALID_STATE ErrorReason = 3000
+	// The resource already exists.
+	// Maps to HTTP 409.
+	ErrorReason_RESOURCE_EXISTS ErrorReason = 3001
+	// The resource is in use and cannot be deleted.
+	// Maps to HTTP 409.
+	ErrorReason_RESOURCE_IN_USE ErrorReason = 3002
+	// The operation was canceled.
+	// Maps to HTTP 499.
+	ErrorReason_CANCELLED ErrorReason = 3003
+	// The operation was aborted.
+	// Maps to HTTP 409.
+	ErrorReason_ABORTED ErrorReason = 3004
+	// The request is missing required parameters.
+	// Maps to HTTP 400.
+	ErrorReason_MISSING_PARAMETER ErrorReason = 3005
+	// The request contains an invalid parameter value.
+	// Maps to HTTP 400.
+	ErrorReason_INVALID_PARAMETER ErrorReason = 3006
+	// The request is not allowed in the current context.
+	// Maps to HTTP 403.
+	ErrorReason_OPERATION_NOT_ALLOWED ErrorReason = 3007
+	// An external service is unavailable.
+	// Maps to HTTP 503.
+	ErrorReason_EXTERNAL_SERVICE_UNAVAILABLE ErrorReason = 4000
+	// An external service returned an error.
+	// Maps to HTTP 502.
+	ErrorReason_EXTERNAL_SERVICE_ERROR ErrorReason = 4001
+	// An external service timed out.
+	// Maps to HTTP 504.
+	ErrorReason_EXTERNAL_SERVICE_TIMEOUT ErrorReason = 4002
+	// The request to an external service was invalid.
+	// Maps to HTTP 400.
+	ErrorReason_EXTERNAL_SERVICE_BAD_REQUEST ErrorReason = 4003
+	// The request to an external service was unauthorized.
+	// Maps to HTTP 401.
+	ErrorReason_EXTERNAL_SERVICE_UNAUTHORIZED ErrorReason = 4004
+	// The request to an external service was forbidden.
+	// Maps to HTTP 403.
+	ErrorReason_EXTERNAL_SERVICE_FORBIDDEN ErrorReason = 4005
+	// The requested resource was not found in the external service.
+	// Maps to HTTP 404.
+	ErrorReason_EXTERNAL_SERVICE_NOT_FOUND ErrorReason = 4006
+	// The external service is rate limiting requests.
+	// Maps to HTTP 429.
+	ErrorReason_EXTERNAL_SERVICE_RATE_LIMIT ErrorReason = 4007
+	// The external service returned an unexpected response.
+	// Maps to HTTP 502.
+	ErrorReason_EXTERNAL_SERVICE_UNEXPECTED_RESPONSE ErrorReason = 4008
+	// The external service is not configured correctly.
+	// Maps to HTTP 500.
+	ErrorReason_EXTERNAL_SERVICE_MISCONFIGURED ErrorReason = 4009
+	// The external service returned a response that could not be processed.
+	// Maps to HTTP 502.
+	ErrorReason_EXTERNAL_SERVICE_INVALID_RESPONSE ErrorReason = 4010
+	// The external service requires authentication.
+	// Maps to HTTP 401.
+	ErrorReason_EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED ErrorReason = 4011
+	// The external service request was rejected due to invalid parameters.
+	// Maps to HTTP 400.
+	ErrorReason_EXTERNAL_SERVICE_INVALID_REQUEST ErrorReason = 4012
+	// The external service is currently overloaded.
+	// Maps to HTTP 503.
+	ErrorReason_EXTERNAL_SERVICE_OVERLOADED ErrorReason = 4013
 )
 
 // Enum value maps for ErrorReason.
@@ -85,20 +246,82 @@ var (
 		9:    "GATEWAY_TIMEOUT",
 		1000: "UNAUTHENTICATED",
 		1001: "FORBIDDEN",
+		1002: "INVALID_CREDENTIALS",
+		1003: "TOKEN_EXPIRED",
+		1004: "TOKEN_INVALID",
+		1005: "TOKEN_MISSING",
+		2000: "DATABASE_ERROR",
+		2001: "RECORD_NOT_FOUND",
+		2002: "CONSTRAINT_VIOLATION",
+		2003: "DUPLICATE_KEY",
+		2004: "DATABASE_CONNECTION_FAILED",
+		3000: "INVALID_STATE",
+		3001: "RESOURCE_EXISTS",
+		3002: "RESOURCE_IN_USE",
+		3003: "CANCELLED",
+		3004: "ABORTED",
+		3005: "MISSING_PARAMETER",
+		3006: "INVALID_PARAMETER",
+		3007: "OPERATION_NOT_ALLOWED",
+		4000: "EXTERNAL_SERVICE_UNAVAILABLE",
+		4001: "EXTERNAL_SERVICE_ERROR",
+		4002: "EXTERNAL_SERVICE_TIMEOUT",
+		4003: "EXTERNAL_SERVICE_BAD_REQUEST",
+		4004: "EXTERNAL_SERVICE_UNAUTHORIZED",
+		4005: "EXTERNAL_SERVICE_FORBIDDEN",
+		4006: "EXTERNAL_SERVICE_NOT_FOUND",
+		4007: "EXTERNAL_SERVICE_RATE_LIMIT",
+		4008: "EXTERNAL_SERVICE_UNEXPECTED_RESPONSE",
+		4009: "EXTERNAL_SERVICE_MISCONFIGURED",
+		4010: "EXTERNAL_SERVICE_INVALID_RESPONSE",
+		4011: "EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED",
+		4012: "EXTERNAL_SERVICE_INVALID_REQUEST",
+		4013: "EXTERNAL_SERVICE_OVERLOADED",
 	}
 	ErrorReason_value = map[string]int32{
-		"UNKNOWN_ERROR":         0,
-		"VALIDATION_ERROR":      1,
-		"NOT_FOUND":             2,
-		"INTERNAL_SERVER_ERROR": 3,
-		"METHOD_NOT_ALLOWED":    4,
-		"REQUEST_TIMEOUT":       5,
-		"CONFLICT":              6,
-		"TOO_MANY_REQUESTS":     7,
-		"SERVICE_UNAVAILABLE":   8,
-		"GATEWAY_TIMEOUT":       9,
-		"UNAUTHENTICATED":       1000,
-		"FORBIDDEN":             1001,
+		"UNKNOWN_ERROR":                            0,
+		"VALIDATION_ERROR":                         1,
+		"NOT_FOUND":                                2,
+		"INTERNAL_SERVER_ERROR":                    3,
+		"METHOD_NOT_ALLOWED":                       4,
+		"REQUEST_TIMEOUT":                          5,
+		"CONFLICT":                                 6,
+		"TOO_MANY_REQUESTS":                        7,
+		"SERVICE_UNAVAILABLE":                      8,
+		"GATEWAY_TIMEOUT":                          9,
+		"UNAUTHENTICATED":                          1000,
+		"FORBIDDEN":                                1001,
+		"INVALID_CREDENTIALS":                      1002,
+		"TOKEN_EXPIRED":                            1003,
+		"TOKEN_INVALID":                            1004,
+		"TOKEN_MISSING":                            1005,
+		"DATABASE_ERROR":                           2000,
+		"RECORD_NOT_FOUND":                         2001,
+		"CONSTRAINT_VIOLATION":                     2002,
+		"DUPLICATE_KEY":                            2003,
+		"DATABASE_CONNECTION_FAILED":               2004,
+		"INVALID_STATE":                            3000,
+		"RESOURCE_EXISTS":                          3001,
+		"RESOURCE_IN_USE":                          3002,
+		"CANCELLED":                                3003,
+		"ABORTED":                                  3004,
+		"MISSING_PARAMETER":                        3005,
+		"INVALID_PARAMETER":                        3006,
+		"OPERATION_NOT_ALLOWED":                    3007,
+		"EXTERNAL_SERVICE_UNAVAILABLE":             4000,
+		"EXTERNAL_SERVICE_ERROR":                   4001,
+		"EXTERNAL_SERVICE_TIMEOUT":                 4002,
+		"EXTERNAL_SERVICE_BAD_REQUEST":             4003,
+		"EXTERNAL_SERVICE_UNAUTHORIZED":            4004,
+		"EXTERNAL_SERVICE_FORBIDDEN":               4005,
+		"EXTERNAL_SERVICE_NOT_FOUND":               4006,
+		"EXTERNAL_SERVICE_RATE_LIMIT":              4007,
+		"EXTERNAL_SERVICE_UNEXPECTED_RESPONSE":     4008,
+		"EXTERNAL_SERVICE_MISCONFIGURED":           4009,
+		"EXTERNAL_SERVICE_INVALID_RESPONSE":        4010,
+		"EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED": 4011,
+		"EXTERNAL_SERVICE_INVALID_REQUEST":         4012,
+		"EXTERNAL_SERVICE_OVERLOADED":              4013,
 	}
 )
 
@@ -113,11 +336,11 @@ func (x ErrorReason) String() string {
 }
 
 func (ErrorReason) Descriptor() protoreflect.EnumDescriptor {
-	return file_apierrors_error_proto_enumTypes[0].Descriptor()
+	return file_apierrors_error_proto_enumTypes[1].Descriptor()
 }
 
 func (ErrorReason) Type() protoreflect.EnumType {
-	return &file_apierrors_error_proto_enumTypes[0]
+	return &file_apierrors_error_proto_enumTypes[1]
 }
 
 func (x ErrorReason) Number() protoreflect.EnumNumber {
@@ -126,14 +349,81 @@ func (x ErrorReason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ErrorReason.Descriptor instead.
 func (ErrorReason) EnumDescriptor() ([]byte, []int) {
+	return file_apierrors_error_proto_rawDescGZIP(), []int{1}
+}
+
+// ErrorMetadata contains additional context about an error.
+type ErrorMetadata struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The category of the error.
+	Category ErrorCategory `protobuf:"varint,1,opt,name=category,proto3,enum=runtime.api.proto.apierrors.ErrorCategory" json:"category,omitempty"`
+	// Additional key-value pairs providing context about the error.
+	Metadata      map[string]string `protobuf:"bytes,2,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErrorMetadata) Reset() {
+	*x = ErrorMetadata{}
+	mi := &file_apierrors_error_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErrorMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErrorMetadata) ProtoMessage() {}
+
+func (x *ErrorMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_apierrors_error_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErrorMetadata.ProtoReflect.Descriptor instead.
+func (*ErrorMetadata) Descriptor() ([]byte, []int) {
 	return file_apierrors_error_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ErrorMetadata) GetCategory() ErrorCategory {
+	if x != nil {
+		return x.Category
+	}
+	return ErrorCategory_GENERAL
+}
+
+func (x *ErrorMetadata) GetMetadata() map[string]string {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
 }
 
 var File_apierrors_error_proto protoreflect.FileDescriptor
 
 const file_apierrors_error_proto_rawDesc = "" +
 	"\n" +
-	"\x15apierrors/error.proto\x12\x1bruntime.api.proto.apierrors\x1a\x13errors/errors.proto*\xd4\x02\n" +
+	"\x15apierrors/error.proto\x12\x1bruntime.api.proto.apierrors\x1a\x13errors/errors.proto\"\xea\x01\n" +
+	"\rErrorMetadata\x12F\n" +
+	"\bcategory\x18\x01 \x01(\x0e2*.runtime.api.proto.apierrors.ErrorCategoryR\bcategory\x12T\n" +
+	"\bmetadata\x18\x02 \x03(\v28.runtime.api.proto.apierrors.ErrorMetadata.MetadataEntryR\bmetadata\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*b\n" +
+	"\rErrorCategory\x12\v\n" +
+	"\aGENERAL\x10\x00\x12\x12\n" +
+	"\x0eAUTHENTICATION\x10\x01\x12\f\n" +
+	"\bDATABASE\x10\x02\x12\f\n" +
+	"\bBUSINESS\x10\x03\x12\x14\n" +
+	"\x10EXTERNAL_SERVICE\x10\x04*\x84\v\n" +
 	"\vErrorReason\x12\x17\n" +
 	"\rUNKNOWN_ERROR\x10\x00\x1a\x04\xa8E\xf4\x03\x12\x1a\n" +
 	"\x10VALIDATION_ERROR\x10\x01\x1a\x04\xa8E\x90\x03\x12\x13\n" +
@@ -146,7 +436,38 @@ const file_apierrors_error_proto_rawDesc = "" +
 	"\x13SERVICE_UNAVAILABLE\x10\b\x1a\x04\xa8E\xf7\x03\x12\x19\n" +
 	"\x0fGATEWAY_TIMEOUT\x10\t\x1a\x04\xa8E\xf8\x03\x12\x1a\n" +
 	"\x0fUNAUTHENTICATED\x10\xe8\a\x1a\x04\xa8E\x91\x03\x12\x14\n" +
-	"\tFORBIDDEN\x10\xe9\a\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B\xfa\x01\n" +
+	"\tFORBIDDEN\x10\xe9\a\x1a\x04\xa8E\x93\x03\x12\x1e\n" +
+	"\x13INVALID_CREDENTIALS\x10\xea\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
+	"\rTOKEN_EXPIRED\x10\xeb\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
+	"\rTOKEN_INVALID\x10\xec\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
+	"\rTOKEN_MISSING\x10\xed\a\x1a\x04\xa8E\x91\x03\x12\x19\n" +
+	"\x0eDATABASE_ERROR\x10\xd0\x0f\x1a\x04\xa8E\xf4\x03\x12\x1b\n" +
+	"\x10RECORD_NOT_FOUND\x10\xd1\x0f\x1a\x04\xa8E\x94\x03\x12\x1f\n" +
+	"\x14CONSTRAINT_VIOLATION\x10\xd2\x0f\x1a\x04\xa8E\x99\x03\x12\x18\n" +
+	"\rDUPLICATE_KEY\x10\xd3\x0f\x1a\x04\xa8E\x99\x03\x12%\n" +
+	"\x1aDATABASE_CONNECTION_FAILED\x10\xd4\x0f\x1a\x04\xa8E\xf7\x03\x12\x18\n" +
+	"\rINVALID_STATE\x10\xb8\x17\x1a\x04\xa8E\x90\x03\x12\x1a\n" +
+	"\x0fRESOURCE_EXISTS\x10\xb9\x17\x1a\x04\xa8E\x99\x03\x12\x1a\n" +
+	"\x0fRESOURCE_IN_USE\x10\xba\x17\x1a\x04\xa8E\x99\x03\x12\x14\n" +
+	"\tCANCELLED\x10\xbb\x17\x1a\x04\xa8E\xf3\x03\x12\x12\n" +
+	"\aABORTED\x10\xbc\x17\x1a\x04\xa8E\x99\x03\x12\x1c\n" +
+	"\x11MISSING_PARAMETER\x10\xbd\x17\x1a\x04\xa8E\x90\x03\x12\x1c\n" +
+	"\x11INVALID_PARAMETER\x10\xbe\x17\x1a\x04\xa8E\x90\x03\x12 \n" +
+	"\x15OPERATION_NOT_ALLOWED\x10\xbf\x17\x1a\x04\xa8E\x93\x03\x12'\n" +
+	"\x1cEXTERNAL_SERVICE_UNAVAILABLE\x10\xa0\x1f\x1a\x04\xa8E\xf7\x03\x12!\n" +
+	"\x16EXTERNAL_SERVICE_ERROR\x10\xa1\x1f\x1a\x04\xa8E\xf6\x03\x12#\n" +
+	"\x18EXTERNAL_SERVICE_TIMEOUT\x10\xa2\x1f\x1a\x04\xa8E\xf8\x03\x12'\n" +
+	"\x1cEXTERNAL_SERVICE_BAD_REQUEST\x10\xa3\x1f\x1a\x04\xa8E\x90\x03\x12(\n" +
+	"\x1dEXTERNAL_SERVICE_UNAUTHORIZED\x10\xa4\x1f\x1a\x04\xa8E\x91\x03\x12%\n" +
+	"\x1aEXTERNAL_SERVICE_FORBIDDEN\x10\xa5\x1f\x1a\x04\xa8E\x93\x03\x12%\n" +
+	"\x1aEXTERNAL_SERVICE_NOT_FOUND\x10\xa6\x1f\x1a\x04\xa8E\x94\x03\x12&\n" +
+	"\x1bEXTERNAL_SERVICE_RATE_LIMIT\x10\xa7\x1f\x1a\x04\xa8E\xad\x03\x12/\n" +
+	"$EXTERNAL_SERVICE_UNEXPECTED_RESPONSE\x10\xa8\x1f\x1a\x04\xa8E\xf6\x03\x12)\n" +
+	"\x1eEXTERNAL_SERVICE_MISCONFIGURED\x10\xa9\x1f\x1a\x04\xa8E\xf4\x03\x12,\n" +
+	"!EXTERNAL_SERVICE_INVALID_RESPONSE\x10\xaa\x1f\x1a\x04\xa8E\xf6\x03\x123\n" +
+	"(EXTERNAL_SERVICE_AUTHENTICATION_REQUIRED\x10\xab\x1f\x1a\x04\xa8E\x91\x03\x12+\n" +
+	" EXTERNAL_SERVICE_INVALID_REQUEST\x10\xac\x1f\x1a\x04\xa8E\x90\x03\x12&\n" +
+	"\x1bEXTERNAL_SERVICE_OVERLOADED\x10\xad\x1f\x1a\x04\xa8E\xf7\x03\x1a\x04\xa0E\xf4\x03B\xfa\x01\n" +
 	"\x1fcom.runtime.api.proto.apierrorsB\n" +
 	"ErrorProtoP\x01Z;github.com/origadmin/runtime/api/gen/go/apierrors;apierrors\xa2\x02\x04RAPA\xaa\x02\x1bRuntime.Api.Proto.Apierrors\xca\x02\x1bRuntime\\Api\\Proto\\Apierrors\xe2\x02'Runtime\\Api\\Proto\\Apierrors\\GPBMetadata\xea\x02\x1eRuntime::Api::Proto::Apierrorsb\x06proto3"
 
@@ -162,16 +483,22 @@ func file_apierrors_error_proto_rawDescGZIP() []byte {
 	return file_apierrors_error_proto_rawDescData
 }
 
-var file_apierrors_error_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_apierrors_error_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_apierrors_error_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_apierrors_error_proto_goTypes = []any{
-	(ErrorReason)(0), // 0: runtime.api.proto.apierrors.ErrorReason
+	(ErrorCategory)(0),    // 0: runtime.api.proto.apierrors.ErrorCategory
+	(ErrorReason)(0),      // 1: runtime.api.proto.apierrors.ErrorReason
+	(*ErrorMetadata)(nil), // 2: runtime.api.proto.apierrors.ErrorMetadata
+	nil,                   // 3: runtime.api.proto.apierrors.ErrorMetadata.MetadataEntry
 }
 var file_apierrors_error_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: runtime.api.proto.apierrors.ErrorMetadata.category:type_name -> runtime.api.proto.apierrors.ErrorCategory
+	3, // 1: runtime.api.proto.apierrors.ErrorMetadata.metadata:type_name -> runtime.api.proto.apierrors.ErrorMetadata.MetadataEntry
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_apierrors_error_proto_init() }
@@ -184,14 +511,15 @@ func file_apierrors_error_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_apierrors_error_proto_rawDesc), len(file_apierrors_error_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   0,
+			NumEnums:      2,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_apierrors_error_proto_goTypes,
 		DependencyIndexes: file_apierrors_error_proto_depIdxs,
 		EnumInfos:         file_apierrors_error_proto_enumTypes,
+		MessageInfos:      file_apierrors_error_proto_msgTypes,
 	}.Build()
 	File_apierrors_error_proto = out.File
 	file_apierrors_error_proto_goTypes = nil
