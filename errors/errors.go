@@ -3,180 +3,153 @@
  */
 
 // Package errors provides a centralized hub for handling, converting, and rendering errors.
-// It provides custom error handlers/encoders for HTTP and gRPC that integrate with the
-// Kratos ecosystem while providing centralized logging and error conversion.
+// It uses a proto-defined enum for standard error reasons and adapts the Kratos error package.
 package errors
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
 
 	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/transport"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	apiErrors "github.com/origadmin/framework/runtime/api/gen/go/apierrors"
+	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
+	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/log"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
+// MethodNotAllowed creates a 405 Method Not Allowed error.
+func MethodNotAllowed(reason, message string) *kerrors.Error {
+	return New(http.StatusMethodNotAllowed, reason, message)
+}
+
+// TooManyRequests creates a 429 Too Many Requests error.
+func TooManyRequests(reason, message string) *kerrors.Error {
+	return New(http.StatusTooManyRequests, reason, message)
+}
+
+// RequestTimeout creates a 408 Request Timeout error.
+func RequestTimeout(reason, message string) *kerrors.Error {
+	return New(http.StatusRequestTimeout, reason, message)
+}
+
+// FromReason creates a Kratos error from a predefined error reason from the .proto file.
+// This is the primary and consistent way to create standard application errors.
+func FromReason(reason apierrors.ErrorReason) *kerrors.Error {
+	// The message is a generic default. It can be overridden by using WithMessage().
+	switch reason {
+	// --- General --- 
+	case apierrors.ErrorReason_VALIDATION_ERROR: 
+		return BadRequest(reason.String(), "Request validation failed")
+	case apierrors.ErrorReason_NOT_FOUND:
+		return NotFound(reason.String(), "Resource not found")
+	case apierrors.ErrorReason_INTERNAL_SERVER_ERROR:
+		return InternalServer(reason.String(), "Internal server error")
+	case apierrors.ErrorReason_METHOD_NOT_ALLOWED:
+		return MethodNotAllowed(reason.String(), "Method not allowed")
+	case apierrors.ErrorReason_REQUEST_TIMEOUT:
+		return RequestTimeout(reason.String(), "Request timeout")
+	case apierrors.ErrorReason_CONFLICT:
+		return Conflict(reason.String(), "Resource conflict")
+	case apierrors.ErrorReason_TOO_MANY_REQUESTS:
+		return TooManyRequests(reason.String(), "Too many requests")
+	case apierrors.ErrorReason_SERVICE_UNAVAILABLE:
+		return ServiceUnavailable(reason.String(), "Service unavailable")
+	case apierrors.ErrorReason_GATEWAY_TIMEOUT:
+		return GatewayTimeout(reason.String(), "Gateway timeout")
+
+	// --- Auth --- 
+	case apierrors.ErrorReason_UNAUTHENTICATED, apierrors.ErrorReason_INVALID_CREDENTIALS, apierrors.ErrorReason_TOKEN_EXPIRED, apierrors.ErrorReason_TOKEN_INVALID, apierrors.ErrorReason_TOKEN_MISSING:
+		return Unauthorized(reason.String(), "Authentication error")
+	case apierrors.ErrorReason_FORBIDDEN:
+		return Forbidden(reason.String(), "Permission denied")
+
+	// --- Database --- 
+	case apierrors.ErrorReason_DATABASE_ERROR:
+		return InternalServer(reason.String(), "Database error")
+	case apierrors.ErrorReason_RECORD_NOT_FOUND:
+		return NotFound(reason.String(), "Record not found")
+	case apierrors.ErrorReason_CONSTRAINT_VIOLATION, apierrors.ErrorReason_DUPLICATE_KEY:
+		return Conflict(reason.String(), "Database constraint violation")
+	case apierrors.ErrorReason_DATABASE_CONNECTION_FAILED:
+		return ServiceUnavailable(reason.String(), "Database connection failed")
+
+	// --- Business --- 
+	case apierrors.ErrorReason_INVALID_STATE, apierrors.ErrorReason_MISSING_PARAMETER, apierrors.ErrorReason_INVALID_PARAMETER:
+		return BadRequest(reason.String(), "Invalid business parameter")
+	case apierrors.ErrorReason_RESOURCE_EXISTS, apierrors.ErrorReason_RESOURCE_IN_USE, apierrors.ErrorReason_ABORTED:
+		return Conflict(reason.String(), "Business resource conflict")
+	case apierrors.ErrorReason_CANCELLED:
+		return ClientClosed(reason.String(), "Operation was cancelled")
+	case apierrors.ErrorReason_OPERATION_NOT_ALLOWED:
+		return Forbidden(reason.String(), "Operation not allowed")
+
+	default:
+		return InternalServer(apierrors.ErrorReason_UNKNOWN_ERROR.String(), "An unknown error occurred")
+	}
+}
+
 // Convert takes any standard Go error and converts it into a structured Kratos error.
-// This function is the core of the error handling package, acting as the bridge
-// between internal business logic errors and standardized API errors.
-// It uses toolkits/errors for enhanced error handling capabilities.
 func Convert(err error) *kerrors.Error {
 	if err == nil {
 		return nil
 	}
 
-	// If it's already a Kratos error, return it directly
-	if ke, ok := err.(*kerrors.Error); ok {
+	var ke *kerrors.Error
+	if errors.As(err, &ke) {
 		return ke
 	}
 
-	// Handle error chains using toolkits/errors
-	if unwrapper, ok := err.(interface{ Unwrap() error }); ok {
-		if unwrapped := unwrapper.Unwrap(); unwrapped != nil {
-			return Convert(unwrapped)
-		}
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return FromReason(apierrors.ErrorReason_RECORD_NOT_FOUND)
+	case errors.Is(err, context.DeadlineExceeded):
+		return FromReason(apierrors.ErrorReason_REQUEST_TIMEOUT)
+	case errors.Is(err, context.Canceled):
+		return FromReason(apierrors.ErrorReason_CANCELLED)
+	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+		return FromReason(apierrors.ErrorReason_VALIDATION_ERROR)
 	}
 
-	// Handle error with code from toolkits/errors
-	if tkerrors.IsType[tkerrors.ErrorWithCode](err) {
-		if codeErr, ok := err.(interface{ Code() int }); ok {
-			return kerrors.New(
-				codeErr.Code(),
-				"CUSTOM_ERROR",
-				err.Error(),
-			)
-		}
-	}
-
-	// Convert other error types to Kratos error
-	ke := kerrors.FromError(err)
-
-	// If the conversion results in a generic error with a 500 status code,
-	// we can provide a more specific, standardized internal error type.
-	if ke.Code == 500 && ke.Reason == kerrors.UnknownReason {
-		return apiErrors.ErrorInternalServerError(ke.Message)
-	}
-
-	return ke
+	// For unknown errors, create a standard internal error but preserve the original message.
+	return WithMessage(FromReason(apierrors.ErrorReason_INTERNAL_SERVER_ERROR), err.Error())
 }
 
-// NewErrorEncoder returns a new transhttp.EncodeErrorFunc that provides centralized
-// logging and error conversion for all HTTP responses.
-// It wraps the default Kratos error encoder, enhancing it with our custom logic.
+// NewErrorEncoder returns a new transhttp.EncodeErrorFunc for centralized logging and error conversion.
 func NewErrorEncoder() transhttp.EncodeErrorFunc {
 	return func(w http.ResponseWriter, r *http.Request, err error) {
 		if err == nil {
 			return
 		}
 
-		// Convert the error to Kratos error
 		ke := Convert(err)
 
-		// Log the error with request context and metadata
 		if tr, ok := transport.FromServerContext(r.Context()); ok {
 			fields := []interface{}{
-				"kind", "server",
-				"path", tr.Operation(),
-				"error", ke.Message,
-				"code", ke.Code,
-				"reason", ke.Reason,
+				"kind", "server", "operation", tr.Operation(),
+				"code", ke.Code, "reason", ke.Reason, "error", ke.Message,
 			}
-
-			// Add metadata to log if present
 			if len(ke.Metadata) > 0 {
 				fields = append(fields, "metadata", ke.Metadata)
 			}
 
-			// Add error chain information if available
-			if cause := tkerrors.Unwrap(err); cause != nil {
-				fields = append(fields, "cause", cause.Error())
+			type stackTracer interface {
+				StackTrace() tkerrors.StackTrace
+			}
+			var st stackTracer
+			if errors.As(err, &st) {
+				// Limit stack trace to first 2 frames for brevity in logs
+				fields = append(fields, "stack", fmt.Sprintf("%+v", st.StackTrace()[0:2]))
 			}
 
-			log.Context(r.Context()).Errorw(
-				fields...,
-			)
+			log.Context(r.Context()).Errorw(fields...)
 		}
 
-		// Delegate to the default encoder to write the final response
 		transhttp.DefaultErrorEncoder(w, r, ke)
 	}
-}
-
-// ConvertError converts an error to a Kratos error with additional metadata.
-// It uses toolkits/errors for enhanced error handling capabilities.
-func ConvertError(err error, meta map[string]string) *kerrors.Error {
-	if err == nil {
-		return nil
-	}
-
-	// Convert the error first
-	ke := Convert(err)
-	if ke == nil {
-		return nil
-	}
-
-	// Add metadata if provided
-	if len(meta) > 0 {
-		if ke.Metadata == nil {
-			ke.Metadata = make(map[string]string)
-		}
-		for k, v := range meta {
-			ke.Metadata[k] = v
-		}
-
-		// Add metadata to the error chain if using toolkits/errors
-		if tkerrors.IsType[tkerrors.ErrorWithCode](err) {
-			// If the error supports metadata, add it directly
-			if metaSetter, ok := err.(interface{ SetMetadata(map[string]string) }); ok {
-				metaSetter.SetMetadata(meta)
-			}
-		}
-	}
-
-	return ke
-}
-
-// Wrap wraps an error with a message, preserving the error type.
-// It uses toolkits/errors for enhanced error wrapping.
-func Wrap(err error, message string) error {
-	if err == nil {
-		return nil
-	}
-
-	// Use toolkits/errors for enhanced error wrapping
-	return tkerrors.Wrap(err, message)
-}
-
-// Wrapf wraps an error with a formatted message, preserving the error type.
-// It uses toolkits/errors for enhanced error wrapping.
-func Wrapf(err error, format string, args ...interface{}) error {
-	if err == nil {
-		return nil
-	}
-
-	// Use toolkits/errors for enhanced error wrapping
-	return tkerrors.Wrapf(err, format, args...)
-}
-
-// IsError checks if any error in the chain matches the target.
-// It's a wrapper around toolkits/errors.Is for better error chain handling.
-func IsError(err, target error) bool {
-	return tkerrors.Is(err, target)
-}
-
-// AsError finds the first error in the chain that matches the target type.
-// It's a wrapper around toolkits/errors.As for better error chain handling.
-func AsError(err error, target interface{}) bool {
-	return tkerrors.As(err, target)
-}
-
-// UnwrapError returns the result of calling the Unwrap method on err, if err's
-// type contains an Unwrap method returning error.
-// Otherwise, UnwrapError returns nil.
-// It's a wrapper around toolkits/errors.Unwrap for better error chain handling.
-func UnwrapError(err error) error {
-	return tkerrors.Unwrap(err)
 }
