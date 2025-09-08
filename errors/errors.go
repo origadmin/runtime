@@ -20,9 +20,6 @@ import (
 	// toolkits "github.com/origadmin/toolkits/errors"
 )
 
-//go:generate adptool .
-//go:adapter:package github.com/go-kratos/kratos/v2/errors kerrors
-
 // Convert takes any standard Go error and converts it into a structured Kratos error.
 // This function is the core of the error handling package, acting as the bridge
 // between internal business logic errors and standardized API errors.
