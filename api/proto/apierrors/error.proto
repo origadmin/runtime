@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package runtime.api.proto.apierrors;
+
+import "errors/errors.proto";
+
+// The go_package option specifies the import path for the generated Go code.
+// It should point to the `gen/go` directory, which is the standard output for generated files.
+option go_package = "github.com/origadmin/framework/runtime/api/gen/go/apierrors;apierrors";
+
+// ErrorReason defines the application's error codes.
+// These codes are mapped to HTTP status codes and are consistent across all services.
+//
+// The enum values are structured to allow for future expansion.
+// - 0-999: General framework errors
+// - 1000-1999: User and authentication related errors
+// - 2000+: Plugin-specific errors (to be defined by plugins themselves)
+enum ErrorReason {
+  // Do not use this directly. It's a placeholder for the default error code.
+  option (errors.default_code) = 500;
+
+  // --- General Framework Errors (0-999) ---
+
+  // An unknown error occurred.
+  // Maps to HTTP 500.
+  UNKNOWN_ERROR = 0 [(errors.code) = 500];
+
+  // The request was invalid or malformed.
+  // Maps to HTTP 400.
+  VALIDATION_ERROR = 1 [(errors.code) = 400];
+
+  // The requested resource was not found.
+  // Maps to HTTP 404.
+  NOT_FOUND = 2 [(errors.code) = 404];
+
+  // The server encountered an internal error.
+  // Maps to HTTP 500.
+  INTERNAL_SERVER_ERROR = 3 [(errors.code) = 500];
+
+  // The HTTP method is not supported for the requested resource.
+  // Maps to HTTP 405.
+  METHOD_NOT_ALLOWED = 4 [(errors.code) = 405];
+
+  // The server timed out waiting for the request.
+  // Maps to HTTP 408.
+  REQUEST_TIMEOUT = 5 [(errors.code) = 408];
+
+  // The request could not be completed due to a conflict with the current state of the resource.
+  // Maps to HTTP 409.
+  CONFLICT = 6 [(errors.code) = 409];
+
+  // The user has sent too many requests in a given amount of time.
+  // Maps to HTTP 429.
+  TOO_MANY_REQUESTS = 7 [(errors.code) = 429];
+
+  // The server is not ready to handle the request.
+  // Maps to HTTP 503.
+  SERVICE_UNAVAILABLE = 8 [(errors.code) = 503];
+
+  // The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server.
+  // Maps to HTTP 504.
+  GATEWAY_TIMEOUT = 9 [(errors.code) = 504];
+
+
+  // --- Authentication & Authorization Errors (1000-1999) ---
+
+  // The user is not authenticated.
+  // Maps to HTTP 401.
+  UNAUTHENTICATED = 1000 [(errors.code) = 401];
+
+  // The user is authenticated but does not have permission to perform the action.
+  // Maps to HTTP 403.
+  FORBIDDEN = 1001 [(errors.code) = 403];
+}

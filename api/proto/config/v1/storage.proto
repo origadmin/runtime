@@ -155,7 +155,7 @@ message Memcached {
   int32 max_idle = 4 [
     json_name = "max_idle",
     (gnostic.openapi.v3.property) = {
-      description: "maximum number of idle connections"
+      description: "maximum number of idle connections",
       minimum: 1
     }
   ];
@@ -302,8 +302,7 @@ message FileStore {
   optional FileLocal local = 2 [json_name = "local", (gnostic.openapi.v3.property) = {description: "local file system configuration"}];
 
   // Cloud object storage configuration. Only effective when driver is "oss".
-  optional Oss oss = 3 [json_name = "oss", (gnostic.openapi.v3.property) = {description: "cloud object storage configuration}
-}];
+  optional Oss oss = 3 [json_name = "oss", (gnostic.openapi.v3.property) = {description: "cloud object storage configuration"}];
 
   // Chunk size in bytes for splitting large files.
   // For OSS, this corresponds to the multipart upload part size.

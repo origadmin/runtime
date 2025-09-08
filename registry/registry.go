@@ -2,72 +2,43 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package registry implements the functions, types, and interfaces for the module.
+// Package registry implements a pluggable mechanism for service registration and discovery.
 package registry
 
 import (
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 )
 
-type (
-	// RegistryBuilder is an interface that defines methods for creating a discovery and a KRegistrar.
-	RegistryBuilder interface {
-		NewRegistrar(*configv1.Discovery, ...interface{}) (KRegistrar, error)
-		NewDiscovery(*configv1.Discovery, ...interface{}) (KDiscovery, error)
-	}
-	// Factory is an interface that defines methods for creating a discovery and a KRegistrar.
-	Factory interface {
-		NewRegistrar(*configv1.Discovery, ...interface{}) (KRegistrar, error)
-		NewDiscovery(*configv1.Discovery, ...interface{}) (KDiscovery, error)
-	}
-
-	Registry interface {
-		KRegistrar
-		KDiscovery
-	}
+// --- Error Definitions ---
+// Following the project's error handling specification.
+const (
+	ReasonRegistryNotFound = "REGISTRY_NOT_FOUND"
+	ReasonInvalidConfig    = "INVALID_CONFIG"
+	ReasonCreationFailure  = "CREATION_FAILURE"
 )
 
-// RegistrarBuildFunc is a function type that takes a *config.RegistryConfig and returns a KRegistrar and an error.
-type RegistrarBuildFunc func(*configv1.Discovery, ...interface{}) (KRegistrar, error)
-
-// NewRegistrar is a method that calls the RegistrarBuildFunc with the given config.
-func (fn RegistrarBuildFunc) NewRegistrar(cfg *configv1.Discovery, ss ...interface{}) (KRegistrar, error) {
-	return fn(cfg, ss...)
+// Builder defines the public interface for the registry builder.
+// The concrete implementation is in factory.go.
+type Builder interface {
+	Register(name string, factory Factory)
+	NewRegistrar(cfg *configv1.Discovery, opts ...Option) (KRegistrar, error)
+	NewDiscovery(cfg *configv1.Discovery, opts ...Option) (KDiscovery, error)
 }
 
-// DiscoveryBuildFunc is a function type that takes a *config.RegistryConfig and returns a discovery and an error.
-type DiscoveryBuildFunc func(*configv1.Discovery, ...interface{}) (KDiscovery, error)
+// --- Top-Level API ---
 
-// NewDiscovery is a method that calls the DiscoveryBuildFunc with the given config.
-func (fn DiscoveryBuildFunc) NewDiscovery(cfg *configv1.Discovery, ss ...interface{}) (KDiscovery, error) {
-	return fn(cfg, ss...)
+// Register registers a new registry factory with the DefaultBuilder.
+// It is a convenience wrapper around the builder's Register method.
+func Register(name string, factory Factory) {
+	defaultBuilder.Register(name, factory)
 }
 
-type FuncFactory struct {
-	RegistrarFunc func(*configv1.Discovery, ...interface{}) (KRegistrar, error)
-	DiscoveryFunc func(*configv1.Discovery, ...interface{}) (KDiscovery, error)
+// NewRegistrar creates a new KRegistrar instance using the DefaultBuilder.
+func NewRegistrar(cfg *configv1.Discovery, opts ...Option) (KRegistrar, error) {
+	return defaultBuilder.NewRegistrar(cfg, opts...)
 }
 
-func (f FuncFactory) NewRegistrar(cfg *configv1.Discovery, opts ...interface{}) (KRegistrar, error) {
-	return f.RegistrarFunc(cfg, opts...)
+// NewDiscovery creates a new KDiscovery instance using the DefaultBuilder.
+func NewDiscovery(cfg *configv1.Discovery, opts ...Option) (KDiscovery, error) {
+	return defaultBuilder.NewDiscovery(cfg, opts...)
 }
-
-func (f FuncFactory) NewDiscovery(cfg *configv1.Discovery, opts ...interface{}) (KDiscovery, error) {
-	return f.DiscoveryFunc(cfg, opts...)
-}
-
-// wrapped is a struct that embeds RegistrarBuildFunc and DiscoveryBuildFunc.
-type wrapped struct {
-	RegistrarBuildFunc
-	DiscoveryBuildFunc
-}
-
-func WrapFactory(registrar RegistrarBuildFunc, discovery DiscoveryBuildFunc) Factory {
-	return &wrapped{
-		RegistrarBuildFunc: registrar,
-		DiscoveryBuildFunc: discovery,
-	}
-}
-
-// _ is a blank identifier that is used to satisfy the interface requirement for RegistryBuilder.
-var _ Factory = &wrapped{}

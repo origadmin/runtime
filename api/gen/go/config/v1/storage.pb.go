@@ -893,9 +893,9 @@ type Storage struct {
 	// Map of named Database configurations.
 	Databases map[string]*Database `protobuf:"bytes,3,rep,name=databases,proto3" json:"databases,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// Optional: Default instance names for each type.
-	DefaultFilestore *string `protobuf:"bytes,4,opt,name=default_filestore,json=defaultFilestore,proto3,oneof" json:"default_filestore,omitempty"`
-	DefaultCache     *string `protobuf:"bytes,5,opt,name=default_cache,json=defaultCache,proto3,oneof" json:"default_cache,omitempty"`
-	DefaultDatabase  *string `protobuf:"bytes,6,opt,name=default_database,json=defaultDatabase,proto3,oneof" json:"default_database,omitempty"`
+	DefaultFilestore *string `protobuf:"bytes,4,opt,name=default_filestore,proto3,oneof" json:"default_filestore,omitempty"`
+	DefaultCache     *string `protobuf:"bytes,5,opt,name=default_cache,proto3,oneof" json:"default_cache,omitempty"`
+	DefaultDatabase  *string `protobuf:"bytes,6,opt,name=default_database,proto3,oneof" json:"default_database,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1019,15 +1019,15 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\n" +
 	"expiration\x18\x03 \x01(\x03B\x15\xbaG\x12\x92\x02\x0fexpiration timeR\n" +
 	"expiration\x12D\n" +
-	"\x10cleanup_interval\x18\x04 \x01(\x03B\x18\xbaG\x15\x92\x02\x12clearance intervalR\x10cleanup_interval\"\xe9\x02\n" +
+	"\x10cleanup_interval\x18\x04 \x01(\x03B\x18\xbaG\x15\x92\x02\x12clearance intervalR\x10cleanup_interval\"\xc6\x03\n" +
 	"\x05Mongo\x12.\n" +
 	"\x03uri\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16MongoDB connection URIR\x03uri\x12/\n" +
-	"\bdatabase\x18\x02 \x01(\tB\x13\xbaG\x10\x92\x02\rDatabase nameR\bdatabase\x12\x1a\n" +
-	"\busername\x18\x03 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x04 \x01(\tR\bpassword\x12 \n" +
-	"\vauth_source\x18\x05 \x01(\bR\vauth_source\x12$\n" +
-	"\rmax_pool_size\x18\x06 \x01(\x05R\rmax_pool_size\x12$\n" +
-	"\rmin_pool_size\x18\a \x01(\x05R\rmin_pool_size\x12Y\n" +
+	"\bdatabase\x18\x02 \x01(\tB\x13\xbaG\x10\x92\x02\rDatabase nameR\bdatabase\x12*\n" +
+	"\busername\x18\x03 \x01(\tB\x0e\xbaG\v\x92\x02\busernameR\busername\x12*\n" +
+	"\bpassword\x18\x04 \x01(\tB\x0e\xbaG\v\x92\x02\bpasswordR\bpassword\x123\n" +
+	"\vauth_source\x18\x05 \x01(\bB\x11\xbaG\x0e\x92\x02\vauth sourceR\vauth_source\x129\n" +
+	"\rmax_pool_size\x18\x06 \x01(\x05B\x13\xbaG\x10\x92\x02\rmax pool sizeR\rmax_pool_size\x129\n" +
+	"\rmin_pool_size\x18\a \x01(\x05B\x13\xbaG\x10\x92\x02\rmin pool sizeR\rmin_pool_size\x12Y\n" +
 	"\x0fconnect_timeout\x18\b \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\"\xd3\x03\n" +
 	"\x05Cache\x12T\n" +
 	"\x06driver\x18\x01 \x01(\tB<\xfaB\"r R\x04noneR\x05redisR\tmemcachedR\x06memory\xbaG\x14\x92\x02\x11cache driver nameR\x06driver\x12$\n" +
@@ -1048,25 +1048,25 @@ const file_config_v1_storage_proto_rawDesc = "" +
 	"\x0fconnect_timeout\x18\a \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\x12M\n" +
 	"\fread_timeout\x18\b \x01(\x03B)\xfaB\x04\"\x02(\x00\xbaG\x1f\x92\x02\x1cRead timeout in millisecondsR\fread_timeout\"5\n" +
 	"\tFileLocal\x12(\n" +
-	"\x04root\x18\x01 \x01(\tB\x14\xbaG\x11\x92\x02\x0eroot directoryR\x04root\"\xc0\x01\n" +
-	"\tFileStore\x12)\n" +
-	"\x06driver\x18\x01 \x01(\tB\x11\xfaB\x0er\fR\x05localR\x03ossR\x06driver\x12/\n" +
-	"\x05local\x18\x02 \x01(\v2\x14.config.v1.FileLocalH\x00R\x05local\x88\x01\x01\x12%\n" +
-	"\x03oss\x18\x03 \x01(\v2\x0e.config.v1.OssH\x01R\x03oss\x88\x01\x01\x12\x1e\n" +
+	"\x04root\x18\x01 \x01(\tB\x14\xbaG\x11\x92\x02\x0eroot directoryR\x04root\"\xc8\x02\n" +
+	"\tFileStore\x12E\n" +
+	"\x06driver\x18\x01 \x01(\tB-\xfaB\x0er\fR\x05localR\x03oss\xbaG\x19\x92\x02\x16file store driver nameR\x06driver\x12V\n" +
+	"\x05local\x18\x02 \x01(\v2\x14.config.v1.FileLocalB%\xbaG\"\x92\x02\x1flocal file system configurationH\x00R\x05local\x88\x01\x01\x12O\n" +
+	"\x03oss\x18\x03 \x01(\v2\x0e.config.v1.OssB(\xbaG%\x92\x02\"cloud object storage configurationH\x01R\x03oss\x88\x01\x01\x129\n" +
 	"\n" +
-	"chunk_size\x18\x04 \x01(\x03R\n" +
+	"chunk_size\x18\x04 \x01(\x03B\x19\xbaG\x16\x92\x02\x13chunk size in bytesR\n" +
 	"chunk_sizeB\b\n" +
 	"\x06_localB\x06\n" +
-	"\x04_oss\"\x84\x05\n" +
-	"\aStorage\x12B\n" +
+	"\x04_oss\"\xde\x06\n" +
+	"\aStorage\x12o\n" +
 	"\n" +
-	"filestores\x18\x01 \x03(\v2\".config.v1.Storage.FilestoresEntryR\n" +
-	"filestores\x126\n" +
-	"\x06caches\x18\x02 \x03(\v2\x1e.config.v1.Storage.CachesEntryR\x06caches\x12?\n" +
-	"\tdatabases\x18\x03 \x03(\v2!.config.v1.Storage.DatabasesEntryR\tdatabases\x120\n" +
-	"\x11default_filestore\x18\x04 \x01(\tH\x00R\x10defaultFilestore\x88\x01\x01\x12(\n" +
-	"\rdefault_cache\x18\x05 \x01(\tH\x01R\fdefaultCache\x88\x01\x01\x12.\n" +
-	"\x10default_database\x18\x06 \x01(\tH\x02R\x0fdefaultDatabase\x88\x01\x01\x1aS\n" +
+	"filestores\x18\x01 \x03(\v2\".config.v1.Storage.FilestoresEntryB+\xbaG(\x92\x02%map of named FileStore configurationsR\n" +
+	"filestores\x12_\n" +
+	"\x06caches\x18\x02 \x03(\v2\x1e.config.v1.Storage.CachesEntryB'\xbaG$\x92\x02!map of named Cache configurationsR\x06caches\x12k\n" +
+	"\tdatabases\x18\x03 \x03(\v2!.config.v1.Storage.DatabasesEntryB*\xbaG'\x92\x02$map of named Database configurationsR\tdatabases\x12O\n" +
+	"\x11default_filestore\x18\x04 \x01(\tB\x1c\xbaG\x19\x92\x02\x16default filestore nameH\x00R\x11default_filestore\x88\x01\x01\x12C\n" +
+	"\rdefault_cache\x18\x05 \x01(\tB\x18\xbaG\x15\x92\x02\x12default cache nameH\x01R\rdefault_cache\x88\x01\x01\x12L\n" +
+	"\x10default_database\x18\x06 \x01(\tB\x1b\xbaG\x18\x92\x02\x15default database nameH\x02R\x10default_database\x88\x01\x01\x1aS\n" +
 	"\x0fFilestoresEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
 	"\x05value\x18\x02 \x01(\v2\x14.config.v1.FileStoreR\x05value:\x028\x01\x1aK\n" +

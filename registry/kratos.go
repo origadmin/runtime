@@ -14,6 +14,8 @@ import (
 //go:adapter:package:type *
 //go:adapter:package:type:prefix K
 //go:adapter:package:func *
+//go:adapter:package:func:regex New([A-Z])=NewK$1
+//go:adapter:package:func *
 //go:adapter:package:func:prefix K
 
 var (
