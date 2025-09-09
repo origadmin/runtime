@@ -3,53 +3,54 @@ package grpc
 import (
 	"context"
 
-	"github.com/go-kratos/kratos/v2/transport/grpc"
+	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	"google.golang.org/grpc"
 
 	"github.com/origadmin/framework/runtime/service"
 )
 
 // optionsKey is a private key type to avoid collisions in context.
 type (
-	serverOptionsKey struct{}
-	clientOptionsKey struct{}
+	grpcServerOptionsKey struct{}
+	grpcClientOptionsKey struct{}
 )
 
-// WithServerOption is an option to add a grpc.ServerOption to the context.
-func WithServerOption(opt ...grpc.ServerOption) service.Option {
+// WithServerOption is an option to add a Kratos transgrpc.ServerOption to the context.
+func WithServerOption(opt ...transgrpc.ServerOption) service.Option {
 	return func(o *service.Options) {
 		if o.Context == nil {
 			o.Context = context.Background()
 		}
-		opts, _ := o.Context.Value(serverOptionsKey{}).([]grpc.ServerOption)
-		o.Context = context.WithValue(o.Context, serverOptionsKey{}, append(opts, opt...))
+		opts, _ := o.Context.Value(grpcServerOptionsKey{}).([]transgrpc.ServerOption)
+		o.Context = context.WithValue(o.Context, grpcServerOptionsKey{}, append(opts, opt...))
 	}
 }
 
-// FromServerOptions returns the collected grpc.ServerOption from the service.Options' Context.
-func FromServerOptions(o *service.Options) []grpc.ServerOption {
+// WithClientOption is an option to add a native grpc.DialOption to the context.
+func WithClientOption(opt ...grpc.DialOption) service.Option {
+	return func(o *service.Options) {
+		if o.Context == nil {
+			o.Context = context.Background()
+		}
+		opts, _ := o.Context.Value(grpcClientOptionsKey{}).([]grpc.DialOption)
+		o.Context = context.WithValue(o.Context, grpcClientOptionsKey{}, append(opts, opt...))
+	}
+}
+
+// FromServerOptions returns the collected Kratos transgrpc.ServerOption from the service.Options' Context.
+func FromServerOptions(o *service.Options) []transgrpc.ServerOption {
 	if o == nil || o.Context == nil {
 		return nil
 	}
-	opts, _ := o.Context.Value(serverOptionsKey{}).([]grpc.ServerOption)
+	opts, _ := o.Context.Value(grpcServerOptionsKey{}).([]transgrpc.ServerOption)
 	return opts
 }
 
-// WithClientOption is an option to add a grpc.ClientOption to the context.
-func WithClientOption(opt ...grpc.ClientOption) service.Option {
-	return func(o *service.Options) {
-		if o.Context == nil {
-			o.Context = context.Background()
-		}
-		opts, _ := o.Context.Value(clientOptionsKey{}).([]grpc.ClientOption)
-		o.Context = context.WithValue(o.Context, clientOptionsKey{}, append(opts, opt...))
-	}
-}
-
-// FromClientOptions returns the collected grpc.ClientOption from the service.Options' Context.
-func FromClientOptions(o *service.Options) []grpc.ClientOption {
+// FromClientOptions returns the collected native grpc.DialOption from the service.Options' Context.
+func FromClientOptions(o *service.Options) []grpc.DialOption {
 	if o == nil || o.Context == nil {
 		return nil
 	}
-	opts, _ := o.Context.Value(clientOptionsKey{}).([]grpc.ClientOption)
+	opts, _ := o.Context.Value(grpcClientOptionsKey{}).([]grpc.DialOption)
 	return opts
 }

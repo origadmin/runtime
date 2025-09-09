@@ -5,92 +5,76 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
-	"github.com/go-kratos/kratos/v2/transport/grpc"
+	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/goexts/generic/configure"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/origadmin/framework/runtime/errors"
 	"github.com/origadmin/framework/runtime/interfaces"
+	"github.com/origadmin/framework/runtime/log"
+	"github.com/origadmin/framework/runtime/service"
+	"github.com/origadmin/framework/runtime/service/tls"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/tls"
 )
+
+const defaultTimeout = 5 * time.Second
 
 // grpcProtocolFactory implements service.ProtocolFactory for gRPC.
 type grpcProtocolFactory struct{}
 
-const defaultTimeout = 5 * time.Second
-
-// NewClient creates a new gRPC client instance.
+// NewClient creates a new gRPC client instance using the current recommended grpc.NewClient function.
 func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Option) (interfaces.Client, error) {
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	ll.Debugf("Creating new gRPC client with config: %+v", cfg)
 
-	// Create a new service.Options instance and apply the incoming options.
 	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: ctx}}
 	configure.Apply(svcOpts, opts)
 
-	// Initialize client options
-	var clientOpts []grpc.ClientOption
-	timeout := defaultTimeout
+	var dialOpts []grpc.DialOption
+	var endpoint string
 
-	// Apply configuration from configv1.Service
 	if cfg.GetGrpc() != nil {
 		grpcCfg := cfg.GetGrpc()
-		if grpcCfg.GetTimeout() != 0 {
-			timeout = time.Duration(grpcCfg.GetTimeout() * 1e6) // Convert milliseconds to nanoseconds
-		}
+		endpoint = grpcCfg.GetEndpoint()
 
-		// Configure TLS if needed
+		var creds credentials.TransportCredentials
 		if grpcCfg.GetUseTls() {
 			tlsConfig, err := tls.NewClientTLSConfig(grpcCfg.GetTlsConfig())
 			if err != nil {
 				return nil, err
 			}
-			if tlsConfig != nil {
-				clientOpts = append(clientOpts, grpc.WithTLSConfig(tlsConfig))
-			}
+			creds = credentials.NewTLS(tlsConfig)
+		} else {
+			creds = insecure.NewCredentials()
 		}
-
-		// Set endpoint if provided
-		if grpcCfg.GetEndpoint() != "" {
-			clientOpts = append(clientOpts, grpc.WithEndpoint(grpcCfg.GetEndpoint()))
-		}
+		dialOpts = append(dialOpts, grpc.WithTransportCredentials(creds))
 	}
 
-	// Apply timeout
-	clientOpts = append(clientOpts, grpc.WithTimeout(timeout))
+	dialOptsFromContext := FromClientOptions(svcOpts)
+	dialOpts = append(dialOpts, dialOptsFromContext...)
 
-	// Extract gRPC client specific options from the service.Options' Context.
-	// These are the options added via grpc.WithClientOption
-	clientOptsFromContext := FromClientOptions(svcOpts)
-	clientOpts = append(clientOpts, clientOptsFromContext...)
-
-	// Create the client with the merged options
-	client, err := grpc.DialInsecure(ctx, clientOpts...)
+	// Use the modern grpc.NewClient function, which supersedes grpc.Dial and grpc.DialContext.
+	conn, err := grpc.NewClient(endpoint, dialOpts...)
 	if err != nil {
 		return nil, errors.Newf(500, "INTERNAL_SERVER_ERROR", "create grpc client failed: %v", err)
 	}
 
-	return client, nil
+	return conn, nil
 }
 
-// NewServer creates a new gRPC server instance.
+// NewServer creates a new gRPC server instance using Kratos transport.
 func (f *grpcProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.Option) (interfaces.Server, error) {
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	ll.Debugf("Creating new gRPC server instance with config: %+v", cfg)
 
-	// Create a new service.Options instance and apply the incoming options.
 	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
 	configure.Apply(svcOpts, opts)
 
-	// Initialize Kratos gRPC server options
-	var serverOpts []grpc.ServerOption
+	var serverOpts []transgrpc.ServerOption
+	serverOpts = append(serverOpts, transgrpc.Middleware(recovery.Recovery()))
 
-	// Add default recovery middleware and error encoder
-	serverOpts = append(serverOpts, grpc.Middleware(recovery.Recovery()))
-
-	// Apply configuration from configv1.Service
 	if cfg.GetGrpc() != nil {
 		grpcCfg := cfg.GetGrpc()
 
@@ -100,38 +84,33 @@ func (f *grpcProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 				return nil, err
 			}
 			if tlsConfig != nil {
-				serverOpts = append(serverOpts, grpc.TLSConfig(tlsConfig))
+				serverOpts = append(serverOpts, transgrpc.TLSConfig(tlsConfig))
 			}
 		}
 
 		if grpcCfg.GetNetwork() != "" {
-			serverOpts = append(serverOpts, grpc.Network(grpcCfg.GetNetwork()))
+			serverOpts = append(serverOpts, transgrpc.Network(grpcCfg.GetNetwork()))
 		}
 
 		if grpcCfg.GetAddr() != "" {
-			serverOpts = append(serverOpts, grpc.Address(grpcCfg.GetAddr()))
+			serverOpts = append(serverOpts, transgrpc.Address(grpcCfg.GetAddr()))
 		}
 
 		timeout := defaultTimeout
 		if grpcCfg.GetTimeout() != 0 {
-			timeout = time.Duration(grpcCfg.GetTimeout() * 1e6) // Convert milliseconds to nanoseconds
+			timeout = time.Duration(grpcCfg.GetTimeout() * 1e6)
 		}
-		serverOpts = append(serverOpts, grpc.Timeout(timeout))
+		serverOpts = append(serverOpts, transgrpc.Timeout(timeout))
 
 		ll.Debugw("gRPC server configured", "endpoint", grpcCfg.GetEndpoint())
 	}
 
-	// Extract gRPC specific options from the service.Options' Context.
 	serverOptsFromContext := FromServerOptions(svcOpts)
+	serverOpts = append(serverOpts, serverOptsFromContext...)
 
-	// Combine all gRPC options
-	grpcOpts := append(serverOpts, serverOptsFromContext...)
-
-	return grpc.NewServer(grpcOpts...), nil
+	return transgrpc.NewServer(serverOpts...), nil
 }
 
-// init registers the gRPC protocol factory with the global service registry.
 func init() {
-	// Register the gRPC protocol factory with the service module.
 	service.RegisterProtocol("grpc", &grpcProtocolFactory{})
 }
