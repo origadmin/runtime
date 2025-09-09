@@ -8,7 +8,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/origadmin/framework/runtime/configure"
 	"github.com/origadmin/framework/runtime/interfaces"
 )
 
@@ -22,7 +21,7 @@ type Options struct {
 }
 
 // Option is a function that configures registry.Options.
-type Option configure.Option[*Options]
+type Option func(*Options)
 
 // WithContext sets the context for the options.
 func WithContext(ctx context.Context) Option {

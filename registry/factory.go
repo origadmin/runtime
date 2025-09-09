@@ -5,19 +5,16 @@
 package registry
 
 import (
-	"context"
 	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/factory"
-	"github.com/origadmin/framework/runtime/interfaces"
-	"github.com/origadmin/framework/runtime/configure" // Add this import
 )
 
 // Factory is the interface for creating new registrar and discovery components.
 type Factory interface {
-	NewRegistrar(cfg *configv1.Discovery, opts *Options) (KRegistrar, error)
-	NewDiscovery(cfg *configv1.Discovery, opts *Options) (KDiscovery, error)
+	NewRegistrar(*configv1.Discovery, ...Option) (KRegistrar, error)
+	NewDiscovery(*configv1.Discovery, ...Option) (KDiscovery, error)
 }
 
 // buildImpl is the concrete implementation of the Builder.
@@ -30,16 +27,11 @@ func (b *buildImpl) NewRegistrar(cfg *configv1.Discovery, opts ...Option) (KRegi
 		return nil, errors.NewMessage(apierrors.ErrorReason_INVALID_REGISTRY_CONFIG, "registry configuration or type is missing")
 	}
 
-	// Create a new registry.Options instance and apply the incoming options.
-	// Initialize its ContextOptions.Context with a background context.
-	registryOpts := &Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
-	configure.Apply(registryOpts, opts...) // Use configure.Apply
-
 	f, ok := b.Get(cfg.Type)
 	if !ok {
 		return nil, errors.NewMessageWithMeta(apierrors.ErrorReason_NOT_FOUND, map[string]string{"type": cfg.Type}, "no registry factory found for type: %s", cfg.Type)
 	}
-	registrar, err := f.NewRegistrar(cfg, registryOpts)
+	registrar, err := f.NewRegistrar(cfg, opts...)
 	if err != nil {
 		return nil, errors.WrapAndConvert(err, apierrors.ErrorReason_REGISTRY_CREATION_FAILURE, "failed to create registrar for type %s", cfg.Type)
 	}
@@ -51,16 +43,11 @@ func (b *buildImpl) NewDiscovery(cfg *configv1.Discovery, opts ...Option) (KDisc
 		return nil, errors.NewMessage(apierrors.ErrorReason_INVALID_REGISTRY_CONFIG, "registry configuration or type is missing")
 	}
 
-	// Create a new registry.Options instance and apply the incoming options.
-	// Initialize its ContextOptions.Context with a background context.
-	registryOpts := &Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
-	configure.Apply(registryOpts, opts...) // Use configure.Apply
-
 	f, ok := b.Get(cfg.Type)
 	if !ok {
 		return nil, errors.NewMessageWithMeta(apierrors.ErrorReason_NOT_FOUND, map[string]string{"type": cfg.Type}, "no registry factory found for type: %s", cfg.Type)
 	}
-	discovery, err := f.NewDiscovery(cfg, registryOpts)
+	discovery, err := f.NewDiscovery(cfg, opts...)
 	if err != nil {
 		return nil, errors.WrapAndConvert(err, apierrors.ErrorReason_REGISTRY_CREATION_FAILURE, "failed to create discovery for type %s", cfg.Type)
 	}
