@@ -28,7 +28,7 @@ const (
 type httpProtocolFactory struct{}
 
 // NewClient creates a new HTTP client instance.
-func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Option) (interface{}, error) {
+func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Option) (interfaces.Client, error) {
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 	ll.Debugf("Creating new HTTP client with config: %+v", cfg)
 

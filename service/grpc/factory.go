@@ -22,7 +22,7 @@ type grpcProtocolFactory struct{}
 const defaultTimeout = 5 * time.Second
 
 // NewClient creates a new gRPC client instance.
-func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Option) (interface{}, error) {
+func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Option) (interfaces.Client, error) {
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	ll.Debugf("Creating new gRPC client with config: %+v", cfg)
 
