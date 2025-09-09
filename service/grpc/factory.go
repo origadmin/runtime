@@ -11,12 +11,12 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/origadmin/framework/runtime/errors"
-	"github.com/origadmin/framework/runtime/interfaces"
-	"github.com/origadmin/framework/runtime/log"
-	"github.com/origadmin/framework/runtime/service"
-	"github.com/origadmin/framework/runtime/service/tls"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/errors"
+	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/service"
+	"github.com/origadmin/runtime/service/tls"
 )
 
 const defaultTimeout = 5 * time.Second
@@ -55,7 +55,6 @@ func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Servi
 	dialOptsFromContext := FromClientOptions(svcOpts)
 	dialOpts = append(dialOpts, dialOptsFromContext...)
 
-	// Use the modern grpc.NewClient function, which supersedes grpc.Dial and grpc.DialContext.
 	conn, err := grpc.NewClient(endpoint, dialOpts...)
 	if err != nil {
 		return nil, errors.Newf(500, "INTERNAL_SERVER_ERROR", "create grpc client failed: %v", err)
