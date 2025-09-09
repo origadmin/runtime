@@ -5,7 +5,7 @@ import (
 	"time"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/context" // Use project's context
+	"github.com/origadmin/runtime/context"
 
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
@@ -49,7 +49,6 @@ func (f *httpProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 		if httpCfg.GetUseTls() {
 			tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTlsConfig())
 			if err != nil {
-				// This error occurs during server creation, it's an internal error for this function
 				return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 			}
 			if tlsConfig != nil {
@@ -72,7 +71,6 @@ func (f *httpProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 		if httpCfg.GetEndpoint() != "" {
 			parsedEndpoint, err := url.Parse(httpCfg.GetEndpoint())
 			if err != nil {
-				// This error occurs during server creation, it's an internal error for this function
 				return nil, tkerrors.Wrapf(err, "failed to parse endpoint for server creation")
 			}
 			kratosServerOptions = append(kratosServerOptions, transhttp.Endpoint(parsedEndpoint))

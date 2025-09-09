@@ -11,7 +11,7 @@ type Registry[F any] interface {
 	Get(name string) (F, bool)
 	Register(name string, factory F)
 	RegisteredFactories() map[string]F
-	Reset() // Add Reset method for testing purposes
+	Reset()
 }
 
 // registry is a thread-safe implementation of the Registry interface.
@@ -47,7 +47,6 @@ func (f *registry[F]) RegisteredFactories() map[string]F {
 }
 
 // Reset clears all registered factories.
-// This method is primarily intended for testing purposes to ensure isolation.
 func (f *registry[F]) Reset() {
 	f.mu.Lock()
 	defer f.mu.Unlock()

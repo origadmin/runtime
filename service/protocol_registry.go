@@ -1,11 +1,12 @@
 package service
 
 import (
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/context" // 修正：移除 /adapter
+	"fmt"
+	tkerrors "github.com/origadmin/toolkits/errors"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
-	tkerrors "github.com/origadmin/toolkits/errors"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	context "github.com/origadmin/runtime/context"
 )
 
 // defaultRegistry is the default, package-level instance of the protocol registry.

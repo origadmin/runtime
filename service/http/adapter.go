@@ -15,12 +15,12 @@ import (
 func adaptClientConfig(cfg *configv1.Service) ([]transhttp.ClientOption, error) {
 	// 1. Validate the configuration
 	if cfg == nil {
-		return nil, tkerrors.Errorf("client config is required for creation") // 修正为 Errorf
+		return nil, tkerrors.Errorf("client config is required for creation")
 	}
 
 	httpCfg := cfg.GetHttp()
 	if httpCfg == nil {
-		return nil, tkerrors.Errorf("http client config is required for creation") // 修正为 Errorf
+		return nil, tkerrors.Errorf("http client config is required for creation")
 	}
 
 	var opts []transhttp.ClientOption
@@ -48,7 +48,7 @@ func adaptClientConfig(cfg *configv1.Service) ([]transhttp.ClientOption, error) 
 	if selectorCfg := cfg.GetSelector(); selectorCfg != nil {
 		filter, err := selector.NewFilter(selectorCfg)
 		if err != nil {
-			return nil, tkerrors.Wrapf(err, "invalid selector config for client creation") // 修正为 Wrapf
+			return nil, tkerrors.Wrapf(err, "invalid selector config for client creation")
 		}
 		opts = append(opts, transhttp.WithNodeFilter(filter))
 	}

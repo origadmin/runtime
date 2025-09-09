@@ -1,21 +1,21 @@
 package service
 
 import (
-	stdContext "context" // Standard library context for MockServer/Client methods
+	"context"
 	"strings"
 	"testing"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	projectContext "github.com/origadmin/runtime/context" // Project's context package
+	projectContext "github.com/origadmin/runtime/context"
+	tkerrors "github.com/origadmin/toolkits/errors"
 	"github.com/origadmin/runtime/interfaces"
-	tkerrors "github.com/origadmin/toolkits/errors" // Import tkerrors
 )
 
 // MockServer implements interfaces.Server for testing purposes.
 type MockServer struct{}
 
-func (m *MockServer) Start(ctx stdContext.Context) error { return nil }
-func (m *MockServer) Stop(ctx stdContext.Context) error  { return nil }
+func (m *MockServer) Start(ctx context.Context) error { return nil }
+func (m *MockServer) Stop(ctx context.Context) error  { return nil }
 
 // MockClient implements interfaces.Client for testing purposes.
 type MockClient struct{}
@@ -42,7 +42,7 @@ func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *configv
 
 // Helper to reset the registry for isolated tests
 func resetProtocolRegistry() {
-	defaultRegistry.Reset() // Call the new Reset method on the defaultRegistry
+	defaultRegistry.Reset()
 }
 
 func TestRegisterAndGetProtocol(t *testing.T) {
@@ -51,7 +51,7 @@ func TestRegisterAndGetProtocol(t *testing.T) {
 	aFactory := &MockProtocolFactory{}
 	RegisterProtocol("mock_protocol", aFactory)
 
-	factory, ok := GetProtocolFactory("mock_protocol") // Use public GetProtocolFactory
+	factory, ok := GetProtocolFactory("mock_protocol")
 	if !ok {
 		t.Errorf("Expected protocol 'mock_protocol' to be registered, but it was not found.")
 	}
@@ -74,8 +74,8 @@ func TestNewServer(t *testing.T) {
 		name        string
 		cfg         *configv1.Service
 		factory     *MockProtocolFactory
-		expectedErr string // Expected error message substring
-		checkWrappedErr error // Optional: check if a specific error is wrapped
+		expectedErr string
+		checkWrappedErr error
 	}{
 		{
 			name:        "nil config",
@@ -95,21 +95,20 @@ func TestNewServer(t *testing.T) {
 		{
 			name:        "factory returns error",
 			cfg:         &configv1.Service{Protocol: "mock_error_server"},
-			factory:     &MockProtocolFactory{NewServerError: tkerrors.Errorf("internal factory error")}, // 修正为 Errorf
+			factory:     &MockProtocolFactory{NewServerError: tkerrors.Errorf("internal factory error")},
 			expectedErr: "failed to create server for protocol mock_error_server",
-			checkWrappedErr: tkerrors.Errorf("internal factory error"), // 修正为 Errorf
+			checkWrappedErr: tkerrors.Errorf("internal factory error"),
 		},
 		{
 			name:        "successful server creation",
 			cfg:         &configv1.Service{Protocol: "mock_success_server"},
-			factory:     &MockProtocolFactory{},
-			expectedErr: "", // No error expected
+			expectedErr: "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resetProtocolRegistry() // Reset for each sub-test
+			resetProtocolRegistry()
 			if tt.factory != nil {
 				RegisterProtocol(tt.cfg.Protocol, tt.factory)
 			}
@@ -146,8 +145,8 @@ func TestNewClient(t *testing.T) {
 		name        string
 		cfg         *configv1.Service
 		factory     *MockProtocolFactory
-		expectedErr string // Expected error message substring
-		checkWrappedErr error // Optional: check if a specific error is wrapped
+		expectedErr string
+		checkWrappedErr error
 	}{
 		{
 			name:        "nil config",
@@ -167,26 +166,25 @@ func TestNewClient(t *testing.T) {
 		{
 			name:        "factory returns error",
 			cfg:         &configv1.Service{Protocol: "mock_error_client"},
-			factory:     &MockProtocolFactory{NewClientError: tkerrors.Errorf("internal factory client error")}, // 修正为 Errorf
+			factory:     &MockProtocolFactory{NewClientError: tkerrors.Errorf("internal factory client error")},
 			expectedErr: "failed to create client for protocol mock_error_client",
-			checkWrappedErr: tkerrors.Errorf("internal factory client error"), // 修正为 Errorf
+			checkWrappedErr: tkerrors.Errorf("internal factory client error"),
 		},
 		{
 			name:        "successful client creation",
 			cfg:         &configv1.Service{Protocol: "mock_success_client"},
-			factory:     &MockProtocolFactory{},
-			expectedErr: "", // No error expected
+			expectedErr: "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resetProtocolRegistry() // Reset for each sub-test
+			resetProtocolRegistry()
 			if tt.factory != nil {
 				RegisterProtocol(tt.cfg.Protocol, tt.factory)
 			}
 
-			client, err := NewClient(projectContext.Background(), tt.cfg) // Use projectContext.Background()
+			client, err := NewClient(projectContext.Background(), tt.cfg)
 
 			if tt.expectedErr != "" {
 				if err == nil {

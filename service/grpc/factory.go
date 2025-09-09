@@ -17,7 +17,9 @@ import (
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
-const defaultTimeout = 5 * time.Second
+const (
+	defaultTimeout = 5 * time.Second
+)
 
 // grpcProtocolFactory implements service.ProtocolFactory for gRPC.
 type grpcProtocolFactory struct{}
@@ -44,7 +46,6 @@ func (f *grpcProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 		if grpcCfg.GetUseTls() {
 			tlsConfig, err := tls.NewServerTLSConfig(grpcCfg.GetTlsConfig())
 			if err != nil {
-				// This error occurs during server creation, it's an internal error for this function
 				return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 			}
 			if tlsConfig != nil {
