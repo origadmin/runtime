@@ -130,6 +130,7 @@ func (f *grpcProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 	return grpc.NewServer(grpcOpts...), nil
 }
 
+// init registers the gRPC protocol factory with the global service registry.
 func init() {
 	// Register the gRPC protocol factory with the service module.
 	service.RegisterProtocol("grpc", &grpcProtocolFactory{})

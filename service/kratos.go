@@ -7,7 +7,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
@@ -82,7 +81,3 @@ type ServerRegistrar interface {
 	RegisterHTTP(context.Context, *HTTPServer)
 	RegisterGRPC(context.Context, *GRPCServer)
 }
-
-var (
-	ErrServiceNotFound = errors.New("service not found")
-)

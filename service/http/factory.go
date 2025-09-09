@@ -77,16 +77,6 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Servi
 	// Apply timeout
 	clientOpts = append(clientOpts, transhttp.WithTimeout(timeout))
 
-	// Handle service discovery if configured
-	//if svcOpts.Discovery != nil && svcOpts.ServiceName != "" {
-	//	endpoint := helpers.ServiceDiscovery(svcOpts.ServiceName)
-	//	ll.Debugw("msg", "init with discovery", "service", "http", "name", svcOpts.ServiceName, "endpoint", endpoint)
-	//	clientOpts = append(clientOpts,
-	//		transhttp.WithEndpoint(endpoint),
-	//		transhttp.WithDiscovery(svcOpts.Discovery),
-	//	)
-	//}
-
 	// Extract HTTP client specific options from the service.Options' Context.
 	// These are the options added via http.WithClientOption
 	clientOptsFromContext := FromClientOptions(svcOpts)
@@ -97,9 +87,6 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Servi
 	if err != nil {
 		return nil, errors.Newf(500, "INTERNAL_SERVER_ERROR", "create http client failed: %v", err)
 	}
-
-	// Apply context to the client if needed
-	// Note: The actual HTTP requests will use the context passed to each request
 
 	return client, nil
 }
@@ -167,6 +154,7 @@ func (f *httpProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 	return transhttp.NewServer(httpOpts...), nil
 }
 
+// init registers the HTTP protocol factory with the global service registry.
 func init() {
 	// Register the HTTP protocol factory with the service module.
 	service.RegisterProtocol("http", &httpProtocolFactory{})

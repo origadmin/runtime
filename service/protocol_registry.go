@@ -1,29 +1,76 @@
 package service
 
 import (
-	"sync"
-
-	// No longer importing interfaces.ProtocolFactory directly here
+	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
+	"github.com/origadmin/framework/runtime/errors"
+	"github.com/origadmin/framework/runtime/interfaces"
+	"github.com/origadmin/framework/runtime/interfaces/factory"
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/context"
 )
 
-var (
-	protocolRegistry     = make(map[string]ProtocolFactory) // Use service.ProtocolFactory
-	protocolRegistryLock sync.RWMutex
-)
+// defaultRegistry is the default, package-level instance of the protocol registry.
+var defaultRegistry = factory.New[ProtocolFactory]()
 
-// RegisterProtocol registers a new protocol factory with the service module.
-// This function is safe for concurrent use.
-func RegisterProtocol(name string, factory ProtocolFactory) { // Use service.ProtocolFactory
-	protocolRegistryLock.Lock()
-	defer protocolRegistryLock.Unlock()
-	protocolRegistry[name] = factory
+// RegisterProtocol registers a new protocol factory with the default registry.
+// This function is the public API for registration and is safe for concurrent use.
+func RegisterProtocol(name string, f ProtocolFactory) {
+	defaultRegistry.Register(name, f)
 }
 
-// getProtocolFactory retrieves a registered protocol factory by name.
-// This function is safe for concurrent use.
-func getProtocolFactory(name string) (ProtocolFactory, bool) { // Use service.ProtocolFactory
-	protocolRegistryLock.RLock()
-	defer protocolRegistryLock.RUnlock()
-	factory, ok := protocolRegistry[name]
-	return factory, ok
+// GetProtocolFactory retrieves a registered protocol factory by name from the default registry.
+// This function is the public API for retrieval.
+func GetProtocolFactory(name string) (ProtocolFactory, bool) {
+	return defaultRegistry.Get(name)
+}
+
+// NewServer creates a new server instance based on the provided configuration and options.
+// It automatically looks up the appropriate protocol factory from the default registry
+// based on the `cfg.Type` field which represents the protocol name.
+func NewServer(cfg *configv1.Service, opts ...Option) (interfaces.Server, error) {
+	if cfg == nil || cfg.GetProtocol() == "" {
+		return nil, errors.NewMessage(apierrors.ErrorReason_INVALID_PARAMETER, "service configuration or protocol is missing")
+	}
+
+	f, ok := GetProtocolFactory(cfg.Protocol)
+	if !ok {
+		return nil, errors.NewMessageWithMeta(apierrors.ErrorReason_NOT_FOUND,
+			map[string]string{"protocol": cfg.Protocol},
+			"unsupported protocol: %s", cfg.Protocol)
+	}
+
+	server, err := f.NewServer(cfg, opts...)
+	if err != nil {
+		return nil, errors.WrapAndConvert(err,
+			apierrors.ErrorReason_INTERNAL_SERVER_ERROR,
+			"failed to create server for protocol %s: %v",
+			cfg.Protocol,
+			err)
+	}
+
+	return server, nil
+}
+
+// NewClient creates a new client instance based on the provided configuration and options.
+func NewClient(ctx context.Context, cfg *configv1.Service, opts ...Option) (interfaces.Client, error) {
+	if cfg == nil || cfg.GetProtocol() == "" {
+		return nil, errors.NewMessage(apierrors.ErrorReason_INVALID_PARAMETER, "service configuration or protocol is missing")
+	}
+	f, ok := GetProtocolFactory(cfg.Protocol)
+	if !ok {
+		return nil, errors.NewMessageWithMeta(apierrors.ErrorReason_NOT_FOUND,
+			map[string]string{"protocol": cfg.Protocol},
+			"unsupported protocol: %s", cfg.Protocol)
+	}
+
+	client, err := f.NewClient(ctx, cfg, opts...)
+	if err != nil {
+		return nil, errors.WrapAndConvert(err,
+			apierrors.ErrorReason_INTERNAL_SERVER_ERROR,
+			"failed to create client for protocol %s: %v",
+			cfg.Protocol,
+			err)
+	}
+
+	return client, nil
 }

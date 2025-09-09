@@ -8,7 +8,7 @@ package configv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	_ "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -26,17 +26,21 @@ const (
 type Service struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Service name for service discovery
-	Name            string            `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type            string            `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	DynamicEndpoint bool              `protobuf:"varint,3,opt,name=dynamic_endpoint,proto3" json:"dynamic_endpoint,omitempty"`
-	Grpc            *Service_GRPC     `protobuf:"bytes,10,opt,name=grpc,proto3" json:"grpc,omitempty"`
-	Http            *Service_HTTP     `protobuf:"bytes,20,opt,name=http,proto3" json:"http,omitempty"`
-	Websocket       *WebSocket        `protobuf:"bytes,100,opt,name=websocket,proto3" json:"websocket,omitempty"`
-	Message         *Message          `protobuf:"bytes,200,opt,name=message,proto3" json:"message,omitempty"`
-	Task            *Task             `protobuf:"bytes,300,opt,name=task,proto3" json:"task,omitempty"`
-	Selector        *Service_Selector `protobuf:"bytes,500,opt,name=selector,proto3" json:"selector,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Protocol defines the communication protocol for the service
+	Protocol string `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	// Protocol-specific configurations.
+	// Only the configuration matching the 'protocol' field will be used.
+	Grpc      *GRPC      `protobuf:"bytes,10,opt,name=grpc,proto3" json:"grpc,omitempty"`
+	Http      *HTTP      `protobuf:"bytes,20,opt,name=http,proto3" json:"http,omitempty"`
+	Websocket *WebSocket `protobuf:"bytes,100,opt,name=websocket,proto3" json:"websocket,omitempty"`
+	Message   *Message   `protobuf:"bytes,200,opt,name=message,proto3" json:"message,omitempty"`
+	Task      *Task      `protobuf:"bytes,300,opt,name=task,proto3" json:"task,omitempty"`
+	// Middleware configuration for the service.
+	Middleware    *v1.Middleware    `protobuf:"bytes,400,opt,name=middleware,proto3" json:"middleware,omitempty"`
+	Selector      *Service_Selector `protobuf:"bytes,500,opt,name=selector,proto3" json:"selector,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Service) Reset() {
@@ -76,28 +80,21 @@ func (x *Service) GetName() string {
 	return ""
 }
 
-func (x *Service) GetType() string {
+func (x *Service) GetProtocol() string {
 	if x != nil {
-		return x.Type
+		return x.Protocol
 	}
 	return ""
 }
 
-func (x *Service) GetDynamicEndpoint() bool {
-	if x != nil {
-		return x.DynamicEndpoint
-	}
-	return false
-}
-
-func (x *Service) GetGrpc() *Service_GRPC {
+func (x *Service) GetGrpc() *GRPC {
 	if x != nil {
 		return x.Grpc
 	}
 	return nil
 }
 
-func (x *Service) GetHttp() *Service_HTTP {
+func (x *Service) GetHttp() *HTTP {
 	if x != nil {
 		return x.Http
 	}
@@ -125,245 +122,18 @@ func (x *Service) GetTask() *Task {
 	return nil
 }
 
+func (x *Service) GetMiddleware() *v1.Middleware {
+	if x != nil {
+		return x.Middleware
+	}
+	return nil
+}
+
 func (x *Service) GetSelector() *Service_Selector {
 	if x != nil {
 		return x.Selector
 	}
 	return nil
-}
-
-// HTTP
-type Service_HTTP struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Network         string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	Addr            string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	UseTls          bool                   `protobuf:"varint,3,opt,name=use_tls,proto3" json:"use_tls,omitempty"`
-	TlsConfig       *TLSConfig             `protobuf:"bytes,4,opt,name=tls_config,proto3" json:"tls_config,omitempty"`
-	Timeout         int64                  `protobuf:"varint,6,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	ShutdownTimeout int64                  `protobuf:"varint,7,opt,name=shutdown_timeout,proto3" json:"shutdown_timeout,omitempty"`
-	ReadTimeout     int64                  `protobuf:"varint,8,opt,name=read_timeout,proto3" json:"read_timeout,omitempty"`
-	WriteTimeout    int64                  `protobuf:"varint,9,opt,name=write_timeout,proto3" json:"write_timeout,omitempty"`
-	IdleTimeout     int64                  `protobuf:"varint,10,opt,name=idle_timeout,proto3" json:"idle_timeout,omitempty"`
-	Endpoint        string                 `protobuf:"bytes,11,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *Service_HTTP) Reset() {
-	*x = Service_HTTP{}
-	mi := &file_config_v1_service_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Service_HTTP) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Service_HTTP) ProtoMessage() {}
-
-func (x *Service_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_service_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Service_HTTP.ProtoReflect.Descriptor instead.
-func (*Service_HTTP) Descriptor() ([]byte, []int) {
-	return file_config_v1_service_proto_rawDescGZIP(), []int{0, 0}
-}
-
-func (x *Service_HTTP) GetNetwork() string {
-	if x != nil {
-		return x.Network
-	}
-	return ""
-}
-
-func (x *Service_HTTP) GetAddr() string {
-	if x != nil {
-		return x.Addr
-	}
-	return ""
-}
-
-func (x *Service_HTTP) GetUseTls() bool {
-	if x != nil {
-		return x.UseTls
-	}
-	return false
-}
-
-func (x *Service_HTTP) GetTlsConfig() *TLSConfig {
-	if x != nil {
-		return x.TlsConfig
-	}
-	return nil
-}
-
-func (x *Service_HTTP) GetTimeout() int64 {
-	if x != nil {
-		return x.Timeout
-	}
-	return 0
-}
-
-func (x *Service_HTTP) GetShutdownTimeout() int64 {
-	if x != nil {
-		return x.ShutdownTimeout
-	}
-	return 0
-}
-
-func (x *Service_HTTP) GetReadTimeout() int64 {
-	if x != nil {
-		return x.ReadTimeout
-	}
-	return 0
-}
-
-func (x *Service_HTTP) GetWriteTimeout() int64 {
-	if x != nil {
-		return x.WriteTimeout
-	}
-	return 0
-}
-
-func (x *Service_HTTP) GetIdleTimeout() int64 {
-	if x != nil {
-		return x.IdleTimeout
-	}
-	return 0
-}
-
-func (x *Service_HTTP) GetEndpoint() string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return ""
-}
-
-// GRPC
-type Service_GRPC struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Network         string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	Addr            string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	UseTls          bool                   `protobuf:"varint,3,opt,name=use_tls,proto3" json:"use_tls,omitempty"`
-	TlsConfig       *TLSConfig             `protobuf:"bytes,4,opt,name=tls_config,proto3" json:"tls_config,omitempty"`
-	Timeout         int64                  `protobuf:"varint,6,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	ShutdownTimeout int64                  `protobuf:"varint,7,opt,name=shutdown_timeout,proto3" json:"shutdown_timeout,omitempty"`
-	ReadTimeout     int64                  `protobuf:"varint,8,opt,name=read_timeout,proto3" json:"read_timeout,omitempty"`
-	WriteTimeout    int64                  `protobuf:"varint,9,opt,name=write_timeout,proto3" json:"write_timeout,omitempty"`
-	IdleTimeout     int64                  `protobuf:"varint,10,opt,name=idle_timeout,proto3" json:"idle_timeout,omitempty"`
-	Endpoint        string                 `protobuf:"bytes,11,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *Service_GRPC) Reset() {
-	*x = Service_GRPC{}
-	mi := &file_config_v1_service_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Service_GRPC) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Service_GRPC) ProtoMessage() {}
-
-func (x *Service_GRPC) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_service_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Service_GRPC.ProtoReflect.Descriptor instead.
-func (*Service_GRPC) Descriptor() ([]byte, []int) {
-	return file_config_v1_service_proto_rawDescGZIP(), []int{0, 1}
-}
-
-func (x *Service_GRPC) GetNetwork() string {
-	if x != nil {
-		return x.Network
-	}
-	return ""
-}
-
-func (x *Service_GRPC) GetAddr() string {
-	if x != nil {
-		return x.Addr
-	}
-	return ""
-}
-
-func (x *Service_GRPC) GetUseTls() bool {
-	if x != nil {
-		return x.UseTls
-	}
-	return false
-}
-
-func (x *Service_GRPC) GetTlsConfig() *TLSConfig {
-	if x != nil {
-		return x.TlsConfig
-	}
-	return nil
-}
-
-func (x *Service_GRPC) GetTimeout() int64 {
-	if x != nil {
-		return x.Timeout
-	}
-	return 0
-}
-
-func (x *Service_GRPC) GetShutdownTimeout() int64 {
-	if x != nil {
-		return x.ShutdownTimeout
-	}
-	return 0
-}
-
-func (x *Service_GRPC) GetReadTimeout() int64 {
-	if x != nil {
-		return x.ReadTimeout
-	}
-	return 0
-}
-
-func (x *Service_GRPC) GetWriteTimeout() int64 {
-	if x != nil {
-		return x.WriteTimeout
-	}
-	return 0
-}
-
-func (x *Service_GRPC) GetIdleTimeout() int64 {
-	if x != nil {
-		return x.IdleTimeout
-	}
-	return 0
-}
-
-func (x *Service_GRPC) GetEndpoint() string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return ""
 }
 
 // Selector
@@ -377,7 +147,7 @@ type Service_Selector struct {
 
 func (x *Service_Selector) Reset() {
 	*x = Service_Selector{}
-	mi := &file_config_v1_service_proto_msgTypes[3]
+	mi := &file_config_v1_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -389,7 +159,7 @@ func (x *Service_Selector) String() string {
 func (*Service_Selector) ProtoMessage() {}
 
 func (x *Service_Selector) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_service_proto_msgTypes[3]
+	mi := &file_config_v1_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -402,7 +172,7 @@ func (x *Service_Selector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Service_Selector.ProtoReflect.Descriptor instead.
 func (*Service_Selector) Descriptor() ([]byte, []int) {
-	return file_config_v1_service_proto_rawDescGZIP(), []int{0, 2}
+	return file_config_v1_service_proto_rawDescGZIP(), []int{0, 0}
 }
 
 func (x *Service_Selector) GetVersion() string {
@@ -423,46 +193,20 @@ var File_config_v1_service_proto protoreflect.FileDescriptor
 
 const file_config_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/tlsconfig.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\x95\t\n" +
+	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x14config/v1/grpc.proto\x1a\x14config/v1/http.proto\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\xef\x03\n" +
 	"\aService\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12?\n" +
-	"\x04type\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\x04type\x12*\n" +
-	"\x10dynamic_endpoint\x18\x03 \x01(\bR\x10dynamic_endpoint\x12+\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12G\n" +
+	"\bprotocol\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\bprotocol\x12#\n" +
 	"\x04grpc\x18\n" +
-	" \x01(\v2\x17.config.v1.Service.GRPCR\x04grpc\x12+\n" +
-	"\x04http\x18\x14 \x01(\v2\x17.config.v1.Service.HTTPR\x04http\x122\n" +
+	" \x01(\v2\x0f.config.v1.GRPCR\x04grpc\x12#\n" +
+	"\x04http\x18\x14 \x01(\v2\x0f.config.v1.HTTPR\x04http\x122\n" +
 	"\twebsocket\x18d \x01(\v2\x14.config.v1.WebSocketR\twebsocket\x12-\n" +
 	"\amessage\x18\xc8\x01 \x01(\v2\x12.config.v1.MessageR\amessage\x12$\n" +
-	"\x04task\x18\xac\x02 \x01(\v2\x0f.config.v1.TaskR\x04task\x128\n" +
-	"\bselector\x18\xf4\x03 \x01(\v2\x1b.config.v1.Service.SelectorR\bselector\x1a\xd4\x02\n" +
-	"\x04HTTP\x12\x18\n" +
-	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
-	"\x04addr\x18\x02 \x01(\tR\x04addr\x12\x18\n" +
-	"\ause_tls\x18\x03 \x01(\bR\ause_tls\x124\n" +
+	"\x04task\x18\xac\x02 \x01(\v2\x0f.config.v1.TaskR\x04task\x12:\n" +
 	"\n" +
-	"tls_config\x18\x04 \x01(\v2\x14.config.v1.TLSConfigR\n" +
-	"tls_config\x12\x18\n" +
-	"\atimeout\x18\x06 \x01(\x03R\atimeout\x12*\n" +
-	"\x10shutdown_timeout\x18\a \x01(\x03R\x10shutdown_timeout\x12\"\n" +
-	"\fread_timeout\x18\b \x01(\x03R\fread_timeout\x12$\n" +
-	"\rwrite_timeout\x18\t \x01(\x03R\rwrite_timeout\x12\"\n" +
-	"\fidle_timeout\x18\n" +
-	" \x01(\x03R\fidle_timeout\x12\x1a\n" +
-	"\bendpoint\x18\v \x01(\tR\bendpoint\x1a\xd4\x02\n" +
-	"\x04GRPC\x12\x18\n" +
-	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
-	"\x04addr\x18\x02 \x01(\tR\x04addr\x12\x18\n" +
-	"\ause_tls\x18\x03 \x01(\bR\ause_tls\x124\n" +
-	"\n" +
-	"tls_config\x18\x04 \x01(\v2\x14.config.v1.TLSConfigR\n" +
-	"tls_config\x12\x18\n" +
-	"\atimeout\x18\x06 \x01(\x03R\atimeout\x12*\n" +
-	"\x10shutdown_timeout\x18\a \x01(\x03R\x10shutdown_timeout\x12\"\n" +
-	"\fread_timeout\x18\b \x01(\x03R\fread_timeout\x12$\n" +
-	"\rwrite_timeout\x18\t \x01(\x03R\rwrite_timeout\x12\"\n" +
-	"\fidle_timeout\x18\n" +
-	" \x01(\x03R\fidle_timeout\x12\x1a\n" +
-	"\bendpoint\x18\v \x01(\tR\bendpoint\x1a>\n" +
+	"middleware\x18\x90\x03 \x01(\v2\x19.middleware.v1.MiddlewareR\n" +
+	"middleware\x128\n" +
+	"\bselector\x18\xf4\x03 \x01(\v2\x1b.config.v1.Service.SelectorR\bselector\x1a>\n" +
 	"\bSelector\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x12\x18\n" +
 	"\abuilder\x18\x02 \x01(\tR\abuilderB\xa1\x01\n" +
@@ -481,31 +225,30 @@ func file_config_v1_service_proto_rawDescGZIP() []byte {
 	return file_config_v1_service_proto_rawDescData
 }
 
-var file_config_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_config_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_config_v1_service_proto_goTypes = []any{
 	(*Service)(nil),          // 0: config.v1.Service
-	(*Service_HTTP)(nil),     // 1: config.v1.Service.HTTP
-	(*Service_GRPC)(nil),     // 2: config.v1.Service.GRPC
-	(*Service_Selector)(nil), // 3: config.v1.Service.Selector
+	(*Service_Selector)(nil), // 1: config.v1.Service.Selector
+	(*GRPC)(nil),             // 2: config.v1.GRPC
+	(*HTTP)(nil),             // 3: config.v1.HTTP
 	(*WebSocket)(nil),        // 4: config.v1.WebSocket
 	(*Message)(nil),          // 5: config.v1.Message
 	(*Task)(nil),             // 6: config.v1.Task
-	(*TLSConfig)(nil),        // 7: config.v1.TLSConfig
+	(*v1.Middleware)(nil),    // 7: middleware.v1.Middleware
 }
 var file_config_v1_service_proto_depIdxs = []int32{
-	2, // 0: config.v1.Service.grpc:type_name -> config.v1.Service.GRPC
-	1, // 1: config.v1.Service.http:type_name -> config.v1.Service.HTTP
+	2, // 0: config.v1.Service.grpc:type_name -> config.v1.GRPC
+	3, // 1: config.v1.Service.http:type_name -> config.v1.HTTP
 	4, // 2: config.v1.Service.websocket:type_name -> config.v1.WebSocket
 	5, // 3: config.v1.Service.message:type_name -> config.v1.Message
 	6, // 4: config.v1.Service.task:type_name -> config.v1.Task
-	3, // 5: config.v1.Service.selector:type_name -> config.v1.Service.Selector
-	7, // 6: config.v1.Service.HTTP.tls_config:type_name -> config.v1.TLSConfig
-	7, // 7: config.v1.Service.GRPC.tls_config:type_name -> config.v1.TLSConfig
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	7, // 5: config.v1.Service.middleware:type_name -> middleware.v1.Middleware
+	1, // 6: config.v1.Service.selector:type_name -> config.v1.Service.Selector
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_service_proto_init() }
@@ -513,9 +256,10 @@ func file_config_v1_service_proto_init() {
 	if File_config_v1_service_proto != nil {
 		return
 	}
+	file_config_v1_grpc_proto_init()
+	file_config_v1_http_proto_init()
 	file_config_v1_message_proto_init()
 	file_config_v1_task_proto_init()
-	file_config_v1_tlsconfig_proto_init()
 	file_config_v1_websocket_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -523,7 +267,7 @@ func file_config_v1_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_service_proto_rawDesc), len(file_config_v1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

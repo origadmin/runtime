@@ -58,9 +58,9 @@ func (m *Service) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _Service_Type_InLookup[m.GetType()]; !ok {
+	if _, ok := _Service_Protocol_InLookup[m.GetProtocol()]; !ok {
 		err := ServiceValidationError{
-			field:  "Type",
+			field:  "Protocol",
 			reason: "value must be in list [http grpc websocket message task]",
 		}
 		if !all {
@@ -68,8 +68,6 @@ func (m *Service) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
-
-	// no validation rules for DynamicEndpoint
 
 	if all {
 		switch v := interface{}(m.GetGrpc()).(type) {
@@ -217,6 +215,35 @@ func (m *Service) validate(all bool) error {
 	}
 
 	if all {
+		switch v := interface{}(m.GetMiddleware()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ServiceValidationError{
+					field:  "Middleware",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ServiceValidationError{
+					field:  "Middleware",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetMiddleware()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ServiceValidationError{
+				field:  "Middleware",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
 		switch v := interface{}(m.GetSelector()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
@@ -322,305 +349,13 @@ var _ interface {
 	ErrorName() string
 } = ServiceValidationError{}
 
-var _Service_Type_InLookup = map[string]struct{}{
+var _Service_Protocol_InLookup = map[string]struct{}{
 	"http":      {},
 	"grpc":      {},
 	"websocket": {},
 	"message":   {},
 	"task":      {},
 }
-
-// Validate checks the field values on Service_HTTP with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Service_HTTP) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Service_HTTP with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in Service_HTTPMultiError, or
-// nil if none found.
-func (m *Service_HTTP) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Service_HTTP) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Network
-
-	// no validation rules for Addr
-
-	// no validation rules for UseTls
-
-	if all {
-		switch v := interface{}(m.GetTlsConfig()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "TlsConfig",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Service_HTTPValidationError{
-					field:  "TlsConfig",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTlsConfig()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Service_HTTPValidationError{
-				field:  "TlsConfig",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	// no validation rules for Timeout
-
-	// no validation rules for ShutdownTimeout
-
-	// no validation rules for ReadTimeout
-
-	// no validation rules for WriteTimeout
-
-	// no validation rules for IdleTimeout
-
-	// no validation rules for Endpoint
-
-	if len(errors) > 0 {
-		return Service_HTTPMultiError(errors)
-	}
-
-	return nil
-}
-
-// Service_HTTPMultiError is an error wrapping multiple validation errors
-// returned by Service_HTTP.ValidateAll() if the designated constraints aren't met.
-type Service_HTTPMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m Service_HTTPMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m Service_HTTPMultiError) AllErrors() []error { return m }
-
-// Service_HTTPValidationError is the validation error returned by
-// Service_HTTP.Validate if the designated constraints aren't met.
-type Service_HTTPValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e Service_HTTPValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e Service_HTTPValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e Service_HTTPValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e Service_HTTPValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e Service_HTTPValidationError) ErrorName() string { return "Service_HTTPValidationError" }
-
-// Error satisfies the builtin error interface
-func (e Service_HTTPValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sService_HTTP.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = Service_HTTPValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = Service_HTTPValidationError{}
-
-// Validate checks the field values on Service_GRPC with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Service_GRPC) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Service_GRPC with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in Service_GRPCMultiError, or
-// nil if none found.
-func (m *Service_GRPC) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Service_GRPC) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Network
-
-	// no validation rules for Addr
-
-	// no validation rules for UseTls
-
-	if all {
-		switch v := interface{}(m.GetTlsConfig()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Service_GRPCValidationError{
-					field:  "TlsConfig",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, Service_GRPCValidationError{
-					field:  "TlsConfig",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTlsConfig()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return Service_GRPCValidationError{
-				field:  "TlsConfig",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	// no validation rules for Timeout
-
-	// no validation rules for ShutdownTimeout
-
-	// no validation rules for ReadTimeout
-
-	// no validation rules for WriteTimeout
-
-	// no validation rules for IdleTimeout
-
-	// no validation rules for Endpoint
-
-	if len(errors) > 0 {
-		return Service_GRPCMultiError(errors)
-	}
-
-	return nil
-}
-
-// Service_GRPCMultiError is an error wrapping multiple validation errors
-// returned by Service_GRPC.ValidateAll() if the designated constraints aren't met.
-type Service_GRPCMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m Service_GRPCMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m Service_GRPCMultiError) AllErrors() []error { return m }
-
-// Service_GRPCValidationError is the validation error returned by
-// Service_GRPC.Validate if the designated constraints aren't met.
-type Service_GRPCValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e Service_GRPCValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e Service_GRPCValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e Service_GRPCValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e Service_GRPCValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e Service_GRPCValidationError) ErrorName() string { return "Service_GRPCValidationError" }
-
-// Error satisfies the builtin error interface
-func (e Service_GRPCValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sService_GRPC.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = Service_GRPCValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = Service_GRPCValidationError{}
 
 // Validate checks the field values on Service_Selector with the rules defined
 // in the proto definition for this message. If any rules are violated, the

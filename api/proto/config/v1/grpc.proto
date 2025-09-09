@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package config.v1;
+
+import "config/v1/tlsconfig.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/v1;configv1";
+option java_multiple_files = true;
+option java_outer_classname = "GRPCProto";
+option java_package = "com.github.origadmin.api.runtime.config.v1";
+option objc_class_prefix = "ORC";
+
+// GRPC service configuration.
+message GRPC {
+  string network = 1 [json_name = "network"];
+  string addr = 2 [json_name = "addr"];
+  bool use_tls = 3 [json_name = "use_tls"];
+  TLSConfig tls_config = 4 [json_name = "tls_config"];
+  int64 timeout = 6 [json_name = "timeout"];
+  int64 shutdown_timeout = 7 [json_name = "shutdown_timeout"];
+  int64 read_timeout = 8 [json_name = "read_timeout"];
+  int64 write_timeout = 9 [json_name = "write_timeout"];
+  int64 idle_timeout = 10 [json_name = "idle_timeout"];
+  string endpoint = 11 [json_name = "endpoint"];
+}

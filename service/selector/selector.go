@@ -41,7 +41,7 @@ func DefaultHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error)
 	}
 
 	// Set the global selector with the provided builder
-	SetGlobalSelector(cfg.GetBuilder())
+	SetSelectorGlobalSelector(cfg.GetBuilder())
 
 	// Return the client option and no error
 	return options, nil
@@ -63,7 +63,7 @@ func DefaultGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error)
 	}
 
 	// Set the global selector with the provided builder
-	SetGlobalSelector(cfg.GetBuilder())
+	SetSelectorGlobalSelector(cfg.GetBuilder())
 
 	// Return the client option and no error
 	return options, nil
@@ -74,7 +74,7 @@ func NewFilter(cfg *configv1.Service_Selector) (selector.NodeFilter, error) {
 	if cfg.GetVersion() != "" {
 		// Create a version filter based on the configuration version
 		// Set the global selector with the provided builder
-		SetGlobalSelector(cfg.GetBuilder())
+		SetSelectorGlobalSelector(cfg.GetBuilder())
 		// Return the version filter and no error
 		return filter.Version(cfg.Version), nil
 	}
@@ -82,8 +82,8 @@ func NewFilter(cfg *configv1.Service_Selector) (selector.NodeFilter, error) {
 	return nil, errors.New("version is nil")
 }
 
-// SetGlobalSelector sets the global selector.
-func SetGlobalSelector(selectorType string) {
+// SetSelectorGlobalSelector sets the global selector.
+func SetSelectorGlobalSelector(selectorType string) {
 	if builder != nil {
 		return
 	}
@@ -102,7 +102,7 @@ func SetGlobalSelector(selectorType string) {
 		if b != nil {
 			builder = b
 			// Set global selector
-			selector.SetGlobalSelector(builder)
+			SetGlobalSelector(builder)
 		}
 	})
 }
