@@ -6,7 +6,7 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 
-	"github.com/origadmin/framework/runtime/service"
+	"github.com/origadmin/runtime/service"
 )
 
 // optionsKey is a private key type to avoid collisions in context.

@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package factory implements the functions, types, and interfaces for the module.
 package factory
 
 import (
@@ -16,6 +11,7 @@ type Registry[F any] interface {
 	Get(name string) (F, bool)
 	Register(name string, factory F)
 	RegisteredFactories() map[string]F
+	Reset() // Add Reset method for testing purposes
 }
 
 // registry is a thread-safe implementation of the Registry interface.
@@ -48,6 +44,14 @@ func (f *registry[F]) RegisteredFactories() map[string]F {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 	return maps.Clone(f.factories)
+}
+
+// Reset clears all registered factories.
+// This method is primarily intended for testing purposes to ensure isolation.
+func (f *registry[F]) Reset() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.factories = make(map[string]F)
 }
 
 // New creates and returns a new instance of the registry.

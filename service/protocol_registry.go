@@ -1,12 +1,11 @@
 package service
 
 import (
-	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
-	"github.com/origadmin/framework/runtime/errors"
-	"github.com/origadmin/framework/runtime/interfaces"
-	"github.com/origadmin/framework/runtime/interfaces/factory"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/context"
+	"github.com/origadmin/runtime/context" // 修正：移除 /adapter
+	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/factory"
+	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // defaultRegistry is the default, package-level instance of the protocol registry.
@@ -29,23 +28,17 @@ func GetProtocolFactory(name string) (ProtocolFactory, bool) {
 // based on the `cfg.Type` field which represents the protocol name.
 func NewServer(cfg *configv1.Service, opts ...Option) (interfaces.Server, error) {
 	if cfg == nil || cfg.GetProtocol() == "" {
-		return nil, errors.NewMessage(apierrors.ErrorReason_INVALID_PARAMETER, "service configuration or protocol is missing")
+		return nil, tkerrors.Errorf("service configuration or protocol is missing")
 	}
 
 	f, ok := GetProtocolFactory(cfg.Protocol)
 	if !ok {
-		return nil, errors.NewMessageWithMeta(apierrors.ErrorReason_NOT_FOUND,
-			map[string]string{"protocol": cfg.Protocol},
-			"unsupported protocol: %s", cfg.Protocol)
+		return nil, tkerrors.Errorf("unsupported protocol: %s", cfg.Protocol)
 	}
 
 	server, err := f.NewServer(cfg, opts...)
 	if err != nil {
-		return nil, errors.WrapAndConvert(err,
-			apierrors.ErrorReason_INTERNAL_SERVER_ERROR,
-			"failed to create server for protocol %s: %v",
-			cfg.Protocol,
-			err)
+		return nil, tkerrors.Wrapf(err, "failed to create server for protocol %s", cfg.Protocol)
 	}
 
 	return server, nil
@@ -54,22 +47,16 @@ func NewServer(cfg *configv1.Service, opts ...Option) (interfaces.Server, error)
 // NewClient creates a new client instance based on the provided configuration and options.
 func NewClient(ctx context.Context, cfg *configv1.Service, opts ...Option) (interfaces.Client, error) {
 	if cfg == nil || cfg.GetProtocol() == "" {
-		return nil, errors.NewMessage(apierrors.ErrorReason_INVALID_PARAMETER, "service configuration or protocol is missing")
+		return nil, tkerrors.Errorf("service configuration or protocol is missing")
 	}
 	f, ok := GetProtocolFactory(cfg.Protocol)
 	if !ok {
-		return nil, errors.NewMessageWithMeta(apierrors.ErrorReason_NOT_FOUND,
-			map[string]string{"protocol": cfg.Protocol},
-			"unsupported protocol: %s", cfg.Protocol)
+		return nil, tkerrors.Errorf("unsupported protocol: %s", cfg.Protocol)
 	}
 
 	client, err := f.NewClient(ctx, cfg, opts...)
 	if err != nil {
-		return nil, errors.WrapAndConvert(err,
-			apierrors.ErrorReason_INTERNAL_SERVER_ERROR,
-			"failed to create client for protocol %s: %v",
-			cfg.Protocol,
-			err)
+		return nil, tkerrors.Wrapf(err, "failed to create client for protocol %s", cfg.Protocol)
 	}
 
 	return client, nil

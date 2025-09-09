@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"net/url"
 	"time"
 
@@ -10,12 +9,13 @@ import (
 	"github.com/goexts/generic/configure"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/errors"
+	"github.com/origadmin/runtime/context"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/selector"
 	"github.com/origadmin/runtime/service/tls"
+	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 const (
@@ -25,58 +25,9 @@ const (
 // httpProtocolFactory implements service.ProtocolFactory for HTTP.
 type httpProtocolFactory struct{}
 
-// NewClient creates a new HTTP client instance.
+// NewClient creates a new HTTP client instance by delegating to the direct implementation.
 func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Option) (interfaces.Client, error) {
-	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
-	ll.Debugf("Creating new HTTP client with config: %+v", cfg)
-
-	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: ctx}}
-	configure.Apply(svcOpts, opts)
-
-	var clientOpts []transhttp.ClientOption
-	timeout := defaultTimeout
-
-	if cfg.GetHttp() != nil {
-		httpCfg := cfg.GetHttp()
-		if httpCfg.GetTimeout() != 0 {
-			timeout = time.Duration(httpCfg.GetTimeout() * 1e6)
-		}
-
-		if httpCfg.GetUseTls() {
-			tlsConfig, err := tls.NewClientTLSConfig(httpCfg.GetTlsConfig())
-			if err != nil {
-				return nil, err
-			}
-			if tlsConfig != nil {
-				clientOpts = append(clientOpts, transhttp.WithTLSConfig(tlsConfig))
-			}
-		}
-
-		if httpCfg.GetEndpoint() != "" {
-			clientOpts = append(clientOpts, transhttp.WithEndpoint(httpCfg.GetEndpoint()))
-		}
-
-		if selectorCfg := cfg.GetSelector(); selectorCfg != nil {
-			filter, err := selector.NewFilter(selectorCfg)
-			if err == nil {
-				clientOpts = append(clientOpts, transhttp.WithNodeFilter(filter))
-			} else {
-				ll.Warnf("Failed to create selector filter: %v", err)
-			}
-		}
-	}
-
-	clientOpts = append(clientOpts, transhttp.WithTimeout(timeout))
-
-	clientOptsFromContext := FromClientOptions(svcOpts)
-	clientOpts = append(clientOpts, clientOptsFromContext...)
-
-	client, err := transhttp.NewClient(ctx, clientOpts...)
-	if err != nil {
-		return nil, errors.Newf(500, "INTERNAL_SERVER_ERROR", "create http client failed: %v", err)
-	}
-
-	return client, nil
+	return NewClient(ctx, cfg, opts...)
 }
 
 // NewServer creates a new HTTP server instance.
@@ -89,7 +40,7 @@ func (f *httpProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 
 	var kratosServerOptions []transhttp.ServerOption
 	kratosServerOptions = append(kratosServerOptions, transhttp.Middleware(recovery.Recovery()))
-	kratosServerOptions = append(kratosServerOptions, transhttp.ErrorEncoder(errors.NewErrorEncoder()))
+	kratosServerOptions = append(kratosServerOptions, transhttp.ErrorEncoder(runtimeerrors.NewErrorEncoder())) // This is correct, as it's setting up the encoder for *external* errors
 
 	if cfg.GetHttp() != nil {
 		httpCfg := cfg.GetHttp()
@@ -97,7 +48,8 @@ func (f *httpProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 		if httpCfg.GetUseTls() {
 			tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTlsConfig())
 			if err != nil {
-				return nil, err
+				// This error occurs during server creation, it's an internal error for this function
+				return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation") // 修正为 Wrapf
 			}
 			if tlsConfig != nil {
 				kratosServerOptions = append(kratosServerOptions, transhttp.TLSConfig(tlsConfig))
@@ -118,11 +70,11 @@ func (f *httpProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 		ll.Debugw("msg", "HTTP", "endpoint", httpCfg.GetEndpoint())
 		if httpCfg.GetEndpoint() != "" {
 			parsedEndpoint, err := url.Parse(httpCfg.GetEndpoint())
-			if err == nil {
-				kratosServerOptions = append(kratosServerOptions, transhttp.Endpoint(parsedEndpoint))
-			} else {
-				ll.Errorf("Failed to parse endpoint: %v", err)
+			if err != nil {
+				// This error occurs during server creation, it's an internal error for this function
+				return nil, tkerrors.Wrapf(err, "failed to parse endpoint for server creation")
 			}
+			kratosServerOptions = append(kratosServerOptions, transhttp.Endpoint(parsedEndpoint))
 		}
 	}
 
