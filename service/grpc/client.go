@@ -2,6 +2,7 @@ package grpc
 
 import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc" // Import Kratos gRPC transport
+	"google.golang.org/grpc"                                  // Use native grpc package
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/context" // Use project's context
@@ -38,15 +39,19 @@ func NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Optio
 		clientOptions = append(clientOptions, clientOptsFromCtx...)
 	}
 
-	// 4. Create the underlying transport client using transgrpc.Dial
-	// transgrpc.Dial expects transgrpc.ClientOption
+	// 4. Create the underlying transport client using transgrpc.Dial or transgrpc.DialInsecure
+	var conn *grpc.ClientConn
 	kratosClientOptions := []transgrpc.ClientOption{
 		transgrpc.WithEndpoint(endpoint), // Endpoint is passed here
 	}
-	// Append the collected clientOptions (which are already transgrpc.ClientOption)
 	kratosClientOptions = append(kratosClientOptions, clientOptions...)
 
-	conn, err := transgrpc.Dial(ctx, kratosClientOptions...)
+	if grpcCfg.GetUseTls() {
+		conn, err = transgrpc.Dial(ctx, kratosClientOptions...)
+	} else {
+		conn, err = transgrpc.DialInsecure(ctx, kratosClientOptions...)
+	}
+
 	if err != nil {
 		return nil, tkerrors.Wrapf(err, "failed to create grpc client connection to %s", endpoint)
 	}
