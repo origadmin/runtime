@@ -4,7 +4,6 @@ import (
 	"context"
 
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
-	"google.golang.org/grpc"
 
 	"github.com/origadmin/runtime/service"
 )
@@ -12,7 +11,7 @@ import (
 // optionsKey is a private key type to avoid collisions in context.
 type (
 	grpcServerOptionsKey struct{}
-	grpcClientOptionsKey struct{}
+	grpcClientOptionsKey struct{} // This key will now store transgrpc.ClientOption
 )
 
 // WithServerOption is an option to add a Kratos transgrpc.ServerOption to the context.
@@ -26,13 +25,13 @@ func WithServerOption(opt ...transgrpc.ServerOption) service.Option {
 	}
 }
 
-// WithClientOption is an option to add a native grpc.DialOption to the context.
-func WithClientOption(opt ...grpc.DialOption) service.Option {
+// WithClientOption is an option to add a transgrpc.ClientOption to the context.
+func WithClientOption(opt ...transgrpc.ClientOption) service.Option { // Change parameter type
 	return func(o *service.Options) {
 		if o.Context == nil {
 			o.Context = context.Background()
 		}
-		opts, _ := o.Context.Value(grpcClientOptionsKey{}).([]grpc.DialOption)
+		opts, _ := o.Context.Value(grpcClientOptionsKey{}).([]transgrpc.ClientOption) // Change stored type
 		o.Context = context.WithValue(o.Context, grpcClientOptionsKey{}, append(opts, opt...))
 	}
 }
@@ -46,11 +45,11 @@ func FromServerOptions(o *service.Options) []transgrpc.ServerOption {
 	return opts
 }
 
-// FromClientOptions returns the collected native grpc.DialOption from the service.Options' Context.
-func FromClientOptions(o *service.Options) []grpc.DialOption {
+// FromClientOptions returns the collected transgrpc.ClientOption from the service.Options' Context.
+func FromClientOptions(o *service.Options) []transgrpc.ClientOption { // Change return type
 	if o == nil || o.Context == nil {
 		return nil
 	}
-	opts, _ := o.Context.Value(grpcClientOptionsKey{}).([]grpc.DialOption)
+	opts, _ := o.Context.Value(grpcClientOptionsKey{}).([]transgrpc.ClientOption) // Change retrieved type
 	return opts
 }

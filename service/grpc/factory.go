@@ -4,13 +4,12 @@ import (
 	"time"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/context" // Use project's context adapter
+	"github.com/origadmin/runtime/context" // Use project's context
 
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/goexts/generic/configure"
 
-	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service"
@@ -38,7 +37,6 @@ func (f *grpcProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 
 	var serverOpts []transgrpc.ServerOption
 	serverOpts = append(serverOpts, transgrpc.Middleware(recovery.Recovery()))
-	serverOpts = append(serverOpts, transgrpc.ErrorEncoder(runtimeerrors.NewErrorEncoder())) // This is correct, as it's setting up the encoder for *external* errors
 
 	if cfg.GetGrpc() != nil {
 		grpcCfg := cfg.GetGrpc()
@@ -47,7 +45,7 @@ func (f *grpcProtocolFactory) NewServer(cfg *configv1.Service, opts ...service.O
 			tlsConfig, err := tls.NewServerTLSConfig(grpcCfg.GetTlsConfig())
 			if err != nil {
 				// This error occurs during server creation, it's an internal error for this function
-				return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation") // 修正为 Wrapf
+				return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 			}
 			if tlsConfig != nil {
 				serverOpts = append(serverOpts, transgrpc.TLSConfig(tlsConfig))

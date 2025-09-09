@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc" // Import Kratos gRPC transport
 	tkerrors "github.com/origadmin/toolkits/errors"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/service/selector"
@@ -12,23 +13,21 @@ import (
 )
 
 // adaptClientConfig 将服务配置转换为特定协议的选项
-func adaptClientConfig(cfg *configv1.Service) ([]grpc.ClientOption, error) {
+// Note: This function no longer adds grpc.WithEndpoint, as the endpoint is passed directly to grpc.DialContext.
+func adaptClientConfig(cfg *configv1.Service) ([]transgrpc.ClientOption, error) { // Change return type
 	// 1. 验证配置
 	if cfg == nil {
-		return nil, tkerrors.Errorf("client config is required for creation") // 修正为 Errorf
+		return nil, tkerrors.Errorf("client config is required for creation") // 使用内部错误
 	}
 
 	grpcCfg := cfg.GetGrpc()
 	if grpcCfg == nil {
-		return nil, tkerrors.Errorf("grpc client config is required for creation") // 修正为 Errorf
+		return nil, tkerrors.Errorf("grpc client config is required for creation") // 使用内部错误
 	}
 
-	var opts []grpc.ClientOption
+	var dialOpts []grpc.DialOption // Collect native grpc.DialOption
 
-	// 2. 处理端点 (gRPC typically uses WithEndpoint or WithTarget)
-	if endpoint := grpcCfg.GetEndpoint(); endpoint != "" {
-		opts = append(opts, grpc.WithEndpoint(endpoint))
-	}
+	// 2. 处理端点 (Removed: Endpoint is now handled directly in NewClient via grpc.DialContext)
 
 	// 3. 处理超时 (gRPC client timeout is usually per-call, not a global client option)
 	// For now, we'll skip global timeout for gRPC client options as it's not directly analogous
@@ -38,10 +37,10 @@ func adaptClientConfig(cfg *configv1.Service) ([]grpc.ClientOption, error) {
 	if tlsCfg := grpcCfg.GetTlsConfig(); tlsCfg != nil {
 		tlsConfig, err := tls.NewClientTLSConfig(tlsCfg)
 		if err != nil {
-			return nil, tkerrors.Wrapf(err, "invalid TLS config for client creation") // 修正为 Wrapf
+			return nil, tkerrors.Wrapf(err, "invalid TLS config for client creation") // 使用内部错误包装
 		}
 		if tlsConfig != nil {
-			opts = append(opts, grpc.WithTransportCredentials(tls.NewClientCredentials(tlsConfig)))
+			dialOpts = append(dialOpts, grpc.WithTransportCredentials(tls.NewClientCredentials(tlsConfig))) // Collect as DialOption
 		}
 	}
 
@@ -49,15 +48,19 @@ func adaptClientConfig(cfg *configv1.Service) ([]grpc.ClientOption, error) {
 	if selectorCfg := cfg.GetSelector(); selectorCfg != nil {
 		filter, err := selector.NewFilter(selectorCfg)
 		if err != nil {
-			return nil, tkerrors.Wrapf(err, "invalid selector config for client creation") // 修正为 Wrapf
+			return nil, tkerrors.Wrapf(err, "invalid selector config for client creation") // 使用内部错误包装
 		}
-		opts = append(opts, grpc.WithDefaultServiceConfig(filter.String())) // Simplified, usually more complex for gRPC
+		dialOpts = append(dialOpts, grpc.WithDefaultServiceConfig(filter.String())) // Collect as DialOption
 	}
 
 	// Add insecure by default if TLS is not used and not explicitly set
 	if grpcCfg.GetUseTls() == false {
-		opts = append(opts, grpc.WithInsecure())
+		dialOpts = append(dialOpts, grpc.WithInsecure())
 	}
 
-	return opts, nil
+	// Wrap collected grpc.DialOption into transgrpc.ClientOption
+	var kratosClientOpts []transgrpc.ClientOption
+	kratosClientOpts = append(kratosClientOpts, transgrpc.WithDialOptions(dialOpts...))
+
+	return kratosClientOpts, nil
 }

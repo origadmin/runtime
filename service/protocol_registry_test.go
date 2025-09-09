@@ -95,9 +95,9 @@ func TestNewServer(t *testing.T) {
 		{
 			name:        "factory returns error",
 			cfg:         &configv1.Service{Protocol: "mock_error_server"},
-			factory:     &MockProtocolFactory{NewServerError: tkerrors.New("internal factory error")},
+			factory:     &MockProtocolFactory{NewServerError: tkerrors.Errorf("internal factory error")}, // 修正为 Errorf
 			expectedErr: "failed to create server for protocol mock_error_server",
-			checkWrappedErr: tkerrors.New("internal factory error"),
+			checkWrappedErr: tkerrors.Errorf("internal factory error"), // 修正为 Errorf
 		},
 		{
 			name:        "successful server creation",
@@ -167,9 +167,9 @@ func TestNewClient(t *testing.T) {
 		{
 			name:        "factory returns error",
 			cfg:         &configv1.Service{Protocol: "mock_error_client"},
-			factory:     &MockProtocolFactory{NewClientError: tkerrors.New("internal factory client error")},
+			factory:     &MockProtocolFactory{NewClientError: tkerrors.Errorf("internal factory client error")}, // 修正为 Errorf
 			expectedErr: "failed to create client for protocol mock_error_client",
-			checkWrappedErr: tkerrors.New("internal factory client error"),
+			checkWrappedErr: tkerrors.Errorf("internal factory client error"), // 修正为 Errorf
 		},
 		{
 			name:        "successful client creation",
