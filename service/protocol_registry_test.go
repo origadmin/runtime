@@ -7,8 +7,8 @@ import (
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	projectContext "github.com/origadmin/runtime/context"
-	tkerrors "github.com/origadmin/toolkits/errors"
 	"github.com/origadmin/runtime/interfaces"
+	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // MockServer implements interfaces.Server for testing purposes.
@@ -71,10 +71,10 @@ func TestNewServer(t *testing.T) {
 	resetProtocolRegistry()
 
 	tests := []struct {
-		name        string
-		cfg         *configv1.Service
-		factory     *MockProtocolFactory
-		expectedErr string
+		name            string
+		cfg             *configv1.Service
+		factory         *MockProtocolFactory
+		expectedErr     string
 		checkWrappedErr error
 	}{
 		{
@@ -93,10 +93,10 @@ func TestNewServer(t *testing.T) {
 			expectedErr: "unsupported protocol: unknown_protocol",
 		},
 		{
-			name:        "factory returns error",
-			cfg:         &configv1.Service{Protocol: "mock_error_server"},
-			factory:     &MockProtocolFactory{NewServerError: tkerrors.Errorf("internal factory error")},
-			expectedErr: "failed to create server for protocol mock_error_server",
+			name:            "factory returns error",
+			cfg:             &configv1.Service{Protocol: "mock_error_server"},
+			factory:         &MockProtocolFactory{NewServerError: tkerrors.Errorf("internal factory error")},
+			expectedErr:     "failed to create server for protocol mock_error_server",
 			checkWrappedErr: tkerrors.Errorf("internal factory error"),
 		},
 		{
@@ -142,10 +142,10 @@ func TestNewClient(t *testing.T) {
 	resetProtocolRegistry()
 
 	tests := []struct {
-		name        string
-		cfg         *configv1.Service
-		factory     *MockProtocolFactory
-		expectedErr string
+		name            string
+		cfg             *configv1.Service
+		factory         *MockProtocolFactory
+		expectedErr     string
 		checkWrappedErr error
 	}{
 		{
@@ -164,10 +164,10 @@ func TestNewClient(t *testing.T) {
 			expectedErr: "unsupported protocol: unknown_protocol",
 		},
 		{
-			name:        "factory returns error",
-			cfg:         &configv1.Service{Protocol: "mock_error_client"},
-			factory:     &MockProtocolFactory{NewClientError: tkerrors.Errorf("internal factory client error")},
-			expectedErr: "failed to create client for protocol mock_error_client",
+			name:            "factory returns error",
+			cfg:             &configv1.Service{Protocol: "mock_error_client"},
+			factory:         &MockProtocolFactory{NewClientError: tkerrors.Errorf("internal factory client error")},
+			expectedErr:     "failed to create client for protocol mock_error_client",
 			checkWrappedErr: tkerrors.Errorf("internal factory client error"),
 		},
 		{
