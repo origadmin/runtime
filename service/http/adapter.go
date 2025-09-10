@@ -1,17 +1,85 @@
 package http
 
 import (
+	"net/url"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/errors"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/selector"
 	"github.com/origadmin/runtime/service/tls"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
-// adaptClientConfig Option to convert service configuration to a specific protocol
+// DefaultServerMiddlewares returns the default server middlewares and options
+func DefaultServerMiddlewares() []transhttp.ServerOption {
+	return []transhttp.ServerOption{
+		transhttp.Middleware(recovery.Recovery()),
+		transhttp.ErrorEncoder(errors.NewErrorEncoder()),
+	}
+}
+
+// adaptServerConfig converts service configuration to Kratos HTTP server options.
+func adaptServerConfig(cfg *configv1.Service) ([]transhttp.ServerOption, error) {
+	if cfg == nil {
+		return nil, tkerrors.Errorf("server config is required for creation")
+	}
+
+	httpCfg := cfg.GetHttp()
+	if httpCfg == nil {
+		return nil, tkerrors.Errorf("http server config is required for creation")
+	}
+
+	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
+
+	// Start with default middlewares and options
+	serverOpts := DefaultServerMiddlewares()
+
+	// Add TLS configuration if needed
+	if httpCfg.GetUseTls() {
+		tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTlsConfig())
+		if err != nil {
+			return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
+		}
+		if tlsConfig != nil {
+			serverOpts = append(serverOpts, transhttp.TLSConfig(tlsConfig))
+		}
+	}
+
+	// Add network and address configurations
+	if httpCfg.GetNetwork() != "" {
+		serverOpts = append(serverOpts, transhttp.Network(httpCfg.GetNetwork()))
+	}
+
+	if httpCfg.GetAddr() != "" {
+		serverOpts = append(serverOpts, transhttp.Address(httpCfg.GetAddr()))
+	}
+
+	// Configure timeout
+	timeout := 5 * time.Second
+	if httpCfg.GetTimeout() != 0 {
+		timeout = time.Duration(httpCfg.GetTimeout() * 1e6)
+	}
+	serverOpts = append(serverOpts, transhttp.Timeout(timeout))
+
+	// Handle endpoint configuration
+	ll.Debugw("msg", "HTTP", "endpoint", httpCfg.GetEndpoint())
+	if httpCfg.GetEndpoint() != "" {
+		parsedEndpoint, err := url.Parse(httpCfg.GetEndpoint())
+		if err != nil {
+			return nil, tkerrors.Wrapf(err, "failed to parse endpoint for server creation")
+		}
+		serverOpts = append(serverOpts, transhttp.Endpoint(parsedEndpoint))
+	}
+
+	return serverOpts, nil
+}
+
+// adaptClientConfig converts service configuration to Kratos HTTP client options.
 func adaptClientConfig(cfg *configv1.Service) ([]transhttp.ClientOption, error) {
 	// 1. Validate the configuration
 	if cfg == nil {

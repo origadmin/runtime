@@ -1,9 +1,6 @@
 package grpc
 
 import (
-	"time"
-
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/goexts/generic/configure"
 
@@ -12,7 +9,6 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/tls"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
@@ -22,44 +18,20 @@ func NewServer(cfg *configv1.Service, opts ...service.Option) (*transgrpc.Server
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	ll.Debugf("Creating new gRPC server instance with config: %+v", cfg)
 
+	// Get base configuration from the service config
+	serverOpts, err := adaptServerConfig(cfg)
+	if err != nil {
+		return nil, tkerrors.Wrapf(err, "failed to adapt server config for gRPC server creation")
+	}
+
+	// Apply any additional options
 	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
 	configure.Apply(svcOpts, opts)
 
-	var serverOpts []transgrpc.ServerOption
-	serverOpts = append(serverOpts, transgrpc.Middleware(recovery.Recovery()))
-
-	if cfg.GetGrpc() != nil {
-		grpcCfg := cfg.GetGrpc()
-
-		if grpcCfg.GetUseTls() {
-			tlsConfig, err := tls.NewServerTLSConfig(grpcCfg.GetTlsConfig())
-			if err != nil {
-				return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
-			}
-			if tlsConfig != nil {
-				serverOpts = append(serverOpts, transgrpc.TLSConfig(tlsConfig))
-			}
-		}
-
-		if grpcCfg.GetNetwork() != "" {
-			serverOpts = append(serverOpts, transgrpc.Network(grpcCfg.GetNetwork()))
-		}
-
-		if grpcCfg.GetAddr() != "" {
-			serverOpts = append(serverOpts, transgrpc.Address(grpcCfg.GetAddr()))
-		}
-
-		timeout := defaultTimeout
-		if grpcCfg.GetTimeout() != 0 {
-			timeout = time.Duration(grpcCfg.GetTimeout() * 1e6)
-		}
-		serverOpts = append(serverOpts, transgrpc.Timeout(timeout))
-
-		ll.Debugw("gRPC server configured", "endpoint", grpcCfg.GetEndpoint())
-	}
-
+	// Apply any options from context
 	serverOptsFromContext := FromServerOptions(svcOpts)
 	serverOpts = append(serverOpts, serverOptsFromContext...)
 
+	// Create and return the server
 	return transgrpc.NewServer(serverOpts...), nil
 }

@@ -2,19 +2,14 @@ package http
 
 import (
 	"context"
-	"net/url"
-	"time"
 
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/goexts/generic/configure"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/tls"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
@@ -24,49 +19,20 @@ func NewServer(cfg *configv1.Service, opts ...service.Option) (*transhttp.Server
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 	ll.Debugf("Creating new HTTP server instance with config: %+v", cfg)
 
+	// Get base configuration from the service config
+	serverOpts, err := adaptServerConfig(cfg)
+	if err != nil {
+		return nil, tkerrors.Wrapf(err, "failed to adapt server config for HTTP server creation")
+	}
+
+	// Apply any additional options
 	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
 	configure.Apply(svcOpts, opts)
 
-	var kratosServerOptions []transhttp.ServerOption
-	kratosServerOptions = append(kratosServerOptions, transhttp.Middleware(recovery.Recovery()))
-	kratosServerOptions = append(kratosServerOptions, transhttp.ErrorEncoder(runtimeerrors.NewErrorEncoder()))
-
-	if cfg.GetHttp() != nil {
-		httpCfg := cfg.GetHttp()
-
-		if httpCfg.GetUseTls() {
-			tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTlsConfig())
-			if err != nil {
-				return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
-			}
-			if tlsConfig != nil {
-				kratosServerOptions = append(kratosServerOptions, transhttp.TLSConfig(tlsConfig))
-			}
-		}
-		if httpCfg.GetNetwork() != "" {
-			kratosServerOptions = append(kratosServerOptions, transhttp.Network(httpCfg.GetNetwork()))
-		}
-		if httpCfg.GetAddr() != "" {
-			kratosServerOptions = append(kratosServerOptions, transhttp.Address(httpCfg.GetAddr()))
-		}
-		timeout := defaultTimeout
-		if httpCfg.GetTimeout() != 0 {
-			timeout = time.Duration(httpCfg.GetTimeout() * 1e6)
-		}
-		kratosServerOptions = append(kratosServerOptions, transhttp.Timeout(timeout))
-
-		ll.Debugw("msg", "HTTP", "endpoint", httpCfg.GetEndpoint())
-		if httpCfg.GetEndpoint() != "" {
-			parsedEndpoint, err := url.Parse(httpCfg.GetEndpoint())
-			if err != nil {
-				return nil, tkerrors.Wrapf(err, "failed to parse endpoint for server creation")
-			}
-			kratosServerOptions = append(kratosServerOptions, transhttp.Endpoint(parsedEndpoint))
-		}
-	}
-
+	// Apply any options from context
 	serverOptsFromContext := FromServerOptions(svcOpts)
-	httpOpts := append(kratosServerOptions, serverOptsFromContext...)
+	serverOpts = append(serverOpts, serverOptsFromContext...)
 
-	return transhttp.NewServer(httpOpts...), nil
+	// Create and return the server
+	return transhttp.NewServer(serverOpts...), nil
 }
