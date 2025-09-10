@@ -23,6 +23,27 @@ message TLSConfig {
     bytes ca = 3;
   }
 
-  File file = 1 [json_name = "file"];
-  PEM pem = 2 [json_name = "pem"];
+  // Whether TLS is enabled
+  bool enabled = 1 [json_name = "enabled"];
+
+  // Certificate configuration
+  oneof config {
+    // File path method
+    File file = 2 [json_name = "file"];
+    // Directly inline PEM data
+    PEM pem = 3 [json_name = "pem"];
+  }
+
+  // Minimum TLS version
+  // Optional values: "1.0", "1.1", "1.2", "1.3"
+  string min_version = 4 [json_name = "min_version"];
+
+  // Cipher suites
+  repeated string cipher_suites = 5 [json_name = "cipher_suites"];
+
+  // Whether a client certificate is required
+  bool require_client_cert = 6 [json_name = "require_client_cert"];
+
+  // Client CA certificate to validate client certificates
+  string client_ca_file = 7 [json_name = "client_ca_file"];
 }
