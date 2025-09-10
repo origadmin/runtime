@@ -21,6 +21,11 @@ import (
 //go:adapter:package:type:suffix GRPC
 //go:adapter:package:func *
 //go:adapter:package:func:suffix GRPC
+////go:adapter:package google.golang.org/grpc grpc
+////go:adapter:package:type *
+////go:adapter:package:type:suffix GRPC
+////go:adapter:package:func *
+////go:adapter:package:func:suffix GRPC
 //go:adapter:package github.com/go-kratos/kratos/v2/transport/http transhttp
 //go:adapter:package:type *
 //go:adapter:package:type:suffix HTTP

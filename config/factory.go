@@ -11,7 +11,6 @@ import (
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
-	"github.com/origadmin/runtime/log"
 )
 
 var (
@@ -30,29 +29,25 @@ func (f *configFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
-type BuildFunc func(*configv1.SourceConfig, *interfaces.Options) (kratosconfig.Source, error)
+type BuildFunc func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
 
 // NewSource is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *interfaces.Options) (kratosconfig.Source, error) {
+func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *Options) (kratosconfig.Source, error) {
 	// Call the function with the given KConfig and a list of Options.
 	return fn(cfg, opts)
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (f *configFactory) NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
-	options := configure.Apply(&interfaces.Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
-	sources := options.Sources
-	if sources == nil {
-		sources = make([]kratosconfig.Source, 0)
-	}
+func (f *configFactory) NewConfig(cfg *configv1.SourceConfig, opts ...Option) (kratosconfig.Config, error) {
+	options := configure.Apply(&Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 
+	var sources []kratosconfig.Source
 	for _, t := range cfg.Types {
-		bld, ok := f.Get(t)
+		buildFactory, ok := f.Get(t)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", t)
 		}
-		log.Infof("registering type: %s", t)
-		source, err := bld.NewSource(cfg, options)
+		source, err := buildFactory.NewSource(cfg, options)
 		if err != nil {
 			return nil, err
 		}

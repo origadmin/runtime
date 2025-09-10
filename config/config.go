@@ -12,12 +12,17 @@ import (
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/toolkits/errors"
 )
 
 const Type = "config"
 
+var (
+	ErrInvalidConfigType = errors.New("invalid config type")
+)
+
 // NewConfig creates a new config instance.
-func NewConfig(cfg *configv1.SourceConfig, opts ...interfaces.Option) (kratosconfig.Config, error) {
+func NewConfig(cfg *configv1.SourceConfig, opts ...Option) (kratosconfig.Config, error) {
 	return defaultConfigFactory.NewConfig(cfg, opts...)
 }
 

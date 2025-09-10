@@ -9,17 +9,17 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 )
 
-type FileOption func(*file)
+type Option func(*file)
 
 type Formatter func(key string, value []byte) (*config.KeyValue, error)
 
-func WithIgnores(ignores ...string) FileOption {
+func WithIgnores(ignores ...string) Option {
 	return func(o *file) {
 		o.ignores = ignores
 	}
 }
 
-func WithFormatter(f Formatter) FileOption {
+func WithFormatter(f Formatter) Option {
 	return func(o *file) {
 		o.formatter = f
 	}
