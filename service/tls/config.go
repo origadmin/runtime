@@ -25,20 +25,22 @@ func NewServerTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config
 
 	var err error
 	var tlsCfg *tls.Config
-	if cfg.File != nil {
+	if cfg.GetFile() != nil {
+		file := cfg.GetFile()
 		if tlsCfg, err = NewServerTLSConfigFromFile(
-			cfg.File.GetKey(),
-			cfg.File.GetCert(),
-			cfg.File.GetCa(),
+			file.GetKey(),
+			file.GetCert(),
+			file.GetCa(),
 			options...,
 		); err != nil {
 			return nil, err
 		}
-	} else if cfg.Pem != nil {
+	} else if cfg.GetPem() != nil {
+		pem := cfg.GetPem()
 		if tlsCfg, err = NewServerTLSConfigFromPem(
-			cfg.Pem.GetKey(),
-			cfg.Pem.GetCert(),
-			cfg.Pem.GetCa(),
+			pem.GetKey(),
+			pem.GetCert(),
+			pem.GetCa(),
 			options...,
 		); err != nil {
 			return nil, err
@@ -114,20 +116,22 @@ func NewClientTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config
 
 	var err error
 	var tlsCfg *tls.Config
-	if cfg.File != nil {
+	if cfg.GetFile() != nil {
+		file := cfg.GetFile()
 		if tlsCfg, err = NewClientTLSConfigFromFile(
-			cfg.File.GetKey(),
-			cfg.File.GetCert(),
-			cfg.File.GetCa(),
+			file.GetKey(),
+			file.GetCert(),
+			file.GetCa(),
 			options...,
 		); err != nil {
 			return nil, err
 		}
-	} else if cfg.Pem != nil {
+	} else if cfg.GetPem() != nil {
+		pem := cfg.GetPem()
 		if tlsCfg, err = NewClientTLSConfigFromPem(
-			cfg.Pem.GetKey(),
-			cfg.Pem.GetCert(),
-			cfg.Pem.GetCa(),
+			pem.GetKey(),
+			pem.GetCert(),
+			pem.GetCa(),
 			options...,
 		); err != nil {
 			return nil, err
