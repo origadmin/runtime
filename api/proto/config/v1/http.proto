@@ -2,7 +2,8 @@ syntax = "proto3";
 
 package config.v1;
 
-import "config/v1/tlsconfig.proto";
+import "config/v1/tls.proto";
+import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/v1;configv1";
@@ -11,15 +12,54 @@ option java_outer_classname = "HTTPProto";
 option java_package = "com.github.origadmin.api.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
-// HTTP service configuration.
+// HTTP service configuration
 message HTTP {
-  string network = 1 [json_name = "network"];
-  string addr = 2 [json_name = "addr"];
-  TLSConfig tls_config = 4 [json_name = "tls_config"];
-  int64 timeout = 6 [json_name = "timeout"];
-  int64 shutdown_timeout = 7 [json_name = "shutdown_timeout"];
-  int64 read_timeout = 8 [json_name = "read_timeout"];
-  int64 write_timeout = 9 [json_name = "write_timeout"];
-  int64 idle_timeout = 10 [json_name = "idle_timeout"];
-  string endpoint = 11 [json_name = "endpoint"];
+  // Network type (tcp, tcp4, tcp6, unix, unixpacket)
+  // Default: "tcp"
+  string network = 1 [
+    (validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]},
+    json_name = "network"
+  ];
+  
+  // Server address (host:port)
+  // Example: "0.0.0.0:8080", ":8080"
+  // Default: ":8080"
+  string addr = 2 [
+    (validate.rules).string.min_len = 1,
+    json_name = "addr"
+  ];
+  
+  // Timeout for request processing (seconds)
+  // Default: 30
+  int64 timeout = 3 [
+    (validate.rules).int64 = {gt: 0},
+    json_name = "timeout"
+  ];
+  
+  // Graceful shutdown timeout (seconds)
+  // Default: 10
+  int64 shutdown_timeout = 4 [
+    (validate.rules).int64 = {gt: 0},
+    json_name = "shutdown_timeout"
+  ];
+  
+  // Service endpoint for service discovery
+  // Format: scheme://host:port/path
+  // Example: "http://service.example.com:8080/api"
+  string endpoint = 5 [json_name = "endpoint"];
+  
+  // Enable request size limit
+  // Default: true
+  bool enable_request_size_limit = 6 [json_name = "enable_request_size_limit"];
+  
+  // Maximum request size (bytes)
+  // Default: 4MB (4 * 1024 * 1024)
+  int64 max_request_size = 7 [
+    (validate.rules).int64 = {gt: 0},
+    json_name = "max_request_size"
+  ];
+  
+  // TLS configuration
+  // If null or not set, TLS is disabled
+  TLSConfig tls = 8 [json_name = "tls"];
 }

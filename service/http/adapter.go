@@ -40,8 +40,8 @@ func adaptServerConfig(cfg *configv1.Service) ([]transhttp.ServerOption, error) 
 	serverOpts := DefaultServerMiddlewares()
 
 	// Add TLS configuration if needed
-	if httpCfg.GetUseTls() {
-		tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTlsConfig())
+	if httpCfg.Tls != nil && httpCfg.Tls.Enabled {
+		tlsConfig, err := tls.NewServerTLSConfig(httpCfg.Tls)
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 		}
@@ -104,8 +104,8 @@ func adaptClientConfig(cfg *configv1.Service) ([]transhttp.ClientOption, error) 
 	}
 
 	// 4. Handle TLS
-	if tlsCfg := httpCfg.GetTlsConfig(); tlsCfg != nil {
-		tlsConfig, err := tls.NewClientTLSConfig(tlsCfg)
+	if httpCfg.Tls != nil && httpCfg.Tls.Enabled {
+		tlsConfig, err := tls.NewClientTLSConfig(httpCfg.Tls)
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for client creation")
 		}
