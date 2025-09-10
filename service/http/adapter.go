@@ -37,26 +37,24 @@ func adaptServerConfig(cfg *configv1.Service) ([]transhttp.ServerOption, error) 
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 
 	// Start with default middlewares and options
-	serverOpts := DefaultServerMiddlewares()
+	opts := DefaultServerMiddlewares()
 
 	// Add TLS configuration if needed
-	if httpCfg.Tls != nil && httpCfg.Tls.Enabled {
-		tlsConfig, err := tls.NewServerTLSConfig(httpCfg.Tls)
+	if httpCfg.GetTls() != nil && httpCfg.GetTls().GetEnabled() {
+		tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTls())
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 		}
-		if tlsConfig != nil {
-			serverOpts = append(serverOpts, transhttp.TLSConfig(tlsConfig))
-		}
+		opts = append(opts, transhttp.TLSConfig(tlsConfig))
 	}
 
 	// Add network and address configurations
 	if httpCfg.GetNetwork() != "" {
-		serverOpts = append(serverOpts, transhttp.Network(httpCfg.GetNetwork()))
+		opts = append(opts, transhttp.Network(httpCfg.GetNetwork()))
 	}
 
 	if httpCfg.GetAddr() != "" {
-		serverOpts = append(serverOpts, transhttp.Address(httpCfg.GetAddr()))
+		opts = append(opts, transhttp.Address(httpCfg.GetAddr()))
 	}
 
 	// Configure timeout
@@ -64,7 +62,7 @@ func adaptServerConfig(cfg *configv1.Service) ([]transhttp.ServerOption, error) 
 	if httpCfg.GetTimeout() != 0 {
 		timeout = time.Duration(httpCfg.GetTimeout() * 1e6)
 	}
-	serverOpts = append(serverOpts, transhttp.Timeout(timeout))
+	opts = append(opts, transhttp.Timeout(timeout))
 
 	// Handle endpoint configuration
 	ll.Debugw("msg", "HTTP", "endpoint", httpCfg.GetEndpoint())
@@ -73,10 +71,10 @@ func adaptServerConfig(cfg *configv1.Service) ([]transhttp.ServerOption, error) 
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "failed to parse endpoint for server creation")
 		}
-		serverOpts = append(serverOpts, transhttp.Endpoint(parsedEndpoint))
+		opts = append(opts, transhttp.Endpoint(parsedEndpoint))
 	}
 
-	return serverOpts, nil
+	return opts, nil
 }
 
 // adaptClientConfig converts service configuration to Kratos HTTP client options.
@@ -104,8 +102,8 @@ func adaptClientConfig(cfg *configv1.Service) ([]transhttp.ClientOption, error) 
 	}
 
 	// 4. Handle TLS
-	if httpCfg.Tls != nil && httpCfg.Tls.Enabled {
-		tlsConfig, err := tls.NewClientTLSConfig(httpCfg.Tls)
+	if httpCfg.GetTls() != nil && httpCfg.GetTls().GetEnabled() {
+		tlsConfig, err := tls.NewClientTLSConfig(httpCfg.GetTls())
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for client creation")
 		}

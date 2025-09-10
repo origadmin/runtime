@@ -2,7 +2,8 @@ package grpc
 
 import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc" // Import Kratos gRPC transport
-	"google.golang.org/grpc"                                  // Use native grpc package
+	"github.com/goexts/generic/configure"
+	"google.golang.org/grpc" // Use native grpc package
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/context" // Use project's context
@@ -28,10 +29,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Optio
 		return nil, tkerrors.Wrapf(err, "failed to adapt client config for grpc client creation")
 	}
 
-	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: ctx}}
-	for _, opt := range opts {
-		opt(svcOpts)
-	}
+	svcOpts := configure.Apply(service.DefaultServerOptions(), opts)
 	if clientOptsFromCtx := FromClientOptions(svcOpts); len(clientOptsFromCtx) > 0 {
 		clientOptions = append(clientOptions, clientOptsFromCtx...)
 	}
@@ -42,7 +40,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Optio
 	}
 	kratosClientOptions = append(kratosClientOptions, clientOptions...)
 
-	if grpcCfg.GetUseTls() {
+	if grpcCfg.GetTls() != nil && grpcCfg.GetTls().GetEnabled() {
 		conn, err = transgrpc.Dial(ctx, kratosClientOptions...)
 	} else {
 		conn, err = transgrpc.DialInsecure(ctx, kratosClientOptions...)

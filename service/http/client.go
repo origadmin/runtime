@@ -2,6 +2,7 @@ package http
 
 import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/goexts/generic/configure"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/context" // Use project's context
@@ -18,10 +19,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Optio
 		return nil, tkerrors.Wrapf(err, "failed to adapt client config for http client creation")
 	}
 
-	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: ctx}}
-	for _, opt := range opts {
-		opt(svcOpts)
-	}
+	svcOpts := configure.Apply(service.DefaultServerOptions(), opts)
 	if clientOptsFromCtx := FromClientOptions(svcOpts); len(clientOptsFromCtx) > 0 {
 		clientOpts = append(clientOpts, clientOptsFromCtx...)
 	}

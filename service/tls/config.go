@@ -18,6 +18,54 @@ import (
 	"github.com/origadmin/toolkits/errors"
 )
 
+var tlsVersionMap = map[string]uint16{
+	"1.0": tls.VersionTLS10,
+	"1.1": tls.VersionTLS11,
+	"1.2": tls.VersionTLS12,
+	"1.3": tls.VersionTLS13,
+}
+
+var cipherSuiteMap = map[string]uint16{
+	"TLS_RSA_WITH_RC4_128_SHA":                tls.TLS_RSA_WITH_RC4_128_SHA,
+	"TLS_RSA_WITH_3DES_EDE_CBC_SHA":           tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+	"TLS_RSA_WITH_AES_128_CBC_SHA":            tls.TLS_RSA_WITH_AES_128_CBC_SHA,
+	"TLS_RSA_WITH_AES_256_CBC_SHA":            tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+	"TLS_RSA_WITH_AES_128_CBC_SHA256":         tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
+	"TLS_RSA_WITH_AES_256_CBC_SHA256":         tls.TLS_RSA_WITH_AES_256_CBC_SHA256,
+	"TLS_RSA_WITH_AES_128_GCM_SHA256":         tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+	"TLS_RSA_WITH_AES_256_GCM_SHA384":         tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+	"TLS_ECDHE_ECDSA_WITH_RC4_128_SHA":        tls.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+	"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA":    tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+	"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA":    tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+	"TLS_ECDHE_RSA_WITH_RC4_128_SHA":          tls.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+	"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA":     tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+	"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA":      tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+	"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA":      tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+	"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256": tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+	"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
+	"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256":   tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+	"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384":   tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
+	"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256": tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+	"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+	"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256":   tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+	"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384":   tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+	"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305":    tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+	"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305":  tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+	"TLS_AES_128_GCM_SHA256":                  tls.TLS_AES_128_GCM_SHA256,
+	"TLS_AES_256_GCM_SHA384":                  tls.TLS_AES_256_GCM_SHA384,
+	"TLS_CHACHA20_POLY1305_SHA256":            tls.TLS_CHACHA20_POLY1305_SHA256,
+}
+
+func parseCipherSuites(cipherSuites []string) []uint16 {
+	var suites []uint16
+	for _, s := range cipherSuites {
+		if suite, ok := cipherSuiteMap[s]; ok {
+			suites = append(suites, suite)
+		}
+	}
+	return suites
+}
+
 func NewServerTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config, error) {
 	if cfg == nil {
 		return nil, nil
@@ -46,8 +94,39 @@ func NewServerTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config
 			return nil, err
 		}
 	} else {
-
+		// If no file or PEM config, create a default TLS config
+		tlsCfg = configure.Apply(&tls.Config{}, options)
 	}
+
+	// Apply common TLS configurations from the proto
+	if tlsCfg == nil {
+		tlsCfg = configure.Apply(&tls.Config{}, options)
+	}
+
+	if version, ok := tlsVersionMap[cfg.GetMinVersion()]; ok {
+		tlsCfg.MinVersion = version
+	} else if cfg.GetMinVersion() != "" {
+		// Default to TLS1.2 if not specified or invalid
+		tlsCfg.MinVersion = tls.VersionTLS12
+	}
+
+	if len(cfg.GetCipherSuites()) > 0 {
+		tlsCfg.CipherSuites = parseCipherSuites(cfg.GetCipherSuites())
+	}
+
+	if cfg.GetRequireClientCert() {
+		tlsCfg.ClientAuth = tls.RequireAndVerifyClientCert
+		if cfg.GetClientCaFile() != "" {
+			cp, err := newRootCertWithFile(cfg.GetClientCaFile())
+			if err != nil {
+				return nil, errors.Wrap(err, "read client CA file error")
+			}
+			tlsCfg.ClientCAs = cp
+		}
+	} else {
+		tlsCfg.ClientAuth = tls.NoClientCert
+	}
+
 	return tlsCfg, nil
 }
 
@@ -137,7 +216,32 @@ func NewClientTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config
 			return nil, err
 		}
 	} else {
+		// If no file or PEM config, create a default TLS config
+		tlsCfg = configure.Apply(&tls.Config{}, options)
+	}
 
+	// Apply common TLS configurations from the proto
+	if tlsCfg == nil {
+		tlsCfg = configure.Apply(&tls.Config{}, options)
+	}
+
+	if version, ok := tlsVersionMap[cfg.GetMinVersion()]; ok {
+		tlsCfg.MinVersion = version
+	} else if cfg.GetMinVersion() != "" {
+		// Default to TLS1.2 if not specified or invalid
+		tlsCfg.MinVersion = tls.VersionTLS12
+	}
+
+	if len(cfg.GetCipherSuites()) > 0 {
+		tlsCfg.CipherSuites = parseCipherSuites(cfg.GetCipherSuites())
+	}
+
+	if cfg.GetClientCaFile() != "" {
+		cp, err := newRootCertWithFile(cfg.GetClientCaFile())
+		if err != nil {
+			return nil, errors.Wrap(err, "read client CA file error")
+		}
+		tlsCfg.RootCAs = cp
 	}
 
 	return tlsCfg, nil

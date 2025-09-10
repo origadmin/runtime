@@ -31,26 +31,24 @@ func adaptServerConfig(cfg *configv1.Service) ([]transgrpc.ServerOption, error) 
 	}
 
 	// Start with default middlewares
-	serverOpts := DefaultServerMiddlewares()
+	opts := DefaultServerMiddlewares()
 
 	// Add TLS configuration if needed
-	if grpcCfg.GetUseTls() {
-		tlsConfig, err := tls.NewServerTLSConfig(grpcCfg.GetTlsConfig())
+	if grpcCfg.GetTls() != nil && grpcCfg.GetTls().GetEnabled() {
+		tlsConfig, err := tls.NewServerTLSConfig(grpcCfg.GetTls())
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 		}
-		if tlsConfig != nil {
-			serverOpts = append(serverOpts, transgrpc.TLSConfig(tlsConfig))
-		}
+		opts = append(opts, transgrpc.TLSConfig(tlsConfig))
 	}
 
 	// Add network and address configurations
 	if grpcCfg.GetNetwork() != "" {
-		serverOpts = append(serverOpts, transgrpc.Network(grpcCfg.GetNetwork()))
+		opts = append(opts, transgrpc.Network(grpcCfg.GetNetwork()))
 	}
 
 	if grpcCfg.GetAddr() != "" {
-		serverOpts = append(serverOpts, transgrpc.Address(grpcCfg.GetAddr()))
+		opts = append(opts, transgrpc.Address(grpcCfg.GetAddr()))
 	}
 
 	// Configure timeout
@@ -58,9 +56,9 @@ func adaptServerConfig(cfg *configv1.Service) ([]transgrpc.ServerOption, error) 
 	if grpcCfg.GetTimeout() != 0 {
 		timeout = time.Duration(grpcCfg.GetTimeout() * 1e6)
 	}
-	serverOpts = append(serverOpts, transgrpc.Timeout(timeout))
+	opts = append(opts, transgrpc.Timeout(timeout))
 
-	return serverOpts, nil
+	return opts, nil
 }
 
 // adaptClientConfig converts service configuration to Kratos gRPC client options.
@@ -74,16 +72,14 @@ func adaptClientConfig(cfg *configv1.Service) ([]transgrpc.ClientOption, error) 
 		return nil, tkerrors.Errorf("grpc client config is required for creation")
 	}
 
-	var kratosClientOpts []transgrpc.ClientOption
+	var opts []transgrpc.ClientOption
 
-	if tlsCfg := grpcCfg.GetTlsConfig(); tlsCfg != nil {
-		tlsConfig, err := tls.NewClientTLSConfig(tlsCfg)
+	if grpcCfg.GetTls() != nil && grpcCfg.GetTls().GetEnabled() {
+		tlsConfig, err := tls.NewClientTLSConfig(grpcCfg.GetTls())
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for client creation")
 		}
-		if tlsConfig != nil {
-			kratosClientOpts = append(kratosClientOpts, transgrpc.WithTLSConfig(tlsConfig))
-		}
+		opts = append(opts, transgrpc.WithTLSConfig(tlsConfig))
 	}
 
 	if selectorCfg := cfg.GetSelector(); selectorCfg != nil {
@@ -91,8 +87,8 @@ func adaptClientConfig(cfg *configv1.Service) ([]transgrpc.ClientOption, error) 
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid selector config for client creation")
 		}
-		kratosClientOpts = append(kratosClientOpts, transgrpc.WithNodeFilter(nodeFilter))
+		opts = append(opts, transgrpc.WithNodeFilter(nodeFilter))
 	}
 
-	return kratosClientOpts, nil
+	return opts, nil
 }

@@ -5,7 +5,7 @@
 package registry
 
 import (
-	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
+	"github.com/origadmin/runtime/api/gen/go/apierrors"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/factory"

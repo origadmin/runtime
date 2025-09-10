@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/origadmin/framework/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/context"
 )

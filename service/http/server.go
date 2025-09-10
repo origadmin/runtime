@@ -1,13 +1,10 @@
 package http
 
 import (
-	"context"
-
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/goexts/generic/configure"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service"
 	tkerrors "github.com/origadmin/toolkits/errors"
@@ -26,8 +23,7 @@ func NewServer(cfg *configv1.Service, opts ...service.Option) (*transhttp.Server
 	}
 
 	// Apply any additional options
-	svcOpts := &service.Options{ContextOptions: interfaces.ContextOptions{Context: context.Background()}}
-	configure.Apply(svcOpts, opts)
+	svcOpts := configure.Apply(service.DefaultServerOptions(), opts)
 
 	// Apply any options from context
 	serverOptsFromContext := FromServerOptions(svcOpts)

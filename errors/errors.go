@@ -18,7 +18,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	"github.com/origadmin/framework/runtime/api/gen/go/apierrors"
+	"github.com/origadmin/runtime/api/gen/go/apierrors"
 	"github.com/origadmin/runtime/log"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
@@ -71,7 +71,7 @@ func FromReason(reason apierrors.ErrorReason) *kerrors.Error {
 	// The message is a generic default. It can be overridden by setting the Message field directly.
 	switch reason {
 	// --- General --- 
-	case apierrors.ErrorReason_VALIDATION_ERROR: 
+	case apierrors.ErrorReason_VALIDATION_ERROR:
 		return kerrors.BadRequest(reason.String(), "Request validation failed")
 	case apierrors.ErrorReason_NOT_FOUND:
 		return kerrors.NotFound(reason.String(), "Resource not found")
@@ -115,7 +115,7 @@ func FromReason(reason apierrors.ErrorReason) *kerrors.Error {
 		return kerrors.ClientClosed(reason.String(), "Operation was cancelled")
 	case apierrors.ErrorReason_OPERATION_NOT_ALLOWED:
 		return kerrors.Forbidden(reason.String(), "Operation not allowed")
-	
+
 	// --- Registry Errors (6000-6999) ---
 	case apierrors.ErrorReason_REGISTRY_NOT_FOUND:
 		return kerrors.NotFound(reason.String(), "Registry entry not found")

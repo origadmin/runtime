@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/origadmin/framework/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces"
 )
 
 // Options contains the options for creating registry components.

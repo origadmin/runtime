@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/origadmin/framework/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces"
 )
 
 // Options contains the options for creating service components.
@@ -13,6 +13,8 @@ type Options struct {
 // Option is a function that configures service.Options.
 type Option func(*Options)
 
-func DefaultServerOptions() interfaces.OptionValue {
-	return interfaces.DefaultOptions()
+func DefaultServerOptions() *Options {
+	return &Options{
+		OptionValue: interfaces.DefaultOptions(),
+	}
 }
