@@ -6,6 +6,7 @@ import (
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/log"
+	serviceoptions "github.com/origadmin/runtime/service/options" // Re-import service options
 )
 
 type Logger interface {
@@ -25,7 +26,7 @@ type Runtime interface {
 	Client() Runtime
 	Builder() Builder
 	Context() context.Context
-	Load(bs *bootstrap.Bootstrap, opts ...Option) error
+	Load(bs *bootstrap.Bootstrap, opts ...serviceoptions.Option) error
 	Run() error
 	Stop() error
 	WithLoggerAttrs(kvs ...any) Runtime

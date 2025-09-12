@@ -5,36 +5,37 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	configoptions "github.com/origadmin/runtime/config/options" // Re-import config options
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 
 type ConfigBuilder interface {
 	factory.Registry[ConfigFactory]
-	NewConfig(*configv1.SourceConfig, ...Option) (kratosconfig.Config, error)
-	SyncConfig(*configv1.SourceConfig, any, ...Option) error // Add SyncConfig method
+	NewConfig(*configv1.SourceConfig, ...configoptions.Option) (kratosconfig.Config, error)
+	SyncConfig(*configv1.SourceConfig, any, ...configoptions.Option) error // Add SyncConfig method
 }
 
-type ConfigFunc func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
+type ConfigFunc func(*configv1.SourceConfig, *configoptions.Options) (kratosconfig.Source, error)
 
-func (c ConfigFunc) NewSource(config *configv1.SourceConfig, options *Options) (kratosconfig.Source, error) {
+func (c ConfigFunc) NewSource(config *configv1.SourceConfig, options *configoptions.Options) (kratosconfig.Source, error) {
 	return c(config, options)
 }
 
 type ConfigFactory interface {
 	// NewSource creates a new config using the given KConfig and a list of Options.
-	NewSource(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
+	NewSource(*configv1.SourceConfig, *configoptions.Options) (kratosconfig.Source, error)
 }
 
 type ConfigSyncer interface {
-	SyncConfig(*configv1.SourceConfig, string, any, *Options) error
+	SyncConfig(*configv1.SourceConfig, string, any, *configoptions.Options) error
 }
 
 type ConfigProtoSyncer interface {
-	SyncConfig(*configv1.SourceConfig, string, proto.Message, *Options) error
+	SyncConfig(*configv1.SourceConfig, string, proto.Message, *configoptions.Options) error
 }
 
-type FileConfig func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
+type FileConfig func(*configv1.SourceConfig, *configoptions.Options) (kratosconfig.Source, error)
 
-func (f FileConfig) NewSource(sourceConfig *configv1.SourceConfig, opts *Options) (kratosconfig.Source, error) {
+func (f FileConfig) NewSource(sourceConfig *configv1.SourceConfig, opts *configoptions.Options) (kratosconfig.Source, error) {
 	return f(sourceConfig, opts)
 }

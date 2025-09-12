@@ -10,19 +10,22 @@ import (
 
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/env"
+
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	runtimeconfig "github.com/origadmin/runtime/config"
 )
 
-type envars struct {
+type source struct {
 	data []*config.KeyValue
 }
 
 func NewSource(prefixes ...string) config.Source {
-	return &envars{
+	return &source{
 		data: loadEnviron(os.Environ(), prefixes),
 	}
 }
 
-func (e *envars) Load() (kv []*config.KeyValue, err error) {
+func (e *source) Load() (kv []*config.KeyValue, err error) {
 	return e.data, nil
 }
 
@@ -52,7 +55,7 @@ func loadEnviron(data, prefixes []string) []*config.KeyValue {
 	return kvs
 }
 
-func (e *envars) Watch() (config.Watcher, error) {
+func (e *source) Watch() (config.Watcher, error) {
 	return env.NewWatcher()
 }
 
@@ -63,4 +66,12 @@ func matchPrefix(prefixes []string, v string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func NewEnvSource(cfg *configv1.SourceConfig, opts *runtimeconfig.Options) (runtimeconfig.KSource, error) {
+	return NewSource(FromOptions(opts)...), nil
+}
+
+func init() {
+	runtimeconfig.Register(runtimeconfig.SourceType_ENV, NewEnvSource)
 }

@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 
-	configenv "github.com/go-kratos/kratos/v2/config/env"
 	"github.com/goexts/generic/configure"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
@@ -54,15 +53,11 @@ func (f *configFactory) NewConfig(cfg *configv1.SourceConfig, opts ...Option) (k
 		sources = append(sources, source)
 	}
 
-	if options.EnvPrefixes != nil {
-		sources = append(sources, configenv.NewSource(options.EnvPrefixes...))
-	}
-
 	options.ConfigOptions = append(options.ConfigOptions, kratosconfig.WithSource(sources...))
 	return kratosconfig.New(options.ConfigOptions...), nil
 }
 
-func (f *configFactory) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...interfaces.Option) error {
+func (f *configFactory) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...Option) error {
 	// This method is a placeholder. Actual synchronization logic would go here.
 	// For now, we'll just return nil or an error if needed.
 	return nil

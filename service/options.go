@@ -5,9 +5,9 @@ import (
 )
 
 // Options contains the options for creating service components.
-// It embeds interfaces.ContextOptions for common context handling.
+// It embeds interfaces.OptionValue for common context handling.
 type Options struct {
-	interfaces.OptionValue
+	interfaces.OptionValue // Updated type
 }
 
 // Option is a function that configures service.Options.
@@ -15,6 +15,6 @@ type Option func(*Options)
 
 func DefaultServerOptions() *Options {
 	return &Options{
-		OptionValue: interfaces.DefaultOptions(),
+		OptionValue: interfaces.DefaultOptions(), // Updated function call
 	}
 }

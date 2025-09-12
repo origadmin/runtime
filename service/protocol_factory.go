@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/origadmin/runtime/interfaces"
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/context"
+	"github.com/origadmin/runtime/interfaces"
 )
 
 // ProtocolFactory 定义了创建特定协议服务实例的工厂标准。

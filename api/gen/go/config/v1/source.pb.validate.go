@@ -35,6 +35,1163 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on FileSource with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *FileSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FileSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FileSourceMultiError, or
+// nil if none found.
+func (m *FileSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FileSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Path
+
+	// no validation rules for Format
+
+	// no validation rules for Reload
+
+	if len(errors) > 0 {
+		return FileSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// FileSourceMultiError is an error wrapping multiple validation errors
+// returned by FileSource.ValidateAll() if the designated constraints aren't met.
+type FileSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FileSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FileSourceMultiError) AllErrors() []error { return m }
+
+// FileSourceValidationError is the validation error returned by
+// FileSource.Validate if the designated constraints aren't met.
+type FileSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FileSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FileSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FileSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FileSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FileSourceValidationError) ErrorName() string { return "FileSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e FileSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFileSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FileSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FileSourceValidationError{}
+
+// Validate checks the field values on EnvSource with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *EnvSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EnvSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in EnvSourceMultiError, or nil
+// if none found.
+func (m *EnvSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EnvSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Args
+
+	// no validation rules for Watch
+
+	// no validation rules for Nested
+
+	if len(errors) > 0 {
+		return EnvSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// EnvSourceMultiError is an error wrapping multiple validation errors returned
+// by EnvSource.ValidateAll() if the designated constraints aren't met.
+type EnvSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EnvSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EnvSourceMultiError) AllErrors() []error { return m }
+
+// EnvSourceValidationError is the validation error returned by
+// EnvSource.Validate if the designated constraints aren't met.
+type EnvSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EnvSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EnvSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EnvSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EnvSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EnvSourceValidationError) ErrorName() string { return "EnvSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e EnvSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEnvSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EnvSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EnvSourceValidationError{}
+
+// Validate checks the field values on ConsulSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ConsulSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ConsulSource with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ConsulSourceMultiError, or
+// nil if none found.
+func (m *ConsulSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ConsulSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Address
+
+	// no validation rules for Scheme
+
+	// no validation rules for Token
+
+	// no validation rules for Path
+
+	// no validation rules for Datacenter
+
+	// no validation rules for Namespace
+
+	// no validation rules for WaitTime
+
+	// no validation rules for Timeout
+
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConsulSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConsulSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConsulSourceValidationError{
+				field:  "Tls",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ConsulSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// ConsulSourceMultiError is an error wrapping multiple validation errors
+// returned by ConsulSource.ValidateAll() if the designated constraints aren't met.
+type ConsulSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ConsulSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ConsulSourceMultiError) AllErrors() []error { return m }
+
+// ConsulSourceValidationError is the validation error returned by
+// ConsulSource.Validate if the designated constraints aren't met.
+type ConsulSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ConsulSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ConsulSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ConsulSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ConsulSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ConsulSourceValidationError) ErrorName() string { return "ConsulSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ConsulSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sConsulSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ConsulSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ConsulSourceValidationError{}
+
+// Validate checks the field values on ETCDSource with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ETCDSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ETCDSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ETCDSourceMultiError, or
+// nil if none found.
+func (m *ETCDSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ETCDSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Address
+
+	// no validation rules for Username
+
+	// no validation rules for Password
+
+	// no validation rules for Path
+
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ETCDSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ETCDSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ETCDSourceValidationError{
+				field:  "Tls",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ETCDSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// ETCDSourceMultiError is an error wrapping multiple validation errors
+// returned by ETCDSource.ValidateAll() if the designated constraints aren't met.
+type ETCDSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ETCDSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ETCDSourceMultiError) AllErrors() []error { return m }
+
+// ETCDSourceValidationError is the validation error returned by
+// ETCDSource.Validate if the designated constraints aren't met.
+type ETCDSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ETCDSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ETCDSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ETCDSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ETCDSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ETCDSourceValidationError) ErrorName() string { return "ETCDSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ETCDSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sETCDSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ETCDSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ETCDSourceValidationError{}
+
+// Validate checks the field values on NacosSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *NacosSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NacosSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in NacosSourceMultiError, or
+// nil if none found.
+func (m *NacosSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NacosSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Address
+
+	// no validation rules for Namespace
+
+	// no validation rules for Group
+
+	// no validation rules for DataId
+
+	// no validation rules for Username
+
+	// no validation rules for Password
+
+	// no validation rules for Format
+
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NacosSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NacosSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NacosSourceValidationError{
+				field:  "Tls",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return NacosSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// NacosSourceMultiError is an error wrapping multiple validation errors
+// returned by NacosSource.ValidateAll() if the designated constraints aren't met.
+type NacosSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NacosSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NacosSourceMultiError) AllErrors() []error { return m }
+
+// NacosSourceValidationError is the validation error returned by
+// NacosSource.Validate if the designated constraints aren't met.
+type NacosSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NacosSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NacosSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NacosSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NacosSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NacosSourceValidationError) ErrorName() string { return "NacosSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e NacosSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNacosSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NacosSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NacosSourceValidationError{}
+
+// Validate checks the field values on ApolloSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ApolloSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ApolloSource with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ApolloSourceMultiError, or
+// nil if none found.
+func (m *ApolloSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ApolloSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Address
+
+	// no validation rules for AppId
+
+	// no validation rules for Cluster
+
+	// no validation rules for Namespace
+
+	// no validation rules for Secret
+
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ApolloSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ApolloSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ApolloSourceValidationError{
+				field:  "Tls",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ApolloSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// ApolloSourceMultiError is an error wrapping multiple validation errors
+// returned by ApolloSource.ValidateAll() if the designated constraints aren't met.
+type ApolloSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ApolloSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ApolloSourceMultiError) AllErrors() []error { return m }
+
+// ApolloSourceValidationError is the validation error returned by
+// ApolloSource.Validate if the designated constraints aren't met.
+type ApolloSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ApolloSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ApolloSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ApolloSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ApolloSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ApolloSourceValidationError) ErrorName() string { return "ApolloSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ApolloSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sApolloSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ApolloSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ApolloSourceValidationError{}
+
+// Validate checks the field values on KubernetesSource with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *KubernetesSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on KubernetesSource with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// KubernetesSourceMultiError, or nil if none found.
+func (m *KubernetesSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *KubernetesSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Namespace
+
+	// no validation rules for ConfigMap
+
+	// no validation rules for Secret
+
+	// no validation rules for Key
+
+	// no validation rules for Watch
+
+	// no validation rules for Kubeconfig
+
+	if len(errors) > 0 {
+		return KubernetesSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// KubernetesSourceMultiError is an error wrapping multiple validation errors
+// returned by KubernetesSource.ValidateAll() if the designated constraints
+// aren't met.
+type KubernetesSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m KubernetesSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m KubernetesSourceMultiError) AllErrors() []error { return m }
+
+// KubernetesSourceValidationError is the validation error returned by
+// KubernetesSource.Validate if the designated constraints aren't met.
+type KubernetesSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e KubernetesSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e KubernetesSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e KubernetesSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e KubernetesSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e KubernetesSourceValidationError) ErrorName() string { return "KubernetesSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e KubernetesSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sKubernetesSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = KubernetesSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = KubernetesSourceValidationError{}
+
+// Validate checks the field values on PolarisSource with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *PolarisSource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PolarisSource with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PolarisSourceMultiError, or
+// nil if none found.
+func (m *PolarisSource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PolarisSource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Address
+
+	// no validation rules for Namespace
+
+	// no validation rules for Group
+
+	// no validation rules for File
+
+	// no validation rules for Timeout
+
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PolarisSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PolarisSourceValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PolarisSourceValidationError{
+				field:  "Tls",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return PolarisSourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// PolarisSourceMultiError is an error wrapping multiple validation errors
+// returned by PolarisSource.ValidateAll() if the designated constraints
+// aren't met.
+type PolarisSourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PolarisSourceMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PolarisSourceMultiError) AllErrors() []error { return m }
+
+// PolarisSourceValidationError is the validation error returned by
+// PolarisSource.Validate if the designated constraints aren't met.
+type PolarisSourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PolarisSourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PolarisSourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PolarisSourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PolarisSourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PolarisSourceValidationError) ErrorName() string { return "PolarisSourceValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PolarisSourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPolarisSource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PolarisSourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PolarisSourceValidationError{}
+
+// Validate checks the field values on Sources with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Sources) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Sources with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in SourcesMultiError, or nil if none found.
+func (m *Sources) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Sources) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Name
+
+	// no validation rules for Version
+
+	for idx, item := range m.GetSources() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SourcesValidationError{
+						field:  fmt.Sprintf("Sources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SourcesValidationError{
+						field:  fmt.Sprintf("Sources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SourcesValidationError{
+					field:  fmt.Sprintf("Sources[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return SourcesMultiError(errors)
+	}
+
+	return nil
+}
+
+// SourcesMultiError is an error wrapping multiple validation errors returned
+// by Sources.ValidateAll() if the designated constraints aren't met.
+type SourcesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SourcesMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SourcesMultiError) AllErrors() []error { return m }
+
+// SourcesValidationError is the validation error returned by Sources.Validate
+// if the designated constraints aren't met.
+type SourcesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SourcesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SourcesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SourcesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SourcesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SourcesValidationError) ErrorName() string { return "SourcesValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SourcesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSources.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SourcesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SourcesValidationError{}
+
 // Validate checks the field values on SourceConfig with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -57,13 +1214,29 @@ func (m *SourceConfig) validate(all bool) error {
 
 	var errors []error
 
-	for idx, item := range m.GetTypes() {
-		_, _ = idx, item
+	if _, ok := _SourceConfig_Type_InLookup[m.GetType()]; !ok {
+		err := SourceConfigValidationError{
+			field:  "Type",
+			reason: "value must be in list [env file etcd consul apollo nacos kubernetes polaris customize]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-		if _, ok := _SourceConfig_Types_InLookup[item]; !ok {
+	// no validation rules for Name
+
+	// no validation rules for Version
+
+	// no validation rules for EnvArgs
+
+	switch v := m.Config.(type) {
+	case *SourceConfig_Env:
+		if v == nil {
 			err := SourceConfigValidationError{
-				field:  fmt.Sprintf("Types[%v]", idx),
-				reason: "value must be in list [file apollo consul etcd kubernetes nacos polaris customize]",
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
 			}
 			if !all {
 				return err
@@ -71,17 +1244,46 @@ func (m *SourceConfig) validate(all bool) error {
 			errors = append(errors, err)
 		}
 
-	}
+		if all {
+			switch v := interface{}(m.GetEnv()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SourceConfigValidationError{
+						field:  "Env",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SourceConfigValidationError{
+						field:  "Env",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetEnv()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SourceConfigValidationError{
+					field:  "Env",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
 
-	// no validation rules for Name
-
-	// no validation rules for Version
-
-	// no validation rules for Env
-
-	// no validation rules for EnvArgs
-
-	if m.File != nil {
+	case *SourceConfig_File:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(m.GetFile()).(type) {
@@ -112,42 +1314,17 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	}
-
-	if m.Consul != nil {
-
-		if all {
-			switch v := interface{}(m.GetConsul()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, SourceConfigValidationError{
-						field:  "Consul",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, SourceConfigValidationError{
-						field:  "Consul",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
+	case *SourceConfig_Etcd:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
 			}
-		} else if v, ok := interface{}(m.GetConsul()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return SourceConfigValidationError{
-					field:  "Consul",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
+			if !all {
+				return err
 			}
+			errors = append(errors, err)
 		}
-
-	}
-
-	if m.Etcd != nil {
 
 		if all {
 			switch v := interface{}(m.GetEtcd()).(type) {
@@ -178,9 +1355,58 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	}
+	case *SourceConfig_Consul:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
-	if m.Nacos != nil {
+		if all {
+			switch v := interface{}(m.GetConsul()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SourceConfigValidationError{
+						field:  "Consul",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SourceConfigValidationError{
+						field:  "Consul",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetConsul()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SourceConfigValidationError{
+					field:  "Consul",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *SourceConfig_Nacos:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(m.GetNacos()).(type) {
@@ -211,9 +1437,17 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	}
-
-	if m.Apollo != nil {
+	case *SourceConfig_Apollo:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(m.GetApollo()).(type) {
@@ -244,9 +1478,17 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	}
-
-	if m.Kubernetes != nil {
+	case *SourceConfig_Kubernetes:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(m.GetKubernetes()).(type) {
@@ -277,9 +1519,17 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	}
-
-	if m.Polaris != nil {
+	case *SourceConfig_Polaris:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(m.GetPolaris()).(type) {
@@ -310,9 +1560,17 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	}
-
-	if m.Customize != nil {
+	case *SourceConfig_Customize:
+		if v == nil {
+			err := SourceConfigValidationError{
+				field:  "Config",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 		if all {
 			switch v := interface{}(m.GetCustomize()).(type) {
@@ -343,6 +1601,8 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
+	default:
+		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {
@@ -422,739 +1682,14 @@ var _ interface {
 	ErrorName() string
 } = SourceConfigValidationError{}
 
-var _SourceConfig_Types_InLookup = map[string]struct{}{
+var _SourceConfig_Type_InLookup = map[string]struct{}{
+	"env":        {},
 	"file":       {},
-	"apollo":     {},
-	"consul":     {},
 	"etcd":       {},
-	"kubernetes": {},
+	"consul":     {},
+	"apollo":     {},
 	"nacos":      {},
+	"kubernetes": {},
 	"polaris":    {},
 	"customize":  {},
 }
-
-// Validate checks the field values on SourceConfig_File with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *SourceConfig_File) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SourceConfig_File with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SourceConfig_FileMultiError, or nil if none found.
-func (m *SourceConfig_File) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SourceConfig_File) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Path
-
-	// no validation rules for Format
-
-	if len(errors) > 0 {
-		return SourceConfig_FileMultiError(errors)
-	}
-
-	return nil
-}
-
-// SourceConfig_FileMultiError is an error wrapping multiple validation errors
-// returned by SourceConfig_File.ValidateAll() if the designated constraints
-// aren't met.
-type SourceConfig_FileMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SourceConfig_FileMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SourceConfig_FileMultiError) AllErrors() []error { return m }
-
-// SourceConfig_FileValidationError is the validation error returned by
-// SourceConfig_File.Validate if the designated constraints aren't met.
-type SourceConfig_FileValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SourceConfig_FileValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SourceConfig_FileValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SourceConfig_FileValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SourceConfig_FileValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SourceConfig_FileValidationError) ErrorName() string {
-	return "SourceConfig_FileValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SourceConfig_FileValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSourceConfig_File.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SourceConfig_FileValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SourceConfig_FileValidationError{}
-
-// Validate checks the field values on SourceConfig_Consul with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *SourceConfig_Consul) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SourceConfig_Consul with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SourceConfig_ConsulMultiError, or nil if none found.
-func (m *SourceConfig_Consul) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SourceConfig_Consul) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Address
-
-	// no validation rules for Scheme
-
-	// no validation rules for Token
-
-	// no validation rules for Path
-
-	if len(errors) > 0 {
-		return SourceConfig_ConsulMultiError(errors)
-	}
-
-	return nil
-}
-
-// SourceConfig_ConsulMultiError is an error wrapping multiple validation
-// errors returned by SourceConfig_Consul.ValidateAll() if the designated
-// constraints aren't met.
-type SourceConfig_ConsulMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SourceConfig_ConsulMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SourceConfig_ConsulMultiError) AllErrors() []error { return m }
-
-// SourceConfig_ConsulValidationError is the validation error returned by
-// SourceConfig_Consul.Validate if the designated constraints aren't met.
-type SourceConfig_ConsulValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SourceConfig_ConsulValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SourceConfig_ConsulValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SourceConfig_ConsulValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SourceConfig_ConsulValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SourceConfig_ConsulValidationError) ErrorName() string {
-	return "SourceConfig_ConsulValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SourceConfig_ConsulValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSourceConfig_Consul.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SourceConfig_ConsulValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SourceConfig_ConsulValidationError{}
-
-// Validate checks the field values on SourceConfig_ETCD with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *SourceConfig_ETCD) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SourceConfig_ETCD with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SourceConfig_ETCDMultiError, or nil if none found.
-func (m *SourceConfig_ETCD) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SourceConfig_ETCD) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return SourceConfig_ETCDMultiError(errors)
-	}
-
-	return nil
-}
-
-// SourceConfig_ETCDMultiError is an error wrapping multiple validation errors
-// returned by SourceConfig_ETCD.ValidateAll() if the designated constraints
-// aren't met.
-type SourceConfig_ETCDMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SourceConfig_ETCDMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SourceConfig_ETCDMultiError) AllErrors() []error { return m }
-
-// SourceConfig_ETCDValidationError is the validation error returned by
-// SourceConfig_ETCD.Validate if the designated constraints aren't met.
-type SourceConfig_ETCDValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SourceConfig_ETCDValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SourceConfig_ETCDValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SourceConfig_ETCDValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SourceConfig_ETCDValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SourceConfig_ETCDValidationError) ErrorName() string {
-	return "SourceConfig_ETCDValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SourceConfig_ETCDValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSourceConfig_ETCD.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SourceConfig_ETCDValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SourceConfig_ETCDValidationError{}
-
-// Validate checks the field values on SourceConfig_Nacos with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *SourceConfig_Nacos) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SourceConfig_Nacos with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SourceConfig_NacosMultiError, or nil if none found.
-func (m *SourceConfig_Nacos) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SourceConfig_Nacos) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return SourceConfig_NacosMultiError(errors)
-	}
-
-	return nil
-}
-
-// SourceConfig_NacosMultiError is an error wrapping multiple validation errors
-// returned by SourceConfig_Nacos.ValidateAll() if the designated constraints
-// aren't met.
-type SourceConfig_NacosMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SourceConfig_NacosMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SourceConfig_NacosMultiError) AllErrors() []error { return m }
-
-// SourceConfig_NacosValidationError is the validation error returned by
-// SourceConfig_Nacos.Validate if the designated constraints aren't met.
-type SourceConfig_NacosValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SourceConfig_NacosValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SourceConfig_NacosValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SourceConfig_NacosValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SourceConfig_NacosValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SourceConfig_NacosValidationError) ErrorName() string {
-	return "SourceConfig_NacosValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SourceConfig_NacosValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSourceConfig_Nacos.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SourceConfig_NacosValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SourceConfig_NacosValidationError{}
-
-// Validate checks the field values on SourceConfig_Apollo with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *SourceConfig_Apollo) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SourceConfig_Apollo with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SourceConfig_ApolloMultiError, or nil if none found.
-func (m *SourceConfig_Apollo) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SourceConfig_Apollo) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return SourceConfig_ApolloMultiError(errors)
-	}
-
-	return nil
-}
-
-// SourceConfig_ApolloMultiError is an error wrapping multiple validation
-// errors returned by SourceConfig_Apollo.ValidateAll() if the designated
-// constraints aren't met.
-type SourceConfig_ApolloMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SourceConfig_ApolloMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SourceConfig_ApolloMultiError) AllErrors() []error { return m }
-
-// SourceConfig_ApolloValidationError is the validation error returned by
-// SourceConfig_Apollo.Validate if the designated constraints aren't met.
-type SourceConfig_ApolloValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SourceConfig_ApolloValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SourceConfig_ApolloValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SourceConfig_ApolloValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SourceConfig_ApolloValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SourceConfig_ApolloValidationError) ErrorName() string {
-	return "SourceConfig_ApolloValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SourceConfig_ApolloValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSourceConfig_Apollo.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SourceConfig_ApolloValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SourceConfig_ApolloValidationError{}
-
-// Validate checks the field values on SourceConfig_Kubernetes with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *SourceConfig_Kubernetes) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SourceConfig_Kubernetes with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SourceConfig_KubernetesMultiError, or nil if none found.
-func (m *SourceConfig_Kubernetes) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SourceConfig_Kubernetes) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return SourceConfig_KubernetesMultiError(errors)
-	}
-
-	return nil
-}
-
-// SourceConfig_KubernetesMultiError is an error wrapping multiple validation
-// errors returned by SourceConfig_Kubernetes.ValidateAll() if the designated
-// constraints aren't met.
-type SourceConfig_KubernetesMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SourceConfig_KubernetesMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SourceConfig_KubernetesMultiError) AllErrors() []error { return m }
-
-// SourceConfig_KubernetesValidationError is the validation error returned by
-// SourceConfig_Kubernetes.Validate if the designated constraints aren't met.
-type SourceConfig_KubernetesValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SourceConfig_KubernetesValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SourceConfig_KubernetesValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SourceConfig_KubernetesValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SourceConfig_KubernetesValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SourceConfig_KubernetesValidationError) ErrorName() string {
-	return "SourceConfig_KubernetesValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SourceConfig_KubernetesValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSourceConfig_Kubernetes.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SourceConfig_KubernetesValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SourceConfig_KubernetesValidationError{}
-
-// Validate checks the field values on SourceConfig_Polaris with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *SourceConfig_Polaris) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SourceConfig_Polaris with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SourceConfig_PolarisMultiError, or nil if none found.
-func (m *SourceConfig_Polaris) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SourceConfig_Polaris) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return SourceConfig_PolarisMultiError(errors)
-	}
-
-	return nil
-}
-
-// SourceConfig_PolarisMultiError is an error wrapping multiple validation
-// errors returned by SourceConfig_Polaris.ValidateAll() if the designated
-// constraints aren't met.
-type SourceConfig_PolarisMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SourceConfig_PolarisMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SourceConfig_PolarisMultiError) AllErrors() []error { return m }
-
-// SourceConfig_PolarisValidationError is the validation error returned by
-// SourceConfig_Polaris.Validate if the designated constraints aren't met.
-type SourceConfig_PolarisValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SourceConfig_PolarisValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SourceConfig_PolarisValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SourceConfig_PolarisValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SourceConfig_PolarisValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SourceConfig_PolarisValidationError) ErrorName() string {
-	return "SourceConfig_PolarisValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SourceConfig_PolarisValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSourceConfig_Polaris.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SourceConfig_PolarisValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SourceConfig_PolarisValidationError{}

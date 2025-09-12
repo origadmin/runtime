@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package envars implements the functions, types, and interfaces for the module.
+// Package source implements the functions, types, and interfaces for the module.
 package envars
 
 import (
@@ -81,7 +81,7 @@ func TestNewSource(t *testing.T) {
 
 			// Test
 			source := NewSource(tt.prefixes...)
-			envarsSource, ok := source.(*envars)
+			envarsSource, ok := source.(*source)
 			assert.True(t, ok)
 
 			// Call the Load method to load data
