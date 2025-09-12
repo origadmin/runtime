@@ -1,4 +1,4 @@
-package config
+package bootstrap
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 
@@ -19,7 +18,7 @@ var (
 
 // configFactory is a config factory that implements interfaces.ConfigBuilder.
 type configFactory struct {
-	factory.Registry[interfaces.ConfigFactory]
+	factory.Registry[ConfigFactory]
 }
 
 // RegisterConfigFunc registers a new ConfigBuilder with the given name and function.
@@ -37,16 +36,16 @@ func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *Options) (kratos
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (f *configFactory) NewConfig(cfg *configv1.SourceConfig, opts ...Option) (kratosconfig.Config, error) {
+func (f *configFactory) NewConfig(srcs *configv1.Sources, opts ...Option) (kratosconfig.Config, error) {
 	options := configure.Apply(&Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 
 	var sources []kratosconfig.Source
-	for _, t := range cfg.Types {
-		buildFactory, ok := f.Get(t)
+	for _, src := range srcs.GetSources() {
+		buildFactory, ok := f.Get(src.Type)
 		if !ok {
-			return nil, fmt.Errorf("unknown type: %s", t)
+			return nil, fmt.Errorf("unknown type: %s", src.Type)
 		}
-		source, err := buildFactory.NewSource(cfg, options)
+		source, err := buildFactory.NewSource(src, options)
 		if err != nil {
 			return nil, err
 		}
@@ -64,8 +63,8 @@ func (f *configFactory) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...Op
 }
 
 // NewFactory creates a new config factory.
-func NewFactory() interfaces.ConfigBuilder {
+func NewFactory() Builder {
 	return &configFactory{
-		Registry: factory.New[interfaces.ConfigFactory](),
+		Registry: factory.New[ConfigFactory](),
 	}
 }

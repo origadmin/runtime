@@ -1,5 +1,5 @@
 // Package bootstrap is a package that provides the bootstrap information for the service.
-package bootstrap
+package bootstrap_bak
 
 import (
 	"crypto/rand"
