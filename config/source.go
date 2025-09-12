@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package bootstrap
+package config
 
 import (
 	"fmt" // Add fmt import for error formatting
@@ -22,12 +22,12 @@ var (
 
 // NewConfig creates a new config instance.
 func NewConfig(cfg *configv1.Sources, opts ...Option) (kratosconfig.Config, error) {
-	return defaultConfigFactory.NewConfig(cfg, opts...)
+	return defaultBuilder.NewConfig(cfg, opts...)
 }
 
 // Register registers a config factory.
-func Register(name string, factory ConfigFactory) {
-	defaultConfigFactory.Register(name, factory)
+func Register(name string, factory SourceFactory) {
+	defaultBuilder.Register(name, factory)
 }
 
 // Load loads configuration from the specified file path and scans it into the target struct.

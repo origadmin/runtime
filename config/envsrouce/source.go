@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package envsource
+package envsrouce
 
 import (
 	"os"

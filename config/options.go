@@ -1,4 +1,4 @@
-package bootstrap
+package config
 
 import (
 	"github.com/go-kratos/kratos/v2/config"

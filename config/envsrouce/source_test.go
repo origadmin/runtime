@@ -3,7 +3,7 @@
  */
 
 // Package source implements the functions, types, and interfaces for the module.
-package envsource
+package envsrouce
 
 import (
 	"os"

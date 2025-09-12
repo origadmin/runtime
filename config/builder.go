@@ -1,4 +1,4 @@
-package bootstrap
+package config
 
 import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
@@ -9,27 +9,27 @@ import (
 )
 
 type Builder interface {
-	factory.Registry[ConfigFactory]
+	factory.Registry[SourceFactory]
 	NewConfig(*configv1.Sources, ...Option) (kratosconfig.Config, error)
 	//SyncConfig(*configv1.Sources, any, ...Option) error // Add SyncConfig method
 }
 
-type ConfigFunc func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
+type SourceFunc func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
 
-func (c ConfigFunc) NewSource(config *configv1.SourceConfig, options *Options) (kratosconfig.Source, error) {
+func (c SourceFunc) NewSource(config *configv1.SourceConfig, options *Options) (kratosconfig.Source, error) {
 	return c(config, options)
 }
 
-type ConfigFactory interface {
+type SourceFactory interface {
 	// NewSource creates a new config using the given KConfig and a list of Options.
 	NewSource(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
 }
 
-type ConfigSyncer interface {
+type Syncer interface {
 	SyncConfig(*configv1.SourceConfig, string, any, *Options) error
 }
 
-type ConfigProtoSyncer interface {
+type ProtoSyncer interface {
 	SyncConfig(*configv1.SourceConfig, string, proto.Message, *Options) error
 }
 

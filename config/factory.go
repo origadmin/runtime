@@ -1,4 +1,4 @@
-package bootstrap
+package config
 
 import (
 	"fmt"
@@ -12,17 +12,17 @@ import (
 )
 
 var (
-	// defaultConfigFactory is the default config factory.
-	defaultConfigFactory = NewFactory()
+	// defaultBuilder is the default config factory.
+	defaultBuilder = NewBuilder()
 )
 
-// configFactory is a config factory that implements interfaces.ConfigBuilder.
-type configFactory struct {
-	factory.Registry[ConfigFactory]
+// sourceFactory is a config factory that implements interfaces.ConfigBuilder.
+type sourceFactory struct {
+	factory.Registry[SourceFactory]
 }
 
 // RegisterConfigFunc registers a new ConfigBuilder with the given name and function.
-func (f *configFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
+func (f *sourceFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
 	f.Register(name, buildFunc)
 }
 
@@ -36,7 +36,7 @@ func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *Options) (kratos
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (f *configFactory) NewConfig(srcs *configv1.Sources, opts ...Option) (kratosconfig.Config, error) {
+func (f *sourceFactory) NewConfig(srcs *configv1.Sources, opts ...Option) (kratosconfig.Config, error) {
 	options := configure.Apply(&Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 
 	var sources []kratosconfig.Source
@@ -56,15 +56,15 @@ func (f *configFactory) NewConfig(srcs *configv1.Sources, opts ...Option) (krato
 	return kratosconfig.New(options.ConfigOptions...), nil
 }
 
-func (f *configFactory) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...Option) error {
+func (f *sourceFactory) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...Option) error {
 	// This method is a placeholder. Actual synchronization logic would go here.
 	// For now, we'll just return nil or an error if needed.
 	return nil
 }
 
-// NewFactory creates a new config factory.
-func NewFactory() Builder {
-	return &configFactory{
-		Registry: factory.New[ConfigFactory](),
+// NewBuilder creates a new config factory.
+func NewBuilder() Builder {
+	return &sourceFactory{
+		Registry: factory.New[SourceFactory](),
 	}
 }
