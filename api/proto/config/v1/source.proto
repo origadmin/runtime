@@ -173,6 +173,12 @@ message SourceConfig {
   string version = 3 [json_name = "version"];
   // set the supported file format, if not set, all formats are supported
   repeated string formats = 4 [json_name = "formats"];
+
+  // priority for this configuration source.
+  // Sources will be loaded in ascending order of priority (e.g., 0, 1, 2, ...),
+  // with later sources (higher priority value) overriding earlier ones.
+  int32 priority = 5 [json_name = "priority"];
+
   // set the environment variable name
   map<string, string> env_args = 6 [json_name = "env_args"];
   // set the environment variable prefix

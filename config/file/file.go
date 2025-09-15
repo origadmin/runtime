@@ -11,7 +11,7 @@ import (
 	"github.com/goexts/generic/configure"
 
 	kratosconfigv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
-	"github.com/origadmin/runtime/config"
+	runtimeconfig "github.com/origadmin/runtime/config"
 )
 
 var _ kratoskratosconfig.Source = (*file)(nil)
@@ -133,10 +133,14 @@ func defaultFormatter(key string, value []byte) (*kratosconfig.KeyValue, error) 
 	}, nil
 }
 
-func NewFileSource(cfg *kratosconfigv1.SourceConfig, opts *bootstrap.Options) (kratoskratosconfig.Source, error) {
+func NewFileSource(cfg *kratosconfigv1.SourceConfig, opts *runtimeconfig.Options) (kratoskratosconfig.Source, error) {
 	if cfg.GetFile() == nil {
 		return nil, nil // Or return an error if a file source is expected
 	}
 
 	return NewSource(cfg.GetFile().GetPath(), FromOptions(opts)...), nil
+}
+
+func init() {
+	runtimeconfig.Register("file", runtimeconfig.SourceFunc(NewFileSource))
 }

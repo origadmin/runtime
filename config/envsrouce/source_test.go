@@ -80,8 +80,8 @@ func TestNewSource(t *testing.T) {
 			}
 
 			// Test
-			source := NewSource(tt.prefixes...)
-			envarsSource, ok := source.(*source)
+			ksource := NewSource(tt.prefixes...)
+			envarsSource, ok := ksource.(*source)
 			assert.True(t, ok)
 
 			// Call the Load method to load data

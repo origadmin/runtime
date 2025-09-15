@@ -68,10 +68,10 @@ func matchPrefix(prefixes []string, v string) (string, bool) {
 	return "", false
 }
 
-func NewEnvSource(cfg *configv1.SourceConfig, opts *runtimeconfig.Options) (runtimeconfig.KSource, error) {
+func NewEnvSource(_ *configv1.SourceConfig, opts *runtimeconfig.Options) (runtimeconfig.KSource, error) {
 	return NewSource(FromOptions(opts)...), nil
 }
 
 func init() {
-	runtimeconfig.Register(runtimeconfig.SourceType_ENV, NewEnvSource)
+	runtimeconfig.Register("env", runtimeconfig.SourceFunc(NewEnvSource))
 }
