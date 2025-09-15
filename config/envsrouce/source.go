@@ -73,5 +73,5 @@ func NewEnvSource(_ *configv1.SourceConfig, opts *runtimeconfig.Options) (runtim
 }
 
 func init() {
-	runtimeconfig.Register("env", runtimeconfig.SourceFunc(NewEnvSource))
+	runtimeconfig.Register("env", NewEnvSource)
 }

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package config.v1;
 
+import "security/transport/v1/tls.proto";
+
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/v1;configv1";
 option java_multiple_files = true;
@@ -15,15 +17,7 @@ message Gateway {
   repeated string hosts = 3 [deprecated = true];
   repeated Endpoint endpoints = 4;
   repeated Middleware middlewares = 5;
-  map<string, TLS> tls_store = 6;
-}
-
-message TLS {
-  bool insecure = 1;
-  string cacert = 2;
-  string cert = 3;
-  string key = 4;
-  string server_name = 5;
+  map<string, security.transport.v1.TLSConfig> tls_store = 6;
 }
 
 message PriorityConfig {
