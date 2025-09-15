@@ -68,6 +68,7 @@ type Option func(*options)
 
 // options holds the configuration options for creating a Runtime instance.
 type options struct {
+	appInfo         AppInfo
 	decoderProvider interfaces.ConfigDecoderProvider
 }
 
@@ -76,6 +77,12 @@ type options struct {
 func WithDecoderProvider(p interfaces.ConfigDecoderProvider) Option {
 	return func(o *options) {
 		o.decoderProvider = p
+	}
+}
+
+func WithAppInfo(appInfo AppInfo) Option {
+	return func(o *options) {
+		o.appInfo = appInfo
 	}
 }
 
@@ -100,20 +107,19 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	}
 
 	// --- 1. Initialize AppInfo ---
-	var appInfo AppInfo
-	if err := configDecoder.Decode("app", &appInfo); err != nil {
-		return nil, nil, fmt.Errorf("failed to decode app config: %w", err)
-	}
-	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
-		return nil, nil, fmt.Errorf("app ID, name, or version cannot be empty")
-	}
+	appInfo := appliedOpts.appInfo
 
 	// --- 2. Initialize Logger ---
-	var loggerConfig configv1.Logger
-	if err := configDecoder.Decode("logger", &loggerConfig); err != nil {
-		log.Warnf("Failed to decode logger config, using default: %v", err)
+	var loggerConfig *configv1.Logger
+	if d, ok := configDecoder.(interfaces.LoggerConfig); ok {
+		loggerConfig = d.GetLogger()
+	} else {
+		loggerConfig = new(configv1.Logger)
+		if err := configDecoder.Decode("logger", loggerConfig); err != nil {
+			log.Warnf("Failed to decode logger config, using default: %v", err)
+		}
 	}
-	logger := runtimeLog.NewLogger(&loggerConfig)
+	logger := runtimeLog.NewLogger(loggerConfig)
 	klog.SetLogger(logger) // Set global logger for Kratos's internal logging
 
 	// --- 3. Initialize all configured Service Registries & Discoveries ---
@@ -121,8 +127,12 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 		Registries      map[string]*discoveryv1.Discovery
 		DefaultRegistry string
 	}
-	if err := configDecoder.Decode("registries", &registriesConfig); err != nil {
-		log.Warnf("Failed to decode registries config, running in standalone mode: %v", err)
+	if d, ok := configDecoder.(interfaces.DiscoveryConfig); ok {
+		registriesConfig.Registries = d.GetDiscoveries()
+	} else {
+		if err := configDecoder.Decode("registries", &registriesConfig); err != nil {
+			log.Warnf("Failed to decode registries config, running in standalone mode: %v", err)
+		}
 	}
 
 	registrars := make(map[string]registry.Registrar)
