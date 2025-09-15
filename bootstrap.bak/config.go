@@ -22,7 +22,7 @@ func decodeFile(path string, cfg any) error {
 		return errors.New("unsupported config file type: " + path)
 	}
 
-	// Decode the file into the config struct
+	// Resolve the file into the config struct
 	if err := codec.DecodeFromFile(path, cfg); err != nil {
 		return errors.Wrapf(err, "failed to parse config file %s", path)
 	}
@@ -46,7 +46,7 @@ func decodeDirWithDepth(path string, cfg any, ignores []string, depth int) error
 			}
 		}
 
-		// Decode the file into the config struct
+		// Resolve the file into the config struct
 		if err := decodeFile(walkpath, cfg); err != nil {
 			return err
 		}
@@ -73,7 +73,7 @@ func decodeDir(path string, cfg any, ignores []string) error {
 			return decodeDirWithDepth(walkpath, cfg, ignores, 3)
 		}
 
-		// Decode the file into the config struct
+		// Resolve the file into the config struct
 		if err := decodeFile(walkpath, cfg); err != nil {
 			return err
 		}

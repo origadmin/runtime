@@ -2,19 +2,49 @@ package interfaces
 
 import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
+
+	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 )
 
-// Resolved is the main interface for accessing resolved configuration values.
-// It provides a flexible way to scan configuration sections into custom Go structs.
-type Resolved interface {
-	// Decode decodes the configuration section identified by 'key' into the 'target' Go struct.
-	// The 'key' can be a dot-separated path (e.g., "service.http", "data.database").
+type ConfigDecoderFunc func(config kratosconfig.Config) (ConfigDecoder, error)
+
+func (c ConfigDecoderFunc) GetConfigDecoder(config kratosconfig.Config) (ConfigDecoder, error) {
+	return c(config)
+}
+
+// ConfigDecoder provides a generic way to decode a portion of the configuration
+// into a Go struct.
+type ConfigDecoder interface {
+	// Decode unmarshals the configuration section identified by 'key' into the 'target'.
+	// The 'key' can be a dot-separated path (e.g., "service.http").
 	// 'target' must be a pointer to a Go struct.
 	Decode(key string, target interface{}) error
 }
 
-// ConfigLoader defines the interface for loading application configuration.
-// DEPRECATED: This interface is being phased out in favor of the new bootstrap.Load mechanism.
-type ConfigLoader interface {
-	Load(configPath string, bootstrapConfig interface{}) (kratosconfig.Config, error)
+type ConfigDecoderProvider interface {
+	GetConfigDecoder(config kratosconfig.Config) (ConfigDecoder, error)
+}
+
+// ServiceConfig provides access to service configurations.
+type ServiceConfig interface {
+	GetService(name string) *configv1.Service
+	GetServices() map[string]*configv1.Service
+}
+
+// DiscoveryConfig provides access to discovery/registry configurations.
+type DiscoveryConfig interface {
+	GetDiscovery(name string) *discoveryv1.Discovery
+	GetDiscoveries() map[string]*discoveryv1.Discovery
+}
+
+// LoggerConfig provides access to the logger configuration.
+type LoggerConfig interface {
+	GetLogger() *configv1.Logger
+}
+
+// MiddlewareConfig provides access to middleware configurations.
+type MiddlewareConfig interface {
+	GetMiddleware(name string) *configv1.Middleware
+	GetMiddlewares() map[string]*configv1.Middleware
 }
