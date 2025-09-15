@@ -8,7 +8,7 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 
@@ -28,16 +28,16 @@ func (f *sourceFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
-type BuildFunc func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error)
+type BuildFunc func(*sourcev1.SourceConfig, *Options) (kratosconfig.Source, error)
 
 // NewSource is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn BuildFunc) NewSource(cfg *configv1.SourceConfig, opts *Options) (kratosconfig.Source, error) {
+func (fn BuildFunc) NewSource(cfg *sourcev1.SourceConfig, opts *Options) (kratosconfig.Source, error) {
 	// Call the function with the given KConfig and a list of Options.
 	return fn(cfg, opts)
 }
 
 // NewConfig creates a new Selector object based on the given KConfig and options.
-func (f *sourceFactory) NewConfig(srcs *configv1.Sources, opts ...Option) (kratosconfig.Config, error) {
+func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (kratosconfig.Config, error) {
 	options := configure.Apply(&Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 
 	var sources []kratosconfig.Source
@@ -68,7 +68,7 @@ func (f *sourceFactory) NewConfig(srcs *configv1.Sources, opts ...Option) (krato
 	return kratosconfig.New(options.ConfigOptions...), nil
 }
 
-func (f *sourceFactory) SyncConfig(cfg *configv1.SourceConfig, v any, opts ...Option) error {
+func (f *sourceFactory) SyncConfig(cfg *sourcev1.SourceConfig, v any, opts ...Option) error {
 	// This method is a placeholder. Actual synchronization logic would go here.
 	// For now, we'll just return nil or an error if needed.
 	return nil

@@ -11,7 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/env"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
 )
 
@@ -68,8 +68,12 @@ func matchPrefix(prefixes []string, v string) (string, bool) {
 	return "", false
 }
 
-func NewEnvSource(_ *configv1.SourceConfig, opts *runtimeconfig.Options) (runtimeconfig.KSource, error) {
-	return NewSource(FromOptions(opts)...), nil
+func NewEnvSource(sourceCfg *sourcev1.SourceConfig, opts *runtimeconfig.Options) (runtimeconfig.KSource, error) {
+	var prefixes []string
+	if cfg := sourceCfg.GetEnv(); cfg != nil {
+		prefixes = cfg.GetPrefixes()
+	}
+	return NewSource(prefixes...), nil
 }
 
 func init() {

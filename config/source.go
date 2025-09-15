@@ -5,12 +5,12 @@
 package config
 
 import (
-	"fmt" // Add fmt import for error formatting
+	"fmt"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file" // Add file config source import
+	"github.com/go-kratos/kratos/v2/config/file"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -21,7 +21,7 @@ var (
 )
 
 // NewConfig creates a new config instance.
-func NewConfig(cfg *configv1.Sources, opts ...Option) (kratosconfig.Config, error) {
+func NewConfig(cfg *sourcev1.Sources, opts ...Option) (kratosconfig.Config, error) {
 	return defaultBuilder.NewConfig(cfg, opts...)
 }
 
@@ -33,7 +33,7 @@ func Register(name string, sourceFactory any) {
 		factory = fty
 	case SourceFunc:
 		factory = fty
-	case func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error):
+	case func(*sourcev1.SourceConfig, *Options) (kratosconfig.Source, error):
 		factory = SourceFunc(fty)
 	default:
 		panic(ErrInvalidConfigType)

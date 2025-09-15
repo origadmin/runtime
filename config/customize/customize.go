@@ -1,24 +1,19 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package customize implements the functions, types, and interfaces for the module.
-package customize
+package extension
 
 import (
 	"fmt"
 
 	"google.golang.org/protobuf/proto"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	extensionv1 "github.com/origadmin/runtime/api/gen/go/extension/v1"
 )
 
-// GetTypedConfig retrieves a configuration of the specified type and name from the CustomizeMap
+// GetTypedConfig retrieves a configuration of the specified type and name from the ExtensionMap
 // and deserializes it into the result object.
 // This function uses generics, requiring the generic type T to implement the proto.Message interface.
 //
 // Parameters:
-//   - m: A pointer to configv1.CustomizeMap containing configuration information.
+//   - m: A pointer to extensionv1.ExtensionMap containing configuration information.
 //   - configType: The type of the configuration.
 //   - name: The name of the configuration.
 //   - result: An object used to receive the deserialized configuration.
@@ -26,8 +21,8 @@ import (
 // Returns:
 //   - bool: Indicates whether the configuration was successfully found and deserialized.
 //   - error: Represents any errors that occurred during the operation.
-func GetTypedConfig[T proto.Message](m *configv1.CustomizeMap, configType, name string, result T) (bool, error) {
-	// Find the configuration set of the specified type from the CustomizeMap
+func GetTypedConfig[T proto.Message](m *extensionv1.ExtensionMap, configType, name string, result T) (bool, error) {
+	// Find the configuration set of the specified type from the ExtensionMap
 	configs := ConfigsFromType(m, configType)
 	if configs == nil {
 		// If the configuration set is not found, return false and nil error
@@ -56,7 +51,7 @@ func GetTypedConfig[T proto.Message](m *configv1.CustomizeMap, configType, name 
 }
 
 // ConfigFromName returns the config with the given name.
-func ConfigFromName(cc *configv1.Customize, name string) *configv1.Customize_Config {
+func ConfigFromName(cc *extensionv1.Extension, name string) *extensionv1.Extension_Config {
 	configs := cc.GetConfigs()
 	if configs == nil {
 		return nil
@@ -71,7 +66,7 @@ func ConfigFromName(cc *configv1.Customize, name string) *configv1.Customize_Con
 }
 
 // ConfigsFromType returns all configs with the given type.
-func ConfigsFromType(cm *configv1.CustomizeMap, typo string) []*configv1.Customize_Config {
+func ConfigsFromType(cm *extensionv1.ExtensionMap, typo string) []*extensionv1.Extension_Config {
 	types := cm.GetTypes()
 	if types == nil {
 		return nil

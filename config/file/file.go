@@ -7,14 +7,13 @@ import (
 	"strings"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	kratoskratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/goexts/generic/configure"
 
-	kratosconfigv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
 )
 
-var _ kratoskratosconfig.Source = (*file)(nil)
+var _ kratosconfig.Source = (*file)(nil)
 
 // Temporary file suffixes that are ignored by default
 var defaultIgnores = []string{
@@ -38,10 +37,6 @@ type file struct {
 }
 
 // NewSource creates a new file source instance
-// Parameters:
-//   path: file or directory path
-//   opts: optional configuration options
-// Returns: a kratos configuration source interface instance
 func NewSource(path string, opts ...Option) kratosconfig.Source {
 	f := &file{
 		path:      path,
@@ -52,9 +47,6 @@ func NewSource(path string, opts ...Option) kratosconfig.Source {
 }
 
 // loadFile loads a single file from the specified path
-// Parameters:
-//   path: file path
-// Returns: the key-value pair of the file and possible error
 func (f *file) loadFile(path string) (*kratosconfig.KeyValue, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -80,9 +72,6 @@ func (f *file) loadFile(path string) (*kratosconfig.KeyValue, error) {
 }
 
 // shouldIgnore determines whether a file should be ignored
-// Parameters:
-//   filename: file name
-// Returns: true if the file should be ignored, otherwise false
 func (f *file) shouldIgnore(filename string) bool {
 	if len(f.ignores) == 0 {
 		return false
@@ -97,9 +86,6 @@ func (f *file) shouldIgnore(filename string) bool {
 }
 
 // loadDir loads all non-ignored files from the specified directory
-// Parameters:
-//   path: directory path
-// Returns: a list of key-value pairs for all files in the directory and possible error
 func (f *file) loadDir(path string) (kvs []*kratosconfig.KeyValue, err error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -120,7 +106,6 @@ func (f *file) loadDir(path string) (kvs []*kratosconfig.KeyValue, err error) {
 }
 
 // Load loads configuration data from the file source
-// Returns: a list of configuration key-value pairs and possible error
 func (f *file) Load() (kvs []*kratosconfig.KeyValue, err error) {
 	fi, err := os.Stat(f.path)
 	if err != nil {
@@ -141,16 +126,11 @@ func (f *file) Load() (kvs []*kratosconfig.KeyValue, err error) {
 }
 
 // Watch creates and returns a file watcher instance
-// Returns: a configuration watcher interface instance and possible error
 func (f *file) Watch() (kratosconfig.Watcher, error) {
 	return newWatcher(f)
 }
 
 // defaultFormatter is the default formatting function used to process key-value pair data
-// Parameters:
-//   key: key name
-//   value: key value
-// Returns: the formatted key-value pair and possible error
 func defaultFormatter(key string, value []byte) (*kratosconfig.KeyValue, error) {
 	return &kratosconfig.KeyValue{
 		Key:    key,
@@ -159,17 +139,17 @@ func defaultFormatter(key string, value []byte) (*kratosconfig.KeyValue, error) 
 	}, nil
 }
 
-// NewFileSource creates a new file source based on configuration
-// Parameters:
-//   cfg: source configuration information
-//   opts: runtime configuration options
-// Returns: a configuration source instance and possible error
-func NewFileSource(cfg *kratosconfigv1.SourceConfig, opts *runtimeconfig.Options) (kratoskratosconfig.Source, error) {
-	if cfg.GetFile() == nil {
-		return nil, nil // Or return an error if a file source is expected
+// NewFileSource creates a new file source based on configuration.
+// It adapts to the new bootstrap mechanism.
+func NewFileSource(cfg *sourcev1.SourceConfig, opts *runtimeconfig.Options) (kratosconfig.Source, error) {
+	fileSrc := cfg.GetFile()
+	if fileSrc == nil {
+		// This can happen if the source type is "file" but the `file` oneof is not set.
+		// Returning nil, nil is a safe default, allowing other sources to proceed.
+		return nil, nil
 	}
 
-	return NewSource(cfg.GetFile().GetPath(), FromOptions(opts)...), nil
+	return NewSource(fileSrc.GetPath(), FromOptions(opts)...), nil
 }
 
 // init registers the file source during package initialization
