@@ -1,74 +1,57 @@
 package interfaces
 
 import (
-	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-
-	"github.com/origadmin/runtime/log"
 )
 
-type ResolveFunc func(config kratosconfig.Config) (Resolved, error)
-
-func (r ResolveFunc) Resolve(config kratosconfig.Config) (Resolved, error) {
-	return r(config)
+// NewResolver creates a new Resolved instance from a Kratos config.
+// This function is the entry point for creating a Resolved instance.
+func NewResolver(config kratosconfig.Config) (Resolved, error) {
+	var r resolver
+	err := config.Scan(&r.values) // Scan the entire config into the internal map
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
 }
 
 type resolver struct {
 	values map[string]any
 }
 
-// All methods that previously implemented Resolved interface are removed
-// as Resolved is now an empty interface.
+// Decode implements the Resolved interface.
+func (r *resolver) Decode(key string, target interface{}) error {
+	if target == nil {
+		return fmt.Errorf("target cannot be nil")
+	}
+	if key == "" {
+		// If key is empty, decode the entire config
+		return mapstructure.Decode(r.values, target)
+	}
 
-func (r *resolver) WithDecode(name string, v any, decode func([]byte, any) error) error {
-	if v == nil {
-		return fmt.Errorf("value %s is nil", name)
+	// Navigate through the map using the dot-separated key
+	currentValue := r.values
+	keys := strings.Split(key, ".")
+	for i, k := range keys {
+		if val, ok := currentValue[k]; ok {
+			if i == len(keys)-1 {
+				// Last key, decode the value
+				return mapstructure.Decode(val, target)
+			}
+			// Not the last key, continue navigating
+			if nextMap, isMap := val.(map[string]any); isMap {
+				currentValue = nextMap
+			} else {
+				return fmt.Errorf("config path '%s' is not a map at key '%s'", key, k)
+			}
+		} else {
+			return fmt.Errorf("config key '%s' not found at path '%s'", k, key)
+		}
 	}
-	data, err := r.Value(name)
-	if err != nil {
-		return err
-	}
-	if data == nil {
-		return fmt.Errorf("value %s is nil", name)
-	}
-	marshal, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-	return decode(marshal, v)
+	return nil // Should not be reached if key is not empty
 }
-
-func (r *resolver) Value(name string) (any, error) {
-	v, ok := r.values[name]
-	if !ok {
-		return nil, fmt.Errorf("value %s not found", name)
-	}
-	return v, nil
-}
-
-func (r *resolver) decodeConfig(key string, target interface{}) bool {
-	v, ok := r.values[key]
-	if !ok {
-		return false
-	}
-	if err := mapstructure.Decode(v, target); err != nil {
-		log.Errorf("Failed to decode config key '%s': %v", key, err)
-		return false
-	}
-	return true
-}
-
-var DefaultResolver Resolved = ResolveFunc(func(config kratosconfig.Config) (Resolved, error) {
-	var r resolver
-	err := config.Scan(&r.values)
-	if err != nil {
-		return nil, err
-	}
-	return &r, nil // Return pointer to resolver
-})
-
-// All adapter structs are removed as they are no longer needed for an empty Resolved interface.
