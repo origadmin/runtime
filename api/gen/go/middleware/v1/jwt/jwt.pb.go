@@ -9,7 +9,7 @@ package jwtv1
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
-	v1 "github.com/origadmin/runtime/api/gen/go/security/jwt/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/security/authn/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -31,7 +31,7 @@ type JWT struct {
 	Subject     string                 `protobuf:"bytes,2,opt,name=subject,proto3" json:"subject,omitempty"`
 	ClaimType   string                 `protobuf:"bytes,3,opt,name=claim_type,proto3" json:"claim_type,omitempty"`
 	TokenHeader map[string]string      `protobuf:"bytes,4,rep,name=token_header,proto3" json:"token_header,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// The token used security.jwt.v1.
+	// The token used security.authn.v1.
 	Config        *v1.Config `protobuf:"bytes,100,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -106,7 +106,7 @@ var File_middleware_v1_jwt_jwt_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_jwt_jwt_proto_rawDesc = "" +
 	"\n" +
-	"\x1bmiddleware/v1/jwt/jwt.proto\x12\x11middleware.v1.jwt\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1csecurity/jwt/v1/config.proto\x1a\x17validate/validate.proto\"\x98\x03\n" +
+	"\x1bmiddleware/v1/jwt/jwt.proto\x12\x11middleware.v1.jwt\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1bsecurity/authn/v1/jwt.proto\x1a\x17validate/validate.proto\"\x9a\x03\n" +
 	"\x03JWT\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x18\n" +
 	"\asubject\x18\x02 \x01(\tR\asubject\x12l\n" +
@@ -114,8 +114,8 @@ const file_middleware_v1_jwt_jwt_proto_rawDesc = "" +
 	"claim_type\x18\x03 \x01(\tBL\xfaB\x13r\x11R\x03mapR\n" +
 	"registered\xbaG3\x92\x020The type of the claim used to extract the token.R\n" +
 	"claim_type\x12K\n" +
-	"\ftoken_header\x18\x04 \x03(\v2'.middleware.v1.jwt.JWT.TokenHeaderEntryR\ftoken_header\x12b\n" +
-	"\x06config\x18d \x01(\v2\x17.security.jwt.v1.ConfigB1\xbaG.\x92\x02+The configuration used to create the token.R\x06config\x1a>\n" +
+	"\ftoken_header\x18\x04 \x03(\v2'.middleware.v1.jwt.JWT.TokenHeaderEntryR\ftoken_header\x12d\n" +
+	"\x06config\x18d \x01(\v2\x19.security.authn.v1.ConfigB1\xbaG.\x92\x02+The configuration used to create the token.R\x06config\x1a>\n" +
 	"\x10TokenHeaderEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\xcb\x01\n" +
@@ -137,11 +137,11 @@ var file_middleware_v1_jwt_jwt_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_middleware_v1_jwt_jwt_proto_goTypes = []any{
 	(*JWT)(nil),       // 0: middleware.v1.jwt.JWT
 	nil,               // 1: middleware.v1.jwt.JWT.TokenHeaderEntry
-	(*v1.Config)(nil), // 2: security.jwt.v1.Config
+	(*v1.Config)(nil), // 2: security.authn.v1.Config
 }
 var file_middleware_v1_jwt_jwt_proto_depIdxs = []int32{
 	1, // 0: middleware.v1.jwt.JWT.token_header:type_name -> middleware.v1.jwt.JWT.TokenHeaderEntry
-	2, // 1: middleware.v1.jwt.JWT.config:type_name -> security.jwt.v1.Config
+	2, // 1: middleware.v1.jwt.JWT.config:type_name -> security.authn.v1.Config
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

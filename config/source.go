@@ -26,7 +26,18 @@ func NewConfig(cfg *configv1.Sources, opts ...Option) (kratosconfig.Config, erro
 }
 
 // Register registers a config factory.
-func Register(name string, factory SourceFactory) {
+func Register(name string, sourceFactory any) {
+	var factory SourceFactory
+	switch fty := sourceFactory.(type) {
+	case SourceFactory:
+		factory = fty
+	case SourceFunc:
+		factory = fty
+	case func(*configv1.SourceConfig, *Options) (kratosconfig.Source, error):
+		factory = SourceFunc(fty)
+	default:
+		panic(ErrInvalidConfigType)
+	}
 	defaultBuilder.Register(name, factory)
 }
 

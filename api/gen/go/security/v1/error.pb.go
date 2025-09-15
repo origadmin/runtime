@@ -22,75 +22,59 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// SecurityErrorReason defines the application's specific security error codes.
+// These codes supplement the common error codes and provide more specific details
+// for authentication and authorization failures.
 type SecurityErrorReason int32
 
 const (
+	// The default, unspecified reason. This is required by proto3 syntax.
 	SecurityErrorReason_SECURITY_ERROR_REASON_UNSPECIFIED SecurityErrorReason = 0
-	// authentication starts at 1000, and ends at 1999
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUTHENTICATION     SecurityErrorReason = 1000
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_CLAIMS             SecurityErrorReason = 1001
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_BEARER_TOKEN       SecurityErrorReason = 1002
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_SUBJECT            SecurityErrorReason = 1003
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUDIENCE           SecurityErrorReason = 1004
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_ISSUER             SecurityErrorReason = 1005
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_EXPIRATION         SecurityErrorReason = 1006
-	SecurityErrorReason_SECURITY_ERROR_REASON_TOKEN_NOT_FOUND            SecurityErrorReason = 1007
-	SecurityErrorReason_SECURITY_ERROR_REASON_BEARER_TOKEN_MISSING       SecurityErrorReason = 1010
-	SecurityErrorReason_SECURITY_ERROR_REASON_TOKEN_EXPIRED              SecurityErrorReason = 1011
-	SecurityErrorReason_SECURITY_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD SecurityErrorReason = 1012
-	SecurityErrorReason_SECURITY_ERROR_REASON_MISSING_KEY_FUNC           SecurityErrorReason = 1014
-	SecurityErrorReason_SECURITY_ERROR_REASON_SIGN_TOKEN_FAILED          SecurityErrorReason = 1015
-	SecurityErrorReason_SECURITY_ERROR_REASON_GET_KEY_FAILED             SecurityErrorReason = 1016
-	// authorization starts at 2000, and ends at 2999
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AUTHORIZATION SecurityErrorReason = 2000
-	SecurityErrorReason_SECURITY_ERROR_REASON_NO_AT_HASH            SecurityErrorReason = 1050
-	SecurityErrorReason_SECURITY_ERROR_REASON_INVALID_AT_HASH       SecurityErrorReason = 1051
-	SecurityErrorReason_SECURITY_ERROR_REASON_UNSECURITY_ENTICATED  SecurityErrorReason = 3000
+	// The provided credentials (e.g., username/password) are invalid.
+	SecurityErrorReason_INVALID_CREDENTIALS SecurityErrorReason = 1002
+	// The authentication token has expired.
+	SecurityErrorReason_TOKEN_EXPIRED SecurityErrorReason = 1003
+	// The authentication token is malformed or invalid.
+	SecurityErrorReason_TOKEN_INVALID SecurityErrorReason = 1004
+	// The authentication token is missing from the request.
+	SecurityErrorReason_TOKEN_MISSING SecurityErrorReason = 1005
+	// The claims within the token are invalid.
+	SecurityErrorReason_INVALID_CLAIMS SecurityErrorReason = 1006
+	// The bearer token is specifically invalid or malformed.
+	SecurityErrorReason_INVALID_BEARER_TOKEN SecurityErrorReason = 1007
+	// The signing method used in the token is not supported.
+	SecurityErrorReason_UNSUPPORTED_SIGNING_METHOD SecurityErrorReason = 1008
+	// Failed to sign a new token.
+	SecurityErrorReason_SIGN_TOKEN_FAILED SecurityErrorReason = 1009
+	// The user is authenticated but does not have permission for the specific resource or action.
+	SecurityErrorReason_INVALID_AUTHORIZATION SecurityErrorReason = 2000
 )
 
 // Enum value maps for SecurityErrorReason.
 var (
 	SecurityErrorReason_name = map[int32]string{
 		0:    "SECURITY_ERROR_REASON_UNSPECIFIED",
-		1000: "SECURITY_ERROR_REASON_INVALID_AUTHENTICATION",
-		1001: "SECURITY_ERROR_REASON_INVALID_CLAIMS",
-		1002: "SECURITY_ERROR_REASON_INVALID_BEARER_TOKEN",
-		1003: "SECURITY_ERROR_REASON_INVALID_SUBJECT",
-		1004: "SECURITY_ERROR_REASON_INVALID_AUDIENCE",
-		1005: "SECURITY_ERROR_REASON_INVALID_ISSUER",
-		1006: "SECURITY_ERROR_REASON_INVALID_EXPIRATION",
-		1007: "SECURITY_ERROR_REASON_TOKEN_NOT_FOUND",
-		1010: "SECURITY_ERROR_REASON_BEARER_TOKEN_MISSING",
-		1011: "SECURITY_ERROR_REASON_TOKEN_EXPIRED",
-		1012: "SECURITY_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD",
-		1014: "SECURITY_ERROR_REASON_MISSING_KEY_FUNC",
-		1015: "SECURITY_ERROR_REASON_SIGN_TOKEN_FAILED",
-		1016: "SECURITY_ERROR_REASON_GET_KEY_FAILED",
-		2000: "SECURITY_ERROR_REASON_INVALID_AUTHORIZATION",
-		1050: "SECURITY_ERROR_REASON_NO_AT_HASH",
-		1051: "SECURITY_ERROR_REASON_INVALID_AT_HASH",
-		3000: "SECURITY_ERROR_REASON_UNSECURITY_ENTICATED",
+		1002: "INVALID_CREDENTIALS",
+		1003: "TOKEN_EXPIRED",
+		1004: "TOKEN_INVALID",
+		1005: "TOKEN_MISSING",
+		1006: "INVALID_CLAIMS",
+		1007: "INVALID_BEARER_TOKEN",
+		1008: "UNSUPPORTED_SIGNING_METHOD",
+		1009: "SIGN_TOKEN_FAILED",
+		2000: "INVALID_AUTHORIZATION",
 	}
 	SecurityErrorReason_value = map[string]int32{
-		"SECURITY_ERROR_REASON_UNSPECIFIED":                0,
-		"SECURITY_ERROR_REASON_INVALID_AUTHENTICATION":     1000,
-		"SECURITY_ERROR_REASON_INVALID_CLAIMS":             1001,
-		"SECURITY_ERROR_REASON_INVALID_BEARER_TOKEN":       1002,
-		"SECURITY_ERROR_REASON_INVALID_SUBJECT":            1003,
-		"SECURITY_ERROR_REASON_INVALID_AUDIENCE":           1004,
-		"SECURITY_ERROR_REASON_INVALID_ISSUER":             1005,
-		"SECURITY_ERROR_REASON_INVALID_EXPIRATION":         1006,
-		"SECURITY_ERROR_REASON_TOKEN_NOT_FOUND":            1007,
-		"SECURITY_ERROR_REASON_BEARER_TOKEN_MISSING":       1010,
-		"SECURITY_ERROR_REASON_TOKEN_EXPIRED":              1011,
-		"SECURITY_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD": 1012,
-		"SECURITY_ERROR_REASON_MISSING_KEY_FUNC":           1014,
-		"SECURITY_ERROR_REASON_SIGN_TOKEN_FAILED":          1015,
-		"SECURITY_ERROR_REASON_GET_KEY_FAILED":             1016,
-		"SECURITY_ERROR_REASON_INVALID_AUTHORIZATION":      2000,
-		"SECURITY_ERROR_REASON_NO_AT_HASH":                 1050,
-		"SECURITY_ERROR_REASON_INVALID_AT_HASH":            1051,
-		"SECURITY_ERROR_REASON_UNSECURITY_ENTICATED":       3000,
+		"SECURITY_ERROR_REASON_UNSPECIFIED": 0,
+		"INVALID_CREDENTIALS":               1002,
+		"TOKEN_EXPIRED":                     1003,
+		"TOKEN_INVALID":                     1004,
+		"TOKEN_MISSING":                     1005,
+		"INVALID_CLAIMS":                    1006,
+		"INVALID_BEARER_TOKEN":              1007,
+		"UNSUPPORTED_SIGNING_METHOD":        1008,
+		"SIGN_TOKEN_FAILED":                 1009,
+		"INVALID_AUTHORIZATION":             2000,
 	}
 )
 
@@ -125,29 +109,20 @@ var File_security_v1_error_proto protoreflect.FileDescriptor
 
 const file_security_v1_error_proto_rawDesc = "" +
 	"\n" +
-	"\x17security/v1/error.proto\x12\vsecurity.v1\x1a\x13errors/errors.proto*\xea\a\n" +
+	"\x17security/v1/error.proto\x12\vsecurity.v1\x1a\x13errors/errors.proto*\xd3\x02\n" +
 	"\x13SecurityErrorReason\x12%\n" +
-	"!SECURITY_ERROR_REASON_UNSPECIFIED\x10\x00\x127\n" +
-	",SECURITY_ERROR_REASON_INVALID_AUTHENTICATION\x10\xe8\a\x1a\x04\xa8E\x91\x03\x12/\n" +
-	"$SECURITY_ERROR_REASON_INVALID_CLAIMS\x10\xe9\a\x1a\x04\xa8E\x91\x03\x125\n" +
-	"*SECURITY_ERROR_REASON_INVALID_BEARER_TOKEN\x10\xea\a\x1a\x04\xa8E\x91\x03\x120\n" +
-	"%SECURITY_ERROR_REASON_INVALID_SUBJECT\x10\xeb\a\x1a\x04\xa8E\x91\x03\x121\n" +
-	"&SECURITY_ERROR_REASON_INVALID_AUDIENCE\x10\xec\a\x1a\x04\xa8E\x91\x03\x12/\n" +
-	"$SECURITY_ERROR_REASON_INVALID_ISSUER\x10\xed\a\x1a\x04\xa8E\x91\x03\x123\n" +
-	"(SECURITY_ERROR_REASON_INVALID_EXPIRATION\x10\xee\a\x1a\x04\xa8E\x91\x03\x120\n" +
-	"%SECURITY_ERROR_REASON_TOKEN_NOT_FOUND\x10\xef\a\x1a\x04\xa8E\x91\x03\x125\n" +
-	"*SECURITY_ERROR_REASON_BEARER_TOKEN_MISSING\x10\xf2\a\x1a\x04\xa8E\x91\x03\x12.\n" +
-	"#SECURITY_ERROR_REASON_TOKEN_EXPIRED\x10\xf3\a\x1a\x04\xa8E\x91\x03\x12;\n" +
-	"0SECURITY_ERROR_REASON_UNSUPPORTED_SIGNING_METHOD\x10\xf4\a\x1a\x04\xa8E\x91\x03\x121\n" +
-	"&SECURITY_ERROR_REASON_MISSING_KEY_FUNC\x10\xf6\a\x1a\x04\xa8E\x91\x03\x122\n" +
-	"'SECURITY_ERROR_REASON_SIGN_TOKEN_FAILED\x10\xf7\a\x1a\x04\xa8E\x91\x03\x12/\n" +
-	"$SECURITY_ERROR_REASON_GET_KEY_FAILED\x10\xf8\a\x1a\x04\xa8E\x91\x03\x126\n" +
-	"+SECURITY_ERROR_REASON_INVALID_AUTHORIZATION\x10\xd0\x0f\x1a\x04\xa8E\x93\x03\x12+\n" +
-	" SECURITY_ERROR_REASON_NO_AT_HASH\x10\x9a\b\x1a\x04\xa8E\x93\x03\x120\n" +
-	"%SECURITY_ERROR_REASON_INVALID_AT_HASH\x10\x9b\b\x1a\x04\xa8E\x93\x03\x125\n" +
-	"*SECURITY_ERROR_REASON_UNSECURITY_ENTICATED\x10\xb8\x17\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B\xad\x01\n" +
+	"!SECURITY_ERROR_REASON_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x13INVALID_CREDENTIALS\x10\xea\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
+	"\rTOKEN_EXPIRED\x10\xeb\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
+	"\rTOKEN_INVALID\x10\xec\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
+	"\rTOKEN_MISSING\x10\xed\a\x1a\x04\xa8E\x91\x03\x12\x19\n" +
+	"\x0eINVALID_CLAIMS\x10\xee\a\x1a\x04\xa8E\x91\x03\x12\x1f\n" +
+	"\x14INVALID_BEARER_TOKEN\x10\xef\a\x1a\x04\xa8E\x91\x03\x12%\n" +
+	"\x1aUNSUPPORTED_SIGNING_METHOD\x10\xf0\a\x1a\x04\xa8E\x91\x03\x12\x1c\n" +
+	"\x11SIGN_TOKEN_FAILED\x10\xf1\a\x1a\x04\xa8E\xf4\x03\x12 \n" +
+	"\x15INVALID_AUTHORIZATION\x10\xd0\x0f\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B\xaa\x01\n" +
 	"\x0fcom.security.v1B\n" +
-	"ErrorProtoP\x01Z>github.com/origadmin/runtime/api/gen/go/security/v1;securityv1\xf8\x01\x01\xa2\x02\x03SXX\xaa\x02\vSecurity.V1\xca\x02\vSecurity\\V1\xe2\x02\x17Security\\V1\\GPBMetadata\xea\x02\fSecurity::V1b\x06proto3"
+	"ErrorProtoP\x01Z>github.com/origadmin/runtime/api/gen/go/security/v1;securityv1\xa2\x02\x03SXX\xaa\x02\vSecurity.V1\xca\x02\vSecurity\\V1\xe2\x02\x17Security\\V1\\GPBMetadata\xea\x02\fSecurity::V1b\x06proto3"
 
 var (
 	file_security_v1_error_proto_rawDescOnce sync.Once
