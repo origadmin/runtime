@@ -7,6 +7,7 @@
 package configv1
 
 import (
+	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -119,7 +120,7 @@ func (x HealthCheck_CheckType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use HealthCheck_CheckType.Descriptor instead.
 func (HealthCheck_CheckType) EnumDescriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{6, 0}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{5, 0}
 }
 
 type Gateway struct {
@@ -127,10 +128,10 @@ type Gateway struct {
 	Name    string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Version string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	// Deprecated: Marked as deprecated in config/v1/gateway.proto.
-	Hosts         []string        `protobuf:"bytes,3,rep,name=hosts,proto3" json:"hosts,omitempty"`
-	Endpoints     []*Endpoint     `protobuf:"bytes,4,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
-	Middlewares   []*Middleware   `protobuf:"bytes,5,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
-	TlsStore      map[string]*TLS `protobuf:"bytes,6,rep,name=tls_store,json=tlsStore,proto3" json:"tls_store,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Hosts         []string                 `protobuf:"bytes,3,rep,name=hosts,proto3" json:"hosts,omitempty"`
+	Endpoints     []*Endpoint              `protobuf:"bytes,4,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
+	Middlewares   []*Middleware            `protobuf:"bytes,5,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	TlsStore      map[string]*v1.TLSConfig `protobuf:"bytes,6,rep,name=tls_store,json=tlsStore,proto3" json:"tls_store,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -201,87 +202,11 @@ func (x *Gateway) GetMiddlewares() []*Middleware {
 	return nil
 }
 
-func (x *Gateway) GetTlsStore() map[string]*TLS {
+func (x *Gateway) GetTlsStore() map[string]*v1.TLSConfig {
 	if x != nil {
 		return x.TlsStore
 	}
 	return nil
-}
-
-type TLS struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Insecure      bool                   `protobuf:"varint,1,opt,name=insecure,proto3" json:"insecure,omitempty"`
-	Cacert        string                 `protobuf:"bytes,2,opt,name=cacert,proto3" json:"cacert,omitempty"`
-	Cert          string                 `protobuf:"bytes,3,opt,name=cert,proto3" json:"cert,omitempty"`
-	Key           string                 `protobuf:"bytes,4,opt,name=key,proto3" json:"key,omitempty"`
-	ServerName    string                 `protobuf:"bytes,5,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TLS) Reset() {
-	*x = TLS{}
-	mi := &file_config_v1_gateway_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TLS) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TLS) ProtoMessage() {}
-
-func (x *TLS) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TLS.ProtoReflect.Descriptor instead.
-func (*TLS) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *TLS) GetInsecure() bool {
-	if x != nil {
-		return x.Insecure
-	}
-	return false
-}
-
-func (x *TLS) GetCacert() string {
-	if x != nil {
-		return x.Cacert
-	}
-	return ""
-}
-
-func (x *TLS) GetCert() string {
-	if x != nil {
-		return x.Cert
-	}
-	return ""
-}
-
-func (x *TLS) GetKey() string {
-	if x != nil {
-		return x.Key
-	}
-	return ""
-}
-
-func (x *TLS) GetServerName() string {
-	if x != nil {
-		return x.ServerName
-	}
-	return ""
 }
 
 type PriorityConfig struct {
@@ -295,7 +220,7 @@ type PriorityConfig struct {
 
 func (x *PriorityConfig) Reset() {
 	*x = PriorityConfig{}
-	mi := &file_config_v1_gateway_proto_msgTypes[2]
+	mi := &file_config_v1_gateway_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -307,7 +232,7 @@ func (x *PriorityConfig) String() string {
 func (*PriorityConfig) ProtoMessage() {}
 
 func (x *PriorityConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[2]
+	mi := &file_config_v1_gateway_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -320,7 +245,7 @@ func (x *PriorityConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriorityConfig.ProtoReflect.Descriptor instead.
 func (*PriorityConfig) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{2}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *PriorityConfig) GetName() string {
@@ -362,7 +287,7 @@ type Endpoint struct {
 
 func (x *Endpoint) Reset() {
 	*x = Endpoint{}
-	mi := &file_config_v1_gateway_proto_msgTypes[3]
+	mi := &file_config_v1_gateway_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -374,7 +299,7 @@ func (x *Endpoint) String() string {
 func (*Endpoint) ProtoMessage() {}
 
 func (x *Endpoint) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[3]
+	mi := &file_config_v1_gateway_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -387,7 +312,7 @@ func (x *Endpoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Endpoint.ProtoReflect.Descriptor instead.
 func (*Endpoint) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{3}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Endpoint) GetPath() string {
@@ -471,7 +396,7 @@ type Middleware struct {
 
 func (x *Middleware) Reset() {
 	*x = Middleware{}
-	mi := &file_config_v1_gateway_proto_msgTypes[4]
+	mi := &file_config_v1_gateway_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -483,7 +408,7 @@ func (x *Middleware) String() string {
 func (*Middleware) ProtoMessage() {}
 
 func (x *Middleware) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[4]
+	mi := &file_config_v1_gateway_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -496,7 +421,7 @@ func (x *Middleware) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Middleware.ProtoReflect.Descriptor instead.
 func (*Middleware) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{4}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Middleware) GetName() string {
@@ -537,7 +462,7 @@ type Backend struct {
 
 func (x *Backend) Reset() {
 	*x = Backend{}
-	mi := &file_config_v1_gateway_proto_msgTypes[5]
+	mi := &file_config_v1_gateway_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -549,7 +474,7 @@ func (x *Backend) String() string {
 func (*Backend) ProtoMessage() {}
 
 func (x *Backend) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[5]
+	mi := &file_config_v1_gateway_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -562,7 +487,7 @@ func (x *Backend) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Backend.ProtoReflect.Descriptor instead.
 func (*Backend) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{5}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Backend) GetTarget() string {
@@ -617,7 +542,7 @@ type HealthCheck struct {
 
 func (x *HealthCheck) Reset() {
 	*x = HealthCheck{}
-	mi := &file_config_v1_gateway_proto_msgTypes[6]
+	mi := &file_config_v1_gateway_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -629,7 +554,7 @@ func (x *HealthCheck) String() string {
 func (*HealthCheck) ProtoMessage() {}
 
 func (x *HealthCheck) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[6]
+	mi := &file_config_v1_gateway_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -642,7 +567,7 @@ func (x *HealthCheck) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheck.ProtoReflect.Descriptor instead.
 func (*HealthCheck) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{6}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *HealthCheck) GetType() HealthCheck_CheckType {
@@ -673,7 +598,7 @@ type Retry struct {
 
 func (x *Retry) Reset() {
 	*x = Retry{}
-	mi := &file_config_v1_gateway_proto_msgTypes[7]
+	mi := &file_config_v1_gateway_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -685,7 +610,7 @@ func (x *Retry) String() string {
 func (*Retry) ProtoMessage() {}
 
 func (x *Retry) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[7]
+	mi := &file_config_v1_gateway_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -698,7 +623,7 @@ func (x *Retry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Retry.ProtoReflect.Descriptor instead.
 func (*Retry) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{7}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Retry) GetAttempts() uint32 {
@@ -742,7 +667,7 @@ type Condition struct {
 
 func (x *Condition) Reset() {
 	*x = Condition{}
-	mi := &file_config_v1_gateway_proto_msgTypes[8]
+	mi := &file_config_v1_gateway_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -754,7 +679,7 @@ func (x *Condition) String() string {
 func (*Condition) ProtoMessage() {}
 
 func (x *Condition) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[8]
+	mi := &file_config_v1_gateway_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -767,7 +692,7 @@ func (x *Condition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Condition.ProtoReflect.Descriptor instead.
 func (*Condition) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{8}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Condition) GetCondition() isCondition_Condition {
@@ -823,7 +748,7 @@ type Condition_Header struct {
 
 func (x *Condition_Header) Reset() {
 	*x = Condition_Header{}
-	mi := &file_config_v1_gateway_proto_msgTypes[12]
+	mi := &file_config_v1_gateway_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -835,7 +760,7 @@ func (x *Condition_Header) String() string {
 func (*Condition_Header) ProtoMessage() {}
 
 func (x *Condition_Header) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_gateway_proto_msgTypes[12]
+	mi := &file_config_v1_gateway_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -848,7 +773,7 @@ func (x *Condition_Header) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Condition_Header.ProtoReflect.Descriptor instead.
 func (*Condition_Header) Descriptor() ([]byte, []int) {
-	return file_config_v1_gateway_proto_rawDescGZIP(), []int{8, 0}
+	return file_config_v1_gateway_proto_rawDescGZIP(), []int{7, 0}
 }
 
 func (x *Condition_Header) GetName() string {
@@ -869,24 +794,17 @@ var File_config_v1_gateway_proto protoreflect.FileDescriptor
 
 const file_config_v1_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x17config/v1/gateway.proto\x12\tconfig.v1\"\xc9\x02\n" +
+	"\x17config/v1/gateway.proto\x12\tconfig.v1\x1a\x1fsecurity/transport/v1/tls.proto\"\xdb\x02\n" +
 	"\aGateway\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x12\x18\n" +
 	"\x05hosts\x18\x03 \x03(\tB\x02\x18\x01R\x05hosts\x121\n" +
 	"\tendpoints\x18\x04 \x03(\v2\x13.config.v1.EndpointR\tendpoints\x127\n" +
 	"\vmiddlewares\x18\x05 \x03(\v2\x15.config.v1.MiddlewareR\vmiddlewares\x12=\n" +
-	"\ttls_store\x18\x06 \x03(\v2 .config.v1.Gateway.TlsStoreEntryR\btlsStore\x1aK\n" +
+	"\ttls_store\x18\x06 \x03(\v2 .config.v1.Gateway.TlsStoreEntryR\btlsStore\x1a]\n" +
 	"\rTlsStoreEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12$\n" +
-	"\x05value\x18\x02 \x01(\v2\x0e.config.v1.TLSR\x05value:\x028\x01\"\x80\x01\n" +
-	"\x03TLS\x12\x1a\n" +
-	"\binsecure\x18\x01 \x01(\bR\binsecure\x12\x16\n" +
-	"\x06cacert\x18\x02 \x01(\tR\x06cacert\x12\x12\n" +
-	"\x04cert\x18\x03 \x01(\tR\x04cert\x12\x10\n" +
-	"\x03key\x18\x04 \x01(\tR\x03key\x12\x1f\n" +
-	"\vserver_name\x18\x05 \x01(\tR\n" +
-	"serverName\"q\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x126\n" +
+	"\x05value\x18\x02 \x01(\v2 .security.transport.v1.TLSConfigR\x05value:\x028\x01\"q\n" +
 	"\x0ePriorityConfig\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x121\n" +
@@ -966,40 +884,40 @@ func file_config_v1_gateway_proto_rawDescGZIP() []byte {
 }
 
 var file_config_v1_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_config_v1_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_config_v1_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_config_v1_gateway_proto_goTypes = []any{
 	(Protocol)(0),              // 0: config.v1.Protocol
 	(HealthCheck_CheckType)(0), // 1: config.v1.HealthCheck.CheckType
 	(*Gateway)(nil),            // 2: config.v1.Gateway
-	(*TLS)(nil),                // 3: config.v1.TLS
-	(*PriorityConfig)(nil),     // 4: config.v1.PriorityConfig
-	(*Endpoint)(nil),           // 5: config.v1.Endpoint
-	(*Middleware)(nil),         // 6: config.v1.Middleware
-	(*Backend)(nil),            // 7: config.v1.Backend
-	(*HealthCheck)(nil),        // 8: config.v1.HealthCheck
-	(*Retry)(nil),              // 9: config.v1.Retry
-	(*Condition)(nil),          // 10: config.v1.Condition
-	nil,                        // 11: config.v1.Gateway.TlsStoreEntry
-	nil,                        // 12: config.v1.Endpoint.MetadataEntry
-	nil,                        // 13: config.v1.Backend.MetadataEntry
-	(*Condition_Header)(nil),   // 14: config.v1.Condition.Header
+	(*PriorityConfig)(nil),     // 3: config.v1.PriorityConfig
+	(*Endpoint)(nil),           // 4: config.v1.Endpoint
+	(*Middleware)(nil),         // 5: config.v1.Middleware
+	(*Backend)(nil),            // 6: config.v1.Backend
+	(*HealthCheck)(nil),        // 7: config.v1.HealthCheck
+	(*Retry)(nil),              // 8: config.v1.Retry
+	(*Condition)(nil),          // 9: config.v1.Condition
+	nil,                        // 10: config.v1.Gateway.TlsStoreEntry
+	nil,                        // 11: config.v1.Endpoint.MetadataEntry
+	nil,                        // 12: config.v1.Backend.MetadataEntry
+	(*Condition_Header)(nil),   // 13: config.v1.Condition.Header
+	(*v1.TLSConfig)(nil),       // 14: security.transport.v1.TLSConfig
 }
 var file_config_v1_gateway_proto_depIdxs = []int32{
-	5,  // 0: config.v1.Gateway.endpoints:type_name -> config.v1.Endpoint
-	6,  // 1: config.v1.Gateway.middlewares:type_name -> config.v1.Middleware
-	11, // 2: config.v1.Gateway.tls_store:type_name -> config.v1.Gateway.TlsStoreEntry
-	5,  // 3: config.v1.PriorityConfig.endpoints:type_name -> config.v1.Endpoint
+	4,  // 0: config.v1.Gateway.endpoints:type_name -> config.v1.Endpoint
+	5,  // 1: config.v1.Gateway.middlewares:type_name -> config.v1.Middleware
+	10, // 2: config.v1.Gateway.tls_store:type_name -> config.v1.Gateway.TlsStoreEntry
+	4,  // 3: config.v1.PriorityConfig.endpoints:type_name -> config.v1.Endpoint
 	0,  // 4: config.v1.Endpoint.protocol:type_name -> config.v1.Protocol
-	6,  // 5: config.v1.Endpoint.middlewares:type_name -> config.v1.Middleware
-	7,  // 6: config.v1.Endpoint.backends:type_name -> config.v1.Backend
-	9,  // 7: config.v1.Endpoint.retry:type_name -> config.v1.Retry
-	12, // 8: config.v1.Endpoint.metadata:type_name -> config.v1.Endpoint.MetadataEntry
-	8,  // 9: config.v1.Backend.health_check:type_name -> config.v1.HealthCheck
-	13, // 10: config.v1.Backend.metadata:type_name -> config.v1.Backend.MetadataEntry
+	5,  // 5: config.v1.Endpoint.middlewares:type_name -> config.v1.Middleware
+	6,  // 6: config.v1.Endpoint.backends:type_name -> config.v1.Backend
+	8,  // 7: config.v1.Endpoint.retry:type_name -> config.v1.Retry
+	11, // 8: config.v1.Endpoint.metadata:type_name -> config.v1.Endpoint.MetadataEntry
+	7,  // 9: config.v1.Backend.health_check:type_name -> config.v1.HealthCheck
+	12, // 10: config.v1.Backend.metadata:type_name -> config.v1.Backend.MetadataEntry
 	1,  // 11: config.v1.HealthCheck.type:type_name -> config.v1.HealthCheck.CheckType
-	10, // 12: config.v1.Retry.conditions:type_name -> config.v1.Condition
-	14, // 13: config.v1.Condition.by_header:type_name -> config.v1.Condition.Header
-	3,  // 14: config.v1.Gateway.TlsStoreEntry.value:type_name -> config.v1.TLS
+	9,  // 12: config.v1.Retry.conditions:type_name -> config.v1.Condition
+	13, // 13: config.v1.Condition.by_header:type_name -> config.v1.Condition.Header
+	14, // 14: config.v1.Gateway.TlsStoreEntry.value:type_name -> security.transport.v1.TLSConfig
 	15, // [15:15] is the sub-list for method output_type
 	15, // [15:15] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name
@@ -1012,8 +930,8 @@ func file_config_v1_gateway_proto_init() {
 	if File_config_v1_gateway_proto != nil {
 		return
 	}
-	file_config_v1_gateway_proto_msgTypes[5].OneofWrappers = []any{}
-	file_config_v1_gateway_proto_msgTypes[8].OneofWrappers = []any{
+	file_config_v1_gateway_proto_msgTypes[4].OneofWrappers = []any{}
+	file_config_v1_gateway_proto_msgTypes[7].OneofWrappers = []any{
 		(*Condition_ByStatusCode)(nil),
 		(*Condition_ByHeader)(nil),
 	}
@@ -1023,7 +941,7 @@ func file_config_v1_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_gateway_proto_rawDesc), len(file_config_v1_gateway_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   13,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

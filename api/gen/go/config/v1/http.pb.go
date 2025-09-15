@@ -8,6 +8,7 @@ package configv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -29,8 +30,8 @@ type HTTP struct {
 	// Default: "tcp"
 	Network string `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
 	// Server address (host:port)
-	// Example: "0.0.0.0:8080", ":8080"
-	// Default: ":8080"
+	// Example: "0.0.0.0:8000", ":8000"
+	// Default: ":8000"
 	Addr string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
 	// Timeout for request processing (seconds)
 	// Default: 30
@@ -39,18 +40,21 @@ type HTTP struct {
 	// Default: 10
 	ShutdownTimeout int64 `protobuf:"varint,4,opt,name=shutdown_timeout,proto3" json:"shutdown_timeout,omitempty"`
 	// Service endpoint for service discovery
-	// Format: scheme://host:port/path
-	// Example: "http://service.example.com:8080/api"
+	// Format: scheme://host:port
+	// Example: "http://service.example.com:8000"
 	Endpoint string `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	// Enable request size limit
-	// Default: true
-	EnableRequestSizeLimit bool `protobuf:"varint,6,opt,name=enable_request_size_limit,proto3" json:"enable_request_size_limit,omitempty"`
-	// Maximum request size (bytes)
+	// Enable gRPC reflection
+	// Default: false
+	EnableReflection bool `protobuf:"varint,6,opt,name=enable_reflection,proto3" json:"enable_reflection,omitempty"`
+	// Maximum receive message size (bytes)
 	// Default: 4MB (4 * 1024 * 1024)
-	MaxRequestSize int64 `protobuf:"varint,7,opt,name=max_request_size,proto3" json:"max_request_size,omitempty"`
+	MaxRecvMsgSize int32 `protobuf:"varint,7,opt,name=max_recv_msg_size,proto3" json:"max_recv_msg_size,omitempty"`
+	// Maximum send message size (bytes)
+	// Default: 4MB (4 * 1024 * 1024)
+	MaxSendMsgSize int32 `protobuf:"varint,8,opt,name=max_send_msg_size,proto3" json:"max_send_msg_size,omitempty"`
 	// TLS configuration
 	// If null or not set, TLS is disabled
-	Tls           *TLSConfig `protobuf:"bytes,8,opt,name=tls,proto3" json:"tls,omitempty"`
+	Tls           *v1.TLSConfig `protobuf:"bytes,9,opt,name=tls,proto3" json:"tls,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -120,21 +124,28 @@ func (x *HTTP) GetEndpoint() string {
 	return ""
 }
 
-func (x *HTTP) GetEnableRequestSizeLimit() bool {
+func (x *HTTP) GetEnableReflection() bool {
 	if x != nil {
-		return x.EnableRequestSizeLimit
+		return x.EnableReflection
 	}
 	return false
 }
 
-func (x *HTTP) GetMaxRequestSize() int64 {
+func (x *HTTP) GetMaxRecvMsgSize() int32 {
 	if x != nil {
-		return x.MaxRequestSize
+		return x.MaxRecvMsgSize
 	}
 	return 0
 }
 
-func (x *HTTP) GetTls() *TLSConfig {
+func (x *HTTP) GetMaxSendMsgSize() int32 {
+	if x != nil {
+		return x.MaxSendMsgSize
+	}
+	return 0
+}
+
+func (x *HTTP) GetTls() *v1.TLSConfig {
 	if x != nil {
 		return x.Tls
 	}
@@ -145,17 +156,18 @@ var File_config_v1_http_proto protoreflect.FileDescriptor
 
 const file_config_v1_http_proto_rawDesc = "" +
 	"\n" +
-	"\x14config/v1/http.proto\x12\tconfig.v1\x1a\x13config/v1/tls.proto\x1a\x17validate/validate.proto\"\xf6\x02\n" +
+	"\x14config/v1/http.proto\x12\tconfig.v1\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\"\xab\x03\n" +
 	"\x04HTTP\x12B\n" +
 	"\anetwork\x18\x01 \x01(\tB(\xfaB%r#R\x03tcpR\x04tcp4R\x04tcp6R\x04unixR\n" +
 	"unixpacketR\anetwork\x12\x1b\n" +
 	"\x04addr\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04addr\x12!\n" +
 	"\atimeout\x18\x03 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\atimeout\x123\n" +
 	"\x10shutdown_timeout\x18\x04 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x10shutdown_timeout\x12\x1a\n" +
-	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x12<\n" +
-	"\x19enable_request_size_limit\x18\x06 \x01(\bR\x19enable_request_size_limit\x123\n" +
-	"\x10max_request_size\x18\a \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x10max_request_size\x12&\n" +
-	"\x03tls\x18\b \x01(\v2\x14.config.v1.TLSConfigR\x03tlsB\x9e\x01\n" +
+	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x12,\n" +
+	"\x11enable_reflection\x18\x06 \x01(\bR\x11enable_reflection\x125\n" +
+	"\x11max_recv_msg_size\x18\a \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x11max_recv_msg_size\x125\n" +
+	"\x11max_send_msg_size\x18\b \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x11max_send_msg_size\x122\n" +
+	"\x03tls\x18\t \x01(\v2 .security.transport.v1.TLSConfigR\x03tlsB\x9e\x01\n" +
 	"\rcom.config.v1B\tHttpProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -173,11 +185,11 @@ func file_config_v1_http_proto_rawDescGZIP() []byte {
 
 var file_config_v1_http_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_config_v1_http_proto_goTypes = []any{
-	(*HTTP)(nil),      // 0: config.v1.HTTP
-	(*TLSConfig)(nil), // 1: config.v1.TLSConfig
+	(*HTTP)(nil),         // 0: config.v1.HTTP
+	(*v1.TLSConfig)(nil), // 1: security.transport.v1.TLSConfig
 }
 var file_config_v1_http_proto_depIdxs = []int32{
-	1, // 0: config.v1.HTTP.tls:type_name -> config.v1.TLSConfig
+	1, // 0: config.v1.HTTP.tls:type_name -> security.transport.v1.TLSConfig
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -190,7 +202,6 @@ func file_config_v1_http_proto_init() {
 	if File_config_v1_http_proto != nil {
 		return
 	}
-	file_config_v1_tls_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

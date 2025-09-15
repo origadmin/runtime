@@ -2,14 +2,14 @@ syntax = "proto3";
 
 package config.v1;
 
-import "config/v1/tls.proto";
+import "security/transport/v1/tls.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/v1;configv1";
 option java_multiple_files = true;
 option java_outer_classname = "HTTPProto";
-option java_package = "com.github.origadmin.api.runtime.config.v1";
+option java_package = "com.com.github.origadmin.api.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
 // HTTP service configuration
@@ -22,8 +22,8 @@ message HTTP {
   ];
   
   // Server address (host:port)
-  // Example: "0.0.0.0:8080", ":8080"
-  // Default: ":8080"
+  // Example: "0.0.0.0:8000", ":8000"
+  // Default: ":8000"
   string addr = 2 [
     (validate.rules).string.min_len = 1,
     json_name = "addr"
@@ -44,22 +44,29 @@ message HTTP {
   ];
   
   // Service endpoint for service discovery
-  // Format: scheme://host:port/path
-  // Example: "http://service.example.com:8080/api"
+  // Format: scheme://host:port
+  // Example: "http://service.example.com:8000"
   string endpoint = 5 [json_name = "endpoint"];
   
-  // Enable request size limit
-  // Default: true
-  bool enable_request_size_limit = 6 [json_name = "enable_request_size_limit"];
+  // Enable gRPC reflection
+  // Default: false
+  bool enable_reflection = 6 [json_name = "enable_reflection"];
   
-  // Maximum request size (bytes)
+  // Maximum receive message size (bytes)
   // Default: 4MB (4 * 1024 * 1024)
-  int64 max_request_size = 7 [
-    (validate.rules).int64 = {gt: 0},
-    json_name = "max_request_size"
+  int32 max_recv_msg_size = 7 [
+    (validate.rules).int32 = {gt: 0},
+    json_name = "max_recv_msg_size"
+  ];
+  
+  // Maximum send message size (bytes)
+  // Default: 4MB (4 * 1024 * 1024)
+  int32 max_send_msg_size = 8 [
+    (validate.rules).int32 = {gt: 0},
+    json_name = "max_send_msg_size"
   ];
   
   // TLS configuration
   // If null or not set, TLS is disabled
-  TLSConfig tls = 8 [json_name = "tls"];
+  security.transport.v1.TLSConfig tls = 9 [json_name = "tls"];
 }

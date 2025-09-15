@@ -2,12 +2,13 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        (unknown)
-// source: config/v1/discovery.proto
+// source: discovery/v1/discovery.proto
 
-package configv1
+package discoveryv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	v1 "github.com/origadmin/runtime/api/gen/go/extension/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -28,7 +29,7 @@ type Discovery struct {
 	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`                 // Type
 	ServiceName   string                 `protobuf:"bytes,2,opt,name=service_name,proto3" json:"service_name,omitempty"` // ServiceName
 	Debug         bool                   `protobuf:"varint,5,opt,name=debug,proto3" json:"debug,omitempty"`
-	Customize     *Customize             `protobuf:"bytes,6,opt,name=customize,proto3" json:"customize,omitempty"`
+	Customize     *v1.Extension          `protobuf:"bytes,6,opt,name=customize,proto3" json:"customize,omitempty"`
 	Consul        *Discovery_Consul      `protobuf:"bytes,300,opt,name=consul,proto3,oneof" json:"consul,omitempty"` // Consul
 	Etcd          *Discovery_ETCD        `protobuf:"bytes,400,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`     // ETCD
 	unknownFields protoimpl.UnknownFields
@@ -37,7 +38,7 @@ type Discovery struct {
 
 func (x *Discovery) Reset() {
 	*x = Discovery{}
-	mi := &file_config_v1_discovery_proto_msgTypes[0]
+	mi := &file_discovery_v1_discovery_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -49,7 +50,7 @@ func (x *Discovery) String() string {
 func (*Discovery) ProtoMessage() {}
 
 func (x *Discovery) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_discovery_proto_msgTypes[0]
+	mi := &file_discovery_v1_discovery_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62,7 +63,7 @@ func (x *Discovery) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Discovery.ProtoReflect.Descriptor instead.
 func (*Discovery) Descriptor() ([]byte, []int) {
-	return file_config_v1_discovery_proto_rawDescGZIP(), []int{0}
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Discovery) GetType() string {
@@ -86,7 +87,7 @@ func (x *Discovery) GetDebug() bool {
 	return false
 }
 
-func (x *Discovery) GetCustomize() *Customize {
+func (x *Discovery) GetCustomize() *v1.Extension {
 	if x != nil {
 		return x.Customize
 	}
@@ -116,9 +117,9 @@ type Discovery_Consul struct {
 	HeartBeat   bool                   `protobuf:"varint,4,opt,name=heart_beat,proto3" json:"heart_beat,omitempty"`
 	HealthCheck bool                   `protobuf:"varint,5,opt,name=health_check,proto3" json:"health_check,omitempty"`
 	Datacenter  string                 `protobuf:"bytes,6,opt,name=datacenter,proto3" json:"datacenter,omitempty"`
-	// string tag = 7 [json_name = "tag"];
+	//  string tag = 7 [json_name = "tag"];
 	HealthCheckInterval uint32 `protobuf:"varint,8,opt,name=health_check_interval,proto3" json:"health_check_interval,omitempty"`
-	// string health_check_timeout = 9[json_name = "health_check_timeout"];
+	//  string health_check_timeout = 9[json_name = "health_check_timeout"];
 	Timeout                        int64  `protobuf:"varint,10,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	DeregisterCriticalServiceAfter uint32 `protobuf:"varint,11,opt,name=deregister_critical_service_after,proto3" json:"deregister_critical_service_after,omitempty"`
 	unknownFields                  protoimpl.UnknownFields
@@ -127,7 +128,7 @@ type Discovery_Consul struct {
 
 func (x *Discovery_Consul) Reset() {
 	*x = Discovery_Consul{}
-	mi := &file_config_v1_discovery_proto_msgTypes[1]
+	mi := &file_discovery_v1_discovery_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +140,7 @@ func (x *Discovery_Consul) String() string {
 func (*Discovery_Consul) ProtoMessage() {}
 
 func (x *Discovery_Consul) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_discovery_proto_msgTypes[1]
+	mi := &file_discovery_v1_discovery_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +153,7 @@ func (x *Discovery_Consul) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Discovery_Consul.ProtoReflect.Descriptor instead.
 func (*Discovery_Consul) Descriptor() ([]byte, []int) {
-	return file_config_v1_discovery_proto_rawDescGZIP(), []int{0, 0}
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{0, 0}
 }
 
 func (x *Discovery_Consul) GetAddress() string {
@@ -228,7 +229,7 @@ type Discovery_ETCD struct {
 
 func (x *Discovery_ETCD) Reset() {
 	*x = Discovery_ETCD{}
-	mi := &file_config_v1_discovery_proto_msgTypes[2]
+	mi := &file_discovery_v1_discovery_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -240,7 +241,7 @@ func (x *Discovery_ETCD) String() string {
 func (*Discovery_ETCD) ProtoMessage() {}
 
 func (x *Discovery_ETCD) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_discovery_proto_msgTypes[2]
+	mi := &file_discovery_v1_discovery_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -253,7 +254,7 @@ func (x *Discovery_ETCD) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Discovery_ETCD.ProtoReflect.Descriptor instead.
 func (*Discovery_ETCD) Descriptor() ([]byte, []int) {
-	return file_config_v1_discovery_proto_rawDescGZIP(), []int{0, 1}
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{0, 1}
 }
 
 func (x *Discovery_ETCD) GetEndpoints() []string {
@@ -263,19 +264,19 @@ func (x *Discovery_ETCD) GetEndpoints() []string {
 	return nil
 }
 
-var File_config_v1_discovery_proto protoreflect.FileDescriptor
+var File_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
-const file_config_v1_discovery_proto_rawDesc = "" +
+const file_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/v1/discovery.proto\x12\tconfig.v1\x1a\x19config/v1/customize.proto\x1a\x17validate/validate.proto\"\xcb\x05\n" +
+	"\x1cdiscovery/v1/discovery.proto\x12\fdiscovery.v1\x1a\x1cextension/v1/extension.proto\x1a\x17validate/validate.proto\"\xd4\x05\n" +
 	"\tDiscovery\x12Q\n" +
 	"\x04type\x18\x01 \x01(\tB=\xfaB:r8R\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
 	"kubernetesR\apolarisR\x04type\x12\"\n" +
 	"\fservice_name\x18\x02 \x01(\tR\fservice_name\x12\x14\n" +
-	"\x05debug\x18\x05 \x01(\bR\x05debug\x122\n" +
-	"\tcustomize\x18\x06 \x01(\v2\x14.config.v1.CustomizeR\tcustomize\x129\n" +
-	"\x06consul\x18\xac\x02 \x01(\v2\x1b.config.v1.Discovery.ConsulH\x00R\x06consul\x88\x01\x01\x123\n" +
-	"\x04etcd\x18\x90\x03 \x01(\v2\x19.config.v1.Discovery.ETCDH\x01R\x04etcd\x88\x01\x01\x1a\xd2\x02\n" +
+	"\x05debug\x18\x05 \x01(\bR\x05debug\x125\n" +
+	"\tcustomize\x18\x06 \x01(\v2\x17.extension.v1.ExtensionR\tcustomize\x12<\n" +
+	"\x06consul\x18\xac\x02 \x01(\v2\x1e.discovery.v1.Discovery.ConsulH\x00R\x06consul\x88\x01\x01\x126\n" +
+	"\x04etcd\x18\x90\x03 \x01(\v2\x1c.discovery.v1.Discovery.ETCDH\x01R\x04etcd\x88\x01\x01\x1a\xd2\x02\n" +
 	"\x06Consul\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
 	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
@@ -294,33 +295,32 @@ const file_config_v1_discovery_proto_rawDesc = "" +
 	"\x04ETCD\x12\x1c\n" +
 	"\tendpoints\x18\x01 \x03(\tR\tendpointsB\t\n" +
 	"\a_consulB\a\n" +
-	"\x05_etcdB\xa3\x01\n" +
-	"\rcom.config.v1B\x0eDiscoveryProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
-	"Config::V1b\x06proto3"
+	"\x05_etcdB\xb8\x01\n" +
+	"\x10com.discovery.v1B\x0eDiscoveryProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1\xf8\x01\x01\xa2\x02\x03DXX\xaa\x02\fDiscovery.V1\xca\x02\fDiscovery\\V1\xe2\x02\x18Discovery\\V1\\GPBMetadata\xea\x02\rDiscovery::V1b\x06proto3"
 
 var (
-	file_config_v1_discovery_proto_rawDescOnce sync.Once
-	file_config_v1_discovery_proto_rawDescData []byte
+	file_discovery_v1_discovery_proto_rawDescOnce sync.Once
+	file_discovery_v1_discovery_proto_rawDescData []byte
 )
 
-func file_config_v1_discovery_proto_rawDescGZIP() []byte {
-	file_config_v1_discovery_proto_rawDescOnce.Do(func() {
-		file_config_v1_discovery_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_config_v1_discovery_proto_rawDesc), len(file_config_v1_discovery_proto_rawDesc)))
+func file_discovery_v1_discovery_proto_rawDescGZIP() []byte {
+	file_discovery_v1_discovery_proto_rawDescOnce.Do(func() {
+		file_discovery_v1_discovery_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_discovery_v1_discovery_proto_rawDesc), len(file_discovery_v1_discovery_proto_rawDesc)))
 	})
-	return file_config_v1_discovery_proto_rawDescData
+	return file_discovery_v1_discovery_proto_rawDescData
 }
 
-var file_config_v1_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_config_v1_discovery_proto_goTypes = []any{
-	(*Discovery)(nil),        // 0: config.v1.Discovery
-	(*Discovery_Consul)(nil), // 1: config.v1.Discovery.Consul
-	(*Discovery_ETCD)(nil),   // 2: config.v1.Discovery.ETCD
-	(*Customize)(nil),        // 3: config.v1.Customize
+var file_discovery_v1_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_discovery_v1_discovery_proto_goTypes = []any{
+	(*Discovery)(nil),        // 0: discovery.v1.Discovery
+	(*Discovery_Consul)(nil), // 1: discovery.v1.Discovery.Consul
+	(*Discovery_ETCD)(nil),   // 2: discovery.v1.Discovery.ETCD
+	(*v1.Extension)(nil),     // 3: extension.v1.Extension
 }
-var file_config_v1_discovery_proto_depIdxs = []int32{
-	3, // 0: config.v1.Discovery.customize:type_name -> config.v1.Customize
-	1, // 1: config.v1.Discovery.consul:type_name -> config.v1.Discovery.Consul
-	2, // 2: config.v1.Discovery.etcd:type_name -> config.v1.Discovery.ETCD
+var file_discovery_v1_discovery_proto_depIdxs = []int32{
+	3, // 0: discovery.v1.Discovery.customize:type_name -> extension.v1.Extension
+	1, // 1: discovery.v1.Discovery.consul:type_name -> discovery.v1.Discovery.Consul
+	2, // 2: discovery.v1.Discovery.etcd:type_name -> discovery.v1.Discovery.ETCD
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
@@ -328,28 +328,27 @@ var file_config_v1_discovery_proto_depIdxs = []int32{
 	0, // [0:3] is the sub-list for field type_name
 }
 
-func init() { file_config_v1_discovery_proto_init() }
-func file_config_v1_discovery_proto_init() {
-	if File_config_v1_discovery_proto != nil {
+func init() { file_discovery_v1_discovery_proto_init() }
+func file_discovery_v1_discovery_proto_init() {
+	if File_discovery_v1_discovery_proto != nil {
 		return
 	}
-	file_config_v1_customize_proto_init()
-	file_config_v1_discovery_proto_msgTypes[0].OneofWrappers = []any{}
+	file_discovery_v1_discovery_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_discovery_proto_rawDesc), len(file_config_v1_discovery_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_discovery_v1_discovery_proto_rawDesc), len(file_discovery_v1_discovery_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_config_v1_discovery_proto_goTypes,
-		DependencyIndexes: file_config_v1_discovery_proto_depIdxs,
-		MessageInfos:      file_config_v1_discovery_proto_msgTypes,
+		GoTypes:           file_discovery_v1_discovery_proto_goTypes,
+		DependencyIndexes: file_discovery_v1_discovery_proto_depIdxs,
+		MessageInfos:      file_discovery_v1_discovery_proto_msgTypes,
 	}.Build()
-	File_config_v1_discovery_proto = out.File
-	file_config_v1_discovery_proto_goTypes = nil
-	file_config_v1_discovery_proto_depIdxs = nil
+	File_discovery_v1_discovery_proto = out.File
+	file_discovery_v1_discovery_proto_goTypes = nil
+	file_discovery_v1_discovery_proto_depIdxs = nil
 }

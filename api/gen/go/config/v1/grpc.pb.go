@@ -8,6 +8,7 @@ package configv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -53,7 +54,7 @@ type GRPC struct {
 	MaxSendMsgSize int32 `protobuf:"varint,8,opt,name=max_send_msg_size,proto3" json:"max_send_msg_size,omitempty"`
 	// TLS configuration
 	// If null or not set, TLS is disabled
-	Tls           *TLSConfig `protobuf:"bytes,9,opt,name=tls,proto3" json:"tls,omitempty"`
+	Tls           *v1.TLSConfig `protobuf:"bytes,9,opt,name=tls,proto3" json:"tls,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -144,7 +145,7 @@ func (x *GRPC) GetMaxSendMsgSize() int32 {
 	return 0
 }
 
-func (x *GRPC) GetTls() *TLSConfig {
+func (x *GRPC) GetTls() *v1.TLSConfig {
 	if x != nil {
 		return x.Tls
 	}
@@ -155,7 +156,7 @@ var File_config_v1_grpc_proto protoreflect.FileDescriptor
 
 const file_config_v1_grpc_proto_rawDesc = "" +
 	"\n" +
-	"\x14config/v1/grpc.proto\x12\tconfig.v1\x1a\x13config/v1/tls.proto\x1a\x17validate/validate.proto\"\x9f\x03\n" +
+	"\x14config/v1/grpc.proto\x12\tconfig.v1\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\"\xab\x03\n" +
 	"\x04GRPC\x12B\n" +
 	"\anetwork\x18\x01 \x01(\tB(\xfaB%r#R\x03tcpR\x04tcp4R\x04tcp6R\x04unixR\n" +
 	"unixpacketR\anetwork\x12\x1b\n" +
@@ -165,8 +166,8 @@ const file_config_v1_grpc_proto_rawDesc = "" +
 	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x12,\n" +
 	"\x11enable_reflection\x18\x06 \x01(\bR\x11enable_reflection\x125\n" +
 	"\x11max_recv_msg_size\x18\a \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x11max_recv_msg_size\x125\n" +
-	"\x11max_send_msg_size\x18\b \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x11max_send_msg_size\x12&\n" +
-	"\x03tls\x18\t \x01(\v2\x14.config.v1.TLSConfigR\x03tlsB\x9e\x01\n" +
+	"\x11max_send_msg_size\x18\b \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x11max_send_msg_size\x122\n" +
+	"\x03tls\x18\t \x01(\v2 .security.transport.v1.TLSConfigR\x03tlsB\x9e\x01\n" +
 	"\rcom.config.v1B\tGrpcProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -184,11 +185,11 @@ func file_config_v1_grpc_proto_rawDescGZIP() []byte {
 
 var file_config_v1_grpc_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_config_v1_grpc_proto_goTypes = []any{
-	(*GRPC)(nil),      // 0: config.v1.GRPC
-	(*TLSConfig)(nil), // 1: config.v1.TLSConfig
+	(*GRPC)(nil),         // 0: config.v1.GRPC
+	(*v1.TLSConfig)(nil), // 1: security.transport.v1.TLSConfig
 }
 var file_config_v1_grpc_proto_depIdxs = []int32{
-	1, // 0: config.v1.GRPC.tls:type_name -> config.v1.TLSConfig
+	1, // 0: config.v1.GRPC.tls:type_name -> security.transport.v1.TLSConfig
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -201,7 +202,6 @@ func file_config_v1_grpc_proto_init() {
 	if File_config_v1_grpc_proto != nil {
 		return
 	}
-	file_config_v1_tls_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

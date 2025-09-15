@@ -102,11 +102,22 @@ func (m *HTTP) validate(all bool) error {
 
 	// no validation rules for Endpoint
 
-	// no validation rules for EnableRequestSizeLimit
+	// no validation rules for EnableReflection
 
-	if m.GetMaxRequestSize() <= 0 {
+	if m.GetMaxRecvMsgSize() <= 0 {
 		err := HTTPValidationError{
-			field:  "MaxRequestSize",
+			field:  "MaxRecvMsgSize",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetMaxSendMsgSize() <= 0 {
+		err := HTTPValidationError{
+			field:  "MaxSendMsgSize",
 			reason: "value must be greater than 0",
 		}
 		if !all {
