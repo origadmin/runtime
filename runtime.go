@@ -25,7 +25,7 @@ import (
 	runtimeRegistry "github.com/origadmin/runtime/registry"
 )
 
-// AppInfo is an alias for configv1.App, representing the application's configured information.
+// AppInfo represents the application's configured information.
 type AppInfo struct {
 	ID       string
 	Name     string
@@ -37,7 +37,7 @@ type AppInfo struct {
 // core components like configuration, logging, and service discovery/registration.
 type Runtime interface {
 	// AppInfo returns the application's configured information (ID, name, version).
-	AppInfo() *AppInfo
+	AppInfo() AppInfo
 	// Logger returns the configured Kratos logger.
 	Logger() klog.Logger
 	// NewApp creates a new Kratos application instance. It wires together the runtime's
@@ -56,7 +56,7 @@ type Runtime interface {
 
 // runtime is the internal implementation of the Runtime interface.
 type runtime struct {
-	app              *AppInfo
+	app              AppInfo
 	logger           klog.Logger
 	registrars       map[string]registry.Registrar
 	discoveries      map[string]registry.Discovery
@@ -80,6 +80,7 @@ func WithDecoderProvider(p interfaces.ConfigDecoderProvider) Option {
 	}
 }
 
+// WithAppInfo sets the application information for the Runtime.
 func WithAppInfo(appInfo AppInfo) Option {
 	return func(o *options) {
 		o.appInfo = appInfo
@@ -109,8 +110,15 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	// --- 1. Initialize AppInfo ---
 	appInfo := appliedOpts.appInfo
 
+	// Validate essential AppInfo fields
+	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
+		return nil, nil, fmt.Errorf("app ID, name, or version cannot be empty")
+	}
+
 	// --- 2. Initialize Logger ---
 	var loggerConfig *configv1.Logger
+	// Attempt to get LoggerConfig by type assertion if configDecoder implements interfaces.LoggerConfig.
+	// This allows for optimized access if the decoder provides direct access to structured configs.
 	if d, ok := configDecoder.(interfaces.LoggerConfig); ok {
 		loggerConfig = d.GetLogger()
 	} else {
@@ -127,6 +135,8 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 		Registries      map[string]*discoveryv1.Discovery
 		DefaultRegistry string
 	}
+	// Attempt to get DiscoveryConfig by type assertion if configDecoder implements interfaces.DiscoveryConfig.
+	// This allows for optimized access if the decoder provides direct access to structured configs.
 	if d, ok := configDecoder.(interfaces.DiscoveryConfig); ok {
 		registriesConfig.Registries = d.GetDiscoveries()
 	} else {
@@ -175,7 +185,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	}
 
 	rt := &runtime{
-		app:              &appInfo,
+		app:              appInfo,
 		logger:           logger,
 		registrars:       registrars,
 		discoveries:      discoveries,
@@ -189,7 +199,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	return rt, cleanup, nil
 }
 
-func (r *runtime) AppInfo() *AppInfo {
+func (r *runtime) AppInfo() AppInfo {
 	return r.app
 }
 
