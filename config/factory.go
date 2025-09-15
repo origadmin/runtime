@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/goexts/generic/configure"
 
@@ -40,7 +41,18 @@ func (f *sourceFactory) NewConfig(srcs *configv1.Sources, opts ...Option) (krato
 	options := configure.Apply(&Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
 
 	var sources []kratosconfig.Source
-	for _, src := range srcs.GetSources() {
+
+	// Get the list of sources from the protobuf config.
+	userSources := srcs.GetSources()
+
+	// Sort the sources by priority before creating them.
+	sort.SliceStable(userSources, func(i, j int) bool {
+		// Sources with lower priority values are loaded first.
+		// Sources with higher priority values are loaded later, thus overriding earlier ones.
+		return userSources[i].GetPriority() < userSources[j].GetPriority()
+	})
+
+	for _, src := range userSources {
 		buildFactory, ok := f.Get(src.Type)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", src.Type)
