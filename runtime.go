@@ -96,6 +96,13 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 		decoderProvider: decoder.DefaultDecoder,
 	}, opts)
 
+	// --- 1. Initialize and Validate AppInfo ---
+	// AppInfo must be provided via the WithAppInfo option.
+	appInfo := appliedOpts.appInfo
+	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
+		return nil, nil, fmt.Errorf("app ID, name, or version cannot be empty and must be provided via WithAppInfo option")
+	}
+
 	// Ensure a DecoderProvider is set
 	if appliedOpts.decoderProvider == nil {
 		return nil, nil, fmt.Errorf("DecoderProvider must be provided via WithDecoderProvider option")
@@ -105,14 +112,6 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	configDecoder, err := appliedOpts.decoderProvider.GetConfigDecoder(kratosConfig)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get config decoder: %w", err)
-	}
-
-	// --- 1. Initialize AppInfo ---
-	appInfo := appliedOpts.appInfo
-
-	// Validate essential AppInfo fields
-	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
-		return nil, nil, fmt.Errorf("app ID, name, or version cannot be empty")
 	}
 
 	// --- 2. Initialize Logger ---
