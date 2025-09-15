@@ -26,7 +26,7 @@ type SourceFactory interface {
 }
 
 type Syncer interface {
-	SyncConfig(*sourcev1.SourceConfig, string, any, *Options) error
+	SyncConfig(*sourcev1.SourceConfig, string, proto.Message, *Options) error
 }
 
 type ProtoSyncer interface {
