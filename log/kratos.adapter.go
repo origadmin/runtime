@@ -9,184 +9,184 @@ import (
 	"context"
 	"io"
 
-	klog "github.com/go-kratos/kratos/v2/log"
+	kratoslog "github.com/go-kratos/kratos/v2/log"
 )
 
 const (
-	LevelDebug = klog.LevelDebug
-	LevelError = klog.LevelError
-	LevelFatal = klog.LevelFatal
-	LevelInfo  = klog.LevelInfo
-	LevelKey   = klog.LevelKey
-	LevelWarn  = klog.LevelWarn
+	LevelDebug = kratoslog.LevelDebug
+	LevelError = kratoslog.LevelError
+	LevelFatal = kratoslog.LevelFatal
+	LevelInfo  = kratoslog.LevelInfo
+	LevelKey   = kratoslog.LevelKey
+	LevelWarn  = kratoslog.LevelWarn
 )
 
 var (
-	DefaultCaller     = klog.DefaultCaller
-	DefaultLogger     = klog.DefaultLogger
-	DefaultMessageKey = klog.DefaultMessageKey
-	DefaultTimestamp  = klog.DefaultTimestamp
+	DefaultCaller     = kratoslog.DefaultCaller
+	DefaultLogger     = kratoslog.DefaultLogger
+	DefaultMessageKey = kratoslog.DefaultMessageKey
+	DefaultTimestamp  = kratoslog.DefaultTimestamp
 )
 
 type (
-	Filter         = klog.Filter
-	FilterOption   = klog.FilterOption
-	Helper         = klog.Helper
-	Level          = klog.Level
-	Logger         = klog.Logger
-	Option         = klog.Option
-	Valuer         = klog.Valuer
-	WriterOptionFn = klog.WriterOptionFn
+	Filter         = kratoslog.Filter
+	FilterOption   = kratoslog.FilterOption
+	Helper         = kratoslog.Helper
+	Level          = kratoslog.Level
+	Logger         = kratoslog.Logger
+	Option         = kratoslog.Option
+	Valuer         = kratoslog.Valuer
+	WriterOptionFn = kratoslog.WriterOptionFn
 )
 
-func Caller(depth int) klog.Valuer {
-	return klog.Caller(depth)
+func Caller(depth int) kratoslog.Valuer {
+	return kratoslog.Caller(depth)
 }
 
-func Context(ctx context.Context) *klog.Helper {
-	return klog.Context(ctx)
+func Context(ctx context.Context) *kratoslog.Helper {
+	return kratoslog.Context(ctx)
 }
 
 func Debug(a ...any) {
-	klog.Debug(a...)
+	kratoslog.Debug(a...)
 }
 
 func Debugf(format string, a ...any) {
-	klog.Debugf(format, a...)
+	kratoslog.Debugf(format, a...)
 }
 
 func Debugw(keyvals ...any) {
-	klog.Debugw(keyvals...)
+	kratoslog.Debugw(keyvals...)
 }
 
 func Error(a ...any) {
-	klog.Error(a...)
+	kratoslog.Error(a...)
 }
 
 func Errorf(format string, a ...any) {
-	klog.Errorf(format, a...)
+	kratoslog.Errorf(format, a...)
 }
 
 func Errorw(keyvals ...any) {
-	klog.Errorw(keyvals...)
+	kratoslog.Errorw(keyvals...)
 }
 
 func Fatal(a ...any) {
-	klog.Fatal(a...)
+	kratoslog.Fatal(a...)
 }
 
 func Fatalf(format string, a ...any) {
-	klog.Fatalf(format, a...)
+	kratoslog.Fatalf(format, a...)
 }
 
 func Fatalw(keyvals ...any) {
-	klog.Fatalw(keyvals...)
+	kratoslog.Fatalw(keyvals...)
 }
 
-func FilterFunc(f func(level klog.Level, keyvals ...any) bool) klog.FilterOption {
-	return klog.FilterFunc(f)
+func FilterFunc(f func(level kratoslog.Level, keyvals ...any) bool) kratoslog.FilterOption {
+	return kratoslog.FilterFunc(f)
 }
 
-func FilterKey(key ...string) klog.FilterOption {
-	return klog.FilterKey(key...)
+func FilterKey(key ...string) kratoslog.FilterOption {
+	return kratoslog.FilterKey(key...)
 }
 
-func FilterLevel(level klog.Level) klog.FilterOption {
-	return klog.FilterLevel(level)
+func FilterLevel(level kratoslog.Level) kratoslog.FilterOption {
+	return kratoslog.FilterLevel(level)
 }
 
-func FilterValue(value ...string) klog.FilterOption {
-	return klog.FilterValue(value...)
+func FilterValue(value ...string) kratoslog.FilterOption {
+	return kratoslog.FilterValue(value...)
 }
 
-func GetLogger() klog.Logger {
-	return klog.GetLogger()
+func GetLogger() kratoslog.Logger {
+	return kratoslog.GetLogger()
 }
 
 func Info(a ...any) {
-	klog.Info(a...)
+	kratoslog.Info(a...)
 }
 
 func Infof(format string, a ...any) {
-	klog.Infof(format, a...)
+	kratoslog.Infof(format, a...)
 }
 
 func Infow(keyvals ...any) {
-	klog.Infow(keyvals...)
+	kratoslog.Infow(keyvals...)
 }
 
-func Log(level klog.Level, keyvals ...any) {
-	klog.Log(level, keyvals...)
+func Log(level kratoslog.Level, keyvals ...any) {
+	kratoslog.Log(level, keyvals...)
 }
 
-func NewFilter(logger klog.Logger, opts ...klog.FilterOption) *klog.Filter {
-	return klog.NewFilter(logger, opts...)
+func NewFilter(logger kratoslog.Logger, opts ...kratoslog.FilterOption) *kratoslog.Filter {
+	return kratoslog.NewFilter(logger, opts...)
 }
 
-func NewHelper(logger klog.Logger, opts ...klog.Option) *klog.Helper {
-	return klog.NewHelper(logger, opts...)
+func NewHelper(logger kratoslog.Logger, opts ...kratoslog.Option) *kratoslog.Helper {
+	return kratoslog.NewHelper(logger, opts...)
 }
 
-func NewStdLogger(w io.Writer) klog.Logger {
-	return klog.NewStdLogger(w)
+func NewStdLogger(w io.Writer) kratoslog.Logger {
+	return kratoslog.NewStdLogger(w)
 }
 
-func NewWriter(logger klog.Logger, opts ...klog.WriterOptionFn) io.Writer {
-	return klog.NewWriter(logger, opts...)
+func NewWriter(logger kratoslog.Logger, opts ...kratoslog.WriterOptionFn) io.Writer {
+	return kratoslog.NewWriter(logger, opts...)
 }
 
-func ParseLevel(s string) klog.Level {
-	return klog.ParseLevel(s)
+func ParseLevel(s string) kratoslog.Level {
+	return kratoslog.ParseLevel(s)
 }
 
-func SetLogger(logger klog.Logger) {
-	klog.SetLogger(logger)
+func SetLogger(logger kratoslog.Logger) {
+	kratoslog.SetLogger(logger)
 }
 
-func Timestamp(layout string) klog.Valuer {
-	return klog.Timestamp(layout)
+func Timestamp(layout string) kratoslog.Valuer {
+	return kratoslog.Timestamp(layout)
 }
 
 func Value(ctx context.Context, v any) any {
-	return klog.Value(ctx, v)
+	return kratoslog.Value(ctx, v)
 }
 
 func Warn(a ...any) {
-	klog.Warn(a...)
+	kratoslog.Warn(a...)
 }
 
 func Warnf(format string, a ...any) {
-	klog.Warnf(format, a...)
+	kratoslog.Warnf(format, a...)
 }
 
 func Warnw(keyvals ...any) {
-	klog.Warnw(keyvals...)
+	kratoslog.Warnw(keyvals...)
 }
 
-func With(l klog.Logger, kv ...any) klog.Logger {
-	return klog.With(l, kv...)
+func With(l kratoslog.Logger, kv ...any) kratoslog.Logger {
+	return kratoslog.With(l, kv...)
 }
 
-func WithContext(ctx context.Context, l klog.Logger) klog.Logger {
-	return klog.WithContext(ctx, l)
+func WithContext(ctx context.Context, l kratoslog.Logger) kratoslog.Logger {
+	return kratoslog.WithContext(ctx, l)
 }
 
-func WithMessageKey(k string) klog.Option {
-	return klog.WithMessageKey(k)
+func WithMessageKey(k string) kratoslog.Option {
+	return kratoslog.WithMessageKey(k)
 }
 
-func WithSprint(sprint func(...any) string) klog.Option {
-	return klog.WithSprint(sprint)
+func WithSprint(sprint func(...any) string) kratoslog.Option {
+	return kratoslog.WithSprint(sprint)
 }
 
-func WithSprintf(sprintf func(format string, a ...any) string) klog.Option {
-	return klog.WithSprintf(sprintf)
+func WithSprintf(sprintf func(format string, a ...any) string) kratoslog.Option {
+	return kratoslog.WithSprintf(sprintf)
 }
 
-func WithWriteMessageKey(key string) klog.WriterOptionFn {
-	return klog.WithWriteMessageKey(key)
+func WithWriteMessageKey(key string) kratoslog.WriterOptionFn {
+	return kratoslog.WithWriteMessageKey(key)
 }
 
-func WithWriterLevel(level klog.Level) klog.WriterOptionFn {
-	return klog.WithWriterLevel(level)
+func WithWriterLevel(level kratoslog.Level) kratoslog.WriterOptionFn {
+	return kratoslog.WithWriterLevel(level)
 }

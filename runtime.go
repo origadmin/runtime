@@ -8,19 +8,18 @@ package runtime
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/go-kratos/kratos/v2"
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	klog "github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
-	"github.com/prometheus/common/log"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
-	"github.com/origadmin/runtime/bootstrap" // 引入 bootstrap 包
+	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/internal/decoder"
 	runtimeLog "github.com/origadmin/runtime/log"
@@ -64,23 +63,23 @@ func WithDecoderProvider(p interfaces.ConfigDecoderProvider) Option {
 }
 
 // WithAppInfo sets the application information for the Runtime.
+// This is a required option.
 func WithAppInfo(appInfo AppInfo) Option {
 	return func(o *options) {
 		o.appInfo = appInfo
 	}
 }
 
-// NewFromBootstrap is the recommended way to create a new Runtime instance.
-// It takes a path to a bootstrap configuration file (e.g., "configs/bootstrap.yaml"),
-// loads it, and then initializes the full runtime environment.
+// NewFromBootstrap is the recommended, one-stop function to create a new Runtime instance.
+// It loads configuration from the given path and initializes the full runtime environment.
 func NewFromBootstrap(bootstrapPath string, opts ...Option) (Runtime, func(), error) {
-	// 1. Load config from the given path using the bootstrap package.
+	// Load config from the given path using the bootstrap package.
 	kratosConfig, err := bootstrap.Load(bootstrapPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to load bootstrap config from path %s: %w", bootstrapPath, err)
 	}
 
-	// 2. Call the original New function with the loaded config.
+	// Call the main New function with the loaded config.
 	rt, cleanup, err := New(kratosConfig, opts...)
 	if err != nil {
 		// If New fails, we must close the config source we just opened.
@@ -90,7 +89,7 @@ func NewFromBootstrap(bootstrapPath string, opts ...Option) (Runtime, func(), er
 		return nil, nil, err
 	}
 
-	// 3. Chain the cleanup functions. The final cleanup must close the config source.
+	// Chain the cleanup functions. The final cleanup must close the config source.
 	finalCleanup := func() {
 		cleanup()
 		if e := kratosConfig.Close(); e != nil {
@@ -102,35 +101,34 @@ func NewFromBootstrap(bootstrapPath string, opts ...Option) (Runtime, func(), er
 }
 
 // New creates a new runtime instance from a pre-existing Kratos config instance.
-// This is useful for advanced scenarios or testing. For standard usage, prefer NewFromBootstrap.
+// It requires that app info is provided via options.
 func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), error) {
 	// Apply options
 	appliedOpts := configure.Apply(&options{
 		decoderProvider: decoder.DefaultDecoder,
 	}, opts)
 
-	// --- 1. Initialize and Validate AppInfo ---
+	// --- 1. Validate Essential Options ---
 	appInfo := appliedOpts.appInfo
 	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" || appInfo.Env == "" {
 		return nil, nil, fmt.Errorf("app ID, Name, Version, and Env cannot be empty and must be provided via WithAppInfo option")
 	}
 
-	// Ensure a DecoderProvider is set
+	// --- 2. Initialize Decoder ---
 	if appliedOpts.decoderProvider == nil {
 		return nil, nil, fmt.Errorf("DecoderProvider must be provided")
 	}
-
 	configDecoder, err := appliedOpts.decoderProvider.GetConfigDecoder(kratosConfig)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get config decoder: %w", err)
 	}
 
-	// --- 2. Initialize Logger ---
-	loggerConfig := getLoggerConfig(configDecoder)
-	logger := runtimeLog.NewLogger(loggerConfig)
+	// --- 3. Create and Enrich Logger ---
+	// This is the first point where we have both the config and the appInfo context.
+	logger := newLogger(configDecoder, appInfo)
 	klog.SetLogger(logger)
 
-	// --- 3. Initialize all configured Service Registries & Discoveries ---
+	// --- 4. Initialize all configured Service Registries & Discoveries ---
 	registriesCfg := getRegistriesConfig(configDecoder)
 
 	registrars := make(map[string]registry.Registrar)
@@ -155,7 +153,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 		discoveries[name] = d
 	}
 
-	// 4. Identify the default registrar for self-registration
+	// --- 5. Identify the default registrar for self-registration ---
 	var defaultReg registry.Registrar
 	if registriesCfg.DefaultRegistry != "" {
 		var ok bool
@@ -179,31 +177,37 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	}
 
 	cleanup := func() {
-		// Here you would add cleanup logic for components created by the runtime,
-		// for example, closing registry connections if they had a Close() method.
 		klog.Info("Runtime cleanup executed.")
 	}
 
 	return rt, cleanup, nil
 }
 
-// getLoggerConfig encapsulates the logic for decoding the logger configuration.
-// It prioritizes the fast path via the LoggerConfig interface,
-// falling back to a generic decode operation.
-func getLoggerConfig(decoder interfaces.ConfigDecoder) *configv1.Logger {
+// newLogger creates the logger backend from config and enriches it with app info.
+func newLogger(decoder interfaces.ConfigDecoder, appInfo AppInfo) klog.Logger {
+	var loggerConfig *configv1.Logger
+
 	// Fast path: If the decoder directly provides logger config, use it.
 	if d, ok := decoder.(interfaces.LoggerConfig); ok {
-		return d.GetLogger()
+		loggerConfig = d.GetLogger()
+	} else {
+		// Slow path: Fall back to generic decoding.
+		loggerConfig = new(configv1.Logger) // Initialize if not from fast path
+		if err := decoder.Decode("logger", loggerConfig); err != nil {
+			klog.Warnf("Failed to decode logger config, using default: %v", err)
+		}
 	}
 
-	// Slow path: Fall back to generic decoding.
-	loggerConfig := new(configv1.Logger)
-	if err := decoder.Decode("logger", loggerConfig); err != nil {
-		log.Warnf("Failed to decode logger config, using default: %v", err)
-		// On error, we still return the allocated (but empty) struct,
-		// allowing the NewLogger function to apply its own defaults.
-	}
-	return loggerConfig
+	loggerBackend := runtimeLog.NewLogger(loggerConfig)
+
+	return klog.With(loggerBackend,
+		"service.name", appInfo.Name,
+		"service.version", appInfo.Version,
+		"service.id", appInfo.ID,
+		"service.env", appInfo.Env,
+		"trace.id", tracing.TraceID(),
+		"span.id", tracing.SpanID(),
+	)
 }
 
 // registriesConfig holds the configuration for all service registries.
@@ -215,20 +219,15 @@ type registriesConfig struct {
 // getRegistriesConfig encapsulates the logic for decoding the registries' configuration.
 func getRegistriesConfig(decoder interfaces.ConfigDecoder) registriesConfig {
 	var cfg registriesConfig
-
-	// Fast path: Check if the decoder can provide the discoveries map directly.
-	if d, ok := decoder.(interfaces.DiscoveryConfig); ok {
+	if d := decoder.(interfaces.DiscoveryConfig); d != nil {
 		cfg.Registries = d.GetDiscoveries()
-		// Attempt to decode the rest of the struct to get DefaultRegistry.
-		if err := decoder.Decode("registries", &cfg); err != nil {
-			log.Warnf("Could not decode 'registries' block for DefaultRegistry: %v", err)
-		}
 	} else {
-		// Slow path: Decode the entire struct from the config.
-		if err := decoder.Decode("registries", &cfg); err != nil {
-			log.Warnf("Failed to decode registries config, running in standalone mode: %v", err)
+		cfg.Registries = make(map[string]*discoveryv1.Discovery)
+		if err := decoder.Decode("registries", &cfg.Registries); err != nil {
+			klog.Warnf("Failed to decode registries config, running in standalone mode: %v", err)
 		}
 	}
+	//cfg.DefaultRegistry = decoder.GetDefaultDiscovery()
 	return cfg
 }
 

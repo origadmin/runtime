@@ -6,18 +6,18 @@
 package log
 
 import (
-	"github.com/go-kratos/kratos/v2/log"
+	kratoslog "github.com/go-kratos/kratos/v2/log"
 )
 
 var discardInstance DiscardLogger
 
-func NewDiscard() log.Logger {
+func NewDiscard() kratoslog.Logger {
 	return discardInstance
 }
 
 type DiscardLogger struct{}
 
-func (d DiscardLogger) Log(level log.Level, keyvals ...interface{}) error {
+func (d DiscardLogger) Log(level kratoslog.Level, keyvals ...interface{}) error {
 	return nil
 }
 

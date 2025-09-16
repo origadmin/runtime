@@ -8,7 +8,7 @@ package log
 import (
 	"strings"
 
-	"github.com/go-kratos/kratos/v2/log"
+	kratoslog "github.com/go-kratos/kratos/v2/log"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	kslog "github.com/origadmin/slog-kratos"
@@ -17,7 +17,7 @@ import (
 
 // NewLogger creates a new kratos logger based on the provided configuration.
 // It uses slog as the underlying logging library and slog-kratos as an adapter.
-func NewLogger(cfg *configv1.Logger) log.Logger {
+func NewLogger(cfg *configv1.Logger) kratoslog.Logger {
 	if cfg == nil || cfg.GetDisabled() {
 		return NewDiscard()
 	}
@@ -67,7 +67,7 @@ func NewLogger(cfg *configv1.Logger) log.Logger {
 	kratosLogger := kslog.NewLogger(kslog.WithLogger(slogLogger))
 
 	if cfg.GetDefault() {
-		log.SetLogger(kratosLogger)
+		kratoslog.SetLogger(kratosLogger)
 	}
 
 	return kratosLogger
