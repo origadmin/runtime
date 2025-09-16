@@ -12,7 +12,6 @@ import (
 	"github.com/go-kratos/kratos/v2"
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	klog "github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
@@ -198,16 +197,7 @@ func newLogger(decoder interfaces.ConfigDecoder, appInfo AppInfo) klog.Logger {
 		}
 	}
 
-	loggerBackend := runtimeLog.NewLogger(loggerConfig)
-
-	return klog.With(loggerBackend,
-		"service.name", appInfo.Name,
-		"service.version", appInfo.Version,
-		"service.id", appInfo.ID,
-		"service.env", appInfo.Env,
-		"trace.id", tracing.TraceID(),
-		"span.id", tracing.SpanID(),
-	)
+	return runtimeLog.NewLogger(loggerConfig)
 }
 
 // registriesConfig holds the configuration for all service registries.
