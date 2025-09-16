@@ -11,7 +11,6 @@ import (
 
 	"github.com/go-kratos/kratos/v2"
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	klog "github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
@@ -21,7 +20,7 @@ import (
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/internal/decoder"
-	runtimeLog "github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/log"
 	runtimeRegistry "github.com/origadmin/runtime/registry"
 )
 
@@ -29,17 +28,20 @@ import (
 // core components like configuration, logging, and service discovery/registration.
 type Runtime interface {
 	AppInfo() AppInfo
-	Logger() klog.Logger
+	Logger() log.Logger
 	NewApp(servers ...transport.Server) *kratos.App
 	DefaultRegistrar() registry.Registrar
 	Discovery(name string) (registry.Discovery, bool)
 	Registrar(name string) (registry.Registrar, bool)
+	// WithLogger returns a new Runtime instance with the provided logger.
+	// This is useful for updating the logger with additional context.
+	WithLogger(logger log.Logger) Runtime
 }
 
 // runtime is the internal implementation of the Runtime interface.
 type runtime struct {
 	app              AppInfo
-	logger           klog.Logger
+	logger           log.Logger
 	registrars       map[string]registry.Registrar
 	discoveries      map[string]registry.Discovery
 	defaultRegistrar registry.Registrar
@@ -83,7 +85,7 @@ func NewFromBootstrap(bootstrapPath string, opts ...Option) (Runtime, func(), er
 	if err != nil {
 		// If New fails, we must close the config source we just opened.
 		if e := kratosConfig.Close(); e != nil {
-			klog.Errorf("failed to close config source after New() error: %v", e)
+			log.Errorf("failed to close config source after New() error: %v", e)
 		}
 		return nil, nil, err
 	}
@@ -92,7 +94,7 @@ func NewFromBootstrap(bootstrapPath string, opts ...Option) (Runtime, func(), er
 	finalCleanup := func() {
 		cleanup()
 		if e := kratosConfig.Close(); e != nil {
-			klog.Errorf("failed to close config source during cleanup: %v", e)
+			log.Errorf("failed to close config source during cleanup: %v", e)
 		}
 	}
 
@@ -125,7 +127,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	// --- 3. Create and Enrich Logger ---
 	// This is the first point where we have both the config and the appInfo context.
 	logger := newLogger(configDecoder, appInfo)
-	klog.SetLogger(logger)
+	log.SetLogger(logger)
 
 	// --- 4. Initialize all configured Service Registries & Discoveries ---
 	registriesCfg := getRegistriesConfig(configDecoder)
@@ -135,11 +137,11 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 
 	for name, registryCfg := range registriesCfg.Registries {
 		if registryCfg == nil || registryCfg.GetType() == "" || registryCfg.GetType() == "none" {
-			klog.Infof("Skipping registry '%s' due to missing or 'none' type.", name)
+			log.Infof("Skipping registry '%s' due to missing or 'none' type.", name)
 			continue
 		}
 
-		klog.Infof("Initializing service registry and discovery '%s' with type: %s", name, registryCfg.GetType())
+		log.Infof("Initializing service registry and discovery '%s' with type: %s", name, registryCfg.GetType())
 		r, err := runtimeRegistry.NewRegistrar(registryCfg)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to create registrar for '%s': %w", name, err)
@@ -160,11 +162,11 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 		if !ok {
 			return nil, nil, fmt.Errorf("default registry '%s' not found in configured registries", registriesCfg.DefaultRegistry)
 		}
-		klog.Infof("Default registry for self-registration set to: '%s'", registriesCfg.DefaultRegistry)
+		log.Infof("Default registry for self-registration set to: '%s'", registriesCfg.DefaultRegistry)
 	} else if len(registrars) > 0 {
-		klog.Warn("No default registry specified. The service will not register itself despite registries being configured.")
+		log.Warn("No default registry specified. The service will not register itself despite registries being configured.")
 	} else {
-		klog.Info("No service registry configured, running in local mode.")
+		log.Info("No service registry configured, running in local mode.")
 	}
 
 	rt := &runtime{
@@ -176,14 +178,14 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	}
 
 	cleanup := func() {
-		klog.Info("Runtime cleanup executed.")
+		log.Info("Runtime cleanup executed.")
 	}
 
 	return rt, cleanup, nil
 }
 
 // newLogger creates the logger backend from config and enriches it with app info.
-func newLogger(decoder interfaces.ConfigDecoder, appInfo AppInfo) klog.Logger {
+func newLogger(decoder interfaces.ConfigDecoder, appInfo AppInfo) log.Logger {
 	var loggerConfig *configv1.Logger
 
 	// Fast path: If the decoder directly provides logger config, use it.
@@ -193,11 +195,11 @@ func newLogger(decoder interfaces.ConfigDecoder, appInfo AppInfo) klog.Logger {
 		// Slow path: Fall back to generic decoding.
 		loggerConfig = new(configv1.Logger) // Initialize if not from fast path
 		if err := decoder.Decode("logger", loggerConfig); err != nil {
-			klog.Warnf("Failed to decode logger config, using default: %v", err)
+			log.Warnf("Failed to decode logger config, using default: %v", err)
 		}
 	}
 
-	return runtimeLog.NewLogger(loggerConfig)
+	return log.NewLogger(loggerConfig)
 }
 
 // registriesConfig holds the configuration for all service registries.
@@ -214,7 +216,7 @@ func getRegistriesConfig(decoder interfaces.ConfigDecoder) registriesConfig {
 	} else {
 		cfg.Registries = make(map[string]*discoveryv1.Discovery)
 		if err := decoder.Decode("registries", &cfg.Registries); err != nil {
-			klog.Warnf("Failed to decode registries config, running in standalone mode: %v", err)
+			log.Warnf("Failed to decode registries config, running in standalone mode: %v", err)
 		}
 	}
 	//cfg.DefaultRegistry = decoder.GetDefaultDiscovery()
@@ -225,7 +227,7 @@ func (r *runtime) AppInfo() AppInfo {
 	return r.app
 }
 
-func (r *runtime) Logger() klog.Logger {
+func (r *runtime) Logger() log.Logger {
 	return r.logger
 }
 
@@ -243,7 +245,22 @@ func (r *runtime) Registrar(name string) (registry.Registrar, bool) {
 	return reg, ok
 }
 
+func (r *runtime) WithLogger(logger log.Logger) Runtime {
+	// Create a shallow copy of the runtime
+	newRt := *r
+	// Update the logger
+	newRt.logger = logger
+	return &newRt
+}
+
+// NewApp creates a new Kratos application with the provided servers.
+// The caller is responsible for providing at least one server.
 func (r *runtime) NewApp(servers ...transport.Server) *kratos.App {
+	logger := log.NewHelper(r.logger)
+	if len(servers) == 0 {
+		logger.Fatal("No servers provided. Please provide at least one server.")
+	}
+
 	// Start with the application identity options.
 	kratosOpts := r.app.Options()
 
