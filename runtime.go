@@ -127,7 +127,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	// --- 3. Create and Enrich Logger ---
 	// This is the first point where we have both the config and the appInfo context.
 	logger := newLogger(configDecoder, appInfo)
-	log.SetLogger(logger)
+	// Removed: log.SetLogger(logger)
 
 	// --- 4. Initialize all configured Service Registries & Discoveries ---
 	registriesCfg := getRegistriesConfig(configDecoder)
