@@ -27,16 +27,6 @@ import (
 	runtimeRegistry "github.com/origadmin/runtime/registry"
 )
 
-// AppInfo represents the application's configured information.
-type AppInfo struct {
-	ID        string
-	Name      string
-	Version   string
-	Env       string
-	StartTime time.Time
-	Metadata  map[string]string
-}
-
 // Runtime defines the application's runtime environment, providing access to
 // core components like configuration, logging, and service discovery/registration.
 type Runtime interface {
@@ -265,15 +255,16 @@ func (r *runtime) Registrar(name string) (registry.Registrar, bool) {
 }
 
 func (r *runtime) NewApp(servers ...transport.Server) *kratos.App {
-	kratosOpts := []kratos.Option{
-		kratos.ID(r.app.ID),
-		kratos.Name(r.app.Name),
-		kratos.Version(r.app.Version),
-		kratos.Metadata(r.app.Metadata),
+	// Start with the application identity options.
+	kratosOpts := r.app.Options()
+
+	// Append runtime-specific options.
+	kratosOpts = append(kratosOpts,
 		kratos.Logger(r.logger),
 		kratos.Server(servers...),
-	}
+	)
 
+	// Conditionally add the registrar.
 	if r.defaultRegistrar != nil {
 		kratosOpts = append(kratosOpts, kratos.Registrar(r.defaultRegistrar))
 	}
