@@ -13,11 +13,16 @@ import (
 	"github.com/go-kratos/kratos/v2/selector/p2c"
 	"github.com/go-kratos/kratos/v2/selector/random"
 	"github.com/go-kratos/kratos/v2/selector/wrr"
-	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
-	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/toolkits/errors"
+)
+
+const (
+	Random = "random"
+	WRR    = "wrr"
+	P2C    = "p2c"
 )
 
 var (
@@ -25,65 +30,9 @@ var (
 	builder selector.Builder
 )
 
-// DefaultHTTP returns a default HTTP client option based on the provided service selector configuration.
-//
-// If the version is specified in the configuration, it sets a node filter with the version.
-func DefaultHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error) {
-	// Initialize an empty client option
-	var options transhttp.ClientOption
-
-	// Check if the version is specified in the configuration
-	if cfg.GetVersion() != "" {
-		// Create a version filter based on the configuration version
-		v := filter.Version(cfg.Version)
-		// Set the node filter option
-		options = transhttp.WithNodeFilter(v)
-	}
-
-	if builderName := cfg.GlobalBuilder; builderName != "" {
-		// Create a version filter based on the configuration version
-		// Set the global selector with the provided builder
-		SetSelectorGlobalSelector(builderName)
-	}
-
-	// Return the client option and no error
-	return options, nil
-}
-
-// DefaultGRPC returns a default gRPC client option based on the provided service selector configuration.
-//
-// If the version is specified in the configuration, it sets a node filter with the version.
-func DefaultGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error) {
-	// Initialize an empty client option
-	var options transgrpc.ClientOption
-
-	// Check if the version is specified in the configuration
-	if cfg.GetVersion() != "" {
-		// Create a version filter based on the configuration version
-		v := filter.Version(cfg.Version)
-		// Set the node filter option
-		options = transgrpc.WithNodeFilter(v)
-	}
-
-	if builderName := cfg.GlobalBuilder; builderName != "" {
-		// Create a version filter based on the configuration version
-		// Set the global selector with the provided builder
-		SetSelectorGlobalSelector(builderName)
-	}
-
-	// Return the client option and no error
-	return options, nil
-}
-
 func NewFilter(cfg *configv1.Service_Selector) (selector.NodeFilter, error) {
 	// Check if the version is specified in the configuration
 	if cfg.GetVersion() != "" {
-		if builderName := cfg.GlobalBuilder; builderName != "" {
-			// Create a version filter based on the configuration version
-			// Set the global selector with the provided builder
-			SetSelectorGlobalSelector(builderName)
-		}
-
 		// Return the version filter and no error
 		return filter.Version(cfg.Version), nil
 	}
@@ -98,13 +47,14 @@ func SetSelectorGlobalSelector(selectorType string) {
 	}
 	var b selector.Builder
 	switch selectorType {
-	case "random":
+	case Random:
 		b = random.NewBuilder()
-	case "wrr":
+	case WRR:
 		b = wrr.NewBuilder()
-	case "p2c":
+	case P2C:
 		b = p2c.NewBuilder()
 	default:
+		log.Warnf("selector type %s is not supported", selectorType)
 		return
 	}
 	once.Do(func() {

@@ -29,7 +29,7 @@ func NewClient(ctx context.Context, cfg *configv1.Service, opts ...service.Optio
 		return nil, tkerrors.Wrapf(err, "failed to adapt client config for grpc client creation")
 	}
 
-	svcOpts := configure.Apply(service.DefaultServerOptions(), opts)
+	svcOpts := configure.Apply(&service.Options{}, opts)
 	if clientOptsFromCtx := FromClientOptions(svcOpts); len(clientOptsFromCtx) > 0 {
 		clientOptions = append(clientOptions, clientOptsFromCtx...)
 	}
