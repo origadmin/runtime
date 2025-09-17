@@ -1,20 +1,20 @@
 syntax = "proto3";
 
-package config.v1;
+package service.v1;
 
-import "config/v1/grpc.proto";
-import "config/v1/http.proto";
-import "config/v1/message.proto";
-import "config/v1/task.proto";
-import "config/v1/websocket.proto";
+import "transport/v1/grpc.proto";
+import "transport/v1/http.proto";
+import "msg/v1/msg.proto";
+import "task/v1/task.proto";
+import "websocket/v1/websocket.proto";
 import "middleware/v1/middleware.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/v1;configv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/service/v1;servicev1";
 option java_multiple_files = true;
 option java_outer_classname = "ServiceProto";
-option java_package = "com.github.origadmin.api.runtime.config.v1";
+option java_package = "com.github.origadmin.api.runtime.service.v1";
 option objc_class_prefix = "ORC";
 
 message Service {
@@ -42,12 +42,12 @@ message Service {
 
   // Protocol-specific configurations.
   // Only the configuration matching the 'protocol' field will be used.
-  config.v1.GRPC grpc = 10 [json_name = "grpc"];
-  config.v1.HTTP http = 20 [json_name = "http"];
+  transport.v1.GRPC grpc = 10 [json_name = "grpc"];
+  transport.v1.HTTP http = 20 [json_name = "http"];
 
-  config.v1.WebSocket websocket = 100 [json_name = "websocket"];
-  config.v1.Message message = 200 [json_name = "message"];
-  config.v1.Task task = 300 [json_name = "task"];
+  websocket.v1.WebSocket websocket = 100 [json_name = "websocket"];
+  msg.v1.Message message = 200 [json_name = "message"];
+  task.v1.Task task = 300 [json_name = "task"];
 
   // Middleware configuration for the service.
   middleware.v1.Middleware middleware = 400 [json_name = "middleware"];

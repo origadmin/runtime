@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        (unknown)
-// source: config/v1/mail.proto
+// source: mail/v1/mail.proto
 
-package configv1
+package mailv1
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -41,7 +41,7 @@ type Mail struct {
 
 func (x *Mail) Reset() {
 	*x = Mail{}
-	mi := &file_config_v1_mail_proto_msgTypes[0]
+	mi := &file_mail_v1_mail_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -53,7 +53,7 @@ func (x *Mail) String() string {
 func (*Mail) ProtoMessage() {}
 
 func (x *Mail) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_mail_proto_msgTypes[0]
+	mi := &file_mail_v1_mail_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66,7 +66,7 @@ func (x *Mail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mail.ProtoReflect.Descriptor instead.
 func (*Mail) Descriptor() ([]byte, []int) {
-	return file_config_v1_mail_proto_rawDescGZIP(), []int{0}
+	return file_mail_v1_mail_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Mail) GetType() string {
@@ -146,11 +146,11 @@ func (x *Mail) GetFrom() string {
 	return ""
 }
 
-var File_config_v1_mail_proto protoreflect.FileDescriptor
+var File_mail_v1_mail_proto protoreflect.FileDescriptor
 
-const file_config_v1_mail_proto_rawDesc = "" +
+const file_mail_v1_mail_proto_rawDesc = "" +
 	"\n" +
-	"\x14config/v1/mail.proto\x12\tconfig.v1\"\xaa\x02\n" +
+	"\x12mail/v1/mail.proto\x12\tconfig.v1\"\xaa\x02\n" +
 	"\x04Mail\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
 	"\x04host\x18\x02 \x01(\tR\x04host\x12\x12\n" +
@@ -162,27 +162,27 @@ const file_config_v1_mail_proto_rawDesc = "" +
 	"\vmax_retries\x18\b \x01(\x05R\vmax_retries\x12&\n" +
 	"\x0eretry_interval\x18\t \x01(\x03R\x0eretry_interval\x12\x1a\n" +
 	"\bnickname\x18d \x01(\tR\bnickname\x12\x12\n" +
-	"\x04from\x18e \x01(\tR\x04fromB\x9e\x01\n" +
-	"\rcom.config.v1B\tMailProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
+	"\x04from\x18e \x01(\tR\x04fromB\x9a\x01\n" +
+	"\rcom.config.v1B\tMailProtoP\x01Z6github.com/origadmin/runtime/api/gen/go/mail/v1;mailv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
 var (
-	file_config_v1_mail_proto_rawDescOnce sync.Once
-	file_config_v1_mail_proto_rawDescData []byte
+	file_mail_v1_mail_proto_rawDescOnce sync.Once
+	file_mail_v1_mail_proto_rawDescData []byte
 )
 
-func file_config_v1_mail_proto_rawDescGZIP() []byte {
-	file_config_v1_mail_proto_rawDescOnce.Do(func() {
-		file_config_v1_mail_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_config_v1_mail_proto_rawDesc), len(file_config_v1_mail_proto_rawDesc)))
+func file_mail_v1_mail_proto_rawDescGZIP() []byte {
+	file_mail_v1_mail_proto_rawDescOnce.Do(func() {
+		file_mail_v1_mail_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_mail_v1_mail_proto_rawDesc), len(file_mail_v1_mail_proto_rawDesc)))
 	})
-	return file_config_v1_mail_proto_rawDescData
+	return file_mail_v1_mail_proto_rawDescData
 }
 
-var file_config_v1_mail_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_config_v1_mail_proto_goTypes = []any{
+var file_mail_v1_mail_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_mail_v1_mail_proto_goTypes = []any{
 	(*Mail)(nil), // 0: config.v1.Mail
 }
-var file_config_v1_mail_proto_depIdxs = []int32{
+var file_mail_v1_mail_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -190,26 +190,26 @@ var file_config_v1_mail_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_config_v1_mail_proto_init() }
-func file_config_v1_mail_proto_init() {
-	if File_config_v1_mail_proto != nil {
+func init() { file_mail_v1_mail_proto_init() }
+func file_mail_v1_mail_proto_init() {
+	if File_mail_v1_mail_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_mail_proto_rawDesc), len(file_config_v1_mail_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mail_v1_mail_proto_rawDesc), len(file_mail_v1_mail_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_config_v1_mail_proto_goTypes,
-		DependencyIndexes: file_config_v1_mail_proto_depIdxs,
-		MessageInfos:      file_config_v1_mail_proto_msgTypes,
+		GoTypes:           file_mail_v1_mail_proto_goTypes,
+		DependencyIndexes: file_mail_v1_mail_proto_depIdxs,
+		MessageInfos:      file_mail_v1_mail_proto_msgTypes,
 	}.Build()
-	File_config_v1_mail_proto = out.File
-	file_config_v1_mail_proto_goTypes = nil
-	file_config_v1_mail_proto_depIdxs = nil
+	File_mail_v1_mail_proto = out.File
+	file_mail_v1_mail_proto_goTypes = nil
+	file_mail_v1_mail_proto_depIdxs = nil
 }

@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        (unknown)
-// source: config/v1/cors.proto
+// source: cors/v1/cors.proto
 
-package configv1
+package corsv1
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -61,7 +61,7 @@ type Cors struct {
 
 func (x *Cors) Reset() {
 	*x = Cors{}
-	mi := &file_config_v1_cors_proto_msgTypes[0]
+	mi := &file_cors_v1_cors_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -73,7 +73,7 @@ func (x *Cors) String() string {
 func (*Cors) ProtoMessage() {}
 
 func (x *Cors) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v1_cors_proto_msgTypes[0]
+	mi := &file_cors_v1_cors_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -86,7 +86,7 @@ func (x *Cors) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cors.ProtoReflect.Descriptor instead.
 func (*Cors) Descriptor() ([]byte, []int) {
-	return file_config_v1_cors_proto_rawDescGZIP(), []int{0}
+	return file_cors_v1_cors_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Cors) GetEnabled() bool {
@@ -173,11 +173,11 @@ func (x *Cors) GetAllowFiles() bool {
 	return false
 }
 
-var File_config_v1_cors_proto protoreflect.FileDescriptor
+var File_cors_v1_cors_proto protoreflect.FileDescriptor
 
-const file_config_v1_cors_proto_rawDesc = "" +
+const file_cors_v1_cors_proto_rawDesc = "" +
 	"\n" +
-	"\x14config/v1/cors.proto\x12\tconfig.v1\"\xec\x03\n" +
+	"\x12cors/v1/cors.proto\x12\tconfig.v1\"\xec\x03\n" +
 	"\x04Cors\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12,\n" +
 	"\x11allow_credentials\x18\x02 \x01(\bR\x11allow_credentials\x12$\n" +
@@ -191,27 +191,27 @@ const file_config_v1_cors_proto_rawDesc = "" +
 	"\x11allow_web_sockets\x18\n" +
 	" \x01(\bR\x11allow_web_sockets\x124\n" +
 	"\x15allow_private_network\x18\v \x01(\bR\x15allow_private_network\x12 \n" +
-	"\vallow_files\x18\f \x01(\bR\vallow_filesB\x9e\x01\n" +
-	"\rcom.config.v1B\tCorsProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
+	"\vallow_files\x18\f \x01(\bR\vallow_filesB\x9a\x01\n" +
+	"\rcom.config.v1B\tCorsProtoP\x01Z6github.com/origadmin/runtime/api/gen/go/cors/v1;corsv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
 var (
-	file_config_v1_cors_proto_rawDescOnce sync.Once
-	file_config_v1_cors_proto_rawDescData []byte
+	file_cors_v1_cors_proto_rawDescOnce sync.Once
+	file_cors_v1_cors_proto_rawDescData []byte
 )
 
-func file_config_v1_cors_proto_rawDescGZIP() []byte {
-	file_config_v1_cors_proto_rawDescOnce.Do(func() {
-		file_config_v1_cors_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_config_v1_cors_proto_rawDesc), len(file_config_v1_cors_proto_rawDesc)))
+func file_cors_v1_cors_proto_rawDescGZIP() []byte {
+	file_cors_v1_cors_proto_rawDescOnce.Do(func() {
+		file_cors_v1_cors_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_cors_v1_cors_proto_rawDesc), len(file_cors_v1_cors_proto_rawDesc)))
 	})
-	return file_config_v1_cors_proto_rawDescData
+	return file_cors_v1_cors_proto_rawDescData
 }
 
-var file_config_v1_cors_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_config_v1_cors_proto_goTypes = []any{
+var file_cors_v1_cors_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_cors_v1_cors_proto_goTypes = []any{
 	(*Cors)(nil), // 0: config.v1.Cors
 }
-var file_config_v1_cors_proto_depIdxs = []int32{
+var file_cors_v1_cors_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -219,26 +219,26 @@ var file_config_v1_cors_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_config_v1_cors_proto_init() }
-func file_config_v1_cors_proto_init() {
-	if File_config_v1_cors_proto != nil {
+func init() { file_cors_v1_cors_proto_init() }
+func file_cors_v1_cors_proto_init() {
+	if File_cors_v1_cors_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v1_cors_proto_rawDesc), len(file_config_v1_cors_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cors_v1_cors_proto_rawDesc), len(file_cors_v1_cors_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_config_v1_cors_proto_goTypes,
-		DependencyIndexes: file_config_v1_cors_proto_depIdxs,
-		MessageInfos:      file_config_v1_cors_proto_msgTypes,
+		GoTypes:           file_cors_v1_cors_proto_goTypes,
+		DependencyIndexes: file_cors_v1_cors_proto_depIdxs,
+		MessageInfos:      file_cors_v1_cors_proto_msgTypes,
 	}.Build()
-	File_config_v1_cors_proto = out.File
-	file_config_v1_cors_proto_goTypes = nil
-	file_config_v1_cors_proto_depIdxs = nil
+	File_cors_v1_cors_proto = out.File
+	file_cors_v1_cors_proto_goTypes = nil
+	file_cors_v1_cors_proto_depIdxs = nil
 }
