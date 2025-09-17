@@ -54,12 +54,8 @@ func (o *Options[T]) Unwrap() *T {
 	return o.wrapped
 }
 
-func (o *Options[T]) Update(updater func(*T) *T) *Options[T] {
-	updated := updater(o.wrapped)
-	return &Options[T]{
-		option:  o.option,
-		wrapped: updated,
-	}
+func (o *Options[T]) Update(updater func(*T)) {
+	updater(o.wrapped)
 }
 
 func (o *Options[T]) Value(key any) any {

@@ -21,27 +21,24 @@ type Option func(*Options)
 
 func WithConfigOption(opts ...config.Option) Option {
 	return func(o *Options) {
-		o.Update(func(v *configOptions) *configOptions {
+		o.Update(func(v *configOptions) {
 			v.ConfigOptions = append(v.ConfigOptions, opts...)
-			return v
 		})
 	}
 }
 
 func WithEnvPrefixes(prefixes ...string) Option {
 	return func(o *Options) {
-		o.Update(func(v *configOptions) *configOptions {
+		o.Update(func(v *configOptions) {
 			v.EnvPrefixes = append(v.EnvPrefixes, prefixes...)
-			return v
 		})
 	}
 }
 
 func WithSource(s ...config.Source) Option {
 	return func(o *Options) {
-		o.Update(func(v *configOptions) *configOptions {
+		o.Update(func(v *configOptions) {
 			v.Sources = append(v.Sources, s...)
-			return v
 		})
 	}
 }
