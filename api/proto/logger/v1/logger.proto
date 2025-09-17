@@ -3,7 +3,7 @@ syntax = "proto3";
 package config.v1;
 
 option cc_enable_arenas = true;
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/v1;configv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/logger/v1;loggerv1";
 option java_multiple_files = true;
 option java_outer_classname = "LoggerProto";
 option java_package = "com.github.origadmin.api.runtime.config.v1";

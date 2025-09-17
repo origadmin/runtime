@@ -10,14 +10,14 @@ import (
 
 	kratoslog "github.com/go-kratos/kratos/v2/log"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	kslog "github.com/origadmin/slog-kratos"
 	"github.com/origadmin/toolkits/slogx"
 )
 
 // NewLogger creates a new kratos logger based on the provided configuration.
 // It uses slog as the underlying logging library and slog-kratos as an adapter.
-func NewLogger(cfg *configv1.Logger) kratoslog.Logger {
+func NewLogger(cfg *loggerv1.Logger) kratoslog.Logger {
 	if cfg == nil || cfg.GetDisabled() {
 		return NewDiscard()
 	}

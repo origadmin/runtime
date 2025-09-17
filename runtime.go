@@ -15,8 +15,8 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/internal/decoder"
@@ -186,14 +186,14 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 
 // newLogger creates the logger backend from config and enriches it with app info.
 func newLogger(decoder interfaces.ConfigDecoder, appInfo AppInfo) log.Logger {
-	var loggerConfig *configv1.Logger
+	var loggerConfig *loggerv1.Logger
 
 	// Fast path: If the decoder directly provides logger config, use it.
 	if d, ok := decoder.(interfaces.LoggerConfig); ok {
 		loggerConfig = d.GetLogger()
 	} else {
 		// Slow path: Fall back to generic decoding.
-		loggerConfig = new(configv1.Logger) // Initialize if not from fast path
+		loggerConfig = new(loggerv1.Logger) // Initialize if not from fast path
 		if err := decoder.Decode("logger", loggerConfig); err != nil {
 			log.Warnf("Failed to decode logger config, using default: %v", err)
 		}
