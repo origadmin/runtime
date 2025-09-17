@@ -22,7 +22,7 @@ func TestWithOption(t *testing.T) {
 	value1 := "test value"
 
 	// Test basic WithOption
-	opt := optionutil.Options()
+	opt := optionutil.Option()
 	opt = optionutil.With(opt, stringKey, value1)
 	assert.NotNil(t, opt)
 
@@ -31,7 +31,7 @@ func TestWithOption(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, value1, got)
 
-	// Test with existing options
+	// Test with existing Context
 	value2 := 42
 	opt = optionutil.With(opt, intKey, value2)
 
@@ -51,7 +51,7 @@ func TestWithSliceOption(t *testing.T) {
 	key := sliceKey
 
 	// Test initial slice
-	opt := optionutil.Options()
+	opt := optionutil.Option()
 	opt = optionutil.Append(opt, key, 1, 2, 3)
 	slice1 := optionutil.Slice(opt, key)
 	assert.Equal(t, []int{1, 2, 3}, slice1)
@@ -74,13 +74,13 @@ var nonExistentKey = optionutil.Key[string]{}
 
 func TestGetOption_NonExistent(t *testing.T) {
 	key := nonExistentKey
-	opt := optionutil.Options()
+	opt := optionutil.Option()
 
 	// Test with non-existent key
 	_, ok := optionutil.Value(opt, key)
 	assert.False(t, ok)
 
-	// Test with nil options
+	// Test with nil Context
 	_, ok = optionutil.Value(nil, key)
 	assert.False(t, ok)
 }
@@ -89,14 +89,14 @@ var sliceNonExistentKey = optionutil.Key[[]int]{}
 
 func TestGetSliceOption_NonExistent(t *testing.T) {
 	key := sliceNonExistentKey
-	opt := optionutil.Options()
+	opt := optionutil.Option()
 
 	// Test with non-existent key
 	slice := optionutil.Slice(opt, key)
 	nilSlice := []int(nil)
 	assert.Equal(t, nilSlice, slice)
 
-	// Test with nil options
+	// Test with nil Context
 	slice = optionutil.Slice(nil, key)
 	assert.Equal(t, nilSlice, slice)
 }

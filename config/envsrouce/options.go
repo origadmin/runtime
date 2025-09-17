@@ -3,11 +3,11 @@ package envsrouce
 
 import (
 	runtimeconfig "github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/service/optionutil"
+	"github.com/origadmin/runtime/optionutil"
 )
 
-// envOptionKey A key used to store the environment variable prefix option in the configuration
-var envOptionKey optionutil.OptionKey[[]string]
+// optionKey A key used to store the environment variable prefix option in the configuration
+var optionKey optionutil.Key[[]string]
 
 // Option defines a function type that is used to configure the source
 type Option func(*source)
@@ -18,7 +18,7 @@ type Option func(*source)
 // which applies the prefix configuration to the configuration options
 func WithPrefixes(prefixes ...string) runtimeconfig.Option {
 	return func(options *runtimeconfig.Options) {
-		optionutil.WithSliceOption(options.OptionValue, envOptionKey, prefixes...)
+		optionutil.Append(options, optionKey, prefixes...)
 	}
 }
 
@@ -26,5 +26,5 @@ func WithPrefixes(prefixes ...string) runtimeconfig.Option {
 // Parameter options: Point to runtimeconfig. Options, which contains configuration options
 // Return value: String slice containing the environment variable prefix set in the configuration
 func FromOptions(options *runtimeconfig.Options) []string {
-	return optionutil.GetSliceOption(options.OptionValue, envOptionKey)
+	return optionutil.Slice(options, optionKey)
 }

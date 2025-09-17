@@ -3,16 +3,16 @@ package http
 import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
+	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/optionutil"
 )
 
 // Option keys
 var (
-	// ServerOptionsKey is the context key for HTTP server options
-	ServerOptionsKey = optionutil.OptionKey[[]transhttp.ServerOption]{}
-	// ClientOptionsKey is the context key for HTTP client options
-	ClientOptionsKey = optionutil.OptionKey[[]transhttp.ClientOption]{}
+	// serverOptionsKey is the context key for HTTP server options
+	serverOptionsKey = optionutil.Key[[]transhttp.ServerOption]{}
+	// clientOptionsKey is the context key for HTTP client options
+	clientOptionsKey = optionutil.Key[[]transhttp.ClientOption]{}
 )
 
 // WithServerOption adds HTTP server options to the context.
@@ -21,7 +21,7 @@ func WithServerOption(opts ...transhttp.ServerOption) service.Option {
 		return func(*service.Options) {}
 	}
 	return func(o *service.Options) {
-		optionutil.WithSliceOption(o, ServerOptionsKey, opts...)
+		optionutil.Append(o, serverOptionsKey, opts...)
 	}
 }
 
@@ -31,16 +31,16 @@ func WithClientOption(opts ...transhttp.ClientOption) service.Option {
 		return func(*service.Options) {}
 	}
 	return func(o *service.Options) {
-		optionutil.WithSliceOption(o, ClientOptionsKey, opts...)
+		optionutil.Append(o, clientOptionsKey, opts...)
 	}
 }
 
 // FromServerOptions retrieves HTTP server options from the service.Options.
 func FromServerOptions(o *service.Options) []transhttp.ServerOption {
-	return optionutil.GetSliceOption(o, ServerOptionsKey)
+	return optionutil.Slice(o, serverOptionsKey)
 }
 
 // FromClientOptions retrieves HTTP client options from the service.Options.
 func FromClientOptions(o *service.Options) []transhttp.ClientOption {
-	return optionutil.GetSliceOption(o, ClientOptionsKey)
+	return optionutil.Slice(o, clientOptionsKey)
 }

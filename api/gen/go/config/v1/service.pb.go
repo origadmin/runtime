@@ -140,7 +140,7 @@ func (x *Service) GetSelector() *Service_Selector {
 type Service_Selector struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Version       string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	Builder       string                 `protobuf:"bytes,2,opt,name=builder,proto3" json:"builder,omitempty"`
+	GlobalBuilder string                 `protobuf:"bytes,2,opt,name=global_builder,proto3" json:"global_builder,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -182,9 +182,9 @@ func (x *Service_Selector) GetVersion() string {
 	return ""
 }
 
-func (x *Service_Selector) GetBuilder() string {
+func (x *Service_Selector) GetGlobalBuilder() string {
 	if x != nil {
-		return x.Builder
+		return x.GlobalBuilder
 	}
 	return ""
 }
@@ -193,7 +193,7 @@ var File_config_v1_service_proto protoreflect.FileDescriptor
 
 const file_config_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x14config/v1/grpc.proto\x1a\x14config/v1/http.proto\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\xef\x03\n" +
+	"\x17config/v1/service.proto\x12\tconfig.v1\x1a\x14config/v1/grpc.proto\x1a\x14config/v1/http.proto\x1a\x17config/v1/message.proto\x1a\x14config/v1/task.proto\x1a\x19config/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\xfd\x03\n" +
 	"\aService\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12G\n" +
 	"\bprotocol\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\bprotocol\x12#\n" +
@@ -206,10 +206,10 @@ const file_config_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"middleware\x18\x90\x03 \x01(\v2\x19.middleware.v1.MiddlewareR\n" +
 	"middleware\x128\n" +
-	"\bselector\x18\xf4\x03 \x01(\v2\x1b.config.v1.Service.SelectorR\bselector\x1a>\n" +
+	"\bselector\x18\xf4\x03 \x01(\v2\x1b.config.v1.Service.SelectorR\bselector\x1aL\n" +
 	"\bSelector\x12\x18\n" +
-	"\aversion\x18\x01 \x01(\tR\aversion\x12\x18\n" +
-	"\abuilder\x18\x02 \x01(\tR\abuilderB\xa1\x01\n" +
+	"\aversion\x18\x01 \x01(\tR\aversion\x12&\n" +
+	"\x0eglobal_builder\x18\x02 \x01(\tR\x0eglobal_builderB\xa1\x01\n" +
 	"\rcom.config.v1B\fServiceProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 

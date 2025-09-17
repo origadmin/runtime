@@ -40,8 +40,11 @@ func DefaultHTTP(cfg *configv1.Service_Selector) (transhttp.ClientOption, error)
 		options = transhttp.WithNodeFilter(v)
 	}
 
-	// Set the global selector with the provided builder
-	SetSelectorGlobalSelector(cfg.GetBuilder())
+	if builderName := cfg.GlobalBuilder; builderName != "" {
+		// Create a version filter based on the configuration version
+		// Set the global selector with the provided builder
+		SetSelectorGlobalSelector(builderName)
+	}
 
 	// Return the client option and no error
 	return options, nil
@@ -62,8 +65,11 @@ func DefaultGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error)
 		options = transgrpc.WithNodeFilter(v)
 	}
 
-	// Set the global selector with the provided builder
-	SetSelectorGlobalSelector(cfg.GetBuilder())
+	if builderName := cfg.GlobalBuilder; builderName != "" {
+		// Create a version filter based on the configuration version
+		// Set the global selector with the provided builder
+		SetSelectorGlobalSelector(builderName)
+	}
 
 	// Return the client option and no error
 	return options, nil
@@ -72,9 +78,12 @@ func DefaultGRPC(cfg *configv1.Service_Selector) (transgrpc.ClientOption, error)
 func NewFilter(cfg *configv1.Service_Selector) (selector.NodeFilter, error) {
 	// Check if the version is specified in the configuration
 	if cfg.GetVersion() != "" {
-		// Create a version filter based on the configuration version
-		// Set the global selector with the provided builder
-		SetSelectorGlobalSelector(cfg.GetBuilder())
+		if builderName := cfg.GlobalBuilder; builderName != "" {
+			// Create a version filter based on the configuration version
+			// Set the global selector with the provided builder
+			SetSelectorGlobalSelector(builderName)
+		}
+
 		// Return the version filter and no error
 		return filter.Version(cfg.Version), nil
 	}

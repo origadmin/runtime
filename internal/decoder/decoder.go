@@ -5,9 +5,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mitchellh/mapstructure"
-
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
+	"github.com/mitchellh/mapstructure"
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	"github.com/origadmin/runtime/interfaces"

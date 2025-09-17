@@ -63,9 +63,12 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (krato
 		}
 		sources = append(sources, source)
 	}
-
-	options.ConfigOptions = append(options.ConfigOptions, kratosconfig.WithSource(sources...))
-	return kratosconfig.New(options.ConfigOptions...), nil
+	v := options.Unwrap()
+	if v.Sources != nil {
+		sources = append(sources, v.Sources...)
+	}
+	v.ConfigOptions = append(v.ConfigOptions, kratosconfig.WithSource(sources...))
+	return kratosconfig.New(v.ConfigOptions...), nil
 }
 
 func (f *sourceFactory) SyncConfig(cfg *sourcev1.SourceConfig, v any, opts ...Option) error {

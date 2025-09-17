@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package config.v1;
+
 import "config/v1/grpc.proto";
 import "config/v1/http.proto";
 import "config/v1/message.proto";
@@ -19,12 +20,12 @@ option objc_class_prefix = "ORC";
 message Service {
   // Selector
   message Selector {
-    string version = 1;
-    string builder = 2;
+    string version = 1 [json_name = "version"];
+    string global_builder = 2 [json_name = "global_builder"];
   }
   // Service name for service discovery
   string name = 1 [json_name = "name"];
-  
+
   // Protocol defines the communication protocol for the service
   string protocol = 2 [
     json_name = "protocol",
@@ -38,7 +39,7 @@ message Service {
       ]
     }
   ];
-  
+
   // Protocol-specific configurations.
   // Only the configuration matching the 'protocol' field will be used.
   config.v1.GRPC grpc = 10 [json_name = "grpc"];

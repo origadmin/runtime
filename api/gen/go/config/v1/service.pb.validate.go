@@ -381,7 +381,7 @@ func (m *Service_Selector) validate(all bool) error {
 
 	// no validation rules for Version
 
-	// no validation rules for Builder
+	// no validation rules for GlobalBuilder
 
 	if len(errors) > 0 {
 		return Service_SelectorMultiError(errors)

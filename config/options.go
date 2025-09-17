@@ -3,34 +3,45 @@ package config
 import (
 	"github.com/go-kratos/kratos/v2/config"
 
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/optionutil"
 )
 
 // Options contains the options for creating service components.
-// It embeds optionvalue.OptionValue for common context handling.
-type Options struct {
-	interfaces.OptionValue // Updated type
-	ConfigOptions          []config.Option
-	EnvPrefixes            []string
+// It embeds interfaces.Option for common context handling.
+type configOptions struct {
+	ConfigOptions []config.Option
+	EnvPrefixes   []string
+	Sources       []KSource
 }
+
+type Options = optionutil.Options[configOptions]
 
 // Option is a function that configures service.Options.
 type Option func(*Options)
 
-func DefaultServerOptions() *Options {
-	return &Options{
-		OptionValue: interfaces.DefaultOptions(), // Updated function call
-	}
-}
-
-func WithConfigOptions(opts ...config.Option) Option {
+func WithConfigOption(opts ...config.Option) Option {
 	return func(o *Options) {
-		o.ConfigOptions = append(o.ConfigOptions, opts...)
+		o.Update(func(v *configOptions) *configOptions {
+			v.ConfigOptions = append(v.ConfigOptions, opts...)
+			return v
+		})
 	}
 }
 
 func WithEnvPrefixes(prefixes ...string) Option {
 	return func(o *Options) {
-		o.EnvPrefixes = append(o.EnvPrefixes, prefixes...)
+		o.Update(func(v *configOptions) *configOptions {
+			v.EnvPrefixes = append(v.EnvPrefixes, prefixes...)
+			return v
+		})
+	}
+}
+
+func WithSource(s ...config.Source) Option {
+	return func(o *Options) {
+		o.Update(func(v *configOptions) *configOptions {
+			v.Sources = append(v.Sources, s...)
+			return v
+		})
 	}
 }
