@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package discovery.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1";
+
+import "google/protobuf/duration.proto";
+import "middleware/v1/middleware.proto";
+import "validate/validate.proto";
+
+// Client defines the configuration for connecting to a single downstream service.
+message Client {
+  // The unique name of the downstream service to connect to, e.g., "user-service".
+  string name = 1 [(validate.rules).string.min_len = 1];
+
+  // The name of the discovery configuration to use from the bootstrap list.
+  string discovery_name = 2;
+
+  // The endpoint to connect to, e.g., "discovery:///user-service".
+  string endpoint = 3;
+
+  // Selector for client-side load balancing and node filtering.
+  Selector selector = 4;
+
+  // Request timeout.
+  google.protobuf.Duration timeout = 5;
+
+  // Middleware configuration specific to this client.
+  middleware.v1.Middleware middleware = 100;
+}
+
+// Selector defines the client-side node selection strategy.
+message Selector {
+  // version is used for version-based routing.
+  string version = 1;
+}

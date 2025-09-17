@@ -14,7 +14,7 @@ import (
 
 	"github.com/goexts/generic/configure"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -26,12 +26,12 @@ var tlsVersionMap = map[string]uint16{
 }
 
 var cipherSuiteMap = map[string]uint16{
-	"TLS_RSA_WITH_RC4_128_SHA":                tls.TLS_RSA_WITH_RC4_128_SHA,
-	"TLS_RSA_WITH_3DES_EDE_CBC_SHA":           tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-	"TLS_RSA_WITH_AES_128_CBC_SHA":            tls.TLS_RSA_WITH_AES_128_CBC_SHA,
-	"TLS_RSA_WITH_AES_256_CBC_SHA":            tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-	"TLS_RSA_WITH_AES_128_CBC_SHA256":         tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
-	"TLS_RSA_WITH_AES_256_CBC_SHA256":         tls.TLS_RSA_WITH_AES_256_CBC_SHA256,
+	"TLS_RSA_WITH_RC4_128_SHA":        tls.TLS_RSA_WITH_RC4_128_SHA,
+	"TLS_RSA_WITH_3DES_EDE_CBC_SHA":   tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+	"TLS_RSA_WITH_AES_128_CBC_SHA":    tls.TLS_RSA_WITH_AES_128_CBC_SHA,
+	"TLS_RSA_WITH_AES_256_CBC_SHA":    tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+	"TLS_RSA_WITH_AES_128_CBC_SHA256": tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
+	//"TLS_RSA_WITH_AES_256_CBC_SHA256":         tls.TLS_RSA_WITH_AES_256_CBC_SHA256,
 	"TLS_RSA_WITH_AES_128_GCM_SHA256":         tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
 	"TLS_RSA_WITH_AES_256_GCM_SHA384":         tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
 	"TLS_ECDHE_ECDSA_WITH_RC4_128_SHA":        tls.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
@@ -42,9 +42,9 @@ var cipherSuiteMap = map[string]uint16{
 	"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA":      tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
 	"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA":      tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
 	"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256": tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-	"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
-	"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256":   tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-	"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384":   tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
+	//"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
+	"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256": tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+	//"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384":   tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
 	"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256": tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 	"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 	"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256":   tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
@@ -66,7 +66,7 @@ func parseCipherSuites(cipherSuites []string) []uint16 {
 	return suites
 }
 
-func NewServerTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config, error) {
+func NewServerTLSConfig(cfg *transportv1.TLSConfig, options ...Option) (*tls.Config, error) {
 	if cfg == nil {
 		return nil, nil
 	}
@@ -188,7 +188,7 @@ func NewServerTLSConfigFromFile(keyFile, certFile, caFile string, options ...Opt
 	return cfg, nil
 }
 
-func NewClientTLSConfig(cfg *configv1.TLSConfig, options ...Option) (*tls.Config, error) {
+func NewClientTLSConfig(cfg *transportv1.TLSConfig, options ...Option) (*tls.Config, error) {
 	if cfg == nil {
 		return nil, nil
 	}

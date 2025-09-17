@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package transport.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
+
+import "google/protobuf/duration.proto";
+import "middleware/v1/middleware.proto";
+import "security/transport/v1/tls.proto";
+import "validate/validate.proto";
+
+// HTTP defines the configuration for a single HTTP server endpoint.
+message HTTP {
+  // Network type, e.g., "tcp", "unix".
+  string network = 1 [(validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]}];
+  // Address for the server to listen on, e.g., ":8000".
+  string addr = 2 [(validate.rules).string.min_len = 1];
+  // Request timeout.
+  google.protobuf.Duration timeout = 3;
+  // Graceful shutdown timeout.
+  google.protobuf.Duration shutdown_timeout = 4;
+  // The endpoint that this server advertises to the service registry, e.g., "dns:///127.0.0.1:8000".
+  string endpoint = 5;
+  // Max receive message size.
+  int32 max_recv_msg_size = 6 [(validate.rules).int32 = {gt: 0}];
+  // Max send message size.
+  int32 max_send_msg_size = 7 [(validate.rules).int32 = {gt: 0}];
+  // TLS configuration for the server.
+  security.transport.v1.TLSConfig tls = 8;
+
+  // Middleware configuration specific to this HTTP server.
+  middleware.v1.Middleware middleware = 100;
+}
