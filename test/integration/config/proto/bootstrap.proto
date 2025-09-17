@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package test.configs;
+
+import "discovery/v1/client.proto";
+// Import all required building blocks from the framework's api directory
+import "discovery/v1/discovery.proto";
+import "transport/v1/grpc.proto";
+import "transport/v1/http.proto";
+
+// go_package points to where the generated Go code for this test module should be placed
+option go_package = "github.com/origadmin/framework/test/integration/config/proto;configs";
+
+// NamedDiscovery binds a service discovery configuration with a unique name.
+message NamedDiscovery {
+  // Unique name for this discovery configuration, e.g., "internal-consul", "legacy-etcd"
+  string name = 1;
+  // Specific service discovery configuration
+  discovery.v1.Discovery config = 2;
+}
+
+// Bootstrap is the top-level configuration structure for our test application.
+message Bootstrap {
+  // 1. Define a "pool" of service discovery configurations.
+  repeated NamedDiscovery discoveries = 1;
+
+  // 2. Specify which configuration the current service should use to **register itself**.
+  string registration_discovery_name = 2;
+
+  // 3. Define the list of service endpoints that the current service will expose.
+  repeated transport.v1.GRPC grpc_servers = 3;
+  repeated transport.v1.HTTP http_servers = 4;
+
+  // 4. Define the list of downstream clients that the current service will connect to.
+  repeated discovery.v1.Client clients = 5;
+}

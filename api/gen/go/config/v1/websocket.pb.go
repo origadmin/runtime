@@ -9,6 +9,7 @@ package configv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	durationpb "google.golang.org/protobuf/types/known/durationpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -21,13 +22,14 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// WebSocket defines the configuration for a WebSocket server.
 type WebSocket struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Network       string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	Addr          string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	Path          string                 `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
-	Codec         string                 `protobuf:"bytes,4,opt,name=codec,proto3" json:"codec,omitempty"`
-	Timeout       int64                  `protobuf:"varint,5,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Network string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
+	Addr    string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	Timeout *durationpb.Duration   `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	// The endpoint that this server advertises to the service registry.
+	Endpoint      string `protobuf:"bytes,4,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -76,39 +78,31 @@ func (x *WebSocket) GetAddr() string {
 	return ""
 }
 
-func (x *WebSocket) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *WebSocket) GetCodec() string {
-	if x != nil {
-		return x.Codec
-	}
-	return ""
-}
-
-func (x *WebSocket) GetTimeout() int64 {
+func (x *WebSocket) GetTimeout() *durationpb.Duration {
 	if x != nil {
 		return x.Timeout
 	}
-	return 0
+	return nil
+}
+
+func (x *WebSocket) GetEndpoint() string {
+	if x != nil {
+		return x.Endpoint
+	}
+	return ""
 }
 
 var File_config_v1_websocket_proto protoreflect.FileDescriptor
 
 const file_config_v1_websocket_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/v1/websocket.proto\x12\tconfig.v1\"}\n" +
+	"\x19config/v1/websocket.proto\x12\tconfig.v1\x1a\x1egoogle/protobuf/duration.proto\"\x8a\x01\n" +
 	"\tWebSocket\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
-	"\x04addr\x18\x02 \x01(\tR\x04addr\x12\x12\n" +
-	"\x04path\x18\x03 \x01(\tR\x04path\x12\x14\n" +
-	"\x05codec\x18\x04 \x01(\tR\x05codec\x12\x18\n" +
-	"\atimeout\x18\x05 \x01(\x03R\atimeoutB\xa3\x01\n" +
-	"\rcom.config.v1B\x0eWebsocketProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
+	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x1a\n" +
+	"\bendpoint\x18\x04 \x01(\tR\bendpointB\xa0\x01\n" +
+	"\rcom.config.v1B\x0eWebsocketProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/config/v1;configv1\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
 var (
@@ -125,14 +119,16 @@ func file_config_v1_websocket_proto_rawDescGZIP() []byte {
 
 var file_config_v1_websocket_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_config_v1_websocket_proto_goTypes = []any{
-	(*WebSocket)(nil), // 0: config.v1.WebSocket
+	(*WebSocket)(nil),           // 0: config.v1.WebSocket
+	(*durationpb.Duration)(nil), // 1: google.protobuf.Duration
 }
 var file_config_v1_websocket_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: config.v1.WebSocket.timeout:type_name -> google.protobuf.Duration
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_config_v1_websocket_proto_init() }

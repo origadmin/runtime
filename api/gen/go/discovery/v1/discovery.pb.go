@@ -23,15 +23,24 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Discovery
+// Discovery defines the configuration for service registration.
 type Discovery struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`                 // Type
-	ServiceName   string                 `protobuf:"bytes,2,opt,name=service_name,proto3" json:"service_name,omitempty"` // ServiceName
-	Debug         bool                   `protobuf:"varint,5,opt,name=debug,proto3" json:"debug,omitempty"`
-	Customize     *v1.Extension          `protobuf:"bytes,6,opt,name=customize,proto3" json:"customize,omitempty"`
-	Consul        *Discovery_Consul      `protobuf:"bytes,300,opt,name=consul,proto3,oneof" json:"consul,omitempty"` // Consul
-	Etcd          *Discovery_ETCD        `protobuf:"bytes,400,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`     // ETCD
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// type specifies which discovery provider to use.
+	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	// service_name is the single, unique name under which this entire service will be registered.
+	ServiceName string `protobuf:"bytes,2,opt,name=service_name,proto3" json:"service_name,omitempty"`
+	// debug enables verbose logging for the discovery client.
+	Debug bool `protobuf:"varint,5,opt,name=debug,proto3" json:"debug,omitempty"`
+	// --- Standard Provider Configurations ---
+	Consul     *Consul     `protobuf:"bytes,300,opt,name=consul,proto3,oneof" json:"consul,omitempty"`
+	Etcd       *ETCD       `protobuf:"bytes,400,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`
+	Nacos      *Nacos      `protobuf:"bytes,500,opt,name=nacos,proto3,oneof" json:"nacos,omitempty"`
+	Apollo     *Apollo     `protobuf:"bytes,600,opt,name=apollo,proto3,oneof" json:"apollo,omitempty"`
+	Kubernetes *Kubernetes `protobuf:"bytes,700,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
+	Polaris    *Polaris    `protobuf:"bytes,800,opt,name=polaris,proto3,oneof" json:"polaris,omitempty"`
+	// customize is used for non-standard, user-defined discovery providers.
+	Customize     *v1.Extension `protobuf:"bytes,900,opt,name=customize,proto3" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -87,6 +96,48 @@ func (x *Discovery) GetDebug() bool {
 	return false
 }
 
+func (x *Discovery) GetConsul() *Consul {
+	if x != nil {
+		return x.Consul
+	}
+	return nil
+}
+
+func (x *Discovery) GetEtcd() *ETCD {
+	if x != nil {
+		return x.Etcd
+	}
+	return nil
+}
+
+func (x *Discovery) GetNacos() *Nacos {
+	if x != nil {
+		return x.Nacos
+	}
+	return nil
+}
+
+func (x *Discovery) GetApollo() *Apollo {
+	if x != nil {
+		return x.Apollo
+	}
+	return nil
+}
+
+func (x *Discovery) GetKubernetes() *Kubernetes {
+	if x != nil {
+		return x.Kubernetes
+	}
+	return nil
+}
+
+func (x *Discovery) GetPolaris() *Polaris {
+	if x != nil {
+		return x.Polaris
+	}
+	return nil
+}
+
 func (x *Discovery) GetCustomize() *v1.Extension {
 	if x != nil {
 		return x.Customize
@@ -94,52 +145,36 @@ func (x *Discovery) GetCustomize() *v1.Extension {
 	return nil
 }
 
-func (x *Discovery) GetConsul() *Discovery_Consul {
-	if x != nil {
-		return x.Consul
-	}
-	return nil
-}
-
-func (x *Discovery) GetEtcd() *Discovery_ETCD {
-	if x != nil {
-		return x.Etcd
-	}
-	return nil
-}
-
-// Consul
-type Discovery_Consul struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	Address     string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Scheme      string                 `protobuf:"bytes,2,opt,name=scheme,proto3" json:"scheme,omitempty"`
-	Token       string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
-	HeartBeat   bool                   `protobuf:"varint,4,opt,name=heart_beat,proto3" json:"heart_beat,omitempty"`
-	HealthCheck bool                   `protobuf:"varint,5,opt,name=health_check,proto3" json:"health_check,omitempty"`
-	Datacenter  string                 `protobuf:"bytes,6,opt,name=datacenter,proto3" json:"datacenter,omitempty"`
-	//  string tag = 7 [json_name = "tag"];
-	HealthCheckInterval uint32 `protobuf:"varint,8,opt,name=health_check_interval,proto3" json:"health_check_interval,omitempty"`
-	//  string health_check_timeout = 9[json_name = "health_check_timeout"];
-	Timeout                        int64  `protobuf:"varint,10,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	DeregisterCriticalServiceAfter uint32 `protobuf:"varint,11,opt,name=deregister_critical_service_after,proto3" json:"deregister_critical_service_after,omitempty"`
+// Consul provider specific configuration.
+type Consul struct {
+	state                          protoimpl.MessageState `protogen:"open.v1"`
+	Address                        string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Scheme                         string                 `protobuf:"bytes,2,opt,name=scheme,proto3" json:"scheme,omitempty"`
+	Token                          string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
+	HeartBeat                      bool                   `protobuf:"varint,4,opt,name=heart_beat,json=heartBeat,proto3" json:"heart_beat,omitempty"`
+	HealthCheck                    bool                   `protobuf:"varint,5,opt,name=health_check,json=healthCheck,proto3" json:"health_check,omitempty"`
+	Datacenter                     string                 `protobuf:"bytes,6,opt,name=datacenter,proto3" json:"datacenter,omitempty"`
+	HealthCheckInterval            uint32                 `protobuf:"varint,8,opt,name=health_check_interval,json=healthCheckInterval,proto3" json:"health_check_interval,omitempty"`
+	Timeout                        int64                  `protobuf:"varint,10,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	DeregisterCriticalServiceAfter uint32                 `protobuf:"varint,11,opt,name=deregister_critical_service_after,json=deregisterCriticalServiceAfter,proto3" json:"deregister_critical_service_after,omitempty"`
 	unknownFields                  protoimpl.UnknownFields
 	sizeCache                      protoimpl.SizeCache
 }
 
-func (x *Discovery_Consul) Reset() {
-	*x = Discovery_Consul{}
+func (x *Consul) Reset() {
+	*x = Consul{}
 	mi := &file_discovery_v1_discovery_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Discovery_Consul) String() string {
+func (x *Consul) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Discovery_Consul) ProtoMessage() {}
+func (*Consul) ProtoMessage() {}
 
-func (x *Discovery_Consul) ProtoReflect() protoreflect.Message {
+func (x *Consul) ProtoReflect() protoreflect.Message {
 	mi := &file_discovery_v1_discovery_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -151,96 +186,96 @@ func (x *Discovery_Consul) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Discovery_Consul.ProtoReflect.Descriptor instead.
-func (*Discovery_Consul) Descriptor() ([]byte, []int) {
-	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{0, 0}
+// Deprecated: Use Consul.ProtoReflect.Descriptor instead.
+func (*Consul) Descriptor() ([]byte, []int) {
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Discovery_Consul) GetAddress() string {
+func (x *Consul) GetAddress() string {
 	if x != nil {
 		return x.Address
 	}
 	return ""
 }
 
-func (x *Discovery_Consul) GetScheme() string {
+func (x *Consul) GetScheme() string {
 	if x != nil {
 		return x.Scheme
 	}
 	return ""
 }
 
-func (x *Discovery_Consul) GetToken() string {
+func (x *Consul) GetToken() string {
 	if x != nil {
 		return x.Token
 	}
 	return ""
 }
 
-func (x *Discovery_Consul) GetHeartBeat() bool {
+func (x *Consul) GetHeartBeat() bool {
 	if x != nil {
 		return x.HeartBeat
 	}
 	return false
 }
 
-func (x *Discovery_Consul) GetHealthCheck() bool {
+func (x *Consul) GetHealthCheck() bool {
 	if x != nil {
 		return x.HealthCheck
 	}
 	return false
 }
 
-func (x *Discovery_Consul) GetDatacenter() string {
+func (x *Consul) GetDatacenter() string {
 	if x != nil {
 		return x.Datacenter
 	}
 	return ""
 }
 
-func (x *Discovery_Consul) GetHealthCheckInterval() uint32 {
+func (x *Consul) GetHealthCheckInterval() uint32 {
 	if x != nil {
 		return x.HealthCheckInterval
 	}
 	return 0
 }
 
-func (x *Discovery_Consul) GetTimeout() int64 {
+func (x *Consul) GetTimeout() int64 {
 	if x != nil {
 		return x.Timeout
 	}
 	return 0
 }
 
-func (x *Discovery_Consul) GetDeregisterCriticalServiceAfter() uint32 {
+func (x *Consul) GetDeregisterCriticalServiceAfter() uint32 {
 	if x != nil {
 		return x.DeregisterCriticalServiceAfter
 	}
 	return 0
 }
 
-// ETCD
-type Discovery_ETCD struct {
+// ETCD provider specific configuration.
+type ETCD struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Endpoints     []string               `protobuf:"bytes,1,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Discovery_ETCD) Reset() {
-	*x = Discovery_ETCD{}
+func (x *ETCD) Reset() {
+	*x = ETCD{}
 	mi := &file_discovery_v1_discovery_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Discovery_ETCD) String() string {
+func (x *ETCD) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Discovery_ETCD) ProtoMessage() {}
+func (*ETCD) ProtoMessage() {}
 
-func (x *Discovery_ETCD) ProtoReflect() protoreflect.Message {
+func (x *ETCD) ProtoReflect() protoreflect.Message {
 	mi := &file_discovery_v1_discovery_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -252,50 +287,213 @@ func (x *Discovery_ETCD) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Discovery_ETCD.ProtoReflect.Descriptor instead.
-func (*Discovery_ETCD) Descriptor() ([]byte, []int) {
-	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{0, 1}
+// Deprecated: Use ETCD.ProtoReflect.Descriptor instead.
+func (*ETCD) Descriptor() ([]byte, []int) {
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Discovery_ETCD) GetEndpoints() []string {
+func (x *ETCD) GetEndpoints() []string {
 	if x != nil {
 		return x.Endpoints
 	}
 	return nil
 }
 
+// Nacos provider specific configuration (placeholder).
+type Nacos struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Nacos) Reset() {
+	*x = Nacos{}
+	mi := &file_discovery_v1_discovery_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Nacos) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Nacos) ProtoMessage() {}
+
+func (x *Nacos) ProtoReflect() protoreflect.Message {
+	mi := &file_discovery_v1_discovery_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Nacos.ProtoReflect.Descriptor instead.
+func (*Nacos) Descriptor() ([]byte, []int) {
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{3}
+}
+
+// Apollo provider specific configuration (placeholder).
+type Apollo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Apollo) Reset() {
+	*x = Apollo{}
+	mi := &file_discovery_v1_discovery_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Apollo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Apollo) ProtoMessage() {}
+
+func (x *Apollo) ProtoReflect() protoreflect.Message {
+	mi := &file_discovery_v1_discovery_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Apollo.ProtoReflect.Descriptor instead.
+func (*Apollo) Descriptor() ([]byte, []int) {
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{4}
+}
+
+// Kubernetes provider specific configuration (placeholder).
+type Kubernetes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Kubernetes) Reset() {
+	*x = Kubernetes{}
+	mi := &file_discovery_v1_discovery_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Kubernetes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Kubernetes) ProtoMessage() {}
+
+func (x *Kubernetes) ProtoReflect() protoreflect.Message {
+	mi := &file_discovery_v1_discovery_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Kubernetes.ProtoReflect.Descriptor instead.
+func (*Kubernetes) Descriptor() ([]byte, []int) {
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{5}
+}
+
+// Polaris provider specific configuration (placeholder).
+type Polaris struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Polaris) Reset() {
+	*x = Polaris{}
+	mi := &file_discovery_v1_discovery_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Polaris) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Polaris) ProtoMessage() {}
+
+func (x *Polaris) ProtoReflect() protoreflect.Message {
+	mi := &file_discovery_v1_discovery_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Polaris.ProtoReflect.Descriptor instead.
+func (*Polaris) Descriptor() ([]byte, []int) {
+	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{6}
+}
+
 var File_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
 const file_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"\x1cdiscovery/v1/discovery.proto\x12\fdiscovery.v1\x1a\x1cextension/v1/extension.proto\x1a\x17validate/validate.proto\"\xd4\x05\n" +
+	"\x1cdiscovery/v1/discovery.proto\x12\fdiscovery.v1\x1a\x1cextension/v1/extension.proto\x1a\x17validate/validate.proto\"\xd2\x04\n" +
 	"\tDiscovery\x12Q\n" +
 	"\x04type\x18\x01 \x01(\tB=\xfaB:r8R\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
 	"kubernetesR\apolarisR\x04type\x12\"\n" +
 	"\fservice_name\x18\x02 \x01(\tR\fservice_name\x12\x14\n" +
-	"\x05debug\x18\x05 \x01(\bR\x05debug\x125\n" +
-	"\tcustomize\x18\x06 \x01(\v2\x17.extension.v1.ExtensionR\tcustomize\x12<\n" +
-	"\x06consul\x18\xac\x02 \x01(\v2\x1e.discovery.v1.Discovery.ConsulH\x00R\x06consul\x88\x01\x01\x126\n" +
-	"\x04etcd\x18\x90\x03 \x01(\v2\x1c.discovery.v1.Discovery.ETCDH\x01R\x04etcd\x88\x01\x01\x1a\xd2\x02\n" +
+	"\x05debug\x18\x05 \x01(\bR\x05debug\x122\n" +
+	"\x06consul\x18\xac\x02 \x01(\v2\x14.discovery.v1.ConsulH\x00R\x06consul\x88\x01\x01\x12,\n" +
+	"\x04etcd\x18\x90\x03 \x01(\v2\x12.discovery.v1.ETCDH\x01R\x04etcd\x88\x01\x01\x12/\n" +
+	"\x05nacos\x18\xf4\x03 \x01(\v2\x13.discovery.v1.NacosH\x02R\x05nacos\x88\x01\x01\x122\n" +
+	"\x06apollo\x18\xd8\x04 \x01(\v2\x14.discovery.v1.ApolloH\x03R\x06apollo\x88\x01\x01\x12>\n" +
+	"\n" +
+	"kubernetes\x18\xbc\x05 \x01(\v2\x18.discovery.v1.KubernetesH\x04R\n" +
+	"kubernetes\x88\x01\x01\x125\n" +
+	"\apolaris\x18\xa0\x06 \x01(\v2\x15.discovery.v1.PolarisH\x05R\apolaris\x88\x01\x01\x126\n" +
+	"\tcustomize\x18\x84\a \x01(\v2\x17.extension.v1.ExtensionR\tcustomizeB\t\n" +
+	"\a_consulB\a\n" +
+	"\x05_etcdB\b\n" +
+	"\x06_nacosB\t\n" +
+	"\a_apolloB\r\n" +
+	"\v_kubernetesB\n" +
+	"\n" +
+	"\b_polaris\"\xcb\x02\n" +
 	"\x06Consul\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
 	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
-	"\x05token\x18\x03 \x01(\tR\x05token\x12\x1e\n" +
+	"\x05token\x18\x03 \x01(\tR\x05token\x12\x1d\n" +
 	"\n" +
-	"heart_beat\x18\x04 \x01(\bR\n" +
-	"heart_beat\x12\"\n" +
-	"\fhealth_check\x18\x05 \x01(\bR\fhealth_check\x12\x1e\n" +
+	"heart_beat\x18\x04 \x01(\bR\theartBeat\x12!\n" +
+	"\fhealth_check\x18\x05 \x01(\bR\vhealthCheck\x12\x1e\n" +
 	"\n" +
 	"datacenter\x18\x06 \x01(\tR\n" +
-	"datacenter\x124\n" +
-	"\x15health_check_interval\x18\b \x01(\rR\x15health_check_interval\x12\x18\n" +
+	"datacenter\x122\n" +
+	"\x15health_check_interval\x18\b \x01(\rR\x13healthCheckInterval\x12\x18\n" +
 	"\atimeout\x18\n" +
-	" \x01(\x03R\atimeout\x12L\n" +
-	"!deregister_critical_service_after\x18\v \x01(\rR!deregister_critical_service_after\x1a$\n" +
+	" \x01(\x03R\atimeout\x12I\n" +
+	"!deregister_critical_service_after\x18\v \x01(\rR\x1ederegisterCriticalServiceAfter\"$\n" +
 	"\x04ETCD\x12\x1c\n" +
-	"\tendpoints\x18\x01 \x03(\tR\tendpointsB\t\n" +
-	"\a_consulB\a\n" +
-	"\x05_etcdB\xb8\x01\n" +
+	"\tendpoints\x18\x01 \x03(\tR\tendpoints\"\a\n" +
+	"\x05Nacos\"\b\n" +
+	"\x06Apollo\"\f\n" +
+	"\n" +
+	"Kubernetes\"\t\n" +
+	"\aPolarisB\xb8\x01\n" +
 	"\x10com.discovery.v1B\x0eDiscoveryProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1\xf8\x01\x01\xa2\x02\x03DXX\xaa\x02\fDiscovery.V1\xca\x02\fDiscovery\\V1\xe2\x02\x18Discovery\\V1\\GPBMetadata\xea\x02\rDiscovery::V1b\x06proto3"
 
 var (
@@ -310,22 +508,30 @@ func file_discovery_v1_discovery_proto_rawDescGZIP() []byte {
 	return file_discovery_v1_discovery_proto_rawDescData
 }
 
-var file_discovery_v1_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_discovery_v1_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_discovery_v1_discovery_proto_goTypes = []any{
-	(*Discovery)(nil),        // 0: discovery.v1.Discovery
-	(*Discovery_Consul)(nil), // 1: discovery.v1.Discovery.Consul
-	(*Discovery_ETCD)(nil),   // 2: discovery.v1.Discovery.ETCD
-	(*v1.Extension)(nil),     // 3: extension.v1.Extension
+	(*Discovery)(nil),    // 0: discovery.v1.Discovery
+	(*Consul)(nil),       // 1: discovery.v1.Consul
+	(*ETCD)(nil),         // 2: discovery.v1.ETCD
+	(*Nacos)(nil),        // 3: discovery.v1.Nacos
+	(*Apollo)(nil),       // 4: discovery.v1.Apollo
+	(*Kubernetes)(nil),   // 5: discovery.v1.Kubernetes
+	(*Polaris)(nil),      // 6: discovery.v1.Polaris
+	(*v1.Extension)(nil), // 7: extension.v1.Extension
 }
 var file_discovery_v1_discovery_proto_depIdxs = []int32{
-	3, // 0: discovery.v1.Discovery.customize:type_name -> extension.v1.Extension
-	1, // 1: discovery.v1.Discovery.consul:type_name -> discovery.v1.Discovery.Consul
-	2, // 2: discovery.v1.Discovery.etcd:type_name -> discovery.v1.Discovery.ETCD
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	1, // 0: discovery.v1.Discovery.consul:type_name -> discovery.v1.Consul
+	2, // 1: discovery.v1.Discovery.etcd:type_name -> discovery.v1.ETCD
+	3, // 2: discovery.v1.Discovery.nacos:type_name -> discovery.v1.Nacos
+	4, // 3: discovery.v1.Discovery.apollo:type_name -> discovery.v1.Apollo
+	5, // 4: discovery.v1.Discovery.kubernetes:type_name -> discovery.v1.Kubernetes
+	6, // 5: discovery.v1.Discovery.polaris:type_name -> discovery.v1.Polaris
+	7, // 6: discovery.v1.Discovery.customize:type_name -> extension.v1.Extension
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_discovery_v1_discovery_proto_init() }
@@ -340,7 +546,7 @@ func file_discovery_v1_discovery_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_discovery_v1_discovery_proto_rawDesc), len(file_discovery_v1_discovery_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

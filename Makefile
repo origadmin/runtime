@@ -150,6 +150,16 @@ runtime:
 	--validate_out=lang=go,paths=source_relative:./gen/go \
 	$(RUNTIME_PROTO_FILES)
 
+.PHONY: test
+# generate internal proto or use ./internal/generate.go
+test:
+	protoc \
+	--proto_path=./test/integration/config/proto \
+	--proto_path=./api/proto \
+	--proto_path=./third_party \
+	--go_out=paths=source_relative:./test/integration/config/proto \
+	./test/integration/config/proto/*.proto
+
 .PHONY: generate
 # run go generate to generate code
 generate:

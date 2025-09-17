@@ -1,0 +1,43 @@
+# 1. 定义可用的服务发现配置池
+discoveries:
+  - name: "internal-consul"
+    config:
+      service_name: "my-test-app"
+      type: "consul"
+      consul:
+        address: "consul.internal:8500"
+  - name: "legacy-etcd"
+    config:
+      # 在这本电话簿里，我可能不需要注册自己，所以 service_name 可以为空
+      service_name: ""
+      type: "etcd"
+      etcd:
+        endpoints:
+          - "etcd.legacy:2379"
+
+# 2. 指定我（当前服务）使用 "internal-consul" 来注册自己
+registration_discovery_name: "internal-consul"
+
+# 3. 我自己要暴露的服务端点
+grpc_servers:
+  - addr: ":9001"
+    endpoint: "127.0.0.1:9001"
+http_servers:
+  - addr: ":8001"
+    endpoint: "127.0.0.1:8001"
+
+# 4. 我要连接的下游服务
+clients:
+  # user-service 在新的 Consul 里
+  - name: "user-service"
+    discovery_name: "internal-consul" # <-- 明确引用
+    endpoint: "discovery:///user-service"
+    selector:
+      version: "v1.5.0"
+
+  # stock-service 还在旧的 ETCD 里
+  - name: "stock-service"
+    discovery_name: "legacy-etcd" # <-- 明确引用
+    endpoint: "discovery:///stock-service"
+    selector:
+      version: "v1.0.1"

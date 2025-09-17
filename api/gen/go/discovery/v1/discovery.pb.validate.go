@@ -167,6 +167,138 @@ func (m *Discovery) validate(all bool) error {
 
 	}
 
+	if m.Nacos != nil {
+
+		if all {
+			switch v := interface{}(m.GetNacos()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Nacos",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Nacos",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetNacos()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DiscoveryValidationError{
+					field:  "Nacos",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Apollo != nil {
+
+		if all {
+			switch v := interface{}(m.GetApollo()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Apollo",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Apollo",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetApollo()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DiscoveryValidationError{
+					field:  "Apollo",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Kubernetes != nil {
+
+		if all {
+			switch v := interface{}(m.GetKubernetes()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Kubernetes",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Kubernetes",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetKubernetes()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DiscoveryValidationError{
+					field:  "Kubernetes",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Polaris != nil {
+
+		if all {
+			switch v := interface{}(m.GetPolaris()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Polaris",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Polaris",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetPolaris()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DiscoveryValidationError{
+					field:  "Polaris",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return DiscoveryMultiError(errors)
 	}
@@ -254,22 +386,21 @@ var _Discovery_Type_InLookup = map[string]struct{}{
 	"polaris":    {},
 }
 
-// Validate checks the field values on Discovery_Consul with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *Discovery_Consul) Validate() error {
+// Validate checks the field values on Consul with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Consul) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Discovery_Consul with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// Discovery_ConsulMultiError, or nil if none found.
-func (m *Discovery_Consul) ValidateAll() error {
+// ValidateAll checks the field values on Consul with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ConsulMultiError, or nil if none found.
+func (m *Consul) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Discovery_Consul) validate(all bool) error {
+func (m *Consul) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -295,19 +426,18 @@ func (m *Discovery_Consul) validate(all bool) error {
 	// no validation rules for DeregisterCriticalServiceAfter
 
 	if len(errors) > 0 {
-		return Discovery_ConsulMultiError(errors)
+		return ConsulMultiError(errors)
 	}
 
 	return nil
 }
 
-// Discovery_ConsulMultiError is an error wrapping multiple validation errors
-// returned by Discovery_Consul.ValidateAll() if the designated constraints
-// aren't met.
-type Discovery_ConsulMultiError []error
+// ConsulMultiError is an error wrapping multiple validation errors returned by
+// Consul.ValidateAll() if the designated constraints aren't met.
+type ConsulMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Discovery_ConsulMultiError) Error() string {
+func (m ConsulMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -316,11 +446,11 @@ func (m Discovery_ConsulMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Discovery_ConsulMultiError) AllErrors() []error { return m }
+func (m ConsulMultiError) AllErrors() []error { return m }
 
-// Discovery_ConsulValidationError is the validation error returned by
-// Discovery_Consul.Validate if the designated constraints aren't met.
-type Discovery_ConsulValidationError struct {
+// ConsulValidationError is the validation error returned by Consul.Validate if
+// the designated constraints aren't met.
+type ConsulValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -328,22 +458,22 @@ type Discovery_ConsulValidationError struct {
 }
 
 // Field function returns field value.
-func (e Discovery_ConsulValidationError) Field() string { return e.field }
+func (e ConsulValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Discovery_ConsulValidationError) Reason() string { return e.reason }
+func (e ConsulValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Discovery_ConsulValidationError) Cause() error { return e.cause }
+func (e ConsulValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Discovery_ConsulValidationError) Key() bool { return e.key }
+func (e ConsulValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Discovery_ConsulValidationError) ErrorName() string { return "Discovery_ConsulValidationError" }
+func (e ConsulValidationError) ErrorName() string { return "ConsulValidationError" }
 
 // Error satisfies the builtin error interface
-func (e Discovery_ConsulValidationError) Error() string {
+func (e ConsulValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -355,14 +485,14 @@ func (e Discovery_ConsulValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sDiscovery_Consul.%s: %s%s",
+		"invalid %sConsul.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Discovery_ConsulValidationError{}
+var _ error = ConsulValidationError{}
 
 var _ interface {
 	Field() string
@@ -370,24 +500,23 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Discovery_ConsulValidationError{}
+} = ConsulValidationError{}
 
-// Validate checks the field values on Discovery_ETCD with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Discovery_ETCD) Validate() error {
+// Validate checks the field values on ETCD with the rules defined in the proto
+// definition for this message. If any rules are violated, the first error
+// encountered is returned, or nil if there are no violations.
+func (m *ETCD) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Discovery_ETCD with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in Discovery_ETCDMultiError,
-// or nil if none found.
-func (m *Discovery_ETCD) ValidateAll() error {
+// ValidateAll checks the field values on ETCD with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ETCDMultiError, or nil if none found.
+func (m *ETCD) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Discovery_ETCD) validate(all bool) error {
+func (m *ETCD) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -395,19 +524,18 @@ func (m *Discovery_ETCD) validate(all bool) error {
 	var errors []error
 
 	if len(errors) > 0 {
-		return Discovery_ETCDMultiError(errors)
+		return ETCDMultiError(errors)
 	}
 
 	return nil
 }
 
-// Discovery_ETCDMultiError is an error wrapping multiple validation errors
-// returned by Discovery_ETCD.ValidateAll() if the designated constraints
-// aren't met.
-type Discovery_ETCDMultiError []error
+// ETCDMultiError is an error wrapping multiple validation errors returned by
+// ETCD.ValidateAll() if the designated constraints aren't met.
+type ETCDMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Discovery_ETCDMultiError) Error() string {
+func (m ETCDMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -416,11 +544,11 @@ func (m Discovery_ETCDMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Discovery_ETCDMultiError) AllErrors() []error { return m }
+func (m ETCDMultiError) AllErrors() []error { return m }
 
-// Discovery_ETCDValidationError is the validation error returned by
-// Discovery_ETCD.Validate if the designated constraints aren't met.
-type Discovery_ETCDValidationError struct {
+// ETCDValidationError is the validation error returned by ETCD.Validate if the
+// designated constraints aren't met.
+type ETCDValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -428,22 +556,22 @@ type Discovery_ETCDValidationError struct {
 }
 
 // Field function returns field value.
-func (e Discovery_ETCDValidationError) Field() string { return e.field }
+func (e ETCDValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Discovery_ETCDValidationError) Reason() string { return e.reason }
+func (e ETCDValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Discovery_ETCDValidationError) Cause() error { return e.cause }
+func (e ETCDValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Discovery_ETCDValidationError) Key() bool { return e.key }
+func (e ETCDValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Discovery_ETCDValidationError) ErrorName() string { return "Discovery_ETCDValidationError" }
+func (e ETCDValidationError) ErrorName() string { return "ETCDValidationError" }
 
 // Error satisfies the builtin error interface
-func (e Discovery_ETCDValidationError) Error() string {
+func (e ETCDValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -455,14 +583,14 @@ func (e Discovery_ETCDValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sDiscovery_ETCD.%s: %s%s",
+		"invalid %sETCD.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Discovery_ETCDValidationError{}
+var _ error = ETCDValidationError{}
 
 var _ interface {
 	Field() string
@@ -470,4 +598,397 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Discovery_ETCDValidationError{}
+} = ETCDValidationError{}
+
+// Validate checks the field values on Nacos with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Nacos) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Nacos with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in NacosMultiError, or nil if none found.
+func (m *Nacos) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Nacos) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return NacosMultiError(errors)
+	}
+
+	return nil
+}
+
+// NacosMultiError is an error wrapping multiple validation errors returned by
+// Nacos.ValidateAll() if the designated constraints aren't met.
+type NacosMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NacosMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NacosMultiError) AllErrors() []error { return m }
+
+// NacosValidationError is the validation error returned by Nacos.Validate if
+// the designated constraints aren't met.
+type NacosValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NacosValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NacosValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NacosValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NacosValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NacosValidationError) ErrorName() string { return "NacosValidationError" }
+
+// Error satisfies the builtin error interface
+func (e NacosValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNacos.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NacosValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NacosValidationError{}
+
+// Validate checks the field values on Apollo with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Apollo) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Apollo with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ApolloMultiError, or nil if none found.
+func (m *Apollo) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Apollo) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ApolloMultiError(errors)
+	}
+
+	return nil
+}
+
+// ApolloMultiError is an error wrapping multiple validation errors returned by
+// Apollo.ValidateAll() if the designated constraints aren't met.
+type ApolloMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ApolloMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ApolloMultiError) AllErrors() []error { return m }
+
+// ApolloValidationError is the validation error returned by Apollo.Validate if
+// the designated constraints aren't met.
+type ApolloValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ApolloValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ApolloValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ApolloValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ApolloValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ApolloValidationError) ErrorName() string { return "ApolloValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ApolloValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sApollo.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ApolloValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ApolloValidationError{}
+
+// Validate checks the field values on Kubernetes with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Kubernetes) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Kubernetes with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in KubernetesMultiError, or
+// nil if none found.
+func (m *Kubernetes) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Kubernetes) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return KubernetesMultiError(errors)
+	}
+
+	return nil
+}
+
+// KubernetesMultiError is an error wrapping multiple validation errors
+// returned by Kubernetes.ValidateAll() if the designated constraints aren't met.
+type KubernetesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m KubernetesMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m KubernetesMultiError) AllErrors() []error { return m }
+
+// KubernetesValidationError is the validation error returned by
+// Kubernetes.Validate if the designated constraints aren't met.
+type KubernetesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e KubernetesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e KubernetesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e KubernetesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e KubernetesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e KubernetesValidationError) ErrorName() string { return "KubernetesValidationError" }
+
+// Error satisfies the builtin error interface
+func (e KubernetesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sKubernetes.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = KubernetesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = KubernetesValidationError{}
+
+// Validate checks the field values on Polaris with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Polaris) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Polaris with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in PolarisMultiError, or nil if none found.
+func (m *Polaris) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Polaris) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return PolarisMultiError(errors)
+	}
+
+	return nil
+}
+
+// PolarisMultiError is an error wrapping multiple validation errors returned
+// by Polaris.ValidateAll() if the designated constraints aren't met.
+type PolarisMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PolarisMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PolarisMultiError) AllErrors() []error { return m }
+
+// PolarisValidationError is the validation error returned by Polaris.Validate
+// if the designated constraints aren't met.
+type PolarisValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PolarisValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PolarisValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PolarisValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PolarisValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PolarisValidationError) ErrorName() string { return "PolarisValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PolarisValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPolaris.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PolarisValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PolarisValidationError{}
