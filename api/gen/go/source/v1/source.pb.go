@@ -8,8 +8,8 @@ package sourcev1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	v11 "github.com/origadmin/runtime/api/gen/go/extension/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/extension/v1"
+	_ "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -23,739 +23,6 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
-
-// FileSource is the file source
-type FileSource struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Path    string                 `protobuf:"bytes,1,opt,name=path,proto3" json:"path,omitempty"`
-	Format  string                 `protobuf:"bytes,2,opt,name=format,proto3" json:"format,omitempty"`
-	Ignores []string               `protobuf:"bytes,3,rep,name=ignores,proto3" json:"ignores,omitempty"`
-	// supported file formats, if not set, all formats are supported
-	Formats       []string `protobuf:"bytes,4,rep,name=formats,proto3" json:"formats,omitempty"`
-	Reload        bool     `protobuf:"varint,6,opt,name=reload,proto3" json:"reload,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FileSource) Reset() {
-	*x = FileSource{}
-	mi := &file_source_v1_source_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FileSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FileSource) ProtoMessage() {}
-
-func (x *FileSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use FileSource.ProtoReflect.Descriptor instead.
-func (*FileSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *FileSource) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *FileSource) GetFormat() string {
-	if x != nil {
-		return x.Format
-	}
-	return ""
-}
-
-func (x *FileSource) GetIgnores() []string {
-	if x != nil {
-		return x.Ignores
-	}
-	return nil
-}
-
-func (x *FileSource) GetFormats() []string {
-	if x != nil {
-		return x.Formats
-	}
-	return nil
-}
-
-func (x *FileSource) GetReload() bool {
-	if x != nil {
-		return x.Reload
-	}
-	return false
-}
-
-// EnvSource is the environment variable source
-type EnvSource struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Environment variable prefixes to include
-	Prefixes []string `protobuf:"bytes,1,rep,name=prefixes,proto3" json:"prefixes,omitempty"`
-	// Additional environment variables to set
-	Args map[string]string `protobuf:"bytes,2,rep,name=args,proto3" json:"args,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// Whether to watch for environment variable changes
-	Watch bool `protobuf:"varint,3,opt,name=watch,proto3" json:"watch,omitempty"`
-	// Whether to treat environment variables as nested structure
-	Nested        bool `protobuf:"varint,4,opt,name=nested,proto3" json:"nested,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EnvSource) Reset() {
-	*x = EnvSource{}
-	mi := &file_source_v1_source_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EnvSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EnvSource) ProtoMessage() {}
-
-func (x *EnvSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EnvSource.ProtoReflect.Descriptor instead.
-func (*EnvSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *EnvSource) GetPrefixes() []string {
-	if x != nil {
-		return x.Prefixes
-	}
-	return nil
-}
-
-func (x *EnvSource) GetArgs() map[string]string {
-	if x != nil {
-		return x.Args
-	}
-	return nil
-}
-
-func (x *EnvSource) GetWatch() bool {
-	if x != nil {
-		return x.Watch
-	}
-	return false
-}
-
-func (x *EnvSource) GetNested() bool {
-	if x != nil {
-		return x.Nested
-	}
-	return false
-}
-
-// ConsulSource is the consul source
-type ConsulSource struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Scheme        string                 `protobuf:"bytes,2,opt,name=scheme,proto3" json:"scheme,omitempty"`
-	Token         string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
-	Path          string                 `protobuf:"bytes,4,opt,name=path,proto3" json:"path,omitempty"`
-	Datacenter    string                 `protobuf:"bytes,5,opt,name=datacenter,proto3" json:"datacenter,omitempty"`
-	Namespace     string                 `protobuf:"bytes,6,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	WaitTime      string                 `protobuf:"bytes,7,opt,name=wait_time,proto3" json:"wait_time,omitempty"` // e.g., "10s"
-	Timeout       string                 `protobuf:"bytes,8,opt,name=timeout,proto3" json:"timeout,omitempty"`     // e.g., "5s"
-	Tls           *v1.TLSConfig          `protobuf:"bytes,10,opt,name=tls,proto3" json:"tls,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ConsulSource) Reset() {
-	*x = ConsulSource{}
-	mi := &file_source_v1_source_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ConsulSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConsulSource) ProtoMessage() {}
-
-func (x *ConsulSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConsulSource.ProtoReflect.Descriptor instead.
-func (*ConsulSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *ConsulSource) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetScheme() string {
-	if x != nil {
-		return x.Scheme
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetDatacenter() string {
-	if x != nil {
-		return x.Datacenter
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetWaitTime() string {
-	if x != nil {
-		return x.WaitTime
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetTimeout() string {
-	if x != nil {
-		return x.Timeout
-	}
-	return ""
-}
-
-func (x *ConsulSource) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
-// ETCDSource defines the configuration for ETCD configuration source
-type ETCDSource struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// ETCD server address (e.g., "localhost:2379")
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// Username for authentication (if required)
-	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	// Password for authentication (if required)
-	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
-	// Path to the configuration in ETCD (e.g., "/config/app")
-	Path string `protobuf:"bytes,4,opt,name=path,proto3" json:"path,omitempty"`
-	// TLS configuration for secure connection
-	Tls           *v1.TLSConfig `protobuf:"bytes,10,opt,name=tls,proto3" json:"tls,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ETCDSource) Reset() {
-	*x = ETCDSource{}
-	mi := &file_source_v1_source_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ETCDSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ETCDSource) ProtoMessage() {}
-
-func (x *ETCDSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ETCDSource.ProtoReflect.Descriptor instead.
-func (*ETCDSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *ETCDSource) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *ETCDSource) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *ETCDSource) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-func (x *ETCDSource) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *ETCDSource) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
-// Nacos defines the configuration for Nacos configuration center
-type NacosSource struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Nacos server address (e.g., "localhost:8848")
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// Namespace ID
-	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// Group name
-	Group string `protobuf:"bytes,3,opt,name=group,proto3" json:"group,omitempty"`
-	// Data ID
-	DataId string `protobuf:"bytes,4,opt,name=data_id,proto3" json:"data_id,omitempty"`
-	// Username for authentication
-	Username string `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`
-	// Password for authentication
-	Password string `protobuf:"bytes,6,opt,name=password,proto3" json:"password,omitempty"`
-	// Configuration format (e.g., "yaml", "json")
-	Format string `protobuf:"bytes,7,opt,name=format,proto3" json:"format,omitempty"`
-	// TLS configuration
-	Tls           *v1.TLSConfig `protobuf:"bytes,10,opt,name=tls,proto3" json:"tls,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *NacosSource) Reset() {
-	*x = NacosSource{}
-	mi := &file_source_v1_source_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *NacosSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NacosSource) ProtoMessage() {}
-
-func (x *NacosSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NacosSource.ProtoReflect.Descriptor instead.
-func (*NacosSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *NacosSource) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *NacosSource) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *NacosSource) GetGroup() string {
-	if x != nil {
-		return x.Group
-	}
-	return ""
-}
-
-func (x *NacosSource) GetDataId() string {
-	if x != nil {
-		return x.DataId
-	}
-	return ""
-}
-
-func (x *NacosSource) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *NacosSource) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-func (x *NacosSource) GetFormat() string {
-	if x != nil {
-		return x.Format
-	}
-	return ""
-}
-
-func (x *NacosSource) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
-// Apollo defines the configuration for Apollo configuration center
-type ApolloSource struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Apollo server address (e.g., "http://localhost:8080")
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// App ID
-	AppId string `protobuf:"bytes,2,opt,name=app_id,proto3" json:"app_id,omitempty"`
-	// Cluster name
-	Cluster string `protobuf:"bytes,3,opt,name=cluster,proto3" json:"cluster,omitempty"`
-	// Namespace name
-	Namespace string `protobuf:"bytes,4,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// Secret key for authentication
-	Secret string `protobuf:"bytes,5,opt,name=secret,proto3" json:"secret,omitempty"`
-	// Cluster list
-	Clusters []string `protobuf:"bytes,6,rep,name=clusters,proto3" json:"clusters,omitempty"`
-	// TLS configuration
-	Tls           *v1.TLSConfig `protobuf:"bytes,10,opt,name=tls,proto3" json:"tls,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ApolloSource) Reset() {
-	*x = ApolloSource{}
-	mi := &file_source_v1_source_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ApolloSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ApolloSource) ProtoMessage() {}
-
-func (x *ApolloSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ApolloSource.ProtoReflect.Descriptor instead.
-func (*ApolloSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *ApolloSource) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *ApolloSource) GetAppId() string {
-	if x != nil {
-		return x.AppId
-	}
-	return ""
-}
-
-func (x *ApolloSource) GetCluster() string {
-	if x != nil {
-		return x.Cluster
-	}
-	return ""
-}
-
-func (x *ApolloSource) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *ApolloSource) GetSecret() string {
-	if x != nil {
-		return x.Secret
-	}
-	return ""
-}
-
-func (x *ApolloSource) GetClusters() []string {
-	if x != nil {
-		return x.Clusters
-	}
-	return nil
-}
-
-func (x *ApolloSource) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
-// Kubernetes defines the configuration for Kubernetes configuration source
-type KubernetesSource struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Namespace where the configmap/secret is located
-	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// ConfigMap name
-	ConfigMap string `protobuf:"bytes,2,opt,name=config_map,proto3" json:"config_map,omitempty"`
-	// Secret name
-	Secret string `protobuf:"bytes,3,opt,name=secret,proto3" json:"secret,omitempty"`
-	// Key in the configmap/secret
-	Key string `protobuf:"bytes,4,opt,name=key,proto3" json:"key,omitempty"`
-	// Whether to watch for changes
-	Watch bool `protobuf:"varint,5,opt,name=watch,proto3" json:"watch,omitempty"`
-	// Kubeconfig path, if not set will use in-cluster config
-	Kubeconfig    string `protobuf:"bytes,6,opt,name=kubeconfig,proto3" json:"kubeconfig,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *KubernetesSource) Reset() {
-	*x = KubernetesSource{}
-	mi := &file_source_v1_source_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *KubernetesSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*KubernetesSource) ProtoMessage() {}
-
-func (x *KubernetesSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use KubernetesSource.ProtoReflect.Descriptor instead.
-func (*KubernetesSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *KubernetesSource) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *KubernetesSource) GetConfigMap() string {
-	if x != nil {
-		return x.ConfigMap
-	}
-	return ""
-}
-
-func (x *KubernetesSource) GetSecret() string {
-	if x != nil {
-		return x.Secret
-	}
-	return ""
-}
-
-func (x *KubernetesSource) GetKey() string {
-	if x != nil {
-		return x.Key
-	}
-	return ""
-}
-
-func (x *KubernetesSource) GetWatch() bool {
-	if x != nil {
-		return x.Watch
-	}
-	return false
-}
-
-func (x *KubernetesSource) GetKubeconfig() string {
-	if x != nil {
-		return x.Kubeconfig
-	}
-	return ""
-}
-
-// Polaris defines the configuration for Polaris configuration center
-type PolarisSource struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Polaris server address (e.g., "127.0.0.1:8091")
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// Namespace
-	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	// File group
-	Group string `protobuf:"bytes,3,opt,name=group,proto3" json:"group,omitempty"`
-	// File name
-	File string `protobuf:"bytes,4,opt,name=file,proto3" json:"file,omitempty"`
-	// Timeout in seconds
-	Timeout int32 `protobuf:"varint,5,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	// TLS configuration
-	Tls           *v1.TLSConfig `protobuf:"bytes,10,opt,name=tls,proto3" json:"tls,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PolarisSource) Reset() {
-	*x = PolarisSource{}
-	mi := &file_source_v1_source_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PolarisSource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PolarisSource) ProtoMessage() {}
-
-func (x *PolarisSource) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PolarisSource.ProtoReflect.Descriptor instead.
-func (*PolarisSource) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *PolarisSource) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *PolarisSource) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *PolarisSource) GetGroup() string {
-	if x != nil {
-		return x.Group
-	}
-	return ""
-}
-
-func (x *PolarisSource) GetFile() string {
-	if x != nil {
-		return x.File
-	}
-	return ""
-}
-
-func (x *PolarisSource) GetTimeout() int32 {
-	if x != nil {
-		return x.Timeout
-	}
-	return 0
-}
-
-func (x *PolarisSource) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
 
 type Sources struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -771,7 +38,7 @@ type Sources struct {
 
 func (x *Sources) Reset() {
 	*x = Sources{}
-	mi := &file_source_v1_source_proto_msgTypes[8]
+	mi := &file_source_v1_source_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -783,7 +50,7 @@ func (x *Sources) String() string {
 func (*Sources) ProtoMessage() {}
 
 func (x *Sources) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[8]
+	mi := &file_source_v1_source_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -796,7 +63,7 @@ func (x *Sources) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Sources.ProtoReflect.Descriptor instead.
 func (*Sources) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{8}
+	return file_source_v1_source_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Sources) GetName() string {
@@ -835,10 +102,6 @@ type SourceConfig struct {
 	// Sources will be loaded in ascending order of priority (e.g., 0, 1, 2, ...),
 	// with later sources (higher priority value) overriding earlier ones.
 	Priority int32 `protobuf:"varint,5,opt,name=priority,proto3" json:"priority,omitempty"`
-	// set the environment variable name
-	EnvArgs map[string]string `protobuf:"bytes,6,rep,name=env_args,proto3" json:"env_args,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// set the environment variable prefix
-	EnvPrefixes []string `protobuf:"bytes,7,rep,name=env_prefixes,proto3" json:"env_prefixes,omitempty"`
 	// Types that are valid to be assigned to Config:
 	//
 	//	*SourceConfig_Env
@@ -857,7 +120,7 @@ type SourceConfig struct {
 
 func (x *SourceConfig) Reset() {
 	*x = SourceConfig{}
-	mi := &file_source_v1_source_proto_msgTypes[9]
+	mi := &file_source_v1_source_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -869,7 +132,7 @@ func (x *SourceConfig) String() string {
 func (*SourceConfig) ProtoMessage() {}
 
 func (x *SourceConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_source_v1_source_proto_msgTypes[9]
+	mi := &file_source_v1_source_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -882,7 +145,7 @@ func (x *SourceConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SourceConfig.ProtoReflect.Descriptor instead.
 func (*SourceConfig) Descriptor() ([]byte, []int) {
-	return file_source_v1_source_proto_rawDescGZIP(), []int{9}
+	return file_source_v1_source_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SourceConfig) GetType() string {
@@ -918,20 +181,6 @@ func (x *SourceConfig) GetPriority() int32 {
 		return x.Priority
 	}
 	return 0
-}
-
-func (x *SourceConfig) GetEnvArgs() map[string]string {
-	if x != nil {
-		return x.EnvArgs
-	}
-	return nil
-}
-
-func (x *SourceConfig) GetEnvPrefixes() []string {
-	if x != nil {
-		return x.EnvPrefixes
-	}
-	return nil
 }
 
 func (x *SourceConfig) GetConfig() isSourceConfig_Config {
@@ -1013,7 +262,7 @@ func (x *SourceConfig) GetPolaris() *PolarisSource {
 	return nil
 }
 
-func (x *SourceConfig) GetCustomize() *v11.Extension {
+func (x *SourceConfig) GetCustomize() *v1.Extension {
 	if x != nil {
 		if x, ok := x.Config.(*SourceConfig_Customize); ok {
 			return x.Customize
@@ -1059,7 +308,7 @@ type SourceConfig_Polaris struct {
 }
 
 type SourceConfig_Customize struct {
-	Customize *v11.Extension `protobuf:"bytes,900,opt,name=customize,proto3,oneof"` // Customize
+	Customize *v1.Extension `protobuf:"bytes,900,opt,name=customize,proto3,oneof"`
 }
 
 func (*SourceConfig_Env) isSourceConfig_Config() {}
@@ -1084,94 +333,18 @@ var File_source_v1_source_proto protoreflect.FileDescriptor
 
 const file_source_v1_source_proto_rawDesc = "" +
 	"\n" +
-	"\x16source/v1/source.proto\x12\tsource.v1\x1a\x1cextension/v1/extension.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\"\x84\x01\n" +
-	"\n" +
-	"FileSource\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\x12\x16\n" +
-	"\x06format\x18\x02 \x01(\tR\x06format\x12\x18\n" +
-	"\aignores\x18\x03 \x03(\tR\aignores\x12\x18\n" +
-	"\aformats\x18\x04 \x03(\tR\aformats\x12\x16\n" +
-	"\x06reload\x18\x06 \x01(\bR\x06reload\"\xc2\x01\n" +
-	"\tEnvSource\x12\x1a\n" +
-	"\bprefixes\x18\x01 \x03(\tR\bprefixes\x122\n" +
-	"\x04args\x18\x02 \x03(\v2\x1e.source.v1.EnvSource.ArgsEntryR\x04args\x12\x14\n" +
-	"\x05watch\x18\x03 \x01(\bR\x05watch\x12\x16\n" +
-	"\x06nested\x18\x04 \x01(\bR\x06nested\x1a7\n" +
-	"\tArgsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x94\x02\n" +
-	"\fConsulSource\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
-	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
-	"\x05token\x18\x03 \x01(\tR\x05token\x12\x12\n" +
-	"\x04path\x18\x04 \x01(\tR\x04path\x12\x1e\n" +
-	"\n" +
-	"datacenter\x18\x05 \x01(\tR\n" +
-	"datacenter\x12\x1c\n" +
-	"\tnamespace\x18\x06 \x01(\tR\tnamespace\x12\x1c\n" +
-	"\twait_time\x18\a \x01(\tR\twait_time\x12\x18\n" +
-	"\atimeout\x18\b \x01(\tR\atimeout\x122\n" +
-	"\x03tls\x18\n" +
-	" \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\"\xa6\x01\n" +
-	"\n" +
-	"ETCDSource\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x1a\n" +
-	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x12\n" +
-	"\x04path\x18\x04 \x01(\tR\x04path\x122\n" +
-	"\x03tls\x18\n" +
-	" \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\"\xf9\x01\n" +
-	"\vNacosSource\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x1c\n" +
-	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x14\n" +
-	"\x05group\x18\x03 \x01(\tR\x05group\x12\x18\n" +
-	"\adata_id\x18\x04 \x01(\tR\adata_id\x12\x1a\n" +
-	"\busername\x18\x05 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x06 \x01(\tR\bpassword\x12\x16\n" +
-	"\x06format\x18\a \x01(\tR\x06format\x122\n" +
-	"\x03tls\x18\n" +
-	" \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\"\xe0\x01\n" +
-	"\fApolloSource\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
-	"\x06app_id\x18\x02 \x01(\tR\x06app_id\x12\x18\n" +
-	"\acluster\x18\x03 \x01(\tR\acluster\x12\x1c\n" +
-	"\tnamespace\x18\x04 \x01(\tR\tnamespace\x12\x16\n" +
-	"\x06secret\x18\x05 \x01(\tR\x06secret\x12\x1a\n" +
-	"\bclusters\x18\x06 \x03(\tR\bclusters\x122\n" +
-	"\x03tls\x18\n" +
-	" \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\"\xb0\x01\n" +
-	"\x10KubernetesSource\x12\x1c\n" +
-	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x1e\n" +
-	"\n" +
-	"config_map\x18\x02 \x01(\tR\n" +
-	"config_map\x12\x16\n" +
-	"\x06secret\x18\x03 \x01(\tR\x06secret\x12\x10\n" +
-	"\x03key\x18\x04 \x01(\tR\x03key\x12\x14\n" +
-	"\x05watch\x18\x05 \x01(\bR\x05watch\x12\x1e\n" +
-	"\n" +
-	"kubeconfig\x18\x06 \x01(\tR\n" +
-	"kubeconfig\"\xbf\x01\n" +
-	"\rPolarisSource\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x1c\n" +
-	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x14\n" +
-	"\x05group\x18\x03 \x01(\tR\x05group\x12\x12\n" +
-	"\x04file\x18\x04 \x01(\tR\x04file\x12\x18\n" +
-	"\atimeout\x18\x05 \x01(\x05R\atimeout\x122\n" +
-	"\x03tls\x18\n" +
-	" \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\"j\n" +
+	"\x16source/v1/source.proto\x12\tsource.v1\x1a\x1cextension/v1/extension.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\x1a\x1bsource/v1/file_source.proto\x1a\x1asource/v1/env_source.proto\x1a\x1dsource/v1/consul_source.proto\x1a\x1bsource/v1/etcd_source.proto\x1a\x1csource/v1/nacos_source.proto\x1a\x1dsource/v1/apollo_source.proto\x1a!source/v1/kubernetes_source.proto\x1a\x1esource/v1/polaris_source.proto\"j\n" +
 	"\aSources\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x121\n" +
-	"\asources\x18\x03 \x03(\v2\x17.source.v1.SourceConfigR\asources\"\xd1\x06\n" +
+	"\asources\x18\x03 \x03(\v2\x17.source.v1.SourceConfigR\asources\"\xaf\x05\n" +
 	"\fSourceConfig\x12a\n" +
 	"\x04type\x18\x01 \x01(\tBM\xfaBJrHR\x03envR\x04fileR\x04etcdR\x06consulR\x06apolloR\x05nacosR\n" +
 	"kubernetesR\apolarisR\tcustomizeR\x04type\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x03 \x01(\tR\aversion\x12\x18\n" +
 	"\aformats\x18\x04 \x03(\tR\aformats\x12\x1a\n" +
-	"\bpriority\x18\x05 \x01(\x05R\bpriority\x12@\n" +
-	"\benv_args\x18\x06 \x03(\v2$.source.v1.SourceConfig.EnvArgsEntryR\benv_args\x12\"\n" +
-	"\fenv_prefixes\x18\a \x03(\tR\fenv_prefixes\x12(\n" +
+	"\bpriority\x18\x05 \x01(\x05R\bpriority\x12(\n" +
 	"\x03env\x18d \x01(\v2\x14.source.v1.EnvSourceH\x00R\x03env\x12,\n" +
 	"\x04file\x18\xc8\x01 \x01(\v2\x15.source.v1.FileSourceH\x00R\x04file\x12,\n" +
 	"\x04etcd\x18\xac\x02 \x01(\v2\x15.source.v1.ETCDSourceH\x00R\x04etcd\x122\n" +
@@ -1182,10 +355,7 @@ const file_source_v1_source_proto_rawDesc = "" +
 	"kubernetes\x18\xbc\x05 \x01(\v2\x1b.source.v1.KubernetesSourceH\x00R\n" +
 	"kubernetes\x125\n" +
 	"\apolaris\x18\xa0\x06 \x01(\v2\x18.source.v1.PolarisSourceH\x00R\apolaris\x128\n" +
-	"\tcustomize\x18\x84\a \x01(\v2\x17.extension.v1.ExtensionH\x00R\tcustomize\x1a:\n" +
-	"\fEnvArgsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\b\n" +
+	"\tcustomize\x18\x84\a \x01(\v2\x17.extension.v1.ExtensionH\x00R\tcustomizeB\b\n" +
 	"\x06configB\xa0\x01\n" +
 	"\rcom.source.v1B\vSourceProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/source/v1;sourcev1\xf8\x01\x01\xa2\x02\x03SXX\xaa\x02\tSource.V1\xca\x02\tSource\\V1\xe2\x02\x15Source\\V1\\GPBMetadata\xea\x02\n" +
 	"Source::V1b\x06proto3"
@@ -1202,46 +372,36 @@ func file_source_v1_source_proto_rawDescGZIP() []byte {
 	return file_source_v1_source_proto_rawDescData
 }
 
-var file_source_v1_source_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_source_v1_source_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_source_v1_source_proto_goTypes = []any{
-	(*FileSource)(nil),       // 0: source.v1.FileSource
-	(*EnvSource)(nil),        // 1: source.v1.EnvSource
-	(*ConsulSource)(nil),     // 2: source.v1.ConsulSource
-	(*ETCDSource)(nil),       // 3: source.v1.ETCDSource
-	(*NacosSource)(nil),      // 4: source.v1.NacosSource
-	(*ApolloSource)(nil),     // 5: source.v1.ApolloSource
-	(*KubernetesSource)(nil), // 6: source.v1.KubernetesSource
-	(*PolarisSource)(nil),    // 7: source.v1.PolarisSource
-	(*Sources)(nil),          // 8: source.v1.Sources
-	(*SourceConfig)(nil),     // 9: source.v1.SourceConfig
-	nil,                      // 10: source.v1.EnvSource.ArgsEntry
-	nil,                      // 11: source.v1.SourceConfig.EnvArgsEntry
-	(*v1.TLSConfig)(nil),     // 12: security.transport.v1.TLSConfig
-	(*v11.Extension)(nil),    // 13: extension.v1.Extension
+	(*Sources)(nil),          // 0: source.v1.Sources
+	(*SourceConfig)(nil),     // 1: source.v1.SourceConfig
+	(*EnvSource)(nil),        // 2: source.v1.EnvSource
+	(*FileSource)(nil),       // 3: source.v1.FileSource
+	(*ETCDSource)(nil),       // 4: source.v1.ETCDSource
+	(*ConsulSource)(nil),     // 5: source.v1.ConsulSource
+	(*NacosSource)(nil),      // 6: source.v1.NacosSource
+	(*ApolloSource)(nil),     // 7: source.v1.ApolloSource
+	(*KubernetesSource)(nil), // 8: source.v1.KubernetesSource
+	(*PolarisSource)(nil),    // 9: source.v1.PolarisSource
+	(*v1.Extension)(nil),     // 10: extension.v1.Extension
 }
 var file_source_v1_source_proto_depIdxs = []int32{
-	10, // 0: source.v1.EnvSource.args:type_name -> source.v1.EnvSource.ArgsEntry
-	12, // 1: source.v1.ConsulSource.tls:type_name -> security.transport.v1.TLSConfig
-	12, // 2: source.v1.ETCDSource.tls:type_name -> security.transport.v1.TLSConfig
-	12, // 3: source.v1.NacosSource.tls:type_name -> security.transport.v1.TLSConfig
-	12, // 4: source.v1.ApolloSource.tls:type_name -> security.transport.v1.TLSConfig
-	12, // 5: source.v1.PolarisSource.tls:type_name -> security.transport.v1.TLSConfig
-	9,  // 6: source.v1.Sources.sources:type_name -> source.v1.SourceConfig
-	11, // 7: source.v1.SourceConfig.env_args:type_name -> source.v1.SourceConfig.EnvArgsEntry
-	1,  // 8: source.v1.SourceConfig.env:type_name -> source.v1.EnvSource
-	0,  // 9: source.v1.SourceConfig.file:type_name -> source.v1.FileSource
-	3,  // 10: source.v1.SourceConfig.etcd:type_name -> source.v1.ETCDSource
-	2,  // 11: source.v1.SourceConfig.consul:type_name -> source.v1.ConsulSource
-	4,  // 12: source.v1.SourceConfig.nacos:type_name -> source.v1.NacosSource
-	5,  // 13: source.v1.SourceConfig.apollo:type_name -> source.v1.ApolloSource
-	6,  // 14: source.v1.SourceConfig.kubernetes:type_name -> source.v1.KubernetesSource
-	7,  // 15: source.v1.SourceConfig.polaris:type_name -> source.v1.PolarisSource
-	13, // 16: source.v1.SourceConfig.customize:type_name -> extension.v1.Extension
-	17, // [17:17] is the sub-list for method output_type
-	17, // [17:17] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	1,  // 0: source.v1.Sources.sources:type_name -> source.v1.SourceConfig
+	2,  // 1: source.v1.SourceConfig.env:type_name -> source.v1.EnvSource
+	3,  // 2: source.v1.SourceConfig.file:type_name -> source.v1.FileSource
+	4,  // 3: source.v1.SourceConfig.etcd:type_name -> source.v1.ETCDSource
+	5,  // 4: source.v1.SourceConfig.consul:type_name -> source.v1.ConsulSource
+	6,  // 5: source.v1.SourceConfig.nacos:type_name -> source.v1.NacosSource
+	7,  // 6: source.v1.SourceConfig.apollo:type_name -> source.v1.ApolloSource
+	8,  // 7: source.v1.SourceConfig.kubernetes:type_name -> source.v1.KubernetesSource
+	9,  // 8: source.v1.SourceConfig.polaris:type_name -> source.v1.PolarisSource
+	10, // 9: source.v1.SourceConfig.customize:type_name -> extension.v1.Extension
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_source_v1_source_proto_init() }
@@ -1249,7 +409,15 @@ func file_source_v1_source_proto_init() {
 	if File_source_v1_source_proto != nil {
 		return
 	}
-	file_source_v1_source_proto_msgTypes[9].OneofWrappers = []any{
+	file_source_v1_file_source_proto_init()
+	file_source_v1_env_source_proto_init()
+	file_source_v1_consul_source_proto_init()
+	file_source_v1_etcd_source_proto_init()
+	file_source_v1_nacos_source_proto_init()
+	file_source_v1_apollo_source_proto_init()
+	file_source_v1_kubernetes_source_proto_init()
+	file_source_v1_polaris_source_proto_init()
+	file_source_v1_source_proto_msgTypes[1].OneofWrappers = []any{
 		(*SourceConfig_Env)(nil),
 		(*SourceConfig_File)(nil),
 		(*SourceConfig_Etcd)(nil),
@@ -1266,7 +434,7 @@ func file_source_v1_source_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_source_v1_source_proto_rawDesc), len(file_source_v1_source_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

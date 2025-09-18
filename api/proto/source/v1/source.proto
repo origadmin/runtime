@@ -6,131 +6,21 @@ import "extension/v1/extension.proto";
 import "security/transport/v1/tls.proto";
 import "validate/validate.proto";
 
+import "source/v1/file_source.proto";
+import "source/v1/env_source.proto";
+import "source/v1/consul_source.proto";
+import "source/v1/etcd_source.proto";
+import "source/v1/nacos_source.proto";
+import "source/v1/apollo_source.proto";
+import "source/v1/kubernetes_source.proto";
+import "source/v1/polaris_source.proto";
+
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/source/v1;sourcev1";
 option java_multiple_files = true;
 option java_outer_classname = "SourceProto";
 option java_package = "com.github.origadmin.api.runtime.source.v1";
 option objc_class_prefix = "ORS";
-
-// FileSource is the file source
-message FileSource {
-  string path = 1 [json_name = "path"];
-  string format = 2 [json_name = "format"];
-  repeated string ignores = 3 [json_name = "ignores"];
-  // supported file formats, if not set, all formats are supported
-  repeated string formats = 4 [json_name = "formats"];
-  bool reload = 6 [json_name = "reload"];
-}
-
-// EnvSource is the environment variable source
-message EnvSource {
-  // Environment variable prefixes to include
-  repeated string prefixes = 1 [json_name = "prefixes"];
-  // Additional environment variables to set
-  map<string, string> args = 2 [json_name = "args"];
-  // Whether to watch for environment variable changes
-  bool watch = 3 [json_name = "watch"];
-  // Whether to treat environment variables as nested structure
-  bool nested = 4 [json_name = "nested"];
-}
-
-// ConsulSource is the consul source
-message ConsulSource {
-  string address = 1 [json_name = "address"];
-  string scheme = 2 [json_name = "scheme"];
-  string token = 3 [json_name = "token"];
-  string path = 4 [json_name = "path"];
-  string datacenter = 5 [json_name = "datacenter"];
-  string namespace = 6 [json_name = "namespace"];
-  string wait_time = 7 [json_name = "wait_time"]; // e.g., "10s"
-  string timeout = 8 [json_name = "timeout"]; // e.g., "5s"
-  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
-}
-
-// ETCDSource defines the configuration for ETCD configuration source
-message ETCDSource {
-  // ETCD server address (e.g., "localhost:2379")
-  string address = 1 [json_name = "address"];
-  // Username for authentication (if required)
-  string username = 2 [json_name = "username"];
-  // Password for authentication (if required)
-  string password = 3 [json_name = "password"];
-  // Path to the configuration in ETCD (e.g., "/config/app")
-  string path = 4 [json_name = "path"];
-  // TLS configuration for secure connection
-  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
-}
-
-// Nacos defines the configuration for Nacos configuration center
-message NacosSource {
-  // Nacos server address (e.g., "localhost:8848")
-  string address = 1 [json_name = "address"];
-  // Namespace ID
-  string namespace = 2 [json_name = "namespace"];
-  // Group name
-  string group = 3 [json_name = "group"];
-  // Data ID
-  string data_id = 4 [json_name = "data_id"];
-  // Username for authentication
-  string username = 5 [json_name = "username"];
-  // Password for authentication
-  string password = 6 [json_name = "password"];
-  // Configuration format (e.g., "yaml", "json")
-  string format = 7 [json_name = "format"];
-  // TLS configuration
-  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
-}
-
-// Apollo defines the configuration for Apollo configuration center
-message ApolloSource {
-  // Apollo server address (e.g., "http://localhost:8080")
-  string address = 1 [json_name = "address"];
-  // App ID
-  string app_id = 2 [json_name = "app_id"];
-  // Cluster name
-  string cluster = 3 [json_name = "cluster"];
-  // Namespace name
-  string namespace = 4 [json_name = "namespace"];
-  // Secret key for authentication
-  string secret = 5 [json_name = "secret"];
-  // Cluster list
-  repeated string clusters = 6 [json_name = "clusters"];
-  // TLS configuration
-  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
-}
-
-// Kubernetes defines the configuration for Kubernetes configuration source
-message KubernetesSource {
-  // Namespace where the configmap/secret is located
-  string namespace = 1 [json_name = "namespace"];
-  // ConfigMap name
-  string config_map = 2 [json_name = "config_map"];
-  // Secret name
-  string secret = 3 [json_name = "secret"];
-  // Key in the configmap/secret
-  string key = 4 [json_name = "key"];
-  // Whether to watch for changes
-  bool watch = 5 [json_name = "watch"];
-  // Kubeconfig path, if not set will use in-cluster config
-  string kubeconfig = 6 [json_name = "kubeconfig"];
-}
-
-// Polaris defines the configuration for Polaris configuration center
-message PolarisSource {
-  // Polaris server address (e.g., "127.0.0.1:8091")
-  string address = 1 [json_name = "address"];
-  // Namespace
-  string namespace = 2 [json_name = "namespace"];
-  // File group
-  string group = 3 [json_name = "group"];
-  // File name
-  string file = 4 [json_name = "file"];
-  // Timeout in seconds
-  int32 timeout = 5 [json_name = "timeout"];
-  // TLS configuration
-  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
-}
 
 message Sources {
   // name specifies the configuration set name
@@ -173,20 +63,15 @@ message SourceConfig {
   // with later sources (higher priority value) overriding earlier ones.
   int32 priority = 5 [json_name = "priority"];
 
-  // set the environment variable name
-  map<string, string> env_args = 6 [json_name = "env_args"];
-  // set the environment variable prefix
-  repeated string env_prefixes = 7 [json_name = "env_prefixes"];
-
   oneof config {
-    EnvSource env = 100;
-    FileSource file = 200;
-    ETCDSource etcd = 300;
-    ConsulSource consul = 400;
+    EnvSource env = 100 [json_name = "env"];
+    FileSource file = 200 [json_name = "file"];
+    ETCDSource etcd = 300 [json_name = "etcd"];
+    ConsulSource consul = 400 [json_name = "consul"];
     NacosSource nacos = 500 [json_name = "nacos"];
     ApolloSource apollo = 600 [json_name = "apollo"];
     KubernetesSource kubernetes = 700 [json_name = "kubernetes"];
     PolarisSource polaris = 800 [json_name = "polaris"];
-    extension.v1.Extension customize = 900 [json_name = "customize"]; // Customize
+    extension.v1.Extension customize = 900 [json_name = "customize"];
   }
 }

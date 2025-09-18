@@ -1,5 +1,5 @@
 // Package envsrouce implements the functions, types, and interfaces for the module.
-package envsrouce
+package envsource
 
 import (
 	runtimeconfig "github.com/origadmin/runtime/config"
