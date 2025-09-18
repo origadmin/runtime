@@ -14,13 +14,19 @@ import (
 
 	// Import our test-specific, generated bootstrap proto package
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	"github.com/origadmin/toolkits/codec/ini"
+	"github.com/origadmin/toolkits/codec/toml"
 
 	// Import all necessary Kratos codecs to enable format support
 	_ "github.com/go-kratos/kratos/v2/encoding/json"
-	_ "github.com/go-kratos/kratos/v2/encoding/toml"
 	_ "github.com/go-kratos/kratos/v2/encoding/xml"
 	_ "github.com/go-kratos/kratos/v2/encoding/yaml"
 )
+
+func init() {
+	encoding.RegisterCodec(ini.Codec)
+	encoding.RegisterCodec(toml.Codec)
+}
 
 // runAssertions contains all the validation logic for the Bootstrap config.
 // It is reused across all configuration format tests to ensure consistency.
