@@ -7,8 +7,11 @@
 package commonv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	anypb "google.golang.org/protobuf/types/known/anypb"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -27,17 +30,23 @@ const (
 type PaginationRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// For offset-based pagination: the page number to retrieve (1-indexed).
-	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Page *int32 `protobuf:"varint,1,opt,name=page,proto3,oneof" json:"page,omitempty"`
 	// The maximum number of items to return per page. The server may enforce a
 	// maximum limit to this value.
-	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageSize *int32 `protobuf:"varint,2,opt,name=page_size,proto3,oneof" json:"page_size,omitempty"`
 	// For cursor-based pagination: a token identifying a page of results the server
 	// should return. This is the `next_page_token` from a previous response.
-	PageToken string `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	PageToken string `protobuf:"bytes,3,opt,name=page_token,proto3" json:"page_token,omitempty"`
 	// If true, the server will only return the `total_size` in the response Pagination
 	// message, and the `items` list will be empty. This is useful for fetching
 	// only the total count of items.
-	OnlyCount     bool `protobuf:"varint,4,opt,name=only_count,json=onlyCount,proto3" json:"only_count,omitempty"`
+	OnlyCount bool `protobuf:"varint,4,opt,name=only_count,proto3" json:"only_count,omitempty"`
+	// The no_paging is used to disable pagination.
+	NoPaging *bool `protobuf:"varint,5,opt,name=no_paging,proto3,oneof" json:"no_paging,omitempty"`
+	// sort condition
+	OrderBy string `protobuf:"bytes,6,opt,name=order_by,proto3" json:"order_by,omitempty"`
+	// Field mask
+	FieldMask     *fieldmaskpb.FieldMask `protobuf:"bytes,7,opt,name=field_mask,proto3" json:"field_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,15 +82,15 @@ func (*PaginationRequest) Descriptor() ([]byte, []int) {
 }
 
 func (x *PaginationRequest) GetPage() int32 {
-	if x != nil {
-		return x.Page
+	if x != nil && x.Page != nil {
+		return *x.Page
 	}
 	return 0
 }
 
 func (x *PaginationRequest) GetPageSize() int32 {
-	if x != nil {
-		return x.PageSize
+	if x != nil && x.PageSize != nil {
+		return *x.PageSize
 	}
 	return 0
 }
@@ -100,6 +109,27 @@ func (x *PaginationRequest) GetOnlyCount() bool {
 	return false
 }
 
+func (x *PaginationRequest) GetNoPaging() bool {
+	if x != nil && x.NoPaging != nil {
+		return *x.NoPaging
+	}
+	return false
+}
+
+func (x *PaginationRequest) GetOrderBy() string {
+	if x != nil {
+		return x.OrderBy
+	}
+	return ""
+}
+
+func (x *PaginationRequest) GetFieldMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.FieldMask
+	}
+	return nil
+}
+
 // Pagination provides a comprehensive structure for pagination responses, supporting
 // both cursor-based (infinite scroll) and offset-based (numbered pages) pagination.
 type Pagination struct {
@@ -107,13 +137,16 @@ type Pagination struct {
 	// For offset-based pagination: the current page number (1-indexed).
 	Page int32 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	// The number of items retrieved on the current page.
-	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageSize int32 `protobuf:"varint,2,opt,name=page_size,proto3" json:"page_size,omitempty"`
 	// For offset-based pagination: the total number of items available across all pages.
 	// This is optional and may be expensive to calculate for large datasets.
-	TotalSize int64 `protobuf:"varint,3,opt,name=total_size,json=totalSize,proto3" json:"total_size,omitempty"`
+	TotalSize int64 `protobuf:"varint,3,opt,name=total_size,proto3" json:"total_size,omitempty"`
 	// For cursor-based pagination: a token to retrieve the next page of results.
 	// If empty, there are no more results.
-	NextPageToken string `protobuf:"bytes,4,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	NextPageToken string `protobuf:"bytes,4,opt,name=next_page_token,proto3" json:"next_page_token,omitempty"`
+	// Additional information about this response.
+	// content to be added without destroying the current data format
+	Extra         map[string]*anypb.Any `protobuf:"bytes,5,rep,name=extra,proto3" json:"extra,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -176,26 +209,51 @@ func (x *Pagination) GetNextPageToken() string {
 	return ""
 }
 
+func (x *Pagination) GetExtra() map[string]*anypb.Any {
+	if x != nil {
+		return x.Extra
+	}
+	return nil
+}
+
 var File_common_v1_pagination_proto protoreflect.FileDescriptor
 
 const file_common_v1_pagination_proto_rawDesc = "" +
 	"\n" +
-	"\x1acommon/v1/pagination.proto\x12\tcommon.v1\"\x82\x01\n" +
-	"\x11PaginationRequest\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\x1acommon/v1/pagination.proto\x12\tcommon.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x19google/protobuf/any.proto\x1a google/protobuf/field_mask.proto\"\x93\x06\n" +
+	"\x11PaginationRequest\x12S\n" +
+	"\x04page\x18\x01 \x01(\x05B:\xbaG7\x8a\x02\t\t\x00\x00\x00\x00\x00\x00\xf0?\x92\x02(The page number to retrieve (1-indexed).H\x00R\x04page\x88\x01\x01\x12d\n" +
+	"\tpage_size\x18\x02 \x01(\x05BA\xbaG>\x8a\x02\t\t\x00\x00\x00\x00\x00\x00.@\x92\x02/The maximum number of items to return per page.H\x01R\tpage_size\x88\x01\x01\x122\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tR\tpageToken\x12\x1d\n" +
+	"page_token\x18\x03 \x01(\tB\x12\xbaG\x0f\x92\x02\fpaging tokenR\n" +
+	"page_token\x126\n" +
 	"\n" +
-	"only_count\x18\x04 \x01(\bR\tonlyCount\"\x84\x01\n" +
+	"only_count\x18\x04 \x01(\bB\x16\xbaG\x13\x92\x02\x10query total onlyR\n" +
+	"only_count\x12;\n" +
+	"\tno_paging\x18\x05 \x01(\bB\x18\xbaG\x15\x92\x02\x12whether not pagingH\x02R\tno_paging\x88\x01\x01\x12{\n" +
+	"\border_by\x18\x06 \x01(\tB_\xbaG\\:\b\x12\x06id:asc\x92\x02Osort condition, field name followed by 'asc' (ascending) or 'desc' (descending)R\border_by\x12\xf7\x01\n" +
 	"\n" +
-	"Pagination\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"field_mask\x18\a \x01(\v2\x1a.google.protobuf.FieldMaskB\xba\x01\xbaG\xb6\x01:\r\x12\vid,name,age\x92\x02\xa3\x01It is used to Update the request message, which is used to perform a partial update to the resource. This mask is related to the resource, not the request message.R\n" +
+	"field_maskB\a\n" +
+	"\x05_pageB\f\n" +
 	"\n" +
-	"total_size\x18\x03 \x01(\x03R\ttotalSize\x12&\n" +
-	"\x0fnext_page_token\x18\x04 \x01(\tR\rnextPageTokenB\xa1\x01\n" +
-	"\rcom.common.v1B\x0fPaginationProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/common/v1;commonv1\xa2\x02\x03CXX\xaa\x02\tCommon.V1\xca\x02\tCommon\\V1\xe2\x02\x15Common\\V1\\GPBMetadata\xea\x02\n" +
+	"_page_sizeB\f\n" +
+	"\n" +
+	"_no_paging\"\xc0\x04\n" +
+	"\n" +
+	"Pagination\x12>\n" +
+	"\x04page\x18\x01 \x01(\x05B*\xbaG'\x92\x02$The current page number (1-indexed).R\x04page\x12V\n" +
+	"\tpage_size\x18\x02 \x01(\x05B8\xbaG5\x92\x022The number of items retrieved on the current page.R\tpage_size\x12[\n" +
+	"\n" +
+	"total_size\x18\x03 \x01(\x03B;\xbaG8\x92\x025The total number of items available across all pages.R\n" +
+	"total_size\x12\x82\x01\n" +
+	"\x0fnext_page_token\x18\x04 \x01(\tBX\xbaGU\x92\x02RToken to retrieve the next page of results, or empty if there are no more results.R\x0fnext_page_token\x12h\n" +
+	"\x05extra\x18\x05 \x03(\v2 .common.v1.Pagination.ExtraEntryB0\xbaG-\x92\x02*additional information about this responseR\x05extra\x1aN\n" +
+	"\n" +
+	"ExtraEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.google.protobuf.AnyR\x05value:\x028\x01B\xa4\x01\n" +
+	"\rcom.common.v1B\x0fPaginationProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/common/v1;commonv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tCommon.V1\xca\x02\tCommon\\V1\xe2\x02\x15Common\\V1\\GPBMetadata\xea\x02\n" +
 	"Common::V1b\x06proto3"
 
 var (
@@ -210,17 +268,23 @@ func file_common_v1_pagination_proto_rawDescGZIP() []byte {
 	return file_common_v1_pagination_proto_rawDescData
 }
 
-var file_common_v1_pagination_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_common_v1_pagination_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_common_v1_pagination_proto_goTypes = []any{
-	(*PaginationRequest)(nil), // 0: common.v1.PaginationRequest
-	(*Pagination)(nil),        // 1: common.v1.Pagination
+	(*PaginationRequest)(nil),     // 0: common.v1.PaginationRequest
+	(*Pagination)(nil),            // 1: common.v1.Pagination
+	nil,                           // 2: common.v1.Pagination.ExtraEntry
+	(*fieldmaskpb.FieldMask)(nil), // 3: google.protobuf.FieldMask
+	(*anypb.Any)(nil),             // 4: google.protobuf.Any
 }
 var file_common_v1_pagination_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	3, // 0: common.v1.PaginationRequest.field_mask:type_name -> google.protobuf.FieldMask
+	2, // 1: common.v1.Pagination.extra:type_name -> common.v1.Pagination.ExtraEntry
+	4, // 2: common.v1.Pagination.ExtraEntry.value:type_name -> google.protobuf.Any
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_common_v1_pagination_proto_init() }
@@ -228,13 +292,14 @@ func file_common_v1_pagination_proto_init() {
 	if File_common_v1_pagination_proto != nil {
 		return
 	}
+	file_common_v1_pagination_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_common_v1_pagination_proto_rawDesc), len(file_common_v1_pagination_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

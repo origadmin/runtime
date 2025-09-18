@@ -57,13 +57,52 @@ func (m *PaginationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Page
-
-	// no validation rules for PageSize
-
 	// no validation rules for PageToken
 
 	// no validation rules for OnlyCount
+
+	// no validation rules for OrderBy
+
+	if all {
+		switch v := interface{}(m.GetFieldMask()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PaginationRequestValidationError{
+					field:  "FieldMask",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PaginationRequestValidationError{
+					field:  "FieldMask",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetFieldMask()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PaginationRequestValidationError{
+				field:  "FieldMask",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.Page != nil {
+		// no validation rules for Page
+	}
+
+	if m.PageSize != nil {
+		// no validation rules for PageSize
+	}
+
+	if m.NoPaging != nil {
+		// no validation rules for NoPaging
+	}
 
 	if len(errors) > 0 {
 		return PaginationRequestMultiError(errors)
@@ -174,6 +213,52 @@ func (m *Pagination) validate(all bool) error {
 	// no validation rules for TotalSize
 
 	// no validation rules for NextPageToken
+
+	{
+		sorted_keys := make([]string, len(m.GetExtra()))
+		i := 0
+		for key := range m.GetExtra() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetExtra()[key]
+			_ = val
+
+			// no validation rules for Extra[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, PaginationValidationError{
+							field:  fmt.Sprintf("Extra[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, PaginationValidationError{
+							field:  fmt.Sprintf("Extra[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return PaginationValidationError{
+						field:  fmt.Sprintf("Extra[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
+			}
+
+		}
+	}
 
 	if len(errors) > 0 {
 		return PaginationMultiError(errors)
