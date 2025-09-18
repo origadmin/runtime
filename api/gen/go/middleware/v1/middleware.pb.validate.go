@@ -35,295 +35,22 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on Middleware with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Middleware) Validate() error {
+// Validate checks the field values on MiddlewareConfig with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *MiddlewareConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Middleware with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in MiddlewareMultiError, or
-// nil if none found.
-func (m *Middleware) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Middleware) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetMetadata()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Metadata",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Metadata",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "Metadata",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetRateLimiter()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "RateLimiter",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "RateLimiter",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRateLimiter()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "RateLimiter",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetMetrics()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Metrics",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Metrics",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMetrics()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "Metrics",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetValidator()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Validator",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Validator",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetValidator()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "Validator",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetJwt()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Jwt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Jwt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetJwt()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "Jwt",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetSelector()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Selector",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, MiddlewareValidationError{
-					field:  "Selector",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetSelector()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return MiddlewareValidationError{
-				field:  "Selector",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return MiddlewareMultiError(errors)
-	}
-
-	return nil
-}
-
-// MiddlewareMultiError is an error wrapping multiple validation errors
-// returned by Middleware.ValidateAll() if the designated constraints aren't met.
-type MiddlewareMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m MiddlewareMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m MiddlewareMultiError) AllErrors() []error { return m }
-
-// MiddlewareValidationError is the validation error returned by
-// Middleware.Validate if the designated constraints aren't met.
-type MiddlewareValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e MiddlewareValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e MiddlewareValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e MiddlewareValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e MiddlewareValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e MiddlewareValidationError) ErrorName() string { return "MiddlewareValidationError" }
-
-// Error satisfies the builtin error interface
-func (e MiddlewareValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sMiddleware.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = MiddlewareValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = MiddlewareValidationError{}
-
-// Validate checks the field values on Middleware_Metadata with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *Middleware_Metadata) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Middleware_Metadata with the rules
+// ValidateAll checks the field values on MiddlewareConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// Middleware_MetadataMultiError, or nil if none found.
-func (m *Middleware_Metadata) ValidateAll() error {
+// MiddlewareConfigMultiError, or nil if none found.
+func (m *MiddlewareConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Middleware_Metadata) validate(all bool) error {
+func (m *MiddlewareConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -332,22 +59,353 @@ func (m *Middleware_Metadata) validate(all bool) error {
 
 	// no validation rules for Enabled
 
-	// no validation rules for Data
+	switch v := m.Middleware.(type) {
+	case *MiddlewareConfig_RateLimiter:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetRateLimiter()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "RateLimiter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "RateLimiter",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetRateLimiter()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "RateLimiter",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *MiddlewareConfig_Metrics:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetMetrics()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Metrics",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Metrics",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetMetrics()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Metrics",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *MiddlewareConfig_Validator:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetValidator()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Validator",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Validator",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetValidator()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Validator",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *MiddlewareConfig_Jwt:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetJwt()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Jwt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Jwt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetJwt()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Jwt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *MiddlewareConfig_Selector:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetSelector()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Selector",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Selector",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetSelector()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Selector",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *MiddlewareConfig_Cors:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetCors()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Cors",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Cors",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCors()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Cors",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *MiddlewareConfig_CircuitBreaker:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetCircuitBreaker()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "CircuitBreaker",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "CircuitBreaker",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCircuitBreaker()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "CircuitBreaker",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	case *MiddlewareConfig_Custom:
+		if v == nil {
+			err := MiddlewareConfigValidationError{
+				field:  "Middleware",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetCustom()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Custom",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Custom",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustom()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Custom",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	default:
+		_ = v // ensures v is used
+	}
 
 	if len(errors) > 0 {
-		return Middleware_MetadataMultiError(errors)
+		return MiddlewareConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// Middleware_MetadataMultiError is an error wrapping multiple validation
-// errors returned by Middleware_Metadata.ValidateAll() if the designated
-// constraints aren't met.
-type Middleware_MetadataMultiError []error
+// MiddlewareConfigMultiError is an error wrapping multiple validation errors
+// returned by MiddlewareConfig.ValidateAll() if the designated constraints
+// aren't met.
+type MiddlewareConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Middleware_MetadataMultiError) Error() string {
+func (m MiddlewareConfigMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -356,11 +414,11 @@ func (m Middleware_MetadataMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Middleware_MetadataMultiError) AllErrors() []error { return m }
+func (m MiddlewareConfigMultiError) AllErrors() []error { return m }
 
-// Middleware_MetadataValidationError is the validation error returned by
-// Middleware_Metadata.Validate if the designated constraints aren't met.
-type Middleware_MetadataValidationError struct {
+// MiddlewareConfigValidationError is the validation error returned by
+// MiddlewareConfig.Validate if the designated constraints aren't met.
+type MiddlewareConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -368,24 +426,22 @@ type Middleware_MetadataValidationError struct {
 }
 
 // Field function returns field value.
-func (e Middleware_MetadataValidationError) Field() string { return e.field }
+func (e MiddlewareConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Middleware_MetadataValidationError) Reason() string { return e.reason }
+func (e MiddlewareConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Middleware_MetadataValidationError) Cause() error { return e.cause }
+func (e MiddlewareConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Middleware_MetadataValidationError) Key() bool { return e.key }
+func (e MiddlewareConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Middleware_MetadataValidationError) ErrorName() string {
-	return "Middleware_MetadataValidationError"
-}
+func (e MiddlewareConfigValidationError) ErrorName() string { return "MiddlewareConfigValidationError" }
 
 // Error satisfies the builtin error interface
-func (e Middleware_MetadataValidationError) Error() string {
+func (e MiddlewareConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -397,14 +453,14 @@ func (e Middleware_MetadataValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sMiddleware_Metadata.%s: %s%s",
+		"invalid %sMiddlewareConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Middleware_MetadataValidationError{}
+var _ error = MiddlewareConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -412,4 +468,137 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Middleware_MetadataValidationError{}
+} = MiddlewareConfigValidationError{}
+
+// Validate checks the field values on Middlewares with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Middlewares) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Middlewares with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in MiddlewaresMultiError, or
+// nil if none found.
+func (m *Middlewares) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Middlewares) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetMiddlewares() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewaresValidationError{
+						field:  fmt.Sprintf("Middlewares[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewaresValidationError{
+						field:  fmt.Sprintf("Middlewares[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewaresValidationError{
+					field:  fmt.Sprintf("Middlewares[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return MiddlewaresMultiError(errors)
+	}
+
+	return nil
+}
+
+// MiddlewaresMultiError is an error wrapping multiple validation errors
+// returned by Middlewares.ValidateAll() if the designated constraints aren't met.
+type MiddlewaresMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MiddlewaresMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MiddlewaresMultiError) AllErrors() []error { return m }
+
+// MiddlewaresValidationError is the validation error returned by
+// Middlewares.Validate if the designated constraints aren't met.
+type MiddlewaresValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MiddlewaresValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MiddlewaresValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MiddlewaresValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MiddlewaresValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MiddlewaresValidationError) ErrorName() string { return "MiddlewaresValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MiddlewaresValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMiddlewares.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MiddlewaresValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MiddlewaresValidationError{}

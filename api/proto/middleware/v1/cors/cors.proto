@@ -1,13 +1,14 @@
 syntax = "proto3";
 
-package config.v1;
+package middleware.v1.cors;
 
 option cc_enable_arenas = true;
-option go_package = "github.com/origadmin/runtime/api/gen/go/cors/v1;corsv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/middleware/v1/cors;corsv1";
 option java_multiple_files = true;
 option java_outer_classname = "CorsProto";
-option java_package = "com.github.origadmin.api.runtime.config.v1";
+option java_package = "com.github.origadmin.api.runtime.middleware.v1.cors";
 option objc_class_prefix = "ORC";
+option php_namespace = "OrigAdmin\\Runtime\\Middleware\\V1\\Cors";
 
 // Cors
 message Cors {

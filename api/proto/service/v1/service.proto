@@ -50,7 +50,7 @@ message Service {
   task.v1.Task task = 300 [json_name = "task"];
 
   // Middleware configuration for the service.
-  middleware.v1.Middleware middleware = 400 [json_name = "middleware"];
+  repeated middleware.v1.MiddlewareConfig middlewares = 400 [json_name = "middlewares"];
 
   Selector selector = 500 [json_name = "selector"];
 }

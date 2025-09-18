@@ -41,8 +41,8 @@ type Service struct {
 	Message   *v12.Message   `protobuf:"bytes,200,opt,name=message,proto3" json:"message,omitempty"`
 	Task      *v13.Task      `protobuf:"bytes,300,opt,name=task,proto3" json:"task,omitempty"`
 	// Middleware configuration for the service.
-	Middleware    *v14.Middleware   `protobuf:"bytes,400,opt,name=middleware,proto3" json:"middleware,omitempty"`
-	Selector      *Service_Selector `protobuf:"bytes,500,opt,name=selector,proto3" json:"selector,omitempty"`
+	Middlewares   []*v14.MiddlewareConfig `protobuf:"bytes,400,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Selector      *Service_Selector       `protobuf:"bytes,500,opt,name=selector,proto3" json:"selector,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -126,9 +126,9 @@ func (x *Service) GetTask() *v13.Task {
 	return nil
 }
 
-func (x *Service) GetMiddleware() *v14.Middleware {
+func (x *Service) GetMiddlewares() []*v14.MiddlewareConfig {
 	if x != nil {
-		return x.Middleware
+		return x.Middlewares
 	}
 	return nil
 }
@@ -198,7 +198,7 @@ var File_service_v1_service_proto protoreflect.FileDescriptor
 const file_service_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"\x18service/v1/service.proto\x12\n" +
-	"service.v1\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\x1a\x10msg/v1/msg.proto\x1a\x12task/v1/task.proto\x1a\x1cwebsocket/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\x82\x04\n" +
+	"service.v1\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\x1a\x10msg/v1/msg.proto\x1a\x12task/v1/task.proto\x1a\x1cwebsocket/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\x8a\x04\n" +
 	"\aService\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12G\n" +
 	"\bprotocol\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\bprotocol\x12&\n" +
@@ -207,10 +207,8 @@ const file_service_v1_service_proto_rawDesc = "" +
 	"\x04http\x18\x14 \x01(\v2\x12.transport.v1.HTTPR\x04http\x125\n" +
 	"\twebsocket\x18d \x01(\v2\x17.websocket.v1.WebSocketR\twebsocket\x12*\n" +
 	"\amessage\x18\xc8\x01 \x01(\v2\x0f.msg.v1.MessageR\amessage\x12\"\n" +
-	"\x04task\x18\xac\x02 \x01(\v2\r.task.v1.TaskR\x04task\x12:\n" +
-	"\n" +
-	"middleware\x18\x90\x03 \x01(\v2\x19.middleware.v1.MiddlewareR\n" +
-	"middleware\x129\n" +
+	"\x04task\x18\xac\x02 \x01(\v2\r.task.v1.TaskR\x04task\x12B\n" +
+	"\vmiddlewares\x18\x90\x03 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\x129\n" +
 	"\bselector\x18\xf4\x03 \x01(\v2\x1c.service.v1.Service.SelectorR\bselector\x1aL\n" +
 	"\bSelector\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversion\x12&\n" +
@@ -233,14 +231,14 @@ func file_service_v1_service_proto_rawDescGZIP() []byte {
 
 var file_service_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_service_v1_service_proto_goTypes = []any{
-	(*Service)(nil),          // 0: service.v1.Service
-	(*Service_Selector)(nil), // 1: service.v1.Service.Selector
-	(*v1.GRPC)(nil),          // 2: transport.v1.GRPC
-	(*v1.HTTP)(nil),          // 3: transport.v1.HTTP
-	(*v11.WebSocket)(nil),    // 4: websocket.v1.WebSocket
-	(*v12.Message)(nil),      // 5: msg.v1.Message
-	(*v13.Task)(nil),         // 6: task.v1.Task
-	(*v14.Middleware)(nil),   // 7: middleware.v1.Middleware
+	(*Service)(nil),              // 0: service.v1.Service
+	(*Service_Selector)(nil),     // 1: service.v1.Service.Selector
+	(*v1.GRPC)(nil),              // 2: transport.v1.GRPC
+	(*v1.HTTP)(nil),              // 3: transport.v1.HTTP
+	(*v11.WebSocket)(nil),        // 4: websocket.v1.WebSocket
+	(*v12.Message)(nil),          // 5: msg.v1.Message
+	(*v13.Task)(nil),             // 6: task.v1.Task
+	(*v14.MiddlewareConfig)(nil), // 7: middleware.v1.MiddlewareConfig
 }
 var file_service_v1_service_proto_depIdxs = []int32{
 	2, // 0: service.v1.Service.grpc:type_name -> transport.v1.GRPC
@@ -248,7 +246,7 @@ var file_service_v1_service_proto_depIdxs = []int32{
 	4, // 2: service.v1.Service.websocket:type_name -> websocket.v1.WebSocket
 	5, // 3: service.v1.Service.message:type_name -> msg.v1.Message
 	6, // 4: service.v1.Service.task:type_name -> task.v1.Task
-	7, // 5: service.v1.Service.middleware:type_name -> middleware.v1.Middleware
+	7, // 5: service.v1.Service.middlewares:type_name -> middleware.v1.MiddlewareConfig
 	1, // 6: service.v1.Service.selector:type_name -> service.v1.Service.Selector
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type

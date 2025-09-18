@@ -38,7 +38,7 @@ type Client struct {
 	// Request timeout.
 	Timeout *durationpb.Duration `protobuf:"bytes,5,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	// Middleware configuration specific to this client.
-	Middleware    *v1.Middleware `protobuf:"bytes,100,opt,name=middleware,proto3" json:"middleware,omitempty"`
+	Middlewares   []*v1.MiddlewareConfig `protobuf:"bytes,100,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -108,9 +108,9 @@ func (x *Client) GetTimeout() *durationpb.Duration {
 	return nil
 }
 
-func (x *Client) GetMiddleware() *v1.Middleware {
+func (x *Client) GetMiddlewares() []*v1.MiddlewareConfig {
 	if x != nil {
-		return x.Middleware
+		return x.Middlewares
 	}
 	return nil
 }
@@ -165,16 +165,14 @@ var File_discovery_v1_client_proto protoreflect.FileDescriptor
 
 const file_discovery_v1_client_proto_rawDesc = "" +
 	"\n" +
-	"\x19discovery/v1/client.proto\x12\fdiscovery.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\x8c\x02\n" +
+	"\x19discovery/v1/client.proto\x12\fdiscovery.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\x94\x02\n" +
 	"\x06Client\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04name\x12%\n" +
 	"\x0ediscovery_name\x18\x02 \x01(\tR\rdiscoveryName\x12\x1a\n" +
 	"\bendpoint\x18\x03 \x01(\tR\bendpoint\x122\n" +
 	"\bselector\x18\x04 \x01(\v2\x16.discovery.v1.SelectorR\bselector\x123\n" +
-	"\atimeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x129\n" +
-	"\n" +
-	"middleware\x18d \x01(\v2\x19.middleware.v1.MiddlewareR\n" +
-	"middleware\"$\n" +
+	"\atimeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12A\n" +
+	"\vmiddlewares\x18d \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\"$\n" +
 	"\bSelector\x12\x18\n" +
 	"\aversion\x18\x01 \x01(\tR\aversionB\xb2\x01\n" +
 	"\x10com.discovery.v1B\vClientProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1\xa2\x02\x03DXX\xaa\x02\fDiscovery.V1\xca\x02\fDiscovery\\V1\xe2\x02\x18Discovery\\V1\\GPBMetadata\xea\x02\rDiscovery::V1b\x06proto3"
@@ -196,12 +194,12 @@ var file_discovery_v1_client_proto_goTypes = []any{
 	(*Client)(nil),              // 0: discovery.v1.Client
 	(*Selector)(nil),            // 1: discovery.v1.Selector
 	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
-	(*v1.Middleware)(nil),       // 3: middleware.v1.Middleware
+	(*v1.MiddlewareConfig)(nil), // 3: middleware.v1.MiddlewareConfig
 }
 var file_discovery_v1_client_proto_depIdxs = []int32{
 	1, // 0: discovery.v1.Client.selector:type_name -> discovery.v1.Selector
 	2, // 1: discovery.v1.Client.timeout:type_name -> google.protobuf.Duration
-	3, // 2: discovery.v1.Client.middleware:type_name -> middleware.v1.Middleware
+	3, // 2: discovery.v1.Client.middlewares:type_name -> middleware.v1.MiddlewareConfig
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
