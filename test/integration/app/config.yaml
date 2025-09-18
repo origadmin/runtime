@@ -1,0 +1,49 @@
+# This YAML file directly instantiates the structure defined in app/proto/bootstrap.proto.
+
+# A map of available service discovery configurations.
+discoveries:
+  consul-prod:
+    consul:
+      address: "consul.prod.svc.cluster.local:8500"
+      scheme: "http"
+  etcd-legacy:
+    etcd:
+      endpoints:
+        - "etcd1.legacy:2379"
+        - "etcd2.legacy:2379"
+
+# The name of the discovery to use for self-registration.
+registration_discovery_name: "consul-prod"
+
+# A unified list of server endpoints this application will expose.
+# This structure is defined inside bootstrap.proto.
+servers:
+  - name: "public-http"
+    http:
+      network: "tcp"
+      addr: ":8000"
+      timeout: "1s"
+  - name: "internal-grpc"
+    grpc:
+      network: "tcp"
+      addr: ":9000"
+      timeout: "1s"
+
+# A list of downstream clients, each with its own specific middleware.
+# This structure is also defined inside bootstrap.proto.
+clients:
+  - discovery:
+      discovery_name: "consul-prod" # Which discovery to use to find this client
+      service_name: "user-service"   # The name of the service to find
+    middlewares:
+      - name: "tracing"
+      - name: "retry"
+        options:
+          attempts: 3
+          backoff: "0.1s"
+  - discovery:
+      discovery_name: "etcd-legacy"
+      service_name: "order-service"
+    middlewares:
+      - name: "circuit_breaker"
+      - name: "logging"

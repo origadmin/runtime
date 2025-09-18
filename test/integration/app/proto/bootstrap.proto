@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package test.app.configs;
+
+// 1. 导入框架提供的所有基础 "砖头"
+import "discovery/v1/client.proto";
+import "discovery/v1/discovery.proto";
+import "middleware/v1/middleware.proto";
+import "transport/v1/grpc.proto";
+import "transport/v1/http.proto";
+
+option go_package = "github.com/origadmin/framework/test/integration/app/proto;configs";
+
+// 2. 在图纸内部，定义如何组合 "服务器" 砖头
+//    这个 Server 消息是此应用专属的，它解决了 "transport不分" 的问题。
+message Server {
+  // 为这个服务器端点起一个名字, e.g., "private-grpc", "public-http".
+  string name = 1;
+
+  // 使用 oneof 将框架的 GRPC 和 HTTP "砖头" 组合在一起。
+  oneof config {
+    transport.v1.GRPC grpc = 2;
+    transport.v1.HTTP http = 3;
+  }
+}
+
+// 3. 在图纸内部，定义如何组合 "客户端" 砖头
+//    这个 Client 消息也是此应用专属的，它解决了 "不同client需要不同Middleware" 的问题。
+message Client {
+  // 使用框架的 "客户端发现" 砖头。
+  discovery.v1.Client discovery = 1;
+
+  // 将 "中间件" 砖头与上面的 "客户端发现" 砖头绑定在一起。
+  repeated middleware.v1.MiddlewareConfig middlewares = 2;
+}
+
+// 4. 构造顶层的 Bootstrap "蓝图"
+//    这是最终的房子，它完全由上面组合好的部件构成。
+message Bootstrap {
+  // 服务发现配置池。
+  map<string, discovery.v1.Discovery> discoveries = 1;
+
+  // 用于服务注册的发现配置名称。
+  string registration_discovery_name = 2;
+
+  // 使用我们组合好的 `Server` 部件，构造一个统一的服务器列表。
+  repeated Server servers = 3;
+
+  // 使用我们组合好的 `Client` 部件，构造一个客户端列表，每个客户端都有其专属配置。
+  repeated Client clients = 4;
+}
