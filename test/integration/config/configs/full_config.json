@@ -1,0 +1,57 @@
+{
+  "discoveries": [
+    {
+      "name": "internal-consul",
+      "config": {
+        "service_name": "my-test-app",
+        "type": "consul",
+        "consul": {
+          "address": "consul.internal:8500"
+        }
+      }
+    },
+    {
+      "name": "legacy-etcd",
+      "config": {
+        "service_name": "",
+        "type": "etcd",
+        "etcd": {
+          "endpoints": [
+            "etcd.legacy:2379"
+          ]
+        }
+      }
+    }
+  ],
+  "registration_discovery_name": "internal-consul",
+  "grpc_servers": [
+    {
+      "addr": ":9001",
+      "endpoint": "127.0.0.1:9001"
+    }
+  ],
+  "http_servers": [
+    {
+      "addr": ":8001",
+      "endpoint": "127.0.0.1:8001"
+    }
+  ],
+  "clients": [
+    {
+      "name": "user-service",
+      "discovery_name": "internal-consul",
+      "endpoint": "discovery:///user-service",
+      "selector": {
+        "version": "v1.5.0"
+      }
+    },
+    {
+      "name": "stock-service",
+      "discovery_name": "legacy-etcd",
+      "endpoint": "discovery:///stock-service",
+      "selector": {
+        "version": "v1.0.1"
+      }
+    }
+  ]
+}
