@@ -27,7 +27,7 @@ message HTTP {
   int32 max_send_msg_size = 7 [(validate.rules).int32 = {gt: 0}];
   // TLS configuration for the server.
   security.transport.v1.TLSConfig tls = 8;
-
-  // Middleware configuration specific to this HTTP server.
-  repeated middleware.v1.MiddlewareConfig middlewares = 100 [json_name = "middlewares"];
+  // Middlewares specifies the list of middleware names to apply to the server.
+  // The framework will look up these names in the middleware registry.
+  repeated string middlewares = 9;
 }

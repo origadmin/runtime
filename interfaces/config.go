@@ -5,7 +5,11 @@ import (
 
 	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 )
+
+type Config map[string]any
 
 type ConfigDecoderFunc func(config kratosconfig.Config) (ConfigDecoder, error)
 
@@ -16,6 +20,7 @@ func (c ConfigDecoderFunc) GetConfigDecoder(config kratosconfig.Config) (ConfigD
 // ConfigDecoder provides a generic way to decode a portion of the configuration
 // into a Go struct.
 type ConfigDecoder interface {
+	Config() any
 	// Decode unmarshals the configuration section identified by 'key' into the 'target'.
 	// The 'key' can be a dot-separated path (e.g., "service.http").
 	// 'target' must be a pointer to a Go struct.
@@ -40,11 +45,11 @@ type DiscoveryConfig interface {
 
 // LoggerConfig provides access to the logger configuration.
 type LoggerConfig interface {
-	GetLogger() *configv1.Logger
+	GetLogger() *loggerv1.Logger
 }
 
 // MiddlewareConfig provides access to middleware configurations.
 type MiddlewareConfig interface {
-	GetMiddleware(name string) *configv1.Middleware
-	GetMiddlewares() map[string]*configv1.Middleware
+	GetMiddleware(name string) *middlewarev1.MiddlewareConfig
+	GetMiddlewares() map[string]*middlewarev1.MiddlewareConfig
 }

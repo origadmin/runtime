@@ -56,33 +56,59 @@ type (
 	HTTPClientOption = transhttp.ClientOption
 )
 
-type (
-	// RegisterFunc register a service
-	RegisterFunc[T any] func(context.Context, *T)
-	// RegisterGRPCFunc register a gRPC server
-	RegisterGRPCFunc = RegisterFunc[GRPCServer]
-	// RegisterHTTPFunc register a HTTP server
-	RegisterHTTPFunc = RegisterFunc[HTTPServer]
-)
-
-func (f RegisterFunc[T]) Register(ctx context.Context, t *T) {
-	f(ctx, t)
-}
-
-type Registrar[T any] interface {
-	Register(context.Context, *T)
-}
-
-type HTTPRegistrar interface {
-	RegisterHTTP(context.Context, *HTTPServer)
-}
-
+// GRPCRegistrar is a capability interface for services that can register gRPC endpoints.
 type GRPCRegistrar interface {
-	RegisterGRPC(context.Context, *GRPCServer)
+	RegisterGRPC(srv *GRPCServer)
 }
 
+// GRPCRegisterFunc is a function that implements GRPCRegistrar.
+type GRPCRegisterFunc func(ctx context.Context, srv *GRPCServer)
+
+// RegisterGRPC implements the GRPCRegistrar interface for GRPCRegisterFunc.
+func (f GRPCRegisterFunc) RegisterGRPC(ctx context.Context, srv *GRPCServer) {
+	f(ctx, srv)
+}
+
+// Register implements the ServerRegistrar interface for GRPCRegisterFunc.
+func (f GRPCRegisterFunc) Register(ctx context.Context, srv any) {
+	if srv, ok := srv.(*GRPCServer); ok {
+		f(ctx, srv)
+	}
+}
+
+// HTTPRegistrar is a capability interface for services that can register HTTP endpoints.
+type HTTPRegistrar interface {
+	RegisterHTTP(srv *HTTPServer)
+}
+
+// HTTPRegisterFunc is a function that implements HTTPRegistrar.
+type HTTPRegisterFunc func(ctx context.Context, srv *HTTPServer)
+
+// RegisterHTTP implements the HTTPRegistrar interface for HTTPRegisterFunc.
+func (f HTTPRegisterFunc) RegisterHTTP(ctx context.Context, srv *HTTPServer) {
+	f(ctx, srv)
+}
+
+// Register implements the ServerRegistrar interface for HTTPRegisterFunc.
+func (f HTTPRegisterFunc) Register(ctx context.Context, srv any) {
+	if srv, ok := srv.(*HTTPServer); ok {
+		f(ctx, srv)
+	}
+}
+
+// ServerRegistrar defines the single, universal entry point for service registration.
+// It is the responsibility of the transport-specific factories to pass the correct server type
+// (e.g., *GRPCServer or *HTTPServer) to the Register method.
+// The implementation of this interface, typically within the user's project, is expected
+// to perform a type switch to handle the specific server type.
 type ServerRegistrar interface {
-	Register(context.Context, any)
-	RegisterHTTP(context.Context, *HTTPServer)
-	RegisterGRPC(context.Context, *GRPCServer)
+	Register(ctx context.Context, srv any)
+}
+
+// ServerRegisterFunc is a function that implements ServerRegistrar.
+type ServerRegisterFunc func(ctx context.Context, srv any)
+
+// Register implements the ServerRegistrar interface for ServerRegisterFunc.
+func (f ServerRegisterFunc) Register(ctx context.Context, srv any) {
+	f(ctx, srv)
 }

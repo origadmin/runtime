@@ -5,7 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1" // ADD
+	// configv1 "github.com/origadmin/runtime/api/gen/go/config/v1" // REMOVE
 	projectContext "github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/interfaces"
 	tkerrors "github.com/origadmin/toolkits/errors"
@@ -26,14 +27,16 @@ type MockProtocolFactory struct {
 	NewClientError error
 }
 
-func (m *MockProtocolFactory) NewServer(cfg *configv1.Service, opts ...Option) (interfaces.Server, error) {
+// NewServer method of MockProtocolFactory - update cfg type
+func (m *MockProtocolFactory) NewServer(cfg *transportv1.Transport, opts ...Option) (interfaces.Server, error) {
 	if m.NewServerError != nil {
 		return nil, m.NewServerError
 	}
 	return &MockServer{}, nil
 }
 
-func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *configv1.Service, opts ...Option) (interfaces.Client, error) {
+// NewClient method of MockProtocolFactory - update cfg type
+func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *transportv1.Transport, opts ...Option) (interfaces.Client, error) {
 	if m.NewClientError != nil {
 		return nil, m.NewClientError
 	}
@@ -72,7 +75,7 @@ func TestNewServer(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		cfg             *configv1.Service
+		cfg             *transportv1.Transport // UPDATE TYPE
 		factory         *MockProtocolFactory
 		expectedErr     string
 		checkWrappedErr error
@@ -80,28 +83,28 @@ func TestNewServer(t *testing.T) {
 		{
 			name:        "nil config",
 			cfg:         nil,
-			expectedErr: "service configuration or protocol is missing",
+			expectedErr: "transport configuration is nil", // Error message from getProtocolName
 		},
 		{
 			name:        "missing protocol in config",
-			cfg:         &configv1.Service{},
-			expectedErr: "service configuration or protocol is missing",
+			cfg:         &transportv1.Transport{},                                 // No oneof field set
+			expectedErr: "unknown or missing protocol in transport configuration", // Error message from getProtocolName
 		},
 		{
-			name:        "unsupported protocol",
-			cfg:         &configv1.Service{Protocol: "unknown_protocol"},
-			expectedErr: "unsupported protocol: unknown_protocol",
+			name:        "unsupported protocol (no factory registered)",
+			cfg:         &transportv1.Transport{Protocol: &transportv1.Transport_Grpc{Grpc: &transportv1.GRPC{}}}, // A valid config, but no factory registered for "grpc" yet
+			expectedErr: "unsupported protocol: grpc",
 		},
 		{
 			name:            "factory returns error",
-			cfg:             &configv1.Service{Protocol: "mock_error_server"},
+			cfg:             &transportv1.Transport{Protocol: &transportv1.Transport_Grpc{Grpc: &transportv1.GRPC{}}}, // Use gRPC for mock
 			factory:         &MockProtocolFactory{NewServerError: tkerrors.Errorf("internal factory error")},
-			expectedErr:     "failed to create server for protocol mock_error_server",
+			expectedErr:     "failed to create server for protocol grpc", // Protocol name from getProtocolName
 			checkWrappedErr: tkerrors.Errorf("internal factory error"),
 		},
 		{
 			name:        "successful server creation",
-			cfg:         &configv1.Service{Protocol: "mock_success_server"},
+			cfg:         &transportv1.Transport{Protocol: &transportv1.Transport_Grpc{Grpc: &transportv1.GRPC{}}}, // Use gRPC for mock
 			expectedErr: "",
 		},
 	}
@@ -110,7 +113,14 @@ func TestNewServer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			resetProtocolRegistry()
 			if tt.factory != nil {
-				RegisterProtocol(tt.cfg.Protocol, tt.factory)
+				// Extract protocol name from cfg for registration
+				protocolName, err := getProtocolName(tt.cfg) // Use the helper
+				if err != nil && tt.expectedErr == "" {
+					t.Fatalf("Failed to get protocol name for test setup: %v", err)
+				}
+				if protocolName != "" {
+					RegisterProtocol(protocolName, tt.factory)
+				}
 			}
 
 			server, err := NewServer(tt.cfg)
@@ -143,7 +153,7 @@ func TestNewClient(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		cfg             *configv1.Service
+		cfg             *transportv1.Transport // UPDATE TYPE
 		factory         *MockProtocolFactory
 		expectedErr     string
 		checkWrappedErr error
@@ -151,28 +161,28 @@ func TestNewClient(t *testing.T) {
 		{
 			name:        "nil config",
 			cfg:         nil,
-			expectedErr: "service configuration or protocol is missing",
+			expectedErr: "transport configuration is nil", // Error message from getProtocolName
 		},
 		{
 			name:        "missing protocol in config",
-			cfg:         &configv1.Service{},
-			expectedErr: "service configuration or protocol is missing",
+			cfg:         &transportv1.Transport{},                                 // No oneof field set
+			expectedErr: "unknown or missing protocol in transport configuration", // Error message from getProtocolName
 		},
 		{
-			name:        "unsupported protocol",
-			cfg:         &configv1.Service{Protocol: "unknown_protocol"},
-			expectedErr: "unsupported protocol: unknown_protocol",
+			name:        "unsupported protocol (no factory registered)",
+			cfg:         &transportv1.Transport{Protocol: &transportv1.Transport_Grpc{Grpc: &transportv1.GRPC{}}}, // A valid config, but no factory registered for "grpc" yet
+			expectedErr: "unsupported protocol: grpc",
 		},
 		{
 			name:            "factory returns error",
-			cfg:             &configv1.Service{Protocol: "mock_error_client"},
+			cfg:             &transportv1.Transport{Protocol: &transportv1.Transport_Grpc{Grpc: &transportv1.GRPC{}}}, // Use gRPC for mock
 			factory:         &MockProtocolFactory{NewClientError: tkerrors.Errorf("internal factory client error")},
-			expectedErr:     "failed to create client for protocol mock_error_client",
+			expectedErr:     "failed to create client for protocol grpc", // Protocol name from getProtocolName
 			checkWrappedErr: tkerrors.Errorf("internal factory client error"),
 		},
 		{
 			name:        "successful client creation",
-			cfg:         &configv1.Service{Protocol: "mock_success_client"},
+			cfg:         &transportv1.Transport{Protocol: &transportv1.Transport_Grpc{Grpc: &transportv1.GRPC{}}}, // Use gRPC for mock
 			expectedErr: "",
 		},
 	}
@@ -181,7 +191,14 @@ func TestNewClient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			resetProtocolRegistry()
 			if tt.factory != nil {
-				RegisterProtocol(tt.cfg.Protocol, tt.factory)
+				// Extract protocol name from cfg for registration
+				protocolName, err := getProtocolName(tt.cfg) // Use the helper
+				if err != nil && tt.expectedErr == "" {
+					t.Fatalf("Failed to get protocol name for test setup: %v", err)
+				}
+				if protocolName != "" {
+					RegisterProtocol(protocolName, tt.factory)
+				}
 			}
 
 			client, err := NewClient(projectContext.Background(), tt.cfg)

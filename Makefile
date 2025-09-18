@@ -159,6 +159,12 @@ test:
 	--proto_path=./third_party \
 	--go_out=paths=source_relative:./test/integration/config/proto \
 	./test/integration/config/proto/*.proto
+	protoc \
+	--proto_path=./test/integration/app/proto \
+	--proto_path=./api/proto \
+	--proto_path=./third_party \
+	--go_out=paths=source_relative:./test/integration/app/proto \
+	./test/integration/app/proto/*.proto
 
 .PHONY: generate
 # run go generate to generate code

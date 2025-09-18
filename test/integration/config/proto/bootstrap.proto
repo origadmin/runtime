@@ -11,8 +11,8 @@ import "transport/v1/http.proto";
 // go_package points to where the generated Go code for this test module should be placed
 option go_package = "github.com/origadmin/framework/test/integration/config/proto;configs";
 
-// NamedDiscovery binds a service discovery configuration with a unique name.
-message NamedDiscovery {
+// DiscoveryConfig binds a service discovery configuration with a unique name.
+message DiscoveryConfig {
   // Unique name for this discovery configuration, e.g., "internal-consul", "legacy-etcd"
   string name = 1;
   // Specific service discovery configuration
@@ -22,7 +22,7 @@ message NamedDiscovery {
 // Bootstrap is the top-level configuration structure for our test application.
 message Bootstrap {
   // 1. Define a "pool" of service discovery configurations.
-  repeated NamedDiscovery discoveries = 1;
+  repeated DiscoveryConfig discoveries = 1;
 
   // 2. Specify which configuration the current service should use to **register itself**.
   string registration_discovery_name = 2;

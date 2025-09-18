@@ -4,37 +4,15 @@ package transport.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
 
-import "google/protobuf/duration.proto";
-import "security/transport/v1/tls.proto";
-import "validate/validate.proto";
+import "transport/v1/grpc.proto";
+import "transport/v1/http.proto";
 
 // Transport defines the configuration for network transports like gRPC and HTTP.
 message Transport {
-  // GRPC server configuration.
-  message GRPC {
-    string network = 1 [(validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]}];
-    string addr = 2 [(validate.rules).string.min_len = 1];
-    google.protobuf.Duration timeout = 3;
-    google.protobuf.Duration shutdown_timeout = 4;
-    string endpoint = 5; // The endpoint advertised to the service registry.
-    bool enable_reflection = 6;
-    int32 max_recv_msg_size = 7 [(validate.rules).int32 = {gt: 0}];
-    int32 max_send_msg_size = 8 [(validate.rules).int32 = {gt: 0}];
-    security.transport.v1.TLSConfig tls = 9;
+  oneof protocol {
+    // GRPC server configuration.
+    GRPC grpc = 1;
+    // HTTP server configuration.
+    HTTP http = 2;
   }
-
-  // HTTP server configuration.
-  message HTTP {
-    string network = 1 [(validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]}];
-    string addr = 2 [(validate.rules).string.min_len = 1];
-    google.protobuf.Duration timeout = 3;
-    google.protobuf.Duration shutdown_timeout = 4;
-    string endpoint = 5; // The endpoint advertised to the service registry.
-    int32 max_recv_msg_size = 6 [(validate.rules).int32 = {gt: 0}];
-    int32 max_send_msg_size = 7 [(validate.rules).int32 = {gt: 0}];
-    security.transport.v1.TLSConfig tls = 8;
-  }
-
-  GRPC grpc = 1;
-  HTTP http = 2;
 }

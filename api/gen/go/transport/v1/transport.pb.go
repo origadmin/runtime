@@ -7,11 +7,8 @@
 package transportv1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	durationpb "google.golang.org/protobuf/types/known/durationpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -26,9 +23,12 @@ const (
 
 // Transport defines the configuration for network transports like gRPC and HTTP.
 type Transport struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Grpc          *Transport_GRPC        `protobuf:"bytes,1,opt,name=grpc,proto3" json:"grpc,omitempty"`
-	Http          *Transport_HTTP        `protobuf:"bytes,2,opt,name=http,proto3" json:"http,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Protocol:
+	//
+	//	*Transport_Grpc
+	//	*Transport_Http
+	Protocol      isTransport_Protocol `protobuf_oneof:"protocol"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -63,259 +63,59 @@ func (*Transport) Descriptor() ([]byte, []int) {
 	return file_transport_v1_transport_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Transport) GetGrpc() *Transport_GRPC {
+func (x *Transport) GetProtocol() isTransport_Protocol {
 	if x != nil {
-		return x.Grpc
+		return x.Protocol
 	}
 	return nil
 }
 
-func (x *Transport) GetHttp() *Transport_HTTP {
+func (x *Transport) GetGrpc() *GRPC {
 	if x != nil {
-		return x.Http
-	}
-	return nil
-}
-
-// GRPC server configuration.
-type Transport_GRPC struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Network          string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	Addr             string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	Timeout          *durationpb.Duration   `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	ShutdownTimeout  *durationpb.Duration   `protobuf:"bytes,4,opt,name=shutdown_timeout,json=shutdownTimeout,proto3" json:"shutdown_timeout,omitempty"`
-	Endpoint         string                 `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"` // The endpoint advertised to the service registry.
-	EnableReflection bool                   `protobuf:"varint,6,opt,name=enable_reflection,json=enableReflection,proto3" json:"enable_reflection,omitempty"`
-	MaxRecvMsgSize   int32                  `protobuf:"varint,7,opt,name=max_recv_msg_size,json=maxRecvMsgSize,proto3" json:"max_recv_msg_size,omitempty"`
-	MaxSendMsgSize   int32                  `protobuf:"varint,8,opt,name=max_send_msg_size,json=maxSendMsgSize,proto3" json:"max_send_msg_size,omitempty"`
-	Tls              *v1.TLSConfig          `protobuf:"bytes,9,opt,name=tls,proto3" json:"tls,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *Transport_GRPC) Reset() {
-	*x = Transport_GRPC{}
-	mi := &file_transport_v1_transport_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Transport_GRPC) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Transport_GRPC) ProtoMessage() {}
-
-func (x *Transport_GRPC) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
+		if x, ok := x.Protocol.(*Transport_Grpc); ok {
+			return x.Grpc
 		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Transport_GRPC.ProtoReflect.Descriptor instead.
-func (*Transport_GRPC) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{0, 0}
-}
-
-func (x *Transport_GRPC) GetNetwork() string {
-	if x != nil {
-		return x.Network
-	}
-	return ""
-}
-
-func (x *Transport_GRPC) GetAddr() string {
-	if x != nil {
-		return x.Addr
-	}
-	return ""
-}
-
-func (x *Transport_GRPC) GetTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.Timeout
 	}
 	return nil
 }
 
-func (x *Transport_GRPC) GetShutdownTimeout() *durationpb.Duration {
+func (x *Transport) GetHttp() *HTTP {
 	if x != nil {
-		return x.ShutdownTimeout
-	}
-	return nil
-}
-
-func (x *Transport_GRPC) GetEndpoint() string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return ""
-}
-
-func (x *Transport_GRPC) GetEnableReflection() bool {
-	if x != nil {
-		return x.EnableReflection
-	}
-	return false
-}
-
-func (x *Transport_GRPC) GetMaxRecvMsgSize() int32 {
-	if x != nil {
-		return x.MaxRecvMsgSize
-	}
-	return 0
-}
-
-func (x *Transport_GRPC) GetMaxSendMsgSize() int32 {
-	if x != nil {
-		return x.MaxSendMsgSize
-	}
-	return 0
-}
-
-func (x *Transport_GRPC) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
-// HTTP server configuration.
-type Transport_HTTP struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Network         string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	Addr            string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	Timeout         *durationpb.Duration   `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	ShutdownTimeout *durationpb.Duration   `protobuf:"bytes,4,opt,name=shutdown_timeout,json=shutdownTimeout,proto3" json:"shutdown_timeout,omitempty"`
-	Endpoint        string                 `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"` // The endpoint advertised to the service registry.
-	MaxRecvMsgSize  int32                  `protobuf:"varint,6,opt,name=max_recv_msg_size,json=maxRecvMsgSize,proto3" json:"max_recv_msg_size,omitempty"`
-	MaxSendMsgSize  int32                  `protobuf:"varint,7,opt,name=max_send_msg_size,json=maxSendMsgSize,proto3" json:"max_send_msg_size,omitempty"`
-	Tls             *v1.TLSConfig          `protobuf:"bytes,8,opt,name=tls,proto3" json:"tls,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *Transport_HTTP) Reset() {
-	*x = Transport_HTTP{}
-	mi := &file_transport_v1_transport_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Transport_HTTP) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Transport_HTTP) ProtoMessage() {}
-
-func (x *Transport_HTTP) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
+		if x, ok := x.Protocol.(*Transport_Http); ok {
+			return x.Http
 		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Transport_HTTP.ProtoReflect.Descriptor instead.
-func (*Transport_HTTP) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{0, 1}
-}
-
-func (x *Transport_HTTP) GetNetwork() string {
-	if x != nil {
-		return x.Network
-	}
-	return ""
-}
-
-func (x *Transport_HTTP) GetAddr() string {
-	if x != nil {
-		return x.Addr
-	}
-	return ""
-}
-
-func (x *Transport_HTTP) GetTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.Timeout
 	}
 	return nil
 }
 
-func (x *Transport_HTTP) GetShutdownTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.ShutdownTimeout
-	}
-	return nil
+type isTransport_Protocol interface {
+	isTransport_Protocol()
 }
 
-func (x *Transport_HTTP) GetEndpoint() string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return ""
+type Transport_Grpc struct {
+	// GRPC server configuration.
+	Grpc *GRPC `protobuf:"bytes,1,opt,name=grpc,proto3,oneof"`
 }
 
-func (x *Transport_HTTP) GetMaxRecvMsgSize() int32 {
-	if x != nil {
-		return x.MaxRecvMsgSize
-	}
-	return 0
+type Transport_Http struct {
+	// HTTP server configuration.
+	Http *HTTP `protobuf:"bytes,2,opt,name=http,proto3,oneof"`
 }
 
-func (x *Transport_HTTP) GetMaxSendMsgSize() int32 {
-	if x != nil {
-		return x.MaxSendMsgSize
-	}
-	return 0
-}
+func (*Transport_Grpc) isTransport_Protocol() {}
 
-func (x *Transport_HTTP) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
+func (*Transport_Http) isTransport_Protocol() {}
 
 var File_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
-	"\x1ctransport/v1/transport.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\"\xd6\a\n" +
-	"\tTransport\x120\n" +
-	"\x04grpc\x18\x01 \x01(\v2\x1c.transport.v1.Transport.GRPCR\x04grpc\x120\n" +
-	"\x04http\x18\x02 \x01(\v2\x1c.transport.v1.Transport.HTTPR\x04http\x1a\xc7\x03\n" +
-	"\x04GRPC\x12B\n" +
-	"\anetwork\x18\x01 \x01(\tB(\xfaB%r#R\x03tcpR\x04tcp4R\x04tcp6R\x04unixR\n" +
-	"unixpacketR\anetwork\x12\x1b\n" +
-	"\x04addr\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12D\n" +
-	"\x10shutdown_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\x0fshutdownTimeout\x12\x1a\n" +
-	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x12+\n" +
-	"\x11enable_reflection\x18\x06 \x01(\bR\x10enableReflection\x122\n" +
-	"\x11max_recv_msg_size\x18\a \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
-	"\x11max_send_msg_size\x18\b \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
-	"\x03tls\x18\t \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x1a\x9a\x03\n" +
-	"\x04HTTP\x12B\n" +
-	"\anetwork\x18\x01 \x01(\tB(\xfaB%r#R\x03tcpR\x04tcp4R\x04tcp6R\x04unixR\n" +
-	"unixpacketR\anetwork\x12\x1b\n" +
-	"\x04addr\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12D\n" +
-	"\x10shutdown_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\x0fshutdownTimeout\x12\x1a\n" +
-	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x122\n" +
-	"\x11max_recv_msg_size\x18\x06 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
-	"\x11max_send_msg_size\x18\a \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
-	"\x03tls\x18\b \x01(\v2 .security.transport.v1.TLSConfigR\x03tlsB\xb5\x01\n" +
+	"\x1ctransport/v1/transport.proto\x12\ftransport.v1\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"k\n" +
+	"\tTransport\x12(\n" +
+	"\x04grpc\x18\x01 \x01(\v2\x12.transport.v1.GRPCH\x00R\x04grpc\x12(\n" +
+	"\x04http\x18\x02 \x01(\v2\x12.transport.v1.HTTPH\x00R\x04httpB\n" +
+	"\n" +
+	"\bprotocolB\xb5\x01\n" +
 	"\x10com.transport.v1B\x0eTransportProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1\xa2\x02\x03TXX\xaa\x02\fTransport.V1\xca\x02\fTransport\\V1\xe2\x02\x18Transport\\V1\\GPBMetadata\xea\x02\rTransport::V1b\x06proto3"
 
 var (
@@ -330,28 +130,20 @@ func file_transport_v1_transport_proto_rawDescGZIP() []byte {
 	return file_transport_v1_transport_proto_rawDescData
 }
 
-var file_transport_v1_transport_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_transport_v1_transport_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_transport_v1_transport_proto_goTypes = []any{
-	(*Transport)(nil),           // 0: transport.v1.Transport
-	(*Transport_GRPC)(nil),      // 1: transport.v1.Transport.GRPC
-	(*Transport_HTTP)(nil),      // 2: transport.v1.Transport.HTTP
-	(*durationpb.Duration)(nil), // 3: google.protobuf.Duration
-	(*v1.TLSConfig)(nil),        // 4: security.transport.v1.TLSConfig
+	(*Transport)(nil), // 0: transport.v1.Transport
+	(*GRPC)(nil),      // 1: transport.v1.GRPC
+	(*HTTP)(nil),      // 2: transport.v1.HTTP
 }
 var file_transport_v1_transport_proto_depIdxs = []int32{
-	1, // 0: transport.v1.Transport.grpc:type_name -> transport.v1.Transport.GRPC
-	2, // 1: transport.v1.Transport.http:type_name -> transport.v1.Transport.HTTP
-	3, // 2: transport.v1.Transport.GRPC.timeout:type_name -> google.protobuf.Duration
-	3, // 3: transport.v1.Transport.GRPC.shutdown_timeout:type_name -> google.protobuf.Duration
-	4, // 4: transport.v1.Transport.GRPC.tls:type_name -> security.transport.v1.TLSConfig
-	3, // 5: transport.v1.Transport.HTTP.timeout:type_name -> google.protobuf.Duration
-	3, // 6: transport.v1.Transport.HTTP.shutdown_timeout:type_name -> google.protobuf.Duration
-	4, // 7: transport.v1.Transport.HTTP.tls:type_name -> security.transport.v1.TLSConfig
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	1, // 0: transport.v1.Transport.grpc:type_name -> transport.v1.GRPC
+	2, // 1: transport.v1.Transport.http:type_name -> transport.v1.HTTP
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_transport_v1_transport_proto_init() }
@@ -359,13 +151,19 @@ func file_transport_v1_transport_proto_init() {
 	if File_transport_v1_transport_proto != nil {
 		return
 	}
+	file_transport_v1_grpc_proto_init()
+	file_transport_v1_http_proto_init()
+	file_transport_v1_transport_proto_msgTypes[0].OneofWrappers = []any{
+		(*Transport_Grpc)(nil),
+		(*Transport_Http)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transport_v1_transport_proto_rawDesc), len(file_transport_v1_transport_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
