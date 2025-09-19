@@ -2,12 +2,11 @@ package service
 
 import (
 	"context"
-	"fmt"
 
+	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	tkerrors "github.com/origadmin/toolkits/errors"
-	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 )
 
 // defaultRegistry is the default, package-level instance of the protocol registry.
@@ -34,7 +33,7 @@ func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 	case *transportv1.Server_Grpc:
 		return "grpc", nil
 	case *transportv1.Server_Http:
-		return "http", nil	
+		return "http", nil
 	default:
 		return "", tkerrors.Errorf("unknown or missing protocol in server configuration")
 	}
