@@ -10,8 +10,17 @@ import (
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
-	tkerrors "github.com/origadmin/toolkits/errors"
 )
+
+const (
+	SourceTypeFile SourceType = "file"
+	SourceTypeEnv  SourceType = "env"
+	//SourceTypeConsul = "consul"
+	//SourceTypeNacos  = "nacos"
+	//SourceTypeEtcd   = "etcd"
+)
+
+type SourceType string
 
 var (
 	// defaultBuilder is the default config factory.
@@ -37,23 +46,47 @@ func (fn BuildFunc) NewSource(cfg *sourcev1.SourceConfig, opts *Options) (kratos
 	return fn(cfg, opts)
 }
 
+// getDefaultPriorityForSourceType returns a default priority based on the source type.
+// Higher values mean higher priority (overrides lower priority configs).
+func getDefaultPriorityForSourceType(sourceType string) int32 {
+	switch SourceType(sourceType) {
+	case SourceTypeEnv:
+		return 900 // Environment variables (highest common override)
+	case SourceTypeFile:
+		return 600 // Main application config file
+	// Add other remote types as needed, e.g., "consul", "nacos", "etcd"
+	// case SourceTypeConsul:
+	// 	return 800 // Remote config service
+	default:
+		return 100 // Lowest default priority for unknown or base types
+	}
+}
+
 // NewConfig creates a new Selector object based on the given KConfig and options.
 func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (kratosconfig.Config, error) {
-	options := configure.Apply(&Options{}, opts) // Corrected: Use settings.Apply with a new interfaces.Options{}
+	options := configure.Apply(&Options{}, opts)
 
 	var sources []kratosconfig.Source
 
 	// Get the list of sources from the protobuf config.
-	sourceConfigs := srcs.GetSources()
+	userSources := srcs.GetSources()
+
+	// --- START: Assign Default Priorities if not set ---
+	for _, src := range userSources {
+		if src.GetPriority() == 0 {
+			src.Priority = getDefaultPriorityForSourceType(src.GetType())
+		}
+	}
+	// --- END: Assign Default Priorities if not set ---
 
 	// Sort the sources by priority before creating them.
-	sort.SliceStable(sourceConfigs, func(i, j int) bool {
+	sort.SliceStable(userSources, func(i, j int) bool {
 		// Sources with lower priority values are loaded first.
 		// Sources with higher priority values are loaded later, thus overriding earlier ones.
-		return sourceConfigs[i].GetPriority() < sourceConfigs[j].GetPriority()
+		return userSources[i].GetPriority() < userSources[j].GetPriority()
 	})
 
-	for _, src := range sourceConfigs {
+	for _, src := range userSources {
 		buildFactory, ok := f.Get(src.Type)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", src.Type)
@@ -68,11 +101,6 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (krato
 	if v.Sources != nil {
 		sources = append(sources, v.Sources...)
 	}
-
-	if len(sources) == 0 {
-		return nil, tkerrors.New("no configuration sources defined")
-	}
-
 	v.ConfigOptions = append(v.ConfigOptions, kratosconfig.WithSource(sources...))
 	return kratosconfig.New(v.ConfigOptions...), nil
 }
