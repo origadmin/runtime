@@ -7,6 +7,7 @@
 package runtime
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-kratos/kratos/v2"
@@ -122,7 +123,7 @@ func NewFromBootstrap(bootstrapPath string, opts ...Option) (Runtime, func(), er
 func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), error) {
 	// Apply options
 	appliedOpts := configure.Apply(&options{
-		decoderProvider: decoder.DefaultDecoder,
+		decoderProvider: decoder.DefaultDecoderProvider, // Changed to DefaultDecoderProvider
 		configPaths: ConfigPaths{
 			"logger":     "logger",     // Default path for logger config
 			"registries": "registries", // Default path for registries config
@@ -207,16 +208,18 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 
 // newLogger creates the logger backend from config and enriches it with app info.
 func newLogger(decoder interfaces.ConfigDecoder, opts *options) log.Logger {
-	var loggerConfig *loggerv1.Logger
+	var loggerConfig *loggerv1.Logger = new(loggerv1.Logger) // Initialize with a default empty logger config
 
 	configPath := opts.configPaths["logger"]
 
-	// Fast path: If the decoder directly provides logger config, use it.
-	if d, ok := decoder.(interfaces.LoggerConfig); ok {
-		loggerConfig = d.GetLogger()
-	} else {
-		// Slow path: Fall back to generic decoding.
-		loggerConfig = new(loggerv1.Logger) // Initialize if not from fast path
+	// Try the fast path using the specialized DecodeLogger method.
+	decodedLoggerConfig, err := decoder.DecodeLogger()
+	if err != nil && !errors.Is(err, interfaces.ErrNotImplemented) {
+		log.Warnf("Failed to decode logger config via fast path, using default: %v", err)
+	} else if decodedLoggerConfig != nil {
+		loggerConfig = decodedLoggerConfig
+	} else if errors.Is(err, interfaces.ErrNotImplemented) {
+		// Fall back to generic decoding if the fast path is not implemented.
 		if err := decoder.Decode(configPath, loggerConfig); err != nil {
 			log.Warnf("Failed to decode logger config from path '%s', using default: %v", configPath, err)
 		}
@@ -237,15 +240,20 @@ func getRegistriesConfig(decoder interfaces.ConfigDecoder, opts *options) regist
 
 	configPath := opts.configPaths["registries"]
 
-	if d, ok := decoder.(interfaces.DiscoveryConfig); ok {
-		cfg.Registries = d.GetDiscoveries()
-	} else {
+	// Try the fast path using the specialized DecodeDiscoveries method.
+	decodedDiscoveries, err := decoder.DecodeDiscoveries()
+	if err != nil && !errors.Is(err, interfaces.ErrNotImplemented) {
+		log.Warnf("Failed to decode registries config via fast path, running in standalone mode: %v", err)
+	} else if decodedDiscoveries != nil {
+		cfg.Registries = decodedDiscoveries
+	} else if errors.Is(err, interfaces.ErrNotImplemented) {
+		// Fall back to generic decoding if the fast path is not implemented.
 		cfg.Registries = make(map[string]*discoveryv1.Discovery)
 		if err := decoder.Decode(configPath, &cfg.Registries); err != nil {
 			log.Warnf("Failed to decode registries config from path '%s', running in standalone mode: %v", configPath, err)
 		}
 	}
-	//cfg.DefaultRegistry = decoder.GetDefaultDiscovery()
+	// Removed: cfg.DefaultRegistry = decoder.GetDefaultDiscovery()
 	return cfg
 }
 

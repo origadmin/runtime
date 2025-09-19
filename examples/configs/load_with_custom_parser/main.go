@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 	"time"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	"github.com/mitchellh/mapstructure"
 
 	"github.com/origadmin/runtime"
+	"github.com/origadmin/runtime/config/decoder" // Import the new public decoder package
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
 	// Import the generated Go code from the api_gateway proto definition.
@@ -29,9 +28,9 @@ type CustomSettings struct {
 }
 
 // customConfigDecoder implements the interfaces.ConfigDecoder interface
+// It embeds decoder.BaseDecoder to inherit default behaviors.
 type customConfigDecoder struct {
-	kratosConfig kratosconfig.Config
-	values       map[string]any // Store the entire config as a map
+	*decoder.BaseDecoder // Embed the BaseDecoder from config/decoder
 }
 
 // customDecoderProvider implements the interfaces.ConfigDecoderProvider interface
@@ -42,74 +41,15 @@ var DefaultCustomDecoder = &customDecoderProvider{}
 
 // GetConfigDecoder returns a new customConfigDecoder.
 func (p *customDecoderProvider) GetConfigDecoder(kratosConfig kratosconfig.Config) (interfaces.ConfigDecoder, error) {
-	decoder := &customConfigDecoder{kratosConfig: kratosConfig}
-	// Scan the entire config into the internal map upon initialization
-	if err := kratosConfig.Scan(&decoder.values); err != nil {
-		return nil, fmt.Errorf("failed to scan config into custom decoder values: %w", err)
-	}
-	// Ensure that after scanning, decoder.values is not empty, indicating successful load
-	if len(decoder.values) == 0 {
-		return nil, fmt.Errorf("custom decoder values are empty after scanning config")
-	}
-	return decoder, nil
+	// Initialize the embedded BaseDecoder
+	return &customConfigDecoder{
+		BaseDecoder: decoder.NewBaseDecoder(kratosConfig),
+	}, nil
 }
 
-// Config returns the raw configuration data.
-func (d *customConfigDecoder) Config() any {
-	return d.values // Return the stored map
-}
-
-// Decode decodes the configuration into the given target.
-func (d *customConfigDecoder) Decode(key string, target any) error {
-	if target == nil {
-		return fmt.Errorf("target cannot be nil")
-	}
-
-	var dataToDecode any
-	if key == "" {
-		// If key is empty, decode the entire config
-		dataToDecode = d.values
-	} else {
-		// Navigate through the map using the dot-separated key
-		var currentValue any = d.values
-		keys := strings.Split(key, ".")
-
-		for i, k := range keys {
-			currentMap, isMap := currentValue.(map[string]any)
-			if !isMap {
-				pathSegment := strings.Join(keys[:i], ".")
-				return fmt.Errorf("config path '%s' is not a map at segment '%s'", pathSegment, keys[i-1])
-			}
-
-			val, ok := currentMap[k]
-			if !ok {
-				pathSegment := strings.Join(keys[:i+1], ".")
-				return fmt.Errorf("config key '%s' not found at path '%s'", k, pathSegment)
-			}
-			currentValue = val
-		}
-		dataToDecode = currentValue
-	}
-
-	// Configure mapstructure to use "json" tags, allow weakly typed input.
-	config := &mapstructure.DecoderConfig{
-		Metadata:         nil,
-		Result:           target,
-		TagName:          "json",
-		WeaklyTypedInput: true,
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			mapstructure.StringToTimeHookFunc(time.RFC3339),
-			mapstructure.TextUnmarshallerHookFunc(),
-		),
-	}
-
-	decoder, err := mapstructure.NewDecoder(config)
-	if err != nil {
-		return err
-	}
-
-	return decoder.Decode(dataToDecode)
-}
+// Note: We are not implementing Decode, DecodeLogger, DecodeDiscoveries here.
+// This customConfigDecoder will rely on the embedded BaseDecoder's implementations
+// for these methods. If specific custom logic were needed, we would override them here.
 
 func main() {
 	// 1. Create a new Runtime instance from the new api_gateway config.
@@ -137,13 +77,21 @@ func main() {
 
 	// --- DIAGNOSTIC PRINT Kratos Config Content START ---
 	appLogger.Info("--- Debugging Kratos Config Content ---")
-	rawConfig := decoder.Config()
-	appLogger.Infof("Type of decoder.Config(): %v", reflect.TypeOf(rawConfig))
-	appLogger.Infof("Value of decoder.Config(): %+v", rawConfig)
+
+	// Use the Decode method to get the raw config map, as Config() is no longer available.
+	var rawConfig map[string]any
+	if err := decoder.Decode("", &rawConfig); err != nil {
+		appLogger.Errorf("Error decoding raw config: %v", err)
+		// Depending on desired behavior, you might panic or handle more gracefully.
+		panic(err)
+	}
+
+	appLogger.Infof("Type of rawConfig: %v", reflect.TypeOf(rawConfig))
+	appLogger.Infof("Value of rawConfig: %+v", rawConfig)
 
 	rawConfigMap, ok := rawConfig.(map[string]any)
 	if !ok {
-		appLogger.Error("Error: decoder.Config() is not a map[string]any.")
+		appLogger.Error("Error: rawConfig is not a map[string]any.")
 	} else {
 		if serversVal, exists := rawConfigMap["servers"]; exists {
 			if serversStr, err := json.Marshal(serversVal); err == nil {
