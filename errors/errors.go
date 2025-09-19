@@ -18,7 +18,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	"github.com/origadmin/runtime/api/gen/go/commonv1"
+	commonv1 "github.com/origadmin/runtime/api/gen/go/common/v1"
 	"github.com/origadmin/runtime/log"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
@@ -91,7 +91,12 @@ func FromReason(reason commonv1.ErrorReason) *kerrors.Error {
 		return kerrors.GatewayTimeout(reason.String(), "Gateway timeout")
 
 	// --- Auth --- 
-	case commonv1.ErrorReason_UNAUTHENTICATED, commonv1.ErrorReason_INVALID_CREDENTIALS, commonv1.ErrorReason_TOKEN_EXPIRED, commonv1.ErrorReason_TOKEN_INVALID, commonv1.ErrorReason_TOKEN_MISSING:
+	case commonv1.ErrorReason_UNAUTHENTICATED:
+		// TODO: These reasons should be defined and handled in the specific security/auth module
+		// commonv1.ErrorReason_INVALID_CREDENTIALS,
+		// commonv1.ErrorReason_TOKEN_EXPIRED,
+		// commonv1.ErrorReason_TOKEN_INVALID,
+		// commonv1.ErrorReason_TOKEN_MISSING:
 		return kerrors.Unauthorized(reason.String(), "Authentication error")
 	case commonv1.ErrorReason_FORBIDDEN:
 		return kerrors.Forbidden(reason.String(), "Permission denied")
@@ -119,10 +124,11 @@ func FromReason(reason commonv1.ErrorReason) *kerrors.Error {
 	// --- Registry Errors (6000-6999) ---
 	case commonv1.ErrorReason_REGISTRY_NOT_FOUND:
 		return kerrors.NotFound(reason.String(), "Registry entry not found")
-	case commonv1.ErrorReason_INVALID_REGISTRY_CONFIG:
-		return kerrors.BadRequest(reason.String(), "Invalid registry configuration")
-	case commonv1.ErrorReason_REGISTRY_CREATION_FAILURE:
-		return kerrors.InternalServer(reason.String(), "Registry creation failed")
+	// TODO: These reasons should be defined and handled in the specific registry module
+	//case commonv1.ErrorReason_INVALID_REGISTRY_CONFIG:
+	//	return kerrors.BadRequest(reason.String(), "Invalid registry configuration")
+	//case commonv1.ErrorReason_REGISTRY_CREATION_FAILURE:
+	//	return kerrors.InternalServer(reason.String(), "Registry creation failed")
 
 	default:
 		return kerrors.InternalServer(commonv1.ErrorReason_UNKNOWN_ERROR.String(), "An unknown error occurred")

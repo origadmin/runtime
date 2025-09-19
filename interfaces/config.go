@@ -3,7 +3,6 @@ package interfaces
 import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
@@ -31,11 +30,12 @@ type ConfigDecoderProvider interface {
 	GetConfigDecoder(config kratosconfig.Config) (ConfigDecoder, error)
 }
 
-// ServiceConfig provides access to service configurations.
-type ServiceConfig interface {
-	GetService(name string) *configv1.Service
-	GetServices() map[string]*configv1.Service
-}
+//// ServiceConfig provides access to service configurations.
+//type ServiceConfig interface {
+//	GetService(name string) *configv1.Service
+//	GetServices() map[string]*configv1.Service
+//}
+type ServiceConfig interface{}
 
 // DiscoveryConfig provides access to discovery/registry configurations.
 type DiscoveryConfig interface {

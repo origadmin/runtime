@@ -28,6 +28,7 @@ import (
 // core components like configuration, logging, and service discovery/registration.
 type Runtime interface {
 	AppInfo() AppInfo
+	Config() interfaces.ConfigDecoder
 	Logger() log.Logger
 	NewApp(servers ...transport.Server) *kratos.App
 	DefaultRegistrar() registry.Registrar
@@ -41,6 +42,7 @@ type Runtime interface {
 // runtime is the internal implementation of the Runtime interface.
 type runtime struct {
 	app              AppInfo
+	config           interfaces.ConfigDecoder
 	logger           log.Logger
 	registrars       map[string]registry.Registrar
 	discoveries      map[string]registry.Discovery
@@ -126,7 +128,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 
 	// --- 3. Create and Enrich Logger ---
 	// This is the first point where we have both the config and the appInfo context.
-	logger := newLogger(configDecoder, appInfo)
+	logger := newLogger(configDecoder)
 	// Removed: log.SetLogger(logger)
 
 	// --- 4. Initialize all configured Service Registries & Discoveries ---
@@ -171,6 +173,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 
 	rt := &runtime{
 		app:              appInfo,
+		config:           configDecoder,
 		logger:           logger,
 		registrars:       registrars,
 		discoveries:      discoveries,
@@ -185,7 +188,7 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 }
 
 // newLogger creates the logger backend from config and enriches it with app info.
-func newLogger(decoder interfaces.ConfigDecoder, appInfo AppInfo) log.Logger {
+func newLogger(decoder interfaces.ConfigDecoder) log.Logger {
 	var loggerConfig *loggerv1.Logger
 
 	// Fast path: If the decoder directly provides logger config, use it.
@@ -211,7 +214,7 @@ type registriesConfig struct {
 // getRegistriesConfig encapsulates the logic for decoding the registries' configuration.
 func getRegistriesConfig(decoder interfaces.ConfigDecoder) registriesConfig {
 	var cfg registriesConfig
-	if d := decoder.(interfaces.DiscoveryConfig); d != nil {
+	if d, ok := decoder.(interfaces.DiscoveryConfig); ok {
 		cfg.Registries = d.GetDiscoveries()
 	} else {
 		cfg.Registries = make(map[string]*discoveryv1.Discovery)
@@ -225,6 +228,10 @@ func getRegistriesConfig(decoder interfaces.ConfigDecoder) registriesConfig {
 
 func (r *runtime) AppInfo() AppInfo {
 	return r.app
+}
+
+func (r *runtime) Config() interfaces.ConfigDecoder {
+	return r.config
 }
 
 func (r *runtime) Logger() log.Logger {

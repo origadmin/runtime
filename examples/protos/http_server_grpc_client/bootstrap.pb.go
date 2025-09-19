@@ -5,7 +5,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v5.28.3
-// source: proto/http_server_grpc_client/bootstrap.proto
+// source: protos/http_server_grpc_client/bootstrap.proto
 
 // Package name to prevent naming conflicts
 
@@ -51,7 +51,7 @@ type Bootstrap struct {
 
 func (x *Bootstrap) Reset() {
 	*x = Bootstrap{}
-	mi := &file_proto_http_server_grpc_client_bootstrap_proto_msgTypes[0]
+	mi := &file_protos_http_server_grpc_client_bootstrap_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63,7 +63,7 @@ func (x *Bootstrap) String() string {
 func (*Bootstrap) ProtoMessage() {}
 
 func (x *Bootstrap) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_http_server_grpc_client_bootstrap_proto_msgTypes[0]
+	mi := &file_protos_http_server_grpc_client_bootstrap_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -76,7 +76,7 @@ func (x *Bootstrap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bootstrap.ProtoReflect.Descriptor instead.
 func (*Bootstrap) Descriptor() ([]byte, []int) {
-	return file_proto_http_server_grpc_client_bootstrap_proto_rawDescGZIP(), []int{0}
+	return file_protos_http_server_grpc_client_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Bootstrap) GetServers() []*v1.Server {
@@ -116,7 +116,7 @@ type ClientConfig struct {
 
 func (x *ClientConfig) Reset() {
 	*x = ClientConfig{}
-	mi := &file_proto_http_server_grpc_client_bootstrap_proto_msgTypes[1]
+	mi := &file_protos_http_server_grpc_client_bootstrap_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -128,7 +128,7 @@ func (x *ClientConfig) String() string {
 func (*ClientConfig) ProtoMessage() {}
 
 func (x *ClientConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_http_server_grpc_client_bootstrap_proto_msgTypes[1]
+	mi := &file_protos_http_server_grpc_client_bootstrap_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -141,7 +141,7 @@ func (x *ClientConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientConfig.ProtoReflect.Descriptor instead.
 func (*ClientConfig) Descriptor() ([]byte, []int) {
-	return file_proto_http_server_grpc_client_bootstrap_proto_rawDescGZIP(), []int{1}
+	return file_protos_http_server_grpc_client_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ClientConfig) GetDiscovery() *v11.Client {
@@ -158,11 +158,11 @@ func (x *ClientConfig) GetTransport() *v1.Client {
 	return nil
 }
 
-var File_proto_http_server_grpc_client_bootstrap_proto protoreflect.FileDescriptor
+var File_protos_http_server_grpc_client_bootstrap_proto protoreflect.FileDescriptor
 
-const file_proto_http_server_grpc_client_bootstrap_proto_rawDesc = "" +
+const file_protos_http_server_grpc_client_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"-proto/http_server_grpc_client/bootstrap.proto\x12 examples.http_server_grpc_client\x1a\x19transport/v1/server.proto\x1a\x19transport/v1/client.proto\x1a\x19discovery/v1/client.proto\"\xfb\x01\n" +
+	".protos/http_server_grpc_client/bootstrap.proto\x12 examples.http_server_grpc_client\x1a\x19transport/v1/server.proto\x1a\x19transport/v1/client.proto\x1a\x19discovery/v1/client.proto\"\xfb\x01\n" +
 	"\tBootstrap\x12.\n" +
 	"\aservers\x18\x01 \x03(\v2\x14.transport.v1.ServerR\aservers\x12R\n" +
 	"\aclients\x18\x02 \x03(\v28.examples.http_server_grpc_client.Bootstrap.ClientsEntryR\aclients\x1aj\n" +
@@ -174,19 +174,19 @@ const file_proto_http_server_grpc_client_bootstrap_proto_rawDesc = "" +
 	"\ttransport\x18\x02 \x01(\v2\x14.transport.v1.ClientR\ttransportB%Z#./http_server_grpc_client/conf;confb\x06proto3"
 
 var (
-	file_proto_http_server_grpc_client_bootstrap_proto_rawDescOnce sync.Once
-	file_proto_http_server_grpc_client_bootstrap_proto_rawDescData []byte
+	file_protos_http_server_grpc_client_bootstrap_proto_rawDescOnce sync.Once
+	file_protos_http_server_grpc_client_bootstrap_proto_rawDescData []byte
 )
 
-func file_proto_http_server_grpc_client_bootstrap_proto_rawDescGZIP() []byte {
-	file_proto_http_server_grpc_client_bootstrap_proto_rawDescOnce.Do(func() {
-		file_proto_http_server_grpc_client_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_http_server_grpc_client_bootstrap_proto_rawDesc), len(file_proto_http_server_grpc_client_bootstrap_proto_rawDesc)))
+func file_protos_http_server_grpc_client_bootstrap_proto_rawDescGZIP() []byte {
+	file_protos_http_server_grpc_client_bootstrap_proto_rawDescOnce.Do(func() {
+		file_protos_http_server_grpc_client_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protos_http_server_grpc_client_bootstrap_proto_rawDesc), len(file_protos_http_server_grpc_client_bootstrap_proto_rawDesc)))
 	})
-	return file_proto_http_server_grpc_client_bootstrap_proto_rawDescData
+	return file_protos_http_server_grpc_client_bootstrap_proto_rawDescData
 }
 
-var file_proto_http_server_grpc_client_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_proto_http_server_grpc_client_bootstrap_proto_goTypes = []any{
+var file_protos_http_server_grpc_client_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_protos_http_server_grpc_client_bootstrap_proto_goTypes = []any{
 	(*Bootstrap)(nil),    // 0: examples.http_server_grpc_client.Bootstrap
 	(*ClientConfig)(nil), // 1: examples.http_server_grpc_client.ClientConfig
 	nil,                  // 2: examples.http_server_grpc_client.Bootstrap.ClientsEntry
@@ -194,7 +194,7 @@ var file_proto_http_server_grpc_client_bootstrap_proto_goTypes = []any{
 	(*v11.Client)(nil),   // 4: discovery.v1.Client
 	(*v1.Client)(nil),    // 5: transport.v1.Client
 }
-var file_proto_http_server_grpc_client_bootstrap_proto_depIdxs = []int32{
+var file_protos_http_server_grpc_client_bootstrap_proto_depIdxs = []int32{
 	3, // 0: examples.http_server_grpc_client.Bootstrap.servers:type_name -> transport.v1.Server
 	2, // 1: examples.http_server_grpc_client.Bootstrap.clients:type_name -> examples.http_server_grpc_client.Bootstrap.ClientsEntry
 	4, // 2: examples.http_server_grpc_client.ClientConfig.discovery:type_name -> discovery.v1.Client
@@ -207,26 +207,26 @@ var file_proto_http_server_grpc_client_bootstrap_proto_depIdxs = []int32{
 	0, // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_proto_http_server_grpc_client_bootstrap_proto_init() }
-func file_proto_http_server_grpc_client_bootstrap_proto_init() {
-	if File_proto_http_server_grpc_client_bootstrap_proto != nil {
+func init() { file_protos_http_server_grpc_client_bootstrap_proto_init() }
+func file_protos_http_server_grpc_client_bootstrap_proto_init() {
+	if File_protos_http_server_grpc_client_bootstrap_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_http_server_grpc_client_bootstrap_proto_rawDesc), len(file_proto_http_server_grpc_client_bootstrap_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_http_server_grpc_client_bootstrap_proto_rawDesc), len(file_protos_http_server_grpc_client_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_proto_http_server_grpc_client_bootstrap_proto_goTypes,
-		DependencyIndexes: file_proto_http_server_grpc_client_bootstrap_proto_depIdxs,
-		MessageInfos:      file_proto_http_server_grpc_client_bootstrap_proto_msgTypes,
+		GoTypes:           file_protos_http_server_grpc_client_bootstrap_proto_goTypes,
+		DependencyIndexes: file_protos_http_server_grpc_client_bootstrap_proto_depIdxs,
+		MessageInfos:      file_protos_http_server_grpc_client_bootstrap_proto_msgTypes,
 	}.Build()
-	File_proto_http_server_grpc_client_bootstrap_proto = out.File
-	file_proto_http_server_grpc_client_bootstrap_proto_goTypes = nil
-	file_proto_http_server_grpc_client_bootstrap_proto_depIdxs = nil
+	File_protos_http_server_grpc_client_bootstrap_proto = out.File
+	file_protos_http_server_grpc_client_bootstrap_proto_goTypes = nil
+	file_protos_http_server_grpc_client_bootstrap_proto_depIdxs = nil
 }

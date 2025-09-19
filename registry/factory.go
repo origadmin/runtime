@@ -24,7 +24,8 @@ type buildImpl struct {
 
 func (b *buildImpl) NewRegistrar(cfg *discoveryv1.Discovery, opts ...Option) (KRegistrar, error) {
 	if cfg == nil || cfg.Type == "" {
-		return nil, errors.NewMessage(commonv1.ErrorReason_INVALID_REGISTRY_CONFIG,
+		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
+		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR,
 			"registry configuration or type is missing")
 	}
 
@@ -34,14 +35,16 @@ func (b *buildImpl) NewRegistrar(cfg *discoveryv1.Discovery, opts ...Option) (KR
 	}
 	registrar, err := f.NewRegistrar(cfg, opts...)
 	if err != nil {
-		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_REGISTRY_CREATION_FAILURE, "failed to create registrar for type %s", cfg.Type)
+		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
+		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_INTERNAL_SERVER_ERROR, "failed to create registrar for type %s", cfg.Type)
 	}
 	return registrar, nil
 }
 
 func (b *buildImpl) NewDiscovery(cfg *discoveryv1.Discovery, opts ...Option) (KDiscovery, error) {
 	if cfg == nil || cfg.Type == "" {
-		return nil, errors.NewMessage(commonv1.ErrorReason_INVALID_REGISTRY_CONFIG, "registry configuration or type is missing")
+		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
+		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR, "registry configuration or type is missing")
 	}
 
 	f, ok := b.Get(cfg.Type)
@@ -50,7 +53,8 @@ func (b *buildImpl) NewDiscovery(cfg *discoveryv1.Discovery, opts ...Option) (KD
 	}
 	discovery, err := f.NewDiscovery(cfg, opts...)
 	if err != nil {
-		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_REGISTRY_CREATION_FAILURE, "failed to create discovery for type %s", cfg.Type)
+		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
+		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_INTERNAL_SERVER_ERROR, "failed to create discovery for type %s", cfg.Type)
 	}
 	return discovery, nil
 }
@@ -64,8 +68,3 @@ var defaultBuilder = &buildImpl{
 func DefaultBuilder() Builder {
 	return defaultBuilder
 }
-
-// NewBuilder is an alias for DefaultBuilder for consistency, though it returns a shared instance.
-// func NewBuilder() Builder {
-// 	return DefaultBuilder()
-// }

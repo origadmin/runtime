@@ -51,10 +51,16 @@ func (o *Options[T]) Wrap(value *T) *Options[T] {
 	return o
 }
 func (o *Options[T]) Unwrap() *T {
+	if o.wrapped == nil {
+		o.wrapped = new(T)
+	}
 	return o.wrapped
 }
 
 func (o *Options[T]) Update(updater func(*T)) {
+	if o.wrapped == nil {
+		o.wrapped = new(T)
+	}
 	updater(o.wrapped)
 }
 

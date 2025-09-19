@@ -1,0 +1,6 @@
+sources:
+  - type: "file"
+    name: "app-config"
+    config:
+      path: "examples/configs/proto_with_runtime/config/config.yaml" # Corrected path relative to CWD
+    priority: 100
