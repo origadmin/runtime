@@ -1,0 +1,6 @@
+sources:
+  - type: "file"
+    name: "app-config"
+    file:
+      path: "examples/configs/load_with_runtime/config/config.yaml" # Corrected path relative to CWD
+    priority: 100

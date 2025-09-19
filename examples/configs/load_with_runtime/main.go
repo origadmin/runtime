@@ -14,7 +14,7 @@ func main() {
 	// 1. Create a new Runtime instance from the new api_gateway config.
 	//    Path is now relative to the CWD (runtime directory), pointing to the bootstrap.yaml.
 	rt, cleanup, err := runtime.NewFromBootstrap(
-		"examples/configs/proto_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml
+		"examples/configs/load_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml
 		runtime.WithAppInfo(runtime.AppInfo{
 			ID:      "api-gateway-runtime-example",
 			Name:    "ApiGatewayRuntimeExample",

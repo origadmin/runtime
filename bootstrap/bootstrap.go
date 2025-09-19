@@ -130,7 +130,8 @@ func LoadAndScan(bootstrapPath string, target interface{}) error {
 // validateSources validates the effectiveness of configuration source definitions
 func validateSources(sources *sourcev1.Sources) error {
 	if sources == nil {
-		return fmt:// Check if configuration sources are defined
+		return fmt.Errorf("sources cannot be nil")
+	}
 	if len(sources.Sources) == 0 {
 		return fmt.Errorf("no configuration sources defined")
 	}

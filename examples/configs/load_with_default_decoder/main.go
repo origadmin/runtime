@@ -12,7 +12,7 @@ func main() {
 	var bc conf.Bootstrap
 
 	// Corrected path relative to the CWD (runtime directory).
-	configPath := "examples/configs/proto_with_default_decoder/config/config.yaml"
+	configPath := "examples/configs/load_with_default_decoder/config/config.yaml"
 
 	// Use the Load function to read the new api_gateway config.
 	c, err := config.Load(configPath, &bc)

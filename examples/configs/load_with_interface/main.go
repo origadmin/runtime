@@ -35,7 +35,7 @@ func main() {
 	// Path is now relative to the CWD (runtime directory).
 	c := kratosconfig.New(
 		kratosconfig.WithSource(
-			file.NewSource("examples/configs/proto_with_interface/config/config.yaml"),
+			file.NewSource("examples/configs/load_with_interface/config/config.yaml"),
 		),
 	)
 	if err := c.Load(); err != nil {
