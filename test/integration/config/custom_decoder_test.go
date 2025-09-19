@@ -1,14 +1,17 @@
 package config_test
 
 import (
+	"os"
+	"path/filepath"
+	stdruntime "runtime" // Alias the standard library runtime package
 	"testing"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/origadmin/runtime"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
-	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/config/decoder" // Import the public decoder package
 	"github.com/origadmin/runtime/interfaces"
 )
@@ -57,9 +60,47 @@ func (p *customTestDecoderProvider) GetConfigDecoder(kratosConfig kratosconfig.C
 func TestCustomConfigDecoderIntegration(t *testing.T) {
 	assert := assert.New(t)
 
+	// Get the current file's directory to construct an absolute path for the config.
+	_, filename, _, ok := stdruntime.Caller(0) // Use stdruntime.Caller
+	if !ok {
+		t.Fatalf("Failed to get current file info")
+	}
+	currentDir := filepath.Dir(filename)
+
+	// Calculate the runtime module root directory.
+	// From .../runtime/test/integration/config, go up 3 levels to .../runtime
+	runtimeRoot := filepath.Join(currentDir, "../../..")
+
+	// Store original CWD and defer its restoration.
+	originalCwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get original working directory: %v", err)
+	}
+	defer func() {
+		err := os.Chdir(originalCwd)
+		if err != nil {
+			t.Errorf("Failed to restore original working directory: %v", err)
+		}
+	}()
+
+	// Change CWD to the runtime module root.
+	if err := os.Chdir(runtimeRoot); err != nil {
+		t.Fatalf("Failed to change working directory to runtime root: %v", err)
+	}
+
+	// The bootstrapPath is now relative to the runtime module root.
+	bootstrapPath := "examples/configs/load_with_custom_parser/config/bootstrap.yaml"
+
+	// --- Debugging prints ---
+	wd, _ := os.Getwd()
+	t.Logf("Current working directory (after chdir): %s", wd)
+	t.Logf("Calculated runtimeRoot: %s", runtimeRoot)
+	t.Logf("Bootstrap config path (relative to CWD): %s", bootstrapPath)
+	// --- End debugging prints ---
+
 	// 1. Initialize Runtime with the custom decoder provider.
 	rt, cleanup, err := runtime.NewFromBootstrap(
-		"./config/full_config.yaml",
+		bootstrapPath, // Use the path relative to the new CWD
 		runtime.WithAppInfo(runtime.AppInfo{
 			ID:      "test-custom-decoder",
 			Name:    "TestCustomDecoder",
@@ -68,7 +109,9 @@ func TestCustomConfigDecoderIntegration(t *testing.T) {
 		}),
 		runtime.WithDecoderProvider(&customTestDecoderProvider{}),
 	)
-	assert.NoError(err)
+	if err != nil {
+		t.Fatalf("Failed to initialize runtime: %v", err)
+	}
 	defer cleanup()
 
 	// 2. Get the ConfigDecoder from the runtime.
@@ -80,13 +123,10 @@ func TestCustomConfigDecoderIntegration(t *testing.T) {
 	assert.NotNil(logger)
 
 	// We expect the logger level to be "info" as defined in config.yaml
-	// Note: The actual slog.Level value might not be directly comparable, but we can check its string representation or behavior.
 	// For simplicity, we'll just assert that the logger was created without error.
 
 	// 4. Verify Registries configuration (should use generic Decode due to ErrNotImplemented).
-	// The getRegistriesConfig function in runtime.go will attempt to decode into registriesConfig struct.
 	// Since our test config.yaml doesn't define registries, we expect it to be empty.
-	// We can't directly access the internal registriesCfg, but we can check if default registrar is nil.
 	assert.Nil(rt.DefaultRegistrar(), "Default registrar should be nil if no registries are configured")
 
 	// 5. Verify custom_settings are decoded correctly using the generic Decode method.

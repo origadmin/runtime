@@ -2,22 +2,52 @@ package decoder
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/mitchellh/mapstructure"
 
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	base "github.com/origadmin/runtime/config/decoder" // Import the new public decoder package with an alias
 	"github.com/origadmin/runtime/interfaces"
 )
+
+// stringToDurationHookFunc converts a string duration (e.g., "1s", "1m") to a *durationpb.Duration.
+func stringToDurationHookFunc() mapstructure.DecodeHookFunc {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{}) (interface{}, error) {
+		// Only handle string to *durationpb.Duration conversions.
+		if f.Kind() != reflect.String || t != reflect.TypeOf(&durationpb.Duration{}) {
+			return data, nil
+		}
+
+		str, ok := data.(string)
+		if !ok {
+			return data, nil
+		}
+
+		// Parse the string into a time.Duration.
+		d, err := time.ParseDuration(str)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse duration string '%s': %w", str, err)
+		}
+
+		// Convert time.Duration to *durationpb.Duration.
+		return durationpb.New(d), nil
+	}
+}
 
 // defaultDecoder is the default implementation of the interfaces.ConfigDecoder.
 // It embeds BaseDecoder to inherit default behaviors and stores the entire
 // configuration in a map for generic decoding.
 type defaultDecoder struct {
 	*base.BaseDecoder // Embed the BaseDecoder from the new public package
-	values map[string]any
+	values            map[string]any
 }
 
 // NewDecoder creates a new default decoder instance.
@@ -42,6 +72,22 @@ func NewDecoder(config kratosconfig.Config) (interfaces.ConfigDecoder, error) {
 	return d, nil
 }
 
+// getMapstructureDecoderConfig creates a configured mapstructure.DecoderConfig.
+// This function is private to the package.
+func getMapstructureDecoderConfig(target interface{}) *mapstructure.DecoderConfig {
+	return &mapstructure.DecoderConfig{
+		Metadata:         nil,
+		Result:           target,
+		TagName:          "json",
+		WeaklyTypedInput: true,
+		DecodeHook: mapstructure.ComposeDecodeHookFunc(
+			stringToDurationHookFunc(),
+			mapstructure.StringToTimeHookFunc(time.RFC3339),
+			mapstructure.TextUnmarshallerHookFunc(),
+		),
+	}
+}
+
 // Decode provides a generic decoding mechanism. It navigates the internal `values` map
 // using a dot-separated key and then uses mapstructure to decode the result into the target.
 // This method overrides the BaseDecoder's Decode to use the pre-scanned `values` map.
@@ -64,16 +110,7 @@ func (d *defaultDecoder) Decode(key string, target interface{}) error {
 	}
 
 	// Configure mapstructure for flexible decoding.
-	config := &mapstructure.DecoderConfig{
-		Metadata:         nil,
-		Result:           target,
-		TagName:          "json",
-		WeaklyTypedInput: true,
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			mapstructure.StringToTimeHookFunc(time.RFC3339),
-			mapstructure.TextUnmarshallerHookFunc(),
-		),
-	}
+	config := getMapstructureDecoderConfig(target) // Use the helper function
 
 	msDecoder, err := mapstructure.NewDecoder(config)
 	if err != nil {
