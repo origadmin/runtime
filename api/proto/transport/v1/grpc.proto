@@ -3,14 +3,13 @@ syntax = "proto3";
 package transport.v1;
 
 import "google/protobuf/duration.proto";
-import "middleware/v1/middleware.proto";
 import "security/transport/v1/tls.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1"; // Updated go_package
 
-// GRPC defines the configuration for a single gRPC server endpoint.
-message GRPC {
+// GRPCServer defines the configuration for a gRPC server endpoint.
+message GRPCServer {
   // Network type, e.g., "tcp", "unix".
   string network = 1 [(validate.rules).string = {
     in: [
@@ -27,7 +26,7 @@ message GRPC {
   google.protobuf.Duration timeout = 3;
   // Graceful shutdown timeout.
   google.protobuf.Duration shutdown_timeout = 4;
-  // The endpoint that this server advertises to the service registry, e.g., "dns:///127.0.0.1:9000".
+  // The endpoint that this server advertises to the service registry.
   string endpoint = 5;
   // Enable gRPC reflection.
   bool enable_reflection = 6;
@@ -40,4 +39,20 @@ message GRPC {
   // Middlewares specifies the list of middleware names to apply to the server.
   // The framework will look up these names in the middleware registry.
   repeated string middlewares = 10;
+}
+
+// GRPCClient defines the configuration for a gRPC client.
+message GRPCClient {
+  // Target is the address of the gRPC server to connect to, e.g., "127.0.0.1:9000".
+  string target = 1 [(validate.rules).string.min_len = 1];
+  // DialTimeout is the timeout for establishing the connection.
+  google.protobuf.Duration dial_timeout = 2;
+  // Max receive message size.
+  int32 max_recv_msg_size = 3 [(validate.rules).int32 = {gt: 0}];
+  // Max send message size.
+  int32 max_send_msg_size = 4 [(validate.rules).int32 = {gt: 0}];
+  // TLS configuration for the client.
+  security.transport.v1.TLSConfig tls = 5;
+  // Middlewares specifies the list of client interceptor names to apply.
+  repeated string middlewares = 6;
 }

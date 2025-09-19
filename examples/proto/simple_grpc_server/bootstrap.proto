@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package examples.simple_grpc_server;
+
+// 导入框架提供的服务端“积木”容器
+import "transport/v1/server.proto"; // Updated import path
+
+option go_package = "./simple_grpc_server/conf;conf";
+
+// Bootstrap 是一个只提供 gRPC 服务端的微服务的顶层配置示例
+message Bootstrap {
+  // 定义一个服务端，这里使用 repeated 是为了未来可以扩展为多个服务端
+  // 例如，一个 gRPC 对内，一个 HTTP 对外
+  repeated transport.v1.Server servers = 1;
+
+  // 这个服务不调用其他服务，所以不定义 clients 字段
+  // map<string, ClientConfig> clients = 2; 
+}

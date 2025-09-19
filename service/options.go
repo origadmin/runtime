@@ -2,10 +2,14 @@ package service
 
 import (
 	"github.com/origadmin/runtime/optionutil"
+	"github.com/go-kratos/kratos/v2/selector" // Import Kratos selector interface
 )
 
 type serviceOptions struct {
 	registrar ServerRegistrar
+	// New fields for client-specific options
+	clientEndpoint       string
+	clientSelectorFilter selector.NodeFilter
 }
 
 // Options contains the options for creating service components.
@@ -18,16 +22,26 @@ type Option func(*Options)
 // WithRegistrar sets the ServerRegistrar for the service.
 func WithRegistrar(r ServerRegistrar) Option {
 	return func(o *Options) {
-		o.Update(func(v *serviceOptions) {
-			v.registrar = r
+		o.Apply(func(so *serviceOptions) {
+			so.registrar = r
 		})
 	}
 }
 
-func RegistrarFromOptions(o *Options) ServerRegistrar {
-	opts := o.Unwrap()
-	if opts == nil {
-		return nil
+// WithClientEndpoint sets the client's target endpoint (e.g., "discovery:///service-name").
+func WithClientEndpoint(endpoint string) Option {
+	return func(o *Options) {
+		o.Apply(func(so *serviceOptions) {
+			so.clientEndpoint = endpoint
+		})
 	}
-	return opts.registrar
+}
+
+// WithClientSelectorFilter sets the client's node filter for load balancing.
+func WithClientSelectorFilter(filter selector.NodeFilter) Option {
+	return func(o *Options) {
+		o.Apply(func(so *serviceOptions) {
+			so.clientSelectorFilter = filter
+		})
+	}
 }

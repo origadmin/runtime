@@ -8,7 +8,6 @@ package transportv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	_ "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -25,8 +24,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// GRPC defines the configuration for a single gRPC server endpoint.
-type GRPC struct {
+// GRPCServer defines the configuration for a gRPC server endpoint.
+type GRPCServer struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Network type, e.g., "tcp", "unix".
 	Network string `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
@@ -36,7 +35,7 @@ type GRPC struct {
 	Timeout *durationpb.Duration `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	// Graceful shutdown timeout.
 	ShutdownTimeout *durationpb.Duration `protobuf:"bytes,4,opt,name=shutdown_timeout,json=shutdownTimeout,proto3" json:"shutdown_timeout,omitempty"`
-	// The endpoint that this server advertises to the service registry, e.g., "dns:///127.0.0.1:9000".
+	// The endpoint that this server advertises to the service registry.
 	Endpoint string `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	// Enable gRPC reflection.
 	EnableReflection bool `protobuf:"varint,6,opt,name=enable_reflection,json=enableReflection,proto3" json:"enable_reflection,omitempty"`
@@ -45,25 +44,28 @@ type GRPC struct {
 	// Max send message size.
 	MaxSendMsgSize int32 `protobuf:"varint,8,opt,name=max_send_msg_size,json=maxSendMsgSize,proto3" json:"max_send_msg_size,omitempty"`
 	// TLS configuration for the server.
-	Tls           *v1.TLSConfig `protobuf:"bytes,9,opt,name=tls,proto3" json:"tls,omitempty"`
+	Tls *v1.TLSConfig `protobuf:"bytes,9,opt,name=tls,proto3" json:"tls,omitempty"`
+	// Middlewares specifies the list of middleware names to apply to the server.
+	// The framework will look up these names in the middleware registry.
+	Middlewares   []string `protobuf:"bytes,10,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GRPC) Reset() {
-	*x = GRPC{}
+func (x *GRPCServer) Reset() {
+	*x = GRPCServer{}
 	mi := &file_transport_v1_grpc_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GRPC) String() string {
+func (x *GRPCServer) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GRPC) ProtoMessage() {}
+func (*GRPCServer) ProtoMessage() {}
 
-func (x *GRPC) ProtoReflect() protoreflect.Message {
+func (x *GRPCServer) ProtoReflect() protoreflect.Message {
 	mi := &file_transport_v1_grpc_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -75,70 +77,168 @@ func (x *GRPC) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GRPC.ProtoReflect.Descriptor instead.
-func (*GRPC) Descriptor() ([]byte, []int) {
+// Deprecated: Use GRPCServer.ProtoReflect.Descriptor instead.
+func (*GRPCServer) Descriptor() ([]byte, []int) {
 	return file_transport_v1_grpc_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GRPC) GetNetwork() string {
+func (x *GRPCServer) GetNetwork() string {
 	if x != nil {
 		return x.Network
 	}
 	return ""
 }
 
-func (x *GRPC) GetAddr() string {
+func (x *GRPCServer) GetAddr() string {
 	if x != nil {
 		return x.Addr
 	}
 	return ""
 }
 
-func (x *GRPC) GetTimeout() *durationpb.Duration {
+func (x *GRPCServer) GetTimeout() *durationpb.Duration {
 	if x != nil {
 		return x.Timeout
 	}
 	return nil
 }
 
-func (x *GRPC) GetShutdownTimeout() *durationpb.Duration {
+func (x *GRPCServer) GetShutdownTimeout() *durationpb.Duration {
 	if x != nil {
 		return x.ShutdownTimeout
 	}
 	return nil
 }
 
-func (x *GRPC) GetEndpoint() string {
+func (x *GRPCServer) GetEndpoint() string {
 	if x != nil {
 		return x.Endpoint
 	}
 	return ""
 }
 
-func (x *GRPC) GetEnableReflection() bool {
+func (x *GRPCServer) GetEnableReflection() bool {
 	if x != nil {
 		return x.EnableReflection
 	}
 	return false
 }
 
-func (x *GRPC) GetMaxRecvMsgSize() int32 {
+func (x *GRPCServer) GetMaxRecvMsgSize() int32 {
 	if x != nil {
 		return x.MaxRecvMsgSize
 	}
 	return 0
 }
 
-func (x *GRPC) GetMaxSendMsgSize() int32 {
+func (x *GRPCServer) GetMaxSendMsgSize() int32 {
 	if x != nil {
 		return x.MaxSendMsgSize
 	}
 	return 0
 }
 
-func (x *GRPC) GetTls() *v1.TLSConfig {
+func (x *GRPCServer) GetTls() *v1.TLSConfig {
 	if x != nil {
 		return x.Tls
+	}
+	return nil
+}
+
+func (x *GRPCServer) GetMiddlewares() []string {
+	if x != nil {
+		return x.Middlewares
+	}
+	return nil
+}
+
+// GRPCClient defines the configuration for a gRPC client.
+type GRPCClient struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Target is the address of the gRPC server to connect to, e.g., "127.0.0.1:9000".
+	Target string `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
+	// DialTimeout is the timeout for establishing the connection.
+	DialTimeout *durationpb.Duration `protobuf:"bytes,2,opt,name=dial_timeout,json=dialTimeout,proto3" json:"dial_timeout,omitempty"`
+	// Max receive message size.
+	MaxRecvMsgSize int32 `protobuf:"varint,3,opt,name=max_recv_msg_size,json=maxRecvMsgSize,proto3" json:"max_recv_msg_size,omitempty"`
+	// Max send message size.
+	MaxSendMsgSize int32 `protobuf:"varint,4,opt,name=max_send_msg_size,json=maxSendMsgSize,proto3" json:"max_send_msg_size,omitempty"`
+	// TLS configuration for the client.
+	Tls *v1.TLSConfig `protobuf:"bytes,5,opt,name=tls,proto3" json:"tls,omitempty"`
+	// Middlewares specifies the list of client interceptor names to apply.
+	Middlewares   []string `protobuf:"bytes,6,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GRPCClient) Reset() {
+	*x = GRPCClient{}
+	mi := &file_transport_v1_grpc_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GRPCClient) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GRPCClient) ProtoMessage() {}
+
+func (x *GRPCClient) ProtoReflect() protoreflect.Message {
+	mi := &file_transport_v1_grpc_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GRPCClient.ProtoReflect.Descriptor instead.
+func (*GRPCClient) Descriptor() ([]byte, []int) {
+	return file_transport_v1_grpc_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GRPCClient) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
+func (x *GRPCClient) GetDialTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.DialTimeout
+	}
+	return nil
+}
+
+func (x *GRPCClient) GetMaxRecvMsgSize() int32 {
+	if x != nil {
+		return x.MaxRecvMsgSize
+	}
+	return 0
+}
+
+func (x *GRPCClient) GetMaxSendMsgSize() int32 {
+	if x != nil {
+		return x.MaxSendMsgSize
+	}
+	return 0
+}
+
+func (x *GRPCClient) GetTls() *v1.TLSConfig {
+	if x != nil {
+		return x.Tls
+	}
+	return nil
+}
+
+func (x *GRPCClient) GetMiddlewares() []string {
+	if x != nil {
+		return x.Middlewares
 	}
 	return nil
 }
@@ -147,8 +247,9 @@ var File_transport_v1_grpc_proto protoreflect.FileDescriptor
 
 const file_transport_v1_grpc_proto_rawDesc = "" +
 	"\n" +
-	"\x17transport/v1/grpc.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\"\xc7\x03\n" +
-	"\x04GRPC\x12B\n" +
+	"\x17transport/v1/grpc.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\"\xef\x03\n" +
+	"\n" +
+	"GRPCServer\x12B\n" +
 	"\anetwork\x18\x01 \x01(\tB(\xfaB%r#R\x03tcpR\x04tcp4R\x04tcp6R\x04unixR\n" +
 	"unixpacketR\anetwork\x12\x1b\n" +
 	"\x04addr\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04addr\x123\n" +
@@ -158,8 +259,18 @@ const file_transport_v1_grpc_proto_rawDesc = "" +
 	"\x11enable_reflection\x18\x06 \x01(\bR\x10enableReflection\x122\n" +
 	"\x11max_recv_msg_size\x18\a \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
 	"\x11max_send_msg_size\x18\b \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
-	"\x03tls\x18\t \x01(\v2 .security.transport.v1.TLSConfigR\x03tlsB\xb0\x01\n" +
-	"\x10com.transport.v1B\tGrpcProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1\xa2\x02\x03TXX\xaa\x02\fTransport.V1\xca\x02\fTransport\\V1\xe2\x02\x18Transport\\V1\\GPBMetadata\xea\x02\rTransport::V1b\x06proto3"
+	"\x03tls\x18\t \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +
+	"\vmiddlewares\x18\n" +
+	" \x03(\tR\vmiddlewares\"\xa9\x02\n" +
+	"\n" +
+	"GRPCClient\x12\x1f\n" +
+	"\x06target\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x06target\x12<\n" +
+	"\fdial_timeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\vdialTimeout\x122\n" +
+	"\x11max_recv_msg_size\x18\x03 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
+	"\x11max_send_msg_size\x18\x04 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
+	"\x03tls\x18\x05 \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +
+	"\vmiddlewares\x18\x06 \x03(\tR\vmiddlewaresB\x93\x01\n" +
+	"\x10com.transport.v1B\tGrpcProtoP\x01Z#api/gen/go/transport/v1;transportv1\xa2\x02\x03TXX\xaa\x02\fTransport.V1\xca\x02\fTransport\\V1\xe2\x02\x18Transport\\V1\\GPBMetadata\xea\x02\rTransport::V1b\x06proto3"
 
 var (
 	file_transport_v1_grpc_proto_rawDescOnce sync.Once
@@ -173,21 +284,24 @@ func file_transport_v1_grpc_proto_rawDescGZIP() []byte {
 	return file_transport_v1_grpc_proto_rawDescData
 }
 
-var file_transport_v1_grpc_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_transport_v1_grpc_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_transport_v1_grpc_proto_goTypes = []any{
-	(*GRPC)(nil),                // 0: transport.v1.GRPC
-	(*durationpb.Duration)(nil), // 1: google.protobuf.Duration
-	(*v1.TLSConfig)(nil),        // 2: security.transport.v1.TLSConfig
+	(*GRPCServer)(nil),          // 0: transport.v1.GRPCServer
+	(*GRPCClient)(nil),          // 1: transport.v1.GRPCClient
+	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
+	(*v1.TLSConfig)(nil),        // 3: security.transport.v1.TLSConfig
 }
 var file_transport_v1_grpc_proto_depIdxs = []int32{
-	1, // 0: transport.v1.GRPC.timeout:type_name -> google.protobuf.Duration
-	1, // 1: transport.v1.GRPC.shutdown_timeout:type_name -> google.protobuf.Duration
-	2, // 2: transport.v1.GRPC.tls:type_name -> security.transport.v1.TLSConfig
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: transport.v1.GRPCServer.timeout:type_name -> google.protobuf.Duration
+	2, // 1: transport.v1.GRPCServer.shutdown_timeout:type_name -> google.protobuf.Duration
+	3, // 2: transport.v1.GRPCServer.tls:type_name -> security.transport.v1.TLSConfig
+	2, // 3: transport.v1.GRPCClient.dial_timeout:type_name -> google.protobuf.Duration
+	3, // 4: transport.v1.GRPCClient.tls:type_name -> security.transport.v1.TLSConfig
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_transport_v1_grpc_proto_init() }
@@ -201,7 +315,7 @@ func file_transport_v1_grpc_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transport_v1_grpc_proto_rawDesc), len(file_transport_v1_grpc_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

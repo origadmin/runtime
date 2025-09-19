@@ -262,6 +262,17 @@ func (m *Selector) validate(all bool) error {
 
 	var errors []error
 
+	if _, ok := _Selector_Type_InLookup[m.GetType()]; !ok {
+		err := SelectorValidationError{
+			field:  "Type",
+			reason: "value must be in list [random wrr p2c]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for Version
 
 	if len(errors) > 0 {
@@ -340,3 +351,9 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SelectorValidationError{}
+
+var _Selector_Type_InLookup = map[string]struct{}{
+	"random": {},
+	"wrr":    {},
+	"p2c":    {},
+}

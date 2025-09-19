@@ -35,29 +35,30 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on HTTP with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
-func (m *HTTP) Validate() error {
+// Validate checks the field values on HTTPServer with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *HTTPServer) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on HTTP with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in HTTPMultiError, or nil if none found.
-func (m *HTTP) ValidateAll() error {
+// ValidateAll checks the field values on HTTPServer with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in HTTPServerMultiError, or
+// nil if none found.
+func (m *HTTPServer) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *HTTP) validate(all bool) error {
+func (m *HTTPServer) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if _, ok := _HTTP_Network_InLookup[m.GetNetwork()]; !ok {
-		err := HTTPValidationError{
+	if _, ok := _HTTPServer_Network_InLookup[m.GetNetwork()]; !ok {
+		err := HTTPServerValidationError{
 			field:  "Network",
 			reason: "value must be in list [tcp tcp4 tcp6 unix unixpacket]",
 		}
@@ -68,7 +69,7 @@ func (m *HTTP) validate(all bool) error {
 	}
 
 	if utf8.RuneCountInString(m.GetAddr()) < 1 {
-		err := HTTPValidationError{
+		err := HTTPServerValidationError{
 			field:  "Addr",
 			reason: "value length must be at least 1 runes",
 		}
@@ -82,7 +83,7 @@ func (m *HTTP) validate(all bool) error {
 		switch v := interface{}(m.GetTimeout()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, HTTPValidationError{
+				errors = append(errors, HTTPServerValidationError{
 					field:  "Timeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -90,7 +91,7 @@ func (m *HTTP) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, HTTPValidationError{
+				errors = append(errors, HTTPServerValidationError{
 					field:  "Timeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -99,7 +100,7 @@ func (m *HTTP) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return HTTPValidationError{
+			return HTTPServerValidationError{
 				field:  "Timeout",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -111,7 +112,7 @@ func (m *HTTP) validate(all bool) error {
 		switch v := interface{}(m.GetShutdownTimeout()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, HTTPValidationError{
+				errors = append(errors, HTTPServerValidationError{
 					field:  "ShutdownTimeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -119,7 +120,7 @@ func (m *HTTP) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, HTTPValidationError{
+				errors = append(errors, HTTPServerValidationError{
 					field:  "ShutdownTimeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -128,7 +129,7 @@ func (m *HTTP) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetShutdownTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return HTTPValidationError{
+			return HTTPServerValidationError{
 				field:  "ShutdownTimeout",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -139,7 +140,7 @@ func (m *HTTP) validate(all bool) error {
 	// no validation rules for Endpoint
 
 	if m.GetMaxRecvMsgSize() <= 0 {
-		err := HTTPValidationError{
+		err := HTTPServerValidationError{
 			field:  "MaxRecvMsgSize",
 			reason: "value must be greater than 0",
 		}
@@ -150,7 +151,7 @@ func (m *HTTP) validate(all bool) error {
 	}
 
 	if m.GetMaxSendMsgSize() <= 0 {
-		err := HTTPValidationError{
+		err := HTTPServerValidationError{
 			field:  "MaxSendMsgSize",
 			reason: "value must be greater than 0",
 		}
@@ -164,7 +165,7 @@ func (m *HTTP) validate(all bool) error {
 		switch v := interface{}(m.GetTls()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, HTTPValidationError{
+				errors = append(errors, HTTPServerValidationError{
 					field:  "Tls",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -172,7 +173,7 @@ func (m *HTTP) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, HTTPValidationError{
+				errors = append(errors, HTTPServerValidationError{
 					field:  "Tls",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -181,7 +182,7 @@ func (m *HTTP) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return HTTPValidationError{
+			return HTTPServerValidationError{
 				field:  "Tls",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -190,18 +191,18 @@ func (m *HTTP) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return HTTPMultiError(errors)
+		return HTTPServerMultiError(errors)
 	}
 
 	return nil
 }
 
-// HTTPMultiError is an error wrapping multiple validation errors returned by
-// HTTP.ValidateAll() if the designated constraints aren't met.
-type HTTPMultiError []error
+// HTTPServerMultiError is an error wrapping multiple validation errors
+// returned by HTTPServer.ValidateAll() if the designated constraints aren't met.
+type HTTPServerMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m HTTPMultiError) Error() string {
+func (m HTTPServerMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -210,11 +211,11 @@ func (m HTTPMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m HTTPMultiError) AllErrors() []error { return m }
+func (m HTTPServerMultiError) AllErrors() []error { return m }
 
-// HTTPValidationError is the validation error returned by HTTP.Validate if the
-// designated constraints aren't met.
-type HTTPValidationError struct {
+// HTTPServerValidationError is the validation error returned by
+// HTTPServer.Validate if the designated constraints aren't met.
+type HTTPServerValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -222,22 +223,22 @@ type HTTPValidationError struct {
 }
 
 // Field function returns field value.
-func (e HTTPValidationError) Field() string { return e.field }
+func (e HTTPServerValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e HTTPValidationError) Reason() string { return e.reason }
+func (e HTTPServerValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e HTTPValidationError) Cause() error { return e.cause }
+func (e HTTPServerValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e HTTPValidationError) Key() bool { return e.key }
+func (e HTTPServerValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e HTTPValidationError) ErrorName() string { return "HTTPValidationError" }
+func (e HTTPServerValidationError) ErrorName() string { return "HTTPServerValidationError" }
 
 // Error satisfies the builtin error interface
-func (e HTTPValidationError) Error() string {
+func (e HTTPServerValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -249,14 +250,14 @@ func (e HTTPValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sHTTP.%s: %s%s",
+		"invalid %sHTTPServer.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = HTTPValidationError{}
+var _ error = HTTPServerValidationError{}
 
 var _ interface {
 	Field() string
@@ -264,12 +265,209 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = HTTPValidationError{}
+} = HTTPServerValidationError{}
 
-var _HTTP_Network_InLookup = map[string]struct{}{
+var _HTTPServer_Network_InLookup = map[string]struct{}{
 	"tcp":        {},
 	"tcp4":       {},
 	"tcp6":       {},
 	"unix":       {},
 	"unixpacket": {},
 }
+
+// Validate checks the field values on HTTPClient with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *HTTPClient) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on HTTPClient with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in HTTPClientMultiError, or
+// nil if none found.
+func (m *HTTPClient) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *HTTPClient) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetTarget()) < 1 {
+		err := HTTPClientValidationError{
+			field:  "Target",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, HTTPClientValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, HTTPClientValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return HTTPClientValidationError{
+				field:  "Timeout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetDialTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, HTTPClientValidationError{
+					field:  "DialTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, HTTPClientValidationError{
+					field:  "DialTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return HTTPClientValidationError{
+				field:  "DialTimeout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, HTTPClientValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, HTTPClientValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return HTTPClientValidationError{
+				field:  "Tls",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return HTTPClientMultiError(errors)
+	}
+
+	return nil
+}
+
+// HTTPClientMultiError is an error wrapping multiple validation errors
+// returned by HTTPClient.ValidateAll() if the designated constraints aren't met.
+type HTTPClientMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m HTTPClientMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m HTTPClientMultiError) AllErrors() []error { return m }
+
+// HTTPClientValidationError is the validation error returned by
+// HTTPClient.Validate if the designated constraints aren't met.
+type HTTPClientValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e HTTPClientValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e HTTPClientValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e HTTPClientValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e HTTPClientValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e HTTPClientValidationError) ErrorName() string { return "HTTPClientValidationError" }
+
+// Error satisfies the builtin error interface
+func (e HTTPClientValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sHTTPClient.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = HTTPClientValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = HTTPClientValidationError{}

@@ -118,8 +118,10 @@ func (x *Client) GetMiddlewares() []*v1.MiddlewareConfig {
 // Selector defines the client-side node selection strategy.
 type Selector struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// The type of selector to use, e.g., "random", "wrr", "p2c".
+	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	// version is used for version-based routing.
-	Version       string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	Version       string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -154,6 +156,13 @@ func (*Selector) Descriptor() ([]byte, []int) {
 	return file_discovery_v1_client_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *Selector) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
 func (x *Selector) GetVersion() string {
 	if x != nil {
 		return x.Version
@@ -172,9 +181,10 @@ const file_discovery_v1_client_proto_rawDesc = "" +
 	"\bendpoint\x18\x03 \x01(\tR\bendpoint\x122\n" +
 	"\bselector\x18\x04 \x01(\v2\x16.discovery.v1.SelectorR\bselector\x123\n" +
 	"\atimeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12A\n" +
-	"\vmiddlewares\x18d \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\"$\n" +
-	"\bSelector\x12\x18\n" +
-	"\aversion\x18\x01 \x01(\tR\aversionB\xb2\x01\n" +
+	"\vmiddlewares\x18d \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\"Q\n" +
+	"\bSelector\x12+\n" +
+	"\x04type\x18\x01 \x01(\tB\x17\xfaB\x14r\x12R\x06randomR\x03wrrR\x03p2cR\x04type\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\tR\aversionB\xb2\x01\n" +
 	"\x10com.discovery.v1B\vClientProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1\xa2\x02\x03DXX\xaa\x02\fDiscovery.V1\xca\x02\fDiscovery\\V1\xe2\x02\x18Discovery\\V1\\GPBMetadata\xea\x02\rDiscovery::V1b\x06proto3"
 
 var (

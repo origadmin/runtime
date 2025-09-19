@@ -31,6 +31,8 @@ message Client {
 
 // Selector defines the client-side node selection strategy.
 message Selector {
+  // The type of selector to use, e.g., "random", "wrr", "p2c".
+  string type = 1 [(validate.rules).string = {in: ["random", "wrr", "p2c"]}];
   // version is used for version-based routing.
-  string version = 1;
+  string version = 2;
 }

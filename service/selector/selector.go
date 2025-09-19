@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package selector implements the functions, types, and interfaces for the module.
 package selector
 
 import (
@@ -14,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/selector/random"
 	"github.com/go-kratos/kratos/v2/selector/wrr"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1" // Changed import
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -30,14 +25,20 @@ var (
 	builder selector.Builder
 )
 
-func NewFilter(cfg *configv1.Service_Selector) (selector.NodeFilter, error) {
+// NewFilter creates a node filter based on the provided selector configuration.
+// It currently supports version-based filtering.
+func NewFilter(cfg *discoveryv1.Selector) (selector.NodeFilter, error) {
+	if cfg == nil {
+		return nil, errors.New("selector configuration is nil")
+	}
 	// Check if the version is specified in the configuration
 	if cfg.GetVersion() != "" {
 		// Return the version filter and no error
 		return filter.Version(cfg.Version), nil
 	}
-	// Return the node filter and no error
-	return nil, errors.New("version is nil")
+	// If no version is specified, and no other filter type is supported yet, return an error.
+	// This is consistent with the original behavior of expecting a filter to be created.
+	return nil, errors.New("no valid filter criteria found in selector configuration (e.g., version is not specified)")
 }
 
 // SetSelectorGlobalSelector sets the global selector.

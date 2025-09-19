@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package transport.v1;
+
+import "transport/v1/grpc.proto";
+import "transport/v1/http.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
+
+// Client is a container for different client configurations.
+message Client {
+  oneof protocol {
+    GRPCClient grpc = 1;
+    HTTPClient http = 2;
+  }
+}

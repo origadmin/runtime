@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package examples.http_server_grpc_client;
+
+// 导入框架提供的服务端和客户端“积木”容器
+import "transport/v1/server.proto"; // Updated import path
+import "transport/v1/client.proto"; // Updated import path
+import "discovery/v1/client.proto"; // Updated import path
+
+option go_package = "./http_server_grpc_client/conf;conf";
+
+// Bootstrap 是一个提供 HTTP 服务端并调用 gRPC 客户端的微服务的顶层配置示例
+message Bootstrap {
+  // 定义一个服务端
+  repeated transport.v1.Server servers = 1;
+
+  // 定义所有需要调用的下游客户端
+  // key 是客户端的逻辑名称，例如 "user-service-client"
+  map<string, ClientConfig> clients = 2; 
+}
+
+// ClientConfig 是项目层面组合客户端配置的结构
+message ClientConfig {
+  // 业务层面的客户端配置：如何发现和选择服务实例
+  discovery.v1.Client discovery = 1;
+
+  // 传输层面的客户端配置：如何通过特定协议与服务实例通信
+  transport.v1.Client transport = 2;
+}

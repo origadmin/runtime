@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package examples.api_gateway;
+
+// 导入框架提供的服务端和客户端“积木”容器
+import "transport/v1/server.proto";
+import "transport/v1/client.proto";
+import "discovery/v1/client.proto"; // 客户端通常需要服务发现
+
+option go_package = "./api_gateway/conf;conf";
+
+// Bootstrap 是一个 API 网关的顶层配置示例
+message Bootstrap {
+  // 网关通常会提供多个服务端接口
+  repeated transport.v1.Server servers = 1;
+
+  // 网关会调用多个下游服务
+  // key 是客户端的逻辑名称，例如 "user-service-client"
+  map<string, ClientConfig> clients = 2; 
+}
+
+// ClientConfig 是项目层面组合客户端配置的结构
+message ClientConfig {
+  // 业务层面的客户端配置：如何发现和选择服务实例
+  discovery.v1.Client discovery = 1;
+
+  // 传输层面的客户端配置：如何通过特定协议与服务实例通信
+  transport.v1.Client transport = 2;
+}

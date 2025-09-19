@@ -2,15 +2,14 @@ syntax = "proto3";
 
 package transport.v1;
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
-
 import "google/protobuf/duration.proto";
-import "middleware/v1/middleware.proto";
 import "security/transport/v1/tls.proto";
 import "validate/validate.proto";
 
-// HTTP defines the configuration for a single HTTP server endpoint.
-message HTTP {
+option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1"; // Updated go_package
+
+// HTTPServer defines the configuration for an HTTP server endpoint.
+message HTTPServer {
   // Network type, e.g., "tcp", "unix".
   string network = 1 [(validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]}];
   // Address for the server to listen on, e.g., ":8000".
@@ -19,7 +18,7 @@ message HTTP {
   google.protobuf.Duration timeout = 3;
   // Graceful shutdown timeout.
   google.protobuf.Duration shutdown_timeout = 4;
-  // The endpoint that this server advertises to the service registry, e.g., "dns:///127.0.0.1:8000".
+  // The endpoint that this server advertises to the service registry.
   string endpoint = 5;
   // Max receive message size.
   int32 max_recv_msg_size = 6 [(validate.rules).int32 = {gt: 0}];
@@ -30,4 +29,18 @@ message HTTP {
   // Middlewares specifies the list of middleware names to apply to the server.
   // The framework will look up these names in the middleware registry.
   repeated string middlewares = 9;
+}
+
+// HTTPClient defines the configuration for an HTTP client.
+message HTTPClient {
+  // Target is the base URL of the HTTP server to connect to, e.g., "http://127.0.0.1:8000".
+  string target = 1 [(validate.rules).string.min_len = 1];
+  // Timeout is the overall request timeout for the client.
+  google.protobuf.Duration timeout = 2;
+  // DialTimeout is the timeout for establishing the connection.
+  google.protobuf.Duration dial_timeout = 3;
+  // TLS configuration for the client.
+  security.transport.v1.TLSConfig tls = 4;
+  // Middlewares specifies the list of client middleware names to apply.
+  repeated string middlewares = 5;
 }

@@ -35,29 +35,30 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on GRPC with the rules defined in the proto
-// definition for this message. If any rules are violated, the first error
-// encountered is returned, or nil if there are no violations.
-func (m *GRPC) Validate() error {
+// Validate checks the field values on GRPCServer with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GRPCServer) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GRPC with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in GRPCMultiError, or nil if none found.
-func (m *GRPC) ValidateAll() error {
+// ValidateAll checks the field values on GRPCServer with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GRPCServerMultiError, or
+// nil if none found.
+func (m *GRPCServer) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GRPC) validate(all bool) error {
+func (m *GRPCServer) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if _, ok := _GRPC_Network_InLookup[m.GetNetwork()]; !ok {
-		err := GRPCValidationError{
+	if _, ok := _GRPCServer_Network_InLookup[m.GetNetwork()]; !ok {
+		err := GRPCServerValidationError{
 			field:  "Network",
 			reason: "value must be in list [tcp tcp4 tcp6 unix unixpacket]",
 		}
@@ -68,7 +69,7 @@ func (m *GRPC) validate(all bool) error {
 	}
 
 	if utf8.RuneCountInString(m.GetAddr()) < 1 {
-		err := GRPCValidationError{
+		err := GRPCServerValidationError{
 			field:  "Addr",
 			reason: "value length must be at least 1 runes",
 		}
@@ -82,7 +83,7 @@ func (m *GRPC) validate(all bool) error {
 		switch v := interface{}(m.GetTimeout()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GRPCValidationError{
+				errors = append(errors, GRPCServerValidationError{
 					field:  "Timeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -90,7 +91,7 @@ func (m *GRPC) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, GRPCValidationError{
+				errors = append(errors, GRPCServerValidationError{
 					field:  "Timeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -99,7 +100,7 @@ func (m *GRPC) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return GRPCValidationError{
+			return GRPCServerValidationError{
 				field:  "Timeout",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -111,7 +112,7 @@ func (m *GRPC) validate(all bool) error {
 		switch v := interface{}(m.GetShutdownTimeout()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GRPCValidationError{
+				errors = append(errors, GRPCServerValidationError{
 					field:  "ShutdownTimeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -119,7 +120,7 @@ func (m *GRPC) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, GRPCValidationError{
+				errors = append(errors, GRPCServerValidationError{
 					field:  "ShutdownTimeout",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -128,7 +129,7 @@ func (m *GRPC) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetShutdownTimeout()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return GRPCValidationError{
+			return GRPCServerValidationError{
 				field:  "ShutdownTimeout",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -141,7 +142,7 @@ func (m *GRPC) validate(all bool) error {
 	// no validation rules for EnableReflection
 
 	if m.GetMaxRecvMsgSize() <= 0 {
-		err := GRPCValidationError{
+		err := GRPCServerValidationError{
 			field:  "MaxRecvMsgSize",
 			reason: "value must be greater than 0",
 		}
@@ -152,7 +153,7 @@ func (m *GRPC) validate(all bool) error {
 	}
 
 	if m.GetMaxSendMsgSize() <= 0 {
-		err := GRPCValidationError{
+		err := GRPCServerValidationError{
 			field:  "MaxSendMsgSize",
 			reason: "value must be greater than 0",
 		}
@@ -166,7 +167,7 @@ func (m *GRPC) validate(all bool) error {
 		switch v := interface{}(m.GetTls()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GRPCValidationError{
+				errors = append(errors, GRPCServerValidationError{
 					field:  "Tls",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -174,7 +175,7 @@ func (m *GRPC) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, GRPCValidationError{
+				errors = append(errors, GRPCServerValidationError{
 					field:  "Tls",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -183,7 +184,7 @@ func (m *GRPC) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return GRPCValidationError{
+			return GRPCServerValidationError{
 				field:  "Tls",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -192,18 +193,18 @@ func (m *GRPC) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return GRPCMultiError(errors)
+		return GRPCServerMultiError(errors)
 	}
 
 	return nil
 }
 
-// GRPCMultiError is an error wrapping multiple validation errors returned by
-// GRPC.ValidateAll() if the designated constraints aren't met.
-type GRPCMultiError []error
+// GRPCServerMultiError is an error wrapping multiple validation errors
+// returned by GRPCServer.ValidateAll() if the designated constraints aren't met.
+type GRPCServerMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GRPCMultiError) Error() string {
+func (m GRPCServerMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -212,11 +213,11 @@ func (m GRPCMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GRPCMultiError) AllErrors() []error { return m }
+func (m GRPCServerMultiError) AllErrors() []error { return m }
 
-// GRPCValidationError is the validation error returned by GRPC.Validate if the
-// designated constraints aren't met.
-type GRPCValidationError struct {
+// GRPCServerValidationError is the validation error returned by
+// GRPCServer.Validate if the designated constraints aren't met.
+type GRPCServerValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -224,22 +225,22 @@ type GRPCValidationError struct {
 }
 
 // Field function returns field value.
-func (e GRPCValidationError) Field() string { return e.field }
+func (e GRPCServerValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GRPCValidationError) Reason() string { return e.reason }
+func (e GRPCServerValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GRPCValidationError) Cause() error { return e.cause }
+func (e GRPCServerValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GRPCValidationError) Key() bool { return e.key }
+func (e GRPCServerValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GRPCValidationError) ErrorName() string { return "GRPCValidationError" }
+func (e GRPCServerValidationError) ErrorName() string { return "GRPCServerValidationError" }
 
 // Error satisfies the builtin error interface
-func (e GRPCValidationError) Error() string {
+func (e GRPCServerValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -251,14 +252,14 @@ func (e GRPCValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGRPC.%s: %s%s",
+		"invalid %sGRPCServer.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GRPCValidationError{}
+var _ error = GRPCServerValidationError{}
 
 var _ interface {
 	Field() string
@@ -266,12 +267,202 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GRPCValidationError{}
+} = GRPCServerValidationError{}
 
-var _GRPC_Network_InLookup = map[string]struct{}{
+var _GRPCServer_Network_InLookup = map[string]struct{}{
 	"tcp":        {},
 	"tcp4":       {},
 	"tcp6":       {},
 	"unix":       {},
 	"unixpacket": {},
 }
+
+// Validate checks the field values on GRPCClient with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GRPCClient) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GRPCClient with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GRPCClientMultiError, or
+// nil if none found.
+func (m *GRPCClient) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GRPCClient) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetTarget()) < 1 {
+		err := GRPCClientValidationError{
+			field:  "Target",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDialTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GRPCClientValidationError{
+					field:  "DialTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GRPCClientValidationError{
+					field:  "DialTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GRPCClientValidationError{
+				field:  "DialTimeout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetMaxRecvMsgSize() <= 0 {
+		err := GRPCClientValidationError{
+			field:  "MaxRecvMsgSize",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetMaxSendMsgSize() <= 0 {
+		err := GRPCClientValidationError{
+			field:  "MaxSendMsgSize",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetTls()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GRPCClientValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GRPCClientValidationError{
+					field:  "Tls",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTls()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GRPCClientValidationError{
+				field:  "Tls",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GRPCClientMultiError(errors)
+	}
+
+	return nil
+}
+
+// GRPCClientMultiError is an error wrapping multiple validation errors
+// returned by GRPCClient.ValidateAll() if the designated constraints aren't met.
+type GRPCClientMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GRPCClientMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GRPCClientMultiError) AllErrors() []error { return m }
+
+// GRPCClientValidationError is the validation error returned by
+// GRPCClient.Validate if the designated constraints aren't met.
+type GRPCClientValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GRPCClientValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GRPCClientValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GRPCClientValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GRPCClientValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GRPCClientValidationError) ErrorName() string { return "GRPCClientValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GRPCClientValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGRPCClient.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GRPCClientValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GRPCClientValidationError{}

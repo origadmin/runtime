@@ -2,8 +2,10 @@ syntax = "proto3";
 
 package service.v1;
 
-import "transport/v1/grpc.proto";
-import "transport/v1/http.proto";
+// New imports for the new transport server container and discovery selector
+import "transport/v1/server.proto";
+import "discovery/v1/client.proto"; // For the selector
+
 import "msg/v1/msg.proto";
 import "task/v1/task.proto";
 import "websocket/v1/websocket.proto";
@@ -18,11 +20,6 @@ option java_package = "com.github.origadmin.api.runtime.service.v1";
 option objc_class_prefix = "ORC";
 
 message Service {
-  // Selector
-  message Selector {
-    string version = 1 [json_name = "version"];
-    string global_builder = 2 [json_name = "global_builder"];
-  }
   // Service name for service discovery
   string name = 1 [json_name = "name"];
 
@@ -40,10 +37,9 @@ message Service {
     }
   ];
 
-  // Protocol-specific configurations.
-  // Only the configuration matching the 'protocol' field will be used.
-  transport.v1.GRPC grpc = 10 [json_name = "grpc"];
-  transport.v1.HTTP http = 20 [json_name = "http"];
+  // Server-side transport configuration for this service.
+  // This replaces the old 'grpc' and 'http' fields.
+  transport.v1.Server server_transport = 10 [json_name = "server_transport"];
 
   websocket.v1.WebSocket websocket = 100 [json_name = "websocket"];
   msg.v1.Message message = 200 [json_name = "message"];
@@ -52,5 +48,7 @@ message Service {
   // Middleware configuration for the service.
   repeated middleware.v1.MiddlewareConfig middlewares = 400 [json_name = "middlewares"];
 
-  Selector selector = 500 [json_name = "selector"];
+  // Selector configuration for client-side load balancing and node filtering.
+  // This replaces the nested 'Selector' message.
+  discovery.v1.Selector selector = 500 [json_name = "selector"];
 }
