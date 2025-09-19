@@ -85,7 +85,7 @@ func (x *Server) GetConfig() isServer_Config {
 	return nil
 }
 
-func (x *Server) GetGrpc() *v1.GRPC {
+func (x *Server) GetGrpc() *v1.GRPCServer {
 	if x != nil {
 		if x, ok := x.Config.(*Server_Grpc); ok {
 			return x.Grpc
@@ -94,7 +94,7 @@ func (x *Server) GetGrpc() *v1.GRPC {
 	return nil
 }
 
-func (x *Server) GetHttp() *v1.HTTP {
+func (x *Server) GetHttp() *v1.HTTPServer {
 	if x != nil {
 		if x, ok := x.Config.(*Server_Http); ok {
 			return x.Http
@@ -108,11 +108,11 @@ type isServer_Config interface {
 }
 
 type Server_Grpc struct {
-	Grpc *v1.GRPC `protobuf:"bytes,2,opt,name=grpc,proto3,oneof"`
+	Grpc *v1.GRPCServer `protobuf:"bytes,2,opt,name=grpc,proto3,oneof"`
 }
 
 type Server_Http struct {
-	Http *v1.HTTP `protobuf:"bytes,3,opt,name=http,proto3,oneof"`
+	Http *v1.HTTPServer `protobuf:"bytes,3,opt,name=http,proto3,oneof"`
 }
 
 func (*Server_Grpc) isServer_Config() {}
@@ -253,11 +253,11 @@ var File_bootstrap_proto protoreflect.FileDescriptor
 
 const file_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\x0fbootstrap.proto\x12\x10test.app.configs\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"z\n" +
+	"\x0fbootstrap.proto\x12\x10test.app.configs\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"\x86\x01\n" +
 	"\x06Server\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12(\n" +
-	"\x04grpc\x18\x02 \x01(\v2\x12.transport.v1.GRPCH\x00R\x04grpc\x12(\n" +
-	"\x04http\x18\x03 \x01(\v2\x12.transport.v1.HTTPH\x00R\x04httpB\b\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12.\n" +
+	"\x04grpc\x18\x02 \x01(\v2\x18.transport.v1.GRPCServerH\x00R\x04grpc\x12.\n" +
+	"\x04http\x18\x03 \x01(\v2\x18.transport.v1.HTTPServerH\x00R\x04httpB\b\n" +
 	"\x06config\"\x7f\n" +
 	"\x06Client\x122\n" +
 	"\tdiscovery\x18\x01 \x01(\v2\x14.discovery.v1.ClientR\tdiscovery\x12A\n" +
@@ -289,15 +289,15 @@ var file_bootstrap_proto_goTypes = []any{
 	(*Client)(nil),               // 1: test.app.configs.Client
 	(*Bootstrap)(nil),            // 2: test.app.configs.Bootstrap
 	nil,                          // 3: test.app.configs.Bootstrap.DiscoveriesEntry
-	(*v1.GRPC)(nil),              // 4: transport.v1.GRPC
-	(*v1.HTTP)(nil),              // 5: transport.v1.HTTP
+	(*v1.GRPCServer)(nil),        // 4: transport.v1.GRPCServer
+	(*v1.HTTPServer)(nil),        // 5: transport.v1.HTTPServer
 	(*v11.Client)(nil),           // 6: discovery.v1.Client
 	(*v12.MiddlewareConfig)(nil), // 7: middleware.v1.MiddlewareConfig
 	(*v11.Discovery)(nil),        // 8: discovery.v1.Discovery
 }
 var file_bootstrap_proto_depIdxs = []int32{
-	4, // 0: test.app.configs.Server.grpc:type_name -> transport.v1.GRPC
-	5, // 1: test.app.configs.Server.http:type_name -> transport.v1.HTTP
+	4, // 0: test.app.configs.Server.grpc:type_name -> transport.v1.GRPCServer
+	5, // 1: test.app.configs.Server.http:type_name -> transport.v1.HTTPServer
 	6, // 2: test.app.configs.Client.discovery:type_name -> discovery.v1.Client
 	7, // 3: test.app.configs.Client.middlewares:type_name -> middleware.v1.MiddlewareConfig
 	3, // 4: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry

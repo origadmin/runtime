@@ -178,7 +178,7 @@ func TestConfigInteroperability(t *testing.T) {
 }
 
 func generateAllFormatsFromYAML(t *testing.T) {
-	// 1. 使用 Kratos 加载 YAML 配置
+	// 1. Load YAML configuration using Kratos
 	source := file.NewSource("configs/full_config.yaml")
 	c := config.New(config.WithSource(source))
 	if err := c.Load(); err != nil {
@@ -187,7 +187,7 @@ func generateAllFormatsFromYAML(t *testing.T) {
 	}
 	defer c.Close()
 
-	// 2. 解析配置到结构体
+	// 2. Parse configuration into a struct
 	var configBootstrap testconfigs.Bootstrap
 	if err := c.Scan(&configBootstrap); err != nil {
 		fmt.Printf("Failed to scan config: %v\n", err)

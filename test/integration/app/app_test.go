@@ -10,7 +10,7 @@ import (
 	configs "github.com/origadmin/runtime/test/integration/app/proto"
 )
 
-// TestAppBootstrap 证明了在应用专属的 bootstrap.proto 中定义统一结构所带来的优势
+// TestAppBootstrap demonstrates the advantages of defining a unified structure in the application-specific bootstrap.proto
 func TestAppBootstrap(t *testing.T) {
 	// 1. 加载我们新的、与图纸完全对应的 YAML 配置文件
 	yamlFile, err := os.ReadFile("config.yaml")

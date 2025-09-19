@@ -23,8 +23,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// NamedDiscovery binds a service discovery configuration with a unique name.
-type NamedDiscovery struct {
+// DiscoveryConfig binds a service discovery configuration with a unique name.
+type DiscoveryConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Unique name for this discovery configuration, e.g., "internal-consul", "legacy-etcd"
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -34,20 +34,20 @@ type NamedDiscovery struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *NamedDiscovery) Reset() {
-	*x = NamedDiscovery{}
+func (x *DiscoveryConfig) Reset() {
+	*x = DiscoveryConfig{}
 	mi := &file_bootstrap_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *NamedDiscovery) String() string {
+func (x *DiscoveryConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*NamedDiscovery) ProtoMessage() {}
+func (*DiscoveryConfig) ProtoMessage() {}
 
-func (x *NamedDiscovery) ProtoReflect() protoreflect.Message {
+func (x *DiscoveryConfig) ProtoReflect() protoreflect.Message {
 	mi := &file_bootstrap_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -59,19 +59,19 @@ func (x *NamedDiscovery) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use NamedDiscovery.ProtoReflect.Descriptor instead.
-func (*NamedDiscovery) Descriptor() ([]byte, []int) {
+// Deprecated: Use DiscoveryConfig.ProtoReflect.Descriptor instead.
+func (*DiscoveryConfig) Descriptor() ([]byte, []int) {
 	return file_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *NamedDiscovery) GetName() string {
+func (x *DiscoveryConfig) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *NamedDiscovery) GetConfig() *v1.Discovery {
+func (x *DiscoveryConfig) GetConfig() *v1.Discovery {
 	if x != nil {
 		return x.Config
 	}
@@ -82,12 +82,12 @@ func (x *NamedDiscovery) GetConfig() *v1.Discovery {
 type Bootstrap struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// 1. Define a "pool" of service discovery configurations.
-	Discoveries []*NamedDiscovery `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
+	Discoveries []*DiscoveryConfig `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
 	// 2. Specify which configuration the current service should use to **register itself**.
 	RegistrationDiscoveryName string `protobuf:"bytes,2,opt,name=registration_discovery_name,json=registrationDiscoveryName,proto3" json:"registration_discovery_name,omitempty"`
 	// 3. Define the list of service endpoints that the current service will expose.
-	GrpcServers []*v11.GRPC `protobuf:"bytes,3,rep,name=grpc_servers,json=grpcServers,proto3" json:"grpc_servers,omitempty"`
-	HttpServers []*v11.HTTP `protobuf:"bytes,4,rep,name=http_servers,json=httpServers,proto3" json:"http_servers,omitempty"`
+	GrpcServers []*v11.GRPCServer `protobuf:"bytes,3,rep,name=grpc_servers,json=grpcServers,proto3" json:"grpc_servers,omitempty"`
+	HttpServers []*v11.HTTPServer `protobuf:"bytes,4,rep,name=http_servers,json=httpServers,proto3" json:"http_servers,omitempty"`
 	// 4. Define the list of downstream clients that the current service will connect to.
 	Clients       []*v1.Client `protobuf:"bytes,5,rep,name=clients,proto3" json:"clients,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -124,7 +124,7 @@ func (*Bootstrap) Descriptor() ([]byte, []int) {
 	return file_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Bootstrap) GetDiscoveries() []*NamedDiscovery {
+func (x *Bootstrap) GetDiscoveries() []*DiscoveryConfig {
 	if x != nil {
 		return x.Discoveries
 	}
@@ -138,14 +138,14 @@ func (x *Bootstrap) GetRegistrationDiscoveryName() string {
 	return ""
 }
 
-func (x *Bootstrap) GetGrpcServers() []*v11.GRPC {
+func (x *Bootstrap) GetGrpcServers() []*v11.GRPCServer {
 	if x != nil {
 		return x.GrpcServers
 	}
 	return nil
 }
 
-func (x *Bootstrap) GetHttpServers() []*v11.HTTP {
+func (x *Bootstrap) GetHttpServers() []*v11.HTTPServer {
 	if x != nil {
 		return x.HttpServers
 	}
@@ -163,16 +163,16 @@ var File_bootstrap_proto protoreflect.FileDescriptor
 
 const file_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\x0fbootstrap.proto\x12\ftest.configs\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"U\n" +
-	"\x0eNamedDiscovery\x12\x12\n" +
+	"\x0fbootstrap.proto\x12\ftest.configs\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"V\n" +
+	"\x0fDiscoveryConfig\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
-	"\x06config\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x06config\"\xa9\x02\n" +
-	"\tBootstrap\x12>\n" +
-	"\vdiscoveries\x18\x01 \x03(\v2\x1c.test.configs.NamedDiscoveryR\vdiscoveries\x12>\n" +
-	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x125\n" +
-	"\fgrpc_servers\x18\x03 \x03(\v2\x12.transport.v1.GRPCR\vgrpcServers\x125\n" +
-	"\fhttp_servers\x18\x04 \x03(\v2\x12.transport.v1.HTTPR\vhttpServers\x12.\n" +
-	"\aclients\x18\x05 \x03(\v2\x14.discovery.v1.ClientR\aclientsBFZDgithub.com/origadmin/framework/test/integration/config/proto;configsb\x06proto3"
+	"\x06config\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x06config\"\xb6\x02\n" +
+	"\tBootstrap\x12?\n" +
+	"\vdiscoveries\x18\x01 \x03(\v2\x1d.test.configs.DiscoveryConfigR\vdiscoveries\x12>\n" +
+	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12;\n" +
+	"\fgrpc_servers\x18\x03 \x03(\v2\x18.transport.v1.GRPCServerR\vgrpcServers\x12;\n" +
+	"\fhttp_servers\x18\x04 \x03(\v2\x18.transport.v1.HTTPServerR\vhttpServers\x12.\n" +
+	"\aclients\x18\x05 \x03(\v2\x14.discovery.v1.ClientR\aclientsBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
 	file_bootstrap_proto_rawDescOnce sync.Once
@@ -188,18 +188,18 @@ func file_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_bootstrap_proto_goTypes = []any{
-	(*NamedDiscovery)(nil), // 0: test.configs.NamedDiscovery
-	(*Bootstrap)(nil),      // 1: test.configs.Bootstrap
-	(*v1.Discovery)(nil),   // 2: discovery.v1.Discovery
-	(*v11.GRPC)(nil),       // 3: transport.v1.GRPC
-	(*v11.HTTP)(nil),       // 4: transport.v1.HTTP
-	(*v1.Client)(nil),      // 5: discovery.v1.Client
+	(*DiscoveryConfig)(nil), // 0: test.configs.DiscoveryConfig
+	(*Bootstrap)(nil),       // 1: test.configs.Bootstrap
+	(*v1.Discovery)(nil),    // 2: discovery.v1.Discovery
+	(*v11.GRPCServer)(nil),  // 3: transport.v1.GRPCServer
+	(*v11.HTTPServer)(nil),  // 4: transport.v1.HTTPServer
+	(*v1.Client)(nil),       // 5: discovery.v1.Client
 }
 var file_bootstrap_proto_depIdxs = []int32{
-	2, // 0: test.configs.NamedDiscovery.config:type_name -> discovery.v1.Discovery
-	0, // 1: test.configs.Bootstrap.discoveries:type_name -> test.configs.NamedDiscovery
-	3, // 2: test.configs.Bootstrap.grpc_servers:type_name -> transport.v1.GRPC
-	4, // 3: test.configs.Bootstrap.http_servers:type_name -> transport.v1.HTTP
+	2, // 0: test.configs.DiscoveryConfig.config:type_name -> discovery.v1.Discovery
+	0, // 1: test.configs.Bootstrap.discoveries:type_name -> test.configs.DiscoveryConfig
+	3, // 2: test.configs.Bootstrap.grpc_servers:type_name -> transport.v1.GRPCServer
+	4, // 3: test.configs.Bootstrap.http_servers:type_name -> transport.v1.HTTPServer
 	5, // 4: test.configs.Bootstrap.clients:type_name -> discovery.v1.Client
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type

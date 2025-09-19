@@ -24,23 +24,26 @@ type Config interface {
 	Decoder() ConfigDecoder
 }
 
+// LoggerConfigDecoder defines the interface for decoding logger configuration.
+type LoggerConfigDecoder interface {
+	DecodeLogger() (*loggerv1.Logger, error)
+}
+
+// DiscoveriesConfigDecoder defines the interface for decoding service discovery configurations.
+type DiscoveriesConfigDecoder interface {
+	DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error)
+}
+
 // ConfigDecoder defines the interface for decoding configuration values. It supports
 // both generic decoding and specialized "fast path" decoding for common components.
-//
-// This design allows for custom decoders to be implemented by embedding BaseDecoder
-// and overriding only the necessary methods, avoiding the need for runtime type assertions.
+// It embeds smaller, more specific decoder interfaces for better organization.
 type ConfigDecoder interface {
 	// Decode provides generic decoding of a configuration key into a target struct.
 	// This is the fallback mechanism if a specialized method is not implemented.
 	Decode(key string, value any) error
 
-	// DecodeLogger provides a fast path for decoding the logger configuration.
-	// If not implemented, it should return ErrNotImplemented.
-	DecodeLogger() (*loggerv1.Logger, error)
-
-	// DecodeDiscoveries provides a fast path for decoding the service discovery configurations.
-	// If not implemented, it should return ErrNotImplemented.
-	DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error)
+	LoggerConfigDecoder      // Embed LoggerConfigDecoder
+	DiscoveriesConfigDecoder // Embed DiscoveriesConfigDecoder
 }
 
 // ConfigDecoderProvider defines the interface for creating a ConfigDecoder from a Kratos config.
@@ -49,7 +52,6 @@ type ConfigDecoderProvider interface {
 }
 
 // ConfigDecoderFunc is an adapter to allow the use of ordinary functions as ConfigDecoderProviders.
-
 type ConfigDecoderFunc func(kratosconfig.Config) (ConfigDecoder, error)
 
 // GetConfigDecoder calls f(config).

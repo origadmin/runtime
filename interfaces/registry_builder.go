@@ -8,11 +8,15 @@ import (
 
 type RegistryBuilder interface {
 	factory.Registry[RegistryFactory]
-	NewRegistrar(DiscoveryConfig, ...interface{}) (registry.Registrar, error)
-	NewDiscovery(DiscoveryConfig, ...interface{}) (registry.Discovery, error)
+	// NewRegistrar creates a new registrar using the provided ConfigDecoder and config path.
+	NewRegistrar(decoder ConfigDecoder, path string, opts ...interface{}) (registry.Registrar, error)
+	// NewDiscovery creates a new discovery client using the provided ConfigDecoder and config path.
+	NewDiscovery(decoder ConfigDecoder, path string, opts ...interface{}) (registry.Discovery, error)
 }
 
 type RegistryFactory interface {
-	NewRegistrar(DiscoveryConfig, ...interface{}) (registry.Registrar, error)
-	NewDiscovery(DiscoveryConfig, ...interface{}) (registry.Discovery, error)
+	// NewRegistrar creates a new registrar using the provided ConfigDecoder and config path.
+	NewRegistrar(decoder ConfigDecoder, path string, opts ...interface{}) (registry.Registrar, error)
+	// NewDiscovery creates a new discovery client using the provided ConfigDecoder and config path.
+	NewDiscovery(decoder ConfigDecoder, path string, opts ...interface{}) (registry.Discovery, error)
 }

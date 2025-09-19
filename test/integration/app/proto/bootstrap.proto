@@ -19,8 +19,8 @@ message Server {
 
   // 使用 oneof 将框架的 GRPC 和 HTTP "砖头" 组合在一起。
   oneof config {
-    transport.v1.GRPC grpc = 2;
-    transport.v1.HTTP http = 3;
+    transport.v1.GRPCServer grpc = 2;
+    transport.v1.HTTPServer http = 3;
   }
 }
 

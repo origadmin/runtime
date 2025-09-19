@@ -9,7 +9,8 @@ import "transport/v1/grpc.proto";
 import "transport/v1/http.proto";
 
 // go_package points to where the generated Go code for this test module should be placed
-option go_package = "github.com/origadmin/framework/test/integration/config/proto;configs";
+// Explicitly map transport.v1 protobuf package to its generated Go package with the correct alias
+option go_package = "github.com/origadmin/runtime/test/integration/config/proto;configs";
 
 // DiscoveryConfig binds a service discovery configuration with a unique name.
 message DiscoveryConfig {
@@ -28,8 +29,8 @@ message Bootstrap {
   string registration_discovery_name = 2;
 
   // 3. Define the list of service endpoints that the current service will expose.
-  repeated transport.v1.GRPC grpc_servers = 3;
-  repeated transport.v1.HTTP http_servers = 4;
+  repeated transport.v1.GRPCServer grpc_servers = 3;
+  repeated transport.v1.HTTPServer http_servers = 4;
 
   // 4. Define the list of downstream clients that the current service will connect to.
   repeated discovery.v1.Client clients = 5;
