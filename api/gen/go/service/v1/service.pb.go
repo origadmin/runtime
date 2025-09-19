@@ -7,12 +7,12 @@
 package servicev1
 
 import (
-	v1 "api/gen/go/transport/v1"
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	v15 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	v14 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/msg/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/task/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/websocket/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"

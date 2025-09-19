@@ -269,8 +269,8 @@ const file_transport_v1_grpc_proto_rawDesc = "" +
 	"\x11max_recv_msg_size\x18\x03 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
 	"\x11max_send_msg_size\x18\x04 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
 	"\x03tls\x18\x05 \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +
-	"\vmiddlewares\x18\x06 \x03(\tR\vmiddlewaresB\x93\x01\n" +
-	"\x10com.transport.v1B\tGrpcProtoP\x01Z#api/gen/go/transport/v1;transportv1\xa2\x02\x03TXX\xaa\x02\fTransport.V1\xca\x02\fTransport\\V1\xe2\x02\x18Transport\\V1\\GPBMetadata\xea\x02\rTransport::V1b\x06proto3"
+	"\vmiddlewares\x18\x06 \x03(\tR\vmiddlewaresB\xb0\x01\n" +
+	"\x10com.transport.v1B\tGrpcProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1\xa2\x02\x03TXX\xaa\x02\fTransport.V1\xca\x02\fTransport\\V1\xe2\x02\x18Transport\\V1\\GPBMetadata\xea\x02\rTransport::V1b\x06proto3"
 
 var (
 	file_transport_v1_grpc_proto_rawDescOnce sync.Once

@@ -1,29 +1,53 @@
+// Configuration for a microservice with HTTP server and gRPC client
+// This file defines the configuration for a microservice that provides an HTTP server interface and calls gRPC services
 syntax = "proto3";
 
+// Package name to prevent naming conflicts
 package examples.http_server_grpc_client;
 
-// 导入框架提供的服务端和客户端“积木”容器
+// Import server and client building block containers provided by the framework
 import "transport/v1/server.proto"; // Updated import path
 import "transport/v1/client.proto"; // Updated import path
+// Import client configuration related to service discovery
 import "discovery/v1/client.proto"; // Updated import path
 
+// Specify the import path and package name for the generated Go code
 option go_package = "./http_server_grpc_client/conf;conf";
 
-// Bootstrap 是一个提供 HTTP 服务端并调用 gRPC 客户端的微服务的顶层配置示例
+// Bootstrap is the top-level configuration for a microservice with HTTP server and gRPC client
+// This architecture pattern is suitable for scenarios that need to provide RESTful APIs while calling other gRPC services
 message Bootstrap {
-  // 定义一个服务端
+  // Server configuration list
+  // Typically, this would configure an HTTP server to provide APIs
+  // For example:
+  // - Port number
+  // - Middleware configuration
+  // - Timeout settings
   repeated transport.v1.Server servers = 1;
 
-  // 定义所有需要调用的下游客户端
-  // key 是客户端的逻辑名称，例如 "user-service-client"
+  // Downstream gRPC client configuration mapping
+  // The key is the logical name of the client, used to reference specific clients in code
+  // For example:
+  // - "user-service-client"
+  // - "order-service-client"
   map<string, ClientConfig> clients = 2; 
 }
 
-// ClientConfig 是项目层面组合客户端配置的结构
+// ClientConfig combines all configurations needed for a gRPC client
+// It includes service discovery and transport layer configurations
 message ClientConfig {
-  // 业务层面的客户端配置：如何发现和选择服务实例
+  // Business-level client configuration
+  // Mainly configures how to discover and select gRPC service instances, for example:
+  // - Service discovery method (direct, DNS, Consul, etc.)
+  // - Load balancing strategy
+  // - Circuit breaking and fallback configuration
   discovery.v1.Client discovery = 1;
 
-  // 传输层面的客户端配置：如何通过特定协议与服务实例通信
+  // Transport-level client configuration
+  // Mainly configures how to communicate with gRPC service instances, for example:
+  // - Connection pool configuration
+  // - Timeout settings
+  // - Retry policy
+  // - TLS configuration
   transport.v1.Client transport = 2;
 }

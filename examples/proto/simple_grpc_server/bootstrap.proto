@@ -1,18 +1,26 @@
+// Configuration for a simple gRPC server
+// This file defines the configuration structure for a microservice that only provides gRPC server functionality
 syntax = "proto3";
 
+// Package name to prevent naming conflicts
 package examples.simple_grpc_server;
 
-// 导入框架提供的服务端“积木”容器
+// Import the server building block container provided by the framework
 import "transport/v1/server.proto"; // Updated import path
 
+// Specify the import path and package name for the generated Go code
 option go_package = "./simple_grpc_server/conf;conf";
 
-// Bootstrap 是一个只提供 gRPC 服务端的微服务的顶层配置示例
+// Bootstrap is the top-level configuration for a simple gRPC server
+// This configuration is used to initialize a microservice that only provides gRPC server functionality
 message Bootstrap {
-  // 定义一个服务端，这里使用 repeated 是为了未来可以扩展为多个服务端
-  // 例如，一个 gRPC 对内，一个 HTTP 对外
+  // Server configuration list
+  // Using repeated allows configuring multiple server instances, for example:
+  // - A gRPC server for internal service communication
+  // - An HTTP server for providing RESTful APIs
   repeated transport.v1.Server servers = 1;
 
-  // 这个服务不调用其他服务，所以不定义 clients 字段
+  // Note: This service does not call other services, so the clients field is not needed
+  // If you need to call other services, uncomment the following line and implement ClientConfig
   // map<string, ClientConfig> clients = 2; 
 }

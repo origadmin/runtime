@@ -1,29 +1,53 @@
+// API Gateway configuration
+// This file defines the configuration structure for an API Gateway, including server and downstream client configurations
 syntax = "proto3";
 
+// Package name to prevent naming conflicts
 package examples.api_gateway;
 
-// 导入框架提供的服务端和客户端“积木”容器
+// Import server and client building block containers provided by the framework
 import "transport/v1/server.proto";
 import "transport/v1/client.proto";
-import "discovery/v1/client.proto"; // 客户端通常需要服务发现
+// Import client configuration related to service discovery
+import "discovery/v1/client.proto";
 
+// Specify the import path and package name for the generated Go code
 option go_package = "./api_gateway/conf;conf";
 
-// Bootstrap 是一个 API 网关的顶层配置示例
+// Bootstrap is the top-level configuration for an API Gateway
+// This configuration initializes an API Gateway service that can provide multiple server interfaces
+// and call multiple downstream microservices
 message Bootstrap {
-  // 网关通常会提供多个服务端接口
+  // Server configuration list
+  // Gateways typically expose multiple server interfaces, for example:
+  // - HTTP RESTful API for external access
+  // - gRPC interface
+  // - WebSocket service
   repeated transport.v1.Server servers = 1;
 
-  // 网关会调用多个下游服务
-  // key 是客户端的逻辑名称，例如 "user-service-client"
+  // Downstream client configuration mapping
+  // The key is the logical name of the client, used to reference specific clients in code
+  // For example:
+  // - "user-service-client"
+  // - "order-service-client"
   map<string, ClientConfig> clients = 2; 
 }
 
-// ClientConfig 是项目层面组合客户端配置的结构
+// ClientConfig combines all configurations needed for a client
+// It includes both business-level and transport-level configurations
 message ClientConfig {
-  // 业务层面的客户端配置：如何发现和选择服务实例
+  // Business-level client configuration
+  // Mainly configures how to discover and select service instances, for example:
+  // - Service discovery method (direct, DNS, Consul, etc.)
+  // - Load balancing strategy
+  // - Circuit breaking and fallback configuration
   discovery.v1.Client discovery = 1;
 
-  // 传输层面的客户端配置：如何通过特定协议与服务实例通信
+  // Transport-level client configuration
+  // Mainly configures how to communicate with selected service instances, for example:
+  // - Communication protocol (HTTP/gRPC)
+  // - Timeout settings
+  // - Retry policy
+  // - TLS configuration
   transport.v1.Client transport = 2;
 }
