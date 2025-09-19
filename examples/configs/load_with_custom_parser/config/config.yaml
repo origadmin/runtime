@@ -3,10 +3,10 @@
 # --- Logger Configuration ---
 logger:
   level: info
-  format: json # 或者 text
-  stdout: true # 直接对应 loggerv1.Logger.Stdout
-  file:        # 直接对应 loggerv1.Logger.File
-    path: "output.log" # 对应 loggerv1.Logger_File.Path
+  format: json
+  stdout: true
+  file:
+    path: "output.log"
     max_size: 10 # MB
     max_backups: 3
     max_age: 7 # days
@@ -42,3 +42,14 @@ clients:
         # The target also uses the discovery endpoint
         target: "discovery:///user-service"
         dial_timeout: "2s"
+
+# --- Custom Settings for demonstration ---
+custom_settings:
+  feature_enabled: true
+  api_key: "super-secret-key-123"
+  rate_limit: 100
+  endpoints:
+    - name: "users"
+      path: "/api/v1/users"
+    - name: "products"
+      path: "/api/v1/products"

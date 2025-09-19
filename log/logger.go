@@ -40,9 +40,14 @@ func NewLogger(cfg *loggerv1.Logger) kratoslog.Logger {
 				Compress:   fileConfig.GetCompress(),
 			}))
 		} else {
-			// Assuming slogx.WithFile uses the service name for the filename if path is not absolute
-			options = append(options, slogx.WithFile(cfg.GetName()))
+			// Use the path from fileConfig, not the logger's name
+			options = append(options, slogx.WithOutputFile(fileConfig.GetPath()))
 		}
+	}
+
+	// If no output is configured, default to console output
+	if len(options) == 0 {
+		options = append(options, slogx.WithConsole(true))
 	}
 
 	// Configure log format

@@ -52,10 +52,14 @@ type runtime struct {
 // Option is a function type that applies a configuration option to the Runtime.
 type Option func(*options)
 
+// ConfigPaths maps component names to their configuration paths within the main config.
+type ConfigPaths map[string]string
+
 // options holds the configuration options for creating a Runtime instance.
 type options struct {
 	appInfo         AppInfo
 	decoderProvider interfaces.ConfigDecoderProvider
+	configPaths     ConfigPaths // Map for component config paths
 }
 
 // WithDecoderProvider sets the DecoderProvider for the Runtime.
@@ -70,6 +74,16 @@ func WithDecoderProvider(p interfaces.ConfigDecoderProvider) Option {
 func WithAppInfo(appInfo AppInfo) Option {
 	return func(o *options) {
 		o.appInfo = appInfo
+	}
+}
+
+// WithConfigPath sets a specific configuration path for a given component.
+func WithConfigPath(component string, path string) Option {
+	return func(o *options) {
+		if o.configPaths == nil {
+			o.configPaths = make(ConfigPaths)
+		}
+		o.configPaths[component] = path
 	}
 }
 
@@ -109,6 +123,10 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 	// Apply options
 	appliedOpts := configure.Apply(&options{
 		decoderProvider: decoder.DefaultDecoder,
+		configPaths: ConfigPaths{
+			"logger":     "logger",     // Default path for logger config
+			"registries": "registries", // Default path for registries config
+		},
 	}, opts)
 
 	// --- 1. Validate Essential Options ---
@@ -128,11 +146,11 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 
 	// --- 3. Create and Enrich Logger ---
 	// This is the first point where we have both the config and the appInfo context.
-	logger := newLogger(configDecoder)
+	logger := newLogger(configDecoder, appliedOpts)
 	// Removed: log.SetLogger(logger)
 
 	// --- 4. Initialize all configured Service Registries & Discoveries ---
-	registriesCfg := getRegistriesConfig(configDecoder)
+	registriesCfg := getRegistriesConfig(configDecoder, appliedOpts)
 
 	registrars := make(map[string]registry.Registrar)
 	discoveries := make(map[string]registry.Discovery)
@@ -188,8 +206,10 @@ func New(kratosConfig kratosconfig.Config, opts ...Option) (Runtime, func(), err
 }
 
 // newLogger creates the logger backend from config and enriches it with app info.
-func newLogger(decoder interfaces.ConfigDecoder) log.Logger {
+func newLogger(decoder interfaces.ConfigDecoder, opts *options) log.Logger {
 	var loggerConfig *loggerv1.Logger
+
+	configPath := opts.configPaths["logger"]
 
 	// Fast path: If the decoder directly provides logger config, use it.
 	if d, ok := decoder.(interfaces.LoggerConfig); ok {
@@ -197,8 +217,8 @@ func newLogger(decoder interfaces.ConfigDecoder) log.Logger {
 	} else {
 		// Slow path: Fall back to generic decoding.
 		loggerConfig = new(loggerv1.Logger) // Initialize if not from fast path
-		if err := decoder.Decode("logger", loggerConfig); err != nil {
-			log.Warnf("Failed to decode logger config, using default: %v", err)
+		if err := decoder.Decode(configPath, loggerConfig); err != nil {
+			log.Warnf("Failed to decode logger config from path '%s', using default: %v", configPath, err)
 		}
 	}
 
@@ -212,14 +232,17 @@ type registriesConfig struct {
 }
 
 // getRegistriesConfig encapsulates the logic for decoding the registries' configuration.
-func getRegistriesConfig(decoder interfaces.ConfigDecoder) registriesConfig {
+func getRegistriesConfig(decoder interfaces.ConfigDecoder, opts *options) registriesConfig {
 	var cfg registriesConfig
+
+	configPath := opts.configPaths["registries"]
+
 	if d, ok := decoder.(interfaces.DiscoveryConfig); ok {
 		cfg.Registries = d.GetDiscoveries()
 	} else {
 		cfg.Registries = make(map[string]*discoveryv1.Discovery)
-		if err := decoder.Decode("registries", &cfg.Registries); err != nil {
-			log.Warnf("Failed to decode registries config, running in standalone mode: %v", err)
+		if err := decoder.Decode(configPath, &cfg.Registries); err != nil {
+			log.Warnf("Failed to decode registries config from path '%s', running in standalone mode: %v", configPath, err)
 		}
 	}
 	//cfg.DefaultRegistry = decoder.GetDefaultDiscovery()
