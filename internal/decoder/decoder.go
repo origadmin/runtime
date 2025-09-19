@@ -15,11 +15,16 @@ import (
 // This function is the entry point for creating a Decoder instance.
 func NewDecoder(config kratosconfig.Config) (interfaces.ConfigDecoder, error) {
 	var d decoder
-	// Get the root value from the Kratos config and scan it into d.values
-	// This ensures d.values contains the actual application config, not the bootstrap structure.
-	err := config.Value("").Scan(&d.values)
+	// Initialize d.values as a map[string]any before scanning
+	d.values = make(map[string]any)
+	// Scan the entire config into the internal map
+	err := config.Scan(&d.values)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan root config value into decoder: %w", err)
+		return nil, fmt.Errorf("failed to scan config into decoder values: %w", err)
+	}
+	// Ensure that after scanning, d.values is not empty, indicating successful load
+	if len(d.values) == 0 {
+		return nil, fmt.Errorf("decoder values are empty after scanning config")
 	}
 	return &d, nil
 }
@@ -74,6 +79,7 @@ func (d *decoder) Decode(key string, target interface{}) error {
 		DecodeHook: mapstructure.ComposeDecodeHookFunc(
 			mapstructure.StringToTimeHookFunc(time.RFC3339), // Corrected: provide a format
 			mapstructure.TextUnmarshallerHookFunc(),
+			// mapstructure.RecursiveStructHookFunc(), // This line must be removed
 		),
 	}
 

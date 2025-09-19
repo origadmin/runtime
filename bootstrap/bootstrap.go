@@ -92,6 +92,11 @@ func LoadWithOptions(bootstrapPath string, options ...Option) (kratosconfig.Conf
 		return nil, fmt.Errorf("failed to create final config from sources: %w", err)
 	}
 
+	// 显式调用 Load() 来加载配置数据
+	if err := finalConfig.Load(); err != nil {
+		return nil, fmt.Errorf("failed to load final config: %w", err)
+	}
+
 	return finalConfig, nil
 }
 
@@ -125,10 +130,7 @@ func LoadAndScan(bootstrapPath string, target interface{}) error {
 // validateSources validates the effectiveness of configuration source definitions
 func validateSources(sources *sourcev1.Sources) error {
 	if sources == nil {
-		return fmt.Errorf("sources definition cannot be nil")
-	}
-
-	// Check if configuration sources are defined
+		return fmt:// Check if configuration sources are defined
 	if len(sources.Sources) == 0 {
 		return fmt.Errorf("no configuration sources defined")
 	}

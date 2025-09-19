@@ -10,6 +10,7 @@ import (
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
+	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 var (
@@ -43,16 +44,16 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (krato
 	var sources []kratosconfig.Source
 
 	// Get the list of sources from the protobuf config.
-	userSources := srcs.GetSources()
+	sourceConfigs := srcs.GetSources()
 
 	// Sort the sources by priority before creating them.
-	sort.SliceStable(userSources, func(i, j int) bool {
+	sort.SliceStable(sourceConfigs, func(i, j int) bool {
 		// Sources with lower priority values are loaded first.
 		// Sources with higher priority values are loaded later, thus overriding earlier ones.
-		return userSources[i].GetPriority() < userSources[j].GetPriority()
+		return sourceConfigs[i].GetPriority() < sourceConfigs[j].GetPriority()
 	})
 
-	for _, src := range userSources {
+	for _, src := range sourceConfigs {
 		buildFactory, ok := f.Get(src.Type)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", src.Type)
@@ -67,6 +68,11 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (krato
 	if v.Sources != nil {
 		sources = append(sources, v.Sources...)
 	}
+
+	if len(sources) == 0 {
+		return nil, tkerrors.New("no configuration sources defined")
+	}
+
 	v.ConfigOptions = append(v.ConfigOptions, kratosconfig.WithSource(sources...))
 	return kratosconfig.New(v.ConfigOptions...), nil
 }
