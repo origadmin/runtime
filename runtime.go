@@ -25,8 +25,6 @@ type Runtime interface {
 	Logger() kratoslog.Logger // Changed to kratoslog.Logger
 	NewApp(servers ...transport.Server) *kratos.App
 	DefaultRegistrar() registry.Registrar
-	Discovery(name string) (registry.Discovery, bool)
-	Registrar(name string) (registry.Registrar, bool)
 	WithLogger(logger kratoslog.Logger) Runtime // Changed to kratoslog.Logger
 }
 
@@ -68,22 +66,25 @@ func New(provider interfaces.ComponentProvider, opts ...Option) (Runtime, error)
 	}
 
 	// --- 2. Get Components from Provider ---
-	logger := provider.GetLogger()
+	logger := provider.Logger()
 	if logger == nil {
 		return nil, fmt.Errorf("logger component is missing from the provider")
 	}
 
-	registrars := provider.GetRegistrars()
-	discoveries := provider.GetDiscoveries()
-	defaultRegistrar := provider.GetDefaultRegistrar()
+	// Create a helper for consistent logging within this function
+	helper := kratoslog.NewHelper(logger)
 
-	// Log messages about registries/discoveries can be handled by runtime's logger
+	registrars := provider.Registrars()
+	discoveries := provider.Discoveries()
+	defaultRegistrar := provider.DefaultRegistrar()
+
+	// Log messages about registries/discoveries can be handled by runtime's helper
 	if len(registrars) == 0 {
-		logger.Info("No service registry configured, running in local mode.")
+		helper.Info("No service registry configured, running in local mode.")
 	} else if defaultRegistrar == nil {
-		logger.Warn("No default registrar found. Service will not self-register.")
+		helper.Warn("No default registrar found. Service will not self-register.")
 	} else {
-		logger.Infof("Default registrar for self-registration set.")
+		helper.Infof("Default registrar for self-registration set.")
 	}
 
 	rt := &runtime{
@@ -109,15 +110,7 @@ func (r *runtime) DefaultRegistrar() registry.Registrar {
 	return r.defaultRegistrar
 }
 
-func (r *runtime) Discovery(name string) (registry.Discovery, bool) {
-	d, ok := r.discoveries[name]
-	return d, ok
-}
-
-func (r *runtime) Registrar(name string) (registry.Registrar, bool) {
-	reg, ok := r.registrars[name]
-	return reg, ok
-}
+// Removed Discovery and Registrar methods from Runtime interface and implementation
 
 func (r *runtime) WithLogger(logger kratoslog.Logger) Runtime { // Changed to kratoslog.Logger
 	newRt := *r

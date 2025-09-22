@@ -11,21 +11,21 @@ import (
 type ComponentProvider interface {
 	// --- Strongly-Typed Accessors for Core Components ---
 
-	// GetLogger returns the initialized logger instance.
-	GetLogger() kratoslog.Logger // Changed to Kratos log.Logger
+	// Logger returns the initialized logger instance.
+	Logger() kratoslog.Logger // Changed to Kratos log.Logger
 
-	// GetDiscoveries returns a map of initialized Kratos Discovery clients.
-	GetDiscoveries() map[string]registry.Discovery
+	// Discoveries returns a map of initialized Kratos Discovery clients.
+	Discoveries() map[string]registry.Discovery
 
-	// GetRegistrars returns a map of initialized Kratos Registrar clients.
-	GetRegistrars() map[string]registry.Registrar
+	// Registrars returns a map of initialized Kratos Registrar clients.
+	Registrars() map[string]registry.Registrar
 
-	// GetDefaultRegistrar returns the default Kratos Registrar for self-registration.
-	GetDefaultRegistrar() registry.Registrar
+	// DefaultRegistrar returns the default Kratos Registrar for self-registration.
+	DefaultRegistrar() registry.Registrar
 
 	// --- Generic Service Locator for Extensibility ---
 
-	// GetComponent retrieves a component by its registered name.
+	// Component retrieves a component by its registered name.
 	// This allows for future components to be added without changing the interface.
-	GetComponent(name string) (component interface{}, ok bool)
+	Component(name string) (component interface{}, ok bool)
 }

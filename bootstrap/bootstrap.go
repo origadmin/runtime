@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
+	"sync"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	kratoslog "github.com/go-kratos/kratos/v2/log"
@@ -21,6 +22,28 @@ import (
 
 // DefaultBootstrapPath the default bootstrap configuration file path
 const DefaultBootstrapPath = "configs/bootstrap.toml"
+
+// ComponentFactoryFunc defines the signature for a function that creates a component.
+// It receives the full ConfigDecoder and the specific component's configuration map.
+// The returned interface{} should be the actual component instance.
+type ComponentFactoryFunc func(decoder interfaces.ConfigDecoder, config map[string]any) (interface{}, error)
+
+var (
+	componentFactories     = make(map[string]ComponentFactoryFunc)
+	componentFactoriesLock sync.RWMutex
+)
+
+// RegisterComponentFactory registers a ComponentFactoryFunc for a given component type.
+// This allows for dynamic creation of components based on configuration.
+// It is safe for concurrent use.
+func RegisterComponentFactory(componentType string, factory ComponentFactoryFunc) {
+	componentFactoriesLock.Lock()
+	defer componentFactoriesLock.Unlock()
+	if _, exists := componentFactories[componentType]; exists {
+		kratoslog.Warnf("Component factory for type '%s' already registered. Overwriting.", componentType)
+	}
+	componentFactories[componentType] = factory
+}
 
 // NewProvider is the one-stop-shop function that loads configuration, creates all components,
 // and returns them via the ComponentProvider interface, along with a cleanup function.
@@ -99,7 +122,7 @@ func NewProvider(bootstrapPath string, options ...Option) (interfaces.ComponentP
 		}
 	}
 
-	// --- Components (Populate with known components first) ---
+	// --- Dynamic Components (Scan and create from [components] section) ---
 	components := make(map[string]interface{})
 	components["logger"] = logger
 	components["discoveries"] = discoveries
@@ -107,7 +130,37 @@ func NewProvider(bootstrapPath string, options ...Option) (interfaces.ComponentP
 	if defaultRegistrar != nil {
 		components["defaultRegistrar"] = defaultRegistrar
 	}
-	// TODO: Implement logic to scan config for [components] section and dynamically create/register them.
+
+	var rawGenericComponents map[string]map[string]any
+	err = decoder.Decode("components", &rawGenericComponents)
+	if err != nil {
+		helper.Infof("No generic components configuration found or failed to decode (%v). Skipping dynamic component creation.", err)
+	} else {
+		componentFactoriesLock.RLock()
+		defer componentFactoriesLock.RUnlock()
+
+		for compName, compConfig := range rawGenericComponents {
+			compType, ok := compConfig["type"].(string)
+			if !ok || compType == "" {
+				helper.Warnf("Component '%s' has no 'type' field or it's not a string. Skipping.", compName)
+				continue
+			}
+
+			factory, found := componentFactories[compType]
+			if !found {
+				helper.Warnf("No factory registered for component type '%s' (component '%s'). Skipping.", compType, compName)
+				continue
+			}
+
+			helper.Infof("Creating dynamic component '%s' of type '%s'.", compName, compType)
+			compInstance, factoryErr := factory(decoder, compConfig)
+			if factoryErr != nil {
+				helper.Errorf("Failed to create component '%s' of type '%s': %v. Skipping.", compName, compType, factoryErr)
+				continue
+			}
+			components[compName] = compInstance
+		}
+	}
 
 	// 3. ASSEMBLE: Create the concrete provider struct.
 	provider := &componentProviderImpl{

@@ -19,28 +19,28 @@ type componentProviderImpl struct {
 	components map[string]interface{}
 }
 
-// GetLogger returns the initialized logger instance.
-func (o *componentProviderImpl) GetLogger() kratoslog.Logger { // Changed to kratoslog.Logger
+// Logger returns the initialized logger instance.
+func (o *componentProviderImpl) Logger() kratoslog.Logger { // Changed to kratoslog.Logger
 	return o.logger
 }
 
-// GetDiscoveries returns a map of initialized Kratos Discovery clients.
-func (o *componentProviderImpl) GetDiscoveries() map[string]registry.Discovery {
+// Discoveries returns a map of initialized Kratos Discovery clients.
+func (o *componentProviderImpl) Discoveries() map[string]registry.Discovery {
 	return o.discoveries
 }
 
-// GetRegistrars returns a map of initialized Kratos Registrar clients.
-func (o *componentProviderImpl) GetRegistrars() map[string]registry.Registrar {
+// Registrars returns a map of initialized Kratos Registrar clients.
+func (o *componentProviderImpl) Registrars() map[string]registry.Registrar {
 	return o.registrars
 }
 
-// GetDefaultRegistrar returns the default Kratos Registrar for self-registration.
-func (o *componentProviderImpl) GetDefaultRegistrar() registry.Registrar {
+// DefaultRegistrar returns the default Kratos Registrar for self-registration.
+func (o *componentProviderImpl) DefaultRegistrar() registry.Registrar {
 	return o.defaultRegistrar
 }
 
-// GetComponent retrieves a component by its registered name from the components map.
-func (o *componentProviderImpl) GetComponent(name string) (component interface{}, ok bool) {
+// Component retrieves a component by its registered name from the components map.
+func (o *componentProviderImpl) Component(name string) (component interface{}, ok bool) {
 	component, ok = o.components[name]
 	return
 }
