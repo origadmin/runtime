@@ -16,74 +16,57 @@ import (
 	"github.com/origadmin/toolkits/errors"
 )
 
-// baseDecoder provides a basic, direct-to-Kratos implementation.
-// It's unexported and used internally by the more advanced Decoder.
-type baseDecoder struct {
-	KratosConfig kratosconfig.Config
-}
-
-// newBaseDecoder creates a new baseDecoder.
-func newBaseDecoder(config kratosconfig.Config) *baseDecoder {
-	return &baseDecoder{KratosConfig: config}
-}
-
-// Decode provides a generic fallback using the underlying Kratos config.
-func (b *baseDecoder) Decode(key string, value any) error {
-	if key == "" {
-		return b.KratosConfig.Scan(value)
-	}
-	return b.KratosConfig.Value(key).Scan(value)
-}
-
-// DecodeLogger returns ErrNotImplemented, forcing fallback.
-func (b *baseDecoder) DecodeLogger() (*loggerv1.Logger, error) {
-	return nil, interfaces.ErrNotImplemented
-}
-
-// DecodeDiscoveries returns ErrNotImplemented, forcing fallback.
-func (b *baseDecoder) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	return nil, interfaces.ErrNotImplemented
-}
-
-// stringToDurationHookFunc converts a string duration (e.g., "1s") to a *durationpb.Duration.
+// stringToDurationHookFunc converts a string duration (e.g., "1s", "1m") to a *durationpb.Duration.
 func stringToDurationHookFunc() mapstructure.DecodeHookFunc {
 	return func(
 		f reflect.Type,
 		t reflect.Type,
 		data interface{}) (interface{}, error) {
+		// Only handle string to *durationpb.Duration conversions.
 		if f.Kind() != reflect.String || t != reflect.TypeOf(&durationpb.Duration{}) {
 			return data, nil
 		}
+
 		str, ok := data.(string)
 		if !ok {
 			return data, nil
 		}
+
+		// Parse the string into a time.Duration.
 		d, err := time.ParseDuration(str)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse duration string '%s': %w", str, err)
 		}
+
+		// Convert time.Duration to *durationpb.Duration.
 		return durationpb.New(d), nil
 	}
 }
 
-// Decoder is the advanced implementation of the interfaces.ConfigDecoder.
-// It pre-scans the configuration into a map and uses mapstructure for flexible decoding.
-type Decoder struct {
-	base   *baseDecoder
-	values map[string]any
+// defaultDecoder is the default implementation of the interfaces.ConfigDecoder.
+// It embeds baseDecoder to inherit default behaviors and stores the entire
+// configuration in a map for generic decoding.
+type defaultDecoder struct {
+	decoder *baseDecoder // Embed the Decoder from the new public package
+	paths   map[string]string
+	values  map[string]any
 }
 
-// NewDecoder creates a new advanced decoder instance.
+// NewDecoder creates a new default decoder instance.
+// It initializes the baseDecoder and scans the entire configuration into an internal map
+// to support generic decoding lookups.
 func NewDecoder(config kratosconfig.Config) (interfaces.ConfigDecoder, error) {
-	d := &Decoder{
-		base:   newBaseDecoder(config),
-		values: make(map[string]any),
+	d := &defaultDecoder{
+		decoder: newBaseDecoder(config), // Initialize the embedded baseDecoder
+		values:  make(map[string]any),
 	}
 
+	// Scan the entire config into the internal map for generic decoding.
 	if err := config.Scan(&d.values); err != nil {
 		return nil, fmt.Errorf("failed to scan config into decoder values: %w", err)
 	}
 
+	// Ensure that after scanning, d.values is not empty, indicating successful load.
 	if len(d.values) == 0 {
 		return nil, fmt.Errorf("decoder values are empty after scanning config")
 	}
@@ -92,6 +75,7 @@ func NewDecoder(config kratosconfig.Config) (interfaces.ConfigDecoder, error) {
 }
 
 // getMapstructureDecoderConfig creates a configured mapstructure.DecoderConfig.
+// This function is private to the package.
 func getMapstructureDecoderConfig(target interface{}) *mapstructure.DecoderConfig {
 	return &mapstructure.DecoderConfig{
 		Metadata:         nil,
@@ -106,16 +90,20 @@ func getMapstructureDecoderConfig(target interface{}) *mapstructure.DecoderConfi
 	}
 }
 
-// Decode provides a generic decoding mechanism using mapstructure.
-func (d *Decoder) Decode(key string, target interface{}) error {
+// Decode provides a generic decoding mechanism. It navigates the internal `values` map
+// using a dot-separated key and then uses mapstructure to decode the result into the target.
+// This method overrides the baseDecoder's Decode to use the pre-scanned `values` map.
+func (d *defaultDecoder) Decode(key string, target interface{}) error {
 	if target == nil {
 		return fmt.Errorf("target cannot be nil")
 	}
 
 	var dataToDecode any
 	if key == "" {
+		// If key is empty, decode the entire config map.
 		dataToDecode = d.values
 	} else {
+		// Navigate through the map using the dot-separated key.
 		currentValue, err := d.lookup(key)
 		if err != nil {
 			return err
@@ -123,7 +111,9 @@ func (d *Decoder) Decode(key string, target interface{}) error {
 		dataToDecode = currentValue
 	}
 
-	config := getMapstructureDecoderConfig(target)
+	// Configure mapstructure for flexible decoding.
+	config := getMapstructureDecoderConfig(target) // Use the helper function
+
 	msDecoder, err := mapstructure.NewDecoder(config)
 	if err != nil {
 		return fmt.Errorf("failed to create mapstructure decoder: %w", err)
@@ -133,7 +123,7 @@ func (d *Decoder) Decode(key string, target interface{}) error {
 }
 
 // lookup navigates the nested map `d.values` using a dot-separated key.
-func (d *Decoder) lookup(key string) (any, error) {
+func (d *defaultDecoder) lookup(key string) (any, error) {
 	var currentValue any = d.values
 	keys := strings.Split(key, ".")
 
@@ -155,37 +145,50 @@ func (d *Decoder) lookup(key string) (any, error) {
 	return currentValue, nil
 }
 
-// DecodeLogger uses a "fast path first, fallback to generic" strategy.
-func (d *Decoder) DecodeLogger() (*loggerv1.Logger, error) {
-	// Attempt fast path from the base decoder (which will return ErrNotImplemented).
-	loggerConfig, err := d.base.DecodeLogger()
+// DecodeLogger first attempts to call the wrapped decoder's DecodeLogger.
+// If that is not implemented, it falls back to calling the wrapped decoder's
+// generic Decode method, using the path from its ConfigPaths map.
+func (d *defaultDecoder) DecodeLogger() (*loggerv1.Logger, error) {
+	// 1. Try the fast path first.
+	loggerConfig, err := d.decoder.DecodeLogger()
 	if !errors.Is(err, interfaces.ErrNotImplemented) {
+		// This means it was either a success (err == nil) or a real error.
+		// In both cases, we return directly.
 		return loggerConfig, err
 	}
 
-	// Fallback to generic decoding from the pre-scanned map using a default key.
-	var cfg loggerv1.Logger
-	if decodeErr := d.Decode("logger", &cfg); decodeErr != nil {
-		// If the key doesn't exist or fails to decode, it's not a fatal error,
-		// it just means the config isn't there. Return the original ErrNotImplemented.
+	// 2. Fallback to generic decoding using the configured path.
+	path, ok := d.paths["logger"]
+	if !ok || path == "" {
+		// If no path is configured, we can't fall back.
+		// Return the original ErrNotImplemented so the caller knows nothing was found.
 		return nil, interfaces.ErrNotImplemented
+	}
+
+	var cfg loggerv1.Logger
+	if decodeErr := d.decoder.Decode(path, &cfg); decodeErr != nil {
+		return nil, decodeErr
 	}
 	return &cfg, nil
 }
 
-// DecodeDiscoveries uses a "fast path first, fallback to generic" strategy.
-func (d *Decoder) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	// Attempt fast path from the base decoder (which will return ErrNotImplemented).
-	discoveries, err := d.base.DecodeDiscoveries()
+// DecodeDiscoveries implements the same "fast path first, fallback to generic" strategy.
+func (d *defaultDecoder) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
+	// 1. Try the fast path first.
+	discoveries, err := d.decoder.DecodeDiscoveries()
 	if !errors.Is(err, interfaces.ErrNotImplemented) {
 		return discoveries, err
 	}
 
-	// Fallback to generic decoding from the pre-scanned map using a default key.
-	var cfg map[string]*discoveryv1.Discovery
-	if decodeErr := d.Decode("registries", &cfg); decodeErr != nil {
-		// If the key doesn't exist or fails to decode, return the original ErrNotImplemented.
+	// 2. Fallback to generic decoding.
+	path, ok := d.paths["registries"] // Note: the component name is "registries"
+	if !ok || path == "" {
 		return nil, interfaces.ErrNotImplemented
+	}
+
+	var cfg map[string]*discoveryv1.Discovery
+	if decodeErr := d.decoder.Decode(path, &cfg); decodeErr != nil {
+		return nil, decodeErr
 	}
 	return cfg, nil
 }

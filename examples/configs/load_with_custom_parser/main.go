@@ -28,9 +28,9 @@ type CustomSettings struct {
 }
 
 // customConfigDecoder implements the interfaces.ConfigDecoder interface
-// It embeds decoder.BaseDecoder to inherit default behaviors.
+// It embeds decoder.Decoder to inherit default behaviors.
 type customConfigDecoder struct {
-	*decoder.BaseDecoder // Embed the BaseDecoder from config/decoder
+	*decoder.Decoder // Embed the Decoder from config/decoder
 }
 
 // customDecoderProvider implements the interfaces.ConfigDecoderProvider interface
@@ -41,14 +41,14 @@ var DefaultCustomDecoder = &customDecoderProvider{}
 
 // GetConfigDecoder returns a new customConfigDecoder.
 func (p *customDecoderProvider) GetConfigDecoder(kratosConfig kratosconfig.Config) (interfaces.ConfigDecoder, error) {
-	// Initialize the embedded BaseDecoder
+	// Initialize the embedded Decoder
 	return &customConfigDecoder{
-		BaseDecoder: decoder.NewBaseDecoder(kratosConfig),
+		Decoder: decoder.NewDecoder(kratosConfig),
 	}, nil
 }
 
 // Note: We are not implementing Decode, DecodeLogger, DecodeDiscoveries here.
-// This customConfigDecoder will rely on the embedded BaseDecoder's implementations
+// This customConfigDecoder will rely on the embedded Decoder's implementations
 // for these methods. If specific custom logic were needed, we would override them here.
 
 func main() {

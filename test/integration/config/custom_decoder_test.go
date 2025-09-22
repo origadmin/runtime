@@ -28,18 +28,18 @@ type TestCustomSettings struct {
 }
 
 // customTestConfigDecoder implements the interfaces.ConfigDecoder interface for testing.
-// It embeds decoder.BaseDecoder and overrides specific methods to return ErrNotImplemented.
+// It embeds decoder.Decoder and overrides specific methods to return ErrNotImplemented.
 type customTestConfigDecoder struct {
-	*decoder.BaseDecoder
+	*decoder.Decoder
 }
 
-// DecodeLogger overrides the BaseDecoder's DecodeLogger to return ErrNotImplemented.
+// DecodeLogger overrides the Decoder's DecodeLogger to return ErrNotImplemented.
 // This forces the runtime to fall back to the generic Decode method for logger config.
 func (d *customTestConfigDecoder) DecodeLogger() (*loggerv1.Logger, error) {
 	return nil, interfaces.ErrNotImplemented
 }
 
-// DecodeDiscoveries overrides the BaseDecoder's DecodeDiscoveries to return ErrNotImplemented.
+// DecodeDiscoveries overrides the Decoder's DecodeDiscoveries to return ErrNotImplemented.
 // This forces the runtime to fall back to the generic Decode method for discovery configs.
 func (d *customTestConfigDecoder) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
 	return nil, interfaces.ErrNotImplemented
@@ -51,12 +51,12 @@ type customTestDecoderProvider struct{}
 // GetConfigDecoder returns a new customTestConfigDecoder.
 func (p *customTestDecoderProvider) GetConfigDecoder(kratosConfig kratosconfig.Config) (interfaces.ConfigDecoder, error) {
 	return &customTestConfigDecoder{
-		BaseDecoder: decoder.NewBaseDecoder(kratosConfig),
+		Decoder: decoder.NewDecoder(kratosConfig),
 	}, nil
 }
 
 // TestCustomConfigDecoderIntegration tests the integration of a custom ConfigDecoder
-// that relies on BaseDecoder and returns ErrNotImplemented for specific fast paths.
+// that relies on Decoder and returns ErrNotImplemented for specific fast paths.
 func TestCustomConfigDecoderIntegration(t *testing.T) {
 	assert := assert.New(t)
 

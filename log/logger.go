@@ -11,6 +11,7 @@ import (
 	kratoslog "github.com/go-kratos/kratos/v2/log"
 
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	"github.com/origadmin/runtime/interfaces"
 	kslog "github.com/origadmin/slog-kratos"
 	"github.com/origadmin/toolkits/slogx"
 )
@@ -78,7 +79,15 @@ func NewLogger(cfg *loggerv1.Logger) kratoslog.Logger {
 	return kratosLogger
 }
 
-// LevelOption converts a string level to an slogx.Option.
+func NewLoggerFromConfig(configDecoder interfaces.ConfigDecoder) kratoslog.Logger {
+	var cfg loggerv1.Logger
+	if err := configDecoder.DecodeLogger(&cfg); err != nil {
+		panic(err)
+	}
+	return NewLogger(&cfg)
+}
+
+// LevelOption converts a string level to a slogx.Option.
 func LevelOption(level string) slogx.Option {
 	var ll slogx.Level
 	switch strings.ToLower(level) {
