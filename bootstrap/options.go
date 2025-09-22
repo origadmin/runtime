@@ -10,7 +10,7 @@ import (
 type Options struct {
 	BootstrapOptions []runtimeconfig.KOption
 	ConfigOptions    []runtimeconfig.Option
-	DecoderProvider  interfaces.ConfigDecoderProvider
+	DecoderProvider  interfaces.ConfigProviderFunc
 }
 
 // Option is a function that configures bootstrap.Options
@@ -32,7 +32,7 @@ func WithConfigOptions(opts ...runtimeconfig.Option) Option {
 
 // WithDecoderProvider sets the custom decoder provider.
 // If not set, a default decoder provider will be used.
-func WithDecoderProvider(p interfaces.ConfigDecoderProvider) Option {
+func WithDecoderProvider(p interfaces.ConfigProviderFunc) Option {
 	return func(o *Options) {
 		o.DecoderProvider = p
 	}

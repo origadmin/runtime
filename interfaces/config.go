@@ -13,17 +13,6 @@ import (
 // by a custom decoder. This signals the runtime to fall back to generic decoding.
 var ErrNotImplemented = errors.New("method not implemented by this decoder")
 
-// Config defines the interface for the application's configuration, providing
-// access to both the raw configuration source and the decoding capabilities.
-type Config interface {
-	// Raw returns the underlying Kratos config.Config instance.
-	// It is primarily used for advanced scenarios where direct access to the source is needed.
-	Raw() kratosconfig.Config
-
-	// Decoder returns the ConfigDecoder for accessing and decoding configuration values.
-	Decoder() ConfigDecoder
-}
-
 // LoggerConfigDecoder defines the interface for decoding logger configuration.
 type LoggerConfigDecoder interface {
 	DecodeLogger() (*loggerv1.Logger, error)
@@ -34,27 +23,31 @@ type DiscoveriesConfigDecoder interface {
 	DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error)
 }
 
-// ConfigDecoder defines the interface for decoding configuration values. It supports
+// Config defines the interface for the application's configuration, providing
 // both generic decoding and specialized "fast path" decoding for common components.
 // It embeds smaller, more specific decoder interfaces for better organization.
-type ConfigDecoder interface {
+type Config interface {
 	// Decode provides generic decoding of a configuration key into a target struct.
 	// This is the fallback mechanism if a specialized method is not implemented.
 	Decode(key string, value any) error
+
+	// Raw returns the underlying Kratos config.Config instance.
+	// This allows access to the raw configuration source for advanced scenarios.
+	Raw() kratosconfig.Config
 
 	LoggerConfigDecoder      // Embed LoggerConfigDecoder
 	DiscoveriesConfigDecoder // Embed DiscoveriesConfigDecoder
 }
 
-// ConfigDecoderProvider defines the interface for creating a ConfigDecoder from a Kratos config.
-type ConfigDecoderProvider interface {
-	GetConfigDecoder(kratosconfig.Config) (ConfigDecoder, error)
+// ConfigProvider defines the interface for creating a Config from a Kratos config.
+type ConfigProvider interface {
+	New(kratosconfig.Config) (Config, error) // Renamed from NewDecoder
 }
 
-// ConfigDecoderFunc is an adapter to allow the use of ordinary functions as ConfigDecoderProviders.
-type ConfigDecoderFunc func(kratosconfig.Config) (ConfigDecoder, error)
+// ConfigProviderFunc is an adapter to allow the use of ordinary functions as ConfigProviders.
+type ConfigProviderFunc func(kratosconfig.Config) (Config, error)
 
-// GetConfigDecoder calls f(config).
-func (f ConfigDecoderFunc) GetConfigDecoder(config kratosconfig.Config) (ConfigDecoder, error) {
+// New calls f(config).
+func (f ConfigProviderFunc) New(config kratosconfig.Config) (Config, error) {
 	return f(config)
 }

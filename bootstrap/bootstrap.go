@@ -11,10 +11,10 @@ import (
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
+	"github.com/origadmin/runtime/bootstrap/internal/decoder"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/internal/decoder"
 
 	"github.com/origadmin/runtime/log"                      // Re-import runtime/log
 	runtimeRegistry "github.com/origadmin/runtime/registry" // Placeholder for actual registry package
@@ -24,9 +24,9 @@ import (
 const DefaultBootstrapPath = "configs/bootstrap.toml"
 
 // ComponentFactoryFunc defines the signature for a function that creates a component.
-// It receives the full ConfigDecoder and the specific component's configuration map.
+// It receives the full Config and the specific component's configuration map.
 // The returned interface{} should be the actual component instance.
-type ComponentFactoryFunc func(decoder interfaces.ConfigDecoder, config map[string]any) (interface{}, error)
+type ComponentFactoryFunc func(decoder interfaces.Config, config map[string]any) (interface{}, error)
 
 var (
 	componentFactories     = make(map[string]ComponentFactoryFunc)
@@ -109,7 +109,6 @@ func NewProvider(bootstrapPath string, options ...Option) (interfaces.ComponentP
 			registrars[name] = r
 			discoveries[name] = d
 
-
 			if name == registriesCfg.DefaultRegistry {
 				defaultRegistrar = r
 			}
@@ -175,15 +174,15 @@ func NewProvider(bootstrapPath string, options ...Option) (interfaces.ComponentP
 	return provider, cleanup, nil
 }
 
-// NewDecoder initializes the configuration and returns a ready-to-use ConfigDecoder.
+// NewDecoder initializes the configuration and returns a ready-to-use Config.
 // This is a convenience wrapper around NewDecoderWithOptions, allowing direct passing of runtimeconfig.Option.
-func NewDecoder(bootstrapPath string, configOptions ...runtimeconfig.Option) (interfaces.ConfigDecoder, func(), error) {
+func NewDecoder(bootstrapPath string, configOptions ...runtimeconfig.Option) (interfaces.Config, func(), error) {
 	return NewDecoderWithOptions(bootstrapPath, WithConfigOptions(configOptions...))
 }
 
 // NewDecoderWithOptions is the core function that loads all configuration sources,
-// creates a ConfigDecoder using the specified or default provider, and returns it.
-func NewDecoderWithOptions(bootstrapPath string, options ...Option) (interfaces.ConfigDecoder, func(), error) {
+// creates a Config using the specified or default provider, and returns it.
+func NewDecoderWithOptions(bootstrapPath string, options ...Option) (interfaces.Config, func(), error) {
 	// 1. Apply options to get DecoderProvider, etc.
 	opts := configure.Apply(&Options{
 		// Set the default decoder provider here.
@@ -227,8 +226,8 @@ func NewDecoderWithOptions(bootstrapPath string, options ...Option) (interfaces.
 		return nil, nil, fmt.Errorf("failed to load final config: %w", err)
 	}
 
-	// 6. Use the decoder provider to create the ConfigDecoder.
-	configDecoder, err := opts.DecoderProvider.GetConfigDecoder(finalConfig)
+	// 6. Use the decoder provider to create the Config.
+	configDecoder, err := opts.DecoderProvider.New(finalConfig)
 	if err != nil {
 		_ = finalConfig.Close()
 		return nil, nil, fmt.Errorf("failed to get config decoder: %w", err)

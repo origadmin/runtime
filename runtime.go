@@ -30,10 +30,12 @@ type Runtime interface {
 
 // runtime is the internal implementation of the Runtime interface.
 type runtime struct {
-	app              AppInfo
+	app AppInfo
+
 	logger           kratoslog.Logger // Changed to kratoslog.Logger
 	registrars       map[string]registry.Registrar
 	discoveries      map[string]registry.Discovery
+	provider         interfaces.ComponentProvider
 	defaultRegistrar registry.Registrar
 }
 
@@ -42,7 +44,8 @@ type Option func(*options)
 
 // options holds the configuration options for creating a Runtime instance.
 type options struct {
-	appInfo AppInfo
+	appInfo  AppInfo
+	provider interfaces.ComponentProvider
 }
 
 // WithAppInfo sets the application information for the Runtime.
@@ -53,18 +56,29 @@ func WithAppInfo(appInfo AppInfo) Option {
 	}
 }
 
+func WithComponentProvider(provider interfaces.ComponentProvider) Option {
+	return func(o *options) {
+		o.provider = provider
+	}
+}
+
 // New creates a new runtime instance from a ComponentProvider.
 // It requires that app info is provided via options.
-func New(provider interfaces.ComponentProvider, opts ...Option) (Runtime, error) {
+func New(appInfo AppInfo, opts ...Option) (Runtime, error) {
 	// Apply options
 	appliedOpts := configure.Apply(&options{}, opts)
 
 	// --- 1. Validate Essential Options ---
-	appInfo := appliedOpts.appInfo
+	//appInfo := appliedOpts.appInfo
 	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" || appInfo.Env == "" {
 		return nil, fmt.Errorf("app ID, Name, Version, and Env cannot be empty and must be provided via WithAppInfo option")
 	}
 
+	if appliedOpts.provider == nil {
+		return nil, fmt.Errorf("component provider is missing")
+	}
+
+	provider := appliedOpts.provider
 	// --- 2. Get Components from Provider ---
 	logger := provider.Logger()
 	if logger == nil {
@@ -93,6 +107,7 @@ func New(provider interfaces.ComponentProvider, opts ...Option) (Runtime, error)
 		registrars:       registrars,
 		discoveries:      discoveries,
 		defaultRegistrar: defaultRegistrar,
+		provider:         provider,
 	}
 
 	return rt, nil
@@ -109,8 +124,6 @@ func (r *runtime) Logger() kratoslog.Logger { // Changed to kratoslog.Logger
 func (r *runtime) DefaultRegistrar() registry.Registrar {
 	return r.defaultRegistrar
 }
-
-// Removed Discovery and Registrar methods from Runtime interface and implementation
 
 func (r *runtime) WithLogger(logger kratoslog.Logger) Runtime { // Changed to kratoslog.Logger
 	newRt := *r
