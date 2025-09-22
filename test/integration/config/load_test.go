@@ -198,7 +198,7 @@ func generateAllFormatsFromYAML(t *testing.T) {
 		fmt.Printf("Failed to scan config: %v\n", err)
 		return
 	}
-	// 3. 定义支持的格式及其编码器
+	// 3. define the supported formats and their encoders
 	formats := []struct {
 		name string
 	}{
@@ -216,7 +216,7 @@ func generateAllFormatsFromYAML(t *testing.T) {
 		},
 	}
 
-	// 4. 生成并保存各种格式的配置文件
+	// 4. generate and save profiles in various formats
 	for _, format := range formats {
 		saveToFile(t, &configBootstrap, "full_config."+format.name, format.name)
 		t.Logf("Successfully generated %s\n", format.name)
