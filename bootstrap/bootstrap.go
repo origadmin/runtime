@@ -6,6 +6,7 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/goexts/generic/configure"
 
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/bootstrap/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
@@ -108,10 +109,7 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 // It orchestrates the entire process of configuration loading and component initialization.
 func NewProvider(bootstrapPath string, opts ...Option) (interfaces.ComponentProvider, func(), error) {
 	// 1. Apply provider-level options
-	providerOpts := &options{}
-	for _, o := range opts {
-		o(providerOpts)
-	}
+	providerOpts := configure.Apply(&options{}, opts)
 
 	// AppInfo is a mandatory input for creating a valid provider.
 	// Check if appInfo is nil OR if it's not valid (e.g., empty ID, Name, Version).

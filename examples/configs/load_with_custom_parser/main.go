@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
+
 	// Import the generated Go code from the api_gateway proto definition.
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 )
 
@@ -27,36 +28,42 @@ type CustomSettings struct {
 
 // Register the component factory function for our custom settings
 func init() {
-	bootstrap.RegisterComponentFactory("custom_settings", func(config interface{}) (interface{}, error) {
+	bootstrap.RegisterComponentFactory("custom_settings", func(cfg interfaces.Config, componentConfig map[string]interface{}) (interface{}, error) {
 		// Create a new instance of CustomSettings
 		settings := &CustomSettings{}
-		
+
 		// If config is provided, we can unmarshal it into our settings
-		if config != nil {
+		if componentConfig != nil {
 			// Convert config to JSON and back to handle different config formats
-			configBytes, err := json.Marshal(config)
+			configBytes, err := json.Marshal(componentConfig)
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal config: %w", err)
 			}
-			
+
 			if err := json.Unmarshal(configBytes, settings); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal config into CustomSettings: %w", err)
 			}
 		}
-		
+
 		return settings, nil
 	})
 }
 
 func main() {
+	// Create AppInfo struct
+	appInfo := interfaces.AppInfo{
+		ID:        "api_gateway_custom_parser_example",
+		Name:      "ApiGatewayCustomParserExample",
+		Version:   "1.0.0",
+		Env:       "dev",
+		StartTime: time.Now(),
+		Metadata:  make(map[string]string),
+	}
+
 	// 1. Create a new Runtime instance from the bootstrap config
 	rt, cleanup, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_custom_parser/config/bootstrap.yaml",
-		bootstrap.WithAppInfo(
-			"ApiGatewayCustomParserExample", // name
-			"1.0.0",                        // version
-			"dev",                          // env
-		),
+		bootstrap.WithAppInfo(appInfo), // Pass the AppInfo struct
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
@@ -92,7 +99,7 @@ func main() {
 	}
 
 	// 3. Get the config interface to decode other configurations
-	config := rt.Config()
+	config := rt.Decoder()
 
 	// Decode the entire bootstrap config
 	var bc conf.Bootstrap

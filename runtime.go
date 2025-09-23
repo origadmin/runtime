@@ -58,7 +58,7 @@ func (r *Runtime) Decoder() interfaces.Config {
 // Modified: Uses r.AppInfo().Options() for Kratos options.
 func (r *Runtime) NewApp(servers ...transport.Server) *kratos.App {
 	// Get Kratos options directly from the interfaces.AppInfo
-	appOpts := r.AppInfo().Options()
+	appOpts := AppInfo(r.AppInfo()).Options()
 
 	opts := []kratos.Option{
 		kratos.Logger(r.Logger()),

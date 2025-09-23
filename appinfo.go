@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	kratos "github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2"
 	"github.com/google/uuid"
 
 	"github.com/origadmin/runtime/interfaces"
@@ -14,17 +14,7 @@ import (
 // It includes essential metadata such as the application's name, version, environment,
 // and instance ID. This information is determined at startup and remains constant
 // throughout the application's lifecycle.
-type AppInfo struct {
-	ID        string
-	Name      string
-	Version   string
-	Env       string
-	StartTime time.Time
-	Metadata  map[string]string
-}
-
-// Statically assert that AppInfo implements the interfaces.AppInfo interface.
-var _ interfaces.AppInfo = (*AppInfo)(nil)
+type AppInfo interfaces.AppInfo
 
 // NewAppInfo creates a new AppInfo instance with default values for ID, StartTime, and Metadata.
 // It requires the application's name, version, and environment.
@@ -92,13 +82,13 @@ func (a AppInfo) GetEnv() string {
 	return a.Env
 }
 
-// StartTime returns the time the application was started.
-func (a AppInfo) StartTime() time.Time {
+// GetStartTime returns the time the application was started.
+func (a AppInfo) GetStartTime() time.Time {
 	return a.StartTime
 }
 
-// Uptime returns the duration since the application was started.
-func (a AppInfo) Uptime() time.Duration {
+// GetUptime returns the duration since the application was started.
+func (a AppInfo) GetUptime() time.Duration {
 	return time.Since(a.StartTime)
 }
 

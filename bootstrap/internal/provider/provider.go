@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -109,18 +108,11 @@ func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
 	}
 
 	// 4. Create the logger instance. NewLogger handles the nil config gracefully.
-	logger, creationErr := runtimeLog.NewLogger(loggerCfg)
-	if creationErr != nil {
-		// This is a more serious error during logger creation itself.
-		// We must ensure a logger exists, so we create a fallback and log the error.
-		p.logger = log.NewStdLogger(os.Stderr)
-		p.logger.Log(log.LevelError, "msg", "failed to create logger from config, falling back to stderr", "error", creationErr)
-		return creationErr // Return the creation error.
-	}
+	logger := runtimeLog.NewLogger(loggerCfg)
 
 	// 5. Set the logger for the provider and globally for the Kratos framework.
 	p.logger = logger
-	log.SetGlobalLogger(p.logger)
+	runtimeLog.SetLogger(p.logger)
 
 	return nil
 }
@@ -128,7 +120,7 @@ func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
 // initRegistries handles the initialization of the service discovery and registration components.
 func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 	var registriesBlock struct {
-		Default     string                                  `json:"default"`
+		Default     string                            `json:"default"`
 		Discoveries map[string]*discoveryv1.Discovery `json:"discoveries"`
 	}
 
