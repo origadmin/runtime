@@ -1,11 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
-
+	"google.golang.org/protobuf/encoding/protojson"
 	// Import the transportv1 package which contains the Server message definition.
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	// Import the generated Go code from the api_gateway proto for the ClientConfig message.
@@ -18,7 +19,15 @@ type ProtoDecoder struct {
 	c kratosconfig.Config
 }
 
-func NewProtoDecoder(c kratosconfig.Config) interfaces.ConfigDecoder {
+func (d *ProtoDecoder) Raw() kratosconfig.Config {
+	return d.c
+}
+
+func (d *ProtoDecoder) Close() error {
+	return d.c.Close()
+}
+
+func NewProtoDecoder(c kratosconfig.Config) interfaces.Config {
 	return &ProtoDecoder{c: c}
 }
 
@@ -46,17 +55,42 @@ func main() {
 	// Create a new decoder.
 	decoder := NewProtoDecoder(c)
 
-	// Decode the 'servers' key into a slice of Server structs.
+	// Decode the 'servers' key into a slice of Server structs using JSON marshal/unmarshal
+	var rawServers []interface{}
+	if err := decoder.Decode("servers", &rawServers); err != nil {
+		panic(fmt.Errorf("failed to decode raw servers config: %w", err))
+	}
+
 	var servers []*transportv1.Server
-	if err := decoder.Decode("servers", &servers); err != nil {
-		panic(err)
+	for i, rawServer := range rawServers {
+		jsonServer, err := json.Marshal(rawServer)
+		if err != nil {
+			panic(fmt.Errorf("failed to marshal server config %d to JSON: %w", i, err))
+		}
+		var server transportv1.Server
+		if err := protojson.Unmarshal(jsonServer, &server); err != nil {
+			panic(fmt.Errorf("failed to protojson unmarshal JSON to server %d: %w", i, err))
+		}
+		servers = append(servers, &server)
 	}
 
 	// Decode the 'clients' key into a map of ClientConfig structs.
-	var clients map[string]*conf.ClientConfig
-	// The key is empty because we are decoding the entire config into the Bootstrap struct.
-	if err := decoder.Decode("clients", &clients); err != nil {
-		panic(err)
+	var rawClients map[string]interface{}
+	if err := decoder.Decode("clients", &rawClients); err != nil {
+		panic(fmt.Errorf("failed to decode raw clients config: %w", err))
+	}
+
+	var clients map[string]*conf.ClientConfig = make(map[string]*conf.ClientConfig)
+	for name, rawClient := range rawClients {
+		jsonClient, err := json.Marshal(rawClient)
+		if err != nil {
+			panic(fmt.Errorf("failed to marshal client config '%s' to JSON: %w", name, err))
+		}
+		var client conf.ClientConfig
+		if err := protojson.Unmarshal(jsonClient, &client); err != nil {
+			panic(fmt.Errorf("failed to protojson unmarshal JSON to client '%s': %w", name, err))
+		}
+		clients[name] = &client
 	}
 
 	// Print the loaded configuration to verify.

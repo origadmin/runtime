@@ -2,9 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"reflect"
+
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/origadmin/runtime"
+	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/interfaces"
+
+	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1" // Added for transportv1.Server
 	// Import the generated Go code from the api_gateway proto definition.
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 	"github.com/origadmin/runtime/log" // Import the log package
@@ -15,7 +20,7 @@ func main() {
 	//    Path is now relative to the CWD (runtime directory), pointing to the bootstrap.yaml.
 	rt, cleanup, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml
-		runtime.WithAppInfo(runtime.AppInfo{
+		bootstrap.WithAppInfo(interfaces.AppInfo{
 			ID:      "api-gateway-runtime-example",
 			Name:    "ApiGatewayRuntimeExample",
 			Version: "1.0.0",
@@ -35,55 +40,52 @@ func main() {
 	// 2. Get the configuration decoder from the runtime instance.
 	decoder := rt.Config()
 
-	// --- DIAGNOSTIC PRINT Kratos Config Content START ---
-	appLogger.Info("--- Debugging Kratos Config Content ---") // Use appLogger
-
-	// Get the raw config value from the decoder
-	rawConfig := decoder.Config()
-	appLogger.Infof("Type of decoder.Config(): %v", reflect.TypeOf(rawConfig)) // Use appLogger
-	appLogger.Infof("Value of decoder.Config(): %+v", rawConfig)               // Use appLogger
-
-	// Attempt to cast to map[string]any and then marshal
-	rawConfigMap, ok := rawConfig.(map[string]any)
-	if !ok {
-		appLogger.Error("Error: decoder.Config() is not a map[string]any.") // Use appLogger
-	} else {
-		// Access "servers" from the map and marshal to JSON string
-		if serversVal, exists := rawConfigMap["servers"]; exists {
-			if serversStr, err := json.Marshal(serversVal); err == nil {
-				appLogger.Infof("Kratos Config 'servers' value (string): %s", serversStr) // Use appLogger
-			} else {
-				appLogger.Errorf("Error marshalling 'servers' value to string: %v", err) // Use appLogger
-			}
-		} else {
-			appLogger.Info("Kratos Config 'servers' value not found in raw map.") // Use appLogger
-		}
-
-		// Access "clients" from the map and marshal to JSON string
-		if clientsVal, exists := rawConfigMap["clients"]; exists {
-			if clientsStr, err := json.Marshal(clientsVal); err == nil {
-				appLogger.Infof("Kratos Config 'clients' value (string): %s", clientsStr) // Use appLogger
-			} else {
-				appLogger.Errorf("Error marshalling 'clients' value to string: %v", err) // Use appLogger
-			}
-		} else {
-			appLogger.Info("Kratos Config 'clients' value not found in raw map.") // Use appLogger
-		}
-	}
-	appLogger.Info("--------------------------------------") // Use appLogger
-	// --- DIAGNOSTIC PRINT Kratos Config Content END ---
-
 	// 3. Decode the entire configuration into our Bootstrap struct.
+	// Manually decode servers and clients using JSON marshal/unmarshal for Protobuf compatibility.
 	var bc conf.Bootstrap
-	if err := decoder.Decode("", &bc); err != nil {
-		appLogger.Errorf("Failed to decode bootstrap config: %v", err) // Use appLogger
+
+	// Decode Servers
+	var rawServers []interface{}
+	if err := decoder.Decode("servers", &rawServers); err != nil {
+		appLogger.Errorf("Failed to decode raw servers config: %v", err)
 		panic(err)
 	}
 
-	// --- DIAGNOSTIC PRINT Bootstrap struct content after Decode START ---
-	appLogger.Info("--- Debugging Bootstrap struct content after Decode ---") // Use appLogger
-	appLogger.Infof("%+v", bc)                                                // Use appLogger
-	appLogger.Info("--------------------------------------")                  // Use appLogger
+	for i, rawServer := range rawServers {
+		jsonServer, err := json.Marshal(rawServer)
+		if err != nil {
+			appLogger.Errorf("Failed to marshal server config %d to JSON: %v", i, err)
+			panic(err)
+		}
+		var server transportv1.Server
+		if err := protojson.Unmarshal(jsonServer, &server); err != nil {
+			appLogger.Errorf("Failed to protojson unmarshal JSON to server %d: %v", i, err)
+			panic(err)
+		}
+		bc.Servers = append(bc.Servers, &server)
+	}
+
+	// Decode Clients
+	var rawClients map[string]interface{}
+	if err := decoder.Decode("clients", &rawClients); err != nil {
+		appLogger.Errorf("Failed to decode raw clients config: %v", err)
+		panic(err)
+	}
+
+	bc.Clients = make(map[string]*conf.ClientConfig)
+	for name, rawClient := range rawClients {
+		jsonClient, err := json.Marshal(rawClient)
+		if err != nil {
+			appLogger.Errorf("Failed to marshal client config '%s' to JSON: %v", name, err)
+			panic(err)
+		}
+		var client conf.ClientConfig
+		if err := protojson.Unmarshal(jsonClient, &client); err != nil {
+			appLogger.Errorf("Failed to protojson unmarshal JSON to client '%s': %v", name, err)
+			panic(err)
+		}
+		bc.Clients[name] = &client
+	}
 
 	// 4. Print the loaded configuration to verify.
 	appLogger.Info("--- Loaded API Gateway config via runtime interface ---") // Use appLogger
