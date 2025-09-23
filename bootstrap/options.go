@@ -1,19 +1,37 @@
 package bootstrap
 
 import (
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
+
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/interfaces"
 )
 
 // --- Options for NewDecoder ---
 
+// ConfigTransformer defines an interface for custom transformation of kratosconfig.Config to interfaces.Config.
+type ConfigTransformer interface {
+	Transform(kratosconfig.Config) (interfaces.Config, error)
+}
+
+// ConfigTransformFunc is a function type that implements the ConfigTransformer interface.
+type ConfigTransformFunc func(kratosconfig.Config) (interfaces.Config, error)
+
+// Transform implements the ConfigTransformer interface for ConfigTransformFunc.
+func (f ConfigTransformFunc) Transform(config kratosconfig.Config) (interfaces.Config, error) {
+	return f(config)
+}
+
 // DecoderOption configures the NewDecoder function.
 type DecoderOption func(*decoderOptions)
 
 // decoderOptions holds configuration for the NewDecoder function.
 type decoderOptions struct {
-	defaultPaths  map[string]string
-	kratosOptions []runtimeconfig.Option
+	defaultPaths      map[string]string
+	configOptions     []runtimeconfig.Option // Changed from runtimeconfig.Option to kratosconfig.Option
+	customConfig      interfaces.Config      // Added: Custom interfaces.Config implementation
+	kratosConfig      kratosconfig.Config    // Added: Direct Kratos config instance
+	configTransformer ConfigTransformer      // Custom interface for transformation (now also handles function form)
 }
 
 // WithDefaultPaths provides a default path map for components.
@@ -24,10 +42,37 @@ func WithDefaultPaths(paths map[string]string) DecoderOption {
 	}
 }
 
-// WithKratosOption passes Kratos-specific config options to the underlying config creation.
-func WithKratosOption(opts ...runtimeconfig.Option) DecoderOption {
+// WithConfigOption passes Kratos-specific config options to the underlying config creation.
+func WithConfigOption(opts ...runtimeconfig.Option) DecoderOption {
 	return func(o *decoderOptions) {
-		o.kratosOptions = append(o.kratosOptions, opts...)
+		o.configOptions = append(o.configOptions, opts...)
+	}
+}
+
+// WithCustomConfig allows providing a custom interfaces.Config implementation.
+// If this option is used, NewDecoder will return the provided config directly,
+// bypassing the default Kratos config creation and file loading.
+func WithCustomConfig(cfg interfaces.Config) DecoderOption {
+	return func(o *decoderOptions) {
+		o.customConfig = cfg
+	}
+}
+
+// WithKratosConfig allows providing a direct Kratos config.Config instance.
+// If this option is used, NewDecoder will use the provided Kratos config directly,
+// bypassing the default Kratos config creation and file loading from bootstrap.yaml sources.
+func WithKratosConfig(kc kratosconfig.Config) DecoderOption {
+	return func(o *decoderOptions) {
+		o.kratosConfig = kc
+	}
+}
+
+// WithConfigTransformer allows providing an object that implements the ConfigTransformer interface,
+// or a function of type ConfigTransformFunc.
+// This provides a flexible way to customize the creation of interfaces.Config from kratosconfig.Config.
+func WithConfigTransformer(transformer ConfigTransformer) DecoderOption {
+	return func(o *decoderOptions) {
+		o.configTransformer = transformer
 	}
 }
 

@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package examples.load_with_runtime;
+
+import "transport/v1/server.proto";
+import "transport/v1/client.proto";
+import "discovery/v1/client.proto"; // For client discovery config
+
+option go_package = "./load_with_runtime/conf;conf";
+
+// Bootstrap is the top-level configuration for a rich example application.
+message Bootstrap {
+  // Server configurations (e.g., HTTP, gRPC servers)
+  repeated transport.v1.Server servers = 1;
+
+  // Downstream client configurations
+  map<string, ClientConfig> clients = 2;
+
+  // Database configuration
+  DatabaseConfig database = 3;
+
+  // Logging configuration
+  LogConfig log = 4;
+
+  // Application-specific settings
+  ApplicationConfig app = 5;
+}
+
+// ClientConfig combines all configurations needed for a client
+message ClientConfig {
+  discovery.v1.Client discovery = 1;
+  transport.v1.Client transport = 2;
+}
+
+// DatabaseConfig defines database connection settings.
+message DatabaseConfig {
+  string driver = 1; // e.g., "mysql", "postgres"
+  string source = 2; // Connection string
+  int32 max_open_conns = 3;
+  int32 max_idle_conns = 4;
+  int32 conn_max_lifetime_seconds = 5;
+}
+
+// LogConfig defines logging settings.
+message LogConfig {
+  string level = 1; // e.g., "debug", "info", "warn", "error"
+  string format = 2; // e.g., "json", "text"
+  bool enable_caller = 3;
+  bool enable_stacktrace = 4;
+  string output_path = 5; // e.g., "stdout", "stderr", "/var/log/app.log"
+}
+
+// ApplicationConfig defines general application settings.
+message ApplicationConfig {
+  string name = 1;
+  string version = 2;
+  string environment = 3; // e.g., "development", "production"
+  map<string, string> settings = 4; // Generic key-value settings
+}
