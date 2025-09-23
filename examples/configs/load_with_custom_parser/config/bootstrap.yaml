@@ -1,6 +1,7 @@
 sources:
-  - type: "file"
-    name: "app-config"
-    file:
-      path: "examples/configs/load_with_custom_parser/config/config.yaml"
-    priority: 100
+  sources:
+    - type: "file"
+      name: "app-config"
+      file:
+        path: "config.yaml"
+      priority: 100

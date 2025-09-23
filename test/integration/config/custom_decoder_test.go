@@ -76,7 +76,7 @@ func TestRuntimeDecoder(t *testing.T) {
 	assert.Equal("test", rt.AppInfo().Env())
 
 	// 3. Get the ConfigDecoder from the runtime.
-	decoder := rt.Decoder()
+	decoder := rt.Config()
 	assert.NotNil(decoder)
 
 	// 4. Verify custom_settings are decoded correctly using the exposed decoder.

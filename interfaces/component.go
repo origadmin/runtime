@@ -36,7 +36,7 @@ type ComponentProvider interface {
 	DefaultRegistrar() registry.Registrar
 
 	// Config returns the configuration decoder, allowing access to raw configuration values.
-	Config() Config
+	// REMOVED: Config() Config
 
 	// --- Generic Service Locator for Extensibility ---
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
+
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	"github.com/origadmin/runtime/bootstrap/constant"
@@ -20,8 +21,8 @@ type configImpl struct {
 
 // Statically assert that configImpl implements all required interfaces.
 var (
-	_ interfaces.Config                = (*configImpl)(nil)
-	_ interfaces.LoggerConfigDecoder     = (*configImpl)(nil)
+	_ interfaces.Config                   = (*configImpl)(nil)
+	_ interfaces.LoggerConfigDecoder      = (*configImpl)(nil)
 	_ interfaces.DiscoveriesConfigDecoder = (*configImpl)(nil)
 )
 
@@ -56,13 +57,11 @@ func (c *configImpl) Close() error {
 func (c *configImpl) DecodeLogger() (*loggerv1.Logger, error) {
 	path, ok := c.paths[constant.ComponentLogger]
 	if !ok {
-		// This case should ideally not be reached if NewDecoder correctly provides a default.
 		return nil, errors.New("logger component path not configured")
 	}
 
 	loggerConfig := new(loggerv1.Logger)
 	if err := c.kratosConfig.Value(path).Scan(loggerConfig); err != nil {
-		// Return the error to allow the caller (NewProvider) to handle it, e.g., by logging a warning.
 		return nil, err
 	}
 	return loggerConfig, nil
@@ -75,7 +74,6 @@ func (c *configImpl) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, err
 		return nil, errors.New("registries component path not configured")
 	}
 
-	// Kratos config can scan into a map directly.
 	var discoveries map[string]*discoveryv1.Discovery
 	if err := c.kratosConfig.Value(path).Scan(&discoveries); err != nil {
 		return nil, err

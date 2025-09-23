@@ -15,15 +15,18 @@ import (
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 )
 
+// Endpoint represents a single API endpoint configuration.
+type Endpoint struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+}
+
 // CustomSettings represents the structure of our custom configuration section.
 type CustomSettings struct {
 	FeatureEnabled bool   `json:"feature_enabled"`
 	APIKey         string `json:"api_key"`
 	RateLimit      int    `json:"rate_limit"`
-	Endpoints      []struct {
-		Name string `json:"name"`
-		Path string `json:"path"`
-	} `json:"endpoints"`
+	Endpoints      []Endpoint `json:"endpoints"`
 }
 
 // Register the component factory function for our custom settings
@@ -76,7 +79,7 @@ func main() {
 	appLogger.Info("Application started successfully!")
 
 	// 2. Get the custom settings component
-	comp, ok := rt.Component("custom_settings")
+	comp, ok := rt.Component("my-custom-settings") // Updated to use the instance name
 	if !ok {
 		appLogger.Error("Custom settings component not found")
 		return
@@ -99,12 +102,16 @@ func main() {
 	}
 
 	// 3. Get the config interface to decode other configurations
-	config := rt.Decoder()
+	config := rt.Config()
 
-	// Decode the entire bootstrap config
+	// Decode servers and clients individually
 	var bc conf.Bootstrap
-	if err := config.Decode("", &bc); err != nil {
-		appLogger.Errorf("Failed to decode bootstrap config: %v", err)
+	if err := config.Decode("servers", &bc.Servers); err != nil {
+		appLogger.Errorf("Failed to decode servers config: %v", err)
+		return
+	}
+	if err := config.Decode("clients", &bc.Clients); err != nil {
+		appLogger.Errorf("Failed to decode clients config: %v", err)
 		return
 	}
 

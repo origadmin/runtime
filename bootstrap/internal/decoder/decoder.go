@@ -47,7 +47,7 @@ func stringToDurationHookFunc() mapstructure.DecodeHookFunc {
 // It embeds baseDecoder to inherit default behaviors and stores the entire
 // configuration in a map for generic decoding.
 type defaultDecoder struct {
-	decoder *baseDecoder // Embed the Decoder from the new public package
+	decoder *baseDecoder // Embed the Config from the new public package
 	paths   map[string]string
 	values  map[string]any
 }

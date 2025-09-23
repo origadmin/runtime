@@ -18,7 +18,10 @@ import (
 // NewLogger creates a new kratos logger based on the provided configuration.
 // It uses slog as the underlying logging library and slog-kratos as an adapter.
 func NewLogger(cfg *loggerv1.Logger) kratoslog.Logger {
-	if cfg == nil || cfg.GetDisabled() {
+	if cfg == nil {
+		return DefaultLogger
+	}
+	if cfg.GetDisabled() {
 		return NewDiscard()
 	}
 

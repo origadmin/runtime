@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/log"
@@ -35,10 +36,21 @@ func LoadBootstrapConfig(bootstrapPath string) (*bootstrapv1.Bootstrap, error) {
 	bootConfig := kratosconfig.New(
 		kratosconfig.WithSource(file.NewSource(bootstrapPath)),
 	)
-	defer bootConfig.Close()
+	// Defer closing the config and handle its error
+	defer func() {
+		if err := bootConfig.Close(); err != nil {
+			// Log the error, as we can't return it from a deferred function
+			log.Errorf("failed to close temporary bootstrap config: %v", err)
+		}
+	}()
+
+	// CRITICAL FIX: Load the config after creating it
+	if err := bootConfig.Load(); err != nil {
+		return nil, fmt.Errorf("failed to load temporary bootstrap config: %w", err)
+	}
 
 	var bc bootstrapv1.Bootstrap
-	if err := bootConfig.Scan(&bc); err != nil {
+	if err := bootConfig.Scan(&bc); err != nil { // Reverted to direct Scan
 		return nil, fmt.Errorf("failed to scan bootstrap config from %s: %w", bootstrapPath, err)
 	}
 
@@ -58,8 +70,6 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 	// 2. Load BootstrapConfig from file
 	bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath)
 	if err != nil {
-		// It's possible to proceed without a bootstrap file if all config is provided via options,
-		// but for now, we treat it as an error. This can be refined later.
 		return nil, fmt.Errorf("failed to load bootstrap config: %w", err)
 	}
 
@@ -82,6 +92,8 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 	}
 
 	// Apply paths from bootstrap.yaml (highest priority)
+	// Also, resolve relative paths in sources to absolute paths based on bootstrapPath's directory
+	bootstrapDir := filepath.Dir(bootstrapPath)
 	if bootstrapCfg != nil && bootstrapCfg.GetPaths() != nil {
 		for component, path := range bootstrapCfg.GetPaths() {
 			finalPaths[component] = path
@@ -92,10 +104,25 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 	var sources *sourcev1.Sources
 	if bootstrapCfg != nil {
 		sources = bootstrapCfg.GetSources()
+		// Resolve paths in sources to absolute paths
+		if sources != nil {
+			for _, src := range sources.GetSources() {
+				if src.GetType() == "file" && src.GetFile() != nil {
+					resolvedPath := filepath.Join(bootstrapDir, src.GetFile().GetPath())
+					src.GetFile().Path = resolvedPath // Modify the path in the source
+				}
+			}
+		}
 	}
+
 	finalKratosConfig, err := runtimeconfig.NewConfig(sources, decoderOpts.kratosOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create final kratos config: %w", err)
+	}
+
+	// CRITICAL FIX: Load the configuration after creating it
+	if err := finalKratosConfig.Load(); err != nil {
+		return nil, fmt.Errorf("failed to load final kratos config: %w", err)
 	}
 
 	// 5. Create the interfaces.Config implementation with the final merged paths
@@ -105,9 +132,32 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 	return decoder, nil
 }
 
+// bootstrapperImpl implements the interfaces.Bootstrapper interface.
+type bootstrapperImpl struct {
+	provider interfaces.ComponentProvider
+	config   interfaces.Config
+	cleanup  func()
+}
+
+// Provider implements interfaces.Bootstrapper.
+func (b *bootstrapperImpl) Provider() interfaces.ComponentProvider {
+	return b.provider
+}
+
+// Config implements interfaces.Bootstrapper.
+func (b *bootstrapperImpl) Config() interfaces.Config {
+	return b.config
+}
+
+// Cleanup implements interfaces.Bootstrapper.
+func (b *bootstrapperImpl) Cleanup() func() {
+	return b.cleanup
+}
+
 // NewProvider creates a new component provider, which is the main entry point for application startup.
 // It orchestrates the entire process of configuration loading and component initialization.
-func NewProvider(bootstrapPath string, opts ...Option) (interfaces.ComponentProvider, func(), error) {
+// It now returns the interfaces.Bootstrapper interface.
+func NewProvider(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) {
 	// 1. Apply provider-level options
 	providerOpts := configure.Apply(&options{}, opts)
 
@@ -115,13 +165,13 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.ComponentProv
 	// Check if appInfo is nil OR if it's not valid (e.g., empty ID, Name, Version).
 	appInfo := providerOpts.appInfo
 	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
-		return nil, nil, errors.New("app info is required and must be valid")
+		return nil, errors.New("app info is required and must be valid")
 	}
 
 	// 2. Create the configuration decoder, passing through any decoder options.
 	cfg, err := NewDecoder(bootstrapPath, providerOpts.decoderOptions...)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create config decoder: %w", err)
+		return nil, fmt.Errorf("failed to create config decoder: %w", err)
 	}
 
 	// The cleanup function will be built up, starting with closing the config.
@@ -143,19 +193,23 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.ComponentProv
 	if err := p.InitComponents(cfg); err != nil {
 		// Even if initialization fails, we should still call the cleanup function.
 		cleanup()
-		return (interfaces.ComponentProvider)(nil), (func())(nil), fmt.Errorf("failed to initialize components: %w", err)
+		return nil, fmt.Errorf("failed to initialize components: %w", err)
 	}
 
 	// 5. Initialize user-defined components registered via WithComponent.
 	for _, comp := range providerOpts.componentsToConfigure {
 		if err := cfg.Decode(comp.Key, comp.Target); err != nil {
 			cleanup()
-			return (interfaces.ComponentProvider)(nil), (func())(nil), fmt.Errorf("failed to decode component '%s': %w", comp.Key, err)
+			return nil, fmt.Errorf("failed to decode component '%s': %w", comp.Key, err)
 		}
 		// Register the populated struct as a component.
 		p.RegisterComponent(comp.Key, comp.Target)
 	}
 
-	// 6. Return the provider and the final cleanup function.
-	return p, cleanup, nil
+	// 6. Return the provider, the config, and the final cleanup function.
+	return &bootstrapperImpl{
+		provider: p,
+		config:   cfg,
+		cleanup:  cleanup,
+	}, nil
 }

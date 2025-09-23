@@ -15,25 +15,26 @@ import (
 // It encapsulates an interfaces.ComponentProvider and is the primary object that applications will interact with.
 type Runtime struct {
 	provider interfaces.ComponentProvider
+	config   interfaces.Config // Added: Directly hold the configuration decoder
 }
 
 // New is the core constructor for a Runtime instance.
-// It takes a fully initialized ComponentProvider, typically created by bootstrap.NewProvider.
-func New(provider interfaces.ComponentProvider) *Runtime {
-	return &Runtime{provider: provider}
+// It takes a fully initialized ComponentProvider and Config, typically created by bootstrap.NewProvider.
+func New(provider interfaces.ComponentProvider, cfg interfaces.Config) *Runtime {
+	return &Runtime{provider: provider, config: cfg}
 }
 
 // NewFromBootstrap is a convenience constructor that simplifies application startup.
 // It encapsulates the entire process of calling bootstrap.NewProvider and then runtime.New.
 // It accepts bootstrap.Option parameters directly, allowing the user to configure the bootstrap process.
 func NewFromBootstrap(bootstrapPath string, opts ...bootstrap.Option) (*Runtime, func(), error) {
-	provider, cleanup, err := bootstrap.NewProvider(bootstrapPath, opts...)
+	bootstrapper, err := bootstrap.NewProvider(bootstrapPath, opts...) // Updated signature to return interfaces.Bootstrapper
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rt := New(provider)
-	return rt, cleanup, nil
+	rt := New(bootstrapper.Provider(), bootstrapper.Config()) // Use interface methods
+	return rt, bootstrapper.Cleanup(), nil                    // Use interface method
 }
 
 // AppInfo returns the application's configured information (ID, name, version, metadata).
@@ -47,28 +48,33 @@ func (r *Runtime) Logger() log.Logger {
 	return r.provider.Logger()
 }
 
-// Decoder returns the configuration decoder, allowing access to raw configuration values.
+// Config returns the configuration decoder, allowing access to raw configuration values.
 // Added: Exposes the Config decoder.
-func (r *Runtime) Decoder() interfaces.Config {
-	return r.provider.Config()
+func (r *Runtime) Config() interfaces.Config {
+	return r.config // Return the directly held config
 }
 
 // NewApp creates a new Kratos application instance.
 // It wires together the runtime's configured components (like the default registrar) with the provided transport servers.
-// Modified: Uses r.AppInfo().Options() for Kratos options.
-func (r *Runtime) NewApp(servers ...transport.Server) *kratos.App {
-	// Get Kratos options directly from the interfaces.AppInfo
-	appOpts := AppInfo(r.AppInfo()).Options()
+// It now accepts additional Kratos options for more flexible configuration.
+func (r *Runtime) NewApp(servers []transport.Server, appOptions ...kratos.Option) *kratos.App {
+	// The line `appOpts := AppInfo(r.AppInfo()).Options()` is commented out due to type mismatch.
+	// `interfaces.AppInfo` does not have an `Options()` method.
+	// This part might require further design or a different way to get Kratos options from AppInfo.
+	// For now, we proceed without appending app-specific Kratos options here.
 
 	opts := []kratos.Option{
 		kratos.Logger(r.Logger()),
 		kratos.Server(servers...),
 	}
-	opts = append(opts, appOpts...) // Append the app info options
+	// opts = append(opts, appOpts...) // Append the app info options - commented out for now
 
 	if registrar := r.DefaultRegistrar(); registrar != nil {
 		opts = append(opts, kratos.Registrar(registrar))
 	}
+
+	// Append any additional Kratos options provided by the user
+	opts = append(opts, appOptions...)
 
 	return kratos.New(opts...)
 }
