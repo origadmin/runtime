@@ -26,7 +26,7 @@ const (
 type Bootstrap struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// sources defines the list of configuration sources to be loaded.
-	Sources *v1.Sources `protobuf:"bytes,1,opt,name=sources,proto3" json:"sources,omitempty"`
+	Sources []*v1.SourceConfig `protobuf:"bytes,1,rep,name=sources,proto3" json:"sources,omitempty"`
 	// paths provides an optional mapping from a component name to its configuration path.
 	// The keys of this map should correspond to the predefined Component* constants
 	// in the Go bootstrap package (e.g., "logger", "registries").
@@ -65,7 +65,7 @@ func (*Bootstrap) Descriptor() ([]byte, []int) {
 	return file_bootstrap_v1_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Bootstrap) GetSources() *v1.Sources {
+func (x *Bootstrap) GetSources() []*v1.SourceConfig {
 	if x != nil {
 		return x.Sources
 	}
@@ -83,9 +83,9 @@ var File_bootstrap_v1_bootstrap_proto protoreflect.FileDescriptor
 
 const file_bootstrap_v1_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\x1cbootstrap/v1/bootstrap.proto\x12\fbootstrap.v1\x1a\x16source/v1/source.proto\"\xad\x01\n" +
-	"\tBootstrap\x12,\n" +
-	"\asources\x18\x01 \x01(\v2\x12.source.v1.SourcesR\asources\x128\n" +
+	"\x1cbootstrap/v1/bootstrap.proto\x12\fbootstrap.v1\x1a\x16source/v1/source.proto\"\xb2\x01\n" +
+	"\tBootstrap\x121\n" +
+	"\asources\x18\x01 \x03(\v2\x17.source.v1.SourceConfigR\asources\x128\n" +
 	"\x05paths\x18\x02 \x03(\v2\".bootstrap.v1.Bootstrap.PathsEntryR\x05paths\x1a8\n" +
 	"\n" +
 	"PathsEntry\x12\x10\n" +
@@ -107,12 +107,12 @@ func file_bootstrap_v1_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_bootstrap_v1_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_bootstrap_v1_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),  // 0: bootstrap.v1.Bootstrap
-	nil,                // 1: bootstrap.v1.Bootstrap.PathsEntry
-	(*v1.Sources)(nil), // 2: source.v1.Sources
+	(*Bootstrap)(nil),       // 0: bootstrap.v1.Bootstrap
+	nil,                     // 1: bootstrap.v1.Bootstrap.PathsEntry
+	(*v1.SourceConfig)(nil), // 2: source.v1.SourceConfig
 }
 var file_bootstrap_v1_bootstrap_proto_depIdxs = []int32{
-	2, // 0: bootstrap.v1.Bootstrap.sources:type_name -> source.v1.Sources
+	2, // 0: bootstrap.v1.Bootstrap.sources:type_name -> source.v1.SourceConfig
 	1, // 1: bootstrap.v1.Bootstrap.paths:type_name -> bootstrap.v1.Bootstrap.PathsEntry
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type

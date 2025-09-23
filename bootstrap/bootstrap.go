@@ -3,7 +3,6 @@ package bootstrap
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/log"
@@ -91,28 +90,13 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 		}
 	}
 
-	// Apply paths from bootstrap.yaml (highest priority)
-	// Also, resolve relative paths in sources to absolute paths based on bootstrapPath's directory
-	bootstrapDir := filepath.Dir(bootstrapPath)
-	if bootstrapCfg != nil && bootstrapCfg.GetPaths() != nil {
-		for component, path := range bootstrapCfg.GetPaths() {
-			finalPaths[component] = path
-		}
-	}
-
 	// 4. Create the final Kratos config.Config from all sources
 	var sources *sourcev1.Sources
 	if bootstrapCfg != nil {
-		sources = bootstrapCfg.GetSources()
-		// Resolve paths in sources to absolute paths
-		if sources != nil {
-			for _, src := range sources.GetSources() {
-				if src.GetType() == "file" && src.GetFile() != nil {
-					resolvedPath := filepath.Join(bootstrapDir, src.GetFile().GetPath())
-					src.GetFile().Path = resolvedPath // Modify the path in the source
-				}
-			}
-		}
+		sources = &sourcev1.Sources{Sources: bootstrapCfg.GetSources()}
+	}
+	if sources == nil {
+		return nil, errors.New("no sources found in bootstrap.yaml")
 	}
 
 	finalKratosConfig, err := runtimeconfig.NewConfig(sources, decoderOpts.kratosOptions...)

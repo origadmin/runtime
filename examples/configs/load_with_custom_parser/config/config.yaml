@@ -27,7 +27,7 @@ servers:
 registries:
   discoveries:
     user-service:
-      type: "local" # Added discovery type
+      type: "local"
       name: "user-service"
       endpoint: "discovery:///user-service"
       selector:

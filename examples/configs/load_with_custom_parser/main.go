@@ -23,9 +23,9 @@ type Endpoint struct {
 
 // CustomSettings represents the structure of our custom configuration section.
 type CustomSettings struct {
-	FeatureEnabled bool   `json:"feature_enabled"`
-	APIKey         string `json:"api_key"`
-	RateLimit      int    `json:"rate_limit"`
+	FeatureEnabled bool       `json:"feature_enabled"`
+	APIKey         string     `json:"api_key"`
+	RateLimit      int        `json:"rate_limit"`
 	Endpoints      []Endpoint `json:"endpoints"`
 }
 
@@ -37,6 +37,9 @@ func init() {
 
 		// If config is provided, we can unmarshal it into our settings
 		if componentConfig != nil {
+			// Remove the "type" field as it's metadata for the factory, not part of the component struct
+			delete(componentConfig, "type")
+
 			// Convert config to JSON and back to handle different config formats
 			configBytes, err := json.Marshal(componentConfig)
 			if err != nil {
@@ -106,12 +109,36 @@ func main() {
 
 	// Decode servers and clients individually
 	var bc conf.Bootstrap
-	if err := config.Decode("servers", &bc.Servers); err != nil {
-		appLogger.Errorf("Failed to decode servers config: %v", err)
+
+	// Decode Servers
+	var rawServers []interface{}
+	if err := config.Decode("servers", &rawServers); err != nil {
+		appLogger.Errorf("Failed to decode raw servers config: %v", err)
 		return
 	}
-	if err := config.Decode("clients", &bc.Clients); err != nil {
-		appLogger.Errorf("Failed to decode clients config: %v", err)
+	jsonServers, err := json.Marshal(rawServers)
+	if err != nil {
+		appLogger.Errorf("Failed to marshal raw servers to JSON: %v", err)
+		return
+	}
+	if err := json.Unmarshal(jsonServers, &bc.Servers); err != nil {
+		appLogger.Errorf("Failed to unmarshal JSON to bc.Servers: %v", err)
+		return
+	}
+
+	// Decode Clients
+	var rawClients map[string]interface{}
+	if err := config.Decode("clients", &rawClients); err != nil {
+		appLogger.Errorf("Failed to decode raw clients config: %v", err)
+		return
+	}
+	jsonClients, err := json.Marshal(rawClients)
+	if err != nil {
+		appLogger.Errorf("Failed to marshal raw clients to JSON: %v", err)
+		return
+	}
+	if err := json.Unmarshal(jsonClients, &bc.Clients); err != nil {
+		appLogger.Errorf("Failed to unmarshal JSON to bc.Clients: %v", err)
 		return
 	}
 
