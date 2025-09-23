@@ -16,18 +16,21 @@ import (
 type localDiscovery struct{}
 
 func (d *localDiscovery) GetService(ctx context.Context, serviceName string) ([]*kratosregistry.ServiceInstance, error) {
+	// For a local discovery, we might return a predefined instance or an error.
+	// For this example, we'll return a dummy instance.
 	return []*kratosregistry.ServiceInstance{
-		{
-			ID:        fmt.Sprintf("%s-local-0", serviceName),
-			Name:      serviceName,
-			Version:   "1.0.0",
-			Endpoints: []string{"http://localhost:8080"}, // Dummy endpoint
+			{
+				ID:        fmt.Sprintf("%s-local-0", serviceName),
+				Name:      serviceName,
+				Version:   "1.0.0",
+				Endpoints: []string{"http://localhost:8080"}, // Dummy endpoint
+			},
 		},
-	}, nil
+		nil
 }
 
 func (d *localDiscovery) Watch(ctx context.Context, serviceName string) (kratosregistry.Watcher, error) {
-	return &localWatcher{serviceName: serviceName, ctx: ctx}, nil
+	return &localWatcher{serviceName: serviceName, ctx: ctx}, nil // Pass ctx to watcher
 }
 
 type localRegistrar struct{}
@@ -48,6 +51,7 @@ type localWatcher struct {
 }
 
 func (w *localWatcher) Next() ([]*kratosregistry.ServiceInstance, error) {
+	// For a dummy watcher, we might just return a static list or block until context is done.
 	select {
 	case <-w.ctx.Done():
 		return nil, w.ctx.Err()
@@ -83,6 +87,12 @@ func (f *localFactory) NewRegistrar(cfg *discoveryv1.Discovery, opts ...registry
 func init() {
 	fmt.Println("DEBUG: Initializing local registry package in example...") // Added debug print
 	registry.Register("local", &localFactory{})
+}
+
+// DummyInit is a dummy function to ensure the package is linked.
+func DummyInit() {
+	// This function does nothing, its purpose is to be called from main.go
+	// to ensure this package's init() function is executed.
 }
 
 // --- Temporary Local Registry Implementation for Example --- END

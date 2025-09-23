@@ -56,6 +56,9 @@ func init() {
 }
 
 func main() {
+	// Call DummyInit to ensure the local_registry package's init() function is executed.
+	DummyInit()
+
 	// Create AppInfo struct
 	appInfo := interfaces.AppInfo{
 		ID:        "api_gateway_custom_parser_example",
@@ -107,38 +110,14 @@ func main() {
 	// 3. Get the config interface to decode other configurations
 	config := rt.Config()
 
-	// Decode servers and clients individually
+	// Decode servers and clients directly using config.Decode
 	var bc conf.Bootstrap
-
-	// Decode Servers
-	var rawServers []interface{}
-	if err := config.Decode("servers", &rawServers); err != nil {
-		appLogger.Errorf("Failed to decode raw servers config: %v", err)
+	if err := config.Decode("servers", &bc.Servers); err != nil { // Direct decode
+		appLogger.Errorf("Failed to decode servers config: %v", err)
 		return
 	}
-	jsonServers, err := json.Marshal(rawServers)
-	if err != nil {
-		appLogger.Errorf("Failed to marshal raw servers to JSON: %v", err)
-		return
-	}
-	if err := json.Unmarshal(jsonServers, &bc.Servers); err != nil {
-		appLogger.Errorf("Failed to unmarshal JSON to bc.Servers: %v", err)
-		return
-	}
-
-	// Decode Clients
-	var rawClients map[string]interface{}
-	if err := config.Decode("clients", &rawClients); err != nil {
-		appLogger.Errorf("Failed to decode raw clients config: %v", err)
-		return
-	}
-	jsonClients, err := json.Marshal(rawClients)
-	if err != nil {
-		appLogger.Errorf("Failed to marshal raw clients to JSON: %v", err)
-		return
-	}
-	if err := json.Unmarshal(jsonClients, &bc.Clients); err != nil {
-		appLogger.Errorf("Failed to unmarshal JSON to bc.Clients: %v", err)
+	if err := config.Decode("clients", &bc.Clients); err != nil { // Direct decode
+		appLogger.Errorf("Failed to decode clients config: %v", err)
 		return
 	}
 

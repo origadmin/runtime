@@ -28,15 +28,17 @@ registries:
   discoveries:
     user-service:
       type: "local"
+      service_name: "user-service" # Changed from 'name' to 'service_name'
+
+clients:
+  # Configuration for the downstream 'user-service'
+  user-service:
+    discovery:
       name: "user-service"
       endpoint: "discovery:///user-service"
       selector:
         type: "p2c"
         version: "1.0.0"
-
-clients:
-  # Configuration for the downstream 'user-service'
-  user-service:
     transport:
       # This client communicates via gRPC
       grpc:
