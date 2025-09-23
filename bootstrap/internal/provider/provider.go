@@ -6,11 +6,12 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
+	// appv1 "github.com/origadmin/runtime/api/gen/go/app/v1" // Removed: No longer directly used here
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
-	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
+
+	"github.com/origadmin/runtime/bootstrap/constant"
+	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	runtimeLog "github.com/origadmin/runtime/log"
 	runtimeRegistry "github.com/origadmin/runtime/registry"
 )
@@ -18,23 +19,45 @@ import (
 // componentProviderImpl is the default implementation of the interfaces.ComponentProvider interface.
 // It holds all the initialized components for the application runtime.
 type componentProviderImpl struct {
-	appInfo          *appv1.AppInfo
-	logger           log.Logger
-	discoveries      map[string]registry.Discovery
-	registrars       map[string]registry.Registrar
-	defaultRegistrar registry.Registrar
-	components       map[string]interface{}
+	appInfo                  interfaces.AppInfo // Modified: Now stores interfaces.AppInfo
+	logger                   log.Logger
+	discoveries              map[string]registry.Discovery
+	registrars               map[string]registry.Registrar
+	defaultRegistrar         registry.Registrar
+	config                   interfaces.Config // Added: Store the configuration decoder
+	components               map[string]interface{}
+	componentFactoryRegistry interfaces.ComponentFactoryRegistry // Added: Store the component factory registry
 }
 
 // Statically assert that componentProviderImpl implements the interface.
 var _ interfaces.ComponentProvider = (*componentProviderImpl)(nil)
 
 // NewComponentProvider creates a new, uninitialized component provider.
-func NewComponentProvider(appInfo *appv1.AppInfo) *componentProviderImpl {
+// It now accepts the interfaces.AppInfo, interfaces.Config, and interfaces.ComponentFactoryRegistry instances.
+func NewComponentProvider(appInfo interfaces.AppInfo, cfg interfaces.Config, factoryRegistry interfaces.ComponentFactoryRegistry) *componentProviderImpl {
 	return &componentProviderImpl{
-		appInfo:    appInfo,
-		components: make(map[string]interface{}),
+		appInfo:                  appInfo,
+		config:                   cfg, // Store the config instance
+		components:               make(map[string]interface{}),
+		componentFactoryRegistry: factoryRegistry,
 	}
+}
+
+// RegisterComponent adds a user-defined component to the provider's internal registry.
+// This is intended to be called by the bootstrap process after the component has been decoded.
+func (p *componentProviderImpl) RegisterComponent(name string, comp interface{}) {
+	// Ensure the map is initialized.
+	if p.components == nil {
+		p.components = make(map[string]interface{})
+	}
+
+	// Check for duplicates, as this likely indicates a configuration error.
+	if _, exists := p.components[name]; exists {
+		p.Logger().Log(log.LevelWarn, "msg", "overwriting an existing component registration", "name", name)
+	}
+
+	p.components[name] = comp
+	p.Logger().Log(log.LevelInfo, "msg", "registered component", "name", name)
 }
 
 // InitComponents consumes the configuration and initializes all core and generic components.
@@ -75,7 +98,7 @@ func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
 	// 2. Fallback to the generic decoder if the fast path is not taken or explicitly signals a fallback.
 	if loggerCfg == nil && (err == nil || err == interfaces.ErrNotImplemented) {
 		// The error from the fast path is reset, as we are now trying the generic path.
-		err = cfg.Decode(bootstrap.ComponentLogger, &loggerCfg)
+		err = cfg.Decode(constant.ComponentLogger, &loggerCfg)
 	}
 
 	// 3. If there was any error during decoding, log it as a warning.
@@ -110,7 +133,7 @@ func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 	}
 
 	// For registries, we use the generic Decode to get both the 'default' key and the map.
-	err := cfg.Decode(bootstrap.ComponentRegistries, &registriesBlock)
+	err := cfg.Decode(constant.ComponentRegistries, &registriesBlock)
 
 	// Graceful Fallback: If there's an error or no registries are configured, run in local mode.
 	if err != nil || registriesBlock.Discoveries == nil {
@@ -157,7 +180,7 @@ func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 // initGenericComponents handles the initialization of user-defined components.
 func (p *componentProviderImpl) initGenericComponents(cfg interfaces.Config) error {
 	var componentsMap map[string]map[string]interface{}
-	if err := cfg.Decode(bootstrap.ComponentComponents, &componentsMap); err != nil {
+	if err := cfg.Decode(constant.ComponentComponents, &componentsMap); err != nil {
 		// If the components key doesn't exist, it's not an error, just means no generic components.
 		return nil
 	}
@@ -171,7 +194,7 @@ func (p *componentProviderImpl) initGenericComponents(cfg interfaces.Config) err
 		}
 
 		// Get the factory for this component type.
-		factory, found := bootstrap.GetFactory(compType)
+		factory, found := p.componentFactoryRegistry.GetFactory(compType)
 		if !found {
 			p.Logger().Log(log.LevelWarn, "msg", "component factory not found, skipping", "type", compType, "name", name)
 			continue
@@ -193,7 +216,7 @@ func (p *componentProviderImpl) initGenericComponents(cfg interfaces.Config) err
 }
 
 // AppInfo implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) AppInfo() *appv1.AppInfo {
+func (p *componentProviderImpl) AppInfo() interfaces.AppInfo { // Modified: Now returns interfaces.AppInfo
 	return p.appInfo
 }
 
@@ -219,6 +242,11 @@ func (p *componentProviderImpl) Registrars() map[string]registry.Registrar {
 // DefaultRegistrar implements the interfaces.ComponentProvider interface.
 func (p *componentProviderImpl) DefaultRegistrar() registry.Registrar {
 	return p.defaultRegistrar
+}
+
+// Config implements the interfaces.ComponentProvider interface.
+func (p *componentProviderImpl) Config() interfaces.Config {
+	return p.config
 }
 
 // Component implements the interfaces.ComponentProvider interface.

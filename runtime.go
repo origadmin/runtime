@@ -1,14 +1,14 @@
 package runtime
 
 import (
-	"github.com/go-kratos/kratos/v2/app"
+	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
+	// appv1 "github.com/origadmin/runtime/api/gen/go/app/v1" // Removed: No longer directly used here
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces" // This import is already here and now used for interfaces.AppInfo and interfaces.Config
 )
 
 // Runtime defines the application's runtime environment, providing convenient access to core components.
@@ -37,7 +37,8 @@ func NewFromBootstrap(bootstrapPath string, opts ...bootstrap.Option) (*Runtime,
 }
 
 // AppInfo returns the application's configured information (ID, name, version, metadata).
-func (r *Runtime) AppInfo() *appv1.AppInfo {
+// Modified: Now returns the interfaces.AppInfo interface.
+func (r *Runtime) AppInfo() interfaces.AppInfo {
 	return r.provider.AppInfo()
 }
 
@@ -46,24 +47,30 @@ func (r *Runtime) Logger() log.Logger {
 	return r.provider.Logger()
 }
 
+// Decoder returns the configuration decoder, allowing access to raw configuration values.
+// Added: Exposes the Config decoder.
+func (r *Runtime) Decoder() interfaces.Config {
+	return r.provider.Config()
+}
+
 // NewApp creates a new Kratos application instance.
 // It wires together the runtime's configured components (like the default registrar) with the provided transport servers.
-func (r *Runtime) NewApp(servers ...transport.Server) *app.App {
-	appInfo := r.AppInfo()
-	opts := []app.Option{
-		app.ID(appInfo.GetId()),
-		app.Name(appInfo.GetName()),
-		app.Version(appInfo.GetVersion()),
-		app.Metadata(appInfo.GetMetadata()),
-		app.Logger(r.Logger()),
-		app.Server(servers...),
+// Modified: Uses r.AppInfo().Options() for Kratos options.
+func (r *Runtime) NewApp(servers ...transport.Server) *kratos.App {
+	// Get Kratos options directly from the interfaces.AppInfo
+	appOpts := r.AppInfo().Options()
+
+	opts := []kratos.Option{
+		kratos.Logger(r.Logger()),
+		kratos.Server(servers...),
 	}
+	opts = append(opts, appOpts...) // Append the app info options
 
 	if registrar := r.DefaultRegistrar(); registrar != nil {
-		opts = append(opts, app.Registrar(registrar))
+		opts = append(opts, kratos.Registrar(registrar))
 	}
 
-	return app.New(opts...)
+	return kratos.New(opts...)
 }
 
 // DefaultRegistrar returns the default service registrar, used for service self-registration.

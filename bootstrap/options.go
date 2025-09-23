@@ -1,8 +1,8 @@
 package bootstrap
 
 import (
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/interfaces"
 )
 
 // --- Options for NewDecoder ---
@@ -36,15 +36,25 @@ func WithKratosOption(opts ...runtimeconfig.Option) DecoderOption {
 // Option configures the NewProvider function.
 type Option func(*options)
 
+// configurableComponent holds the details for a user-defined component that needs to be decoded from config.
+type configurableComponent struct {
+	// Key is the top-level configuration key for this component (e.g., "custom_settings").
+	Key string
+	// Target is a pointer to the struct that the configuration should be decoded into.
+	Target interface{}
+}
+
 // options holds configuration for the NewProvider function.
 type options struct {
-	appInfo        *appv1.AppInfo
-	decoderOptions []DecoderOption
+	appInfo               interfaces.AppInfo // Modified: Now holds an interfaces.AppInfo
+	decoderOptions        []DecoderOption
+	componentsToConfigure []configurableComponent
 }
 
 // WithAppInfo provides the application's metadata to the provider.
 // This is a required option for NewProvider.
-func WithAppInfo(info *appv1.AppInfo) Option {
+// Modified to accept an interfaces.AppInfo directly.
+func WithAppInfo(info interfaces.AppInfo) Option {
 	return func(o *options) {
 		o.appInfo = info
 	}
@@ -55,5 +65,18 @@ func WithAppInfo(info *appv1.AppInfo) Option {
 func WithDecoderOptions(opts ...DecoderOption) Option {
 	return func(o *options) {
 		o.decoderOptions = append(o.decoderOptions, opts...)
+	}
+}
+
+// WithComponent registers a custom component to be decoded from the configuration.
+// The `key` specifies the top-level configuration key (e.g., "custom_settings").
+// The `target` must be a pointer to a struct, which will be populated with the configuration values.
+// After successful decoding, the populated struct will be available via `runtime.Component(key)`.
+func WithComponent(key string, target interface{}) Option {
+	return func(o *options) {
+		o.componentsToConfigure = append(o.componentsToConfigure, configurableComponent{
+			Key:    key,
+			Target: target,
+		})
 	}
 }

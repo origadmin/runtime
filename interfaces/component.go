@@ -3,9 +3,16 @@ package interfaces
 import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
-
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 )
+
+// ComponentFactoryFunc defines the signature for a function that can create a generic component.
+// It receives the global configuration and the specific configuration map for the component instance.
+type ComponentFactoryFunc func(config Config, componentConfig map[string]interface{}) (interface{}, error)
+
+// ComponentFactoryRegistry defines the interface for retrieving component factories.
+type ComponentFactoryRegistry interface {
+	GetFactory(componentType string) (ComponentFactoryFunc, bool)
+}
 
 // ComponentProvider defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
@@ -13,7 +20,7 @@ type ComponentProvider interface {
 	// --- Strongly-Typed Accessors for Core Components ---
 
 	// AppInfo returns the application's configured information (ID, name, version, metadata).
-	AppInfo() *appv1.AppInfo
+	AppInfo() AppInfo // Modified: Now returns the interfaces.AppInfo interface
 
 	// Logger returns the configured Kratos logger.
 	Logger() log.Logger
@@ -27,6 +34,9 @@ type ComponentProvider interface {
 	// DefaultRegistrar returns the default service registrar, used for service self-registration.
 	// It may be nil if no default registry is configured.
 	DefaultRegistrar() registry.Registrar
+
+	// Config returns the configuration decoder, allowing access to raw configuration values.
+	Config() Config
 
 	// --- Generic Service Locator for Extensibility ---
 

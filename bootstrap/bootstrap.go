@@ -17,6 +17,14 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 )
 
+// componentFactoryRegistryImpl implements interfaces.ComponentFactoryRegistry.
+type componentFactoryRegistryImpl struct{}
+
+// GetFactory retrieves a component factory by its type.
+func (r *componentFactoryRegistryImpl) GetFactory(componentType string) (interfaces.ComponentFactoryFunc, bool) {
+	return getFactory(componentType)
+}
+
 // LoadBootstrapConfig loads the bootstrapv1.Bootstrap definition from a local bootstrap configuration file.
 // This function is the first step in the configuration process.
 // The temporary config used to load the sources is closed internally.
@@ -106,8 +114,10 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.ComponentProv
 	}
 
 	// AppInfo is a mandatory input for creating a valid provider.
-	if providerOpts.appInfo == nil {
-		return nil, nil, errors.New("app info is required, use WithAppInfo() option")
+	// Check if appInfo is nil OR if it's not valid (e.g., empty ID, Name, Version).
+	appInfo := providerOpts.appInfo
+	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
+		return nil, nil, errors.New("app info is required and must be valid")
 	}
 
 	// 2. Create the configuration decoder, passing through any decoder options.
@@ -127,16 +137,27 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.ComponentProv
 
 	// 3. Create the component provider implementation.
 	// This will hold all the initialized components.
-	p := provider.NewComponentProvider(providerOpts.appInfo)
+	componentFactoryRegistry := &componentFactoryRegistryImpl{}
+	p := provider.NewComponentProvider(providerOpts.appInfo, cfg, componentFactoryRegistry)
 
-	// 4. Initialize components by consuming the config.
+	// 4. Initialize core components by consuming the config.
 	// This is where the magic happens: logger, registries, etc., are created.
 	if err := p.InitComponents(cfg); err != nil {
 		// Even if initialization fails, we should still call the cleanup function.
 		cleanup()
-		return nil, nil, fmt.Errorf("failed to initialize components: %w", err)
+		return (interfaces.ComponentProvider)(nil), (func())(nil), fmt.Errorf("failed to initialize components: %w", err)
 	}
 
-	// 5. Return the provider and the final cleanup function.
+	// 5. Initialize user-defined components registered via WithComponent.
+	for _, comp := range providerOpts.componentsToConfigure {
+		if err := cfg.Decode(comp.Key, comp.Target); err != nil {
+			cleanup()
+			return (interfaces.ComponentProvider)(nil), (func())(nil), fmt.Errorf("failed to decode component '%s': %w", comp.Key, err)
+		}
+		// Register the populated struct as a component.
+		p.RegisterComponent(comp.Key, comp.Target)
+	}
+
+	// 6. Return the provider and the final cleanup function.
 	return p, cleanup, nil
 }

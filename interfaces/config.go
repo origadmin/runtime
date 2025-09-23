@@ -5,7 +5,6 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1" // 导入 appv1，尽管 AppInfo 不再从 config 解码，但其他地方可能需要
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 )

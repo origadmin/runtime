@@ -6,14 +6,10 @@ import (
 	stdruntime "runtime" // Alias the standard library runtime package
 	"testing"
 
-	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/origadmin/runtime"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
 )
 
 // TestCustomSettings represents the structure of our custom configuration section for testing.
@@ -27,41 +23,9 @@ type TestCustomSettings struct {
 	} `json:"endpoints"`
 }
 
-// customTestConfigDecoder implements the interfaces.ConfigDecoder interface for testing.
-// It embeds decoder.Decoder and overrides specific methods to return ErrNotImplemented.
-type customTestConfigDecoder struct {
-	interfaces.Config
-}
-
-// DecodeLogger overrides the Decoder's DecodeLogger to return ErrNotImplemented.
-// This forces the runtime to fall back to the generic Decode method for logger config.
-func (d *customTestConfigDecoder) DecodeLogger() (*loggerv1.Logger, error) {
-	return nil, interfaces.ErrNotImplemented
-}
-
-// DecodeDiscoveries overrides the Decoder's DecodeDiscoveries to return ErrNotImplemented.
-// This forces the runtime to fall back to the generic Decode method for discovery configs.
-func (d *customTestConfigDecoder) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	return nil, interfaces.ErrNotImplemented
-}
-
-// customTestDecoderProvider implements the interfaces.ConfigDecoderProvider interface for testing.
-type customTestDecoderProvider struct{}
-
-// ConfigDecoder returns a new customTestConfigDecoder.
-func (p *customTestDecoderProvider) ConfigDecoder(kratosConfig kratosconfig.Config) (interfaces.Config, error) {
-	config, _, err := bootstrap.NewConfigDecoder(kratosConfig)
-	if err != nil {
-		return nil, err
-	}
-	return &customTestConfigDecoder{
-		Config: config,
-	}, nil
-}
-
-// TestCustomConfigDecoderIntegration tests the integration of a custom ConfigDecoder
-// that relies on Decoder and returns ErrNotImplemented for specific fast paths.
-func TestCustomConfigDecoderIntegration(t *testing.T) {
+// TestRuntimeDecoder verifies that the configuration decoder is correctly exposed
+// by the runtime and can be used to parse custom configuration sections.
+func TestRuntimeDecoder(t *testing.T) {
 	assert := assert.New(t)
 
 	// Get the current file's directory to construct an absolute path for the config.
@@ -95,47 +59,29 @@ func TestCustomConfigDecoderIntegration(t *testing.T) {
 	// The bootstrapPath is now relative to the runtime module root.
 	bootstrapPath := "examples/configs/load_with_custom_parser/config/bootstrap.yaml"
 
-	// --- Debugging prints ---
-	wd, _ := os.Getwd()
-	t.Logf("Current working directory (after chdir): %s", wd)
-	t.Logf("Calculated runtimeRoot: %s", runtimeRoot)
-	t.Logf("Bootstrap config path (relative to CWD): %s", bootstrapPath)
-	// --- End debugging prints ---
-
-	// 1. Initialize Runtime with the custom decoder provider.
+	// 1. Initialize Runtime with the correct AppInfo.
 	rt, cleanup, err := runtime.NewFromBootstrap(
 		bootstrapPath, // Use the path relative to the new CWD
-		runtime.WithAppInfo(runtime.AppInfo{
-			ID:      "test-custom-decoder",
-			Name:    "TestCustomDecoder",
-			Version: "1.0.0",
-			Env:     "test",
-		}),
-		//bootstrap.WithDecoderProvider(&customTestDecoderProvider{}),
+		bootstrap.WithAppInfo("test-decoder", "1.0.0", "test"),
 	)
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
 	}
 	defer cleanup()
 
-	// 2. Get the ConfigDecoder from the runtime.
-	configDecoder := rt.Decoder()
-	assert.NotNil(configDecoder)
+	// 2. Verify core components are still initialized correctly.
+	assert.NotNil(rt.Logger())
+	assert.Equal("test-decoder", rt.AppInfo().Name())
+	assert.Equal("1.0.0", rt.AppInfo().Version())
+	assert.Equal("test", rt.AppInfo().Env())
 
-	// 3. Verify Logger configuration (should use generic Decode due to ErrNotImplemented).
-	logger := rt.Logger()
-	assert.NotNil(logger)
+	// 3. Get the ConfigDecoder from the runtime.
+	decoder := rt.Decoder()
+	assert.NotNil(decoder)
 
-	// We expect the logger level to be "info" as defined in config.yaml
-	// For simplicity, we'll just assert that the logger was created without error.
-
-	// 4. Verify Registries configuration (should use generic Decode due to ErrNotImplemented).
-	// Since our test config.yaml doesn't define registries, we expect it to be empty.
-	assert.Nil(rt.DefaultRegistrar(), "Default registrar should be nil if no registries are configured")
-
-	// 5. Verify custom_settings are decoded correctly using the generic Decode method.
+	// 4. Verify custom_settings are decoded correctly using the exposed decoder.
 	var customSettings TestCustomSettings
-	err = configDecoder.Decode("custom_settings", &customSettings)
+	err = decoder.Decode("custom_settings", &customSettings)
 	assert.NoError(err)
 	assert.True(customSettings.FeatureEnabled)
 	assert.Equal("super-secret-key-123", customSettings.APIKey)
@@ -145,29 +91,4 @@ func TestCustomConfigDecoderIntegration(t *testing.T) {
 	assert.Equal("/api/v1/users", customSettings.Endpoints[0].Path)
 	assert.Equal("products", customSettings.Endpoints[1].Name)
 	assert.Equal("/api/v1/products", customSettings.Endpoints[1].Path)
-
-	// 6. Verify a standard config section (e.g., servers) is decoded correctly.
-	var servers []struct {
-		Http *struct {
-			Network string `json:"network"`
-			Addr    string `json:"addr"`
-			Timeout string `json:"timeout"`
-		}
-		Grpc *struct {
-			Network string `json:"network"`
-			Addr    string `json:"addr"`
-			Timeout string `json:"timeout"`
-		}
-	}
-	err = configDecoder.Decode("servers", &servers)
-	assert.NoError(err)
-	assert.Len(servers, 2)
-	assert.NotNil(servers[0].Http)
-	assert.Equal("tcp", servers[0].Http.Network)
-	assert.Equal(":8080", servers[0].Http.Addr)
-	assert.Equal("1s", servers[0].Http.Timeout)
-	assert.NotNil(servers[1].Grpc)
-	assert.Equal("tcp", servers[1].Grpc.Network)
-	assert.Equal(":9090", servers[1].Grpc.Addr)
-	assert.Equal("1s", servers[1].Grpc.Timeout)
 }

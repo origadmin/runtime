@@ -1,15 +1,13 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
 package runtime
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/go-kratos/kratos/v2"
+	kratos "github.com/go-kratos/kratos/v2"
 	"github.com/google/uuid"
+
+	"github.com/origadmin/runtime/interfaces"
 )
 
 // AppInfo represents the application's static, immutable identity information.
@@ -24,6 +22,9 @@ type AppInfo struct {
 	StartTime time.Time
 	Metadata  map[string]string
 }
+
+// Statically assert that AppInfo implements the interfaces.AppInfo interface.
+var _ interfaces.AppInfo = (*AppInfo)(nil)
 
 // NewAppInfo creates a new AppInfo instance with default values for ID, StartTime, and Metadata.
 // It requires the application's name, version, and environment.
@@ -69,4 +70,39 @@ func (a AppInfo) Options() []kratos.Option {
 		kratos.Version(a.Version),
 		kratos.Metadata(a.Metadata),
 	}
+}
+
+// GetID returns the unique identifier of the application instance.
+func (a AppInfo) GetID() string {
+	return a.ID
+}
+
+// GetName returns the name of the application.
+func (a AppInfo) GetName() string {
+	return a.Name
+}
+
+// GetVersion returns the version of the application.
+func (a AppInfo) GetVersion() string {
+	return a.Version
+}
+
+// GetEnv returns the environment the application is running in.
+func (a AppInfo) GetEnv() string {
+	return a.Env
+}
+
+// StartTime returns the time the application was started.
+func (a AppInfo) StartTime() time.Time {
+	return a.StartTime
+}
+
+// Uptime returns the duration since the application was started.
+func (a AppInfo) Uptime() time.Duration {
+	return time.Since(a.StartTime)
+}
+
+// IsValid checks if the AppInfo instance contains essential, non-empty identification fields.
+func (a AppInfo) IsValid() bool {
+	return a.ID != "" && a.Name != "" && a.Version != ""
 }

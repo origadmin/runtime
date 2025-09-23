@@ -59,13 +59,8 @@ func TestAppBootstrap(t *testing.T) {
 		t.Errorf("Expected 2 clients, got %d", len(bootstrap.Clients))
 	}
 	for _, cli := range bootstrap.Clients {
-		target := cli.Discovery.ServiceName
+		target := cli.Discovery.DiscoveryName
 		fmt.Printf("Client for target '%s' has %d specific middlewares:\n", target, len(cli.Middlewares))
-
-		// 这个特定客户端的创建逻辑，现在可以轻松地访问其专属的中间件
-		for _, mw := range cli.Middlewares {
-			fmt.Printf("  - Middleware: %s\n", mw.Name)
-		}
 
 		// 断言以证明我们加载了正确的、专属的数据
 		if target == "user-service" && len(cli.Middlewares) != 2 {
