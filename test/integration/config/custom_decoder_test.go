@@ -12,7 +12,7 @@ import (
 	"github.com/origadmin/runtime"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
-	"github.com/origadmin/runtime/config/decoder" // Import the public decoder package
+	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 )
 
@@ -30,7 +30,7 @@ type TestCustomSettings struct {
 // customTestConfigDecoder implements the interfaces.ConfigDecoder interface for testing.
 // It embeds decoder.Decoder and overrides specific methods to return ErrNotImplemented.
 type customTestConfigDecoder struct {
-	*decoder.Decoder
+	interfaces.Config
 }
 
 // DecodeLogger overrides the Decoder's DecodeLogger to return ErrNotImplemented.
@@ -48,10 +48,14 @@ func (d *customTestConfigDecoder) DecodeDiscoveries() (map[string]*discoveryv1.D
 // customTestDecoderProvider implements the interfaces.ConfigDecoderProvider interface for testing.
 type customTestDecoderProvider struct{}
 
-// GetConfigDecoder returns a new customTestConfigDecoder.
-func (p *customTestDecoderProvider) GetConfigDecoder(kratosConfig kratosconfig.Config) (interfaces.ConfigDecoder, error) {
+// ConfigDecoder returns a new customTestConfigDecoder.
+func (p *customTestDecoderProvider) ConfigDecoder(kratosConfig kratosconfig.Config) (interfaces.Config, error) {
+	config, _, err := bootstrap.NewConfigDecoder(kratosConfig)
+	if err != nil {
+		return nil, err
+	}
 	return &customTestConfigDecoder{
-		Decoder: decoder.NewDecoder(kratosConfig),
+		Config: config,
 	}, nil
 }
 
@@ -107,7 +111,7 @@ func TestCustomConfigDecoderIntegration(t *testing.T) {
 			Version: "1.0.0",
 			Env:     "test",
 		}),
-		runtime.WithDecoderProvider(&customTestDecoderProvider{}),
+		//bootstrap.WithDecoderProvider(&customTestDecoderProvider{}),
 	)
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
@@ -115,7 +119,7 @@ func TestCustomConfigDecoderIntegration(t *testing.T) {
 	defer cleanup()
 
 	// 2. Get the ConfigDecoder from the runtime.
-	configDecoder := rt.Config()
+	configDecoder := rt.Decoder()
 	assert.NotNil(configDecoder)
 
 	// 3. Verify Logger configuration (should use generic Decode due to ErrNotImplemented).

@@ -62,7 +62,7 @@ func TestConfigProtoIntegration(t *testing.T) {
 	defer cleanup()
 
 	// 2. Get the ConfigDecoder from the runtime.
-	configDecoder := rt.Config()
+	configDecoder := rt.Decoder()
 	assert.NotNil(configDecoder)
 
 	// 3. Decode the entire configuration into the generated Bootstrap struct.

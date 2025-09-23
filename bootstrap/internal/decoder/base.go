@@ -40,3 +40,11 @@ func (b *baseDecoder) DecodeLogger() (*loggerv1.Logger, error) {
 func (b *baseDecoder) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
 	return nil, interfaces.ErrNotImplemented
 }
+
+func (b *baseDecoder) Config() kratosconfig.Config {
+	return b.KratosConfig
+}
+
+func (b *baseDecoder) Close() error {
+	return b.KratosConfig.Close()
+}

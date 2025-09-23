@@ -5,49 +5,44 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1" // 导入 appv1，尽管 AppInfo 不再从 config 解码，但其他地方可能需要
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 )
+
+// Config is the minimal contract for providing a custom configuration source.
+// Developers wishing to extend the framework with a new config system should implement this interface.
+type Config interface {
+	// Decode provides generic decoding of a configuration key into a target struct.
+	// This is the fundamental method that MUST be implemented by any Config instance.
+	Decode(key string, value any) error
+
+	// Raw provides an "escape hatch" to the underlying Kratos config.Config instance.
+	// Custom implementations can return nil if not applicable.
+	Raw() kratosconfig.Config
+
+	// Close releases any resources held by the configuration.
+	// MUST be implemented; can be a no-op if no resources are held.
+	Close() error
+}
 
 // ErrNotImplemented is returned when a specific decoder method is not implemented
 // by a custom decoder. This signals the runtime to fall back to generic decoding.
 var ErrNotImplemented = errors.New("method not implemented by this decoder")
 
-// LoggerConfigDecoder defines the interface for decoding logger configuration.
+// LoggerConfigDecoder defines an OPTIONAL interface for providing a "fast path"
+// to decode logger configuration. Custom Config implementations can implement this
+// interface to provide an optimized decoding path.
 type LoggerConfigDecoder interface {
 	DecodeLogger() (*loggerv1.Logger, error)
 }
 
-// DiscoveriesConfigDecoder defines the interface for decoding service discovery configurations.
+// DiscoveriesConfigDecoder defines an OPTIONAL interface for providing a "fast path"
+// to decode service discovery configurations. Custom Config implementations can implement this
+// interface to provide an optimized decoding path.
 type DiscoveriesConfigDecoder interface {
 	DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error)
 }
 
-// Config defines the interface for the application's configuration, providing
-// both generic decoding and specialized "fast path" decoding for common components.
-// It embeds smaller, more specific decoder interfaces for better organization.
-type Config interface {
-	// Decode provides generic decoding of a configuration key into a target struct.
-	// This is the fallback mechanism if a specialized method is not implemented.
-	Decode(key string, value any) error
-
-	// Raw returns the underlying Kratos config.Config instance.
-	// This allows access to the raw configuration source for advanced scenarios.
-	Raw() kratosconfig.Config
-
-	LoggerConfigDecoder      // Embed LoggerConfigDecoder
-	DiscoveriesConfigDecoder // Embed DiscoveriesConfigDecoder
-}
-
-// ConfigProvider defines the interface for creating a Config from a Kratos config.
-type ConfigProvider interface {
-	New(kratosconfig.Config) (Config, error) // Renamed from NewDecoder
-}
-
-// ConfigProviderFunc is an adapter to allow the use of ordinary functions as ConfigProviders.
-type ConfigProviderFunc func(kratosconfig.Config) (Config, error)
-
-// New calls f(config).
-func (f ConfigProviderFunc) New(config kratosconfig.Config) (Config, error) {
-	return f(config)
-}
+// AppInfoConfigDecoder is removed as AppInfo is not loaded from config.
+// ConfigProvider and ConfigProviderFunc are removed as NewDecoder directly returns interfaces.Config.

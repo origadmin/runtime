@@ -1,0 +1,228 @@
+package provider
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
+	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/interfaces"
+	runtimeLog "github.com/origadmin/runtime/log"
+	runtimeRegistry "github.com/origadmin/runtime/registry"
+)
+
+// componentProviderImpl is the default implementation of the interfaces.ComponentProvider interface.
+// It holds all the initialized components for the application runtime.
+type componentProviderImpl struct {
+	appInfo          *appv1.AppInfo
+	logger           log.Logger
+	discoveries      map[string]registry.Discovery
+	registrars       map[string]registry.Registrar
+	defaultRegistrar registry.Registrar
+	components       map[string]interface{}
+}
+
+// Statically assert that componentProviderImpl implements the interface.
+var _ interfaces.ComponentProvider = (*componentProviderImpl)(nil)
+
+// NewComponentProvider creates a new, uninitialized component provider.
+func NewComponentProvider(appInfo *appv1.AppInfo) *componentProviderImpl {
+	return &componentProviderImpl{
+		appInfo:    appInfo,
+		components: make(map[string]interface{}),
+	}
+}
+
+// InitComponents consumes the configuration and initializes all core and generic components.
+// This is the main logic hub for component creation.
+func (p *componentProviderImpl) InitComponents(cfg interfaces.Config) error {
+	// 1. Initialize Logger with graceful fallback.
+	if err := p.initLogger(cfg); err != nil {
+		// Even if the logger fails to initialize from config, a fallback is created.
+		// We log the error but do not stop the bootstrap process.
+		p.Logger().Log(log.LevelError, "msg", "failed to initialize logger component", "error", err)
+	}
+
+	// 2. Initialize Registries and Discoveries with graceful fallback.
+	if err := p.initRegistries(cfg); err != nil {
+		// Log the error but continue, as local mode is the fallback.
+		p.Logger().Log(log.LevelError, "msg", "failed to initialize registries component", "error", err)
+	}
+
+	// 3. Initialize generic components from the [components] config section.
+	if err := p.initGenericComponents(cfg); err != nil {
+		// Log the error but continue.
+		p.Logger().Log(log.LevelError, "msg", "failed to initialize generic components", "error", err)
+	}
+
+	return nil
+}
+
+// initLogger handles the initialization of the logger component.
+func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
+	var loggerCfg *loggerv1.Logger
+	var err error
+
+	// 1. Prioritize the specific decoder interface (fast path).
+	if decoder, ok := cfg.(interfaces.LoggerConfigDecoder); ok {
+		loggerCfg, err = decoder.DecodeLogger()
+	}
+
+	// 2. Fallback to the generic decoder if the fast path is not taken or explicitly signals a fallback.
+	if loggerCfg == nil && (err == nil || err == interfaces.ErrNotImplemented) {
+		// The error from the fast path is reset, as we are now trying the generic path.
+		err = cfg.Decode(bootstrap.ComponentLogger, &loggerCfg)
+	}
+
+	// 3. If there was any error during decoding, log it as a warning.
+	// We use a temporary logger because the main logger isn't created yet.
+	if err != nil {
+		tempLogger := log.NewStdLogger(os.Stderr)
+		tempLogger.Log(log.LevelWarn, "msg", "failed to decode logger config, will use default logger", "error", err)
+	}
+
+	// 4. Create the logger instance. NewLogger handles the nil config gracefully.
+	logger, creationErr := runtimeLog.NewLogger(loggerCfg)
+	if creationErr != nil {
+		// This is a more serious error during logger creation itself.
+		// We must ensure a logger exists, so we create a fallback and log the error.
+		p.logger = log.NewStdLogger(os.Stderr)
+		p.logger.Log(log.LevelError, "msg", "failed to create logger from config, falling back to stderr", "error", creationErr)
+		return creationErr // Return the creation error.
+	}
+
+	// 5. Set the logger for the provider and globally for the Kratos framework.
+	p.logger = logger
+	log.SetGlobalLogger(p.logger)
+
+	return nil
+}
+
+// initRegistries handles the initialization of the service discovery and registration components.
+func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
+	var registriesBlock struct {
+		Default     string                                  `json:"default"`
+		Discoveries map[string]*discoveryv1.Discovery `json:"discoveries"`
+	}
+
+	// For registries, we use the generic Decode to get both the 'default' key and the map.
+	err := cfg.Decode(bootstrap.ComponentRegistries, &registriesBlock)
+
+	// Graceful Fallback: If there's an error or no registries are configured, run in local mode.
+	if err != nil || registriesBlock.Discoveries == nil {
+		p.Logger().Log(log.LevelInfo, "msg", "no registries configured or failed to decode, running in local mode", "error", err)
+		p.discoveries = make(map[string]registry.Discovery)
+		p.registrars = make(map[string]registry.Registrar)
+		return nil // Not a fatal error
+	}
+
+	p.discoveries = make(map[string]registry.Discovery, len(registriesBlock.Discoveries))
+	p.registrars = make(map[string]registry.Registrar, len(registriesBlock.Discoveries))
+
+	for name, discoveryCfg := range registriesBlock.Discoveries {
+		// Create Discovery
+		d, err := runtimeRegistry.NewDiscovery(discoveryCfg)
+		if err != nil {
+			p.Logger().Log(log.LevelWarn, "msg", "failed to create discovery", "name", name, "error", err)
+			continue // Skip this one
+		}
+		p.discoveries[name] = d
+
+		// Create Registrar
+		r, err := runtimeRegistry.NewRegistrar(discoveryCfg)
+		if err != nil {
+			p.Logger().Log(log.LevelWarn, "msg", "failed to create registrar", "name", name, "error", err)
+			continue // Skip this one
+		}
+		p.registrars[name] = r
+	}
+
+	// Set the default registrar
+	if registriesBlock.Default != "" {
+		if r, ok := p.registrars[registriesBlock.Default]; ok {
+			p.defaultRegistrar = r
+			p.Logger().Log(log.LevelInfo, "msg", "default registrar set", "name", registriesBlock.Default)
+		} else {
+			p.Logger().Log(log.LevelWarn, "msg", "default registrar not found", "name", registriesBlock.Default)
+		}
+	}
+
+	return nil
+}
+
+// initGenericComponents handles the initialization of user-defined components.
+func (p *componentProviderImpl) initGenericComponents(cfg interfaces.Config) error {
+	var componentsMap map[string]map[string]interface{}
+	if err := cfg.Decode(bootstrap.ComponentComponents, &componentsMap); err != nil {
+		// If the components key doesn't exist, it's not an error, just means no generic components.
+		return nil
+	}
+
+	for name, compCfg := range componentsMap {
+		// The 'type' field is mandatory for finding the factory.
+		compType, ok := compCfg["type"].(string)
+		if !ok || compType == "" {
+			p.Logger().Log(log.LevelWarn, "msg", "component type is missing or not a string, skipping", "name", name)
+			continue
+		}
+
+		// Get the factory for this component type.
+		factory, found := bootstrap.GetFactory(compType)
+		if !found {
+			p.Logger().Log(log.LevelWarn, "msg", "component factory not found, skipping", "type", compType, "name", name)
+			continue
+		}
+
+		// Create the component instance.
+		instance, err := factory(cfg, compCfg)
+		if err != nil {
+			p.Logger().Log(log.LevelWarn, "msg", "failed to create component instance", "name", name, "type", compType, "error", err)
+			continue
+		}
+
+		// Store the created component.
+		p.components[name] = instance
+		p.Logger().Log(log.LevelInfo, "msg", "initialized generic component", "name", name, "type", compType)
+	}
+
+	return nil
+}
+
+// AppInfo implements the interfaces.ComponentProvider interface.
+func (p *componentProviderImpl) AppInfo() *appv1.AppInfo {
+	return p.appInfo
+}
+
+// Logger implements the interfaces.ComponentProvider interface.
+func (p *componentProviderImpl) Logger() log.Logger {
+	// Ensure a logger always exists, even if initialization failed.
+	if p.logger == nil {
+		p.logger = log.NewStdLogger(os.Stderr)
+	}
+	return p.logger
+}
+
+// Discoveries implements the interfaces.ComponentProvider interface.
+func (p *componentProviderImpl) Discoveries() map[string]registry.Discovery {
+	return p.discoveries
+}
+
+// Registrars implements the interfaces.ComponentProvider interface.
+func (p *componentProviderImpl) Registrars() map[string]registry.Registrar {
+	return p.registrars
+}
+
+// DefaultRegistrar implements the interfaces.ComponentProvider interface.
+func (p *componentProviderImpl) DefaultRegistrar() registry.Registrar {
+	return p.defaultRegistrar
+}
+
+// Component implements the interfaces.ComponentProvider interface.
+func (p *componentProviderImpl) Component(name string) (interface{}, bool) {
+	c, ok := p.components[name]
+	return c, ok
+}

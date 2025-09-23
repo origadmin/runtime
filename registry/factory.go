@@ -1,70 +1,38 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
 package registry
 
 import (
-	commonv1 "github.com/origadmin/runtime/api/gen/go/common/v1"
+	"fmt"
+
+	"github.com/go-kratos/kratos/v2/registry"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
-	"github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/interfaces/factory"
 )
 
-// Factory is the interface for creating new registrar and discovery components.
-type Factory interface {
-	NewRegistrar(*discoveryv1.Discovery, ...Option) (KRegistrar, error)
-	NewDiscovery(*discoveryv1.Discovery, ...Option) (KDiscovery, error)
+// NewDiscovery creates a new service discovery instance based on the provided configuration.
+func NewDiscovery(cfg *discoveryv1.Discovery) (registry.Discovery, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("discovery config cannot be nil")
+	}
+
+	// This is where different discovery implementations (like etcd, consul, nacos) would be handled.
+	switch cfg.GetType() {
+	// case "etcd":
+	// 	 return etcd.New(cfg.GetEtcd())
+	default:
+		return nil, fmt.Errorf("unsupported discovery type: %s", cfg.GetType())
+	}
 }
 
-// buildImpl is the concrete implementation of the Builder.
-type buildImpl struct {
-	factory.Registry[Factory]
-}
-
-func (b *buildImpl) NewRegistrar(cfg *discoveryv1.Discovery, opts ...Option) (KRegistrar, error) {
-	if cfg == nil || cfg.Type == "" {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR,
-			"registry configuration or type is missing")
+// NewRegistrar creates a new service registrar instance based on the provided configuration.
+func NewRegistrar(cfg *discoveryv1.Discovery) (registry.Registrar, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("registrar config cannot be nil")
 	}
 
-	f, ok := b.Get(cfg.Type)
-	if !ok {
-		return nil, errors.NewMessageWithMeta(commonv1.ErrorReason_NOT_FOUND, map[string]string{"type": cfg.Type}, "no registry factory found for type: %s", cfg.Type)
+	// This is where different registrar implementations (like etcd, consul, nacos) would be handled.
+	switch cfg.GetType() {
+	// case "etcd":
+	// 	 return etcd.New(cfg.GetEtcd())
+	default:
+		return nil, fmt.Errorf("unsupported registrar type: %s", cfg.GetType())
 	}
-	registrar, err := f.NewRegistrar(cfg, opts...)
-	if err != nil {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_INTERNAL_SERVER_ERROR, "failed to create registrar for type %s", cfg.Type)
-	}
-	return registrar, nil
-}
-
-func (b *buildImpl) NewDiscovery(cfg *discoveryv1.Discovery, opts ...Option) (KDiscovery, error) {
-	if cfg == nil || cfg.Type == "" {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR, "registry configuration or type is missing")
-	}
-
-	f, ok := b.Get(cfg.Type)
-	if !ok {
-		return nil, errors.NewMessageWithMeta(commonv1.ErrorReason_NOT_FOUND, map[string]string{"type": cfg.Type}, "no registry factory found for type: %s", cfg.Type)
-	}
-	discovery, err := f.NewDiscovery(cfg, opts...)
-	if err != nil {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_INTERNAL_SERVER_ERROR, "failed to create discovery for type %s", cfg.Type)
-	}
-	return discovery, nil
-}
-
-// defaultBuilder is a private variable to prevent accidental modification from other packages.
-var defaultBuilder = &buildImpl{
-	Registry: factory.New[Factory](),
-}
-
-// DefaultBuilder returns the shared instance of the registry builder.
-func DefaultBuilder() Builder {
-	return defaultBuilder
 }

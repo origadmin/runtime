@@ -52,10 +52,18 @@ type defaultDecoder struct {
 	values  map[string]any
 }
 
+func (d *defaultDecoder) Raw() kratosconfig.Config {
+	return d.decoder.Config()
+}
+
+func (d *defaultDecoder) Close() error {
+	return d.decoder.Close()
+}
+
 // NewDecoder creates a new default decoder instance.
 // It initializes the baseDecoder and scans the entire configuration into an internal map
 // to support generic decoding lookups.
-func NewDecoder(config kratosconfig.Config) (interfaces.ConfigDecoder, error) {
+func NewDecoder(config kratosconfig.Config) (interfaces.Config, error) {
 	d := &defaultDecoder{
 		decoder: newBaseDecoder(config), // Initialize the embedded baseDecoder
 		values:  make(map[string]any),
@@ -192,6 +200,3 @@ func (d *defaultDecoder) DecodeDiscoveries() (map[string]*discoveryv1.Discovery,
 	}
 	return cfg, nil
 }
-
-// DefaultDecoderProvider is the default provider that creates a new decoder instance.
-var DefaultDecoderProvider = interfaces.ConfigDecoderFunc(NewDecoder)

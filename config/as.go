@@ -12,7 +12,7 @@ import (
 // The chain consists of d itself, followed by the sequence of decoders obtained by
 // recursively calling As on the preceding decoder. The unwrapping logic is entirely
 // controlled by the decoder's implementation of the optional As(any) bool method.
-func As(d interfaces.ConfigDecoder, target any) bool {
+func As(d interfaces.Config, target any) bool {
 	if d == nil || target == nil {
 		return false
 	}
