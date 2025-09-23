@@ -1,17 +1,18 @@
 # API Gateway Configuration
 
-# --- Logger Configuration ---
+# Logger Configuration
 logger:
   level: info
-  format: json # 或者 text
-  stdout: true # 直接对应 loggerv1.Logger.Stdout
-  file:        # 直接对应 loggerv1.Logger.File
-    path: "output.log" # 对应 loggerv1.Logger_File.Path
-    max_size: 10 # MB
+  format: json
+  stdout: true
+  file:
+    path: "output.log"
+    max_size: 10  # MB
     max_backups: 3
-    max_age: 7 # days
+    max_age: 7    # days
     compress: true
 
+# Server configurations
 servers:
   # HTTP server for external access
   - http:
@@ -24,21 +25,32 @@ servers:
       addr: ":9090"
       timeout: 1s
 
+# Registries configuration
+registries:
+  discoveries:
+    user-service:
+      type: "local"
+      service_name: "user-service"
+      # Add other discovery configurations as needed
+
+# Client configurations
 clients:
   # Configuration for the downstream 'user-service'
   user-service:
     discovery:
       # The name of the service as registered in the discovery service
       name: "user-service"
-      # The endpoint format for Kratos service discovery
+      # The endpoint format for service discovery
       endpoint: "discovery:///user-service"
       selector:
         # Use p2c (pick of 2 choices) load balancing
         type: "p2c"
+        # Route to a specific version of the service
         version: "1.0.0"
     transport:
       # This client communicates via gRPC
       grpc:
         # The target also uses the discovery endpoint
         target: "discovery:///user-service"
+        # Add other transport configurations as needed
         dial_timeout: "2s"

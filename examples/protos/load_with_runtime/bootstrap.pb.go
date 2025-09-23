@@ -7,7 +7,8 @@
 package conf
 
 import (
-	v11 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	v1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -23,19 +24,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Bootstrap is the top-level configuration for a rich example application.
+// Bootstrap is the top-level configuration for a rich example application,
+// composed of existing framework API protos.
 type Bootstrap struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Server configurations (e.g., HTTP, gRPC servers)
 	Servers []*v1.Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
 	// Downstream client configurations
 	Clients map[string]*ClientConfig `protobuf:"bytes,2,rep,name=clients,proto3" json:"clients,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// Database configuration
-	Database *DatabaseConfig `protobuf:"bytes,3,opt,name=database,proto3" json:"database,omitempty"`
 	// Logging configuration
-	Log *LogConfig `protobuf:"bytes,4,opt,name=log,proto3" json:"log,omitempty"`
-	// Application-specific settings
-	App           *ApplicationConfig `protobuf:"bytes,5,opt,name=app,proto3" json:"app,omitempty"`
+	Logger *v11.Logger `protobuf:"bytes,3,opt,name=logger,proto3" json:"logger,omitempty"` // Use the existing logger proto
+	// Registries configuration, including service discoveries
+	Registries    *RegistriesConfig `protobuf:"bytes,4,opt,name=registries,proto3" json:"registries,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -84,23 +84,16 @@ func (x *Bootstrap) GetClients() map[string]*ClientConfig {
 	return nil
 }
 
-func (x *Bootstrap) GetDatabase() *DatabaseConfig {
+func (x *Bootstrap) GetLogger() *v11.Logger {
 	if x != nil {
-		return x.Database
+		return x.Logger
 	}
 	return nil
 }
 
-func (x *Bootstrap) GetLog() *LogConfig {
+func (x *Bootstrap) GetRegistries() *RegistriesConfig {
 	if x != nil {
-		return x.Log
-	}
-	return nil
-}
-
-func (x *Bootstrap) GetApp() *ApplicationConfig {
-	if x != nil {
-		return x.App
+		return x.Registries
 	}
 	return nil
 }
@@ -108,7 +101,7 @@ func (x *Bootstrap) GetApp() *ApplicationConfig {
 // ClientConfig combines all configurations needed for a client
 type ClientConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Discovery     *v11.Client            `protobuf:"bytes,1,opt,name=discovery,proto3" json:"discovery,omitempty"`
+	Discovery     *v12.Client            `protobuf:"bytes,1,opt,name=discovery,proto3" json:"discovery,omitempty"`
 	Transport     *v1.Client             `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -144,7 +137,7 @@ func (*ClientConfig) Descriptor() ([]byte, []int) {
 	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ClientConfig) GetDiscovery() *v11.Client {
+func (x *ClientConfig) GetDiscovery() *v12.Client {
 	if x != nil {
 		return x.Discovery
 	}
@@ -158,186 +151,30 @@ func (x *ClientConfig) GetTransport() *v1.Client {
 	return nil
 }
 
-// DatabaseConfig defines database connection settings.
-type DatabaseConfig struct {
-	state                  protoimpl.MessageState `protogen:"open.v1"`
-	Driver                 string                 `protobuf:"bytes,1,opt,name=driver,proto3" json:"driver,omitempty"` // e.g., "mysql", "postgres"
-	Source                 string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"` // Connection string
-	MaxOpenConns           int32                  `protobuf:"varint,3,opt,name=max_open_conns,json=maxOpenConns,proto3" json:"max_open_conns,omitempty"`
-	MaxIdleConns           int32                  `protobuf:"varint,4,opt,name=max_idle_conns,json=maxIdleConns,proto3" json:"max_idle_conns,omitempty"`
-	ConnMaxLifetimeSeconds int32                  `protobuf:"varint,5,opt,name=conn_max_lifetime_seconds,json=connMaxLifetimeSeconds,proto3" json:"conn_max_lifetime_seconds,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
-}
-
-func (x *DatabaseConfig) Reset() {
-	*x = DatabaseConfig{}
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DatabaseConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DatabaseConfig) ProtoMessage() {}
-
-func (x *DatabaseConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DatabaseConfig.ProtoReflect.Descriptor instead.
-func (*DatabaseConfig) Descriptor() ([]byte, []int) {
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *DatabaseConfig) GetDriver() string {
-	if x != nil {
-		return x.Driver
-	}
-	return ""
-}
-
-func (x *DatabaseConfig) GetSource() string {
-	if x != nil {
-		return x.Source
-	}
-	return ""
-}
-
-func (x *DatabaseConfig) GetMaxOpenConns() int32 {
-	if x != nil {
-		return x.MaxOpenConns
-	}
-	return 0
-}
-
-func (x *DatabaseConfig) GetMaxIdleConns() int32 {
-	if x != nil {
-		return x.MaxIdleConns
-	}
-	return 0
-}
-
-func (x *DatabaseConfig) GetConnMaxLifetimeSeconds() int32 {
-	if x != nil {
-		return x.ConnMaxLifetimeSeconds
-	}
-	return 0
-}
-
-// LogConfig defines logging settings.
-type LogConfig struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Level            string                 `protobuf:"bytes,1,opt,name=level,proto3" json:"level,omitempty"`   // e.g., "debug", "info", "warn", "error"
-	Format           string                 `protobuf:"bytes,2,opt,name=format,proto3" json:"format,omitempty"` // e.g., "json", "text"
-	EnableCaller     bool                   `protobuf:"varint,3,opt,name=enable_caller,json=enableCaller,proto3" json:"enable_caller,omitempty"`
-	EnableStacktrace bool                   `protobuf:"varint,4,opt,name=enable_stacktrace,json=enableStacktrace,proto3" json:"enable_stacktrace,omitempty"`
-	OutputPath       string                 `protobuf:"bytes,5,opt,name=output_path,json=outputPath,proto3" json:"output_path,omitempty"` // e.g., "stdout", "stderr", "/var/log/app.log"
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *LogConfig) Reset() {
-	*x = LogConfig{}
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LogConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LogConfig) ProtoMessage() {}
-
-func (x *LogConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LogConfig.ProtoReflect.Descriptor instead.
-func (*LogConfig) Descriptor() ([]byte, []int) {
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *LogConfig) GetLevel() string {
-	if x != nil {
-		return x.Level
-	}
-	return ""
-}
-
-func (x *LogConfig) GetFormat() string {
-	if x != nil {
-		return x.Format
-	}
-	return ""
-}
-
-func (x *LogConfig) GetEnableCaller() bool {
-	if x != nil {
-		return x.EnableCaller
-	}
-	return false
-}
-
-func (x *LogConfig) GetEnableStacktrace() bool {
-	if x != nil {
-		return x.EnableStacktrace
-	}
-	return false
-}
-
-func (x *LogConfig) GetOutputPath() string {
-	if x != nil {
-		return x.OutputPath
-	}
-	return ""
-}
-
-// ApplicationConfig defines general application settings.
-type ApplicationConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	Environment   string                 `protobuf:"bytes,3,opt,name=environment,proto3" json:"environment,omitempty"`                                                                     // e.g., "development", "production"
-	Settings      map[string]string      `protobuf:"bytes,4,rep,name=settings,proto3" json:"settings,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Generic key-value settings
+// RegistriesConfig holds various registry-related configurations.
+type RegistriesConfig struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Service discovery configurations
+	Discoveries   map[string]*v12.Discovery `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ApplicationConfig) Reset() {
-	*x = ApplicationConfig{}
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
+func (x *RegistriesConfig) Reset() {
+	*x = RegistriesConfig{}
+	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ApplicationConfig) String() string {
+func (x *RegistriesConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ApplicationConfig) ProtoMessage() {}
+func (*RegistriesConfig) ProtoMessage() {}
 
-func (x *ApplicationConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
+func (x *RegistriesConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -348,35 +185,14 @@ func (x *ApplicationConfig) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ApplicationConfig.ProtoReflect.Descriptor instead.
-func (*ApplicationConfig) Descriptor() ([]byte, []int) {
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{4}
+// Deprecated: Use RegistriesConfig.ProtoReflect.Descriptor instead.
+func (*RegistriesConfig) Descriptor() ([]byte, []int) {
+	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ApplicationConfig) GetName() string {
+func (x *RegistriesConfig) GetDiscoveries() map[string]*v12.Discovery {
 	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ApplicationConfig) GetVersion() string {
-	if x != nil {
-		return x.Version
-	}
-	return ""
-}
-
-func (x *ApplicationConfig) GetEnvironment() string {
-	if x != nil {
-		return x.Environment
-	}
-	return ""
-}
-
-func (x *ApplicationConfig) GetSettings() map[string]string {
-	if x != nil {
-		return x.Settings
+		return x.Discoveries
 	}
 	return nil
 }
@@ -385,40 +201,25 @@ var File_protos_load_with_runtime_bootstrap_proto protoreflect.FileDescriptor
 
 const file_protos_load_with_runtime_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"(protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a\x19transport/v1/server.proto\x1a\x19transport/v1/client.proto\x1a\x19discovery/v1/client.proto\"\xb1\x03\n" +
+	"(protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x16logger/v1/logger.proto\x1a\x19transport/v1/client.proto\x1a\x19transport/v1/server.proto\"\xe8\x02\n" +
 	"\tBootstrap\x12.\n" +
 	"\aservers\x18\x01 \x03(\v2\x14.transport.v1.ServerR\aservers\x12L\n" +
-	"\aclients\x18\x02 \x03(\v22.examples.load_with_runtime.Bootstrap.ClientsEntryR\aclients\x12F\n" +
-	"\bdatabase\x18\x03 \x01(\v2*.examples.load_with_runtime.DatabaseConfigR\bdatabase\x127\n" +
-	"\x03log\x18\x04 \x01(\v2%.examples.load_with_runtime.LogConfigR\x03log\x12?\n" +
-	"\x03app\x18\x05 \x01(\v2-.examples.load_with_runtime.ApplicationConfigR\x03app\x1ad\n" +
+	"\aclients\x18\x02 \x03(\v22.examples.load_with_runtime.Bootstrap.ClientsEntryR\aclients\x12)\n" +
+	"\x06logger\x18\x03 \x01(\v2\x11.logger.v1.LoggerR\x06logger\x12L\n" +
+	"\n" +
+	"registries\x18\x04 \x01(\v2,.examples.load_with_runtime.RegistriesConfigR\n" +
+	"registries\x1ad\n" +
 	"\fClientsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12>\n" +
 	"\x05value\x18\x02 \x01(\v2(.examples.load_with_runtime.ClientConfigR\x05value:\x028\x01\"v\n" +
 	"\fClientConfig\x122\n" +
 	"\tdiscovery\x18\x01 \x01(\v2\x14.discovery.v1.ClientR\tdiscovery\x122\n" +
-	"\ttransport\x18\x02 \x01(\v2\x14.transport.v1.ClientR\ttransport\"\xc7\x01\n" +
-	"\x0eDatabaseConfig\x12\x16\n" +
-	"\x06driver\x18\x01 \x01(\tR\x06driver\x12\x16\n" +
-	"\x06source\x18\x02 \x01(\tR\x06source\x12$\n" +
-	"\x0emax_open_conns\x18\x03 \x01(\x05R\fmaxOpenConns\x12$\n" +
-	"\x0emax_idle_conns\x18\x04 \x01(\x05R\fmaxIdleConns\x129\n" +
-	"\x19conn_max_lifetime_seconds\x18\x05 \x01(\x05R\x16connMaxLifetimeSeconds\"\xac\x01\n" +
-	"\tLogConfig\x12\x14\n" +
-	"\x05level\x18\x01 \x01(\tR\x05level\x12\x16\n" +
-	"\x06format\x18\x02 \x01(\tR\x06format\x12#\n" +
-	"\renable_caller\x18\x03 \x01(\bR\fenableCaller\x12+\n" +
-	"\x11enable_stacktrace\x18\x04 \x01(\bR\x10enableStacktrace\x12\x1f\n" +
-	"\voutput_path\x18\x05 \x01(\tR\n" +
-	"outputPath\"\xf9\x01\n" +
-	"\x11ApplicationConfig\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x12 \n" +
-	"\venvironment\x18\x03 \x01(\tR\venvironment\x12W\n" +
-	"\bsettings\x18\x04 \x03(\v2;.examples.load_with_runtime.ApplicationConfig.SettingsEntryR\bsettings\x1a;\n" +
-	"\rSettingsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x1fZ\x1d./load_with_runtime/conf;confb\x06proto3"
+	"\ttransport\x18\x02 \x01(\v2\x14.transport.v1.ClientR\ttransport\"\xcc\x01\n" +
+	"\x10RegistriesConfig\x12_\n" +
+	"\vdiscoveries\x18\x01 \x03(\v2=.examples.load_with_runtime.RegistriesConfig.DiscoveriesEntryR\vdiscoveries\x1aW\n" +
+	"\x10DiscoveriesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12-\n" +
+	"\x05value\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x05value:\x028\x01B\x1fZ\x1d./load_with_runtime/conf;confb\x06proto3"
 
 var (
 	file_protos_load_with_runtime_bootstrap_proto_rawDescOnce sync.Once
@@ -432,29 +233,29 @@ func file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP() []byte {
 	return file_protos_load_with_runtime_bootstrap_proto_rawDescData
 }
 
-var file_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_protos_load_with_runtime_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),         // 0: examples.load_with_runtime.Bootstrap
-	(*ClientConfig)(nil),      // 1: examples.load_with_runtime.ClientConfig
-	(*DatabaseConfig)(nil),    // 2: examples.load_with_runtime.DatabaseConfig
-	(*LogConfig)(nil),         // 3: examples.load_with_runtime.LogConfig
-	(*ApplicationConfig)(nil), // 4: examples.load_with_runtime.ApplicationConfig
-	nil,                       // 5: examples.load_with_runtime.Bootstrap.ClientsEntry
-	nil,                       // 6: examples.load_with_runtime.ApplicationConfig.SettingsEntry
-	(*v1.Server)(nil),         // 7: transport.v1.Server
-	(*v11.Client)(nil),        // 8: discovery.v1.Client
-	(*v1.Client)(nil),         // 9: transport.v1.Client
+	(*Bootstrap)(nil),        // 0: examples.load_with_runtime.Bootstrap
+	(*ClientConfig)(nil),     // 1: examples.load_with_runtime.ClientConfig
+	(*RegistriesConfig)(nil), // 2: examples.load_with_runtime.RegistriesConfig
+	nil,                      // 3: examples.load_with_runtime.Bootstrap.ClientsEntry
+	nil,                      // 4: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
+	(*v1.Server)(nil),        // 5: transport.v1.Server
+	(*v11.Logger)(nil),       // 6: logger.v1.Logger
+	(*v12.Client)(nil),       // 7: discovery.v1.Client
+	(*v1.Client)(nil),        // 8: transport.v1.Client
+	(*v12.Discovery)(nil),    // 9: discovery.v1.Discovery
 }
 var file_protos_load_with_runtime_bootstrap_proto_depIdxs = []int32{
-	7, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> transport.v1.Server
-	5, // 1: examples.load_with_runtime.Bootstrap.clients:type_name -> examples.load_with_runtime.Bootstrap.ClientsEntry
-	2, // 2: examples.load_with_runtime.Bootstrap.database:type_name -> examples.load_with_runtime.DatabaseConfig
-	3, // 3: examples.load_with_runtime.Bootstrap.log:type_name -> examples.load_with_runtime.LogConfig
-	4, // 4: examples.load_with_runtime.Bootstrap.app:type_name -> examples.load_with_runtime.ApplicationConfig
-	8, // 5: examples.load_with_runtime.ClientConfig.discovery:type_name -> discovery.v1.Client
-	9, // 6: examples.load_with_runtime.ClientConfig.transport:type_name -> transport.v1.Client
-	6, // 7: examples.load_with_runtime.ApplicationConfig.settings:type_name -> examples.load_with_runtime.ApplicationConfig.SettingsEntry
-	1, // 8: examples.load_with_runtime.Bootstrap.ClientsEntry.value:type_name -> examples.load_with_runtime.ClientConfig
+	5, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> transport.v1.Server
+	3, // 1: examples.load_with_runtime.Bootstrap.clients:type_name -> examples.load_with_runtime.Bootstrap.ClientsEntry
+	6, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> logger.v1.Logger
+	2, // 3: examples.load_with_runtime.Bootstrap.registries:type_name -> examples.load_with_runtime.RegistriesConfig
+	7, // 4: examples.load_with_runtime.ClientConfig.discovery:type_name -> discovery.v1.Client
+	8, // 5: examples.load_with_runtime.ClientConfig.transport:type_name -> transport.v1.Client
+	4, // 6: examples.load_with_runtime.RegistriesConfig.discoveries:type_name -> examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
+	1, // 7: examples.load_with_runtime.Bootstrap.ClientsEntry.value:type_name -> examples.load_with_runtime.ClientConfig
+	9, // 8: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry.value:type_name -> discovery.v1.Discovery
 	9, // [9:9] is the sub-list for method output_type
 	9, // [9:9] is the sub-list for method input_type
 	9, // [9:9] is the sub-list for extension type_name
@@ -473,7 +274,7 @@ func file_protos_load_with_runtime_bootstrap_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_load_with_runtime_bootstrap_proto_rawDesc), len(file_protos_load_with_runtime_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

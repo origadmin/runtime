@@ -2,13 +2,16 @@ syntax = "proto3";
 
 package examples.load_with_runtime;
 
-import "transport/v1/server.proto";
+import "discovery/v1/client.proto";
+import "discovery/v1/discovery.proto";
+import "logger/v1/logger.proto"; // Import the logger proto
 import "transport/v1/client.proto";
-import "discovery/v1/client.proto"; // For client discovery config
+import "transport/v1/server.proto";
 
 option go_package = "./load_with_runtime/conf;conf";
 
-// Bootstrap is the top-level configuration for a rich example application.
+// Bootstrap is the top-level configuration for a rich example application,
+// composed of existing framework API protos.
 message Bootstrap {
   // Server configurations (e.g., HTTP, gRPC servers)
   repeated transport.v1.Server servers = 1;
@@ -16,14 +19,11 @@ message Bootstrap {
   // Downstream client configurations
   map<string, ClientConfig> clients = 2;
 
-  // Database configuration
-  DatabaseConfig database = 3;
-
   // Logging configuration
-  LogConfig log = 4;
+  logger.v1.Logger logger = 3; // Use the existing logger proto
 
-  // Application-specific settings
-  ApplicationConfig app = 5;
+  // Registries configuration, including service discoveries
+  RegistriesConfig registries = 4;
 }
 
 // ClientConfig combines all configurations needed for a client
@@ -32,28 +32,8 @@ message ClientConfig {
   transport.v1.Client transport = 2;
 }
 
-// DatabaseConfig defines database connection settings.
-message DatabaseConfig {
-  string driver = 1; // e.g., "mysql", "postgres"
-  string source = 2; // Connection string
-  int32 max_open_conns = 3;
-  int32 max_idle_conns = 4;
-  int32 conn_max_lifetime_seconds = 5;
-}
-
-// LogConfig defines logging settings.
-message LogConfig {
-  string level = 1; // e.g., "debug", "info", "warn", "error"
-  string format = 2; // e.g., "json", "text"
-  bool enable_caller = 3;
-  bool enable_stacktrace = 4;
-  string output_path = 5; // e.g., "stdout", "stderr", "/var/log/app.log"
-}
-
-// ApplicationConfig defines general application settings.
-message ApplicationConfig {
-  string name = 1;
-  string version = 2;
-  string environment = 3; // e.g., "development", "production"
-  map<string, string> settings = 4; // Generic key-value settings
+// RegistriesConfig holds various registry-related configurations.
+message RegistriesConfig {
+  // Service discovery configurations
+  map<string, discovery.v1.Discovery> discoveries = 1;
 }

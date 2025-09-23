@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package config.v1;
+package logger.v1;
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/logger/v1;loggerv1";
 option java_multiple_files = true;
 option java_outer_classname = "LoggerProto";
-option java_package = "com.github.origadmin.api.runtime.config.v1";
+option java_package = "com.github.origadmin.api.runtime.logger.v1";
 option objc_class_prefix = "ORC";
 
 // Logger level
@@ -76,8 +76,8 @@ message Logger {
   // Logger time format
   string time_format = 10 [json_name = "time_format"];
 
-  // Logger file output config
+  // Logger file output logger
   File file = 100 [json_name = "file"];
-  // Logger dev logger config
+  // Logger dev logger logger
   DevLogger dev_logger = 101 [json_name = "dev_logger"]; //DevLogger
 }
