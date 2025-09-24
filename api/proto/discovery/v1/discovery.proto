@@ -14,8 +14,11 @@ option objc_class_prefix = "ORD";
 
 // Discovery defines the configuration for service registration.
 message Discovery {
+  // name is the the service key in the registry.
+  string name = 1 [json_name = "name"];
+
   // type specifies which discovery provider to use.
-  string type = 1 [(validate.rules).string = {
+  string type = 2 [(validate.rules).string = {
     in: [
       "none",
       "consul",
@@ -28,9 +31,6 @@ message Discovery {
       // and provide its configuration via the 'customize' field.
     ]
   }];
-
-  // service_name is the single, unique name under which this entire service will be registered.
-  string name = 2 [json_name = "name"];
 
   // debug enables verbose logging for the discovery client.
   bool debug = 5 [json_name = "debug"];
@@ -85,5 +85,4 @@ message Kubernetes {
 }
 
 // Polaris provider specific configuration (placeholder).
-message Polaris {
-}
+message Polaris {}

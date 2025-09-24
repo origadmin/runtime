@@ -2,46 +2,33 @@ syntax = "proto3";
 
 package discovery.v1;
 
+import "discovery/v1/discovery.proto";
 import "google/protobuf/duration.proto";
 import "middleware/v1/middleware.proto";
-import "validate/validate.proto";
+import "transport/v1/client.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1";
 
-// Endpoint defines the configuration for connecting to a single downstream service.
+// Endpoint holds the complete, resolved configuration for a client-side service endpoint.
+// It is the final data structure used by runtime components to initialize a client connection.
 message Endpoint {
-  // DiscoveryName defines the name of the discovery provider to use for resolving this endpoint.
-  string name = 1 [json_name = "name"];
-  // The name of the discovery provider configuration (defined in bootstrap.registries.discoveries)
-  // to use for resolving this endpoint.
+  // The name is the name of the service key in the endpoint.
+  string name = 1;
+
+  // The discovery_name is the name of the service key in the discovery service.
   string discovery_name = 2 [json_name = "discovery_name"];
 
-  // The endpoint URI to connect to.
-  string uri = 3 [
-    (validate.rules).string.min_len = 1,
-    json_name = "uri"
-  ];
+  // The endpoint URI to resolve, e.g., "discovery:///user-service".
+  string uri = 3;
 
   // Selector for client-side load balancing and node filtering.
-  Selector selector = 4 [json_name = "selector"];
-
-  // Request timeout for this endpoint.
-  google.protobuf.Duration timeout = 5 [json_name = "timeout"];
-
-  // Middleware configuration specific to this endpoint.
-  repeated middleware.v1.MiddlewareConfig middlewares = 100 [json_name = "middlewares"];
+  Selector selector = 4;
 }
 
 // Selector defines the client-side node selection strategy.
 message Selector {
   // The type of selector to use, e.g., "random", "wrr", "p2c".
-  string type = 1 [(validate.rules).string = {
-    in: [
-      "random",
-      "wrr",
-      "p2c"
-    ]
-  }];
+  string type = 1;
   // version is used for version-based routing.
   string version = 2;
 }
