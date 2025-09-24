@@ -152,15 +152,15 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 
 		// 5. Assemble the final, "rich" Endpoint object
 		resolvedEndpoints[endpointName] = &discoveryv1.Endpoint{
-			Provider: providerCfg, // Link the found provider
-			Uri:      endpointCfg.GetUri(),
+			//Provider: providerCfg, // Link the found provider
+			Uri: endpointCfg.GetUri(),
 			Selector: &discoveryv1.Selector{ // Manual conversion for Selector
 				Type:    endpointCfg.GetSelector().GetType(),
 				Version: endpointCfg.GetSelector().GetVersion(),
 			},
-			Timeout:   endpointCfg.GetTimeout(),
-			Transport: endpointCfg.GetTransport(), // Direct assignment if types match
-			Middlewares: endpointCfg.GetMiddlewares(),
+			//Timeout:   endpointCfg.GetTimeout(),
+			//Transport: endpointCfg.GetTransport(), // Direct assignment if types match
+			//Middlewares: endpointCfg.GetMiddlewares(),
 		}
 	}
 
@@ -230,7 +230,7 @@ func main() {
 			appLogger.Infof("Log File: %s, MaxSize: %dMB, MaxBackups: %d, MaxAge: %dd, Compress: %v",
 				fileCfg.GetPath(),
 				fileCfg.GetMaxSize(),
-				fileCfg.GetMaxBackups(),				fileCfg.GetMaxAge(),
+				fileCfg.GetMaxBackups(), fileCfg.GetMaxAge(),
 				fileCfg.GetCompress())
 		}
 	} else {

@@ -74,12 +74,12 @@ func (w *localWatcher) Stop() error {
 type localFactory struct{}
 
 func (f *localFactory) NewDiscovery(cfg *discoveryv1.Discovery, opts ...registry.Option) (kratosregistry.Discovery, error) {
-	fmt.Printf("Creating Local Discovery for service: %s\n", cfg.GetServiceName())
+	fmt.Printf("Creating Local Discovery for service: %s\n", cfg.GetName())
 	return &localDiscovery{}, nil
 }
 
 func (f *localFactory) NewRegistrar(cfg *discoveryv1.Discovery, opts ...registry.Option) (kratosregistry.Registrar, error) {
-	fmt.Printf("Creating Local Registrar for service: %s\n", cfg.GetServiceName())
+	fmt.Printf("Creating Local Registrar for service: %s\n", cfg.GetName())
 	return &localRegistrar{}, nil
 }
 

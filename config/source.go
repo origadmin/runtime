@@ -41,6 +41,16 @@ func Register(name string, sourceFactory any) {
 	defaultBuilder.Register(name, factory)
 }
 
+// RegisterSourceFactory registers a source factory for a specific config type.
+func RegisterSourceFactory(name string, factory SourceFactory) {
+	defaultBuilder.Register(name, factory)
+}
+
+// RegisterSourceFunc registers a source function for a specific config type.
+func RegisterSourceFunc(name string, factory SourceFunc) {
+	defaultBuilder.Register(name, factory)
+}
+
 // Load loads configuration from the specified file path and scans it into the target struct.
 // It returns the Kratos config instance, which should be closed by the caller when no longer needed.
 func Load(configPath string, target interface{}) (kratosconfig.Config, error) {
