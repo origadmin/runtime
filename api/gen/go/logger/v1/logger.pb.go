@@ -180,9 +180,9 @@ type Logger struct {
 	CallerSkip uint32 `protobuf:"varint,9,opt,name=caller_skip,proto3" json:"caller_skip,omitempty"`
 	// Logger time format
 	TimeFormat string `protobuf:"bytes,10,opt,name=time_format,proto3" json:"time_format,omitempty"`
-	// Logger file output config
+	// Logger file output logger
 	File *Logger_File `protobuf:"bytes,100,opt,name=file,proto3" json:"file,omitempty"`
-	// Logger dev logger config
+	// Logger dev logger logger
 	DevLogger     *Logger_DevLogger `protobuf:"bytes,101,opt,name=dev_logger,proto3" json:"dev_logger,omitempty"` //DevLogger
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -516,7 +516,7 @@ var File_logger_v1_logger_proto protoreflect.FileDescriptor
 
 const file_logger_v1_logger_proto_rawDesc = "" +
 	"\n" +
-	"\x16logger/v1/logger.proto\x12\tconfig.v1\"\xf6\x01\n" +
+	"\x16logger/v1/logger.proto\x12\tlogger.v1\"\xf6\x01\n" +
 	"\x11LoggerHookMessage\x12\x14\n" +
 	"\x05level\x18\x01 \x01(\tR\x05level\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1e\n" +
@@ -524,7 +524,7 @@ const file_logger_v1_logger_proto_rawDesc = "" +
 	"stacktrace\x18\x03 \x01(\tR\n" +
 	"stacktrace\x12\x14\n" +
 	"\x05error\x18\x04 \x01(\tR\x05error\x12@\n" +
-	"\x06fields\x18\x05 \x03(\v2(.config.v1.LoggerHookMessage.FieldsEntryR\x06fields\x1a9\n" +
+	"\x06fields\x18\x05 \x03(\v2(.logger.v1.LoggerHookMessage.FieldsEntryR\x06fields\x1a9\n" +
 	"\vFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x94\a\n" +
@@ -540,9 +540,9 @@ const file_logger_v1_logger_proto_rawDesc = "" +
 	"\vcaller_skip\x18\t \x01(\rR\vcaller_skip\x12 \n" +
 	"\vtime_format\x18\n" +
 	" \x01(\tR\vtime_format\x12*\n" +
-	"\x04file\x18d \x01(\v2\x16.config.v1.Logger.FileR\x04file\x12;\n" +
+	"\x04file\x18d \x01(\v2\x16.logger.v1.Logger.FileR\x04file\x12;\n" +
 	"\n" +
-	"dev_logger\x18e \x01(\v2\x1b.config.v1.Logger.DevLoggerR\n" +
+	"dev_logger\x18e \x01(\v2\x1b.logger.v1.Logger.DevLoggerR\n" +
 	"dev_logger\x1a\xce\x01\n" +
 	"\x04File\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\x12\x1e\n" +
@@ -579,8 +579,8 @@ const file_logger_v1_logger_proto_rawDesc = "" +
 	"\x11LOGGER_LEVEL_WARN\x10\x03\x12\x16\n" +
 	"\x12LOGGER_LEVEL_ERROR\x10\x04\x12\x16\n" +
 	"\x12LOGGER_LEVEL_FATAL\x10\x05B\xa0\x01\n" +
-	"\rcom.config.v1B\vLoggerProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/logger/v1;loggerv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
-	"Config::V1b\x06proto3"
+	"\rcom.logger.v1B\vLoggerProtoP\x01Z:github.com/origadmin/runtime/api/gen/go/logger/v1;loggerv1\xf8\x01\x01\xa2\x02\x03LXX\xaa\x02\tLogger.V1\xca\x02\tLogger\\V1\xe2\x02\x15Logger\\V1\\GPBMetadata\xea\x02\n" +
+	"Logger::V1b\x06proto3"
 
 var (
 	file_logger_v1_logger_proto_rawDescOnce sync.Once
@@ -597,17 +597,17 @@ func file_logger_v1_logger_proto_rawDescGZIP() []byte {
 var file_logger_v1_logger_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_logger_v1_logger_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_logger_v1_logger_proto_goTypes = []any{
-	(LoggerLevel)(0),          // 0: config.v1.LoggerLevel
-	(*LoggerHookMessage)(nil), // 1: config.v1.LoggerHookMessage
-	(*Logger)(nil),            // 2: config.v1.Logger
-	nil,                       // 3: config.v1.LoggerHookMessage.FieldsEntry
-	(*Logger_File)(nil),       // 4: config.v1.Logger.File
-	(*Logger_DevLogger)(nil),  // 5: config.v1.Logger.DevLogger
+	(LoggerLevel)(0),          // 0: logger.v1.LoggerLevel
+	(*LoggerHookMessage)(nil), // 1: logger.v1.LoggerHookMessage
+	(*Logger)(nil),            // 2: logger.v1.Logger
+	nil,                       // 3: logger.v1.LoggerHookMessage.FieldsEntry
+	(*Logger_File)(nil),       // 4: logger.v1.Logger.File
+	(*Logger_DevLogger)(nil),  // 5: logger.v1.Logger.DevLogger
 }
 var file_logger_v1_logger_proto_depIdxs = []int32{
-	3, // 0: config.v1.LoggerHookMessage.fields:type_name -> config.v1.LoggerHookMessage.FieldsEntry
-	4, // 1: config.v1.Logger.file:type_name -> config.v1.Logger.File
-	5, // 2: config.v1.Logger.dev_logger:type_name -> config.v1.Logger.DevLogger
+	3, // 0: logger.v1.LoggerHookMessage.fields:type_name -> logger.v1.LoggerHookMessage.FieldsEntry
+	4, // 1: logger.v1.Logger.file:type_name -> logger.v1.Logger.File
+	5, // 2: logger.v1.Logger.dev_logger:type_name -> logger.v1.Logger.DevLogger
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

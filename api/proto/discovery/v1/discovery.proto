@@ -30,7 +30,7 @@ message Discovery {
   }];
 
   // service_name is the single, unique name under which this entire service will be registered.
-  string service_name = 2 [json_name = "service_name"];
+  string name = 2 [json_name = "name"];
 
   // debug enables verbose logging for the discovery client.
   bool debug = 5 [json_name = "debug"];

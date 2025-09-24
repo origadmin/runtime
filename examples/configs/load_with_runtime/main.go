@@ -134,6 +134,7 @@ func (d *ProtoConfig) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, er
 				if err != nil {
 					return nil, fmt.Errorf("failed to marshal discoveryv1.Client for client '%s' to JSON: %w", clientName, err)
 				}
+
 				var disc discoveryv1.Discovery
 				if err := protojson.Unmarshal(jsonBytes, &disc); err != nil {
 					return nil, fmt.Errorf("failed to protojson unmarshal JSON to discoveryv1.Discovery for client '%s': %w", clientName, err)

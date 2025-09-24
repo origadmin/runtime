@@ -2,15 +2,14 @@ syntax = "proto3";
 
 package service.v1;
 
-// New imports for the new transport server container and discovery selector
-import "transport/v1/server.proto";
-import "discovery/v1/client.proto"; // For the selector
-
+import "discovery/v1/endpoint.proto"; // For the selector
+import "middleware/v1/middleware.proto";
 import "msg/v1/msg.proto";
 import "task/v1/task.proto";
-import "websocket/v1/websocket.proto";
-import "middleware/v1/middleware.proto";
+// New imports for the new transport server container and discovery selector
+import "transport/v1/server.proto";
 import "validate/validate.proto";
+import "websocket/v1/websocket.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/service/v1;servicev1";
@@ -48,7 +47,6 @@ message Service {
   // Middleware configuration for the service.
   repeated middleware.v1.MiddlewareConfig middlewares = 400 [json_name = "middlewares"];
 
-  // Selector configuration for client-side load balancing and node filtering.
-  // This replaces the nested 'Selector' message.
-  discovery.v1.Selector selector = 500 [json_name = "selector"];
+  // Endpoint configuration for the service.
+  discovery.v1.Endpoint endpoint = 500 [json_name = "endpoint"];
 }

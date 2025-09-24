@@ -42,9 +42,8 @@ type Service struct {
 	Task            *v13.Task      `protobuf:"bytes,300,opt,name=task,proto3" json:"task,omitempty"`
 	// Middleware configuration for the service.
 	Middlewares []*v14.MiddlewareConfig `protobuf:"bytes,400,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
-	// Selector configuration for client-side load balancing and node filtering.
-	// This replaces the nested 'Selector' message.
-	Selector      *v15.Selector `protobuf:"bytes,500,opt,name=selector,proto3" json:"selector,omitempty"`
+	// Endpoint configuration for the service.
+	Endpoint      *v15.Endpoint `protobuf:"bytes,500,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -128,9 +127,9 @@ func (x *Service) GetMiddlewares() []*v14.MiddlewareConfig {
 	return nil
 }
 
-func (x *Service) GetSelector() *v15.Selector {
+func (x *Service) GetEndpoint() *v15.Endpoint {
 	if x != nil {
-		return x.Selector
+		return x.Endpoint
 	}
 	return nil
 }
@@ -140,7 +139,7 @@ var File_service_v1_service_proto protoreflect.FileDescriptor
 const file_service_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"\x18service/v1/service.proto\x12\n" +
-	"service.v1\x1a\x19transport/v1/server.proto\x1a\x19discovery/v1/client.proto\x1a\x10msg/v1/msg.proto\x1a\x12task/v1/task.proto\x1a\x1cwebsocket/v1/websocket.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\xa8\x03\n" +
+	"service.v1\x1a\x1bdiscovery/v1/endpoint.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x10msg/v1/msg.proto\x1a\x12task/v1/task.proto\x1a\x19transport/v1/server.proto\x1a\x17validate/validate.proto\x1a\x1cwebsocket/v1/websocket.proto\"\xa8\x03\n" +
 	"\aService\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12G\n" +
 	"\bprotocol\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\bprotocol\x12@\n" +
@@ -150,7 +149,7 @@ const file_service_v1_service_proto_rawDesc = "" +
 	"\amessage\x18\xc8\x01 \x01(\v2\x0f.msg.v1.MessageR\amessage\x12\"\n" +
 	"\x04task\x18\xac\x02 \x01(\v2\r.task.v1.TaskR\x04task\x12B\n" +
 	"\vmiddlewares\x18\x90\x03 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\x123\n" +
-	"\bselector\x18\xf4\x03 \x01(\v2\x16.discovery.v1.SelectorR\bselectorB\xa8\x01\n" +
+	"\bendpoint\x18\xf4\x03 \x01(\v2\x16.discovery.v1.EndpointR\bendpointB\xa8\x01\n" +
 	"\x0ecom.service.v1B\fServiceProtoP\x01Z<github.com/origadmin/runtime/api/gen/go/service/v1;servicev1\xf8\x01\x01\xa2\x02\x03SXX\xaa\x02\n" +
 	"Service.V1\xca\x02\n" +
 	"Service\\V1\xe2\x02\x16Service\\V1\\GPBMetadata\xea\x02\vService::V1b\x06proto3"
@@ -175,7 +174,7 @@ var file_service_v1_service_proto_goTypes = []any{
 	(*v12.Message)(nil),          // 3: msg.v1.Message
 	(*v13.Task)(nil),             // 4: task.v1.Task
 	(*v14.MiddlewareConfig)(nil), // 5: middleware.v1.MiddlewareConfig
-	(*v15.Selector)(nil),         // 6: discovery.v1.Selector
+	(*v15.Endpoint)(nil),         // 6: discovery.v1.Endpoint
 }
 var file_service_v1_service_proto_depIdxs = []int32{
 	1, // 0: service.v1.Service.server_transport:type_name -> transport.v1.Server
@@ -183,7 +182,7 @@ var file_service_v1_service_proto_depIdxs = []int32{
 	3, // 2: service.v1.Service.message:type_name -> msg.v1.Message
 	4, // 3: service.v1.Service.task:type_name -> task.v1.Task
 	5, // 4: service.v1.Service.middlewares:type_name -> middleware.v1.MiddlewareConfig
-	6, // 5: service.v1.Service.selector:type_name -> discovery.v1.Selector
+	6, // 5: service.v1.Service.endpoint:type_name -> discovery.v1.Endpoint
 	6, // [6:6] is the sub-list for method output_type
 	6, // [6:6] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name

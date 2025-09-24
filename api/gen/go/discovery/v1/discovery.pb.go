@@ -29,7 +29,7 @@ type Discovery struct {
 	// type specifies which discovery provider to use.
 	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	// service_name is the single, unique name under which this entire service will be registered.
-	ServiceName string `protobuf:"bytes,2,opt,name=service_name,proto3" json:"service_name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// debug enables verbose logging for the discovery client.
 	Debug bool `protobuf:"varint,5,opt,name=debug,proto3" json:"debug,omitempty"`
 	// --- Standard Provider Configurations ---
@@ -82,9 +82,9 @@ func (x *Discovery) GetType() string {
 	return ""
 }
 
-func (x *Discovery) GetServiceName() string {
+func (x *Discovery) GetName() string {
 	if x != nil {
-		return x.ServiceName
+		return x.Name
 	}
 	return ""
 }
@@ -451,11 +451,11 @@ var File_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
 const file_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"\x1cdiscovery/v1/discovery.proto\x12\fdiscovery.v1\x1a\x1cextension/v1/extension.proto\x1a\x17validate/validate.proto\"\xd2\x04\n" +
+	"\x1cdiscovery/v1/discovery.proto\x12\fdiscovery.v1\x1a\x1cextension/v1/extension.proto\x1a\x17validate/validate.proto\"\xc2\x04\n" +
 	"\tDiscovery\x12Q\n" +
 	"\x04type\x18\x01 \x01(\tB=\xfaB:r8R\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
-	"kubernetesR\apolarisR\x04type\x12\"\n" +
-	"\fservice_name\x18\x02 \x01(\tR\fservice_name\x12\x14\n" +
+	"kubernetesR\apolarisR\x04type\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05debug\x18\x05 \x01(\bR\x05debug\x122\n" +
 	"\x06consul\x18\xac\x02 \x01(\v2\x14.discovery.v1.ConsulH\x00R\x06consul\x88\x01\x01\x12,\n" +
 	"\x04etcd\x18\x90\x03 \x01(\v2\x12.discovery.v1.ETCDH\x01R\x04etcd\x88\x01\x01\x12/\n" +

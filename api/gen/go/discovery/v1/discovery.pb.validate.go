@@ -68,7 +68,7 @@ func (m *Discovery) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ServiceName
+	// no validation rules for Name
 
 	// no validation rules for Debug
 
