@@ -2,38 +2,53 @@ syntax = "proto3";
 
 package examples.load_with_runtime;
 
-import "discovery/v1/client.proto";
 import "discovery/v1/discovery.proto";
-import "logger/v1/logger.proto"; // Import the logger proto
+import "logger/v1/logger.proto";
 import "transport/v1/client.proto";
 import "transport/v1/server.proto";
 
 option go_package = "./load_with_runtime/conf;conf";
 
-// Bootstrap is the top-level configuration for a rich example application,
-// composed of existing framework API protos.
+// Bootstrap is the user-facing configuration structure.
+// It uses references (like discovery_name) to link configurations.
 message Bootstrap {
   // Server configurations (e.g., HTTP, gRPC servers)
   repeated transport.v1.Server servers = 1;
 
-  // Downstream client configurations
-  map<string, ClientConfig> clients = 2;
+  // Endpoints defines the configuration for all downstream services.
+  // The key of the map is the logical name of the endpoint (e.g., "user-service").
+  map<string, EndpointConfig> endpoints = 2;
 
   // Logging configuration
-  logger.v1.Logger logger = 3; // Use the existing logger proto
+  logger.v1.Logger logger = 3;
 
-  // Registries configuration, including service discoveries
+  // RegistriesConfig holds the definitions of available discovery service providers.
   RegistriesConfig registries = 4;
 }
 
-// ClientConfig combines all configurations needed for a client
-message ClientConfig {
-  discovery.v1.Client discovery = 1;
-  transport.v1.Client transport = 2;
+// EndpointConfig represents the user-facing configuration for an endpoint.
+// It uses a string reference (`discovery_name`) to link to a discovery provider.
+message EndpointConfig {
+  // The name of the discovery provider configuration (from registries.discoveries) to use.
+  string discovery_name = 1 [json_name = "discovery_name"];
+
+  // The endpoint URI to connect to, e.g., "discovery:///user-service".
+  string uri = 2;
+
+  // Selector for client-side load balancing and node filtering.
+  Selector selector = 3;
+
+  // Transport configuration for this client.
+  transport.v1.Client transport = 4;
+
+  // We need to define Selector here as it was in the old client.proto/endpoint.proto
+  message Selector {
+    string type = 1;
+    string version = 2;
+  }
 }
 
-// RegistriesConfig holds various registry-related configurations.
+// RegistriesConfig holds the definitions of available discovery service providers.
 message RegistriesConfig {
-  // Service discovery configurations
   map<string, discovery.v1.Discovery> discoveries = 1;
 }

@@ -102,7 +102,7 @@ type ClientConfig struct {
 	// - Service discovery method (direct, DNS, Consul, etc.)
 	// - Load balancing strategy
 	// - Circuit breaking and fallback configuration
-	Discovery *v11.Client `protobuf:"bytes,1,opt,name=discovery,proto3" json:"discovery,omitempty"`
+	Endpoint *v11.Endpoint `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	// Transport-level client configuration
 	// Mainly configures how to communicate with selected service instances, for example:
 	// - Communication protocol (HTTP/gRPC)
@@ -144,9 +144,9 @@ func (*ClientConfig) Descriptor() ([]byte, []int) {
 	return file_protos_api_gateway_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ClientConfig) GetDiscovery() *v11.Client {
+func (x *ClientConfig) GetEndpoint() *v11.Endpoint {
 	if x != nil {
-		return x.Discovery
+		return x.Endpoint
 	}
 	return nil
 }
@@ -162,7 +162,7 @@ var File_protos_api_gateway_bootstrap_proto protoreflect.FileDescriptor
 
 const file_protos_api_gateway_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\"protos/api_gateway/bootstrap.proto\x12\x14examples.api_gateway\x1a\x19transport/v1/server.proto\x1a\x19transport/v1/client.proto\x1a\x19discovery/v1/client.proto\"\xe3\x01\n" +
+	"\"protos/api_gateway/bootstrap.proto\x12\x14examples.api_gateway\x1a\x19transport/v1/server.proto\x1a\x19transport/v1/client.proto\x1a\x1bdiscovery/v1/endpoint.proto\"\xe3\x01\n" +
 	"\tBootstrap\x12.\n" +
 	"\aservers\x18\x01 \x03(\v2\x14.transport.v1.ServerR\aservers\x12F\n" +
 	"\aclients\x18\x02 \x03(\v2,.examples.api_gateway.Bootstrap.ClientsEntryR\aclients\x1a^\n" +
@@ -170,7 +170,7 @@ const file_protos_api_gateway_bootstrap_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
 	"\x05value\x18\x02 \x01(\v2\".examples.api_gateway.ClientConfigR\x05value:\x028\x01\"v\n" +
 	"\fClientConfig\x122\n" +
-	"\tdiscovery\x18\x01 \x01(\v2\x14.discovery.v1.ClientR\tdiscovery\x122\n" +
+	"\bendpoint\x18\x01 \x01(\v2\x16.discovery.v1.EndpointR\bendpoint\x122\n" +
 	"\ttransport\x18\x02 \x01(\v2\x14.transport.v1.ClientR\ttransportB\x19Z\x17./api_gateway/conf;confb\x06proto3"
 
 var (
@@ -191,13 +191,13 @@ var file_protos_api_gateway_bootstrap_proto_goTypes = []any{
 	(*ClientConfig)(nil), // 1: examples.api_gateway.ClientConfig
 	nil,                  // 2: examples.api_gateway.Bootstrap.ClientsEntry
 	(*v1.Server)(nil),    // 3: transport.v1.Server
-	(*v11.Client)(nil),   // 4: discovery.v1.Client
+	(*v11.Endpoint)(nil), // 4: discovery.v1.Endpoint
 	(*v1.Client)(nil),    // 5: transport.v1.Client
 }
 var file_protos_api_gateway_bootstrap_proto_depIdxs = []int32{
 	3, // 0: examples.api_gateway.Bootstrap.servers:type_name -> transport.v1.Server
 	2, // 1: examples.api_gateway.Bootstrap.clients:type_name -> examples.api_gateway.Bootstrap.ClientsEntry
-	4, // 2: examples.api_gateway.ClientConfig.discovery:type_name -> discovery.v1.Client
+	4, // 2: examples.api_gateway.ClientConfig.endpoint:type_name -> discovery.v1.Endpoint
 	5, // 3: examples.api_gateway.ClientConfig.transport:type_name -> transport.v1.Client
 	1, // 4: examples.api_gateway.Bootstrap.ClientsEntry.value:type_name -> examples.api_gateway.ClientConfig
 	5, // [5:5] is the sub-list for method output_type

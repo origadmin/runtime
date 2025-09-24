@@ -53,8 +53,8 @@ func (d *ProtoConfig) Decode(key string, target interface{}) error {
 		switch key {
 		case "servers":
 			source = d.bootstrap.GetServers()
-		case "clients":
-			source = d.bootstrap.GetClients()
+		case "endpoints": // Changed from "clients" to "endpoints"
+			source = d.bootstrap.GetEndpoints()
 		default:
 			// If the key is not a direct top-level field of Bootstrap, and not empty/root,
 			// we can try to scan it from the original Kratos config as a fallback.
@@ -111,40 +111,60 @@ func (d *ProtoConfig) DecodeLogger() (*loggerv1.Logger, error) {
 }
 
 // DecodeDiscoveries implements the interfaces.DiscoveriesConfigDecoder interface.
+// It now only decodes the centralized discovery providers from the registries configuration.
 func (d *ProtoConfig) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	discoveries := make(map[string]*discoveryv1.Discovery)
+	if d.bootstrap.GetRegistries() == nil {
+		return make(map[string]*discoveryv1.Discovery), nil
+	}
+	return d.bootstrap.GetRegistries().GetDiscoveries(), nil
+}
 
-	// First, check if we have registries configuration with discoveries
-	if registries := d.bootstrap.GetRegistries(); registries != nil {
-		// Get discoveries from the registries configuration
-		for name, discovery := range registries.GetDiscoveries() {
-			discoveries[name] = discovery
-		}
+// DecodeEndpoints decodes and links endpoint configurations with their corresponding discovery providers.
+// It returns a map where the key is the endpoint's name and the value contains all necessary
+// information (both behavior and provider) to initialize the client connection.
+func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error) {
+	// 1. Get all available discovery providers
+	providers := d.bootstrap.GetRegistries().GetDiscoveries()
+	if providers == nil {
+		providers = make(map[string]*discoveryv1.Discovery)
 	}
 
-	// Fallback to client configurations for backward compatibility
-	if len(discoveries) == 0 {
-		// Iterate through the clients defined in the bootstrap proto
-		for clientName, clientCfg := range d.bootstrap.GetClients() {
-			if clientCfg.GetDiscovery() != nil {
-				// clientCfg.GetDiscovery() returns a *discoveryv1.Client.
-				// The target is map[string]*discoveryv1.Discovery.
-				// We need to convert discoveryv1.Client to discoveryv1.Discovery.
-				jsonBytes, err := protojson.Marshal(clientCfg.GetDiscovery())
-				if err != nil {
-					return nil, fmt.Errorf("failed to marshal discoveryv1.Client for client '%s' to JSON: %w", clientName, err)
-				}
+	// 2. Prepare for the final results
+	resolvedEndpoints := make(map[string]*discoveryv1.Endpoint)
 
-				var disc discoveryv1.Discovery
-				if err := protojson.Unmarshal(jsonBytes, &disc); err != nil {
-					return nil, fmt.Errorf("failed to protojson unmarshal JSON to discoveryv1.Discovery for client '%s': %w", clientName, err)
-				}
-				discoveries[clientName] = &disc
+	// 3. Iterate through all defined EndpointConfig from the bootstrap file
+	for endpointName, endpointCfg := range d.bootstrap.GetEndpoints() {
+		if endpointCfg == nil {
+			continue
+		}
+
+		// 4. Find the provider
+		var providerCfg *discoveryv1.Discovery
+		providerName := endpointCfg.GetDiscoveryName()
+
+		if providerName != "" {
+			var found bool
+			providerCfg, found = providers[providerName]
+			if !found {
+				return nil, fmt.Errorf("endpoint '%s' references non-existent discovery provider '%s'", endpointName, providerName)
 			}
 		}
+
+		// 5. Assemble the final, "rich" Endpoint object
+		resolvedEndpoints[endpointName] = &discoveryv1.Endpoint{
+			Provider: providerCfg, // Link the found provider
+			Uri:      endpointCfg.GetUri(),
+			Selector: &discoveryv1.Selector{ // Manual conversion for Selector
+				Type:    endpointCfg.GetSelector().GetType(),
+				Version: endpointCfg.GetSelector().GetVersion(),
+			},
+			Timeout:   endpointCfg.GetTimeout(),
+			Transport: endpointCfg.GetTransport(), // Direct assignment if types match
+			Middlewares: endpointCfg.GetMiddlewares(),
+		}
 	}
 
-	return discoveries, nil
+	return resolvedEndpoints, nil
 }
 
 func main() {
@@ -210,8 +230,7 @@ func main() {
 			appLogger.Infof("Log File: %s, MaxSize: %dMB, MaxBackups: %d, MaxAge: %dd, Compress: %v",
 				fileCfg.GetPath(),
 				fileCfg.GetMaxSize(),
-				fileCfg.GetMaxBackups(),
-				fileCfg.GetMaxAge(),
+				fileCfg.GetMaxBackups(),				fileCfg.GetMaxAge(),
 				fileCfg.GetCompress())
 		}
 	} else {
@@ -236,22 +255,35 @@ func main() {
 		appLogger.Info("No server configurations found")
 	}
 
-	// Verify client configs
-	clients := bc.GetClients()
-	if len(clients) > 0 {
-		appLogger.Infof("Found %d client configurations", len(clients))
-		for name, client := range clients {
-			appLogger.Infof("Client '%s':", name)
+	// Verify resolved endpoints
+	resolvedEndpoints, err := protoCfg.DecodeEndpoints()
+	if err != nil {
+		appLogger.Errorf("Failed to decode endpoints: %v", err)
+		panic(err)
+	}
 
-			if discovery := client.GetDiscovery(); discovery != nil {
-				appLogger.Infof("  Discovery: Name=%s, Endpoint=%s, Selector=%s, Version=%s",
-					discovery.GetName(),
-					discovery.GetEndpoint(),
-					discovery.GetSelector().GetType(),
-					discovery.GetSelector().GetVersion())
+	if len(resolvedEndpoints) > 0 {
+		appLogger.Infof("Found %d resolved endpoints", len(resolvedEndpoints))
+		for name, endpoint := range resolvedEndpoints {
+			appLogger.Infof("Endpoint '%s':", name)
+
+			if endpoint.GetProvider() != nil {
+				appLogger.Infof("  Provider: Type=%s, ServiceName=%s",
+					endpoint.GetProvider().GetType(),
+					endpoint.GetProvider().GetServiceName())
+			} else {
+				appLogger.Info("  Provider: None (static endpoint or missing discovery_name)")
 			}
 
-			if transport := client.GetTransport(); transport != nil {
+			appLogger.Infof("  URI: %s", endpoint.GetUri())
+
+			if selector := endpoint.GetSelector(); selector != nil {
+				appLogger.Infof("  Selector: Type=%s, Version=%s",
+					selector.GetType(),
+					selector.GetVersion())
+			}
+
+			if transport := endpoint.GetTransport(); transport != nil {
 				if grpcCfg := transport.GetGrpc(); grpcCfg != nil {
 					appLogger.Infof("  Transport gRPC: Target=%s, Timeout=%s",
 						grpcCfg.GetTarget(),
@@ -260,23 +292,19 @@ func main() {
 			}
 		}
 	} else {
-		appLogger.Info("No client configurations found")
+		appLogger.Info("No resolved endpoints found")
 	}
 
-	// Verify registries and discoveries
-	if registries := bc.GetRegistries(); registries != nil {
-		discoveries := registries.GetDiscoveries()
-		if len(discoveries) > 0 {
-			appLogger.Infof("Found %d discovery configurations", len(discoveries))
-			for name, disc := range discoveries {
-				appLogger.Infof("Discovery '%s': Type=%s, ServiceName=%s",
-					name, disc.GetType(), disc.GetServiceName())
-			}
-		} else {
-			appLogger.Info("No discovery configurations found in registries")
+	// Verify registries (discovery providers)
+	discoveries := bc.GetRegistries().GetDiscoveries()
+	if len(discoveries) > 0 {
+		appLogger.Infof("Found %d raw discovery configurations", len(discoveries))
+		for name, disc := range discoveries {
+			appLogger.Infof("Discovery '%s': Type=%s, ServiceName=%s",
+				name, disc.GetType(), disc.GetServiceName())
 		}
 	} else {
-		appLogger.Info("No registries configuration found")
+		appLogger.Info("No raw discovery configurations found in registries")
 	}
 
 	appLogger.Info("Application finished.") // Log a final message

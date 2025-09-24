@@ -9,7 +9,7 @@ package examples.api_gateway;
 import "transport/v1/server.proto";
 import "transport/v1/client.proto";
 // Import client configuration related to service discovery
-import "discovery/v1/client.proto";
+import "discovery/v1/endpoint.proto";
 
 // Specify the import path and package name for the generated Go code
 option go_package = "./api_gateway/conf;conf";
@@ -41,7 +41,7 @@ message ClientConfig {
   // - Service discovery method (direct, DNS, Consul, etc.)
   // - Load balancing strategy
   // - Circuit breaking and fallback configuration
-  discovery.v1.Client discovery = 1;
+  discovery.v1.Endpoint endpoint = 1;
 
   // Transport-level client configuration
   // Mainly configures how to communicate with selected service instances, for example:

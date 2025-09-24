@@ -42,6 +42,3 @@ type LoggerConfigDecoder interface {
 type DiscoveriesConfigDecoder interface {
 	DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error)
 }
-
-// AppInfoConfigDecoder is removed as AppInfo is not loaded from config.
-// ConfigProvider and ConfigProviderFunc are removed as NewDecoder directly returns interfaces.Config.

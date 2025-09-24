@@ -9,7 +9,7 @@ package examples.http_server_grpc_client;
 import "transport/v1/server.proto"; // Updated import path
 import "transport/v1/client.proto"; // Updated import path
 // Import client configuration related to service discovery
-import "discovery/v1/client.proto"; // Updated import path
+import "discovery/v1/endpoint.proto"; // Updated import path
 
 // Specify the import path and package name for the generated Go code
 option go_package = "./http_server_grpc_client/conf;conf";
@@ -41,7 +41,7 @@ message ClientConfig {
   // - Service discovery method (direct, DNS, Consul, etc.)
   // - Load balancing strategy
   // - Circuit breaking and fallback configuration
-  discovery.v1.Client discovery = 1;
+  discovery.v1.Endpoint endpoint = 1;
 
   // Transport-level client configuration
   // Mainly configures how to communicate with gRPC service instances, for example:

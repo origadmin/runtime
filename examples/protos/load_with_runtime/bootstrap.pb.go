@@ -24,17 +24,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Bootstrap is the top-level configuration for a rich example application,
-// composed of existing framework API protos.
+// Bootstrap is the user-facing configuration structure.
+// It uses references (like discovery_name) to link configurations.
 type Bootstrap struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Server configurations (e.g., HTTP, gRPC servers)
 	Servers []*v1.Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
-	// Downstream client configurations
-	Clients map[string]*ClientConfig `protobuf:"bytes,2,rep,name=clients,proto3" json:"clients,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Endpoints defines the configuration for all downstream services.
+	// The key of the map is the logical name of the endpoint (e.g., "user-service").
+	Endpoints map[string]*EndpointConfig `protobuf:"bytes,2,rep,name=endpoints,proto3" json:"endpoints,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// Logging configuration
-	Logger *v11.Logger `protobuf:"bytes,3,opt,name=logger,proto3" json:"logger,omitempty"` // Use the existing logger proto
-	// Registries configuration, including service discoveries
+	Logger *v11.Logger `protobuf:"bytes,3,opt,name=logger,proto3" json:"logger,omitempty"`
+	// RegistriesConfig holds the definitions of available discovery service providers.
 	Registries    *RegistriesConfig `protobuf:"bytes,4,opt,name=registries,proto3" json:"registries,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -77,9 +78,9 @@ func (x *Bootstrap) GetServers() []*v1.Server {
 	return nil
 }
 
-func (x *Bootstrap) GetClients() map[string]*ClientConfig {
+func (x *Bootstrap) GetEndpoints() map[string]*EndpointConfig {
 	if x != nil {
-		return x.Clients
+		return x.Endpoints
 	}
 	return nil
 }
@@ -98,29 +99,36 @@ func (x *Bootstrap) GetRegistries() *RegistriesConfig {
 	return nil
 }
 
-// ClientConfig combines all configurations needed for a client
-type ClientConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Discovery     *v12.Client            `protobuf:"bytes,1,opt,name=discovery,proto3" json:"discovery,omitempty"`
-	Transport     *v1.Client             `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
+// EndpointConfig represents the user-facing configuration for an endpoint.
+// It uses a string reference (`discovery_name`) to link to a discovery provider.
+type EndpointConfig struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The name of the discovery provider configuration (from registries.discoveries) to use.
+	DiscoveryName string `protobuf:"bytes,1,opt,name=discovery_name,proto3" json:"discovery_name,omitempty"`
+	// The endpoint URI to connect to, e.g., "discovery:///user-service".
+	Uri string `protobuf:"bytes,2,opt,name=uri,proto3" json:"uri,omitempty"`
+	// Selector for client-side load balancing and node filtering.
+	Selector *EndpointConfig_Selector `protobuf:"bytes,3,opt,name=selector,proto3" json:"selector,omitempty"`
+	// Transport configuration for this client.
+	Transport     *v1.Client `protobuf:"bytes,4,opt,name=transport,proto3" json:"transport,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ClientConfig) Reset() {
-	*x = ClientConfig{}
+func (x *EndpointConfig) Reset() {
+	*x = EndpointConfig{}
 	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ClientConfig) String() string {
+func (x *EndpointConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ClientConfig) ProtoMessage() {}
+func (*EndpointConfig) ProtoMessage() {}
 
-func (x *ClientConfig) ProtoReflect() protoreflect.Message {
+func (x *EndpointConfig) ProtoReflect() protoreflect.Message {
 	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -132,29 +140,42 @@ func (x *ClientConfig) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ClientConfig.ProtoReflect.Descriptor instead.
-func (*ClientConfig) Descriptor() ([]byte, []int) {
+// Deprecated: Use EndpointConfig.ProtoReflect.Descriptor instead.
+func (*EndpointConfig) Descriptor() ([]byte, []int) {
 	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ClientConfig) GetDiscovery() *v12.Client {
+func (x *EndpointConfig) GetDiscoveryName() string {
 	if x != nil {
-		return x.Discovery
+		return x.DiscoveryName
+	}
+	return ""
+}
+
+func (x *EndpointConfig) GetUri() string {
+	if x != nil {
+		return x.Uri
+	}
+	return ""
+}
+
+func (x *EndpointConfig) GetSelector() *EndpointConfig_Selector {
+	if x != nil {
+		return x.Selector
 	}
 	return nil
 }
 
-func (x *ClientConfig) GetTransport() *v1.Client {
+func (x *EndpointConfig) GetTransport() *v1.Client {
 	if x != nil {
 		return x.Transport
 	}
 	return nil
 }
 
-// RegistriesConfig holds various registry-related configurations.
+// RegistriesConfig holds the definitions of available discovery service providers.
 type RegistriesConfig struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Service discovery configurations
+	state         protoimpl.MessageState    `protogen:"open.v1"`
 	Discoveries   map[string]*v12.Discovery `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -197,24 +218,82 @@ func (x *RegistriesConfig) GetDiscoveries() map[string]*v12.Discovery {
 	return nil
 }
 
+// We need to define Selector here as it was in the old client.proto/endpoint.proto
+type EndpointConfig_Selector struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EndpointConfig_Selector) Reset() {
+	*x = EndpointConfig_Selector{}
+	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EndpointConfig_Selector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EndpointConfig_Selector) ProtoMessage() {}
+
+func (x *EndpointConfig_Selector) ProtoReflect() protoreflect.Message {
+	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EndpointConfig_Selector.ProtoReflect.Descriptor instead.
+func (*EndpointConfig_Selector) Descriptor() ([]byte, []int) {
+	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{1, 0}
+}
+
+func (x *EndpointConfig_Selector) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *EndpointConfig_Selector) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
 var File_protos_load_with_runtime_bootstrap_proto protoreflect.FileDescriptor
 
 const file_protos_load_with_runtime_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"(protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x16logger/v1/logger.proto\x1a\x19transport/v1/client.proto\x1a\x19transport/v1/server.proto\"\xe8\x02\n" +
+	"(protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a\x1cdiscovery/v1/discovery.proto\x1a\x16logger/v1/logger.proto\x1a\x19transport/v1/client.proto\x1a\x19transport/v1/server.proto\"\xf2\x02\n" +
 	"\tBootstrap\x12.\n" +
-	"\aservers\x18\x01 \x03(\v2\x14.transport.v1.ServerR\aservers\x12L\n" +
-	"\aclients\x18\x02 \x03(\v22.examples.load_with_runtime.Bootstrap.ClientsEntryR\aclients\x12)\n" +
+	"\aservers\x18\x01 \x03(\v2\x14.transport.v1.ServerR\aservers\x12R\n" +
+	"\tendpoints\x18\x02 \x03(\v24.examples.load_with_runtime.Bootstrap.EndpointsEntryR\tendpoints\x12)\n" +
 	"\x06logger\x18\x03 \x01(\v2\x11.logger.v1.LoggerR\x06logger\x12L\n" +
 	"\n" +
 	"registries\x18\x04 \x01(\v2,.examples.load_with_runtime.RegistriesConfigR\n" +
-	"registries\x1ad\n" +
-	"\fClientsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12>\n" +
-	"\x05value\x18\x02 \x01(\v2(.examples.load_with_runtime.ClientConfigR\x05value:\x028\x01\"v\n" +
-	"\fClientConfig\x122\n" +
-	"\tdiscovery\x18\x01 \x01(\v2\x14.discovery.v1.ClientR\tdiscovery\x122\n" +
-	"\ttransport\x18\x02 \x01(\v2\x14.transport.v1.ClientR\ttransport\"\xcc\x01\n" +
+	"registries\x1ah\n" +
+	"\x0eEndpointsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
+	"\x05value\x18\x02 \x01(\v2*.examples.load_with_runtime.EndpointConfigR\x05value:\x028\x01\"\x89\x02\n" +
+	"\x0eEndpointConfig\x12&\n" +
+	"\x0ediscovery_name\x18\x01 \x01(\tR\x0ediscovery_name\x12\x10\n" +
+	"\x03uri\x18\x02 \x01(\tR\x03uri\x12O\n" +
+	"\bselector\x18\x03 \x01(\v23.examples.load_with_runtime.EndpointConfig.SelectorR\bselector\x122\n" +
+	"\ttransport\x18\x04 \x01(\v2\x14.transport.v1.ClientR\ttransport\x1a8\n" +
+	"\bSelector\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\"\xcc\x01\n" +
 	"\x10RegistriesConfig\x12_\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2=.examples.load_with_runtime.RegistriesConfig.DiscoveriesEntryR\vdiscoveries\x1aW\n" +
 	"\x10DiscoveriesEntry\x12\x10\n" +
@@ -233,28 +312,28 @@ func file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP() []byte {
 	return file_protos_load_with_runtime_bootstrap_proto_rawDescData
 }
 
-var file_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_protos_load_with_runtime_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),        // 0: examples.load_with_runtime.Bootstrap
-	(*ClientConfig)(nil),     // 1: examples.load_with_runtime.ClientConfig
-	(*RegistriesConfig)(nil), // 2: examples.load_with_runtime.RegistriesConfig
-	nil,                      // 3: examples.load_with_runtime.Bootstrap.ClientsEntry
-	nil,                      // 4: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
-	(*v1.Server)(nil),        // 5: transport.v1.Server
-	(*v11.Logger)(nil),       // 6: logger.v1.Logger
-	(*v12.Client)(nil),       // 7: discovery.v1.Client
-	(*v1.Client)(nil),        // 8: transport.v1.Client
-	(*v12.Discovery)(nil),    // 9: discovery.v1.Discovery
+	(*Bootstrap)(nil),               // 0: examples.load_with_runtime.Bootstrap
+	(*EndpointConfig)(nil),          // 1: examples.load_with_runtime.EndpointConfig
+	(*RegistriesConfig)(nil),        // 2: examples.load_with_runtime.RegistriesConfig
+	nil,                             // 3: examples.load_with_runtime.Bootstrap.EndpointsEntry
+	(*EndpointConfig_Selector)(nil), // 4: examples.load_with_runtime.EndpointConfig.Selector
+	nil,                             // 5: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
+	(*v1.Server)(nil),               // 6: transport.v1.Server
+	(*v11.Logger)(nil),              // 7: logger.v1.Logger
+	(*v1.Client)(nil),               // 8: transport.v1.Client
+	(*v12.Discovery)(nil),           // 9: discovery.v1.Discovery
 }
 var file_protos_load_with_runtime_bootstrap_proto_depIdxs = []int32{
-	5, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> transport.v1.Server
-	3, // 1: examples.load_with_runtime.Bootstrap.clients:type_name -> examples.load_with_runtime.Bootstrap.ClientsEntry
-	6, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> logger.v1.Logger
+	6, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> transport.v1.Server
+	3, // 1: examples.load_with_runtime.Bootstrap.endpoints:type_name -> examples.load_with_runtime.Bootstrap.EndpointsEntry
+	7, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> logger.v1.Logger
 	2, // 3: examples.load_with_runtime.Bootstrap.registries:type_name -> examples.load_with_runtime.RegistriesConfig
-	7, // 4: examples.load_with_runtime.ClientConfig.discovery:type_name -> discovery.v1.Client
-	8, // 5: examples.load_with_runtime.ClientConfig.transport:type_name -> transport.v1.Client
-	4, // 6: examples.load_with_runtime.RegistriesConfig.discoveries:type_name -> examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
-	1, // 7: examples.load_with_runtime.Bootstrap.ClientsEntry.value:type_name -> examples.load_with_runtime.ClientConfig
+	4, // 4: examples.load_with_runtime.EndpointConfig.selector:type_name -> examples.load_with_runtime.EndpointConfig.Selector
+	8, // 5: examples.load_with_runtime.EndpointConfig.transport:type_name -> transport.v1.Client
+	5, // 6: examples.load_with_runtime.RegistriesConfig.discoveries:type_name -> examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
+	1, // 7: examples.load_with_runtime.Bootstrap.EndpointsEntry.value:type_name -> examples.load_with_runtime.EndpointConfig
 	9, // 8: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry.value:type_name -> discovery.v1.Discovery
 	9, // [9:9] is the sub-list for method output_type
 	9, // [9:9] is the sub-list for method input_type
@@ -274,7 +353,7 @@ func file_protos_load_with_runtime_bootstrap_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_load_with_runtime_bootstrap_proto_rawDesc), len(file_protos_load_with_runtime_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
