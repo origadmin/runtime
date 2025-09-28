@@ -10,8 +10,11 @@ import (
 
 	kratoslog "github.com/go-kratos/kratos/v2/log"
 
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	kslog "github.com/origadmin/slog-kratos"
+
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/toolkits/slogx"
 )
 
@@ -99,4 +102,23 @@ func LevelOption(level string) slogx.Option {
 		ll = slogx.LevelInfo // Default to Info
 	}
 	return slogx.WithLevel(ll)
+}
+
+type loggerContext struct {
+	Logger Logger
+}
+
+func WithLogger(logger Logger) interfaces.Option {
+	return optionutil.Update(func(l *loggerContext) {
+		l.Logger = logger
+	})
+}
+
+func FromLogger(opts ...interfaces.Option) Logger {
+	var l loggerContext
+	optionutil.Apply(&l, opts...)
+	if l.Logger == nil {
+		l.Logger = DefaultLogger
+	}
+	return l.Logger
 }
