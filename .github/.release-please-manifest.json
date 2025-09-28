@@ -1,0 +1,16 @@
+{
+  ".": "0.3.21",
+  "codec": "0.3.20",
+  "crypto": "0.3.20",
+  "errors": "0.3.20",
+  "slogx": "0.3.20",
+  "identifier/cuid2": "0.3.20",
+  "identifier/ksuid": "0.3.20",
+  "identifier/nanoid": "0.3.20",
+  "identifier/shortid": "0.3.20",
+  "identifier/snowflake": "0.3.20",
+  "identifier/sonyflake": "0.3.20",
+  "identifier/ulid": "0.3.20",
+  "identifier/uuid": "0.3.20",
+  "identifier/xid": "0.3.20"
+}

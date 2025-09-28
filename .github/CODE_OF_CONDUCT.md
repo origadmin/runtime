@@ -31,7 +31,7 @@ Examples of unacceptable behavior include:
 any kind
 * Trolling, insulting or derogatory comments, and personal or political attacks
 * Public or private harassment
-* Publishing others' private information, such as a physical or email address,
+* Publishing others\' private information, such as a physical or email address,
 without their explicit permission
 * Other conduct which could reasonably be considered inappropriate in a
 professional setting
@@ -40,7 +40,7 @@ professional setting
 
 * Community leaders are responsible for clarifying and enforcing our standards of
 acceptable behavior and will take appropriate and fair corrective action in
-response to any behavior that they deem inappropriate, threatening, offensive,
+in response to any behavior that they deem inappropriate, threatening, offensive,
 or harmful.
 
 * Community leaders have the right and responsibility to remove, edit, or reject
@@ -120,7 +120,7 @@ version 2.1, available at
 [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html][v2.1].
 
 Community Impact Guidelines were inspired by
-[Mozilla's code of conduct enforcement ladder][Mozilla CoC].
+[Mozilla\'s code of conduct enforcement ladder][Mozilla CoC].
 
 For answers to common questions about this code of conduct, see the FAQ at
 [https://www.contributor-covenant.org/faq][FAQ]. Translations are available at

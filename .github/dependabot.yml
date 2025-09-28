@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Enable version updates for Go modules
+  - package-ecosystem: "gomod"
+    # Look for go.mod files in the root directory and all subdirectories
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      # Prefix all commit messages with "chore(deps):"
+      # This tells release-please that it's a dependency update
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    # Look for workflow files in the .github/workflows directory
+    directory: "/"
+    schedule:
+      interval: "weekly"

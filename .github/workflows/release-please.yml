@@ -1,0 +1,66 @@
+name: Test and Release
+
+# This workflow runs on every push to the main branch.
+# It always runs tests. A release is only triggered if the commit message
+# contains the string "[release]".
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '^1.23.0'
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '^1.23.0' # The Go version to download (if necessary) and use.
+
+      - name: Run tests
+        run: make test
+
+  release:
+    # The release job depends on the test job succeeding.
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[release]')
+    steps:
+      - name: Create Release and Changelog
+        # This action automates the entire release process based on
+        # Conventional Commit messages.
+        uses: googleapis/release-please-action@v4
+        with:
+          # The release-type for a standard Go module.
+          # It automatically finds the go.mod file, reads the module path,
+          # and creates tags like `v1.2.3`.
+          config-file: release-please-config.json
+          manifest-file: .github/.release-please-manifest.json # 已更新路径
+          # The token is required for release-please to create releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Optional: If you want to do something after a release is created (e.g., notify Slack)
+      - name: Notify on new release
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          echo "New release created: ${{ steps.release.outputs.tag_name }}"
+          echo "Release notes: ${{ steps.release.outputs.release_notes }}"
+          # Add your notification logic here (e.g., curl to Slack webhook)
