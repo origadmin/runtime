@@ -22,7 +22,7 @@ type Validator interface {
 
 // Server is a validator middleware.
 func Server(ss ...Option) (middleware.Middleware, error) {
-	cfg := settings.Apply(&Options{
+	cfg := configure.Apply(&Options{
 		version:  V1,
 		failFast: true,
 	}, ss)
