@@ -26,10 +26,10 @@ const (
 // Discovery defines the configuration for service registration.
 type Discovery struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// name is the the service key in the registry.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// type specifies which discovery provider to use.
-	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	// service_name is the single, unique name under which this entire service will be registered.
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// debug enables verbose logging for the discovery client.
 	Debug bool `protobuf:"varint,5,opt,name=debug,proto3" json:"debug,omitempty"`
 	// --- Standard Provider Configurations ---
@@ -75,16 +75,16 @@ func (*Discovery) Descriptor() ([]byte, []int) {
 	return file_discovery_v1_discovery_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Discovery) GetType() string {
+func (x *Discovery) GetName() string {
 	if x != nil {
-		return x.Type
+		return x.Name
 	}
 	return ""
 }
 
-func (x *Discovery) GetName() string {
+func (x *Discovery) GetType() string {
 	if x != nil {
-		return x.Name
+		return x.Type
 	}
 	return ""
 }
@@ -452,10 +452,10 @@ var File_discovery_v1_discovery_proto protoreflect.FileDescriptor
 const file_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
 	"\x1cdiscovery/v1/discovery.proto\x12\fdiscovery.v1\x1a\x1cextension/v1/extension.proto\x1a\x17validate/validate.proto\"\xc2\x04\n" +
-	"\tDiscovery\x12Q\n" +
-	"\x04type\x18\x01 \x01(\tB=\xfaB:r8R\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
-	"kubernetesR\apolarisR\x04type\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\tDiscovery\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12Q\n" +
+	"\x04type\x18\x02 \x01(\tB=\xfaB:r8R\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
+	"kubernetesR\apolarisR\x04type\x12\x14\n" +
 	"\x05debug\x18\x05 \x01(\bR\x05debug\x122\n" +
 	"\x06consul\x18\xac\x02 \x01(\v2\x14.discovery.v1.ConsulH\x00R\x06consul\x88\x01\x01\x12,\n" +
 	"\x04etcd\x18\x90\x03 \x01(\v2\x12.discovery.v1.ETCDH\x01R\x04etcd\x88\x01\x01\x12/\n" +

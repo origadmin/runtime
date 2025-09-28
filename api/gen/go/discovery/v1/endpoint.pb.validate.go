@@ -61,16 +61,7 @@ func (m *Endpoint) validate(all bool) error {
 
 	// no validation rules for DiscoveryName
 
-	if utf8.RuneCountInString(m.GetUri()) < 1 {
-		err := EndpointValidationError{
-			field:  "Uri",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Uri
 
 	if all {
 		switch v := interface{}(m.GetSelector()).(type) {
@@ -99,69 +90,6 @@ func (m *Endpoint) validate(all bool) error {
 				cause:  err,
 			}
 		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, EndpointValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, EndpointValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return EndpointValidationError{
-				field:  "Timeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	for idx, item := range m.GetMiddlewares() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, EndpointValidationError{
-						field:  fmt.Sprintf("Middlewares[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, EndpointValidationError{
-						field:  fmt.Sprintf("Middlewares[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return EndpointValidationError{
-					field:  fmt.Sprintf("Middlewares[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
 	}
 
 	if len(errors) > 0 {
@@ -263,16 +191,7 @@ func (m *Selector) validate(all bool) error {
 
 	var errors []error
 
-	if _, ok := _Selector_Type_InLookup[m.GetType()]; !ok {
-		err := SelectorValidationError{
-			field:  "Type",
-			reason: "value must be in list [random wrr p2c]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	// no validation rules for Version
 
@@ -352,9 +271,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SelectorValidationError{}
-
-var _Selector_Type_InLookup = map[string]struct{}{
-	"random": {},
-	"wrr":    {},
-	"p2c":    {},
-}

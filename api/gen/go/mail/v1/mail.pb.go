@@ -21,20 +21,20 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Mail
+// Mail represents the general configuration for a mail service.
 type Mail struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	Host          string                 `protobuf:"bytes,2,opt,name=host,proto3" json:"host,omitempty"`
-	Port          int32                  `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
-	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
-	Password      string                 `protobuf:"bytes,5,opt,name=password,proto3" json:"password,omitempty"`
-	TokenSecret   string                 `protobuf:"bytes,6,opt,name=token_secret,proto3" json:"token_secret,omitempty"`
-	Ssl           bool                   `protobuf:"varint,7,opt,name=ssl,proto3" json:"ssl,omitempty"`
-	MaxRetries    int32                  `protobuf:"varint,8,opt,name=max_retries,proto3" json:"max_retries,omitempty"`
-	RetryInterval int64                  `protobuf:"varint,9,opt,name=retry_interval,proto3" json:"retry_interval,omitempty"`
-	Nickname      string                 `protobuf:"bytes,100,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	From          string                 `protobuf:"bytes,101,opt,name=from,proto3" json:"from,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Common mailer settings
+	Nickname      string `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	From          string `protobuf:"bytes,2,opt,name=from,proto3" json:"from,omitempty"`
+	MaxRetries    int32  `protobuf:"varint,3,opt,name=max_retries,proto3" json:"max_retries,omitempty"`
+	RetryInterval int64  `protobuf:"varint,4,opt,name=retry_interval,proto3" json:"retry_interval,omitempty"`
+	// Mailer-specific configuration. Only one of these can be set.
+	//
+	// Types that are valid to be assigned to MailerConfig:
+	//
+	//	*Mail_SmtpConfig
+	MailerConfig  isMail_MailerConfig `protobuf_oneof:"mailer_config"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -69,53 +69,18 @@ func (*Mail) Descriptor() ([]byte, []int) {
 	return file_mail_v1_mail_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Mail) GetType() string {
+func (x *Mail) GetNickname() string {
 	if x != nil {
-		return x.Type
+		return x.Nickname
 	}
 	return ""
 }
 
-func (x *Mail) GetHost() string {
+func (x *Mail) GetFrom() string {
 	if x != nil {
-		return x.Host
+		return x.From
 	}
 	return ""
-}
-
-func (x *Mail) GetPort() int32 {
-	if x != nil {
-		return x.Port
-	}
-	return 0
-}
-
-func (x *Mail) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *Mail) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-func (x *Mail) GetTokenSecret() string {
-	if x != nil {
-		return x.TokenSecret
-	}
-	return ""
-}
-
-func (x *Mail) GetSsl() bool {
-	if x != nil {
-		return x.Ssl
-	}
-	return false
 }
 
 func (x *Mail) GetMaxRetries() int32 {
@@ -132,37 +97,139 @@ func (x *Mail) GetRetryInterval() int64 {
 	return 0
 }
 
-func (x *Mail) GetNickname() string {
+func (x *Mail) GetMailerConfig() isMail_MailerConfig {
 	if x != nil {
-		return x.Nickname
+		return x.MailerConfig
+	}
+	return nil
+}
+
+func (x *Mail) GetSmtpConfig() *SmtpConfig {
+	if x != nil {
+		if x, ok := x.MailerConfig.(*Mail_SmtpConfig); ok {
+			return x.SmtpConfig
+		}
+	}
+	return nil
+}
+
+type isMail_MailerConfig interface {
+	isMail_MailerConfig()
+}
+
+type Mail_SmtpConfig struct {
+	SmtpConfig *SmtpConfig `protobuf:"bytes,10,opt,name=smtp_config,json=smtpConfig,proto3,oneof"`
+}
+
+func (*Mail_SmtpConfig) isMail_MailerConfig() {}
+
+// SmtpConfig represents the configuration for an SMTP mailer.
+type SmtpConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Host          string                 `protobuf:"bytes,1,opt,name=host,proto3" json:"host,omitempty"`
+	Port          int32                  `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
+	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
+	TokenSecret   string                 `protobuf:"bytes,5,opt,name=token_secret,proto3" json:"token_secret,omitempty"` // Specific to some SMTP setups or OAuth
+	Ssl           bool                   `protobuf:"varint,6,opt,name=ssl,proto3" json:"ssl,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SmtpConfig) Reset() {
+	*x = SmtpConfig{}
+	mi := &file_mail_v1_mail_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SmtpConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SmtpConfig) ProtoMessage() {}
+
+func (x *SmtpConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_mail_v1_mail_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SmtpConfig.ProtoReflect.Descriptor instead.
+func (*SmtpConfig) Descriptor() ([]byte, []int) {
+	return file_mail_v1_mail_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *SmtpConfig) GetHost() string {
+	if x != nil {
+		return x.Host
 	}
 	return ""
 }
 
-func (x *Mail) GetFrom() string {
+func (x *SmtpConfig) GetPort() int32 {
 	if x != nil {
-		return x.From
+		return x.Port
+	}
+	return 0
+}
+
+func (x *SmtpConfig) GetUsername() string {
+	if x != nil {
+		return x.Username
 	}
 	return ""
+}
+
+func (x *SmtpConfig) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *SmtpConfig) GetTokenSecret() string {
+	if x != nil {
+		return x.TokenSecret
+	}
+	return ""
+}
+
+func (x *SmtpConfig) GetSsl() bool {
+	if x != nil {
+		return x.Ssl
+	}
+	return false
 }
 
 var File_mail_v1_mail_proto protoreflect.FileDescriptor
 
 const file_mail_v1_mail_proto_rawDesc = "" +
 	"\n" +
-	"\x12mail/v1/mail.proto\x12\tconfig.v1\"\xaa\x02\n" +
-	"\x04Mail\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
-	"\x04host\x18\x02 \x01(\tR\x04host\x12\x12\n" +
-	"\x04port\x18\x03 \x01(\x05R\x04port\x12\x1a\n" +
-	"\busername\x18\x04 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x05 \x01(\tR\bpassword\x12\"\n" +
-	"\ftoken_secret\x18\x06 \x01(\tR\ftoken_secret\x12\x10\n" +
-	"\x03ssl\x18\a \x01(\bR\x03ssl\x12 \n" +
-	"\vmax_retries\x18\b \x01(\x05R\vmax_retries\x12&\n" +
-	"\x0eretry_interval\x18\t \x01(\x03R\x0eretry_interval\x12\x1a\n" +
-	"\bnickname\x18d \x01(\tR\bnickname\x12\x12\n" +
-	"\x04from\x18e \x01(\tR\x04fromB\x9a\x01\n" +
+	"\x12mail/v1/mail.proto\x12\tconfig.v1\"\xcb\x01\n" +
+	"\x04Mail\x12\x1a\n" +
+	"\bnickname\x18\x01 \x01(\tR\bnickname\x12\x12\n" +
+	"\x04from\x18\x02 \x01(\tR\x04from\x12 \n" +
+	"\vmax_retries\x18\x03 \x01(\x05R\vmax_retries\x12&\n" +
+	"\x0eretry_interval\x18\x04 \x01(\x03R\x0eretry_interval\x128\n" +
+	"\vsmtp_config\x18\n" +
+	" \x01(\v2\x15.config.v1.SmtpConfigH\x00R\n" +
+	"smtpConfigB\x0f\n" +
+	"\rmailer_config\"\xa2\x01\n" +
+	"\n" +
+	"SmtpConfig\x12\x12\n" +
+	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
+	"\x04port\x18\x02 \x01(\x05R\x04port\x12\x1a\n" +
+	"\busername\x18\x03 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x04 \x01(\tR\bpassword\x12\"\n" +
+	"\ftoken_secret\x18\x05 \x01(\tR\ftoken_secret\x12\x10\n" +
+	"\x03ssl\x18\x06 \x01(\bR\x03sslB\x9a\x01\n" +
 	"\rcom.config.v1B\tMailProtoP\x01Z6github.com/origadmin/runtime/api/gen/go/mail/v1;mailv1\xf8\x01\x01\xa2\x02\x03CXX\xaa\x02\tConfig.V1\xca\x02\tConfig\\V1\xe2\x02\x15Config\\V1\\GPBMetadata\xea\x02\n" +
 	"Config::V1b\x06proto3"
 
@@ -178,16 +245,18 @@ func file_mail_v1_mail_proto_rawDescGZIP() []byte {
 	return file_mail_v1_mail_proto_rawDescData
 }
 
-var file_mail_v1_mail_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_mail_v1_mail_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_mail_v1_mail_proto_goTypes = []any{
-	(*Mail)(nil), // 0: config.v1.Mail
+	(*Mail)(nil),       // 0: config.v1.Mail
+	(*SmtpConfig)(nil), // 1: config.v1.SmtpConfig
 }
 var file_mail_v1_mail_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: config.v1.Mail.smtp_config:type_name -> config.v1.SmtpConfig
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_mail_v1_mail_proto_init() }
@@ -195,13 +264,16 @@ func file_mail_v1_mail_proto_init() {
 	if File_mail_v1_mail_proto != nil {
 		return
 	}
+	file_mail_v1_mail_proto_msgTypes[0].OneofWrappers = []any{
+		(*Mail_SmtpConfig)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mail_v1_mail_proto_rawDesc), len(file_mail_v1_mail_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

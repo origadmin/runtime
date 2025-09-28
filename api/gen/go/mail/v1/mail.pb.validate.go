@@ -56,27 +56,59 @@ func (m *Mail) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Type
+	// no validation rules for Nickname
 
-	// no validation rules for Host
-
-	// no validation rules for Port
-
-	// no validation rules for Username
-
-	// no validation rules for Password
-
-	// no validation rules for TokenSecret
-
-	// no validation rules for Ssl
+	// no validation rules for From
 
 	// no validation rules for MaxRetries
 
 	// no validation rules for RetryInterval
 
-	// no validation rules for Nickname
+	switch v := m.MailerConfig.(type) {
+	case *Mail_SmtpConfig:
+		if v == nil {
+			err := MailValidationError{
+				field:  "MailerConfig",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
-	// no validation rules for From
+		if all {
+			switch v := interface{}(m.GetSmtpConfig()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MailValidationError{
+						field:  "SmtpConfig",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MailValidationError{
+						field:  "SmtpConfig",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetSmtpConfig()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MailValidationError{
+					field:  "SmtpConfig",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	default:
+		_ = v // ensures v is used
+	}
 
 	if len(errors) > 0 {
 		return MailMultiError(errors)
@@ -154,3 +186,114 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = MailValidationError{}
+
+// Validate checks the field values on SmtpConfig with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *SmtpConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SmtpConfig with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in SmtpConfigMultiError, or
+// nil if none found.
+func (m *SmtpConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SmtpConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Host
+
+	// no validation rules for Port
+
+	// no validation rules for Username
+
+	// no validation rules for Password
+
+	// no validation rules for TokenSecret
+
+	// no validation rules for Ssl
+
+	if len(errors) > 0 {
+		return SmtpConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// SmtpConfigMultiError is an error wrapping multiple validation errors
+// returned by SmtpConfig.ValidateAll() if the designated constraints aren't met.
+type SmtpConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SmtpConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SmtpConfigMultiError) AllErrors() []error { return m }
+
+// SmtpConfigValidationError is the validation error returned by
+// SmtpConfig.Validate if the designated constraints aren't met.
+type SmtpConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SmtpConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SmtpConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SmtpConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SmtpConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SmtpConfigValidationError) ErrorName() string { return "SmtpConfigValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SmtpConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSmtpConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SmtpConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SmtpConfigValidationError{}

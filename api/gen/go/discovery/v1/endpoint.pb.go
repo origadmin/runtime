@@ -7,11 +7,11 @@
 package discoveryv1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	v1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	_ "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	_ "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	durationpb "google.golang.org/protobuf/types/known/durationpb"
+	_ "google.golang.org/protobuf/types/known/durationpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -24,22 +24,18 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Endpoint defines the configuration for connecting to a single downstream service.
+// Endpoint holds the complete, resolved configuration for a client-side service endpoint.
+// It is the final data structure used by runtime components to initialize a client connection.
 type Endpoint struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// DiscoveryName defines the name of the discovery provider to use for resolving this endpoint.
+	// The name is the name of the service key in the endpoint.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The name of the discovery provider configuration (defined in bootstrap.registries.discoveries)
-	// to use for resolving this endpoint.
+	// The discovery_name is the name of the service key in the discovery service.
 	DiscoveryName string `protobuf:"bytes,2,opt,name=discovery_name,proto3" json:"discovery_name,omitempty"`
-	// The endpoint URI to connect to.
+	// The endpoint URI to resolve, e.g., "discovery:///user-service".
 	Uri string `protobuf:"bytes,3,opt,name=uri,proto3" json:"uri,omitempty"`
 	// Selector for client-side load balancing and node filtering.
-	Selector *Selector `protobuf:"bytes,4,opt,name=selector,proto3" json:"selector,omitempty"`
-	// Request timeout for this endpoint.
-	Timeout *durationpb.Duration `protobuf:"bytes,5,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	// Middleware configuration specific to this endpoint.
-	Middlewares   []*v1.MiddlewareConfig `protobuf:"bytes,100,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Selector      *Selector `protobuf:"bytes,4,opt,name=selector,proto3" json:"selector,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -98,20 +94,6 @@ func (x *Endpoint) GetUri() string {
 func (x *Endpoint) GetSelector() *Selector {
 	if x != nil {
 		return x.Selector
-	}
-	return nil
-}
-
-func (x *Endpoint) GetTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.Timeout
-	}
-	return nil
-}
-
-func (x *Endpoint) GetMiddlewares() []*v1.MiddlewareConfig {
-	if x != nil {
-		return x.Middlewares
 	}
 	return nil
 }
@@ -175,16 +157,14 @@ var File_discovery_v1_endpoint_proto protoreflect.FileDescriptor
 
 const file_discovery_v1_endpoint_proto_rawDesc = "" +
 	"\n" +
-	"\x1bdiscovery/v1/endpoint.proto\x12\fdiscovery.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17validate/validate.proto\"\x8d\x02\n" +
+	"\x1bdiscovery/v1/endpoint.proto\x12\fdiscovery.v1\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x19transport/v1/client.proto\"\x8c\x01\n" +
 	"\bEndpoint\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12&\n" +
-	"\x0ediscovery_name\x18\x02 \x01(\tR\x0ediscovery_name\x12\x19\n" +
-	"\x03uri\x18\x03 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x03uri\x122\n" +
-	"\bselector\x18\x04 \x01(\v2\x16.discovery.v1.SelectorR\bselector\x123\n" +
-	"\atimeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12A\n" +
-	"\vmiddlewares\x18d \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\"Q\n" +
-	"\bSelector\x12+\n" +
-	"\x04type\x18\x01 \x01(\tB\x17\xfaB\x14r\x12R\x06randomR\x03wrrR\x03p2cR\x04type\x12\x18\n" +
+	"\x0ediscovery_name\x18\x02 \x01(\tR\x0ediscovery_name\x12\x10\n" +
+	"\x03uri\x18\x03 \x01(\tR\x03uri\x122\n" +
+	"\bselector\x18\x04 \x01(\v2\x16.discovery.v1.SelectorR\bselector\"8\n" +
+	"\bSelector\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversionB\xb4\x01\n" +
 	"\x10com.discovery.v1B\rEndpointProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1\xa2\x02\x03DXX\xaa\x02\fDiscovery.V1\xca\x02\fDiscovery\\V1\xe2\x02\x18Discovery\\V1\\GPBMetadata\xea\x02\rDiscovery::V1b\x06proto3"
 
@@ -202,20 +182,16 @@ func file_discovery_v1_endpoint_proto_rawDescGZIP() []byte {
 
 var file_discovery_v1_endpoint_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_discovery_v1_endpoint_proto_goTypes = []any{
-	(*Endpoint)(nil),            // 0: discovery.v1.Endpoint
-	(*Selector)(nil),            // 1: discovery.v1.Selector
-	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
-	(*v1.MiddlewareConfig)(nil), // 3: middleware.v1.MiddlewareConfig
+	(*Endpoint)(nil), // 0: discovery.v1.Endpoint
+	(*Selector)(nil), // 1: discovery.v1.Selector
 }
 var file_discovery_v1_endpoint_proto_depIdxs = []int32{
 	1, // 0: discovery.v1.Endpoint.selector:type_name -> discovery.v1.Selector
-	2, // 1: discovery.v1.Endpoint.timeout:type_name -> google.protobuf.Duration
-	3, // 2: discovery.v1.Endpoint.middlewares:type_name -> middleware.v1.MiddlewareConfig
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_discovery_v1_endpoint_proto_init() }
@@ -223,6 +199,7 @@ func file_discovery_v1_endpoint_proto_init() {
 	if File_discovery_v1_endpoint_proto != nil {
 		return
 	}
+	file_discovery_v1_discovery_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

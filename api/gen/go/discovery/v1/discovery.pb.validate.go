@@ -57,6 +57,8 @@ func (m *Discovery) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
 	if _, ok := _Discovery_Type_InLookup[m.GetType()]; !ok {
 		err := DiscoveryValidationError{
 			field:  "Type",
@@ -67,8 +69,6 @@ func (m *Discovery) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
-
-	// no validation rules for Name
 
 	// no validation rules for Debug
 
