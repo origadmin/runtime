@@ -6,8 +6,9 @@
 package pagination
 
 import (
+	"cmp"
+
 	"github.com/goexts/generic/configure"
-	"github.com/goexts/generic/types"
 )
 
 const (
@@ -56,7 +57,7 @@ func WithDefaultPage(page int32) LimiterOption {
 }
 
 func (obj Limiter) Current(in int32) int32 {
-	in = types.ZeroOr(in, obj.DefaultPage)
+	in = cmp.Or(in, obj.DefaultPage)
 	if in > obj.MaxPage {
 		in = obj.DefaultPage
 	}
@@ -64,7 +65,7 @@ func (obj Limiter) Current(in int32) int32 {
 }
 
 func (obj Limiter) PerPage(in int32) int32 {
-	in = types.ZeroOr(in, obj.DefaultPageSize)
+	in = cmp.Or(in, obj.DefaultPageSize)
 	if in > (obj.MaxPageSize) {
 		in = obj.MaxPageSize
 	}
@@ -72,11 +73,13 @@ func (obj Limiter) PerPage(in int32) int32 {
 }
 
 func NewLimiter(page, defaultPage, pageSize, defaultPageSize int32) *Limiter {
-	return settings.ApplyWithZero(
+	var limiter = &Limiter{}
+	configure.ApplyWith(limiter,
 		WithMaxPageSize(pageSize),
 		WithMaxPage(page),
 		WithDefaultPageSize(defaultPageSize),
 		WithDefaultPage(defaultPage))
+	return limiter
 }
 
 func DefaultLimiter() *Limiter {

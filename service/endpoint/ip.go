@@ -89,7 +89,7 @@ func GenerateDynamic(option *Options, scheme, addr string) (string, error) {
 
 	hostIP := option.HostIP
 	if hostIP == "" {
-		hostIP = toolnet.HostAddr(toolnet.WithEnvVar(option.EnvVar))
+		hostIP = toolnet.RealHostAddr(toolnet.WithEnvVar(option.EnvVar))
 	}
 	return endpointParse(scheme, hostIP, addr)
 }

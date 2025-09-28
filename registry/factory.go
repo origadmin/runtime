@@ -8,13 +8,14 @@ import (
 	commonv1 "github.com/origadmin/runtime/api/gen/go/common/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	"github.com/origadmin/runtime/errors"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 
 // Factory is the interface for creating new registrar and discovery components.
 type Factory interface {
-	NewRegistrar(*discoveryv1.Discovery, ...Option) (KRegistrar, error)
-	NewDiscovery(*discoveryv1.Discovery, ...Option) (KDiscovery, error)
+	NewRegistrar(*discoveryv1.Discovery, ...interfaces.Option) (KRegistrar, error)
+	NewDiscovery(*discoveryv1.Discovery, ...interfaces.Option) (KDiscovery, error)
 }
 
 // buildImpl is the concrete implementation of the Builder.
@@ -22,7 +23,7 @@ type buildImpl struct {
 	factory.Registry[Factory]
 }
 
-func (b *buildImpl) NewRegistrar(cfg *discoveryv1.Discovery, opts ...Option) (KRegistrar, error) {
+func (b *buildImpl) NewRegistrar(cfg *discoveryv1.Discovery, opts ...interfaces.Option) (KRegistrar, error) {
 	if cfg == nil || cfg.Type == "" {
 		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
 		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR,
@@ -41,7 +42,7 @@ func (b *buildImpl) NewRegistrar(cfg *discoveryv1.Discovery, opts ...Option) (KR
 	return registrar, nil
 }
 
-func (b *buildImpl) NewDiscovery(cfg *discoveryv1.Discovery, opts ...Option) (KDiscovery, error) {
+func (b *buildImpl) NewDiscovery(cfg *discoveryv1.Discovery, opts ...interfaces.Option) (KDiscovery, error) {
 	if cfg == nil || cfg.Type == "" {
 		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
 		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR, "registry configuration or type is missing")

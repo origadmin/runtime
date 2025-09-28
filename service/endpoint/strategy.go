@@ -5,9 +5,12 @@
 package endpoint
 
 import (
+	"errors"
 	"net"
 	"sort"
 )
+
+var ErrNoIPFound = errors.New("no ip found")
 
 // defaultIPStrategy is the default strategy that prefers IPv4 addresses
 func defaultIPStrategy(ips []net.IP) (net.IP, error) {
