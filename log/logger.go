@@ -114,11 +114,19 @@ func WithLogger(logger Logger) interfaces.Option {
 	})
 }
 
-func FromLogger(opts ...interfaces.Option) Logger {
+func FromOptions(opts ...interfaces.Option) Logger {
 	var l loggerContext
 	optionutil.Apply(&l, opts...)
 	if l.Logger == nil {
 		l.Logger = DefaultLogger
 	}
 	return l.Logger
+}
+
+func FromContext(ctx interfaces.Context) Logger {
+	v, ok := optionutil.Value(ctx, optionutil.Key[*loggerContext]{})
+	if !ok || v.Logger == nil {
+		return DefaultLogger
+	}
+	return v.Logger
 }
