@@ -31,12 +31,12 @@ func WithClientOption(opt ...transgrpc.ClientOption) service.Option { // Change 
 	}
 }
 
-// FromServerOptions returns the collected Kratos transgrpc.ServerOption from the service.Options' Context.
+// FromServerOptions returns the collected Kratos transgrpc.ServerOption from the service.Options' emptyContext.
 func FromServerOptions(o *service.Options) []transgrpc.ServerOption {
 	return optionutil.Slice(o, serverOptionsKey)
 }
 
-// FromClientOptions returns the collected transgrpc.ClientOption from the service.Options' Context.
+// FromClientOptions returns the collected transgrpc.ClientOption from the service.Options' emptyContext.
 func FromClientOptions(o *service.Options) []transgrpc.ClientOption { // Change return type
 	return optionutil.Slice(o, clientOptionsKey)
 }

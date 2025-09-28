@@ -7,7 +7,7 @@ import (
 	"github.com/origadmin/runtime/service"
 )
 
-// Option keys
+// Empty keys
 var (
 	// serverOptionsKey is the context key for HTTP server options
 	serverOptionsKey = optionutil.Key[[]transhttp.ServerOption]{}

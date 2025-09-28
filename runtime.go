@@ -6,20 +6,19 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 
-	// appv1 "github.com/origadmin/runtime/api/gen/go/app/v1" // Removed: No longer directly used here
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces" // This import is already here and now used for interfaces.AppInfo and interfaces.Config
+	"github.com/origadmin/runtime/interfaces"
 )
 
 // Runtime defines the application's runtime environment, providing convenient access to core components.
 // It encapsulates an interfaces.ComponentProvider and is the primary object that applications will interact with.
 type Runtime struct {
 	provider interfaces.ComponentProvider
-	config   interfaces.Config // Added: Directly hold the configuration decoder
+	config   interfaces.Config
 }
 
 // New is the core constructor for a Runtime instance.
-// It takes a fully initialized ComponentProvider and Config, typically created by bootstrap.NewProvider.
+// It takes a fully initialized ComponentProvider, Config, and aggregated interfaces.Option.
 func New(provider interfaces.ComponentProvider, cfg interfaces.Config) *Runtime {
 	return &Runtime{provider: provider, config: cfg}
 }
@@ -33,12 +32,11 @@ func NewFromBootstrap(bootstrapPath string, opts ...bootstrap.Option) (*Runtime,
 		return nil, nil, err
 	}
 
-	rt := New(bootstrapper.Provider(), bootstrapper.Config()) // Use interface methods
-	return rt, bootstrapper.Cleanup(), nil                    // Use interface method
+	rt := New(bootstrapper.Provider(), bootstrapper.Config()) // Pass aggregated options
+	return rt, bootstrapper.Cleanup(), nil
 }
 
 // AppInfo returns the application's configured information (ID, name, version, metadata).
-// Modified: Now returns the interfaces.AppInfo interface.
 func (r *Runtime) AppInfo() interfaces.AppInfo {
 	return r.provider.AppInfo()
 }
@@ -49,25 +47,18 @@ func (r *Runtime) Logger() log.Logger {
 }
 
 // Config returns the configuration decoder, allowing access to raw configuration values.
-// Added: Exposes the Config decoder.
 func (r *Runtime) Config() interfaces.Config {
-	return r.config // Return the directly held config
+	return r.config
 }
 
 // NewApp creates a new Kratos application instance.
 // It wires together the runtime's configured components (like the default registrar) with the provided transport servers.
 // It now accepts additional Kratos options for more flexible configuration.
 func (r *Runtime) NewApp(servers []transport.Server, appOptions ...kratos.Option) *kratos.App {
-	// The line `appOpts := AppInfo(r.AppInfo()).Options()` is commented out due to type mismatch.
-	// `interfaces.AppInfo` does not have an `Options()` method.
-	// This part might require further design or a different way to get Kratos options from AppInfo.
-	// For now, we proceed without appending app-specific Kratos options here.
-
 	opts := []kratos.Option{
 		kratos.Logger(r.Logger()),
 		kratos.Server(servers...),
 	}
-	// opts = append(opts, appOpts...) // Append the app info options - commented out for now
 
 	if registrar := r.DefaultRegistrar(); registrar != nil {
 		opts = append(opts, kratos.Registrar(registrar))

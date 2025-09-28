@@ -28,7 +28,7 @@ type DecoderOption func(*decoderOptions)
 // decoderOptions holds configuration for the NewDecoder function.
 type decoderOptions struct {
 	defaultPaths      map[string]string
-	configOptions     []runtimeconfig.Option // Changed from runtimeconfig.Option to kratosconfig.Option
+	configOptions     []runtimeconfig.Option // Changed from runtimeconfig.Empty to kratosconfig.Empty
 	customConfig      interfaces.Config      // Added: Custom interfaces.Config implementation
 	kratosConfig      kratosconfig.Config    // Added: Direct Kratos config instance
 	configTransformer ConfigTransformer      // Custom interface for transformation (now also handles function form)
@@ -91,14 +91,18 @@ type configurableComponent struct {
 
 // options holds configuration for the NewProvider function.
 type options struct {
-	appInfo               interfaces.AppInfo // Modified: Now holds an interfaces.AppInfo
+	appInfo               interfaces.AppInfo
 	decoderOptions        []DecoderOption
 	componentsToConfigure []configurableComponent
+	options               []func(interfaces.Option)
 }
+
+// Options contains the options for creating registry components.
+// It embeds interfaces.ContextOptions for common context handling.
+type Options = func(o *options)
 
 // WithAppInfo provides the application's metadata to the provider.
 // This is a required option for NewProvider.
-// Modified to accept an interfaces.AppInfo directly.
 func WithAppInfo(info interfaces.AppInfo) Option {
 	return func(o *options) {
 		o.appInfo = info
@@ -123,5 +127,16 @@ func WithComponent(key string, target interface{}) Option {
 			Key:    key,
 			Target: target,
 		})
+	}
+}
+
+// WithOption is a generic way for any module to contribute its options.
+// It takes a function that knows how to apply a module's specific options
+// to a given interfaces.Option and return the modified interfaces.Option.
+// This allows for type-safe module-specific configuration without bootstrap
+// needing to know the internal types of each module's options.
+func WithOption(opts ...func(interfaces.Option)) Option {
+	return func(o *options) {
+		o.options = append(o.options, opts...)
 	}
 }
