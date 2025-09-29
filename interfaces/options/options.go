@@ -1,4 +1,4 @@
-package interfaces
+package options
 
 // Context is used to store and retrieve option values, similar to context.Context.
 type Context interface {
@@ -7,4 +7,4 @@ type Context interface {
 }
 
 // Option is a function that applies a configuration to a Context.
-type Option func(c Context)
+type Option func(c Context) Context
