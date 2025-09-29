@@ -59,10 +59,7 @@ func (obj *tokenCacheStorage) Close(ctx context.Context) error {
 
 // New creates a new CacheStorage instance
 func New(ss ...StorageOption) CacheStorage {
-	service, err := configure.New[tokenCacheStorage](ss)
-	if err != nil {
-		panic(fmt.Sprintf("failed to create tokenCacheStorage: %v", err))
-	}
+	service := configure.New[tokenCacheStorage](ss)
 	if service.c == nil {
 		defaultCacheConfig := &configv1.Cache{
 			Driver: "memory",
