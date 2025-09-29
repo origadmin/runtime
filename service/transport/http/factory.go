@@ -24,19 +24,19 @@ func init() {
 }
 
 // NewServer creates a new HTTP server instance.
-func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...interfaces.Option) (interfaces.Server, error) {
+func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error) {
 	// 1. Extract the specific HTTP server config from the container.
 	httpConfig := cfg.GetHttp()
 	if httpConfig == nil {
 		return nil, fmt.Errorf("HTTP server config is missing in transport container")
 	}
 
-	// 2. Apply options to a ServiceOptions struct to get a configured context.
-	initialServiceCfg := &service.ServiceOptions{}
+	// 2. Apply options to a Options struct to get a configured context.
+	initialServiceCfg := &service.Options{}
 	configuredContext := optionutil.Apply(initialServiceCfg, opts...)
 
-	// 3. Retrieve the fully configured ServiceOptions from the context.
-	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.ServiceOptions](configuredContext)
+	// 3. Retrieve the fully configured Options from the context.
+	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.Options](configuredContext)
 	if !ok {
 		return nil, fmt.Errorf("failed to retrieve configured service options from context")
 	}
@@ -94,7 +94,7 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...interfa
 }
 
 // NewClient creates a new HTTP client instance.
-func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...interfaces.Option) (interfaces.Client, error) {
+func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
 	// 1. Extract the specific HTTP client config from the container.
 	httpConfig := cfg.GetHttp()
 	if httpConfig == nil {
@@ -102,9 +102,9 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 	}
 
 	// 2. Apply options to get the configured context and service options.
-	initialServiceCfg := &service.ServiceOptions{}
+	initialServiceCfg := &service.Options{}
 	configuredContext := optionutil.Apply(initialServiceCfg, opts...)
-	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.ServiceOptions](configuredContext)
+	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.Options](configuredContext)
 	if !ok {
 		return nil, fmt.Errorf("failed to retrieve configured service options from context")
 	}

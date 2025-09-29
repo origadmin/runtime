@@ -17,7 +17,7 @@ import (
 
 // NewClient creates a new HTTP client.
 // It is the recommended way to create a client when the protocol is known in advance.
-func NewClient(ctx context.Context, cfg *transportv1.HTTPClient, opts ...interfaces.Option) (interfaces.Client, error) {
+func NewClient(ctx context.Context, cfg *transportv1.HTTPClient, opts ...options.Option) (interfaces.Client, error) {
 	if cfg == nil {
 		return nil, tkerrors.Errorf("HTTP client config is required for creation")
 	}

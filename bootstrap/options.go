@@ -94,7 +94,6 @@ type options struct {
 	appInfo               interfaces.AppInfo
 	decoderOptions        []DecoderOption
 	componentsToConfigure []configurableComponent
-	options               []func(interfaces.Option)
 }
 
 // Options contains the options for creating registry components.
@@ -132,10 +131,10 @@ func WithComponent(key string, target interface{}) Option {
 
 // WithOption is a generic way for any module to contribute its options.
 // It takes a function that knows how to apply a module's specific options
-// to a given interfaces.Option and return the modified interfaces.Option.
+// to a given options.Option and return the modified options.Option.
 // This allows for type-safe module-specific configuration without bootstrap
 // needing to know the internal types of each module's options.
-func WithOption(opts ...func(interfaces.Option)) Option {
+func WithOption(opts ...func(options.Option)) Option {
 	return func(o *options) {
 		o.options = append(o.options, opts...)
 	}

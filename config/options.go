@@ -17,11 +17,11 @@ type configOptions struct {
 	Sources       []KSource
 }
 
-// Key is the unique key for configOptions in the interfaces.Option.
+// Key is the unique key for configOptions in the options.Option.
 var Key = optionutil.Key[*configOptions]{}
 
 // Option is a function that configures configOptions.
-type Option interfaces.OptionFunc
+type Option options.OptionFunc
 
 // WithConfigOption appends Kratos config.Option to the configOptions.
 func WithConfigOption(opts ...config.Option) Option {
@@ -44,9 +44,9 @@ func WithSource(s ...config.Source) Option {
 	})
 }
 
-// FromOption retrieves configOptions pointer from the provided interfaces.Option.
+// FromOption retrieves configOptions pointer from the provided options.Option.
 // It returns nil if the options are not found or opt is nil.
-func FromOption(opt interfaces.Option) *configOptions {
+func FromOption(opt options.Option) *configOptions {
 	if opt == nil {
 		return nil
 	}

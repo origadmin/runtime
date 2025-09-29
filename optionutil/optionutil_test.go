@@ -233,7 +233,7 @@ func TestApply(t *testing.T) {
 
 func TestApplyNew(t *testing.T) {
 	// ApplyNew should create a new instance and configure it
-	cfg := optionutil.ApplyNew[serverConfig](
+	_, cfg := optionutil.ApplyNew[serverConfig](
 		withHost("new.example.com"),
 		withPort(3000),
 	)
@@ -337,12 +337,152 @@ func TestChainingAndDependencies(t *testing.T) {
 	}
 
 	// Apply options in order. withHostFromDB depends on withDB.
-	finalCtx := optionutil.Apply(&serverConfig{},
+	finalCtx, finalCfg := optionutil.ApplyNew[serverConfig](
 		withDB("my-database-dsn"),
 		withHostFromDB(),
 	)
 
-	finalCfg, ok := optionutil.FromContext[*serverConfig](finalCtx)
-	assert.True(t, ok)
+	assert.NotNil(t, finalCfg)
 	assert.Equal(t, "my-database-dsn", finalCfg.Host)
+
+	retrievedCfg, ok := optionutil.FromContext[*serverConfig](finalCtx)
+	assert.True(t, ok)
+	assert.Equal(t, "my-database-dsn", retrievedCfg.Host)
+}
+
+func TestValueOr(t *testing.T) {
+	key := optionutil.Key[string]{}
+	defaultValue := "default"
+
+	t.Run("Value exists", func(t *testing.T) {
+		ctx := optionutil.With(optionutil.Empty(), key, "actual")
+		val := optionutil.ValueOr(ctx, key, defaultValue)
+		assert.Equal(t, "actual", val)
+	})
+
+	t.Run("Value does not exist", func(t *testing.T) {
+		ctx := optionutil.Empty()
+		val := optionutil.ValueOr(ctx, key, defaultValue)
+		assert.Equal(t, defaultValue, val)
+	})
+
+	t.Run("Context is nil", func(t *testing.T) {
+		val := optionutil.ValueOr(nil, key, defaultValue)
+		assert.Equal(t, defaultValue, val)
+	})
+}
+
+func TestEmptyAndDefault(t *testing.T) {
+	t.Run("Empty returns non-nil", func(t *testing.T) {
+		ctx := optionutil.Empty()
+		assert.NotNil(t, ctx)
+		_, ok := optionutil.Value(ctx, stringKey)
+		assert.False(t, ok)
+	})
+
+	t.Run("Default returns non-nil", func(t *testing.T) {
+		ctx := optionutil.Default()
+		assert.NotNil(t, ctx)
+		_, ok := optionutil.Value(ctx, stringKey)
+		assert.False(t, ok)
+	})
+}
+
+func TestApplyContext(t *testing.T) {
+	key1 := optionutil.Key[string]{}
+	key2 := optionutil.Key[int]{}
+	key3 := optionutil.Key[bool]{}
+
+	t.Run("Apply to existing context", func(t *testing.T) {
+		baseCtx := optionutil.With(optionutil.Empty(), key1, "base")
+		opts := []options.Option{
+			func(ctx options.Context) options.Context {
+				return optionutil.With(ctx, key2, 123)
+			},
+			func(ctx options.Context) options.Context {
+				return optionutil.With(ctx, key3, true)
+			},
+		}
+
+		finalCtx := optionutil.ApplyContext(baseCtx, opts...)
+
+		val1, ok1 := optionutil.Value(finalCtx, key1)
+		assert.True(t, ok1)
+		assert.Equal(t, "base", val1)
+
+		val2, ok2 := optionutil.Value(finalCtx, key2)
+		assert.True(t, ok2)
+		assert.Equal(t, 123, val2)
+
+		val3, ok3 := optionutil.Value(finalCtx, key3)
+		assert.True(t, ok3)
+		assert.True(t, val3)
+	})
+
+	t.Run("Apply to nil context", func(t *testing.T) {
+		opts := []options.Option{
+			func(ctx options.Context) options.Context {
+				return optionutil.With(ctx, key1, "hello")
+			},
+		}
+		finalCtx := optionutil.ApplyContext(nil, opts...)
+		val, ok := optionutil.Value(finalCtx, key1)
+		assert.True(t, ok)
+		assert.Equal(t, "hello", val)
+	})
+}
+
+func TestIf(t *testing.T) {
+	key := optionutil.Key[string]{}
+	opt := func(ctx options.Context) options.Context {
+		return optionutil.With(ctx, key, "applied")
+	}
+
+	t.Run("Condition is true", func(t *testing.T) {
+		conditionalOpt := optionutil.If(true, opt)
+		ctx := conditionalOpt(optionutil.Empty())
+		val, ok := optionutil.Value(ctx, key)
+		assert.True(t, ok)
+		assert.Equal(t, "applied", val)
+	})
+
+	t.Run("Condition is false", func(t *testing.T) {
+		conditionalOpt := optionutil.If(false, opt)
+		ctx := conditionalOpt(optionutil.Empty())
+		_, ok := optionutil.Value(ctx, key)
+		assert.False(t, ok)
+	})
+}
+
+func TestGroup(t *testing.T) {
+	key1 := optionutil.Key[string]{}
+	key2 := optionutil.Key[int]{}
+
+	opt1 := func(ctx options.Context) options.Context {
+		return optionutil.With(ctx, key1, "from group 1")
+	}
+	opt2 := func(ctx options.Context) options.Context {
+		return optionutil.With(ctx, key2, 456)
+	}
+
+	groupedOpt := optionutil.Group(opt1, opt2)
+	ctx := groupedOpt(optionutil.Empty())
+
+	val1, ok1 := optionutil.Value(ctx, key1)
+	assert.True(t, ok1)
+	assert.Equal(t, "from group 1", val1)
+
+	val2, ok2 := optionutil.Value(ctx, key2)
+	assert.True(t, ok2)
+	assert.Equal(t, 456, val2)
+}
+
+func TestWithNilKeyPanics(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	// This should panic because the key is nil
+	optionutil.With(optionutil.Empty(), nil, "some value")
 }

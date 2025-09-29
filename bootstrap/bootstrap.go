@@ -16,7 +16,6 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/optionutil"
 )
 
 // componentFactoryRegistryImpl implements interfaces.ComponentFactoryRegistry.
@@ -150,10 +149,9 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 
 // bootstrapperImpl implements the interfaces.Bootstrapper interface.
 type bootstrapperImpl struct {
-	provider          interfaces.ComponentProvider
-	config            interfaces.Config
-	cleanup           func()
-	aggregatedOptions interfaces.Option // Renamed from runtimeOptions to aggregatedOptions
+	provider interfaces.ComponentProvider
+	config   interfaces.Config
+	cleanup  func()
 }
 
 // Provider implements interfaces.Bootstrapper.
@@ -169,11 +167,6 @@ func (b *bootstrapperImpl) Config() interfaces.Config {
 // Cleanup implements interfaces.Bootstrapper.
 func (b *bootstrapperImpl) Cleanup() func() {
 	return b.cleanup
-}
-
-// RuntimeOptions implements interfaces.Bootstrapper.
-func (b *bootstrapperImpl) RuntimeOptions() interfaces.Option {
-	return b.aggregatedOptions
 }
 
 // NewProvider creates a new component provider, which is the main entry point for application startup.
@@ -228,17 +221,10 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper,
 		p.RegisterComponent(comp.Key, comp.Target)
 	}
 
-	// 6. Aggregate all module-specific options.
-	aggregatedOptions := optionutil.Empty() // Initialize an empty interfaces.Empty
-	for _, applier := range providerOpts.moduleOptionAppliers {
-		aggregatedOptions = applier(aggregatedOptions)
-	}
-
 	// 7. Return the provider, the config, and the final cleanup function.
 	return &bootstrapperImpl{
-		provider:          p,
-		config:            cfg,
-		cleanup:           cleanup,
-		aggregatedOptions: aggregatedOptions, // Pass the aggregated options
+		provider: p,
+		config:   cfg,
+		cleanup:  cleanup,
 	}, nil
 }

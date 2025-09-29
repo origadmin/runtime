@@ -108,13 +108,13 @@ type loggerContext struct {
 	Logger Logger
 }
 
-func WithLogger(logger Logger) interfaces.Option {
+func WithLogger(logger Logger) options.Option {
 	return optionutil.Update(func(l *loggerContext) {
 		l.Logger = logger
 	})
 }
 
-func FromOptions(opts ...interfaces.Option) Logger {
+func FromOptions(opts ...options.Option) Logger {
 	var l loggerContext
 	optionutil.Apply(&l, opts...)
 	if l.Logger == nil {

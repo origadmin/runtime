@@ -23,26 +23,26 @@ type httpClientOptions struct {
 }
 
 // WithServerOption is an option to add a Kratos transgrpc.ServerOption to the context.
-func WithServerOption(opt ...transgrpc.ServerOption) interfaces.Option {
+func WithServerOption(opt ...transgrpc.ServerOption) options.Option {
 	return optionutil.Update(func(o *httpServerOptions) {
 		o.ServerOptions = append(o.ServerOptions, opt...)
 	})
 }
 
 // WithClientOption is an option to add a transgrpc.ClientOption to the context.
-func WithClientOption(opt ...transgrpc.ClientOption) interfaces.Option { // Change parameter type
+func WithClientOption(opt ...transgrpc.ClientOption) options.Option { // Change parameter type
 	return optionutil.Update(func(o *httpClientOptions) {
 		o.ClientOptions = append(o.ClientOptions, opt...)
 	})
 }
 
 // FromServerOptions returns the collected Kratos transgrpc.ServerOption from the service.Options' emptyContext.
-func FromServerOptions(options []interfaces.Option) []transgrpc.ServerOption {
+func FromServerOptions(options []options.Option) []transgrpc.ServerOption {
 	return optionutil.Slice(options, serverOptionsKey)
 }
 
 // FromClientOptions returns the collected transgrpc.ClientOption from the service.Options' emptyContext.
-func FromClientOptions(options []interfaces.Option) []transgrpc.ClientOption { // Change return type
+func FromClientOptions(options []options.Option) []transgrpc.ClientOption { // Change return type
 	var o httpClientOptions
 	optionutil.Apply(&o, options...)
 	return o.ClientOptions

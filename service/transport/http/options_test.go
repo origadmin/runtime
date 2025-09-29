@@ -16,11 +16,11 @@ func TestWithServerOption(t *testing.T) {
 	kratosServerOpt2 := transhttp.Timeout(0)
 
 	t.Run("should correctly apply a single server option", func(t *testing.T) {
-		// Create an interfaces.Option using WithServerOption
+		// Create an options.Option using WithServerOption
 		option := http.WithServerOption(kratosServerOpt1)
 
 		// Retrieve the Kratos server options using FromServerOptions
-		// FromServerOptions internally applies the provided interfaces.Option to its own context.
+		// FromServerOptions internally applies the provided options.Option to its own context.
 		serverOpts := http.FromServerOptions(option)
 
 		assert.Len(t, serverOpts, 1)
@@ -30,7 +30,7 @@ func TestWithServerOption(t *testing.T) {
 	})
 
 	t.Run("should correctly apply multiple server options", func(t *testing.T) {
-		// Create interfaces.Option functions for multiple Kratos server options
+		// Create options.Option functions for multiple Kratos server options
 		option1 := http.WithServerOption(kratosServerOpt1)
 		option2 := http.WithServerOption(kratosServerOpt2)
 
@@ -48,7 +48,7 @@ func TestWithClientOption(t *testing.T) {
 	kratosClientOpt2 := transhttp.WithTimeout(0)
 
 	t.Run("should correctly apply a single client option", func(t *testing.T) {
-		// Create an interfaces.Option using WithClientOption
+		// Create an options.Option using WithClientOption
 		option := http.WithClientOption(kratosClientOpt1)
 
 		// Retrieve the Kratos client options using FromClientOptions
@@ -58,7 +58,7 @@ func TestWithClientOption(t *testing.T) {
 	})
 
 	t.Run("should correctly apply multiple client options", func(t *testing.T) {
-		// Create interfaces.Option functions for multiple Kratos client options
+		// Create options.Option functions for multiple Kratos client options
 		option1 := http.WithClientOption(kratosClientOpt1)
 		option2 := http.WithClientOption(kratosClientOpt2)
 
@@ -96,7 +96,7 @@ func TestOptionChaining(t *testing.T) {
 	kratosServerOpt := transhttp.Address(":8080")
 	kratosClientOpt := transhttp.WithUserAgent("test")
 
-	// Create interfaces.Option functions
+	// Create options.Option functions
 	serverOptionFunc := http.WithServerOption(kratosServerOpt)
 	clientOptionFunc := http.WithClientOption(kratosClientOpt)
 

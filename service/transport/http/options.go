@@ -24,28 +24,28 @@ type httpClientOptions struct {
 }
 
 // WithServerOption adds HTTP server options to the context.
-func WithServerOption(opts ...transhttp.ServerOption) interfaces.Option {
+func WithServerOption(opts ...transhttp.ServerOption) options.Option {
 	return optionutil.Update(func(o *httpServerOptions) {
 		o.ServerOptions = append(o.ServerOptions, opts...)
 	})
 }
 
 // WithClientOption adds HTTP client options to the context.
-func WithClientOption(opts ...transhttp.ClientOption) interfaces.Option {
+func WithClientOption(opts ...transhttp.ClientOption) options.Option {
 	return optionutil.Update(func(o *httpClientOptions) {
 		o.ClientOptions = append(o.ClientOptions, opts...)
 	})
 }
 
 // FromServerOptions retrieves HTTP server options from the service.Options.
-func FromServerOptions(opts ...interfaces.Option) []transhttp.ServerOption {
+func FromServerOptions(opts ...options.Option) []transhttp.ServerOption {
 	var o httpServerOptions
 	optionutil.Apply(&o, opts...)
 	return o.ServerOptions
 }
 
 // FromClientOptions retrieves HTTP client options from the service.Options.
-func FromClientOptions(opts ...interfaces.Option) []transhttp.ClientOption {
+func FromClientOptions(opts ...options.Option) []transhttp.ClientOption {
 	var o httpClientOptions
 	optionutil.Apply(&o, opts...)
 	return o.ClientOptions

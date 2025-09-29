@@ -18,7 +18,7 @@ type Runtime struct {
 }
 
 // New is the core constructor for a Runtime instance.
-// It takes a fully initialized ComponentProvider, Config, and aggregated interfaces.Option.
+// It takes a fully initialized ComponentProvider, Config, and aggregated options.Option.
 func New(provider interfaces.ComponentProvider, cfg interfaces.Config) *Runtime {
 	return &Runtime{provider: provider, config: cfg}
 }
