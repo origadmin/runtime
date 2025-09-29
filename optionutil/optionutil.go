@@ -2,9 +2,7 @@
 package optionutil
 
 import (
-	"context" // Import context package
-
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // Key is a generic struct used as a type-safe identifier for option keys
@@ -12,37 +10,13 @@ type Key[T any] struct{}
 
 // emptyContext implement the optionvalue interface
 type emptyContext struct {
-	parent interfaces.Context
+	parent options.Context
 	key    any
 	value  any
 }
 
-// contextKey is an unexported type for context keys.
-type contextKey int
-
-const (
-	optionContextKey contextKey = iota
-)
-
-// ToContext stores the interfaces.Context into a standard library context.Context.
-func ToContext(ctx context.Context, opt interfaces.Context) context.Context {
-	return context.WithValue(ctx, optionContextKey, opt)
-}
-
-// FromContext retrieves the interfaces.Context from a standard library context.Context.
-// It returns nil if no interfaces.Context is found.
-func FromContext(ctx context.Context) interfaces.Context {
-	if ctx == nil {
-		return nil
-	}
-	if opt, ok := ctx.Value(optionContextKey).(interfaces.Context); ok {
-		return opt
-	}
-	return nil
-}
-
-// Value retrieves a value from the context based on the given key
-// It first checks the current context, and if not found, recursively checks parent contexts
+// Value retrieves a value from the ctx based on the given key
+// It first checks the current ctx, and if not found, recursively checks parent ctxs
 // Parameters:
 //   - key: The key to look up
 // Returns:
@@ -57,12 +31,12 @@ func (o *emptyContext) Value(key any) any {
 	return nil
 }
 
-// with creates a new context with the specified key-value pair
+// with creates a new ctx with the specified key-value pair
 // Parameters:
 //   - key: The key, cannot be nil
 //   - value: The value
 // Returns:
-//   - *emptyContext: The newly created context
+//   - *emptyContext: The newly created ctx
 func (o *emptyContext) with(key any, value any) *emptyContext {
 	if key == nil {
 		panic("key cannot be nil")
@@ -75,25 +49,25 @@ func (o *emptyContext) with(key any, value any) *emptyContext {
 	}
 }
 
-// With implements the Option interface's With method to create a context with a new key-value pair
+// With implements the Option interface's With method to create a ctx with a new key-value pair
 // Parameters:
 //   - key: The key
 //   - value: The value
 // Returns:
-//   - interfaces.Context: The Option instance containing the new key-value pair
-func (o *emptyContext) With(key any, value any) interfaces.Context {
+//   - options.Context: The Option instance containing the new key-value pair
+func (o *emptyContext) With(key any, value any) options.Context {
 	return o.with(key, value)
 }
 
 // With sets a key-value pair in the specified Option
-// If the passed opt is nil, a new empty context is created
+// If the passed opt is nil, a new empty ctx is created
 // Parameters:
 //   - opt: The original Option instance
 //   - key: The generic key
 //   - value: The value to set
 // Returns:
-//   - interfaces.Context: The Option instance with the new value set
-func With[T any](opt interfaces.Context, key Key[T], value T) interfaces.Context {
+//   - options.Context: The Option instance with the new value set
+func With[T any](opt options.Context, key Key[T], value T) options.Context {
 	if opt == nil {
 		opt = &emptyContext{}
 	}
@@ -108,7 +82,7 @@ func With[T any](opt interfaces.Context, key Key[T], value T) interfaces.Context
 // Returns:
 //   - T: The retrieved value
 //   - bool: Whether the value was successfully retrieved
-func Value[T any](opt interfaces.Context, key Key[T]) (T, bool) {
+func Value[T any](opt options.Context, key Key[T]) (T, bool) {
 	var zero T
 	if opt == nil {
 		return zero, false
@@ -133,8 +107,8 @@ func Value[T any](opt interfaces.Context, key Key[T]) (T, bool) {
 //   - key: The slice-type key
 //   - values: The values to append
 // Returns:
-//   - interfaces.Context: The updated Option instance
-func Append[T any](opt interfaces.Context, key Key[[]T], values ...T) interfaces.Context {
+//   - options.Context: The updated Option instance
+func Append[T any](opt options.Context, key Key[[]T], values ...T) options.Context {
 	if opt == nil {
 		opt = &emptyContext{}
 	}
@@ -154,7 +128,7 @@ func Append[T any](opt interfaces.Context, key Key[[]T], values ...T) interfaces
 //   - key: The slice-type key
 // Returns:
 //   - []T: A copy of the slice, or nil if it doesn't exist
-func Slice[T any](opt interfaces.Context, key Key[[]T]) []T {
+func Slice[T any](opt options.Context, key Key[[]T]) []T {
 	if opt == nil {
 		return nil
 	}
@@ -172,69 +146,95 @@ func Slice[T any](opt interfaces.Context, key Key[[]T]) []T {
 
 // Empty creates an empty Option instance
 // Returns:
-//   - interfaces.Context: An empty Option instance
-func Empty() interfaces.Context {
+//   - options.Context: An empty Option instance
+func Empty() options.Context {
 	return &emptyContext{}
 }
 
 // Default creates a default Option instance
 // Returns:
-//   - interfaces.Context: A default Option instance
-func Default() interfaces.Context {
+//   - options.Context: A default Option instance
+func Default() options.Context {
 	return &emptyContext{}
 }
 
-// Update returns an interfaces.ContextFunc that modifies a configuration struct *T in the interfaces.Context chain.
+// Update returns an options.ContextFunc that modifies a configuration struct *T in the options.Context chain.
 // It finds the *T instance using the provided key and applies the updater function if it exists.
 // If the value for the key does not exist, it does nothing.
 // Create an OptionFunc that updates a configuration struct in the Option chain
 // Parameters:
 //   - updater: The update function that takes a T parameter
 // Returns:
-//   - interfaces.ContextFunc: A function that can be applied to an Option
-func Update[T any](updater func(T)) interfaces.Option {
-	return func(opt interfaces.Context) {
+//   - options.Option: A function that can be applied to an Option
+func Update[T any](updater func(T)) options.Option {
+	return func(ctx options.Context) options.Context {
 		// Use a zero-value Key[T] as the type-specific key to find the value.
 		key := Key[T]{}
-		if v, ok := Value(opt, key); ok {
+		if v, ok := Value(ctx, key); ok {
 			// If the value is found, apply the updater function.
 			// Since T is expected to be a pointer type, the update modifies the original object.
 			updater(v)
 		}
+		return ctx
 	}
 }
 
-// Apply applies a series of OptionFuncs to a given configuration object and returns the resulting interfaces.Context.
+// Apply applies a series of OptionFuncs to a given configuration object and returns the resulting options.Context.
 // It iterates through the provided option functions and applies each one to the object.
 // Parameters:
 //   - cfg: The configuration object
 //   - opts: The list of OptionFuncs to apply
 // Returns:
-//   - interfaces.Context: The interfaces.Context instance with the applied options.
-func Apply[T any](cfg T, opts ...interfaces.Option) interfaces.Context {
+//   - options.Context: The options.Context instance with the applied options.
+func Apply[T any](cfg T, options ...options.Option) options.Context {
 	// Start with an option chain that contains the configuration object,
 	// keyed by its type via Key[T].
-	options := With(Empty(), Key[T]{}, cfg)
-	for _, o := range opts {
-		o(options)
+	ctx := With(Empty(), Key[T]{}, cfg)
+	for _, option := range options {
+		ctx = option(ctx)
 	}
-	return options
+	return ctx
 }
 
-// ApplyNew applies a series of OptionFuncs to a new instance of a configuration object and returns a pointer to it.
-// It iterates through the provided option functions and applies each one to the object.
-// Parameters:
-//   - opts: The list of OptionFuncs to apply
-// Returns:
-//   - T: A pointer to the newly created configuration object with the applied options.
-// Note: This function is useful when you want to create a new configuration object with specific options applied.
-func ApplyNew[T any](opts ...interfaces.Option) T {
+// ApplyNew creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
+// The generic type T should be the struct type itself, not a pointer to it (e.g., use serverConfig, not *serverConfig).
+func ApplyNew[T any](options ...options.Option) *T {
+	// Create a zero-value instance of the struct T.
 	var cfg T
-	// Start with an option chain that contains the configuration object,
-	// keyed by its type via Key[T].
-	options := With(Empty(), Key[T]{}, cfg)
-	for _, o := range opts {
-		o(options)
+
+	// Store this valid pointer in the context, keyed by its type *T.
+	ctx := With(Empty(), Key[*T]{}, &cfg)
+
+	// Apply all options. The Update function will now receive a valid pointer.
+	for _, option := range options {
+		ctx = option(ctx)
 	}
-	return cfg
+
+	// Return the pointer to the configured struct.
+	return &cfg
+}
+
+// WithContext returns an OptionFunc that sets the given options.Context as the current context.
+// Parameters:
+//   - ctx: The options.Context instance to set as the current context
+// Returns:
+//   - options.Option: An OptionFunc that sets the context
+func WithContext(ctx options.Context) options.Option {
+	return func(o options.Context) options.Context {
+		return ctx
+	}
+}
+
+// FromContext retrieves a value of type T from the given options.Context.
+// Parameters:
+//   - ctx: The options.Context instance to retrieve the value from
+// Returns:
+//   - T: The retrieved value
+//   - bool: Whether the value was successfully retrieved
+func FromContext[T any](ctx options.Context) (T, bool) {
+	if v, ok := Value(ctx, Key[T]{}); ok {
+		return v, ok
+	}
+	var zero T
+	return zero, false
 }
