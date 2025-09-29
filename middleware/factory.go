@@ -17,71 +17,94 @@ import (
 var defaultBuilder = NewBuilder()
 
 func init() {
-	defaultBuilder.Register("jwt", &jwtFactory{})
-	defaultBuilder.Register("circuit_breaker", &circuitBreakerFactory{})
-	defaultBuilder.Register("logging", &loggingFactory{})
-	defaultBuilder.Register("rate_limit", &rateLimitFactory{})
-	defaultBuilder.Register("metadata", &metadataFactory{})
-	defaultBuilder.Register("selector", &selectorFactory{})
-	defaultBuilder.Register("tracing", &tracingFactory{})
-	defaultBuilder.Register("validator", &validatorFactory{})
+	Register(Jwt, &jwtFactory{})
+	Register(CircuitBreaker, &circuitBreakerFactory{})
+	Register(Logging, &loggingFactory{})
+	Register(RateLimit, &rateLimitFactory{})
+	Register(Metadata, &metadataFactory{})
+	Register(Selector, &selectorFactory{})
+	Register(Tracing, &tracingFactory{})
+	Register(Validator, &validatorFactory{})
+	//Register(Optimize, &optimize.Factory{})
 }
 
+// middlewareBuilder is a builder for creating middleware chains.
 type middlewareBuilder struct {
 	factory.Registry[Factory]
 }
 
+// BuildClient builds a client-side middleware chain from the given configuration.
 func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
-	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
-
-	// If the configuration is nil, return the empty slice
 	if cfg == nil {
 		return middlewares
 	}
-	option := configure.Apply(&Options{
-		Logger: log.DefaultLogger,
-	}, options)
-	log.Infof("build middleware client")
+
+	// Apply options to get the logger and other settings.
+	option := configure.Apply(&Options{}, options)
+
+	var logger log.Logger
+	if option.Context != nil {
+		logger = log.FromContext(option.Context)
+	} else {
+		logger = log.DefaultLogger
+	}
+
+	helper := log.NewHelper(logger)
+	helper.Info("building client middlewares")
+
 	for _, ms := range cfg.GetMiddlewares() {
 		if !ms.GetEnabled() {
 			continue
 		}
-		f, ok := b.Get(ms.GetType())
+		middlewareName := ms.GetType()
+		f, ok := b.Get(middlewareName)
 		if !ok {
+			helper.Warnf("unknown client middleware: %s", middlewareName)
 			continue
 		}
-		log.Infof("middleware: %s", ms.GetType())
+
+		helper.Infof("enabling client middleware: %s", middlewareName)
 		m, ok := f.NewMiddlewareClient(ms, option)
 		if ok {
 			middlewares = append(middlewares, m)
 		}
-
 	}
 	return middlewares
 }
 
+// BuildServer builds a server-side middleware chain from the given configuration.
 func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
-	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
-
-	// If the configuration is nil, return the empty slice
 	if cfg == nil {
 		return middlewares
 	}
-	option := configure.Apply(&Options{
-		Logger: log.DefaultLogger,
-	}, options)
-	log.Infof("build middleware server")
+
+	// Apply options to get the logger and other settings.
+	option := configure.Apply(&Options{}, options)
+
+	var logger log.Logger
+	if option.Context != nil {
+		logger = log.FromContext(option.Context)
+	} else {
+		logger = log.DefaultLogger
+	}
+
+	helper := log.NewHelper(logger)
+	helper.Info("building server middlewares")
+
 	for _, ms := range cfg.GetMiddlewares() {
 		if !ms.GetEnabled() {
 			continue
 		}
-		f, ok := b.Get(ms.GetType())
+		middlewareName := ms.GetType()
+		f, ok := b.Get(middlewareName)
 		if !ok {
+			helper.Warnf("unknown server middleware: %s", middlewareName)
 			continue
 		}
-		log.Infof("middleware: %s", ms.GetType())
+
+		helper.Infof("enabling server middleware: %s", middlewareName)
 		m, ok := f.NewMiddlewareServer(ms, option)
 		if ok {
 			middlewares = append(middlewares, m)
@@ -90,16 +113,29 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, options .
 	return middlewares
 }
 
-func (b *middlewareBuilder) RegisterMiddlewareBuilder(name string, factory Factory) {
-	b.Register(name, factory)
+// Register registers a middleware factory with the given name.
+func Register(name Name, factory Factory) {
+	defaultBuilder.Register(string(name), factory)
 }
 
+// BuildClient builds middlewares for clients.
+func BuildClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
+	return defaultBuilder.BuildClient(cfg, options...)
+}
+
+// BuildServer builds middlewares for servers.
+func BuildServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
+	return defaultBuilder.BuildServer(cfg, options...)
+}
+
+// NewBuilder creates a new middleware builder.
 func NewBuilder() Builder {
 	return &middlewareBuilder{
 		Registry: factory.New[Factory](),
 	}
 }
 
+// DefaultBuilder returns the default middleware builder.
 func DefaultBuilder() Builder {
 	return defaultBuilder
 }

@@ -27,7 +27,7 @@ type validateV2 struct {
 
 // ValidateV2 validates a protobuf message.
 func (v validateV2) ValidateV2(message proto.Message) error {
-	return v.ValidateV2(message)
+	return v.v.Validate(message)
 }
 
 func (v validateV2) Validate(ctx context.Context, req any) error {

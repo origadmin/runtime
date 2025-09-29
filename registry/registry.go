@@ -8,6 +8,7 @@ package registry
 import (
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // --- Error Definitions ---
@@ -38,11 +39,11 @@ func Register(name string, factory Factory) {
 }
 
 // NewRegistrar creates a new KRegistrar instance using the DefaultBuilder.
-func NewRegistrar(cfg *discoveryv1.Discovery, opts ...Option) (KRegistrar, error) {
+func NewRegistrar(cfg *discoveryv1.Discovery, opts ...options.Option) (KRegistrar, error) {
 	return DefaultBuilder().NewRegistrar(cfg, opts...)
 }
 
 // NewDiscovery creates a new KDiscovery instance using the DefaultBuilder.
-func NewDiscovery(cfg *discoveryv1.Discovery, opts ...Option) (KDiscovery, error) {
+func NewDiscovery(cfg *discoveryv1.Discovery, opts ...options.Option) (KDiscovery, error) {
 	return DefaultBuilder().NewDiscovery(cfg, opts...)
 }

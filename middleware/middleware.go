@@ -6,22 +6,24 @@
 package middleware
 
 import (
-	"github.com/goexts/generic/configure"
-
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
-	"github.com/origadmin/runtime/log"
 )
+
+// Name is the name of a middleware.
+type Name string
 
 // Middleware names.
 const (
-	Jwt            = "jwt"
-	CircuitBreaker = "circuit_breaker"
-	Logging        = "logging"
-	Metadata       = "metadata"
-	RateLimit      = "rate_limit"
-	Tracing        = "tracing"
-	Validator      = "validator"
+	Jwt            Name = "jwt"
+	CircuitBreaker Name = "circuit_breaker"
+	Logging        Name = "logging"
+	Metadata       Name = "metadata"
+	RateLimit      Name = "rate_limit"
+	Tracing        Name = "tracing"
+	Validator      Name = "validator"
+	Optimize       Name = "optimize"
+	Selector       Name = "selector"
 )
 
 type (
@@ -51,82 +53,4 @@ func NewClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
 
 func NewServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
 	return defaultBuilder.BuildServer(cfg, options...)
-}
-
-func buildClientMiddlewares(cfg *middlewarev1.Middlewares, ss ...Option) []KMiddleware {
-	// Create an empty slice of KMiddleware
-	var middlewares []KMiddleware
-	// If the configuration is nil, return the empty slice
-	if cfg == nil {
-		return middlewares
-	}
-	option := configure.Apply(&Options{
-		Logger: log.DefaultLogger,
-	}, ss)
-	for _, middlewareConfig := range cfg.GetMiddlewares() {
-		if !middlewareConfig.GetEnabled() {
-			continue
-		}
-		switch middlewareConfig.GetType() {
-		case Jwt:
-			m, ok := JwtClient(middlewareConfig.GetJwt())
-			if ok && middlewareConfig.GetSelector().GetEnabled() {
-				m = SelectorClient(middlewareConfig.GetSelector(), option.MatchFunc, m)
-			}
-			middlewares = append(middlewares, m)
-		case CircuitBreaker:
-			middlewares = CircuitBreakerClient(middlewares)
-		case Logging:
-			middlewares = LoggingClient(middlewares, option.Logger)
-		case Metadata:
-			middlewares = MetadataClient(middlewares, middlewareConfig.GetMetadata())
-		case RateLimit:
-		//middlewares = RateLimitClient(middlewares, cfg.GetRateLimiter())
-		case Tracing:
-			middlewares = TracingClient(middlewares)
-		case Validator:
-			//middlewares = ValidateClient(middlewares, cfg.GetValidator())
-		}
-	}
-	return middlewares
-}
-
-// NewServer creates a new server with the given configuration
-func buildServerMiddlewares(cfg *middlewarev1.Middlewares, ss ...Option) []KMiddleware {
-	// Create an empty slice of KMiddleware
-	var middlewares []KMiddleware
-
-	// If the configuration is nil, return the empty slice
-	if cfg == nil {
-		return middlewares
-	}
-	option := configure.Apply(&Options{
-		Logger: log.DefaultLogger,
-	}, ss)
-	for _, ms := range cfg.GetMiddlewares() {
-		if !ms.GetEnabled() {
-			continue
-		}
-		switch ms.GetType() {
-		case Jwt:
-			m, ok := JwtServer(ms.GetJwt())
-			if ok && ms.GetSelector().GetEnabled() {
-				m = SelectorServer(ms.GetSelector(), option.MatchFunc, m)
-			}
-			middlewares = append(middlewares, m)
-		case CircuitBreaker:
-			//middlewares = CircuitBreakerServer(middlewares)
-		case Logging:
-			middlewares = LoggingServer(middlewares, option.Logger)
-		case Metadata:
-			middlewares = MetadataServer(middlewares, ms.GetMetadata())
-		case RateLimit:
-			middlewares = RateLimitServer(middlewares, ms.GetRateLimiter())
-		case Tracing:
-			middlewares = TracingServer(middlewares)
-		case Validator:
-			middlewares = ValidateServer(middlewares, ms.GetValidator())
-		}
-	}
-	return middlewares
 }
