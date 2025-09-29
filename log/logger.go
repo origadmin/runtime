@@ -13,14 +13,12 @@ import (
 	kslog "github.com/origadmin/slog-kratos"
 
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/toolkits/slogx"
 )
 
 // NewLogger creates a new kratos logger based on the provided configuration.
 // It uses slog as the underlying logging library and slog-kratos as an adapter.
-func NewLogger(cfg *loggerv1.Logger) kratoslog.Logger {
+func NewLogger(cfg *loggerv1.Logger) Logger {
 	if cfg == nil {
 		return DefaultLogger
 	}
@@ -102,31 +100,4 @@ func LevelOption(level string) slogx.Option {
 		ll = slogx.LevelInfo // Default to Info
 	}
 	return slogx.WithLevel(ll)
-}
-
-type loggerContext struct {
-	Logger Logger
-}
-
-func WithLogger(logger Logger) options.Option {
-	return optionutil.Update(func(l *loggerContext) {
-		l.Logger = logger
-	})
-}
-
-func FromOptions(opts ...options.Option) Logger {
-	var l loggerContext
-	optionutil.Apply(&l, opts...)
-	if l.Logger == nil {
-		l.Logger = DefaultLogger
-	}
-	return l.Logger
-}
-
-func FromContext(ctx interfaces.Context) Logger {
-	v, ok := optionutil.Value(ctx, optionutil.Key[*loggerContext]{})
-	if !ok || v.Logger == nil {
-		return DefaultLogger
-	}
-	return v.Logger
 }
