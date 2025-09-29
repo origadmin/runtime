@@ -48,12 +48,30 @@ type (
 
 // NewClient creates a new client with the given configuration.
 // This function is a convenience wrapper around the default builder.
-func NewClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
-	return defaultBuilder.BuildClient(cfg, opts...)
+func NewClient(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	if mc == nil || !mc.GetEnabled() {
+		return nil, false
+	}
+	// Get the middleware name.
+	middlewareName := mc.GetType()
+	f, ok := defaultBuilder.Get(middlewareName)
+	if !ok {
+		return nil, false
+	}
+	return f.NewMiddlewareClient(mc, opts...)
 }
 
 // NewServer creates a new server with the given configuration.
 // This function is a convenience wrapper around the default builder.
-func NewServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
-	return defaultBuilder.BuildServer(cfg, opts...)
+func NewServer(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	if mc == nil || !mc.GetEnabled() {
+		return nil, false
+	}
+	// Get the middleware name.
+	middlewareName := mc.GetType()
+	f, ok := defaultBuilder.Get(middlewareName)
+	if !ok {
+		return nil, false
+	}
+	return f.NewMiddlewareServer(mc, opts...)
 }

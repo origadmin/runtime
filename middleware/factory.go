@@ -27,7 +27,7 @@ func init() {
 	Register(Metadata, &metadataFactory{})
 	Register(Selector, &selectorFactory{})
 	Register(Tracing, &tracingFactory{})
-	// Register(Validator, &validatorFactory{})
+	Register(Validator, &validatorFactory{})
 }
 
 // middlewareBuilder is a builder for creating middleware chains.

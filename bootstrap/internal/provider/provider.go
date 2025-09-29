@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -8,6 +10,7 @@ import (
 	// appv1 "github.com/origadmin/runtime/api/gen/go/app/v1" // Removed: No longer directly used here
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	"github.com/origadmin/runtime/middleware"
 
 	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
@@ -25,7 +28,19 @@ type componentProviderImpl struct {
 	defaultRegistrar         registry.Registrar
 	config                   interfaces.Config // Added: Store the configuration decoder
 	components               map[string]interface{}
+	serverMiddlewaresMap     map[string]middleware.KMiddleware
+	clientMiddlewaresMap     map[string]middleware.KMiddleware
 	componentFactoryRegistry interfaces.ComponentFactoryRegistry // Added: Store the component factory registry
+}
+
+func (p *componentProviderImpl) ServerMiddleware(name middleware.Name) middleware.KMiddleware {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *componentProviderImpl) ClientMiddleware(name middleware.Name) middleware.KMiddleware {
+	//TODO implement me
+	panic("implement me")
 }
 
 // Statically assert that componentProviderImpl implements the interface.
@@ -66,19 +81,24 @@ func (p *componentProviderImpl) InitComponents(cfg interfaces.Config) error {
 	if err := p.initLogger(cfg); err != nil {
 		// Even if the logger fails to initialize from config, a fallback is created.
 		// We log the error but do not stop the bootstrap process.
-		p.Logger().Log(log.LevelError, "msg", "failed to initialize logger component", "error", err)
+		log.Errorf("failed to initialize logger component, error: %v", err)
 	}
-
+	helper := log.NewHelper(p.Logger())
 	// 2. Initialize Registries and Discoveries with graceful fallback.
 	if err := p.initRegistries(cfg); err != nil {
 		// Log the error but continue, as local mode is the fallback.
-		p.Logger().Log(log.LevelError, "msg", "failed to initialize registries component", "error", err)
+		helper.Errorf("failed to initialize registries component, error: %v", err)
+	}
+
+	if err := p.initMiddlewares(cfg); err != nil {
+		// Log the error but continue.
+		helper.Errorf("failed to initialize middlewares component, error: %v", err)
 	}
 
 	// 3. Initialize generic components from the [components] config section.
 	if err := p.initGenericComponents(cfg); err != nil {
 		// Log the error but continue.
-		p.Logger().Log(log.LevelError, "msg", "failed to initialize generic components", "error", err)
+		helper.Errorf("failed to initialize generic components, error: %v", err)
 	}
 
 	return nil
@@ -95,7 +115,7 @@ func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
 	}
 
 	// 2. Fallback to the generic decoder if the fast path is not taken or explicitly signals a fallback.
-	if loggerCfg == nil && (err == nil || err == interfaces.ErrNotImplemented) {
+	if loggerCfg == nil && (err == nil || errors.Is(err, interfaces.ErrNotImplemented)) {
 		// The error from the fast path is reset, as we are now trying the generic path.
 		err = cfg.Decode(constant.ComponentLogger, &loggerCfg)
 	}
@@ -103,8 +123,8 @@ func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
 	// 3. If there was any error during decoding, log it as a warning.
 	// We use a temporary logger because the main logger isn't created yet.
 	if err != nil {
-		tempLogger := log.NewStdLogger(os.Stderr)
-		tempLogger.Log(log.LevelWarn, "msg", "failed to decode logger config, will use default logger", "error", err)
+		p.Logger().Log(log.LevelWarn, "msg", "failed to decode logger component", "error", err)
+		return err
 	}
 
 	// 4. Create the logger instance. NewLogger handles the nil config gracefully.
@@ -166,6 +186,33 @@ func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 		}
 	}
 
+	return nil
+}
+
+func (p *componentProviderImpl) initMiddlewares(cfg interfaces.Config) error {
+	p.serverMiddlewaresMap = make(map[string]middleware.KMiddleware)
+	p.clientMiddlewaresMap = make(map[string]middleware.KMiddleware)
+	v, ok := cfg.(interfaces.MiddlewareConfigDecoder)
+	if ok {
+		middlewares, err := v.DecodeMiddleware()
+		if err != nil {
+			return fmt.Errorf("failed to decode middlewares: %w", err)
+		}
+		for _, mc := range middlewares.GetMiddlewares() {
+			if mc.GetEnabled() {
+				mclient, ok := middleware.NewClient(mc)
+				if !ok {
+					continue
+				}
+				mserver, ok := middleware.NewServer(mc)
+				if !ok {
+					continue
+				}
+				p.serverMiddlewaresMap[mc.GetType()] = mserver
+				p.clientMiddlewaresMap[mc.GetType()] = mclient
+			}
+		}
+	}
 	return nil
 }
 

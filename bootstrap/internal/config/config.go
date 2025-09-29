@@ -7,6 +7,7 @@ import (
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces"
 )
@@ -24,6 +25,7 @@ var (
 	_ interfaces.Config                   = (*configImpl)(nil)
 	_ interfaces.LoggerConfigDecoder      = (*configImpl)(nil)
 	_ interfaces.DiscoveriesConfigDecoder = (*configImpl)(nil)
+	_ interfaces.MiddlewareConfigDecoder  = (*configImpl)(nil)
 )
 
 // NewConfigImpl creates a new instance of the default config implementation.
@@ -80,4 +82,19 @@ func (c *configImpl) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, err
 	}
 
 	return discoveries, nil
+}
+
+// DecodeMiddleware implements the interfaces.MiddlewareConfigDecoder interface.
+func (c *configImpl) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
+	path, ok := c.paths[constant.ComponentMiddlewares]
+	if !ok {
+		return nil, errors.New("middlewares component path not configured")
+	}
+
+	var middlewares *middlewarev1.Middlewares
+	if err := c.kratosConfig.Value(path).Scan(&middlewares); err != nil {
+		return nil, err
+	}
+
+	return middlewares, nil
 }

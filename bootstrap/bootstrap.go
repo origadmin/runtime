@@ -16,6 +16,7 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/middleware"
 )
 
 // componentFactoryRegistryImpl implements interfaces.ComponentFactoryRegistry.
@@ -59,6 +60,7 @@ func LoadBootstrapConfig(bootstrapPath string) (*bootstrapv1.Bootstrap, error) {
 // NewDecoder creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, including path resolution and source merging.
 // The returned interfaces.Config is ready to be consumed by NewProvider or other tools.
+// It no longer returns *bootstrapv1.Bootstrap directly, as that should be scanned from the returned interfaces.Config.
 func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config, error) {
 	// 1. Apply options
 	decoderOpts := &decoderOptions{}
@@ -82,7 +84,7 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 			return cfg, nil
 		}
 		// Otherwise, use the default implementation.
-		return bootstrapConfig.NewConfigImpl(decoderOpts.kratosConfig, nil), nil // Pass nil for paths as they are not relevant here
+		return bootstrapConfig.NewConfigImpl(decoderOpts.kratosConfig, nil), nil
 	}
 
 	// 2. Load BootstrapConfig from file
@@ -149,9 +151,11 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 
 // bootstrapperImpl implements the interfaces.Bootstrapper interface.
 type bootstrapperImpl struct {
-	provider interfaces.ComponentProvider
-	config   interfaces.Config
-	cleanup  func()
+	provider          interfaces.ComponentProvider
+	config            interfaces.Config
+	cleanup           func()
+	serverMiddlewares map[string]middleware.KMiddleware // Changed to map[string]KMiddleware
+	clientMiddlewares map[string]middleware.KMiddleware // Changed to map[string]KMiddleware
 }
 
 // Provider implements interfaces.Bootstrapper.
@@ -169,6 +173,16 @@ func (b *bootstrapperImpl) Cleanup() func() {
 	return b.cleanup
 }
 
+// ServerMiddlewares returns the built server-side middleware chain.
+func (b *bootstrapperImpl) ServerMiddlewares() map[string]middleware.KMiddleware {
+	return b.serverMiddlewares
+}
+
+// ClientMiddlewares returns the built client-side middleware chain.
+func (b *bootstrapperImpl) ClientMiddlewares() map[string]middleware.KMiddleware {
+	return b.clientMiddlewares
+}
+
 // NewProvider creates a new component provider, which is the main entry point for application startup.
 // It orchestrates the entire process of configuration loading and component initialization.
 // It now returns the interfaces.Bootstrapper interface.
@@ -183,7 +197,7 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper,
 		return nil, errors.New("app info is required and must be valid")
 	}
 
-	// 2. Create the configuration decoder, passing through any decoder options.
+	// 2. Create the configuration decoder, which returns the interfaces.Config.
 	cfg, err := NewDecoder(bootstrapPath, providerOpts.decoderOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create config decoder: %w", err)
@@ -222,6 +236,7 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper,
 	}
 
 	// 7. Return the provider, the config, and the final cleanup function.
+
 	return &bootstrapperImpl{
 		provider: p,
 		config:   cfg,

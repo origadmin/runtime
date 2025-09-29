@@ -3,6 +3,8 @@ package interfaces
 import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
+
+	"github.com/origadmin/runtime/middleware"
 )
 
 // ComponentFactoryFunc defines the signature for a function that can create a generic component.
@@ -35,8 +37,8 @@ type ComponentProvider interface {
 	// It may be nil if no default registry is configured.
 	DefaultRegistrar() registry.Registrar
 
-	// Config returns the configuration decoder, allowing access to raw configuration values.
-	// REMOVED: Config() Config
+	ServerMiddleware(name middleware.Name) middleware.KMiddleware
+	ClientMiddleware(name middleware.Name) middleware.KMiddleware
 
 	// --- Generic Service Locator for Extensibility ---
 
