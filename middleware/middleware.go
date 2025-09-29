@@ -6,14 +6,10 @@
 package middleware
 
 import (
-	"github.com/go-kratos/kratos/v2/middleware"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
 )
-
-// KMiddleware is a type alias for middleware.Middleware
-type KMiddleware = middleware.Middleware
 
 // Name is the name of a middleware.
 type Name string
