@@ -6,8 +6,6 @@
 package middleware
 
 import (
-	"github.com/goexts/generic/configure"
-
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/log"
@@ -41,11 +39,11 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, options .
 	}
 
 	// Apply options to get the logger and other settings.
-	option := configure.Apply(&Options{}, options)
+	ctx, option := FromOptions(options...)
 
 	var logger log.Logger
-	if option.Context != nil {
-		logger = log.FromContext(option.Context)
+	if ctx != nil {
+		logger = log.FromContext(ctx)
 	} else {
 		logger = log.DefaultLogger
 	}
@@ -81,11 +79,11 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, options .
 	}
 
 	// Apply options to get the logger and other settings.
-	option := configure.Apply(&Options{}, options)
+	ctx, option := FromOptions(options...)
 
 	var logger log.Logger
-	if option.Context != nil {
-		logger = log.FromContext(option.Context)
+	if ctx != nil {
+		logger = log.FromContext(ctx)
 	} else {
 		logger = log.DefaultLogger
 	}

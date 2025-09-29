@@ -13,13 +13,16 @@ import (
 
 type Options struct {
 	MatchFunc selector.MatchFunc
-	Context   options.Context
 }
 
-type Option = func(*Options)
+type Option = options.Option
 
 func WithMatchFunc(matchFunc selector.MatchFunc) options.Option {
 	return optionutil.Update(func(o *Options) {
 		o.MatchFunc = matchFunc
 	})
+}
+
+func FromOptions(opts ...options.Option) (options.Context, *Options) {
+	return optionutil.ApplyNew[Options](opts...)
 }
