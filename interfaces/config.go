@@ -7,6 +7,7 @@ import (
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 )
 
 // Config is the minimal contract for providing a custom configuration source.
@@ -41,4 +42,11 @@ type LoggerConfigDecoder interface {
 // interface to provide an optimized decoding path.
 type DiscoveriesConfigDecoder interface {
 	DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error)
+}
+
+// MiddlewareConfigDecoder defines an OPTIONAL interface for providing a "fast path"
+// to decode middleware configurations. Custom Config implementations can implement this
+// interface to provide an optimized decoding path.
+type MiddlewareConfigDecoder interface {
+	DecodeMiddleware() (*middlewarev1.Middlewares, error)
 }

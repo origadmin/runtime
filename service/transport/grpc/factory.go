@@ -3,15 +3,13 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/transport"
 	kgprc "github.com/go-kratos/kratos/v2/transport/grpc"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
-	mw "github.com/origadmin/runtime/middleware"
 	"google.golang.org/grpc"
 )
 
@@ -24,33 +22,42 @@ func init() {
 }
 
 // NewServer creates a new gRPC server instance.
-// It conforms to the updated ProtocolFactory interface.
-func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...service.Option) (interfaces.Server, error) {
+func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...interfaces.Option) (interfaces.Server, error) {
 	// 1. Extract the specific gRPC server config from the container.
 	grpcConfig := cfg.GetGrpc()
 	if grpcConfig == nil {
 		return nil, fmt.Errorf("gRPC server config is missing in transport container")
 	}
 
-	// 2. Process options to extract registrar.
-	var sOpts service.Options
-	sOpts.Apply(opts...)
+	// 2. Apply options to a ServiceOptions struct to get a configured context.
+	initialServiceCfg := &service.ServiceOptions{}
+	configuredContext := optionutil.Apply(initialServiceCfg, opts...)
 
-	grpcRegistrar, ok := sOpts.Value().registrar.(service.GRPCRegistrar)
-	if !ok && sOpts.Value().registrar != nil {
-		return nil, fmt.Errorf("invalid registrar: expected service.GRPCRegistrar, got %T", sOpts.Value().registrar)
+	// 3. Retrieve the fully configured ServiceOptions from the context.
+	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.ServiceOptions](configuredContext)
+	if !ok {
+		return nil, fmt.Errorf("failed to retrieve configured service options from context")
 	}
 
-	// --- All creation logic below uses the extracted, concrete 'grpcConfig' ---
+	// 4. Get the registrar from the configured service options.
+	grpcRegistrar, ok := configuredServiceCfg.Registrar.(service.GRPCRegistrar)
+	if !ok && configuredServiceCfg.Registrar != nil {
+		return nil, fmt.Errorf("invalid registrar: expected service.GRPCRegistrar, got %T", configuredServiceCfg.Registrar)
+	}
+
+	// 5. Get the middleware provider.
+	if configuredServiceCfg.MiddlewareProvider == nil {
+		return nil, fmt.Errorf("middleware provider not found in options")
+	}
 
 	var kOpts []kgprc.ServerOption
 	var mws []middleware.Middleware
 
-	// Build middleware chain
+	// Build middleware chain using the provider
 	for _, name := range grpcConfig.Middlewares {
-		m, ok := mw.Get(name)
+		m, ok := configuredServiceCfg.MiddlewareProvider.GetMiddleware(name)
 		if !ok {
-			return nil, fmt.Errorf("middleware '%s' not found in registry", name)
+			return nil, fmt.Errorf("middleware '%s' not found via provider", name)
 		}
 		mws = append(mws, m)
 	}
@@ -58,7 +65,7 @@ func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...service
 		kOpts = append(kOpts, kgprc.Middleware(mws...))
 	}
 
-	// Apply other server options
+	// Apply other server options from protobuf config
 	if grpcConfig.Network != "" {
 		kOpts = append(kOpts, kgprc.Network(grpcConfig.Network))
 	}
@@ -78,35 +85,41 @@ func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...service
 
 	// Register business logic
 	if grpcRegistrar != nil {
-		grpcRegistrar.RegisterGRPC(context.Background(), srv)
+		grpcRegistrar.RegisterGRPC(srv)
 	}
 
 	return srv, nil
 }
 
 // NewClient creates a new gRPC client instance.
-// It conforms to the updated ProtocolFactory interface.
-func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...service.Option) (interfaces.Client, error) {
+func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...interfaces.Option) (interfaces.Client, error) {
 	// 1. Extract the specific gRPC client config from the container.
 	grpcConfig := cfg.GetGrpc()
 	if grpcConfig == nil {
 		return nil, fmt.Errorf("gRPC client config is missing in transport container")
 	}
 
-	// 2. Process options to extract client-specific settings (endpoint, selector filter).
-	var sOpts service.Options
-	sOpts.Apply(opts...)
+	// 2. Apply options to get the configured context and service options.
+	initialServiceCfg := &service.ServiceOptions{}
+	configuredContext := optionutil.Apply(initialServiceCfg, opts...)
+	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.ServiceOptions](configuredContext)
+	if !ok {
+		return nil, fmt.Errorf("failed to retrieve configured service options from context")
+	}
 
-	// --- Client creation logic below uses the extracted, concrete 'grpcConfig' and 'sOpts' ---
+	// 3. Get the middleware provider.
+	if configuredServiceCfg.MiddlewareProvider == nil {
+		return nil, fmt.Errorf("middleware provider not found in options")
+	}
 
 	var dialOpts []grpc.DialOption
 	var mws []middleware.Middleware
 
-	// Build client interceptors (middlewares)
+	// Build client interceptors (middlewares) using the provider
 	for _, name := range grpcConfig.Middlewares {
-		m, ok := mw.Get(name)
+		m, ok := configuredServiceCfg.MiddlewareProvider.GetMiddleware(name)
 		if !ok {
-			return nil, fmt.Errorf("client middleware '%s' not found in registry", name)
+			return nil, fmt.Errorf("client middleware '%s' not found via provider", name)
 		}
 		mws = append(mws, m)
 	}
@@ -115,7 +128,7 @@ func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 		// TODO: Add stream interceptors if needed
 	}
 
-	// Apply other client options
+	// Apply other client options from protobuf config
 	if grpcConfig.MaxRecvMsgSize > 0 {
 		dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxRecvMsgSize(int(grpcConfig.MaxRecvMsgSize))))
 	}
@@ -123,33 +136,25 @@ func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 		dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxSendMsgSize(int(grpcConfig.MaxSendMsgSize))))
 	}
 
-	// Determine target endpoint: prioritize endpoint from options (discovery) over direct target
+	// Determine target endpoint: prioritize endpoint from options over direct target from config
 	target := grpcConfig.Target
-	if sOpts.Value().clientEndpoint != "" {
-		target = sOpts.Value().clientEndpoint
+	if configuredServiceCfg.ClientEndpoint != "" {
+		target = configuredServiceCfg.ClientEndpoint
 	}
 
 	// Apply selector filter if provided via options
-	if sOpts.Value().clientSelectorFilter != nil {
-		// Kratos gRPC client needs a selector builder to use a NodeFilter.
-		// This typically involves creating a custom selector.Builder or adapting existing ones.
-		// For now, we'll assume Kratos's default discovery mechanism can integrate with a NodeFilter
-		// if the target is a discovery endpoint (e.g., "discovery:///service-name").
-		// If explicit NodeFilter application is needed, a custom Kratos client option or resolver builder
-		// would be required here. For example:
-		// dialOpts = append(dialOpts, kgprc.WithNodeFilter(sOpts.Value().clientSelectorFilter)) // Hypothetical Kratos option
-		// Or, if using a custom Kratos selector builder:
-		// selectorBuilder := selector.NewBuilderWithFilter(sOpts.Value().clientSelectorFilter)
-		// dialOpts = append(dialOpts, kgprc.WithDiscovery(discovery.NewDiscovery(target)), kgprc.WithSelector(selectorBuilder))
+	if configuredServiceCfg.ClientSelectorFilter != nil {
+		// TODO: Kratos gRPC client needs a selector builder to use a NodeFilter.
+		// This part requires a more complex integration with a discovery/selector builder.
 	}
-
 
 	// Set dial timeout
-	dialCtx, cancel := context.WithTimeout(ctx, service.DefaultTimeout)
+	dialCtx := ctx
 	if grpcConfig.DialTimeout != nil {
+		var cancel context.CancelFunc
 		dialCtx, cancel = context.WithTimeout(ctx, grpcConfig.DialTimeout.AsDuration())
+		defer cancel()
 	}
-	defer cancel()
 
 	// Create the gRPC client connection
 	conn, err := grpc.DialContext(dialCtx, target, dialOpts...)
@@ -157,6 +162,5 @@ func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 		return nil, fmt.Errorf("failed to dial gRPC client to %s: %w", target, err)
 	}
 
-	// Return the client connection (which implements interfaces.Client if type aliased correctly)
 	return conn, nil
 }

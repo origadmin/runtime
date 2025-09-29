@@ -25,24 +25,27 @@ func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.Middlewar
 }
 
 func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	log.Debug("[Middleware] Validator server middleware enabled")
-	if !middleware.GetEnabled() || middleware.GetType() != "validator" {
+	log.Debug("[Middleware] ValidatorClient server middleware enabled")
+	if !middleware.GetEnabled() {
 		return nil, false
 	}
 	cfg := middleware.GetValidator()
-	switch validate.Version(cfg.GetVersion()) {
-	case validate.V2:
-		opts := []validate.Option{
-			validate.WithFailFast(cfg.GetFailFast()),
+	switch middleware.GetType() {
+	case Validator:
+		switch validate.Version(cfg.GetVersion()) {
+		case validate.V2:
+			opts := []validate.Option{
+				validate.WithFailFast(cfg.GetFailFast()),
+			}
+			if validate.Version(cfg.Version) == validate.V2 {
+				opts = append(opts, validate.WithV2ProtoValidatorOption())
+			}
+			if m, err := validate.Server(opts...); err == nil {
+				return m, true
+			}
+		default:
+			return validateMiddlewareV1(cfg), true
 		}
-		if validate.Version(cfg.Version) == validate.V2 {
-			opts = append(opts, validate.WithV2ProtoValidatorOptions())
-		}
-		if m, err := validate.Server(opts...); err == nil {
-			return m, true
-		}
-	default:
-		return validateMiddlewareV1(cfg), true
 	}
 	return nil, false
 }
@@ -64,7 +67,7 @@ func ValidateServer(ms []KMiddleware, validator *validatorv1.Validator) []KMiddl
 		validate.WithFailFast(validator.GetFailFast()),
 	}
 	if validate.Version(validator.Version) == validate.V2 {
-		opts = append(opts, validate.WithV2ProtoValidatorOptions())
+		opts = append(opts, validate.WithV2ProtoValidatorOption())
 	}
 	if m, err := validate.Server(opts...); err == nil {
 		ms = append(ms, m)
@@ -73,14 +76,15 @@ func ValidateServer(ms []KMiddleware, validator *validatorv1.Validator) []KMiddl
 }
 
 func validateMiddlewareV1(_ *validatorv1.Validator) middleware.Middleware {
-	return Validator()
+	return newValidatorV1()
 }
 
 type validator interface {
 	Validate() error
 }
 
-func Validator() middleware.Middleware {
+// newValidatorV1 is the constructor for the v1 validation middleware.
+func newValidatorV1() middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req any) (reply any, err error) {
 			if v, ok := req.(validator); ok {

@@ -34,8 +34,8 @@ func WithFailFast(failFast bool) Option {
 	}
 }
 
-// WithV2ProtoValidatorOptions registers options for Validator with version 2.
-func WithV2ProtoValidatorOptions(opts ...ProtoValidatorOption) Option {
+// WithV2ProtoValidatorOption registers options for Validator with version 2.
+func WithV2ProtoValidatorOption(opts ...ProtoValidatorOption) Option {
 	return func(o *Options) {
 		o.version = V2
 		o.validatorOptions = opts

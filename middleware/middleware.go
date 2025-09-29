@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package middlewares implements the functions, types, and interfaces for the module.
+// Package middleware implements the functions, types, and interfaces for the module.
 package middleware
 
 import (
@@ -11,6 +11,17 @@ import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/log"
+)
+
+// Middleware names.
+const (
+	Jwt            = "jwt"
+	CircuitBreaker = "circuit_breaker"
+	Logging        = "logging"
+	Metadata       = "metadata"
+	RateLimit      = "rate_limit"
+	Tracing        = "tracing"
+	Validator      = "validator"
 )
 
 type (
@@ -36,18 +47,10 @@ type Middleware struct {
 // NewClient creates a new client with the given configuration
 func NewClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
 	return defaultBuilder.BuildClient(cfg, options...)
-	//if defaultBuilder != nil {
-	//	return defaultBuilder.BuildClient(cfg, options...)
-	//}
-	//return buildClientMiddlewares(cfg, options...)
 }
 
 func NewServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
 	return defaultBuilder.BuildServer(cfg, options...)
-	//if defaultBuilder != nil {
-	//	return defaultBuilder.BuildServer(cfg, options...)
-	//}
-	//return buildServerMiddlewares(cfg, options...)
 }
 
 func buildClientMiddlewares(cfg *middlewarev1.Middlewares, ss ...Option) []KMiddleware {
@@ -65,54 +68,26 @@ func buildClientMiddlewares(cfg *middlewarev1.Middlewares, ss ...Option) []KMidd
 			continue
 		}
 		switch middlewareConfig.GetType() {
-		case "jwt":
+		case Jwt:
 			m, ok := JwtClient(middlewareConfig.GetJwt())
 			if ok && middlewareConfig.GetSelector().GetEnabled() {
 				m = SelectorClient(middlewareConfig.GetSelector(), option.MatchFunc, m)
 			}
 			middlewares = append(middlewares, m)
-		case "circuit_breaker":
+		case CircuitBreaker:
 			middlewares = CircuitBreakerClient(middlewares)
-		case "logging":
+		case Logging:
 			middlewares = LoggingClient(middlewares, option.Logger)
-		case "metadata":
+		case Metadata:
 			middlewares = MetadataClient(middlewares, middlewareConfig.GetMetadata())
-		case "rate_limit":
+		case RateLimit:
 		//middlewares = RateLimitClient(middlewares, cfg.GetRateLimiter())
-		case "tracing":
+		case Tracing:
 			middlewares = TracingClient(middlewares)
-		case "validator":
+		case Validator:
 			//middlewares = ValidateClient(middlewares, cfg.GetValidator())
 		}
 	}
-	//if cfg.Logging {
-	//	// Add the LoggingClient middleware to the slice
-	//	middlewares = LoggingClient(middlewares, option.Logger)
-	//}
-	//if cfg.Recovery {
-	//	// Add the Recovery middleware to the slice
-	//	middlewares = Recovery(middlewares)
-	//}
-	//if cfg.GetMetadata().GetEnabled() {
-	//	// Add the MetadataClient middleware to the slice
-	//	middlewares = MetadataClient(middlewares, cfg.GetMetadata())
-	//}
-	//if cfg.Tracing {
-	//	// Add the TracingClient middleware to the slice
-	//	middlewares = TracingClient(middlewares)
-	//}
-	//if cfg.CircuitBreaker {
-	//	// Add the CircuitBreakerClient middleware to the slice
-	//	middlewares = CircuitBreakerClient(middlewares)
-	//}
-	//if cfg.GetJwt().GetEnabled() {
-	//	m, ok := JwtClient(cfg.GetJwt())
-	//	if ok && cfg.GetSelector().GetEnabled() {
-	//		m = SelectorClient(cfg.GetSelector(), option.MatchFunc, m)
-	//	}
-	//	middlewares = append(middlewares, m)
-	//}
-	// Add the Security middleware to the slice
 	return middlewares
 }
 
@@ -133,55 +108,25 @@ func buildServerMiddlewares(cfg *middlewarev1.Middlewares, ss ...Option) []KMidd
 			continue
 		}
 		switch ms.GetType() {
-		case "jwt":
+		case Jwt:
 			m, ok := JwtServer(ms.GetJwt())
 			if ok && ms.GetSelector().GetEnabled() {
 				m = SelectorServer(ms.GetSelector(), option.MatchFunc, m)
 			}
 			middlewares = append(middlewares, m)
-		case "circuit_breaker":
+		case CircuitBreaker:
 			//middlewares = CircuitBreakerServer(middlewares)
-		case "logging":
+		case Logging:
 			middlewares = LoggingServer(middlewares, option.Logger)
-		case "metadata":
+		case Metadata:
 			middlewares = MetadataServer(middlewares, ms.GetMetadata())
-		case "rate_limit":
+		case RateLimit:
 			middlewares = RateLimitServer(middlewares, ms.GetRateLimiter())
-		case "tracing":
+		case Tracing:
 			middlewares = TracingServer(middlewares)
-		case "validator":
+		case Validator:
 			middlewares = ValidateServer(middlewares, ms.GetValidator())
 		}
 	}
-	//if cfg.Logging {
-	//	middlewares = LoggingServer(middlewares, option.Logger)
-	//}
-	//if cfg.Recovery {
-	//	// Add the Recovery middleware to the slice
-	//	middlewares = Recovery(middlewares)
-	//}
-	//if cfg.GetValidator().GetEnabled() {
-	//	// Add the ValidateServer middleware to the slice
-	//	middlewares = ValidateServer(middlewares, cfg.Validator)
-	//}
-	//if cfg.Tracing {
-	//	// Add the TracingServer middleware to the slice
-	//	middlewares = TracingServer(middlewares)
-	//}
-	//if cfg.GetMetadata().GetEnabled() {
-	//	// Add the MetadataServer middleware to the slice
-	//	middlewares = MetadataServer(middlewares, cfg.Metadata)
-	//}
-	//if cfg.GetRateLimiter().GetEnabled() {
-	//	// Add the RateLimitServer middleware to the slice
-	//	middlewares = RateLimitServer(middlewares, cfg.RateLimiter)
-	//}
-	//if cfg.GetJwt().GetEnabled() {
-	//	m, ok := JwtServer(cfg.Jwt)
-	//	if ok && cfg.GetSelector().GetEnabled() {
-	//		m = SelectorServer(cfg.GetSelector(), option.MatchFunc, m)
-	//	}
-	//	middlewares = append(middlewares, m)
-	//}
 	return middlewares
 }
