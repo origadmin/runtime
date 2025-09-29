@@ -10,78 +10,59 @@ import (
 	middlewareMetadata "github.com/go-kratos/kratos/v2/middleware/metadata"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
-
-func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Metadata) []KMiddleware {
-	var options []middlewareMetadata.Option
-	if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
-		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
-	}
-	if metaSource := cfg.GetData(); len(metaSource) > 0 {
-		data := make(metadata.Metadata, len(metaSource))
-		for k, v := range metaSource {
-			data[k] = []string{v}
-		}
-		options = append(options, middlewareMetadata.WithConstants(data))
-	}
-	return append(ms, middlewareMetadata.Client(options...))
-}
-
-func MetadataServer(ms []KMiddleware, cfg *middlewarev1.Metadata) []KMiddleware {
-	var options []middlewareMetadata.Option
-	if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
-		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
-	}
-	if metaSource := cfg.GetData(); len(metaSource) > 0 {
-		data := metadata.Metadata{}
-		for k, v := range metaSource {
-			data[k] = []string{v}
-		}
-		options = append(options, middlewareMetadata.WithConstants(data))
-	}
-	return append(ms, middlewareMetadata.Server(options...))
-}
 
 type metadataFactory struct {
 }
 
-func (m metadataFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	cfg := middleware.GetMetadata()
-	if cfg.GetEnabled() {
-		options := make([]middlewareMetadata.Option, 0)
-		if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
-			options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
-		}
-		if metaSource := cfg.GetData(); len(metaSource) > 0 {
-			data := make(metadata.Metadata, len(metaSource))
-			for k, v := range metaSource {
-				data[k] = []string{v}
-			}
-			options = append(options, middlewareMetadata.WithConstants(data))
-		}
-		log.Infof("metadata client enabled, prefixes: %v, data: %v", cfg.GetPrefixes(), cfg.GetData())
-		return middlewareMetadata.Client(options...), true
+func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	_, mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
+
+	metadataConfig := cfg.GetMetadata()
+	if metadataConfig == nil || !metadataConfig.GetEnabled() {
+		return nil, false
 	}
-	return nil, false
+
+	var metadataOpts []middlewareMetadata.Option
+	if prefixes := metadataConfig.GetPrefixes(); len(prefixes) > 0 {
+		metadataOpts = append(metadataOpts, middlewareMetadata.WithPropagatedPrefix(prefixes...))
+	}
+	if metaSource := metadataConfig.GetData(); len(metaSource) > 0 {
+		data := make(metadata.Metadata, len(metaSource))
+		for k, v := range metaSource {
+			data[k] = []string{v}
+		}
+		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
+	}
+	helper.Infof("metadata client enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
+	return middlewareMetadata.Client(metadataOpts...), true
 }
 
-func (m metadataFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	cfg := middleware.GetMetadata()
-	if cfg.GetEnabled() {
-		options := make([]middlewareMetadata.Option, 0)
-		if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
-			options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
-		}
-		if metaSource := cfg.GetData(); len(metaSource) > 0 {
-			data := metadata.Metadata{}
-			for k, v := range metaSource {
-				data[k] = []string{v}
-			}
-			options = append(options, middlewareMetadata.WithConstants(data))
-		}
-		log.Infof("metadata server enabled, prefixes: %v, data: %v", cfg.GetPrefixes(), cfg.GetData())
-		return middlewareMetadata.Server(options...), true
+func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	_, mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
+
+	metadataConfig := cfg.GetMetadata()
+	if metadataConfig == nil || !metadataConfig.GetEnabled() {
+		return nil, false
 	}
-	return nil, false
+
+	var metadataOpts []middlewareMetadata.Option
+	if prefixes := metadataConfig.GetPrefixes(); len(prefixes) > 0 {
+		metadataOpts = append(metadataOpts, middlewareMetadata.WithPropagatedPrefix(prefixes...))
+	}
+	if metaSource := metadataConfig.GetData(); len(metaSource) > 0 {
+		data := metadata.Metadata{}
+		for k, v := range metaSource {
+			data[k] = []string{v}
+		}
+		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
+	}
+	helper.Infof("metadata server enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
+	return middlewareMetadata.Server(metadataOpts...), true
 }

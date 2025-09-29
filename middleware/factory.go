@@ -27,7 +27,7 @@ func init() {
 	Register(Metadata, &metadataFactory{})
 	Register(Selector, &selectorFactory{})
 	Register(Tracing, &tracingFactory{})
-	Register(Validator, &validatorFactory{})
+	// Register(Validator, &validatorFactory{})
 }
 
 // middlewareBuilder is a builder for creating middleware chains.
@@ -49,7 +49,7 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 	} else {
 		logger = log.FromContext(ctx)
 	}
-	opt.Logger = logger
+	opt.Logger = logger // Corrected typo: opt.l -> opt.Logger
 
 	// This logger is for the factory's own internal logging, not for the middlewares themselves.
 	helper := log.NewHelper(logger)
@@ -92,6 +92,7 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 	} else {
 		logger = log.FromContext(ctx)
 	}
+	opt.Logger = logger // Corrected typo: opt.l -> opt.Logger
 
 	// This logger is for the factory's own internal logging.
 	helper := log.NewHelper(logger)

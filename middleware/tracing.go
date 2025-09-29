@@ -9,34 +9,35 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
 
 type tracingFactory struct {
 }
 
-func (t tracingFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	log.Debug("[Middleware] Tracing client middleware enabled")
-	if middleware.GetEnabled() && middleware.GetType() == "tracing" {
-		return tracing.Client(), true
+func (t tracingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	_, mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
+
+	if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
+		return nil, false
 	}
-	return nil, false
+
+	helper.Debug("[Middleware] Tracing client middleware enabled")
+	return tracing.Client(), true
 }
 
-func (t tracingFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	log.Debug("[Middleware] Tracing server middleware enabled")
-	if middleware.GetEnabled() && middleware.GetType() == "tracing" {
-		return tracing.Server(), true
+func (t tracingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	_, mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
+
+	if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
+		return nil, false
 	}
-	return nil, false
-}
 
-func TracingClient(ms []KMiddleware) []KMiddleware {
-	log.Debug("[Middleware] Tracing client middleware enabled")
-	return append(ms, tracing.Client())
-}
-
-func TracingServer(ms []KMiddleware) []KMiddleware {
-	log.Debug("[Middleware] Tracing server middleware enabled")
-	return append(ms, tracing.Server())
+	helper.Debug("[Middleware] Tracing server middleware enabled")
+	return tracing.Server(), true
 }

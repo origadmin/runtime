@@ -15,32 +15,48 @@ import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	jwtv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/jwt"
 	authnv1 "github.com/origadmin/runtime/api/gen/go/security/authn/v1"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
 
 type jwtFactory struct{}
 
-func (f jwtFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	log.Debug("[Middleware] Jwt client middleware enabled")
-	if middleware.GetJwt().GetEnabled() {
-		m, ok := JwtClient(middleware.GetJwt())
-		if ok && middleware.GetSelector().GetEnabled() {
-			m = SelectorServer(middleware.GetSelector(), options.MatchFunc, m)
-		}
+func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	_, mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
+	helper.Debug("[Middleware] Jwt client middleware enabled")
+
+	jwtConfig := cfg.GetJwt()
+	if jwtConfig == nil || !jwtConfig.GetEnabled() {
+		return nil, false
 	}
-	return nil, false
+
+	m, ok := JwtClient(jwtConfig)
+	if ok && cfg.GetSelector().GetEnabled() {
+		// Note: SelectorClient expects middleware.MatchFunc, which is now in mwOpts.MatchFunc
+		m = SelectorClient(cfg.GetSelector(), mwOpts.MatchFunc, m)
+	}
+	return m, ok
 }
 
-func (f jwtFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	log.Debug("[Middleware] Jwt server middleware enabled")
-	if middleware.GetJwt().GetEnabled() {
-		m, ok := JwtServer(middleware.GetJwt())
-		if ok && middleware.GetSelector().GetEnabled() {
-			m = SelectorServer(middleware.GetSelector(), options.MatchFunc, m)
-		}
-		return m, ok
+func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	_, mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
+	helper.Debug("[Middleware] Jwt server middleware enabled")
+
+	jwtConfig := cfg.GetJwt()
+	if jwtConfig == nil || !jwtConfig.GetEnabled() {
+		return nil, false
 	}
-	return nil, false
+
+	m, ok := JwtServer(jwtConfig)
+	if ok && cfg.GetSelector().GetEnabled() {
+		// Note: SelectorServer expects middleware.MatchFunc, which is now in mwOpts.MatchFunc
+		m = SelectorServer(cfg.GetSelector(), mwOpts.MatchFunc, m)
+	}
+	return m, ok
 }
 
 func JwtServer(cfg *jwtv1.JWT) (KMiddleware, bool) {
@@ -87,8 +103,7 @@ func getSigningMethod(sm string) jwt.SigningMethod {
 		return jwt.SigningMethodHS256
 	case "HS384":
 		return jwt.SigningMethodHS384
-	case "HS512":
-		return jwt.SigningMethodHS512
+	case "HS512":	return jwt.SigningMethodHS512
 	case "RS256":
 		return jwt.SigningMethodRS256
 	case "RS384":
