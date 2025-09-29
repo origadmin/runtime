@@ -8,22 +8,26 @@ package middleware
 import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/optionutil"
 )
 
 // defaultBuilder is the default instance of the middlewareBuilder .
 var defaultBuilder = NewBuilder()
 
 func init() {
-	Register(Jwt, &jwtFactory{})
-	Register(CircuitBreaker, &circuitBreakerFactory{})
-	Register(Logging, &loggingFactory{})
-	Register(RateLimit, &rateLimitFactory{})
-	Register(Metadata, &metadataFactory{})
-	Register(Selector, &selectorFactory{})
-	Register(Tracing, &tracingFactory{})
-	Register(Validator, &validatorFactory{})
-	//Register(Optimize, &optimize.Factory{})
+	// The factories will be registered here once they are updated to the new interface.
+	// optimizeFactory is removed from here as it's not a formal feature and should be registered by the user.
+	// All other factories will be uncommented as they are updated.
+	defaultBuilder.Register(Jwt, &jwtFactory{})
+	defaultBuilder.Register(CircuitBreaker, &circuitBreakerFactory{})
+	defaultBuilder.Register(Logging, &loggingFactory{})
+	defaultBuilder.Register(RateLimit, &rateLimitFactory{})
+	defaultBuilder.Register(Metadata, &metadataFactory{})
+	defaultBuilder.Register(Selector, &selectorFactory{})
+	defaultBuilder.Register(Tracing, &tracingFactory{})
+	defaultBuilder.Register(Validator, &validatorFactory{})
 }
 
 // middlewareBuilder is a builder for creating middleware chains.
@@ -32,22 +36,21 @@ type middlewareBuilder struct {
 }
 
 // BuildClient builds a client-side middleware chain from the given configuration.
-func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
+func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
 	var middlewares []KMiddleware
 	if cfg == nil {
 		return middlewares
 	}
 
-	// Apply options to get the logger and other settings.
-	ctx, option := FromOptions(options...)
-
+	ctx, opt := FromOptions(opts...)
 	var logger log.Logger
-	if ctx != nil {
-		logger = log.FromContext(ctx)
+	if opt != nil && opt.Logger != nil {
+		logger = opt.Logger
 	} else {
-		logger = log.DefaultLogger
+		logger = log.FromContext(ctx)
 	}
 
+	// This logger is for the factory's own internal logging, not for the middlewares themselves.
 	helper := log.NewHelper(logger)
 	helper.Info("building client middlewares")
 
@@ -63,7 +66,10 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, options .
 		}
 
 		helper.Infof("enabling client middleware: %s", middlewareName)
-		m, ok := f.NewMiddlewareClient(ms, option)
+
+		// Pass the raw options slice directly to the factory.
+		// The factory is responsible for parsing the options it needs.
+		m, ok := f.NewMiddlewareClient(ms, optionutil.WithContext(ctx), withOptions(opt))
 		if ok {
 			middlewares = append(middlewares, m)
 		}
@@ -72,22 +78,21 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, options .
 }
 
 // BuildServer builds a server-side middleware chain from the given configuration.
-func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
+func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
 	var middlewares []KMiddleware
 	if cfg == nil {
 		return middlewares
 	}
 
-	// Apply options to get the logger and other settings.
-	ctx, option := FromOptions(options...)
-
+	ctx, opt := FromOptions(opts...)
 	var logger log.Logger
-	if ctx != nil {
-		logger = log.FromContext(ctx)
+	if opt != nil && opt.Logger != nil {
+		logger = opt.Logger
 	} else {
-		logger = log.DefaultLogger
+		logger = log.FromContext(ctx)
 	}
 
+	// This logger is for the factory's own internal logging.
 	helper := log.NewHelper(logger)
 	helper.Info("building server middlewares")
 
@@ -103,7 +108,10 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, options .
 		}
 
 		helper.Infof("enabling server middleware: %s", middlewareName)
-		m, ok := f.NewMiddlewareServer(ms, option)
+
+		// Pass the raw options slice directly to the factory.
+		// The factory is responsible for parsing the options it needs.
+		m, ok := f.NewMiddlewareServer(ms, optionutil.WithContext(ctx), withOptions(opt))
 		if ok {
 			middlewares = append(middlewares, m)
 		}
@@ -116,24 +124,9 @@ func Register(name Name, factory Factory) {
 	defaultBuilder.Register(string(name), factory)
 }
 
-// BuildClient builds middlewares for clients.
-func BuildClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
-	return defaultBuilder.BuildClient(cfg, options...)
-}
-
-// BuildServer builds middlewares for servers.
-func BuildServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
-	return defaultBuilder.BuildServer(cfg, options...)
-}
-
 // NewBuilder creates a new middleware builder.
 func NewBuilder() Builder {
 	return &middlewareBuilder{
 		Registry: factory.New[Factory](),
 	}
-}
-
-// DefaultBuilder returns the default middleware builder.
-func DefaultBuilder() Builder {
-	return defaultBuilder
 }
