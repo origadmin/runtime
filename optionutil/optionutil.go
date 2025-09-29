@@ -62,33 +62,33 @@ func (o *emptyContext) With(key any, value any) options.Context {
 // With sets a key-value pair in the specified Option
 // If the passed opt is nil, a new empty ctx is created
 // Parameters:
-//   - opt: The original Option instance
+//   - ctx: The original Option instance
 //   - key: The generic key
 //   - value: The value to set
 // Returns:
 //   - options.Context: The Option instance with the new value set
-func With[T any](opt options.Context, key Key[T], value T) options.Context {
-	if opt == nil {
-		opt = &emptyContext{}
+func With[T any](ctx options.Context, key Key[T], value T) options.Context {
+	if ctx == nil {
+		ctx = &emptyContext{}
 	}
-	return opt.With(key, value)
+	return ctx.With(key, value)
 }
 
 // Value gets a value from the Empty
 // Get a value of the specified type from the Option
 // Parameters:
-//   - opt: The Option instance
+//   - ctx: The Option instance
 //   - key: The generic key
 // Returns:
 //   - T: The retrieved value
 //   - bool: Whether the value was successfully retrieved
-func Value[T any](opt options.Context, key Key[T]) (T, bool) {
+func Value[T any](ctx options.Context, key Key[T]) (T, bool) {
 	var zero T
-	if opt == nil {
+	if ctx == nil {
 		return zero, false
 	}
 
-	val := opt.Value(key)
+	val := ctx.Value(key)
 	if val == nil {
 		return zero, false
 	}
@@ -100,40 +100,54 @@ func Value[T any](opt options.Context, key Key[T]) (T, bool) {
 	return zero, false
 }
 
+// ValueOr returns the value associated with the given key in the options.Context, or a default value if the key is not found.
+// Parameters:
+//   - ctx: The options.Context instance to retrieve the value from
+//   - key: The key to look up in the context
+//   - defaultValue: The default value to return if the key is not found
+// Returns:
+//   - T: The retrieved value or the default value if the key is not found
+func ValueOr[T any](ctx options.Context, key Key[T], defaultValue T) T {
+	if v, ok := Value(ctx, key); ok {
+		return v
+	}
+	return defaultValue
+}
+
 // Append appends values to a slice in the emptyContext
 // Append values to a slice in the Option
 // Parameters:
-//   - opt: The Option instance
+//   - ctx: The Option instance
 //   - key: The slice-type key
 //   - values: The values to append
 // Returns:
 //   - options.Context: The updated Option instance
-func Append[T any](opt options.Context, key Key[[]T], values ...T) options.Context {
-	if opt == nil {
-		opt = &emptyContext{}
+func Append[T any](ctx options.Context, key Key[[]T], values ...T) options.Context {
+	if ctx == nil {
+		ctx = &emptyContext{}
 	}
 
 	// Get existing slice
-	existing := Slice(opt, key)
+	existing := Slice(ctx, key)
 	// Append new values to the existing slice
 	newSlice := append(existing, values...)
 	// Store the combined slice
-	return With(opt, key, newSlice)
+	return With(ctx, key, newSlice)
 }
 
 // Slice gets a slice from the Empty
 // Get a copy of a slice from the Option
 // Parameters:
-//   - opt: The Option instance
+//   - ctx: The Option instance
 //   - key: The slice-type key
 // Returns:
 //   - []T: A copy of the slice, or nil if it doesn't exist
-func Slice[T any](opt options.Context, key Key[[]T]) []T {
-	if opt == nil {
+func Slice[T any](ctx options.Context, key Key[[]T]) []T {
+	if ctx == nil {
 		return nil
 	}
 
-	val, ok := Value(opt, key)
+	val, ok := Value(ctx, key)
 	if !ok {
 		return nil
 	}
@@ -186,11 +200,11 @@ func Update[T any](updater func(T)) options.Option {
 //   - opts: The list of OptionFuncs to apply
 // Returns:
 //   - options.Context: The options.Context instance with the applied options.
-func Apply[T any](cfg T, options ...options.Option) options.Context {
+func Apply[T any](cfg T, opts ...options.Option) options.Context {
 	// Start with an option chain that contains the configuration object,
 	// keyed by its type via Key[T].
 	ctx := With(Empty(), Key[T]{}, cfg)
-	for _, option := range options {
+	for _, option := range opts {
 		ctx = option(ctx)
 	}
 	return ctx
@@ -198,20 +212,43 @@ func Apply[T any](cfg T, options ...options.Option) options.Context {
 
 // ApplyNew creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
 // The generic type T should be the struct type itself, not a pointer to it (e.g., use serverConfig, not *serverConfig).
-func ApplyNew[T any](options ...options.Option) *T {
+// Parameters:
+//   - opts: The list of OptionFuncs to apply to the new instance
+// Returns:
+//   - options.Context: The options.Context instance with the applied options.
+func ApplyNew[T any](opts ...options.Option) (options.Context, *T) {
 	// Create a zero-value instance of the struct T.
 	var cfg T
 
 	// Store this valid pointer in the context, keyed by its type *T.
 	ctx := With(Empty(), Key[*T]{}, &cfg)
 
-	// Apply all options. The Update function will now receive a valid pointer.
-	for _, option := range options {
+	// Apply all opts. The Update function will now receive a valid pointer.
+	for _, option := range opts {
 		ctx = option(ctx)
 	}
 
 	// Return the pointer to the configured struct.
-	return &cfg
+	return ctx, &cfg
+}
+
+// ApplyContext applies a series of OptionFuncs to a given options.Context and returns the resulting options.Context.
+// It iterates through the provided option functions and applies each one to the context.
+// Parameters:
+//   - ctx: The options.Context instance to apply the options to
+//   - opts: The list of OptionFuncs to apply
+// Returns:
+//   - options.Context: The options.Context instance with the applied options.
+func ApplyContext(ctx options.Context, opts ...options.Option) options.Context {
+	// Start with the provided context.
+	if ctx == nil {
+		ctx = Empty()
+	}
+
+	for _, option := range opts {
+		ctx = option(ctx)
+	}
+	return ctx
 }
 
 // WithContext returns an OptionFunc that sets the given options.Context as the current context.
@@ -237,4 +274,32 @@ func FromContext[T any](ctx options.Context) (T, bool) {
 	}
 	var zero T
 	return zero, false
+}
+
+// If returns an OptionFunc that applies the given OptionFunc if the condition is true.
+// Otherwise, it returns an OptionFunc that does nothing.
+// Parameters:
+//   - condition: The condition to check
+//   - opt: The OptionFunc to apply if the condition is true
+// Returns:
+//   - options.Option: The OptionFunc that applies the option if the condition is true
+//   - options.Option: The OptionFunc that does nothing if the condition is false
+func If(condition bool, opt options.Option) options.Option {
+	if condition {
+		return opt
+	}
+	return func(ctx options.Context) options.Context {
+		return ctx
+	}
+}
+
+// Group returns an OptionFunc that applies a group of OptionFuncs to the context.
+// Parameters:
+//   - opts: The list of OptionFuncs to apply
+// Returns:
+//   - options.Option: The OptionFunc that applies the group of options
+func Group(opts ...options.Option) options.Option {
+	return func(ctx options.Context) options.Context {
+		return ApplyContext(ctx, opts...)
+	}
 }
