@@ -1,42 +1,48 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package middleware implements the functions, types, and interfaces for the module.
 package middleware
 
 import (
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/logging"
+	kratosMiddlewareLogging "github.com/go-kratos/kratos/v2/middleware/logging" // Alias for kratos middleware logging
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/log"
 )
 
-func LoggingServer(ms []KMiddleware, logger log.Logger) []KMiddleware {
-	log.Debug("[Middleware] Logging server middleware enabled")
-	return append(ms, logging.Server(logger))
-}
+// loggingFactory implements middleware.Factory for the logging middleware.
+type loggingFactory struct{}
 
-func LoggingClient(ms []KMiddleware, logger log.Logger) []KMiddleware {
-	log.Debug("[Middleware] Logging client middleware enabled")
-	return append(ms, logging.Client(logger))
-}
+// NewMiddlewareClient creates a new client-side logging middleware.
+func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	_, mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
 
-type loggingFactory struct {
-}
-
-func (l loggingFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	log.Debug("[Middleware] Logging client middleware enabled")
-	if !middleware.GetEnabled() || middleware.GetType() != "logging" {
+	// Get logging-specific configuration from the Protobuf config.
+	loggingConfig := cfg.GetLogging()
+	if loggingConfig == nil || !loggingConfig.GetEnabled() {
 		return nil, false
 	}
-	return logging.Client(options.Logger), true
+
+	helper.Info("enabling client logging middleware")
+
+	// Kratos logging middleware expects kratosLog.Logger.
+	// Assuming origadmin/runtime/log.Logger is compatible with kratos/v2/log.Logger interface.
+	return kratosMiddlewareLogging.Client(mwOpts.Logger), true
 }
 
-func (l loggingFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
-	log.Debug("[Middleware] Logging server middleware enabled")
-	if !middleware.GetEnabled() || middleware.GetType() != "logging" {
+// NewMiddlewareServer creates a new server-side logging middleware.
+func (f *loggingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
+	mwOpts := fromOptions(opts...)
+	helper := log.NewHelper(mwOpts.Logger)
+
+	// Get logging-specific configuration from the Protobuf config.
+	loggingConfig := cfg.GetLogging()
+	if loggingConfig == nil || !loggingConfig.GetEnabled() {
 		return nil, false
 	}
-	return logging.Server(options.Logger), true
+	helper.Info("enabling server logging middleware")
+	// Kratos logging middleware expects kratosLog.Logger.
+	// Assuming origadmin/runtime/log.Logger is compatible with kratos/v2/log.Logger interface.
+	return kratosMiddlewareLogging.Server(mwOpts.Logger), true
 }

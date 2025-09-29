@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package optimize implements the functions, types, and interfaces for the module.
 package optimize
 
 import (
@@ -12,19 +7,33 @@ import (
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	"github.com/origadmin/runtime/log"
+	origMiddleware "github.com/origadmin/runtime/middleware"
 )
 
-// The optimizeFactory struct is responsible for creating instances of the optimize middleware.
+// optimizeFactory implements middleware.Factory for the optimize middleware.
 type optimizeFactory struct{}
 
 // NewMiddlewareClient creates a new client-side optimize middleware instance.
-func (f *optimizeFactory) NewMiddlewareClient(config *middlewarev1.MiddlewareConfig, options *middleware.Options) (middleware.Middleware, bool) {
-	return newOptimizer(config.GetOptimize()), true
+// It now accepts *origMiddleware.ResolvedOptions as per the new Factory interface.
+func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, resolvedOpts *origMiddleware.ResolvedOptions) (origMiddleware.KMiddleware, bool) {
+	// Get logger from the resolved common options.
+	helper := log.NewHelper(resolvedOpts.Logger)
+	helper.Infof("enabling client optimize middleware") // Log that it's being enabled
+
+	// The actual optimize configuration comes from the protobuf config.
+	return newOptimizer(cfg.GetOptimize()), true
 }
 
 // NewMiddlewareServer creates a new server-side optimize middleware instance.
-func (f *optimizeFactory) NewMiddlewareServer(config *middlewarev1.MiddlewareConfig, options *middleware.Options) (middleware.Middleware, bool) {
-	return newOptimizer(config.GetOptimize()), true
+// It now accepts *origMiddleware.ResolvedOptions as per the new Factory interface.
+func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, resolvedOpts *origMiddleware.ResolvedOptions) (origMiddleware.KMiddleware, bool) {
+	// Get logger from the resolved common options.
+	helper := log.NewHelper(resolvedOpts.Logger)
+	helper.Infof("enabling server optimize middleware") // Log that it's being enabled
+
+	// The actual optimize configuration comes from the protobuf config.
+	return newOptimizer(cfg.GetOptimize()), true
 }
 
 // Config represents the configuration options for the OptimizeServer.
@@ -43,16 +52,6 @@ var defaultConfig = &Config{
 	Min:      2,
 	Max:      30,
 	Interval: time.Hour * 24,
-}
-
-// Server creates a new server-side optimize middleware.
-func Server(config *middlewarev1.Optimize) (middleware.Middleware, bool) {
-	return newOptimizer(config), true
-}
-
-// Client creates a new client-side optimize middleware.
-func Client(config *middlewarev1.Optimize) (middleware.Middleware, bool) {
-	return newOptimizer(config), true
 }
 
 // newOptimizer returns a new OptimizeServer middleware.
@@ -92,7 +91,7 @@ func Client(config *middlewarev1.Optimize) (middleware.Middleware, bool) {
 // 4.  **Collect Your Praise:** You are a hero. The system is "faster." You have mastered the art of perception management.
 //
 // You can try it! What could possibly go wrong? :dog:
-func newOptimizer(pbConfig *middlewarev1.Optimize) middleware.Middleware {
+func newOptimizer(pbConfig *middlewarev1.Optimize) middleware.KMiddleware {
 	cfg := defaultConfig
 	if pbConfig != nil {
 		cfg = &Config{

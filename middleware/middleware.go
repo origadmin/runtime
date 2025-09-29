@@ -6,9 +6,14 @@
 package middleware
 
 import (
+	"github.com/go-kratos/kratos/v2/middleware"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
+	"github.com/origadmin/runtime/interfaces/options"
 )
+
+// KMiddleware is a type alias for middleware.Middleware
+type KMiddleware = middleware.Middleware
 
 // Name is the name of a middleware.
 type Name string
@@ -30,27 +35,29 @@ type (
 	// Builder is an interface that defines a method for registering a buildImpl.
 	Builder interface {
 		factory.Registry[Factory]
-		BuildClient(*middlewarev1.Middlewares, ...Option) []KMiddleware
-		BuildServer(*middlewarev1.Middlewares, ...Option) []KMiddleware
+		BuildClient(*middlewarev1.Middlewares, ...options.Option) []KMiddleware
+		BuildServer(*middlewarev1.Middlewares, ...options.Option) []KMiddleware
 	}
 
 	// Factory is an interface that defines a method for creating a new buildImpl.
+	// It receives the middleware-specific Protobuf configuration and the generic options.Option slice.
+	// Each factory is responsible for parsing the options it cares about (e.g., by using log.FromOptions).
 	Factory interface {
-		// NewMiddlewareClient build middleware
-		NewMiddlewareClient(*middlewarev1.MiddlewareConfig, *Options) (KMiddleware, bool)
-		// NewMiddlewareServer build middleware
-		NewMiddlewareServer(*middlewarev1.MiddlewareConfig, *Options) (KMiddleware, bool)
+		// NewMiddlewareClient builds a client-side middleware.
+		NewMiddlewareClient(*middlewarev1.MiddlewareConfig, ...options.Option) (KMiddleware, bool)
+		// NewMiddlewareServer builds a server-side middleware.
+		NewMiddlewareServer(*middlewarev1.MiddlewareConfig, ...options.Option) (KMiddleware, bool)
 	}
 )
 
-type Middleware struct {
+// NewClient creates a new client with the given configuration.
+// This function is a convenience wrapper around the default builder.
+func NewClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+	return defaultBuilder.BuildClient(cfg, opts...)
 }
 
-// NewClient creates a new client with the given configuration
-func NewClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
-	return defaultBuilder.BuildClient(cfg, options...)
-}
-
-func NewServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
-	return defaultBuilder.BuildServer(cfg, options...)
+// NewServer creates a new server with the given configuration.
+// This function is a convenience wrapper around the default builder.
+func NewServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+	return defaultBuilder.BuildServer(cfg, opts...)
 }

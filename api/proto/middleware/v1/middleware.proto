@@ -26,6 +26,10 @@ message Metadata {
   map<string, string> data = 3 [json_name = "data"];
 }
 
+message Logging {
+  bool enabled = 1 [json_name = "enabled"];
+}
+
 // MiddlewareConfig represents a single middleware configuration with an enable switch.
 message MiddlewareConfig {
   bool enabled = 1 [json_name = "enabled"];
@@ -37,9 +41,10 @@ message MiddlewareConfig {
   optional middleware.v1.selector.Selector selector = 7 [json_name = "selector"];
   optional middleware.v1.cors.Cors cors = 8 [json_name = "cors"];
   optional middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 9 [json_name = "circuit_breaker"];
-  optional Metadata metadata = 10 [json_name = "metadata"];
+  optional Logging logging = 10 [json_name = "logging"];
+  optional Metadata metadata = 11 [json_name = "metadata"];
   // Using Extension.Config for custom middlewares, moved to last
-  optional extension.v1.Extension.Config custom = 100;
+  optional extension.v1.Extension.Config customize = 100;
   // Add other specific middleware types here as they are defined
 }
 

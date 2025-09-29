@@ -138,6 +138,106 @@ var _ interface {
 	ErrorName() string
 } = MetadataValidationError{}
 
+// Validate checks the field values on Logging with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Logging) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Logging with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in LoggingMultiError, or nil if none found.
+func (m *Logging) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Logging) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enabled
+
+	if len(errors) > 0 {
+		return LoggingMultiError(errors)
+	}
+
+	return nil
+}
+
+// LoggingMultiError is an error wrapping multiple validation errors returned
+// by Logging.ValidateAll() if the designated constraints aren't met.
+type LoggingMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LoggingMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LoggingMultiError) AllErrors() []error { return m }
+
+// LoggingValidationError is the validation error returned by Logging.Validate
+// if the designated constraints aren't met.
+type LoggingValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LoggingValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LoggingValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LoggingValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LoggingValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LoggingValidationError) ErrorName() string { return "LoggingValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LoggingValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLogging.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LoggingValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LoggingValidationError{}
+
 // Validate checks the field values on MiddlewareConfig with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -395,6 +495,39 @@ func (m *MiddlewareConfig) validate(all bool) error {
 
 	}
 
+	if m.Logging != nil {
+
+		if all {
+			switch v := interface{}(m.GetLogging()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Logging",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Logging",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetLogging()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Logging",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if m.Metadata != nil {
 
 		if all {
@@ -428,14 +561,14 @@ func (m *MiddlewareConfig) validate(all bool) error {
 
 	}
 
-	if m.Custom != nil {
+	if m.Customize != nil {
 
 		if all {
-			switch v := interface{}(m.GetCustom()).(type) {
+			switch v := interface{}(m.GetCustomize()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, MiddlewareConfigValidationError{
-						field:  "Custom",
+						field:  "Customize",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -443,16 +576,16 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, MiddlewareConfigValidationError{
-						field:  "Custom",
+						field:  "Customize",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetCustom()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return MiddlewareConfigValidationError{
-					field:  "Custom",
+					field:  "Customize",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

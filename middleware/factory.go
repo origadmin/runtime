@@ -20,14 +20,14 @@ func init() {
 	// The factories will be registered here once they are updated to the new interface.
 	// optimizeFactory is removed from here as it's not a formal feature and should be registered by the user.
 	// All other factories will be uncommented as they are updated.
-	defaultBuilder.Register(Jwt, &jwtFactory{})
-	defaultBuilder.Register(CircuitBreaker, &circuitBreakerFactory{})
-	defaultBuilder.Register(Logging, &loggingFactory{})
-	defaultBuilder.Register(RateLimit, &rateLimitFactory{})
-	defaultBuilder.Register(Metadata, &metadataFactory{})
-	defaultBuilder.Register(Selector, &selectorFactory{})
-	defaultBuilder.Register(Tracing, &tracingFactory{})
-	defaultBuilder.Register(Validator, &validatorFactory{})
+	Register(Jwt, &jwtFactory{})
+	Register(CircuitBreaker, &circuitBreakerFactory{})
+	Register(Logging, &loggingFactory{})
+	Register(RateLimit, &rateLimitFactory{})
+	Register(Metadata, &metadataFactory{})
+	Register(Selector, &selectorFactory{})
+	Register(Tracing, &tracingFactory{})
+	Register(Validator, &validatorFactory{})
 }
 
 // middlewareBuilder is a builder for creating middleware chains.
@@ -49,6 +49,7 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 	} else {
 		logger = log.FromContext(ctx)
 	}
+	opt.Logger = logger
 
 	// This logger is for the factory's own internal logging, not for the middlewares themselves.
 	helper := log.NewHelper(logger)

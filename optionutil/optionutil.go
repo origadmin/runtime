@@ -218,10 +218,10 @@ func Apply[T any](cfg T, opts ...options.Option) options.Context {
 //   - options.Context: The options.Context instance with the applied options.
 func ApplyNew[T any](opts ...options.Option) (options.Context, *T) {
 	// Create a zero-value instance of the struct T.
-	var cfg T
+	cfg := new(T)
 
 	// Store this valid pointer in the context, keyed by its type *T.
-	ctx := With(Empty(), Key[*T]{}, &cfg)
+	ctx := With(Empty(), Key[*T]{}, cfg)
 
 	// Apply all opts. The Update function will now receive a valid pointer.
 	for _, option := range opts {
@@ -229,7 +229,7 @@ func ApplyNew[T any](opts ...options.Option) (options.Context, *T) {
 	}
 
 	// Return the pointer to the configured struct.
-	return ctx, &cfg
+	return ctx, cfg
 }
 
 // ApplyContext applies a series of OptionFuncs to a given options.Context and returns the resulting options.Context.

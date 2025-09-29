@@ -90,6 +90,50 @@ func (x *Metadata) GetData() map[string]string {
 	return nil
 }
 
+type Logging struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Logging) Reset() {
+	*x = Logging{}
+	mi := &file_middleware_v1_middleware_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Logging) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Logging) ProtoMessage() {}
+
+func (x *Logging) ProtoReflect() protoreflect.Message {
+	mi := &file_middleware_v1_middleware_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Logging.ProtoReflect.Descriptor instead.
+func (*Logging) Descriptor() ([]byte, []int) {
+	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Logging) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
 // MiddlewareConfig represents a single middleware configuration with an enable switch.
 type MiddlewareConfig struct {
 	state          protoimpl.MessageState         `protogen:"open.v1"`
@@ -102,16 +146,17 @@ type MiddlewareConfig struct {
 	Selector       *selector.Selector             `protobuf:"bytes,7,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
 	Cors           *cors.Cors                     `protobuf:"bytes,8,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
 	CircuitBreaker *circuitbreaker.CircuitBreaker `protobuf:"bytes,9,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
-	Metadata       *Metadata                      `protobuf:"bytes,10,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Logging        *Logging                       `protobuf:"bytes,10,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
+	Metadata       *Metadata                      `protobuf:"bytes,11,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	// Using Extension.Config for custom middlewares, moved to last
-	Custom        *v1.Extension_Config `protobuf:"bytes,100,opt,name=custom,proto3,oneof" json:"custom,omitempty"` // Add other specific middleware types here as they are defined
+	Customize     *v1.Extension_Config `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *MiddlewareConfig) Reset() {
 	*x = MiddlewareConfig{}
-	mi := &file_middleware_v1_middleware_proto_msgTypes[1]
+	mi := &file_middleware_v1_middleware_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -123,7 +168,7 @@ func (x *MiddlewareConfig) String() string {
 func (*MiddlewareConfig) ProtoMessage() {}
 
 func (x *MiddlewareConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_middleware_v1_middleware_proto_msgTypes[1]
+	mi := &file_middleware_v1_middleware_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -136,7 +181,7 @@ func (x *MiddlewareConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MiddlewareConfig.ProtoReflect.Descriptor instead.
 func (*MiddlewareConfig) Descriptor() ([]byte, []int) {
-	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{1}
+	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *MiddlewareConfig) GetEnabled() bool {
@@ -202,6 +247,13 @@ func (x *MiddlewareConfig) GetCircuitBreaker() *circuitbreaker.CircuitBreaker {
 	return nil
 }
 
+func (x *MiddlewareConfig) GetLogging() *Logging {
+	if x != nil {
+		return x.Logging
+	}
+	return nil
+}
+
 func (x *MiddlewareConfig) GetMetadata() *Metadata {
 	if x != nil {
 		return x.Metadata
@@ -209,9 +261,9 @@ func (x *MiddlewareConfig) GetMetadata() *Metadata {
 	return nil
 }
 
-func (x *MiddlewareConfig) GetCustom() *v1.Extension_Config {
+func (x *MiddlewareConfig) GetCustomize() *v1.Extension_Config {
 	if x != nil {
-		return x.Custom
+		return x.Customize
 	}
 	return nil
 }
@@ -227,7 +279,7 @@ type Middlewares struct {
 
 func (x *Middlewares) Reset() {
 	*x = Middlewares{}
-	mi := &file_middleware_v1_middleware_proto_msgTypes[2]
+	mi := &file_middleware_v1_middleware_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -239,7 +291,7 @@ func (x *Middlewares) String() string {
 func (*Middlewares) ProtoMessage() {}
 
 func (x *Middlewares) ProtoReflect() protoreflect.Message {
-	mi := &file_middleware_v1_middleware_proto_msgTypes[2]
+	mi := &file_middleware_v1_middleware_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -252,7 +304,7 @@ func (x *Middlewares) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Middlewares.ProtoReflect.Descriptor instead.
 func (*Middlewares) Descriptor() ([]byte, []int) {
-	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{2}
+	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Middlewares) GetMiddlewares() []*MiddlewareConfig {
@@ -273,7 +325,9 @@ const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x04data\x18\x03 \x03(\v2!.middleware.v1.Metadata.DataEntryR\x04data\x1a7\n" +
 	"\tDataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x83\x06\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"#\n" +
+	"\aLogging\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\"\xcf\x06\n" +
 	"\x10MiddlewareConfig\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12M\n" +
@@ -283,10 +337,11 @@ const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x03jwt\x18\x06 \x01(\v2\x16.middleware.v1.jwt.JWTH\x03R\x03jwt\x88\x01\x01\x12A\n" +
 	"\bselector\x18\a \x01(\v2 .middleware.v1.selector.SelectorH\x04R\bselector\x88\x01\x01\x121\n" +
 	"\x04cors\x18\b \x01(\v2\x18.middleware.v1.cors.CorsH\x05R\x04cors\x88\x01\x01\x12[\n" +
-	"\x0fcircuit_breaker\x18\t \x01(\v2,.middleware.v1.circuitbreaker.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x128\n" +
-	"\bmetadata\x18\n" +
-	" \x01(\v2\x17.middleware.v1.MetadataH\aR\bmetadata\x88\x01\x01\x12;\n" +
-	"\x06custom\x18d \x01(\v2\x1e.extension.v1.Extension.ConfigH\bR\x06custom\x88\x01\x01B\x0f\n" +
+	"\x0fcircuit_breaker\x18\t \x01(\v2,.middleware.v1.circuitbreaker.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x125\n" +
+	"\alogging\x18\n" +
+	" \x01(\v2\x16.middleware.v1.LoggingH\aR\alogging\x88\x01\x01\x128\n" +
+	"\bmetadata\x18\v \x01(\v2\x17.middleware.v1.MetadataH\bR\bmetadata\x88\x01\x01\x12A\n" +
+	"\tcustomize\x18d \x01(\v2\x1e.extension.v1.Extension.ConfigH\tR\tcustomize\x88\x01\x01B\x0f\n" +
 	"\r_rate_limiterB\n" +
 	"\n" +
 	"\b_metricsB\f\n" +
@@ -295,9 +350,12 @@ const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x04_jwtB\v\n" +
 	"\t_selectorB\a\n" +
 	"\x05_corsB\x12\n" +
-	"\x10_circuit_breakerB\v\n" +
-	"\t_metadataB\t\n" +
-	"\a_custom\"P\n" +
+	"\x10_circuit_breakerB\n" +
+	"\n" +
+	"\b_loggingB\v\n" +
+	"\t_metadataB\f\n" +
+	"\n" +
+	"_customize\"P\n" +
 	"\vMiddlewares\x12A\n" +
 	"\vmiddlewares\x18\x01 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewaresB\xc0\x01\n" +
 	"\x11com.middleware.v1B\x0fMiddlewareProtoP\x01ZBgithub.com/origadmin/runtime/api/gen/go/middleware/v1;middlewarev1\xf8\x01\x01\xa2\x02\x03MXX\xaa\x02\rMiddleware.V1\xca\x02\rMiddleware\\V1\xe2\x02\x19Middleware\\V1\\GPBMetadata\xea\x02\x0eMiddleware::V1b\x06proto3"
@@ -314,38 +372,40 @@ func file_middleware_v1_middleware_proto_rawDescGZIP() []byte {
 	return file_middleware_v1_middleware_proto_rawDescData
 }
 
-var file_middleware_v1_middleware_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_middleware_v1_middleware_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_middleware_v1_middleware_proto_goTypes = []any{
 	(*Metadata)(nil),                      // 0: middleware.v1.Metadata
-	(*MiddlewareConfig)(nil),              // 1: middleware.v1.MiddlewareConfig
-	(*Middlewares)(nil),                   // 2: middleware.v1.Middlewares
-	nil,                                   // 3: middleware.v1.Metadata.DataEntry
-	(*ratelimit.RateLimiter)(nil),         // 4: middleware.v1.ratelimit.RateLimiter
-	(*metrics.Metrics)(nil),               // 5: middleware.v1.metrics.Metrics
-	(*validator.Validator)(nil),           // 6: middleware.v1.validator.Validator
-	(*jwt.JWT)(nil),                       // 7: middleware.v1.jwt.JWT
-	(*selector.Selector)(nil),             // 8: middleware.v1.selector.Selector
-	(*cors.Cors)(nil),                     // 9: middleware.v1.cors.Cors
-	(*circuitbreaker.CircuitBreaker)(nil), // 10: middleware.v1.circuitbreaker.CircuitBreaker
-	(*v1.Extension_Config)(nil),           // 11: extension.v1.Extension.Config
+	(*Logging)(nil),                       // 1: middleware.v1.Logging
+	(*MiddlewareConfig)(nil),              // 2: middleware.v1.MiddlewareConfig
+	(*Middlewares)(nil),                   // 3: middleware.v1.Middlewares
+	nil,                                   // 4: middleware.v1.Metadata.DataEntry
+	(*ratelimit.RateLimiter)(nil),         // 5: middleware.v1.ratelimit.RateLimiter
+	(*metrics.Metrics)(nil),               // 6: middleware.v1.metrics.Metrics
+	(*validator.Validator)(nil),           // 7: middleware.v1.validator.Validator
+	(*jwt.JWT)(nil),                       // 8: middleware.v1.jwt.JWT
+	(*selector.Selector)(nil),             // 9: middleware.v1.selector.Selector
+	(*cors.Cors)(nil),                     // 10: middleware.v1.cors.Cors
+	(*circuitbreaker.CircuitBreaker)(nil), // 11: middleware.v1.circuitbreaker.CircuitBreaker
+	(*v1.Extension_Config)(nil),           // 12: extension.v1.Extension.Config
 }
 var file_middleware_v1_middleware_proto_depIdxs = []int32{
-	3,  // 0: middleware.v1.Metadata.data:type_name -> middleware.v1.Metadata.DataEntry
-	4,  // 1: middleware.v1.MiddlewareConfig.rate_limiter:type_name -> middleware.v1.ratelimit.RateLimiter
-	5,  // 2: middleware.v1.MiddlewareConfig.metrics:type_name -> middleware.v1.metrics.Metrics
-	6,  // 3: middleware.v1.MiddlewareConfig.validator:type_name -> middleware.v1.validator.Validator
-	7,  // 4: middleware.v1.MiddlewareConfig.jwt:type_name -> middleware.v1.jwt.JWT
-	8,  // 5: middleware.v1.MiddlewareConfig.selector:type_name -> middleware.v1.selector.Selector
-	9,  // 6: middleware.v1.MiddlewareConfig.cors:type_name -> middleware.v1.cors.Cors
-	10, // 7: middleware.v1.MiddlewareConfig.circuit_breaker:type_name -> middleware.v1.circuitbreaker.CircuitBreaker
-	0,  // 8: middleware.v1.MiddlewareConfig.metadata:type_name -> middleware.v1.Metadata
-	11, // 9: middleware.v1.MiddlewareConfig.custom:type_name -> extension.v1.Extension.Config
-	1,  // 10: middleware.v1.Middlewares.middlewares:type_name -> middleware.v1.MiddlewareConfig
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	4,  // 0: middleware.v1.Metadata.data:type_name -> middleware.v1.Metadata.DataEntry
+	5,  // 1: middleware.v1.MiddlewareConfig.rate_limiter:type_name -> middleware.v1.ratelimit.RateLimiter
+	6,  // 2: middleware.v1.MiddlewareConfig.metrics:type_name -> middleware.v1.metrics.Metrics
+	7,  // 3: middleware.v1.MiddlewareConfig.validator:type_name -> middleware.v1.validator.Validator
+	8,  // 4: middleware.v1.MiddlewareConfig.jwt:type_name -> middleware.v1.jwt.JWT
+	9,  // 5: middleware.v1.MiddlewareConfig.selector:type_name -> middleware.v1.selector.Selector
+	10, // 6: middleware.v1.MiddlewareConfig.cors:type_name -> middleware.v1.cors.Cors
+	11, // 7: middleware.v1.MiddlewareConfig.circuit_breaker:type_name -> middleware.v1.circuitbreaker.CircuitBreaker
+	1,  // 8: middleware.v1.MiddlewareConfig.logging:type_name -> middleware.v1.Logging
+	0,  // 9: middleware.v1.MiddlewareConfig.metadata:type_name -> middleware.v1.Metadata
+	12, // 10: middleware.v1.MiddlewareConfig.customize:type_name -> extension.v1.Extension.Config
+	2,  // 11: middleware.v1.Middlewares.middlewares:type_name -> middleware.v1.MiddlewareConfig
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_middleware_v1_middleware_proto_init() }
@@ -353,14 +413,14 @@ func file_middleware_v1_middleware_proto_init() {
 	if File_middleware_v1_middleware_proto != nil {
 		return
 	}
-	file_middleware_v1_middleware_proto_msgTypes[1].OneofWrappers = []any{}
+	file_middleware_v1_middleware_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_middleware_v1_middleware_proto_rawDesc), len(file_middleware_v1_middleware_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
