@@ -35,6 +35,109 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on Metadata with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Metadata) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Metadata with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in MetadataMultiError, or nil
+// if none found.
+func (m *Metadata) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Metadata) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enabled
+
+	// no validation rules for Data
+
+	if len(errors) > 0 {
+		return MetadataMultiError(errors)
+	}
+
+	return nil
+}
+
+// MetadataMultiError is an error wrapping multiple validation errors returned
+// by Metadata.ValidateAll() if the designated constraints aren't met.
+type MetadataMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MetadataMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MetadataMultiError) AllErrors() []error { return m }
+
+// MetadataValidationError is the validation error returned by
+// Metadata.Validate if the designated constraints aren't met.
+type MetadataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MetadataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MetadataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MetadataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MetadataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MetadataValidationError) ErrorName() string { return "MetadataValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MetadataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMetadata.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MetadataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MetadataValidationError{}
+
 // Validate checks the field values on MiddlewareConfig with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -59,18 +162,9 @@ func (m *MiddlewareConfig) validate(all bool) error {
 
 	// no validation rules for Enabled
 
-	switch v := m.Middleware.(type) {
-	case *MiddlewareConfig_RateLimiter:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	// no validation rules for Type
+
+	if m.RateLimiter != nil {
 
 		if all {
 			switch v := interface{}(m.GetRateLimiter()).(type) {
@@ -101,17 +195,9 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	case *MiddlewareConfig_Metrics:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Metrics != nil {
 
 		if all {
 			switch v := interface{}(m.GetMetrics()).(type) {
@@ -142,17 +228,9 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	case *MiddlewareConfig_Validator:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Validator != nil {
 
 		if all {
 			switch v := interface{}(m.GetValidator()).(type) {
@@ -183,17 +261,9 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	case *MiddlewareConfig_Jwt:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Jwt != nil {
 
 		if all {
 			switch v := interface{}(m.GetJwt()).(type) {
@@ -224,17 +294,9 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	case *MiddlewareConfig_Selector:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Selector != nil {
 
 		if all {
 			switch v := interface{}(m.GetSelector()).(type) {
@@ -265,17 +327,9 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	case *MiddlewareConfig_Cors:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Cors != nil {
 
 		if all {
 			switch v := interface{}(m.GetCors()).(type) {
@@ -306,17 +360,9 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	case *MiddlewareConfig_CircuitBreaker:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.CircuitBreaker != nil {
 
 		if all {
 			switch v := interface{}(m.GetCircuitBreaker()).(type) {
@@ -347,17 +393,42 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	case *MiddlewareConfig_Custom:
-		if v == nil {
-			err := MiddlewareConfigValidationError{
-				field:  "Middleware",
-				reason: "oneof value cannot be a typed-nil",
+	}
+
+	if m.Metadata != nil {
+
+		if all {
+			switch v := interface{}(m.GetMetadata()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Metadata",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Metadata",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-			if !all {
-				return err
+		} else if v, ok := interface{}(m.GetMetadata()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Metadata",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
 			}
-			errors = append(errors, err)
 		}
+
+	}
+
+	if m.Custom != nil {
 
 		if all {
 			switch v := interface{}(m.GetCustom()).(type) {
@@ -388,8 +459,6 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			}
 		}
 
-	default:
-		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {

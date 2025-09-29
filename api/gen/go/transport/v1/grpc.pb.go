@@ -156,7 +156,7 @@ func (x *GRPCServer) GetMiddlewares() []string {
 type GRPCClient struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Target is the address of the gRPC server to connect to, e.g., "127.0.0.1:9000".
-	Target string `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
+	Endpoint string `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	// DialTimeout is the timeout for establishing the connection.
 	DialTimeout *durationpb.Duration `protobuf:"bytes,2,opt,name=dial_timeout,json=dialTimeout,proto3" json:"dial_timeout,omitempty"`
 	// Max receive message size.
@@ -201,9 +201,9 @@ func (*GRPCClient) Descriptor() ([]byte, []int) {
 	return file_transport_v1_grpc_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GRPCClient) GetTarget() string {
+func (x *GRPCClient) GetEndpoint() string {
 	if x != nil {
-		return x.Target
+		return x.Endpoint
 	}
 	return ""
 }
@@ -261,10 +261,10 @@ const file_transport_v1_grpc_proto_rawDesc = "" +
 	"\x11max_send_msg_size\x18\b \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
 	"\x03tls\x18\t \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +
 	"\vmiddlewares\x18\n" +
-	" \x03(\tR\vmiddlewares\"\xa9\x02\n" +
+	" \x03(\tR\vmiddlewares\"\xad\x02\n" +
 	"\n" +
-	"GRPCClient\x12\x1f\n" +
-	"\x06target\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x06target\x12<\n" +
+	"GRPCClient\x12#\n" +
+	"\bendpoint\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\bendpoint\x12<\n" +
 	"\fdial_timeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\vdialTimeout\x122\n" +
 	"\x11max_recv_msg_size\x18\x03 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
 	"\x11max_send_msg_size\x18\x04 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +

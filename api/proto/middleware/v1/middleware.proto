@@ -19,21 +19,28 @@ option java_package = "com.github.origadmin.api.runtime.middleware.v1";
 option objc_class_prefix = "OMX";
 option php_namespace = "OrigAdmin\\Runtime\\Middleware\\V1";
 
+// Metadata configuration for the middleware.
+message Metadata {
+  bool enabled = 1 [json_name = "enabled"];
+  repeated string prefixes = 2 [json_name = "prefixes"];
+  map<string, string> data = 3 [json_name = "data"];
+}
+
 // MiddlewareConfig represents a single middleware configuration with an enable switch.
 message MiddlewareConfig {
   bool enabled = 1 [json_name = "enabled"];
-
-  oneof middleware {
-    middleware.v1.ratelimit.RateLimiter rate_limiter = 2;
-    middleware.v1.metrics.Metrics metrics = 3;
-    middleware.v1.validator.Validator validator = 4;
-    middleware.v1.jwt.JWT jwt = 5;
-    middleware.v1.selector.Selector selector = 6;
-    middleware.v1.cors.Cors cors = 7;
-    middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 8;
-    extension.v1.Extension.Config custom = 100; // Using Extension.Config for custom middlewares, moved to last
-    // Add other specific middleware types here as they are defined
-  }
+  string type = 2 [json_name = "type"];
+  optional middleware.v1.ratelimit.RateLimiter rate_limiter = 3 [json_name = "rate_limiter"];
+  optional middleware.v1.metrics.Metrics metrics = 4 [json_name = "metrics"];
+  optional middleware.v1.validator.Validator validator = 5 [json_name = "validator"];
+  optional middleware.v1.jwt.JWT jwt = 6 [json_name = "jwt"];
+  optional middleware.v1.selector.Selector selector = 7 [json_name = "selector"];
+  optional middleware.v1.cors.Cors cors = 8 [json_name = "cors"];
+  optional middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 9 [json_name = "circuit_breaker"];
+  optional Metadata metadata = 10 [json_name = "metadata"];
+  // Using Extension.Config for custom middlewares, moved to last
+  optional extension.v1.Extension.Config custom = 100;
+  // Add other specific middleware types here as they are defined
 }
 
 // Middlewares is used to configure a chain of middlewares for an entry point.

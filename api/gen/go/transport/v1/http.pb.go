@@ -147,7 +147,7 @@ func (x *HTTPServer) GetMiddlewares() []string {
 type HTTPClient struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Target is the base URL of the HTTP server to connect to, e.g., "http://127.0.0.1:8000".
-	Target string `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
+	Endpoint string `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	// Timeout is the overall request timeout for the client.
 	Timeout *durationpb.Duration `protobuf:"bytes,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	// DialTimeout is the timeout for establishing the connection.
@@ -190,9 +190,9 @@ func (*HTTPClient) Descriptor() ([]byte, []int) {
 	return file_transport_v1_http_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *HTTPClient) GetTarget() string {
+func (x *HTTPClient) GetEndpoint() string {
 	if x != nil {
-		return x.Target
+		return x.Endpoint
 	}
 	return ""
 }
@@ -241,10 +241,10 @@ const file_transport_v1_http_proto_rawDesc = "" +
 	"\x11max_recv_msg_size\x18\x06 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
 	"\x11max_send_msg_size\x18\a \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
 	"\x03tls\x18\b \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +
-	"\vmiddlewares\x18\t \x03(\tR\vmiddlewares\"\xf6\x01\n" +
+	"\vmiddlewares\x18\t \x03(\tR\vmiddlewares\"\xfa\x01\n" +
 	"\n" +
-	"HTTPClient\x12\x1f\n" +
-	"\x06target\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x06target\x123\n" +
+	"HTTPClient\x12#\n" +
+	"\bendpoint\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\bendpoint\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12<\n" +
 	"\fdial_timeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\vdialTimeout\x122\n" +
 	"\x03tls\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +

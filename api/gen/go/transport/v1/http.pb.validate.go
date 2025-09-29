@@ -297,9 +297,9 @@ func (m *HTTPClient) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetTarget()) < 1 {
+	if utf8.RuneCountInString(m.GetEndpoint()) < 1 {
 		err := HTTPClientValidationError{
-			field:  "Target",
+			field:  "Endpoint",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {

@@ -34,7 +34,7 @@ message HTTPServer {
 // HTTPClient defines the configuration for an HTTP client.
 message HTTPClient {
   // Target is the base URL of the HTTP server to connect to, e.g., "http://127.0.0.1:8000".
-  string target = 1 [(validate.rules).string.min_len = 1];
+  string endpoint = 1 [(validate.rules).string.min_len = 1];
   // Timeout is the overall request timeout for the client.
   google.protobuf.Duration timeout = 2;
   // DialTimeout is the timeout for establishing the connection.
