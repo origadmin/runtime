@@ -56,7 +56,7 @@ func getClientProtocolName(cfg *transportv1.Client) (string, error) {
 
 // NewServer creates a new server instance based on the provided configuration and options.
 // It automatically looks up the appropriate protocol factory from the default registry.
-func NewServer(cfg *transportv1.Server, opts ...Option) (interfaces.Server, error) {
+func NewServer(cfg *transportv1.Server, opts ...interfaces.Option) (interfaces.Server, error) {
 	protocolName, err := getServerProtocolName(cfg)
 	if err != nil {
 		return nil, err
@@ -69,14 +69,14 @@ func NewServer(cfg *transportv1.Server, opts ...Option) (interfaces.Server, erro
 
 	server, err := f.NewServer(cfg, opts...)
 	if err != nil {
-		return nil, tkerrors.Errorf("failed to create server for protocol %s: %w", protocolName, err)
+		return nil, tkerrors.Errorf("failed to create server for protocol %s: %v", protocolName, err)
 	}
 
 	return server, nil
 }
 
 // NewClient creates a new client instance based on the provided configuration and options.
-func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...Option) (interfaces.Client, error) {
+func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...interfaces.Option) (interfaces.Client, error) {
 	protocolName, err := getClientProtocolName(cfg)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...Option) (in
 
 	client, err := f.NewClient(ctx, cfg, opts...)
 	if err != nil {
-		return nil, tkerrors.Errorf("failed to create client for protocol %s: %w", protocolName, err)
+		return nil, tkerrors.Errorf("failed to create client for protocol %s: %v", protocolName, err)
 	}
 
 	return client, nil

@@ -15,17 +15,17 @@ import (
 type tracingFactory struct {
 }
 
-func (t tracingFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (t tracingFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Tracing client middleware enabled")
-	if checkEnabled(middleware, "tracing") {
+	if middleware.GetEnabled() && middleware.GetType() == "tracing" {
 		return tracing.Client(), true
 	}
 	return nil, false
 }
 
-func (t tracingFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (t tracingFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Tracing server middleware enabled")
-	if checkEnabled(middleware, "tracing") {
+	if middleware.GetEnabled() && middleware.GetType() == "tracing" {
 		return tracing.Server(), true
 	}
 	return nil, false

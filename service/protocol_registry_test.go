@@ -28,7 +28,7 @@ type MockProtocolFactory struct {
 }
 
 // NewServer method of MockProtocolFactory - update cfg type
-func (m *MockProtocolFactory) NewServer(cfg *transportv1.Server, opts ...Option) (interfaces.Server, error) {
+func (m *MockProtocolFactory) NewServer(cfg *transportv1.Server, opts ...interfaces.Option) (interfaces.Server, error) {
 	if m.NewServerError != nil {
 		return nil, m.NewServerError
 	}
@@ -36,7 +36,7 @@ func (m *MockProtocolFactory) NewServer(cfg *transportv1.Server, opts ...Option)
 }
 
 // NewClient method of MockProtocolFactory - update cfg type
-func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *transportv1.Client, opts ...Option) (interfaces.Client, error) {
+func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *transportv1.Client, opts ...interfaces.Option) (interfaces.Client, error) {
 	if m.NewClientError != nil {
 		return nil, m.NewClientError
 	}

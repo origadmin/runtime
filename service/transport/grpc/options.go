@@ -3,6 +3,7 @@ package grpc
 import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
 )
@@ -13,30 +14,36 @@ var (
 	clientOptionsKey = optionutil.Key[[]transgrpc.ClientOption]{}
 )
 
-type grpcServerOptions struct {
-	grpcServer []transgrpc.ServerOption
+type httpServerOptions struct {
+	ServerOptions []transgrpc.ServerOption
+}
+
+type httpClientOptions struct {
+	ClientOptions []transgrpc.ClientOption
 }
 
 // WithServerOption is an option to add a Kratos transgrpc.ServerOption to the context.
-func WithServerOption(opt ...transgrpc.ServerOption) service.Option {
-	return func(o *service.Options) {
-		optionutil.Append(o, serverOptionsKey, opt...)
-	}
+func WithServerOption(opt ...transgrpc.ServerOption) interfaces.Option {
+	return optionutil.Update(func(o *httpServerOptions) {
+		o.ServerOptions = append(o.ServerOptions, opt...)
+	})
 }
 
 // WithClientOption is an option to add a transgrpc.ClientOption to the context.
-func WithClientOption(opt ...transgrpc.ClientOption) service.Option { // Change parameter type
-	return func(o *service.Options) {
-		optionutil.Append(o, clientOptionsKey, opt...)
-	}
+func WithClientOption(opt ...transgrpc.ClientOption) interfaces.Option { // Change parameter type
+	return optionutil.Update(func(o *httpClientOptions) {
+		o.ClientOptions = append(o.ClientOptions, opt...)
+	})
 }
 
 // FromServerOptions returns the collected Kratos transgrpc.ServerOption from the service.Options' emptyContext.
-func FromServerOptions(o *service.Options) []transgrpc.ServerOption {
-	return optionutil.Slice(o, serverOptionsKey)
+func FromServerOptions(options []interfaces.Option) []transgrpc.ServerOption {
+	return optionutil.Slice(options, serverOptionsKey)
 }
 
 // FromClientOptions returns the collected transgrpc.ClientOption from the service.Options' emptyContext.
-func FromClientOptions(o *service.Options) []transgrpc.ClientOption { // Change return type
-	return optionutil.Slice(o, clientOptionsKey)
+func FromClientOptions(options []interfaces.Option) []transgrpc.ClientOption { // Change return type
+	var o httpClientOptions
+	optionutil.Apply(&o, options...)
+	return o.ClientOptions
 }

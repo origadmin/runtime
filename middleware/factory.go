@@ -8,30 +8,30 @@ package middleware
 import (
 	"github.com/goexts/generic/configure"
 
-	"github.com/origadmin/runtime/interfaces"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/log"
 )
 
-// DefaultBuilder is the default instance of the middlewareBuilder .
-var DefaultBuilder = NewBuilder()
+// defaultBuilder is the default instance of the middlewareBuilder .
+var defaultBuilder = NewBuilder()
 
 func init() {
-	DefaultBuilder.Register("jwt", &jwtFactory{})
-	DefaultBuilder.Register("circuit_breaker", &circuitBreakerFactory{})
-	DefaultBuilder.Register("logging", &loggingFactory{})
-	DefaultBuilder.Register("rate_limit", &rateLimitFactory{})
-	DefaultBuilder.Register("metadata", &metadataFactory{})
-	DefaultBuilder.Register("selector", &selectorFactory{})
-	DefaultBuilder.Register("tracing", &tracingFactory{})
-	DefaultBuilder.Register("validator", &validatorFactory{})
+	defaultBuilder.Register("jwt", &jwtFactory{})
+	defaultBuilder.Register("circuit_breaker", &circuitBreakerFactory{})
+	defaultBuilder.Register("logging", &loggingFactory{})
+	defaultBuilder.Register("rate_limit", &rateLimitFactory{})
+	defaultBuilder.Register("metadata", &metadataFactory{})
+	defaultBuilder.Register("selector", &selectorFactory{})
+	defaultBuilder.Register("tracing", &tracingFactory{})
+	defaultBuilder.Register("validator", &validatorFactory{})
 }
 
 type middlewareBuilder struct {
 	factory.Registry[Factory]
 }
 
-func (b *middlewareBuilder) BuildClient(cfg interfaces.MiddlewareConfig, options ...Option) []KMiddleware {
+func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
 	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
 
@@ -43,13 +43,16 @@ func (b *middlewareBuilder) BuildClient(cfg interfaces.MiddlewareConfig, options
 		Logger: log.DefaultLogger,
 	}, options)
 	log.Infof("build middleware client")
-	for _, em := range cfg.GetEnabledMiddlewares() {
-		f, ok := b.Get(em)
+	for _, ms := range cfg.GetMiddlewares() {
+		if !ms.GetEnabled() {
+			continue
+		}
+		f, ok := b.Get(ms.GetType())
 		if !ok {
 			continue
 		}
-		log.Infof("middleware: %s", em)
-		m, ok := f.NewMiddlewareClient(cfg, option)
+		log.Infof("middleware: %s", ms.GetType())
+		m, ok := f.NewMiddlewareClient(ms, option)
 		if ok {
 			middlewares = append(middlewares, m)
 		}
@@ -58,7 +61,7 @@ func (b *middlewareBuilder) BuildClient(cfg interfaces.MiddlewareConfig, options
 	return middlewares
 }
 
-func (b *middlewareBuilder) BuildServer(cfg interfaces.MiddlewareConfig, options ...Option) []KMiddleware {
+func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, options ...Option) []KMiddleware {
 	// Create an empty slice of KMiddleware
 	var middlewares []KMiddleware
 
@@ -70,13 +73,16 @@ func (b *middlewareBuilder) BuildServer(cfg interfaces.MiddlewareConfig, options
 		Logger: log.DefaultLogger,
 	}, options)
 	log.Infof("build middleware server")
-	for _, em := range cfg.GetEnabledMiddlewares() {
-		f, ok := b.Get(em)
+	for _, ms := range cfg.GetMiddlewares() {
+		if !ms.GetEnabled() {
+			continue
+		}
+		f, ok := b.Get(ms.GetType())
 		if !ok {
 			continue
 		}
-		log.Infof("middleware: %s", em)
-		m, ok := f.NewMiddlewareServer(cfg, option)
+		log.Infof("middleware: %s", ms.GetType())
+		m, ok := f.NewMiddlewareServer(ms, option)
 		if ok {
 			middlewares = append(middlewares, m)
 		}
@@ -92,4 +98,8 @@ func NewBuilder() Builder {
 	return &middlewareBuilder{
 		Registry: factory.New[Factory](),
 	}
+}
+
+func DefaultBuilder() Builder {
+	return defaultBuilder
 }

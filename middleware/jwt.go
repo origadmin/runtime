@@ -14,13 +14,13 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	jwtv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/jwt"
-	secjwtv1 "github.com/origadmin/runtime/api/gen/go/security/jwt/v1"
+	authnv1 "github.com/origadmin/runtime/api/gen/go/security/authn/v1"
 	"github.com/origadmin/runtime/log"
 )
 
 type jwtFactory struct{}
 
-func (f jwtFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Jwt client middleware enabled")
 	if middleware.GetJwt().GetEnabled() {
 		m, ok := JwtClient(middleware.GetJwt())
@@ -31,7 +31,7 @@ func (f jwtFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, opt
 	return nil, false
 }
 
-func (f jwtFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Jwt server middleware enabled")
 	if middleware.GetJwt().GetEnabled() {
 		m, ok := JwtServer(middleware.GetJwt())
@@ -62,7 +62,7 @@ func JwtClient(cfg *jwtv1.JWT) (KMiddleware, bool) {
 	return authjwt.Client(kf, opts...), true
 }
 
-func fromJwtConfig(cfg *secjwtv1.Config, subject string, ctp string, header map[string]string) []authjwt.Option {
+func fromJwtConfig(cfg *authnv1.Config, subject string, ctp string, header map[string]string) []authjwt.Option {
 	sm := getSigningMethod(cfg.SigningMethod)
 	jcf := getClaimsFunc(subject, ctp, cfg)
 	tkh := getTokenHeader(header)
@@ -118,7 +118,7 @@ func getKeyFunc(key string, method string) jwt.Keyfunc {
 	}
 }
 
-func getClaimsFunc(subject string, claimType string, cfg *secjwtv1.Config) func() jwt.Claims {
+func getClaimsFunc(subject string, claimType string, cfg *authnv1.Config) func() jwt.Claims {
 	if subject == "" {
 		subject = "anonymous"
 	}

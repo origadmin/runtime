@@ -15,14 +15,14 @@ import (
 type selectorFactory struct {
 }
 
-func (s selectorFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (s selectorFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	if !middleware.GetSelector().GetEnabled() {
 		return nil, false
 	}
 	return SelectorClient(middleware.Selector, options.MatchFunc, options.Middlewares...), true
 }
 
-func (s selectorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (s selectorFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	if !middleware.GetSelector().GetEnabled() {
 		return nil, false
 	}

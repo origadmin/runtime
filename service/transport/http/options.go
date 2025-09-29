@@ -3,8 +3,8 @@ package http
 import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/optionutil"
-	"github.com/origadmin/runtime/service"
 )
 
 // Empty keys
@@ -15,32 +15,38 @@ var (
 	clientOptionsKey = optionutil.Key[[]transhttp.ClientOption]{}
 )
 
+type httpServerOptions struct {
+	ServerOptions []transhttp.ServerOption
+}
+
+type httpClientOptions struct {
+	ClientOptions []transhttp.ClientOption
+}
+
 // WithServerOption adds HTTP server options to the context.
-func WithServerOption(opts ...transhttp.ServerOption) service.Option {
-	if len(opts) == 0 {
-		return func(*service.Options) {}
-	}
-	return func(o *service.Options) {
-		optionutil.Append(o, serverOptionsKey, opts...)
-	}
+func WithServerOption(opts ...transhttp.ServerOption) interfaces.Option {
+	return optionutil.Update(func(o *httpServerOptions) {
+		o.ServerOptions = append(o.ServerOptions, opts...)
+	})
 }
 
 // WithClientOption adds HTTP client options to the context.
-func WithClientOption(opts ...transhttp.ClientOption) service.Option {
-	if len(opts) == 0 {
-		return func(*service.Options) {}
-	}
-	return func(o *service.Options) {
-		optionutil.Append(o, clientOptionsKey, opts...)
-	}
+func WithClientOption(opts ...transhttp.ClientOption) interfaces.Option {
+	return optionutil.Update(func(o *httpClientOptions) {
+		o.ClientOptions = append(o.ClientOptions, opts...)
+	})
 }
 
 // FromServerOptions retrieves HTTP server options from the service.Options.
-func FromServerOptions(o *service.Options) []transhttp.ServerOption {
-	return optionutil.Slice(o, serverOptionsKey)
+func FromServerOptions(opts ...interfaces.Option) []transhttp.ServerOption {
+	var o httpServerOptions
+	optionutil.Apply(&o, opts...)
+	return o.ServerOptions
 }
 
 // FromClientOptions retrieves HTTP client options from the service.Options.
-func FromClientOptions(o *service.Options) []transhttp.ClientOption {
-	return optionutil.Slice(o, clientOptionsKey)
+func FromClientOptions(opts ...interfaces.Option) []transhttp.ClientOption {
+	var o httpClientOptions
+	optionutil.Apply(&o, opts...)
+	return o.ClientOptions
 }

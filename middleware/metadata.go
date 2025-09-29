@@ -13,7 +13,7 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []KMiddleware {
+func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Metadata) []KMiddleware {
 	var options []middlewareMetadata.Option
 	if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
 		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
@@ -28,7 +28,7 @@ func MetadataClient(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []K
 	return append(ms, middlewareMetadata.Client(options...))
 }
 
-func MetadataServer(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []KMiddleware {
+func MetadataServer(ms []KMiddleware, cfg *middlewarev1.Metadata) []KMiddleware {
 	var options []middlewareMetadata.Option
 	if prefixes := cfg.GetPrefixes(); len(prefixes) > 0 {
 		options = append(options, middlewareMetadata.WithPropagatedPrefix(prefixes...))
@@ -46,7 +46,7 @@ func MetadataServer(ms []KMiddleware, cfg *middlewarev1.Middleware_Metadata) []K
 type metadataFactory struct {
 }
 
-func (m metadataFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (m metadataFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	cfg := middleware.GetMetadata()
 	if cfg.GetEnabled() {
 		options := make([]middlewareMetadata.Option, 0)
@@ -66,7 +66,7 @@ func (m metadataFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware
 	return nil, false
 }
 
-func (m metadataFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (m metadataFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	cfg := middleware.GetMetadata()
 	if cfg.GetEnabled() {
 		options := make([]middlewareMetadata.Option, 0)

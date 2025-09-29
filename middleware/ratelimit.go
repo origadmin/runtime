@@ -16,12 +16,12 @@ import (
 type rateLimitFactory struct {
 }
 
-func (r rateLimitFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (r rateLimitFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Rate limit client middleware enabled, not supported yet")
 	return nil, false
 }
 
-func (r rateLimitFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (r rateLimitFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Rate limit server middleware enabled")
 	if middleware.GetRateLimiter().GetEnabled() {
 		options := make([]ratelimit.Option, 0)

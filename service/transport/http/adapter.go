@@ -7,7 +7,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/selector"
@@ -24,7 +24,7 @@ func DefaultServerMiddlewares() []transhttp.ServerOption {
 }
 
 // adaptServerConfig converts service configuration to Kratos HTTP server options.
-func adaptServerConfig(cfg *configv1.Service) ([]transhttp.ServerOption, error) {
+func adaptServerConfig(cfg *transportv1.Server) ([]transhttp.ServerOption, error) {
 	if cfg == nil {
 		return nil, tkerrors.Errorf("server config is required for creation")
 	}
@@ -78,7 +78,7 @@ func adaptServerConfig(cfg *configv1.Service) ([]transhttp.ServerOption, error) 
 }
 
 // adaptClientConfig converts service configuration to Kratos HTTP client options.
-func adaptClientConfig(cfg *configv1.Service) ([]transhttp.ClientOption, error) {
+func adaptClientConfig(cfg *transportv1.Client) ([]transhttp.ClientOption, error) {
 	// 1. Validate the configuration
 	if cfg == nil {
 		return nil, tkerrors.Errorf("client config is required for creation")
@@ -92,8 +92,8 @@ func adaptClientConfig(cfg *configv1.Service) ([]transhttp.ClientOption, error) 
 	var opts []transhttp.ClientOption
 
 	// 2. Processing endpoints
-	if endpoint := httpCfg.GetEndpoint(); endpoint != "" {
-		opts = append(opts, transhttp.WithEndpoint(endpoint))
+	if target := httpCfg.GetTarget(); target != "" {
+		opts = append(opts, transhttp.WithEndpoint(target))
 	}
 
 	// 3. Processing timeout

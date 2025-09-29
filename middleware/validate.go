@@ -20,13 +20,13 @@ import (
 type validatorFactory struct {
 }
 
-func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	return nil, false
 }
 
-func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Validator server middleware enabled")
-	if !checkEnabled(middleware, "validator") {
+	if !middleware.GetEnabled() || middleware.GetType() != "validator" {
 		return nil, false
 	}
 	cfg := middleware.GetValidator()

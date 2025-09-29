@@ -3,8 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
@@ -12,28 +10,27 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/tls"
 	mw "github.com/origadmin/runtime/middleware"
+	"github.com/origadmin/runtime/optionutil"
+	"github.com/origadmin/runtime/service/tls"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // NewClient creates a new HTTP client.
 // It is the recommended way to create a client when the protocol is known in advance.
-func NewClient(ctx context.Context, cfg *transportv1.HTTPClient, opts ...service.Option) (interfaces.Client, error) {
+func NewClient(ctx context.Context, cfg *transportv1.HTTPClient, opts ...interfaces.Option) (interfaces.Client, error) {
 	if cfg == nil {
 		return nil, tkerrors.Errorf("HTTP client config is required for creation")
 	}
 
 	// 1. Process options to extract client-specific settings (endpoint, selector filter).
-	var sOpts service.Options
-	sOpts.Apply(opts...)
-
+	var options httpClientOptions
+	sOpts := optionutil.Apply(&options, opts...)
 	// --- Client creation logic below uses the extracted, concrete 'cfg' and 'sOpts' ---
 
 	var clientOpts []transhttp.ClientOption
-	var mws []middleware.Middleware
 
+	var mws []middleware.Middleware
 	// Build client interceptors (middlewares)
 	for _, name := range cfg.Middlewares {
 		m, ok := mw.Get(name)
@@ -62,63 +59,23 @@ func NewClient(ctx context.Context, cfg *transportv1.HTTPClient, opts ...service
 		}
 		// Kratos HTTP client uses WithTransport to set custom http.RoundTripper
 		// which can include TLS config. We'll handle this in the custom transport below.
+		clientOpts = append(clientOpts, transhttp.WithTLSConfig(tlsConfig))
 	}
 
-	// Determine target endpoint: prioritize endpoint from options (discovery) over direct target
-	target := cfg.Target
+	// Determine endpoint endpoint: prioritize endpoint from options (discovery) over direct endpoint
+	endpoint := cfg.Endpoint
 	if sOpts.Value().clientEndpoint != "" {
-		target = sOpts.Value().clientEndpoint
+		endpoint = sOpts.Value().clientEndpoint
 	}
 
-	if target == "" {
-		return nil, tkerrors.Errorf("client target endpoint is required for creation")
-	}
-
-	// Apply selector filter if provided via options
-	if sOpts.Value().clientSelectorFilter != nil {
-		// Similar to gRPC, Kratos HTTP client needs a way to integrate NodeFilter with discovery.
-		// This might involve a custom Kratos client option or a custom resolver.
-		// For example:
-		// clientOpts = append(clientOpts, transhttp.WithNodeFilter(sOpts.Value().clientSelectorFilter)) // Hypothetical Kratos option
-		// Or, if using a custom Kratos selector builder:
-		// selectorBuilder := selector.NewBuilderWithFilter(sOpts.Value().clientSelectorFilter)
-		// clientOpts = append(clientOpts, transhttp.WithDiscovery(discovery.NewDiscovery(target)), transhttp.WithSelector(selectorBuilder))
-	}
-
-	// Create a new HTTP client with custom transport to handle dial timeout and TLS
-	transport := &http.Transport{
-		DialContext: (&net.Dialer{
-			Timeout:   service.DefaultTimeout, // Default dial timeout
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		TLSClientConfig: nil, // TODO: Apply TLS config from cfg.Tls
-		ForceAttemptHTTP2: true,
-		MaxIdleConns:    100,
-		IdleConnTimeout: 90 * time.Second,
-		TLSHandshakeTimeout: 10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	}
-
-	if cfg.DialTimeout != nil {
-		transport.DialContext = (&net.Dialer{
-			Timeout:   cfg.DialTimeout.AsDuration(),
-			KeepAlive: 30 * time.Second,
-		}).DialContext
-	}
-
-	// Apply TLS config to transport if enabled
-	if cfg.GetTls() != nil && cfg.GetTls().GetEnabled() {
-		tlsConfig, err := tls.NewClientTLSConfig(cfg.GetTls())
-		if err != nil {
-			return nil, tkerrors.Wrapf(err, "invalid TLS config for client creation")
-		}
-		transport.TLSClientConfig = tlsConfig
+	if endpoint == "" {
+		return nil, tkerrors.Errorf("client endpoint endpoint is required for creation")
 	}
 
 	// Create the Kratos HTTP client
-	client, err := transhttp.NewClient(ctx, transhttp.WithEndpoint(target), transhttp.WithTransport(transport), clientOpts...)
+	client, err := transhttp.NewClient(ctx, transhttp.WithEndpoint(endpoint), transhttp.WithTransport(transport), clientOpts...)
 	if err != nil {
-		return nil, tkerrors.Wrapf(err, "failed to create HTTP client to %s", target)
+		return nil, tkerrors.Wrapf(err, "failed to create HTTP client to %s", endpoint)
 	}
 
 	return client, nil

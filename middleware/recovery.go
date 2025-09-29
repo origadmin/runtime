@@ -15,17 +15,17 @@ import (
 type recoveryFactory struct {
 }
 
-func (r recoveryFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Recovery client middleware enabled")
-	if checkEnabled(middleware, "recovery") {
+	if middleware.GetEnabled() && middleware.GetType() == "recovery" {
 		return recovery.Recovery(), true
 	}
 	return nil, false
 }
 
-func (r recoveryFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, options *Options) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
 	log.Debug("[Middleware] Recovery server middleware enabled")
-	if checkEnabled(middleware, "recovery") {
+	if middleware.GetEnabled() && middleware.GetType() == "recovery" {
 		return recovery.Recovery(), true
 	}
 	return nil, false
