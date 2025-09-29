@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -64,9 +63,6 @@ func NewClient(ctx context.Context, cfg *transportv1.HTTPClient, opts ...interfa
 
 	// Determine endpoint endpoint: prioritize endpoint from options (discovery) over direct endpoint
 	endpoint := cfg.Endpoint
-	if sOpts.Value().clientEndpoint != "" {
-		endpoint = sOpts.Value().clientEndpoint
-	}
 
 	if endpoint == "" {
 		return nil, tkerrors.Errorf("client endpoint endpoint is required for creation")
