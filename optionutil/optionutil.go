@@ -2,6 +2,8 @@
 package optionutil
 
 import (
+	"context" // Import context package
+
 	"github.com/origadmin/runtime/interfaces"
 )
 
@@ -13,6 +15,30 @@ type emptyContext struct {
 	parent interfaces.Context
 	key    any
 	value  any
+}
+
+// contextKey is an unexported type for context keys.
+type contextKey int
+
+const (
+	optionContextKey contextKey = iota
+)
+
+// ToContext stores the interfaces.Context into a standard library context.Context.
+func ToContext(ctx context.Context, opt interfaces.Context) context.Context {
+	return context.WithValue(ctx, optionContextKey, opt)
+}
+
+// FromContext retrieves the interfaces.Context from a standard library context.Context.
+// It returns nil if no interfaces.Context is found.
+func FromContext(ctx context.Context) interfaces.Context {
+	if ctx == nil {
+		return nil
+	}
+	if opt, ok := ctx.Value(optionContextKey).(interfaces.Context); ok {
+		return opt
+	}
+	return nil
 }
 
 // Value retrieves a value from the context based on the given key
@@ -178,17 +204,37 @@ func Update[T any](updater func(T)) interfaces.Option {
 	}
 }
 
-// Apply applies a series of OptionFuncs to a given configuration object.
+// Apply applies a series of OptionFuncs to a given configuration object and returns the resulting interfaces.Context.
 // It iterates through the provided option functions and applies each one to the object.
-// Apply a series of OptionFuncs to a given configuration object
 // Parameters:
 //   - cfg: The configuration object
 //   - opts: The list of OptionFuncs to apply
-func Apply[T any](cfg T, opts ...interfaces.Option) {
+// Returns:
+//   - interfaces.Context: The interfaces.Context instance with the applied options.
+func Apply[T any](cfg T, opts ...interfaces.Option) interfaces.Context {
 	// Start with an option chain that contains the configuration object,
 	// keyed by its type via Key[T].
 	options := With(Empty(), Key[T]{}, cfg)
 	for _, o := range opts {
 		o(options)
 	}
+	return options
+}
+
+// ApplyNew applies a series of OptionFuncs to a new instance of a configuration object and returns a pointer to it.
+// It iterates through the provided option functions and applies each one to the object.
+// Parameters:
+//   - opts: The list of OptionFuncs to apply
+// Returns:
+//   - *T: A pointer to the newly created configuration object with the applied options.
+// Note: This function is useful when you want to create a new configuration object with specific options applied.
+func ApplyNew[T any](opts ...interfaces.Option) *T {
+	var cfg T
+	// Start with an option chain that contains the configuration object,
+	// keyed by its type via Key[T].
+	options := With(Empty(), Key[T]{}, cfg)
+	for _, o := range opts {
+		o(options)
+	}
+	return &cfg
 }
