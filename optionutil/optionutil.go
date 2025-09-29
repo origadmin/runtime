@@ -226,7 +226,7 @@ func Apply[T any](cfg T, opts ...interfaces.Option) interfaces.Context {
 // Parameters:
 //   - opts: The list of OptionFuncs to apply
 // Returns:
-//   - *T: A pointer to the newly created configuration object with the applied options.
+//   - T: A pointer to the newly created configuration object with the applied options.
 // Note: This function is useful when you want to create a new configuration object with specific options applied.
 func ApplyNew[T any](opts ...interfaces.Option) T {
 	var cfg T
