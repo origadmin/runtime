@@ -9,12 +9,7 @@ import (
 
 // ComponentFactoryFunc defines the signature for a function that can create a generic component.
 // It receives the global configuration and the specific configuration map for the component instance.
-type ComponentFactoryFunc func(config Config, componentConfig map[string]interface{}) (interface{}, error)
-
-// ComponentFactoryRegistry defines the interface for retrieving component factories.
-type ComponentFactoryRegistry interface {
-	GetFactory(componentType string) (ComponentFactoryFunc, bool)
-}
+type ComponentFactoryFunc func(config Config, provider ComponentProvider) (interface{}, error)
 
 // ComponentProvider defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
