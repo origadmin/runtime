@@ -59,15 +59,6 @@ func WithCustomConfig(cfg interfaces.Config) ConfigLoadOption {
 	}
 }
 
-// WithKratosConfig allows providing a direct Kratos config.Config instance.
-// If this option is used, LoadConfig will use the provided Kratos config directly,
-// bypassing the default Kratos config creation and file loading from bootstrap.yaml sources.
-func WithKratosConfig(kc kratosconfig.Config) ConfigLoadOption {
-	return func(o *decoderOptions) {
-		o.kratosConfig = kc
-	}
-}
-
 // WithConfigTransformer allows providing an object that implements the ConfigTransformer interface,
 // or a function of type ConfigTransformFunc.
 // This provides a flexible way to customize the creation of interfaces.Config from kratosconfig.Config.

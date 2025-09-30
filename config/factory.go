@@ -105,11 +105,6 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (inter
 	// Create the underlying Kratos config
 	kc := kratosconfig.New(options.ConfigOptions...)
 
-	// Load the configuration sources.
-	if err := kc.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load configuration sources: %w", err)
-	}
-
 	// Wrap it in our adapter and return the interface
 	return &adapter{kc: kc}, nil
 }
