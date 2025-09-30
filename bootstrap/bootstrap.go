@@ -16,7 +16,6 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/middleware"
 )
 
 // componentFactoryRegistryImpl implements interfaces.ComponentFactoryRegistry.
@@ -151,11 +150,9 @@ func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config,
 
 // bootstrapperImpl implements the interfaces.Bootstrapper interface.
 type bootstrapperImpl struct {
-	provider          interfaces.ComponentProvider
-	config            interfaces.Config
-	cleanup           func()
-	serverMiddlewares map[string]middleware.KMiddleware // Changed to map[string]KMiddleware
-	clientMiddlewares map[string]middleware.KMiddleware // Changed to map[string]KMiddleware
+	provider interfaces.ComponentProvider
+	config   interfaces.Config
+	cleanup  func()
 }
 
 // Provider implements interfaces.Bootstrapper.
@@ -171,16 +168,6 @@ func (b *bootstrapperImpl) Config() interfaces.Config {
 // Cleanup implements interfaces.Bootstrapper.
 func (b *bootstrapperImpl) Cleanup() func() {
 	return b.cleanup
-}
-
-// ServerMiddlewares returns the built server-side middleware chain.
-func (b *bootstrapperImpl) ServerMiddlewares() map[string]middleware.KMiddleware {
-	return b.serverMiddlewares
-}
-
-// ClientMiddlewares returns the built client-side middleware chain.
-func (b *bootstrapperImpl) ClientMiddlewares() map[string]middleware.KMiddleware {
-	return b.clientMiddlewares
 }
 
 // NewProvider creates a new component provider, which is the main entry point for application startup.

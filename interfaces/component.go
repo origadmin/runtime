@@ -37,8 +37,8 @@ type ComponentProvider interface {
 	// It may be nil if no default registry is configured.
 	DefaultRegistrar() registry.Registrar
 
-	ServerMiddleware(name middleware.Name) middleware.KMiddleware
-	ClientMiddleware(name middleware.Name) middleware.KMiddleware
+	ServerMiddleware(name middleware.Name) (middleware.KMiddleware, bool)
+	ClientMiddleware(name middleware.Name) (middleware.KMiddleware, bool)
 
 	// --- Generic Service Locator for Extensibility ---
 

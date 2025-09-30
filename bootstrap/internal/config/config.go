@@ -28,8 +28,15 @@ var (
 	_ interfaces.MiddlewareConfigDecoder  = (*configImpl)(nil)
 )
 
+type Implementations interface {
+	interfaces.Config
+	interfaces.LoggerConfigDecoder
+	interfaces.DiscoveriesConfigDecoder
+	interfaces.MiddlewareConfigDecoder
+}
+
 // NewConfigImpl creates a new instance of the default config implementation.
-func NewConfigImpl(kc kratosconfig.Config, paths map[string]string) interfaces.Config {
+func NewConfigImpl(kc kratosconfig.Config, paths map[string]string) Implementations {
 	// Ensure paths map is not nil to prevent panics.
 	if paths == nil {
 		paths = make(map[string]string)

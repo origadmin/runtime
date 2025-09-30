@@ -33,14 +33,14 @@ type componentProviderImpl struct {
 	componentFactoryRegistry interfaces.ComponentFactoryRegistry // Added: Store the component factory registry
 }
 
-func (p *componentProviderImpl) ServerMiddleware(name middleware.Name) middleware.KMiddleware {
-	//TODO implement me
-	panic("implement me")
+func (p *componentProviderImpl) ServerMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
+	mw, ok := p.serverMiddlewaresMap[string(name)]
+	return mw, ok
 }
 
-func (p *componentProviderImpl) ClientMiddleware(name middleware.Name) middleware.KMiddleware {
-	//TODO implement me
-	panic("implement me")
+func (p *componentProviderImpl) ClientMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
+	mw, ok := p.clientMiddlewaresMap[string(name)]
+	return mw, ok
 }
 
 // Statically assert that componentProviderImpl implements the interface.
