@@ -22,10 +22,7 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 	// 1. Apply Options to determine the configuration flow.
 	providerOpts := FromConfigLoadOptions(opts...)
 
-	var (
-		baseConfig interfaces.Config
-		paths      map[string]string
-	)
+	var baseConfig interfaces.Config
 
 	// Case 1: A fully custom interfaces.Config is provided.
 	if providerOpts.config != nil {
@@ -35,7 +32,6 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 		}
 		// Otherwise, we'll use it as the base for our default structured implementation.
 		baseConfig = providerOpts.config
-		paths = nil // Paths are not applicable for a fully custom config.
 
 		// Case 2: Default flow - load from bootstrapPath.
 	} else {
@@ -50,32 +46,32 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 			sources = &sourcev1.Sources{Sources: bootstrapCfg.GetSources()}
 		}
 
-		// The runtimeconfig package now handles the creation of the base config object.
-		// It returns an un-loaded interfaces.Config.
 		baseConfig, err = runtimeconfig.NewConfig(sources, opts...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create base config: %w", err)
 		}
-
-		// Merge paths for the default flow.
-		finalPaths := make(map[string]string)
-		for component, path := range constant.DefaultComponentPaths {
-			finalPaths[component] = path
-		}
-		if providerOpts.defaultPaths != nil {
-			for component, path := range providerOpts.defaultPaths {
-				finalPaths[component] = path
-			}
-		}
-		paths = finalPaths
 	}
 
-	// Step 2: Load the configuration. This is the new responsibility of the bootstrap module.
+	// Step 2: Merge paths. This logic now applies to all flows that provide a baseConfig.
+	// We get a safe copy of the default paths and then merge user-provided paths on top.
+	paths := constant.DefaultComponentPaths()
+	if providerOpts.defaultPaths != nil {
+		for component, path := range providerOpts.defaultPaths {
+			paths[component] = path
+		}
+	}
+
+	// Step 3: Load the configuration. This is the responsibility of the bootstrap module.
 	if err := baseConfig.Load(); err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// Final Step: All flows converge here.
+	// Step 4: (Optional) Apply a high-level transformer if provided.
+	if providerOpts.configTransformer != nil {
+		return providerOpts.configTransformer.Transform(baseConfig)
+	}
+
+	// Final Step: If no transformer is used, apply the default structured implementation.
 	// We take the loaded base interfaces.Config and enhance it with structured, path-based decoding.
 	return bootstrapconfig.NewStructured(baseConfig, paths), nil
 }
