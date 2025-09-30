@@ -4,7 +4,12 @@ package interfaces
 // It provides access to the initialized Container, the Config decoder,
 // and a cleanup function to release resources.
 type Bootstrapper interface {
-	Provider() Container
+	// AppInfo returns the application information.
+	AppInfo() *AppInfo
+	// Container returns the initialized component provider.
+	Container() Container
+	// Config returns the configuration decoder.
 	Config() Config
+	// Cleanup returns the cleanup function.
 	Cleanup() func()
 }
