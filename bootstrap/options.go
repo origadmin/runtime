@@ -42,7 +42,7 @@ func WithDefaultPaths(paths map[string]string) DecoderOption {
 	}
 }
 
-// WithConfigOption passes Kratos-specific config options to the underlying config creation.
+// WithConfigOption passes Kratos-specific config Options to the underlying config creation.
 func WithConfigOption(opts ...runtimeconfig.Option) DecoderOption {
 	return func(o *decoderOptions) {
 		o.configOptions = append(o.configOptions, opts...)
@@ -78,9 +78,6 @@ func WithConfigTransformer(transformer ConfigTransformer) DecoderOption {
 
 // --- Options for NewProvider ---
 
-// Option configures the NewProvider function.
-type Option func(*options)
-
 // configurableComponent holds the details for a user-defined component that needs to be decoded from config.
 type configurableComponent struct {
 	// Key is the top-level configuration key for this component (e.g., "custom_settings").
@@ -89,21 +86,20 @@ type configurableComponent struct {
 	Target interface{}
 }
 
-// options holds configuration for the NewProvider function.
-type options struct {
-	appInfo               interfaces.AppInfo
+// Options holds configuration for the NewProvider function.
+type Options struct {
+	appInfo               *interfaces.AppInfo
 	decoderOptions        []DecoderOption
 	componentsToConfigure []configurableComponent
 }
 
-// Options contains the options for creating registry components.
-// It embeds interfaces.ContextOptions for common context handling.
-type Options = func(o *options)
+// Option configures the NewProvider function.
+type Option func(*Options)
 
 // WithAppInfo provides the application's metadata to the provider.
 // This is a required option for NewProvider.
-func WithAppInfo(info interfaces.AppInfo) Option {
-	return func(o *options) {
+func WithAppInfo(info *interfaces.AppInfo) Option {
+	return func(o *Options) {
 		o.appInfo = info
 	}
 }
@@ -111,7 +107,7 @@ func WithAppInfo(info interfaces.AppInfo) Option {
 // WithDecoderOptions allows passing DecoderOption functions to the internal NewDecoder call.
 // This enables the caller of NewProvider to configure the decoding process.
 func WithDecoderOptions(opts ...DecoderOption) Option {
-	return func(o *options) {
+	return func(o *Options) {
 		o.decoderOptions = append(o.decoderOptions, opts...)
 	}
 }
@@ -121,21 +117,10 @@ func WithDecoderOptions(opts ...DecoderOption) Option {
 // The `target` must be a pointer to a struct, which will be populated with the configuration values.
 // After successful decoding, the populated struct will be available via `runtime.Component(key)`.
 func WithComponent(key string, target interface{}) Option {
-	return func(o *options) {
+	return func(o *Options) {
 		o.componentsToConfigure = append(o.componentsToConfigure, configurableComponent{
 			Key:    key,
 			Target: target,
 		})
-	}
-}
-
-// WithOption is a generic way for any module to contribute its options.
-// It takes a function that knows how to apply a module's specific options
-// to a given options.Option and return the modified options.Option.
-// This allows for type-safe module-specific configuration without bootstrap
-// needing to know the internal types of each module's options.
-func WithOption(opts ...func(options.Option)) Option {
-	return func(o *options) {
-		o.options = append(o.options, opts...)
 	}
 }

@@ -22,7 +22,7 @@ type ComponentProvider interface {
 	// --- Strongly-Typed Accessors for Core Components ---
 
 	// AppInfo returns the application's configured information (ID, name, version, metadata).
-	AppInfo() AppInfo // Modified: Now returns the interfaces.AppInfo interface
+	AppInfo() *AppInfo // Modified: Now returns the interfaces.AppInfo interface
 
 	// Logger returns the configured Kratos logger.
 	Logger() log.Logger

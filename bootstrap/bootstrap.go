@@ -61,7 +61,7 @@ func LoadBootstrapConfig(bootstrapPath string) (*bootstrapv1.Bootstrap, error) {
 // The returned interfaces.Config is ready to be consumed by NewProvider or other tools.
 // It no longer returns *bootstrapv1.Bootstrap directly, as that should be scanned from the returned interfaces.Config.
 func NewDecoder(bootstrapPath string, opts ...DecoderOption) (interfaces.Config, error) {
-	// 1. Apply options
+	// 1. Apply Options
 	decoderOpts := &decoderOptions{}
 	for _, o := range opts {
 		o(decoderOpts)
@@ -174,8 +174,8 @@ func (b *bootstrapperImpl) Cleanup() func() {
 // It orchestrates the entire process of configuration loading and component initialization.
 // It now returns the interfaces.Bootstrapper interface.
 func NewProvider(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) {
-	// 1. Apply provider-level options
-	providerOpts := configure.Apply(&options{}, opts)
+	// 1. Apply provider-level Options
+	providerOpts := configure.Apply(&Options{}, opts)
 
 	// AppInfo is a mandatory input for creating a valid provider.
 	// Check if appInfo is nil OR if it's not valid (e.g., empty ID, Name, Version).
