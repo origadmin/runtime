@@ -31,6 +31,16 @@ type Config interface {
 	Close() error
 }
 
+// StructuredConfig defines a set of type-safe, recommended methods for decoding configuration.
+// This is the interface that should be exposed to the end user.
+type StructuredConfig interface {
+	AppConfigDecoder
+	LoggerConfigDecoder
+	DiscoveriesConfigDecoder
+	MiddlewareConfigDecoder
+	// Add other specific decoders here
+}
+
 type AppConfigDecoder interface {
 	DecodeApp() (*appv1.App, error)
 }
