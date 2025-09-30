@@ -6,7 +6,6 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/goexts/generic/configure"
 
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/bootstrap/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
@@ -19,9 +18,9 @@ import (
 
 // LoadConfig creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, following a clear, layered approach.
-func LoadConfig(bootstrapPath string, opts ...ConfigLoadOption) (interfaces.StructuredConfig, error) {
+func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConfig, error) {
 	// 1. Apply Options to determine the configuration flow.
-	providerOpts := configure.New(opts)
+	providerOpts := FromConfigLoadOptions(opts...)
 
 	var (
 		baseConfig interfaces.Config
@@ -53,7 +52,7 @@ func LoadConfig(bootstrapPath string, opts ...ConfigLoadOption) (interfaces.Stru
 
 		// The runtimeconfig package now handles the creation of the base config object.
 		// It returns an un-loaded interfaces.Config.
-		baseConfig, err = runtimeconfig.NewConfig(sources, providerOpts.configOptions...)
+		baseConfig, err = runtimeconfig.NewConfig(sources, opts...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create base config: %w", err)
 		}
