@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 
+	"github.com/origadmin/runtime/bootstrap/internal/container"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -76,32 +77,24 @@ func New(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) 
 		return nil, errors.New("app info (ID, Name, Version) is required but was not found in config or WithAppInfo option")
 	}
 
-	//// 3. Create the component provider implementation.
-	//// This will hold all the initialized components.
-	//p := container.NewContainer(cfg)
-	//
-	//// 4. Initialize core components by consuming the config.
-	//// This is where the magic happens: logger, registries, etc., are created.
-	//if err := p.Initialize(cfg); err != nil {
-	//	// Even if initialization fails, we should still call the cleanup function.
-	//	cleanup()
-	//	return nil, fmt.Errorf("failed to initialize components: %w", err)
-	//}
-	//
-	//// 5. Initialize user-defined components registered via WithComponent.
-	//for key, factory := range providerOpts.componentFactories {
-	//	instance, err := factory(cfg, p)
-	//	if err != nil {
-	//		cleanup()
-	//		return nil, fmt.Errorf("failed to create component '%s' using factory: %w", key, err)
-	//	}
-	//	p.RegisterComponent(key, instance)
-	//}
+	// 3. Create the component provider implementation.
+	// This will hold all the initialized components.
+	p := container.NewBuilder(providerOpts.componentFactories).WithConfig(cfg)
+
+	// 4. Initialize core components by consuming the config.
+	// This is where the magic happens: logger, registries, etc., are created.
+	c, err := p.Build()
+	if err != nil {
+		// Even if initialization fails, we should still call the cleanup function.
+		cleanup()
+		return nil, fmt.Errorf("failed to initialize components: %w", err)
+	}
 
 	// 7. Return the container, the config, and the final cleanup function.
 	return &bootstrapperImpl{
-		appInfo: finalAppInfo,
-		config:  cfg,
-		cleanup: cleanup,
+		config:    cfg,
+		appInfo:   finalAppInfo,
+		container: c,
+		cleanup:   cleanup,
 	}, nil
 }

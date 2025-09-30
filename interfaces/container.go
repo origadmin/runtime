@@ -9,7 +9,7 @@ import (
 
 // ComponentFactory defines the signature for a function that can create a generic component.
 // It receives the global configuration and the specific configuration map for the component instance.
-type ComponentFactory func(cfg Config, container Container) (interface{}, error)
+type ComponentFactory func(cfg StructuredConfig, container Container) (interface{}, error)
 
 // Container defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
