@@ -16,6 +16,16 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 )
 
+// defaultComponentPaths provides the framework's default path map for core components.
+// It is now a private variable within the bootstrap package, ensuring that the default
+// path logic is cohesive and contained within this package.
+var defaultComponentPaths = map[string]string{
+	constant.ConfigApp:            "app",
+	constant.ComponentLogger:      "logger",
+	constant.ComponentRegistries:  "registries",
+	constant.ComponentMiddlewares: "middlewares",
+}
+
 // LoadConfig creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, following a clear, layered approach.
 func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConfig, error) {
@@ -53,8 +63,11 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 	}
 
 	// Step 2: Merge paths. This logic now applies to all flows that provide a baseConfig.
-	// We get a safe copy of the default paths and then merge user-provided paths on top.
-	paths := constant.DefaultComponentPaths()
+	// We create a new map from our private default paths and then merge user-provided paths on top.
+	paths := make(map[string]string, len(defaultComponentPaths))
+	for k, v := range defaultComponentPaths {
+		paths[k] = v
+	}
 	if providerOpts.defaultPaths != nil {
 		for component, path := range providerOpts.defaultPaths {
 			paths[component] = path
