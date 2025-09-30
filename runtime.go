@@ -13,14 +13,15 @@ import (
 // Runtime defines the application's runtime environment, providing convenient access to core components.
 // It encapsulates an interfaces.Container and is the primary object that applications will interact with.
 type Runtime struct {
-	provider interfaces.Container
-	config   interfaces.Config
+	appInfo   *interfaces.AppInfo
+	container interfaces.Container
+	config    interfaces.Config
 }
 
 // New is the core constructor for a Runtime instance.
 // It takes a fully initialized Container, Config, and aggregated options.Option.
-func New(provider interfaces.Container, cfg interfaces.Config) *Runtime {
-	return &Runtime{provider: provider, config: cfg}
+func New(info *interfaces.AppInfo, container interfaces.Container, cfg interfaces.Config) *Runtime {
+	return &Runtime{appInfo: info, container: container, config: cfg}
 }
 
 // NewFromBootstrap is a convenience constructor that simplifies application startup.
@@ -32,18 +33,18 @@ func NewFromBootstrap(bootstrapPath string, opts ...bootstrap.Option) (*Runtime,
 		return nil, nil, err
 	}
 
-	rt := New(bootstrapper.Provider(), bootstrapper.Config()) // Pass aggregated options
+	rt := New(bootstrapper.AppInfo(), bootstrapper.Container(), bootstrapper.Config()) // Pass aggregated options
 	return rt, bootstrapper.Cleanup(), nil
 }
 
 // AppInfo returns the application's configured information (ID, name, version, metadata).
-func (r *Runtime) AppInfo() interfaces.AppInfo {
-	return r.provider.AppInfo()
+func (r *Runtime) AppInfo() *interfaces.AppInfo {
+	return r.appInfo
 }
 
 // Logger returns the configured Kratos logger.
 func (r *Runtime) Logger() log.Logger {
-	return r.provider.Logger()
+	return r.container.Logger()
 }
 
 // Config returns the configuration decoder, allowing access to raw configuration values.
@@ -73,22 +74,22 @@ func (r *Runtime) NewApp(servers []transport.Server, appOptions ...kratos.Option
 // DefaultRegistrar returns the default service registrar, used for service self-registration.
 // It may be nil if no default registry is configured.
 func (r *Runtime) DefaultRegistrar() registry.Registrar {
-	return r.provider.DefaultRegistrar()
+	return r.container.DefaultRegistrar()
 }
 
 // Discovery returns a service discovery component by its configured name.
 func (r *Runtime) Discovery(name string) (registry.Discovery, bool) {
-	disc, ok := r.provider.Discoveries()[name]
+	disc, ok := r.container.Discoveries()[name]
 	return disc, ok
 }
 
 // Registrar returns a service registrar component by its configured name.
 func (r *Runtime) Registrar(name string) (registry.Registrar, bool) {
-	reg, ok := r.provider.Registrars()[name]
+	reg, ok := r.container.Registrars()[name]
 	return reg, ok
 }
 
 // Component retrieves a generic, user-defined component by its registered name.
 func (r *Runtime) Component(name string) (interface{}, bool) {
-	return r.provider.Component(name)
+	return r.container.Component(name)
 }
