@@ -25,37 +25,37 @@ func (f ConfigTransformFunc) Transform(config kratosconfig.Config) (interfaces.C
 }
 
 // ConfigLoadOption configures the LoadConfig function.
-type ConfigLoadOption func(*decoderOptions)
+type ConfigLoadOption func(*configOptions)
 
-// decoderOptions holds configuration for the LoadConfig function.
-type decoderOptions struct {
+// configOptions holds configuration for the LoadConfig function.
+type configOptions struct {
 	defaultPaths      map[string]string
 	configOptions     []runtimeconfig.Option // Changed from runtimeconfig.Empty to kratosconfig.Empty
-	customConfig      interfaces.Config      // Added: Custom interfaces.Config implementation
+	config            interfaces.Config      // Added: Custom interfaces.Config implementation
 	configTransformer ConfigTransformer      // Custom interface for transformation (now also handles function form)
 }
 
 // WithDefaultPaths provides a default path map for components.
 // This map is used as a base and can be overridden by paths defined in the bootstrap file.
 func WithDefaultPaths(paths map[string]string) ConfigLoadOption {
-	return func(o *decoderOptions) {
+	return func(o *configOptions) {
 		o.defaultPaths = paths
 	}
 }
 
 // WithConfigOption passes Kratos-specific config Options to the underlying config creation.
 func WithConfigOption(opts ...runtimeconfig.Option) ConfigLoadOption {
-	return func(o *decoderOptions) {
+	return func(o *configOptions) {
 		o.configOptions = append(o.configOptions, opts...)
 	}
 }
 
-// WithCustomConfig allows providing a custom interfaces.Config implementation.
+// WithConfig allows providing a custom interfaces.Config implementation.
 // If this option is used, LoadConfig will return the provided config directly,
 // bypassing the default Kratos config creation and file loading.
-func WithCustomConfig(cfg interfaces.Config) ConfigLoadOption {
-	return func(o *decoderOptions) {
-		o.customConfig = cfg
+func WithConfig(cfg interfaces.Config) ConfigLoadOption {
+	return func(o *configOptions) {
+		o.config = cfg
 	}
 }
 
@@ -63,7 +63,7 @@ func WithCustomConfig(cfg interfaces.Config) ConfigLoadOption {
 // or a function of type ConfigTransformFunc.
 // This provides a flexible way to customize the creation of interfaces.Config from kratosconfig.Config.
 func WithConfigTransformer(transformer ConfigTransformer) ConfigLoadOption {
-	return func(o *decoderOptions) {
+	return func(o *configOptions) {
 		o.configTransformer = transformer
 	}
 }
