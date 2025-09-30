@@ -76,21 +76,19 @@ func WithConfigTransformer(transformer ConfigTransformer) DecoderOption {
 	}
 }
 
-// --- Options for NewProvider ---
+// ComponentFactory is a function that creates a component instance.
+// It receives the configuration decoder and the component provider, allowing for
+// configuration-driven instantiation and dependency resolution.
+// This is an alias for interfaces.ComponentFactoryFunc for consistency.
+type ComponentFactory = interfaces.ComponentFactoryFunc
 
-// configurableComponent holds the details for a user-defined component that needs to be decoded from config.
-type configurableComponent struct {
-	// Key is the top-level configuration key for this component (e.g., "custom_settings").
-	Key string
-	// Target is a pointer to the struct that the configuration should be decoded into.
-	Target interface{}
-}
+// --- Options for NewProvider ---
 
 // Options holds configuration for the NewProvider function.
 type Options struct {
-	appInfo               *interfaces.AppInfo
-	decoderOptions        []DecoderOption
-	componentsToConfigure []configurableComponent
+	appInfo            *interfaces.AppInfo
+	decoderOptions     []DecoderOption
+	componentFactories map[string]ComponentFactory
 }
 
 // Option configures the NewProvider function.
@@ -112,15 +110,12 @@ func WithDecoderOptions(opts ...DecoderOption) Option {
 	}
 }
 
-// WithComponent registers a custom component to be decoded from the configuration.
-// The `key` specifies the top-level configuration key (e.g., "custom_settings").
-// The `target` must be a pointer to a struct, which will be populated with the configuration values.
-// After successful decoding, the populated struct will be available via `runtime.Component(key)`.
-func WithComponent(key string, target interface{}) Option {
+// WithComponent registers a component factory to be used during bootstrap.
+func WithComponent(key string, factory ComponentFactory) Option {
 	return func(o *Options) {
-		o.componentsToConfigure = append(o.componentsToConfigure, configurableComponent{
-			Key:    key,
-			Target: target,
-		})
+		if o.componentFactories == nil {
+			o.componentFactories = make(map[string]ComponentFactory)
+		}
+		o.componentFactories[key] = factory
 	}
 }

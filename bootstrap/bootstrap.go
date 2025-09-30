@@ -1,8 +1,8 @@
 package bootstrap
 
 import (
-	"errors"
 	"fmt"
+	"time"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/log"
@@ -16,6 +16,7 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/toolkits/errors"
 )
 
 // componentFactoryRegistryImpl implements interfaces.ComponentFactoryRegistry.
@@ -179,9 +180,15 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper,
 
 	// AppInfo is a mandatory input for creating a valid provider.
 	// Check if appInfo is nil OR if it's not valid (e.g., empty ID, Name, Version).
-	appInfo := providerOpts.appInfo
-	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
-		return nil, errors.New("app info is required and must be valid")
+	baseAppInfo := providerOpts.appInfo // This is from WithAppInfo() option
+
+	// Provide a default AppInfo if none was given via options
+	if baseAppInfo == nil {
+		baseAppInfo = &interfaces.AppInfo{}
+	}
+	// Set StartTime if not already set (it's a runtime value, not from config)
+	if baseAppInfo.StartTime.IsZero() {
+		baseAppInfo.StartTime = time.Now()
 	}
 
 	// 2. Create the configuration decoder, which returns the interfaces.Config.
@@ -198,28 +205,49 @@ func NewProvider(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper,
 			log.Errorf("failed to close config: %v", err)
 		}
 	}
+	// 3. Decode AppInfo from the configuration and merge/overwrite
+	var configAppInfo interfaces.AppInfo // Directly decode into interfaces.AppInfo struct
+	if err := cfg.Decode("app", &configAppInfo); err == nil {
+		if configAppInfo.ID != "" {
+			baseAppInfo.ID = configAppInfo.ID
+		}
+		if configAppInfo.Name != "" {
+			baseAppInfo.Name = configAppInfo.Name
+		}
+		if configAppInfo.Version != "" {
+			baseAppInfo.Version = configAppInfo.Version
+		}
+		if configAppInfo.Env != "" {
+			baseAppInfo.Env = configAppInfo.Env
+		}
+		if len(configAppInfo.Metadata) > 0 {
+			baseAppInfo.Metadata = configAppInfo.Metadata
+		}
+	}
+	if baseAppInfo.ID == "" || baseAppInfo.Name == "" || baseAppInfo.Version == "" {
+		return nil, errors.New("app info (ID, Name, Version) is required and must be valid after merging with config")
+	}
 
 	// 3. Create the component provider implementation.
 	// This will hold all the initialized components.
-	componentFactoryRegistry := &componentFactoryRegistryImpl{}
-	p := provider.NewComponentProvider(providerOpts.appInfo, cfg, componentFactoryRegistry)
+	p := provider.NewComponentProvider(baseAppInfo, cfg)
 
 	// 4. Initialize core components by consuming the config.
 	// This is where the magic happens: logger, registries, etc., are created.
-	if err := p.InitComponents(cfg); err != nil {
+	if err := p.Initialize(cfg); err != nil {
 		// Even if initialization fails, we should still call the cleanup function.
 		cleanup()
 		return nil, fmt.Errorf("failed to initialize components: %w", err)
 	}
 
 	// 5. Initialize user-defined components registered via WithComponent.
-	for _, comp := range providerOpts.componentsToConfigure {
-		if err := cfg.Decode(comp.Key, comp.Target); err != nil {
+	for _, factory := range providerOpts.componentFactories {
+		instance, err := factory(cfg, p)
+		if err != nil {
 			cleanup()
-			return nil, fmt.Errorf("failed to decode component '%s': %w", comp.Key, err)
+			return nil, fmt.Errorf("failed to create component '%s' using factory: %w", key, err)
 		}
-		// Register the populated struct as a component.
-		p.RegisterComponent(comp.Key, comp.Target)
+		p.RegisterComponent(key, instance)
 	}
 
 	// 7. Return the provider, the config, and the final cleanup function.

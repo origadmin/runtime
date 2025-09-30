@@ -48,14 +48,13 @@ var _ interfaces.ComponentProvider = (*componentProviderImpl)(nil)
 
 // NewComponentProvider creates a new, uninitialized component provider.
 // It now accepts the interfaces.AppInfo, interfaces.Config, and interfaces.ComponentFactoryRegistry instances.
-func NewComponentProvider(appInfo *interfaces.AppInfo, cfg interfaces.Config, factoryRegistry interfaces.ComponentFactoryRegistry) *componentProviderImpl {
+func NewComponentProvider(appInfo *interfaces.AppInfo, cfg interfaces.Config) interfaces.ComponentProvider {
 	return &componentProviderImpl{
-		appInfo:                  appInfo,
-		config:                   cfg, // Store the config instance
-		components:               make(map[string]interface{}),
-		componentFactoryRegistry: factoryRegistry,
-		serverMiddlewaresMap:     make(map[string]middleware.KMiddleware), // Initialize maps
-		clientMiddlewaresMap:     make(map[string]middleware.KMiddleware), // Initialize maps
+		appInfo:              appInfo,
+		config:               cfg, // Store the config instance
+		components:           make(map[string]interface{}),
+		serverMiddlewaresMap: make(map[string]middleware.KMiddleware), // Initialize maps
+		clientMiddlewaresMap: make(map[string]middleware.KMiddleware), // Initialize maps
 	}
 }
 
@@ -77,9 +76,9 @@ func (p *componentProviderImpl) RegisterComponent(name string, comp interface{})
 	helper.Infow("msg", "registered component", "name", name)
 }
 
-// InitComponents consumes the configuration and initializes all core and generic components.
+// Initialize consumes the configuration and initializes all core and generic components.
 // This is the main logic hub for component creation.
-func (p *componentProviderImpl) InitComponents(cfg interfaces.Config) error {
+func (p *componentProviderImpl) Initialize(cfg interfaces.Config) error {
 	// 1. Initialize Logger with graceful fallback.
 	if err := p.initLogger(cfg); err != nil {
 		// Even if the logger fails to initialize from config, a fallback is created.

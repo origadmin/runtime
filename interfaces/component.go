@@ -19,6 +19,10 @@ type ComponentFactoryRegistry interface {
 // ComponentProvider defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
 type ComponentProvider interface {
+	// Initialize initializes the component provider with the given configuration.
+	// It should be called once before any other methods.
+	Initialize(cfg Config) error
+
 	// --- Strongly-Typed Accessors for Core Components ---
 
 	// AppInfo returns the application's configured information (ID, name, version, metadata).
