@@ -40,14 +40,13 @@ var _ interfaces.Container = (*container)(nil)
 
 // NewContainer creates a new, uninitialized container.
 // It now accepts the interfaces.AppInfo, interfaces.Config, and interfaces.ComponentFactoryRegistry instances.
-func NewContainer(appInfo *interfaces.AppInfo, cfg interfaces.Config) interfaces.Container {
+func NewContainer(cfg interfaces.Config) interfaces.Container {
 	return &container{
-		appInfo:              appInfo,
 		config:               cfg, // Store the config instance
 		factories:            make(map[string]interfaces.ComponentFactory),
 		components:           make(map[string]interface{}),
-		serverMiddlewaresMap: make(map[string]middleware.KMiddleware), // Initialize maps
-		clientMiddlewaresMap: make(map[string]middleware.KMiddleware), // Initialize maps
+		serverMiddlewaresMap: make(map[string]middleware.KMiddleware),
+		clientMiddlewaresMap: make(map[string]middleware.KMiddleware),
 	}
 }
 
@@ -104,12 +103,6 @@ func (c *container) Build() error {
 			continue
 		}
 
-		factory := c.factories[name]
-		instance, err := factory(c)
-		if err != nil {
-			return fmt.Errorf("failed to build component '%s': %w", name, err)
-		}
-		c.components[name] = instance
 		log.NewHelper(c.Logger()).Infof("component '%s' built successfully", name)
 	}
 

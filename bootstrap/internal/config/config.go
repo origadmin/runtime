@@ -13,107 +13,80 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 )
 
-// configImpl is the default implementation of the interfaces.Config interface.
-// It also implements all optional decoder interfaces (LoggerConfigDecoder, etc.)
-// to provide an optimized "fast path" for the bootstrap process.
-type configImpl struct {
-	kratosConfig kratosconfig.Config
-	paths        map[string]string
+// structuredConfigImpl implements the interfaces.StructuredConfig interface.
+// It wraps a generic interfaces.Config and provides type-safe, path-based decoding methods.
+type structuredConfigImpl struct {
+	interfaces.Config // Embed the generic config interface
+	paths             map[string]string
 }
 
-// Statically assert that configImpl implements all required interfaces.
-var (
-	_ interfaces.Config                   = (*configImpl)(nil)
-	_ interfaces.LoggerConfigDecoder      = (*configImpl)(nil)
-	_ interfaces.DiscoveriesConfigDecoder = (*configImpl)(nil)
-	_ interfaces.MiddlewareConfigDecoder  = (*configImpl)(nil)
-)
+// Statically assert that structuredConfigImpl implements the full StructuredConfig interface.
+var _ interfaces.StructuredConfig = (*structuredConfigImpl)(nil)
 
-type Implementations interface {
-	interfaces.Config
-	interfaces.AppConfigDecoder
-	interfaces.LoggerConfigDecoder
-	interfaces.DiscoveriesConfigDecoder
-	interfaces.MiddlewareConfigDecoder
-}
-
-// NewConfigImpl creates a new instance of the default config implementation.
-func NewConfigImpl(kc kratosconfig.Config, paths map[string]string) Implementations {
-	// Ensure paths map is not nil to prevent panics.
+// NewStructured creates a new structured config implementation.
+// It takes a generic interfaces.Config and a path map to provide high-level decoding methods.
+func NewStructured(cfg interfaces.Config, paths map[string]string) interfaces.StructuredConfig {
 	if paths == nil {
 		paths = make(map[string]string)
 	}
-	return &configImpl{
-		kratosConfig: kc,
-		paths:        paths,
+	return &structuredConfigImpl{
+		Config: cfg,
+		paths:  paths,
 	}
 }
 
-// Decode implements the interfaces.Config interface.
-func (c *configImpl) Decode(key string, value any) error {
-	return c.kratosConfig.Value(key).Scan(value)
-}
-
-// Raw implements the interfaces.Config interface.
-func (c *configImpl) Raw() kratosconfig.Config {
-	return c.kratosConfig
-}
-
-// Close implements the interfaces.Config interface.
-func (c *configImpl) Close() error {
-	return c.kratosConfig.Close()
-}
-
-func (c *configImpl) DecodeApp() (*appv1.App, error) {
+// DecodeApp implements the AppConfigDecoder interface.
+func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
 	path, ok := c.paths[constant.ConfigApp]
 	if !ok {
-		return nil, errors.New("app config path not configured")
+		// If no path is specified, try decoding from the root.
+		path = "app"
 	}
 	appConfig := new(appv1.App)
-	if err := c.kratosConfig.Value(path).Scan(appConfig); err != nil {
+	if err := c.Decode(path, appConfig); err != nil {
 		return nil, err
 	}
 	return appConfig, nil
 }
 
-// DecodeLogger implements the interfaces.LoggerConfigDecoder interface.
-func (c *configImpl) DecodeLogger() (*loggerv1.Logger, error) {
+// DecodeLogger implements the LoggerConfigDecoder interface.
+func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 	path, ok := c.paths[constant.ComponentLogger]
 	if !ok {
 		return nil, errors.New("logger component path not configured")
 	}
 
 	loggerConfig := new(loggerv1.Logger)
-	if err := c.kratosConfig.Value(path).Scan(loggerConfig); err != nil {
+	if err := c.Decode(path, loggerConfig); err != nil {
 		return nil, err
 	}
 	return loggerConfig, nil
 }
 
-// DecodeDiscoveries implements the interfaces.DiscoveriesConfigDecoder interface.
-func (c *configImpl) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
+// DecodeDiscoveries implements the DiscoveriesConfigDecoder interface.
+func (c *structuredConfigImpl) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
 	path, ok := c.paths[constant.ComponentRegistries]
 	if !ok {
 		return nil, errors.New("registries component path not configured")
 	}
 
 	var discoveries map[string]*discoveryv1.Discovery
-	if err := c.kratosConfig.Value(path).Scan(&discoveries); err != nil {
+	if err := c.Decode(path, &discoveries); err != nil {
 		return nil, err
 	}
 
 	return discoveries, nil
 }
 
-// DecodeMiddleware implements the interfaces.MiddlewareConfigDecoder interface.
-func (c *configImpl) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
+// DecodeMiddleware implements the MiddlewareConfigDecoder interface.
+func (c *structuredConfigImpl) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
 	path, ok := c.paths[constant.ComponentMiddlewares]
 	if !ok {
 		return nil, errors.New("middlewares component path not configured")
 	}
 
 	var middlewares *middlewarev1.Middlewares
-	if err := c.kratosConfig.Value(path).Scan(&middlewares); err != nil {
+	if err := c.Decode(path, &middlewares); err != nil {
 		return nil, err
 	}
 

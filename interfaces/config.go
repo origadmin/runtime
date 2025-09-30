@@ -16,6 +16,9 @@ var ErrNotImplemented = errors.New("method not implemented by this decoder")
 // Config is the minimal contract for providing a custom configuration source.
 // Developers wishing to extend the framework with a new config system should implement this interface.
 type Config interface {
+	// Load loads the configuration from its source.
+	Load() error
+
 	// Decode provides generic decoding of a configuration key into a target struct.
 	// This is the fundamental method that MUST be implemented by any Config instance.
 	Decode(key string, value any) error

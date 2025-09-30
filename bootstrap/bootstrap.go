@@ -4,159 +4,104 @@ import (
 	"fmt"
 	"time"
 
-	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/goexts/generic/configure"
 
-	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/bootstrap/v1"
-	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
-	"github.com/origadmin/runtime/bootstrap/constant"
-	bootstrapConfig "github.com/origadmin/runtime/bootstrap/internal/config"
-	"github.com/origadmin/runtime/bootstrap/internal/container"
-	runtimeconfig "github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/toolkits/errors"
 )
-
-// LoadBootstrapConfig loads the bootstrapv1.Bootstrap definition from a local bootstrap configuration file.
-// This function is the first step in the configuration process.
-// The temporary config used to load the sources is closed internally.
-func LoadBootstrapConfig(bootstrapPath string) (*bootstrapv1.Bootstrap, error) {
-	// Create a temporary Kratos config instance to load the bootstrap.yaml file.
-	// We assume runtimeconfig.NewFileSource exists and creates a file source.
-	bootConfig := kratosconfig.New(
-		kratosconfig.WithSource(file.NewSource(bootstrapPath)),
-	)
-	// Defer closing the config and handle its error
-	defer func() {
-		if err := bootConfig.Close(); err != nil {
-			// Log the error, as we can't return it from a deferred function
-			log.Errorf("failed to close temporary bootstrap config: %v", err)
-		}
-	}()
-
-	// CRITICAL FIX: Load the config after creating it
-	if err := bootConfig.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load temporary bootstrap config: %w", err)
-	}
-
-	var bc bootstrapv1.Bootstrap
-	if err := bootConfig.Scan(&bc); err != nil { // Reverted to direct Scan
-		return nil, fmt.Errorf("failed to scan bootstrap config from %s: %w", bootstrapPath, err)
-	}
-
-	return &bc, nil
-}
-
-// bootstrapperImpl implements the interfaces.Bootstrapper interface.
-type bootstrapperImpl struct {
-	provider interfaces.Container
-	config   interfaces.Config
-	cleanup  func()
-}
-
-// Provider implements interfaces.Bootstrapper.
-func (b *bootstrapperImpl) Provider() interfaces.Container {
-	return b.provider
-}
-
-// Config implements interfaces.Bootstrapper.
-func (b *bootstrapperImpl) Config() interfaces.Config {
-	return b.config
-}
-
-// Cleanup implements interfaces.Bootstrapper.
-func (b *bootstrapperImpl) Cleanup() func() {
-	return b.cleanup
-}
 
 // New creates a new component provider, which is the main entry point for application startup.
 // It orchestrates the entire process of configuration loading and component initialization.
 // It now returns the interfaces.Bootstrapper interface.
 func New(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) {
-	// 1. Apply provider-level Options
-	providerOpts := configure.Apply(&Options{}, opts)
+	// 1. Apply options to get access to WithAppInfo.
+	// Assuming options have been flattened as per our discussion.
+	providerOpts := FromOptions(opts...)
 
-	// AppInfo is a mandatory input for creating a valid provider.
-	// Check if appInfo is nil OR if it's not valid (e.g., empty ID, Name, Version).
-	baseAppInfo := providerOpts.appInfo // This is from WithAppInfo() option
-
-	// Provide a default AppInfo if none was given via options
-	if baseAppInfo == nil {
-		baseAppInfo = &interfaces.AppInfo{}
-	}
-	// Set StartTime if not already set (it's a runtime value, not from config)
-	if baseAppInfo.StartTime.IsZero() {
-		baseAppInfo.StartTime = time.Now()
-	}
-
-	// 2. Create the configuration decoder, which returns the interfaces.Config.
-	cfg, err := NewDecoder(bootstrapPath, providerOpts.decoderOptions...)
+	// 2. Load configuration first. This is a critical change in the flow.
+	cfg, err := LoadConfig(bootstrapPath, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create config decoder: %w", err)
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
 	// The cleanup function will be built up, starting with closing the config.
 	cleanup := func() {
 		if err := cfg.Close(); err != nil {
-			// Use a global logger to report cleanup errors.
-			// This is a best-effort action.
 			log.Errorf("failed to close config: %v", err)
 		}
 	}
-	// 3. Decode AppInfo from the configuration and merge/overwrite
-	// 4. Merge AppInfo from config using the type-safe decoder interface
-	if decoder, ok := cfg.(interfaces.AppConfigDecoder); ok {
-		if configAppInfo, err := decoder.DecodeApp(); err == nil && configAppInfo != nil {
-			if configAppInfo.Id != "" {
-				baseAppInfo.ID = configAppInfo.Id
-			}
-			if configAppInfo.Name != "" {
-				baseAppInfo.Name = configAppInfo.Name
-			}
-			if configAppInfo.Version != "" {
-				baseAppInfo.Version = configAppInfo.Version
-			}
-			if configAppInfo.Env != "" {
-				baseAppInfo.Env = configAppInfo.Env
-			}
-			if len(configAppInfo.Metadata) > 0 {
-				baseAppInfo.Metadata = configAppInfo.Metadata
-			}
+
+	// 3. Decode AppInfo from the configuration.
+	configAppInfo, err := cfg.DecodeApp()
+	// It's okay if this fails (e.g., 'app' key not in config), so we don't return the error immediately.
+	// A hard error would prevent using WithAppInfo as the only source.
+	if err != nil {
+		log.Debugf("failed to decode app info from config, will rely on WithAppInfo option: %v", err)
+	}
+
+	// 4. Merge AppInfo from options (as base) and config (as override).
+	// Start with the AppInfo provided via the WithAppInfo option. It can be nil.
+	finalAppInfo := providerOpts.appInfo
+	if finalAppInfo == nil {
+		// If no AppInfo was provided via options, create a new one to populate from config.
+		finalAppInfo = &interfaces.AppInfo{}
+	}
+
+	// Merge values from the config. Config values take precedence.
+	if configAppInfo != nil {
+		if configAppInfo.Id != "" {
+			finalAppInfo.ID = configAppInfo.Id
+		}
+		if configAppInfo.Name != "" {
+			finalAppInfo.Name = configAppInfo.Name
+		}
+		if configAppInfo.Version != "" {
+			finalAppInfo.Version = configAppInfo.Version
+		}
+		if configAppInfo.Env != "" {
+			finalAppInfo.Env = configAppInfo.Env
+		}
+		if len(configAppInfo.Metadata) > 0 {
+			finalAppInfo.Metadata = configAppInfo.Metadata
 		}
 	}
-	if baseAppInfo.ID == "" || baseAppInfo.Name == "" || baseAppInfo.Version == "" {
-		return nil, errors.New("app info (ID, Name, Version) is required and must be valid after merging with config")
+
+	// 5. Set runtime values and validate.
+	if finalAppInfo.StartTime.IsZero() {
+		finalAppInfo.StartTime = time.Now()
 	}
 
-	// 3. Create the component provider implementation.
-	// This will hold all the initialized components.
-	p := container.NewContainer(baseAppInfo, cfg)
-
-	// 4. Initialize core components by consuming the config.
-	// This is where the magic happens: logger, registries, etc., are created.
-	if err := p.Initialize(cfg); err != nil {
-		// Even if initialization fails, we should still call the cleanup function.
-		cleanup()
-		return nil, fmt.Errorf("failed to initialize components: %w", err)
+	if finalAppInfo.ID == "" || finalAppInfo.Name == "" || finalAppInfo.Version == "" {
+		cleanup() // Call cleanup as we are failing.
+		return nil, errors.New("app info (ID, Name, Version) is required but was not found in config or WithAppInfo option")
 	}
 
-	// 5. Initialize user-defined components registered via WithComponent.
-	for key, factory := range providerOpts.componentFactories {
-		instance, err := factory(cfg, p)
-		if err != nil {
-			cleanup()
-			return nil, fmt.Errorf("failed to create component '%s' using factory: %w", key, err)
-		}
-		p.RegisterComponent(key, instance)
-	}
+	//// 3. Create the component provider implementation.
+	//// This will hold all the initialized components.
+	//p := container.NewContainer(cfg)
+	//
+	//// 4. Initialize core components by consuming the config.
+	//// This is where the magic happens: logger, registries, etc., are created.
+	//if err := p.Initialize(cfg); err != nil {
+	//	// Even if initialization fails, we should still call the cleanup function.
+	//	cleanup()
+	//	return nil, fmt.Errorf("failed to initialize components: %w", err)
+	//}
+	//
+	//// 5. Initialize user-defined components registered via WithComponent.
+	//for key, factory := range providerOpts.componentFactories {
+	//	instance, err := factory(cfg, p)
+	//	if err != nil {
+	//		cleanup()
+	//		return nil, fmt.Errorf("failed to create component '%s' using factory: %w", key, err)
+	//	}
+	//	p.RegisterComponent(key, instance)
+	//}
 
-	// 7. Return the provider, the config, and the final cleanup function.
-
+	// 7. Return the container, the config, and the final cleanup function.
 	return &bootstrapperImpl{
-		provider: p,
-		config:   cfg,
-		cleanup:  cleanup,
+		appInfo: finalAppInfo,
+		config:  cfg,
+		cleanup: cleanup,
 	}, nil
 }
