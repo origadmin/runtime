@@ -35,15 +35,15 @@ type Builder interface {
 // Register registers a new registry factory with the DefaultBuilder.
 // It is a convenience wrapper around the builder's Register method.
 func Register(name string, factory Factory) {
-	DefaultBuilder().Register(name, factory)
+	defaultBuilder.Register(name, factory)
 }
 
 // NewRegistrar creates a new KRegistrar instance using the DefaultBuilder.
 func NewRegistrar(cfg *discoveryv1.Discovery, opts ...options.Option) (KRegistrar, error) {
-	return DefaultBuilder().NewRegistrar(cfg, opts...)
+	return defaultBuilder.NewRegistrar(cfg, opts...)
 }
 
 // NewDiscovery creates a new KDiscovery instance using the DefaultBuilder.
 func NewDiscovery(cfg *discoveryv1.Discovery, opts ...options.Option) (KDiscovery, error) {
-	return DefaultBuilder().NewDiscovery(cfg, opts...)
+	return defaultBuilder.NewDiscovery(cfg, opts...)
 }
