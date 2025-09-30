@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/goexts/generic/configure"
-
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 
@@ -38,12 +37,12 @@ func (f *sourceFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
-type BuildFunc func(*sourcev1.SourceConfig, *Options) (kratosconfig.Source, error)
+type BuildFunc func(*sourcev1.SourceConfig, ...Option) (kratosconfig.Source, error)
 
 // NewSource is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn BuildFunc) NewSource(cfg *sourcev1.SourceConfig, opts *Options) (kratosconfig.Source, error) {
+func (fn BuildFunc) NewSource(cfg *sourcev1.SourceConfig, opts ...Option) (kratosconfig.Source, error) {
 	// Call the function with the given KConfig and a list of Options.
-	return fn(cfg, opts)
+	return fn(cfg, opts...)
 }
 
 // getDefaultPriorityForSourceType returns a default priority based on the source type.
@@ -62,10 +61,11 @@ func getDefaultPriorityForSourceType(sourceType string) int32 {
 	}
 }
 
-// NewConfig creates a new Selector object based on the given KConfig and options.
-func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (kratosconfig.Config, error) {
-	options := configure.Apply(&Options{}, opts)
-
+// NewConfig creates a new configuration object that conforms to the interfaces.Config interface.
+// It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
+// to hide the underlying implementation from the rest of the framework.
+func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (interfaces.Config, error) {
+	options := FromOptions(opts...)
 	var sources []kratosconfig.Source
 
 	// Get the list of sources from the protobuf config.
@@ -91,18 +91,27 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (krato
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", src.Type)
 		}
-		source, err := buildFactory.NewSource(src, options)
+		source, err := buildFactory.NewSource(src, opts...)
 		if err != nil {
 			return nil, err
 		}
 		sources = append(sources, source)
 	}
-	v := options.Unwrap()
-	if v.Sources != nil {
-		sources = append(sources, v.Sources...)
+	if options.Sources != nil {
+		sources = append(sources, options.Sources...)
 	}
-	v.ConfigOptions = append(v.ConfigOptions, kratosconfig.WithSource(sources...))
-	return kratosconfig.New(v.ConfigOptions...), nil
+	options.ConfigOptions = append(options.ConfigOptions, kratosconfig.WithSource(sources...))
+
+	// Create the underlying Kratos config
+	kc := kratosconfig.New(options.ConfigOptions...)
+
+	// Load the configuration sources.
+	if err := kc.Load(); err != nil {
+		return nil, fmt.Errorf("failed to load configuration sources: %w", err)
+	}
+
+	// Wrap it in our adapter and return the interface
+	return &adapter{kc: kc}, nil
 }
 
 func (f *sourceFactory) SyncConfig(cfg *sourcev1.SourceConfig, v any, opts ...Option) error {

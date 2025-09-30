@@ -3,8 +3,6 @@ package interfaces
 import (
 	"errors"
 
-	kratosconfig "github.com/go-kratos/kratos/v2/config"
-
 	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
@@ -24,7 +22,7 @@ type Config interface {
 
 	// Raw provides an "escape hatch" to the underlying Kratos config.Config instance.
 	// Custom implementations can return nil if not applicable.
-	Raw() kratosconfig.Config
+	Raw() any
 
 	// Close releases any resources held by the configuration.
 	// MUST be implemented; can be a no-op if no resources are held.
@@ -33,7 +31,9 @@ type Config interface {
 
 // StructuredConfig defines a set of type-safe, recommended methods for decoding configuration.
 // This is the interface that should be exposed to the end user.
+// It embeds the generic Config interface to allow for decoding arbitrary values.
 type StructuredConfig interface {
+	Config // Embed the generic config interface
 	AppConfigDecoder
 	LoggerConfigDecoder
 	DiscoveriesConfigDecoder
