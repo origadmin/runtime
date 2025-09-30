@@ -27,6 +27,11 @@ type adapter struct {
 	kc kratosconfig.Config
 }
 
+// Load implements the interfaces.kc interface.
+func (a *adapter) Load() error {
+	return a.kc.Load()
+}
+
 // Decode implements the interfaces.kc interface.
 func (a *adapter) Decode(key string, value any) error {
 	if key == "" {

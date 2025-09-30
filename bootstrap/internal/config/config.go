@@ -3,8 +3,6 @@ package config
 import (
 	"errors"
 
-	kratosconfig "github.com/go-kratos/kratos/v2/config"
-
 	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
