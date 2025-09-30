@@ -11,23 +11,23 @@ import (
 )
 
 // Runtime defines the application's runtime environment, providing convenient access to core components.
-// It encapsulates an interfaces.ComponentProvider and is the primary object that applications will interact with.
+// It encapsulates an interfaces.Container and is the primary object that applications will interact with.
 type Runtime struct {
-	provider interfaces.ComponentProvider
+	provider interfaces.Container
 	config   interfaces.Config
 }
 
 // New is the core constructor for a Runtime instance.
-// It takes a fully initialized ComponentProvider, Config, and aggregated options.Option.
-func New(provider interfaces.ComponentProvider, cfg interfaces.Config) *Runtime {
+// It takes a fully initialized Container, Config, and aggregated options.Option.
+func New(provider interfaces.Container, cfg interfaces.Config) *Runtime {
 	return &Runtime{provider: provider, config: cfg}
 }
 
 // NewFromBootstrap is a convenience constructor that simplifies application startup.
-// It encapsulates the entire process of calling bootstrap.NewProvider and then runtime.New.
+// It encapsulates the entire process of calling bootstrap.New and then runtime.New.
 // It accepts bootstrap.Option parameters directly, allowing the user to configure the bootstrap process.
 func NewFromBootstrap(bootstrapPath string, opts ...bootstrap.Option) (*Runtime, func(), error) {
-	bootstrapper, err := bootstrap.NewProvider(bootstrapPath, opts...) // Updated signature to return interfaces.Bootstrapper
+	bootstrapper, err := bootstrap.New(bootstrapPath, opts...) // Updated signature to return interfaces.Bootstrapper
 	if err != nil {
 		return nil, nil, err
 	}

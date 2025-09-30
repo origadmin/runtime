@@ -1,10 +1,10 @@
 package interfaces
 
 // Bootstrapper defines the interface for the result of the bootstrap process.
-// It provides access to the initialized ComponentProvider, the Config decoder,
+// It provides access to the initialized Container, the Config decoder,
 // and a cleanup function to release resources.
 type Bootstrapper interface {
-	Provider() ComponentProvider
+	Provider() Container
 	Config() Config
 	Cleanup() func()
 }

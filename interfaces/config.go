@@ -5,6 +5,7 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
@@ -29,6 +30,10 @@ type Config interface {
 // ErrNotImplemented is returned when a specific decoder method is not implemented
 // by a custom decoder. This signals the runtime to fall back to generic decoding.
 var ErrNotImplemented = errors.New("method not implemented by this decoder")
+
+type AppConfigDecoder interface {
+	DecodeApp() (*appv1.App, error)
+}
 
 // LoggerConfigDecoder defines an OPTIONAL interface for providing a "fast path"
 // to decode logger configuration. Custom Config implementations can implement this

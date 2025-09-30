@@ -82,20 +82,20 @@ func WithConfigTransformer(transformer ConfigTransformer) DecoderOption {
 // This is an alias for interfaces.ComponentFactoryFunc for consistency.
 type ComponentFactory = interfaces.ComponentFactoryFunc
 
-// --- Options for NewProvider ---
+// --- Options for New ---
 
-// Options holds configuration for the NewProvider function.
+// Options holds configuration for the New function.
 type Options struct {
 	appInfo            *interfaces.AppInfo
 	decoderOptions     []DecoderOption
 	componentFactories map[string]ComponentFactory
 }
 
-// Option configures the NewProvider function.
+// Option configures the New function.
 type Option func(*Options)
 
 // WithAppInfo provides the application's metadata to the provider.
-// This is a required option for NewProvider.
+// This is a required option for New.
 func WithAppInfo(info *interfaces.AppInfo) Option {
 	return func(o *Options) {
 		o.appInfo = info
@@ -103,7 +103,7 @@ func WithAppInfo(info *interfaces.AppInfo) Option {
 }
 
 // WithDecoderOptions allows passing DecoderOption functions to the internal NewDecoder call.
-// This enables the caller of NewProvider to configure the decoding process.
+// This enables the caller of New to configure the decoding process.
 func WithDecoderOptions(opts ...DecoderOption) Option {
 	return func(o *Options) {
 		o.decoderOptions = append(o.decoderOptions, opts...)

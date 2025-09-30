@@ -5,6 +5,7 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
@@ -30,6 +31,7 @@ var (
 
 type Implementations interface {
 	interfaces.Config
+	interfaces.AppConfigDecoder
 	interfaces.LoggerConfigDecoder
 	interfaces.DiscoveriesConfigDecoder
 	interfaces.MiddlewareConfigDecoder
@@ -60,6 +62,18 @@ func (c *configImpl) Raw() kratosconfig.Config {
 // Close implements the interfaces.Config interface.
 func (c *configImpl) Close() error {
 	return c.kratosConfig.Close()
+}
+
+func (c *configImpl) DecodeApp() (*appv1.App, error) {
+	path, ok := c.paths[constant.ConfigApp]
+	if !ok {
+		return nil, errors.New("app config path not configured")
+	}
+	appConfig := new(appv1.App)
+	if err := c.kratosConfig.Value(path).Scan(appConfig); err != nil {
+		return nil, err
+	}
+	return appConfig, nil
 }
 
 // DecodeLogger implements the interfaces.LoggerConfigDecoder interface.

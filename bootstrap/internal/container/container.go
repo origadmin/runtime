@@ -1,9 +1,10 @@
-package provider
+package container
 
 import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -18,88 +19,155 @@ import (
 	runtimeRegistry "github.com/origadmin/runtime/registry"
 )
 
-// componentProviderImpl is the default implementation of the interfaces.ComponentProvider interface.
+// container is the default implementation of the interfaces.Container interface.
 // It holds all the initialized components for the application runtime.
-type componentProviderImpl struct {
-	appInfo                  *interfaces.AppInfo // Modified: Now stores interfaces.AppInfo
-	logger                   log.Logger
-	discoveries              map[string]registry.Discovery
-	registrars               map[string]registry.Registrar
-	defaultRegistrar         registry.Registrar
-	config                   interfaces.Config // Added: Store the configuration decoder
-	components               map[string]interface{}
-	serverMiddlewaresMap     map[string]middleware.KMiddleware
-	clientMiddlewaresMap     map[string]middleware.KMiddleware
-	componentFactoryRegistry interfaces.ComponentFactoryRegistry // Added: Store the component factory registry
-}
+type container struct {
+	appInfo   *interfaces.AppInfo // Modified: Now stores interfaces.AppInfo
+	config    interfaces.Config   // Added: Store the configuration decoder
+	factories map[string]interfaces.ComponentFactory
 
-func (p *componentProviderImpl) ServerMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
-	mw, ok := p.serverMiddlewaresMap[string(name)]
-	return mw, ok
-}
-
-func (p *componentProviderImpl) ClientMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
-	mw, ok := p.clientMiddlewaresMap[string(name)]
-	return mw, ok
+	logger               log.Logger
+	discoveries          map[string]registry.Discovery
+	registrars           map[string]registry.Registrar
+	defaultRegistrar     registry.Registrar
+	components           map[string]interface{}
+	serverMiddlewaresMap map[string]middleware.KMiddleware
+	clientMiddlewaresMap map[string]middleware.KMiddleware
 }
 
 // Statically assert that componentProviderImpl implements the interface.
-var _ interfaces.ComponentProvider = (*componentProviderImpl)(nil)
+var _ interfaces.Container = (*container)(nil)
 
-// NewComponentProvider creates a new, uninitialized component provider.
+// NewContainer creates a new, uninitialized container.
 // It now accepts the interfaces.AppInfo, interfaces.Config, and interfaces.ComponentFactoryRegistry instances.
-func NewComponentProvider(appInfo *interfaces.AppInfo, cfg interfaces.Config) interfaces.ComponentProvider {
-	return &componentProviderImpl{
+func NewContainer(appInfo *interfaces.AppInfo, cfg interfaces.Config) interfaces.Container {
+	return &container{
 		appInfo:              appInfo,
 		config:               cfg, // Store the config instance
+		factories:            make(map[string]interfaces.ComponentFactory),
 		components:           make(map[string]interface{}),
 		serverMiddlewaresMap: make(map[string]middleware.KMiddleware), // Initialize maps
 		clientMiddlewaresMap: make(map[string]middleware.KMiddleware), // Initialize maps
 	}
 }
 
+func (c *container) RegisterFactory(name string, factory interfaces.ComponentFactory) {
+	if _, exists := c.factories[name]; exists {
+		panic(fmt.Sprintf("component factory for '%s' is already registered", name))
+	}
+	c.factories[name] = factory
+}
+
+func (c *container) Component(name string) (interface{}, bool) {
+	comp, ok := c.components[name]
+	return comp, ok
+}
+
+// Build instantiates all registered components in a deterministic order.
+func (c *container) Build() error {
+	// Define a build order to ensure dependencies are met.
+	// For example, "logger" must be built before other components that use it.
+	buildOrder := []string{"logger", "registries", "middlewares"}
+
+	// Create a map of registered keys for quick lookup
+	registeredKeys := make(map[string]struct{})
+	for key := range c.factories {
+		registeredKeys[key] = struct{}{}
+	}
+
+	// Append remaining keys that are not in the explicit build order.
+	// Sort them to ensure deterministic build order.
+	var remainingKeys []string
+	for key := range registeredKeys {
+		isExplicit := false
+		for _, explicitKey := range buildOrder {
+			if key == explicitKey {
+				isExplicit = true
+				break
+			}
+		}
+		if !isExplicit {
+			remainingKeys = append(remainingKeys, key)
+		}
+	}
+	sort.Strings(remainingKeys)
+	buildOrder = append(buildOrder, remainingKeys...)
+
+	// Build components in the determined order.
+	for _, name := range buildOrder {
+		if _, exists := registeredKeys[name]; !exists {
+			continue // Skip if a key in buildOrder was not registered.
+		}
+
+		// Skip if component is already built (e.g., as a dependency).
+		if _, ok := c.components[name]; ok {
+			continue
+		}
+
+		factory := c.factories[name]
+		instance, err := factory(c)
+		if err != nil {
+			return fmt.Errorf("failed to build component '%s': %w", name, err)
+		}
+		c.components[name] = instance
+		log.NewHelper(c.Logger()).Infof("component '%s' built successfully", name)
+	}
+
+	return nil
+}
+
+func (c *container) ServerMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
+	mw, ok := c.serverMiddlewaresMap[string(name)]
+	return mw, ok
+}
+
+func (c *container) ClientMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
+	mw, ok := c.clientMiddlewaresMap[string(name)]
+	return mw, ok
+}
+
 // RegisterComponent adds a user-defined component to the provider's internal registry.
 // This is intended to be called by the bootstrap process after the component has been decoded.
-func (p *componentProviderImpl) RegisterComponent(name string, comp interface{}) {
-	helper := log.NewHelper(p.Logger()) // Use log.Helper
+func (c *container) RegisterComponent(name string, comp interface{}) {
+	helper := log.NewHelper(c.Logger()) // Use log.Helper
 	// Ensure the map is initialized.
-	if p.components == nil {
-		p.components = make(map[string]interface{})
+	if c.components == nil {
+		c.components = make(map[string]interface{})
 	}
 
 	// Check for duplicates, as this likely indicates a configuration error.
-	if _, exists := p.components[name]; exists {
+	if _, exists := c.components[name]; exists {
 		helper.Warnw("msg", "overwriting an existing component registration", "name", name)
 	}
 
-	p.components[name] = comp
+	c.components[name] = comp
 	helper.Infow("msg", "registered component", "name", name)
 }
 
 // Initialize consumes the configuration and initializes all core and generic components.
 // This is the main logic hub for component creation.
-func (p *componentProviderImpl) Initialize(cfg interfaces.Config) error {
+func (c *container) Initialize(cfg interfaces.Config) error {
 	// 1. Initialize Logger with graceful fallback.
-	if err := p.initLogger(cfg); err != nil {
+	if err := c.initLogger(cfg); err != nil {
 		// Even if the logger fails to initialize from config, a fallback is created.
 		// We log the error but do not stop the bootstrap process.
-		log.Errorf("failed to initialize logger component, error: %v", err) // This uses the temporary logger if p.logger is not yet set
+		log.Errorf("failed to initialize logger component, error: %v", err) // This uses the temporary logger if c.logger is not yet set
 	}
-	helper := log.NewHelper(p.Logger()) // Now p.Logger() should be initialized or fallbacked
+	helper := log.NewHelper(c.Logger()) // Now c.Logger() should be initialized or fallbacked
 
 	// 2. Initialize Registries and Discoveries with graceful fallback.
-	if err := p.initRegistries(cfg); err != nil {
+	if err := c.initRegistries(cfg); err != nil {
 		// Log the error but continue, as local mode is the fallback.
 		helper.Errorf("failed to initialize registries component, error: %v", err)
 	}
 
-	if err := p.initMiddlewares(cfg); err != nil {
+	if err := c.initMiddlewares(cfg); err != nil {
 		// Log the error but continue.
 		helper.Errorf("failed to initialize middlewares component, error: %v", err)
 	}
 
 	// 3. Initialize generic components from the [components] config section.
-	if err := p.initGenericComponents(cfg); err != nil {
+	if err := c.initGenericComponents(cfg); err != nil {
 		// Log the error but continue.
 		helper.Errorf("failed to initialize generic components, error: %v", err)
 	}
@@ -108,7 +176,7 @@ func (p *componentProviderImpl) Initialize(cfg interfaces.Config) error {
 }
 
 // initLogger handles the initialization of the logger component.
-func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
+func (c *container) initLogger(cfg interfaces.Config) error {
 	var loggerCfg *loggerv1.Logger
 	var err error
 
@@ -126,7 +194,7 @@ func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
 	// 3. If there was any error during decoding, log it as a warning.
 	// We use a temporary logger because the main logger isn't created yet.
 	if err != nil {
-		// Use a temporary logger here as p.logger might not be fully initialized
+		// Use a temporary logger here as c.logger might not be fully initialized
 		log.NewHelper(log.NewStdLogger(os.Stderr)).Warnw("msg", "failed to decode logger component", "error", err)
 		return err
 	}
@@ -135,15 +203,15 @@ func (p *componentProviderImpl) initLogger(cfg interfaces.Config) error {
 	logger := runtimelog.NewLogger(loggerCfg)
 
 	// 5. Set the logger for the provider and globally for the Kratos framework.
-	p.logger = logger
-	runtimelog.SetLogger(p.logger)
+	c.logger = logger
+	runtimelog.SetLogger(c.logger)
 
 	return nil
 }
 
 // initRegistries handles the initialization of the service discovery and registration components.
-func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
-	helper := log.NewHelper(p.Logger()) // Use log.Helper
+func (c *container) initRegistries(cfg interfaces.Config) error {
+	helper := log.NewHelper(c.Logger()) // Use log.Helper
 	var registriesBlock struct {
 		Default     string                            `json:"default"`
 		Discoveries map[string]*discoveryv1.Discovery `json:"discoveries"`
@@ -155,13 +223,13 @@ func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 	// Graceful Fallback: If there's an error or no registries are configured, run in local mode.
 	if err != nil || registriesBlock.Discoveries == nil {
 		helper.Infow("msg", "no registries configured or failed to decode, running in local mode", "error", err)
-		p.discoveries = make(map[string]registry.Discovery)
-		p.registrars = make(map[string]registry.Registrar)
+		c.discoveries = make(map[string]registry.Discovery)
+		c.registrars = make(map[string]registry.Registrar)
 		return nil // Not a fatal error
 	}
 
-	p.discoveries = make(map[string]registry.Discovery, len(registriesBlock.Discoveries))
-	p.registrars = make(map[string]registry.Registrar, len(registriesBlock.Discoveries))
+	c.discoveries = make(map[string]registry.Discovery, len(registriesBlock.Discoveries))
+	c.registrars = make(map[string]registry.Registrar, len(registriesBlock.Discoveries))
 
 	for name, discoveryCfg := range registriesBlock.Discoveries {
 		// Create Discovery
@@ -170,7 +238,7 @@ func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 			helper.Warnw("msg", "failed to create discovery", "name", name, "error", err)
 			continue // Skip this one
 		}
-		p.discoveries[name] = d
+		c.discoveries[name] = d
 
 		// Create Registrar
 		r, err := runtimeRegistry.NewRegistrar(discoveryCfg)
@@ -178,14 +246,14 @@ func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 			helper.Warnw("msg", "failed to create registrar", "name", name, "error", err)
 			continue // Skip this one
 		}
-		p.registrars[name] = r
+		c.registrars[name] = r
 	}
 
 	// Set the default registrar
 	if registriesBlock.Default != "" {
-		if r, ok := p.registrars[registriesBlock.Default]; ok {
+		if r, ok := c.registrars[registriesBlock.Default]; ok {
 			helper.Infow("msg", "default registrar set", "name", registriesBlock.Default)
-			p.defaultRegistrar = r
+			c.defaultRegistrar = r
 		} else {
 			helper.Warnw("msg", "default registrar not found", "name", registriesBlock.Default)
 		}
@@ -194,10 +262,10 @@ func (p *componentProviderImpl) initRegistries(cfg interfaces.Config) error {
 	return nil
 }
 
-func (p *componentProviderImpl) initMiddlewares(cfg interfaces.Config) error {
-	helper := log.NewHelper(p.Logger()) // Use log.Helper
-	// p.serverMiddlewaresMap = make(map[string]middleware.KMiddleware) // Already initialized in NewComponentProvider
-	// p.clientMiddlewaresMap = make(map[string]middleware.KMiddleware) // Already initialized in NewComponentProvider
+func (c *container) initMiddlewares(cfg interfaces.Config) error {
+	helper := log.NewHelper(c.Logger()) // Use log.Helper
+	// c.serverMiddlewaresMap = make(map[string]middleware.KMiddleware) // Already initialized in NewComponentProvider
+	// c.clientMiddlewaresMap = make(map[string]middleware.KMiddleware) // Already initialized in NewComponentProvider
 	v, ok := cfg.(interfaces.MiddlewareConfigDecoder)
 	if ok {
 		middlewares, err := v.DecodeMiddleware()
@@ -205,7 +273,7 @@ func (p *componentProviderImpl) initMiddlewares(cfg interfaces.Config) error {
 			return fmt.Errorf("failed to decode middlewares: %w", err)
 		}
 		// Get the logger to pass to middleware options
-		logger := p.Logger()
+		logger := c.Logger()
 		for _, mc := range middlewares.GetMiddlewares() {
 			if mc.GetEnabled() {
 				// Assuming NewClient and NewServer support WithLogger option
@@ -219,8 +287,8 @@ func (p *componentProviderImpl) initMiddlewares(cfg interfaces.Config) error {
 					helper.Warnw("msg", "failed to create server middleware", "type", mc.GetType())
 					continue
 				}
-				p.serverMiddlewaresMap[mc.GetType()] = mserver
-				p.clientMiddlewaresMap[mc.GetType()] = mclient
+				c.serverMiddlewaresMap[mc.GetType()] = mserver
+				c.clientMiddlewaresMap[mc.GetType()] = mclient
 			}
 		}
 	}
@@ -228,8 +296,8 @@ func (p *componentProviderImpl) initMiddlewares(cfg interfaces.Config) error {
 }
 
 // initGenericComponents handles the initialization of user-defined components.
-func (p *componentProviderImpl) initGenericComponents(cfg interfaces.Config) error {
-	helper := log.NewHelper(p.Logger()) // Use log.Helper
+func (c *container) initGenericComponents(cfg interfaces.Config) error {
+	helper := log.NewHelper(c.Logger()) // Use log.Helper
 	var componentsMap map[string]map[string]interface{}
 	if err := cfg.Decode(constant.ComponentComponents, &componentsMap); err != nil {
 		// If the components key doesn't exist, it's not an error, just means no generic components.
@@ -245,63 +313,58 @@ func (p *componentProviderImpl) initGenericComponents(cfg interfaces.Config) err
 		}
 
 		// Get the factory for this component type.
-		factory, found := p.componentFactoryRegistry.GetFactory(compType)
+		factory, found := c.factories[compType]
 		if !found {
 			helper.Warnw("msg", "component factory not found, skipping", "type", compType, "name", name)
 			continue
 		}
 
 		// Create the component instance.
-		instance, err := factory(cfg, compCfg) // Note: This factory signature might need adjustment based on the new ComponentFactory type
+		instance, err := factory(c) // Note: This factory signature might need adjustment based on the new
+		// ComponentFactory type
 		if err != nil {
 			helper.Warnw("msg", "failed to create component instance", "name", name, "type", compType, "error", err)
 			continue
 		}
 
 		// Store the created component.
-		p.components[name] = instance
+		c.components[name] = instance
 		helper.Infow("msg", "initialized generic component", "name", name, "type", compType)
 	}
 
 	return nil
 }
 
-// AppInfo implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) AppInfo() *interfaces.AppInfo { // Modified: Now returns *interfaces.AppInfo
-	return p.appInfo
+// AppInfo implements the interfaces.Container interface.
+func (c *container) AppInfo() *interfaces.AppInfo { // Modified: Now returns *interfaces.AppInfo
+	return c.appInfo
 }
 
-// Logger implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) Logger() log.Logger {
+// Logger implements the interfaces.Container interface.
+func (c *container) Logger() log.Logger {
 	// Ensure a logger always exists, even if initialization failed.
-	if p.logger == nil {
-		p.logger = log.NewStdLogger(os.Stderr)
+	if c.logger == nil {
+		c.logger = log.NewStdLogger(os.Stderr)
 	}
-	return p.logger
+	return c.logger
 }
 
-// Discoveries implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) Discoveries() map[string]registry.Discovery {
-	return p.discoveries
+// Discoveries implements the interfaces.Container interface.
+func (c *container) Discoveries() map[string]registry.Discovery {
+	return c.discoveries
 }
 
-// Registrars implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) Registrars() map[string]registry.Registrar {
-	return p.registrars
+// Registrars implements the interfaces.Container interface.
+func (c *container) Registrars() map[string]registry.Registrar {
+	return c.registrars
 }
 
-// DefaultRegistrar implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) DefaultRegistrar() registry.Registrar {
-	return p.defaultRegistrar
+// DefaultRegistrar implements the interfaces.Container interface.
+func (c *container) DefaultRegistrar() registry.Registrar {
+	return c.defaultRegistrar
 }
 
-// Config implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) Config() interfaces.Config {
-	return p.config
-}
-
-// Component implements the interfaces.ComponentProvider interface.
-func (p *componentProviderImpl) Component(name string) (interface{}, bool) {
-	c, ok := p.components[name]
-	return c, ok
+// Config implements the interfaces.Container interface.
+func (c *container) Config() interfaces.Config {
+	return c.config
 }

@@ -2,6 +2,8 @@ package constant
 
 // Core component keys used for identifying components in the bootstrap paths map.
 const (
+	ConfigApp = "app"
+
 	// ComponentLogger is the key for the logger configuration path.
 	ComponentLogger = "logger"
 
@@ -19,6 +21,7 @@ const (
 // This map is used as the lowest priority base for path resolution.
 // It can be inspected or copied by users to build their own custom path maps.
 var DefaultComponentPaths = map[string]string{
+	ConfigApp:            "app",
 	ComponentLogger:      "logger",
 	ComponentRegistries:  "registries",
 	ComponentMiddlewares: "middlewares",

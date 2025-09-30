@@ -7,22 +7,13 @@ import (
 	"github.com/origadmin/runtime/middleware"
 )
 
-// ComponentFactoryFunc defines the signature for a function that can create a generic component.
+// ComponentFactory defines the signature for a function that can create a generic component.
 // It receives the global configuration and the specific configuration map for the component instance.
-type ComponentFactoryFunc func(config Config, provider ComponentProvider) (interface{}, error)
+type ComponentFactory func(cfg Config, container Container) (interface{}, error)
 
-// ComponentProvider defines the interface for retrieving fully-initialized application components.
+// Container defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
-type ComponentProvider interface {
-	// Initialize initializes the component provider with the given configuration.
-	// It should be called once before any other methods.
-	Initialize(cfg Config) error
-
-	// --- Strongly-Typed Accessors for Core Components ---
-
-	// AppInfo returns the application's configured information (ID, name, version, metadata).
-	AppInfo() *AppInfo // Modified: Now returns the interfaces.AppInfo interface
-
+type Container interface {
 	// Logger returns the configured Kratos logger.
 	Logger() log.Logger
 
