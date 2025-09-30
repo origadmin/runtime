@@ -11,6 +11,10 @@ import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 )
 
+// ErrNotImplemented is returned when a specific decoder method is not implemented
+// by a custom decoder. This signals the runtime to fall back to generic decoding.
+var ErrNotImplemented = errors.New("method not implemented by this decoder")
+
 // Config is the minimal contract for providing a custom configuration source.
 // Developers wishing to extend the framework with a new config system should implement this interface.
 type Config interface {
@@ -26,10 +30,6 @@ type Config interface {
 	// MUST be implemented; can be a no-op if no resources are held.
 	Close() error
 }
-
-// ErrNotImplemented is returned when a specific decoder method is not implemented
-// by a custom decoder. This signals the runtime to fall back to generic decoding.
-var ErrNotImplemented = errors.New("method not implemented by this decoder")
 
 type AppConfigDecoder interface {
 	DecodeApp() (*appv1.App, error)
