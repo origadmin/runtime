@@ -123,10 +123,12 @@ func (*Server_Http) isServer_Config() {}
 //     这个 Client 消息也是此应用专属的，它解决了 "不同client需要不同Middleware" 的问题。
 type Client struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// 客户端名称，用于在应用中唯一标识这个客户端。
+	ClientName string `protobuf:"bytes,1,opt,name=client_name,json=clientName,proto3" json:"client_name,omitempty"`
 	// 使用框架的 "客户端发现" 砖头。
-	Discovery *v11.Client `protobuf:"bytes,1,opt,name=discovery,proto3" json:"discovery,omitempty"`
+	Discovery []*v11.Discovery `protobuf:"bytes,2,rep,name=discovery,proto3" json:"discovery,omitempty"`
 	// 将 "中间件" 砖头与上面的 "客户端发现" 砖头绑定在一起。
-	Middlewares   []*v12.MiddlewareConfig `protobuf:"bytes,2,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Middlewares   []*v12.MiddlewareConfig `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -161,7 +163,14 @@ func (*Client) Descriptor() ([]byte, []int) {
 	return file_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Client) GetDiscovery() *v11.Client {
+func (x *Client) GetClientName() string {
+	if x != nil {
+		return x.ClientName
+	}
+	return ""
+}
+
+func (x *Client) GetDiscovery() []*v11.Discovery {
 	if x != nil {
 		return x.Discovery
 	}
@@ -253,15 +262,17 @@ var File_bootstrap_proto protoreflect.FileDescriptor
 
 const file_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\x0fbootstrap.proto\x12\x10test.app.configs\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"\x86\x01\n" +
+	"\x0fbootstrap.proto\x12\x10test.app.configs\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"\x86\x01\n" +
 	"\x06Server\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12.\n" +
 	"\x04grpc\x18\x02 \x01(\v2\x18.transport.v1.GRPCServerH\x00R\x04grpc\x12.\n" +
 	"\x04http\x18\x03 \x01(\v2\x18.transport.v1.HTTPServerH\x00R\x04httpB\b\n" +
-	"\x06config\"\x7f\n" +
-	"\x06Client\x122\n" +
-	"\tdiscovery\x18\x01 \x01(\v2\x14.discovery.v1.ClientR\tdiscovery\x12A\n" +
-	"\vmiddlewares\x18\x02 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\"\xdc\x02\n" +
+	"\x06config\"\xa3\x01\n" +
+	"\x06Client\x12\x1f\n" +
+	"\vclient_name\x18\x01 \x01(\tR\n" +
+	"clientName\x125\n" +
+	"\tdiscovery\x18\x02 \x03(\v2\x17.discovery.v1.DiscoveryR\tdiscovery\x12A\n" +
+	"\vmiddlewares\x18\x03 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\"\xdc\x02\n" +
 	"\tBootstrap\x12N\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2,.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
 	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x122\n" +
@@ -291,19 +302,18 @@ var file_bootstrap_proto_goTypes = []any{
 	nil,                          // 3: test.app.configs.Bootstrap.DiscoveriesEntry
 	(*v1.GRPCServer)(nil),        // 4: transport.v1.GRPCServer
 	(*v1.HTTPServer)(nil),        // 5: transport.v1.HTTPServer
-	(*v11.Client)(nil),           // 6: discovery.v1.Client
+	(*v11.Discovery)(nil),        // 6: discovery.v1.Discovery
 	(*v12.MiddlewareConfig)(nil), // 7: middleware.v1.MiddlewareConfig
-	(*v11.Discovery)(nil),        // 8: discovery.v1.Discovery
 }
 var file_bootstrap_proto_depIdxs = []int32{
 	4, // 0: test.app.configs.Server.grpc:type_name -> transport.v1.GRPCServer
 	5, // 1: test.app.configs.Server.http:type_name -> transport.v1.HTTPServer
-	6, // 2: test.app.configs.Client.discovery:type_name -> discovery.v1.Client
+	6, // 2: test.app.configs.Client.discovery:type_name -> discovery.v1.Discovery
 	7, // 3: test.app.configs.Client.middlewares:type_name -> middleware.v1.MiddlewareConfig
 	3, // 4: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry
 	0, // 5: test.app.configs.Bootstrap.servers:type_name -> test.app.configs.Server
 	1, // 6: test.app.configs.Bootstrap.clients:type_name -> test.app.configs.Client
-	8, // 7: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> discovery.v1.Discovery
+	6, // 7: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> discovery.v1.Discovery
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name

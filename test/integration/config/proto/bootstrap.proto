@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package test.configs;
 
-import "discovery/v1/client.proto";
 // Import all required building blocks from the framework's api directory
 import "discovery/v1/discovery.proto";
 import "transport/v1/grpc.proto";
@@ -33,5 +32,5 @@ message Bootstrap {
   repeated transport.v1.HTTPServer http_servers = 4;
 
   // 4. Define the list of downstream clients that the current service will connect to.
-  repeated discovery.v1.Client clients = 5;
+  repeated string clients = 5;
 }

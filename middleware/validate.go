@@ -13,6 +13,7 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	validatorv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/validator"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware/validate"
 )
@@ -20,18 +21,18 @@ import (
 type validatorFactory struct {
 }
 
-func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
+func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	return nil, false
 }
 
-func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
+func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	log.Debug("[Middleware] ValidatorClient server middleware enabled")
 	if !middleware.GetEnabled() {
 		return nil, false
 	}
 	cfg := middleware.GetValidator()
 	switch middleware.GetType() {
-	case Validator:
+	case string(Validator):
 		switch validate.Version(cfg.GetVersion()) {
 		case validate.V2:
 			opts := []validate.Option{

@@ -10,6 +10,7 @@ import (
 
 	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/interfaces"
 )
 
 // TestCustomSettings represents the structure of our custom configuration section for testing.
@@ -62,7 +63,12 @@ func TestRuntimeDecoder(t *testing.T) {
 	// 1. Initialize Runtime with the correct AppInfo.
 	rt, cleanup, err := runtime.NewFromBootstrap(
 		bootstrapPath, // Use the path relative to the new CWD
-		bootstrap.WithAppInfo("test-decoder", "1.0.0", "test"),
+		bootstrap.WithAppInfo(&interfaces.AppInfo{
+			ID:      "test-decoder",
+			Name:    "TestDecoder",
+			Version: "1.0.0",
+			//Env:     "test",
+		}),
 	)
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
@@ -71,9 +77,9 @@ func TestRuntimeDecoder(t *testing.T) {
 
 	// 2. Verify core components are still initialized correctly.
 	assert.NotNil(rt.Logger())
-	assert.Equal("test-decoder", rt.AppInfo().Name())
-	assert.Equal("1.0.0", rt.AppInfo().Version())
-	assert.Equal("test", rt.AppInfo().Env())
+	assert.Equal("test-decoder", rt.AppInfo().Name)
+	assert.Equal("1.0.0", rt.AppInfo().Version)
+	assert.Equal("test", rt.AppInfo().Env)
 
 	// 3. Get the ConfigDecoder from the runtime.
 	decoder := rt.Config()

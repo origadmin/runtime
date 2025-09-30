@@ -89,7 +89,7 @@ type Bootstrap struct {
 	GrpcServers []*v11.GRPCServer `protobuf:"bytes,3,rep,name=grpc_servers,json=grpcServers,proto3" json:"grpc_servers,omitempty"`
 	HttpServers []*v11.HTTPServer `protobuf:"bytes,4,rep,name=http_servers,json=httpServers,proto3" json:"http_servers,omitempty"`
 	// 4. Define the list of downstream clients that the current service will connect to.
-	Clients       []*v1.Client `protobuf:"bytes,5,rep,name=clients,proto3" json:"clients,omitempty"`
+	Clients       []string `protobuf:"bytes,5,rep,name=clients,proto3" json:"clients,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -152,7 +152,7 @@ func (x *Bootstrap) GetHttpServers() []*v11.HTTPServer {
 	return nil
 }
 
-func (x *Bootstrap) GetClients() []*v1.Client {
+func (x *Bootstrap) GetClients() []string {
 	if x != nil {
 		return x.Clients
 	}
@@ -163,16 +163,16 @@ var File_bootstrap_proto protoreflect.FileDescriptor
 
 const file_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\x0fbootstrap.proto\x12\ftest.configs\x1a\x19discovery/v1/client.proto\x1a\x1cdiscovery/v1/discovery.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"V\n" +
+	"\x0fbootstrap.proto\x12\ftest.configs\x1a\x1cdiscovery/v1/discovery.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"V\n" +
 	"\x0fDiscoveryConfig\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
-	"\x06config\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x06config\"\xb6\x02\n" +
+	"\x06config\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x06config\"\xa0\x02\n" +
 	"\tBootstrap\x12?\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2\x1d.test.configs.DiscoveryConfigR\vdiscoveries\x12>\n" +
 	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12;\n" +
 	"\fgrpc_servers\x18\x03 \x03(\v2\x18.transport.v1.GRPCServerR\vgrpcServers\x12;\n" +
-	"\fhttp_servers\x18\x04 \x03(\v2\x18.transport.v1.HTTPServerR\vhttpServers\x12.\n" +
-	"\aclients\x18\x05 \x03(\v2\x14.discovery.v1.ClientR\aclientsBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
+	"\fhttp_servers\x18\x04 \x03(\v2\x18.transport.v1.HTTPServerR\vhttpServers\x12\x18\n" +
+	"\aclients\x18\x05 \x03(\tR\aclientsBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
 	file_bootstrap_proto_rawDescOnce sync.Once
@@ -193,19 +193,17 @@ var file_bootstrap_proto_goTypes = []any{
 	(*v1.Discovery)(nil),    // 2: discovery.v1.Discovery
 	(*v11.GRPCServer)(nil),  // 3: transport.v1.GRPCServer
 	(*v11.HTTPServer)(nil),  // 4: transport.v1.HTTPServer
-	(*v1.Client)(nil),       // 5: discovery.v1.Client
 }
 var file_bootstrap_proto_depIdxs = []int32{
 	2, // 0: test.configs.DiscoveryConfig.config:type_name -> discovery.v1.Discovery
 	0, // 1: test.configs.Bootstrap.discoveries:type_name -> test.configs.DiscoveryConfig
 	3, // 2: test.configs.Bootstrap.grpc_servers:type_name -> transport.v1.GRPCServer
 	4, // 3: test.configs.Bootstrap.http_servers:type_name -> transport.v1.HTTPServer
-	5, // 4: test.configs.Bootstrap.clients:type_name -> discovery.v1.Client
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_bootstrap_proto_init() }

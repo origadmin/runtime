@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	"github.com/goexts/generic/configure"
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 var _ kratosconfig.Source = (*file)(nil)
@@ -43,7 +43,7 @@ func NewSource(path string, opts ...Option) kratosconfig.Source {
 		ignores:   defaultIgnores,
 		formatter: defaultFormatter,
 	}
-	return configure.Apply(f, opts)
+	return applyFileOptions(f, opts...)
 }
 
 // loadFile loads a single file from the specified path
@@ -141,7 +141,7 @@ func defaultFormatter(key string, value []byte) (*kratosconfig.KeyValue, error) 
 
 // NewFileSource creates a new file source based on configuration.
 // It adapts to the new bootstrap mechanism.
-func NewFileSource(cfg *sourcev1.SourceConfig, opts *runtimeconfig.Options) (kratosconfig.Source, error) {
+func NewFileSource(cfg *sourcev1.SourceConfig, opts ...options.Option) (kratosconfig.Source, error) {
 	fileSrc := cfg.GetFile()
 	if fileSrc == nil {
 		// This can happen if the source type is "file" but the `file` oneof is not set.
@@ -149,7 +149,7 @@ func NewFileSource(cfg *sourcev1.SourceConfig, opts *runtimeconfig.Options) (kra
 		return nil, nil
 	}
 
-	return NewSource(fileSrc.GetPath(), FromOptions(opts)...), nil
+	return NewSource(fileSrc.GetPath(), opts...), nil
 }
 
 // init registers the file source during package initialization

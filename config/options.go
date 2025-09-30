@@ -7,44 +7,44 @@ import (
 	"github.com/origadmin/runtime/optionutil"
 )
 
-// configOptions holds the configuration for the config module.
-type configOptions struct {
+// ConfigOptions holds the configuration for the config module.
+type ConfigOptions struct {
 	ConfigOptions []config.Option
 	EnvPrefixes   []string
 	Sources       []KSource
 }
 
-// Key is the unique key for configOptions in the options.Option.
-var Key = optionutil.Key[*configOptions]{}
+// Key is the unique key for ConfigOptions in the options.Option.
+var Key = optionutil.Key[*ConfigOptions]{}
 
-// Option is a function that configures configOptions.
+// Option is a function that configures ConfigOptions.
 type Option = options.Option
 
-// WithConfigOption appends Kratos config.Option to the configOptions.
+// WithConfigOption appends Kratos config.Option to the ConfigOptions.
 func WithConfigOption(opts ...config.Option) Option {
-	return optionutil.Update(func(c *configOptions) {
+	return optionutil.Update(func(c *ConfigOptions) {
 		c.ConfigOptions = append(c.ConfigOptions, opts...)
 	})
 }
 
-// WithEnvPrefixes appends environment variable prefixes to the configOptions.
+// WithEnvPrefixes appends environment variable prefixes to the ConfigOptions.
 func WithEnvPrefixes(prefixes ...string) Option {
-	return optionutil.Update(func(c *configOptions) {
+	return optionutil.Update(func(c *ConfigOptions) {
 		c.EnvPrefixes = append(c.EnvPrefixes, prefixes...)
 	})
 }
 
-// WithSource appends config.Source to the configOptions.
+// WithSource appends config.Source to the ConfigOptions.
 func WithSource(s ...config.Source) Option {
-	return optionutil.Update(func(c *configOptions) {
+	return optionutil.Update(func(c *ConfigOptions) {
 		c.Sources = append(c.Sources, s...)
 	})
 }
 
-// FromOptions retrieves configOptions pointer from the provided options.Option.
+// FromOptions retrieves ConfigOptions pointer from the provided options.Option.
 // It returns nil if the options are not found or opt is nil.
-func FromOptions(opts ...Option) *configOptions {
-	var configOpt configOptions
+func FromOptions(opts ...Option) *ConfigOptions {
+	var configOpt ConfigOptions
 	optionutil.Apply(&configOpt, opts...)
 	return &configOpt
 }

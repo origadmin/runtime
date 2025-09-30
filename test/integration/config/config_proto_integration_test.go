@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/origadmin/runtime"
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/interfaces"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto" // Import generated proto package
 )
 
@@ -51,8 +51,8 @@ func TestConfigProtoIntegration(t *testing.T) {
 	// 1. Initialize Runtime with the default decoder provider.
 	rt, cleanup, err := runtime.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&appv1.AppInfo{
-			Id:      "test-proto-config",
+		bootstrap.WithAppInfo(&interfaces.AppInfo{
+			ID:      "test-proto-config",
 			Name:    "TestProtoConfig",
 			Version: "1.0.0",
 			//Env:     "test",
@@ -64,7 +64,7 @@ func TestConfigProtoIntegration(t *testing.T) {
 	defer cleanup()
 
 	// 2. Get the ConfigDecoder from the runtime.
-	configDecoder := rt.Config
+	configDecoder := rt.Config()
 	assert.NotNil(configDecoder)
 
 	// 3. Decode the entire configuration into the generated Bootstrap struct.

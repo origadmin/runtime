@@ -13,6 +13,7 @@ import (
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 type source struct {
@@ -68,10 +69,16 @@ func matchPrefix(prefixes []string, v string) (string, bool) {
 	return "", false
 }
 
-func NewEnvSource(sourceCfg *sourcev1.SourceConfig, opts *runtimeconfig.Options) (runtimeconfig.KSource, error) {
-	var prefixes []string
-	if cfg := sourceCfg.GetEnv(); cfg != nil {
-		prefixes = cfg.GetPrefixes()
+func NewEnvSource(sourceCfg *sourcev1.SourceConfig, opts ...options.Option) (runtimeconfig.KSource, error) {
+	envSrc := sourceCfg.GetEnv()
+	prefixes := FromOptions(opts...)
+	if envSrc == nil {
+		// This can happen if the source type is "file" but the `file` oneof is not set.
+		// Returning nil, nil is a safe default, allowing other sources to proceed.
+		return nil, nil
+	}
+	if len(prefixes) == 0 {
+		prefixes = envSrc.GetPrefixes()
 	}
 	return NewSource(prefixes...), nil
 }
