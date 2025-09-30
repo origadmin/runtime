@@ -6,19 +6,20 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/stretchr/testify/assert"
 
-	runtimeconfig "github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/optionutil"
 )
 
 func TestFromOptions_NilOptions(t *testing.T) {
 	// Test with nil options
-	opts := applyFileOptions(&file{}, nil)
+	opts := applyFileOptions(&file{})
 	assert.Empty(t, opts, "Expected empty options slice when options is nil")
 }
 
 func TestFromOptions_UninitializedOptions(t *testing.T) {
 	// Test with uninitialized options
-	options := &runtimeconfig.Options{}
-	opts := applyFileOptions(&file{}, options)
+	option := optionutil.WithContext(nil)
+	opts := applyFileOptions(&file{}, option)
 	assert.Empty(t, opts, "Expected empty options slice when options.Option is nil")
 }
 
@@ -47,14 +48,13 @@ func TestWithIgnores(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			options := runtimeconfig.DefaultOptions()
-			WithIgnores(tt.ignores...)(options)
+			option := WithIgnores(tt.ignores...)
 
 			// Apply the options to a file
 			f := &file{
 				ignores: defaultIgnores, // Initialize with default ignores
 			}
-			f = applyFileOptions(f, options)
+			f = applyFileOptions(f, option)
 			// Only check the newly added ignores, not the default ones
 			if tt.expected > 0 {
 				// The last 'tt.expected' elements should be our test ignores
@@ -71,10 +71,7 @@ func TestWithIgnores(t *testing.T) {
 
 func TestWithFormatter(t *testing.T) {
 	t.Log("1. Getting default options")
-	options := runtimeconfig.DefaultOptions()
-	if options == nil {
-		t.Fatal("Default options is nil")
-	}
+	var opts []options.Option
 
 	// Define a test formatter
 	testFormatter := func(key string, value []byte) (*config.KeyValue, error) {
@@ -86,7 +83,7 @@ func TestWithFormatter(t *testing.T) {
 	}
 
 	t.Log("2. Setting formatter in options")
-	WithFormatter(testFormatter)(options)
+	opts = append(opts, WithFormatter(testFormatter))
 
 	// Apply the options to a file
 	t.Log("3. Creating file instance")
@@ -95,13 +92,12 @@ func TestWithFormatter(t *testing.T) {
 	}
 
 	t.Log("4. Applying options to file")
-	opts := FromOptions(options)
 	t.Logf("Number of options found: %d", len(opts))
 	for i, opt := range opts {
 		t.Logf("Option %d: %T", i, opt)
 	}
 
-	f = applyFileOptions(f, options)
+	f = applyFileOptions(f, opts...)
 
 	t.Log("5. Verifying formatter was set")
 	if f.formatter == nil {
@@ -124,17 +120,17 @@ func TestWithFormatter(t *testing.T) {
 
 func TestEmptyOptions(t *testing.T) {
 	// Test that FromOptions works with empty options
-	options := runtimeconfig.DefaultOptions()
-	opts := applyFileOptions(&file{}, options)
-	assert.Empty(t, opts, "Expected empty options slice when no options are set")
+	opts := optionutil.WithContext(nil)
+	f := applyFileOptions(&file{}, opts)
+	assert.Empty(t, f, "Expected empty options slice when no options are set")
 }
 
 func TestMultipleOptions(t *testing.T) {
 	// Test that multiple options can be set and retrieved correctly
-	options := runtimeconfig.DefaultOptions()
+	var opts []options.Option
 
 	// Set multiple options
-	WithIgnores("test1", "test2")(options)
+	opts = append(opts, WithIgnores("test1", "test2"))
 
 	// Set a formatter
 	formatterCalled := false
@@ -145,13 +141,13 @@ func TestMultipleOptions(t *testing.T) {
 			Value: value,
 		}, nil
 	}
-	WithFormatter(testFormatter)(options)
+	opts = append(opts, WithFormatter(testFormatter))
 
 	// Apply the options
 	f := &file{
 		ignores: defaultIgnores, // Initialize with default ignores
 	}
-	f = applyFileOptions(f, options)
+	f = applyFileOptions(f, opts...)
 
 	// Verify both options were applied
 	// The ignores should include both default ignores and our test ignores
