@@ -5,6 +5,7 @@ import (
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // ProtocolFactory 定义了创建特定协议服务实例的工厂标准。

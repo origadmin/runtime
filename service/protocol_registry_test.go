@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1" // ADD
+	"github.com/origadmin/runtime/interfaces/options"
+
 	// configv1 "github.com/origadmin/runtime/api/gen/go/config/v1" // REMOVE
 	projectContext "github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/interfaces"
