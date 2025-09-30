@@ -1,39 +1,30 @@
+[app]
+name = "my-test-app"
+
+[[discoveries]]
+name = "internal-consul"
+[discoveries.config]
+service_name = "my-test-app"
+type = "consul"
+[discoveries.config.consul]
+address = "consul.internal:8500"
+
+[[discoveries]]
+name = "legacy-etcd"
+[discoveries.config]
+service_name = ""
+type = "etcd"
+[discoveries.config.etcd]
+endpoints = ["etcd.legacy:2379"]
+
 registration_discovery_name = "internal-consul"
 
-[[discoveries]]
-  name = "internal-consul"
-  [discoveries.config]
-    service_name = "my-test-app"
-    type = "consul"
-    [discoveries.config.consul]
-      address = "consul.internal:8500"
-
-[[discoveries]]
-  name = "legacy-etcd"
-  [discoveries.config]
-    service_name = ""
-    type = "etcd"
-    [discoveries.config.etcd]
-      endpoints = ["etcd.legacy:2379"]
-
 [[grpc_servers]]
-  addr = ":9001"
-  endpoint = "127.0.0.1:9001"
+addr = ":9001"
+endpoint = "127.0.0.1:9001"
 
 [[http_servers]]
-  addr = ":8001"
-  endpoint = "127.0.0.1:8001"
+addr = ":8001"
+endpoint = "127.0.0.1:8001"
 
-[[clients]]
-  name = "user-service"
-  discovery_name = "internal-consul"
-  endpoint = "discovery:///user-service"
-  [clients.selector]
-    version = "v1.5.0"
-
-[[clients]]
-  name = "stock-service"
-  discovery_name = "legacy-etcd"
-  endpoint = "discovery:///stock-service"
-  [clients.selector]
-    version = "v1.0.1"
+clients = ["user-service", "stock-service"]

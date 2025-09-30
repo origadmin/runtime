@@ -35,9 +35,9 @@ func NewStructured(cfg interfaces.Config, paths map[string]string) interfaces.St
 	}
 }
 
-// decodeConfig implements a simple and robust decoding logic.
+// decodeComponent implements a simple and robust decoding logic.
 // It no longer contains any fallback logic. It trusts the `paths` map provided by the bootstrap package.
-func (c *structuredConfigImpl) decodeConfig(componentKey string, value any) error {
+func (c *structuredConfigImpl) decodeComponent(componentKey string, value any) error {
 	path, ok := c.paths[componentKey]
 
 	// If the key is not in the paths map, or the path is explicitly empty, it's considered disabled or not configured.
@@ -61,7 +61,7 @@ func (c *structuredConfigImpl) decodeConfig(componentKey string, value any) erro
 // DecodeApp implements the AppConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
 	appConfig := new(appv1.App)
-	if err := c.decodeConfig(constant.ConfigApp, appConfig); err != nil {
+	if err := c.decodeComponent(constant.ConfigApp, appConfig); err != nil {
 		return nil, err
 	}
 	// If the struct is still zero-valued, it means the key was not found or disabled.
@@ -74,7 +74,7 @@ func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
 // DecodeLogger implements the LoggerConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 	loggerConfig := new(loggerv1.Logger)
-	if err := c.decodeConfig(constant.ComponentLogger, loggerConfig); err != nil {
+	if err := c.decodeComponent(constant.ComponentLogger, loggerConfig); err != nil {
 		return nil, err
 	}
 	if loggerConfig.Name == "" && len(loggerConfig.Level) == 0 {
@@ -85,21 +85,46 @@ func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 
 // DecodeDiscoveries implements the DiscoveriesConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	var discoveries map[string]*discoveryv1.Discovery
-	if err := c.decodeConfig(constant.ComponentRegistries, &discoveries); err != nil {
+	// Attempt 1: Try to decode directly into a map (if config is structured as a map).
+	var discoveriesMap map[string]*discoveryv1.Discovery
+	err := c.decodeComponent(constant.ComponentRegistries, &discoveriesMap)
+	if err == nil {
+		// If decoding into a map was successful and it's not empty, return it.
+		if len(discoveriesMap) > 0 {
+			return discoveriesMap, nil
+		}
+		// If it was successful but empty, proceed to try list or return nil.
+	}
+
+	// Attempt 2: If decoding into a map failed or resulted in an empty map,
+	// try to decode into a list and convert it (if config is structured as a list).
+	var discoveryList []*discoveryv1.Discovery
+	err = c.decodeComponent(constant.ComponentRegistries, &discoveryList)
+	if err != nil {
+		// If both attempts failed, return the error from the second attempt.
 		return nil, err
 	}
-	if len(discoveries) == 0 {
+
+	// If the list is empty, return nil.
+	if len(discoveryList) == 0 {
 		return nil, nil
 	}
-	return discoveries, nil
+
+	// Convert the list to a map.
+	discoveriesMap = make(map[string]*discoveryv1.Discovery)
+	for _, d := range discoveryList {
+		if d.Name != "" {
+			discoveriesMap[d.Name] = d
+		}
+	}
+	return discoveriesMap, nil
 }
 
 // DecodeMiddleware implements the MiddlewareConfigDecoder interface.
 // This implementation correctly preserves the user's fix.
 func (c *structuredConfigImpl) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
 	var middlewares *middlewarev1.Middlewares
-	if err := c.decodeConfig(constant.ComponentMiddlewares, &middlewares); err != nil {
+	if err := c.decodeComponent(constant.ComponentMiddlewares, &middlewares); err != nil {
 		return nil, err
 	}
 	// This check correctly handles both a nil pointer and an empty inner slice.

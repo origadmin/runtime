@@ -1,7 +1,10 @@
 # 1. 定义可用的服务发现配置池
+app:
+  name: "my-test-app"
 discoveries:
   - name: "internal-consul"
     config:
+      name: "my-test-app"
       service_name: "my-test-app"
       type: "consul"
       consul:
@@ -27,17 +30,4 @@ http_servers:
     endpoint: "127.0.0.1:8001"
 
 # 4. 我要连接的下游服务
-clients:
-  # user-service 在新的 Consul 里
-  - name: "user-service"
-    discovery_name: "internal-consul" # <-- 明确引用
-    endpoint: "discovery:///user-service"
-    selector:
-      version: "v1.5.0"
-
-  # stock-service 还在旧的 ETCD 里
-  - name: "stock-service"
-    discovery_name: "legacy-etcd" # <-- 明确引用
-    endpoint: "discovery:///stock-service"
-    selector:
-      version: "v1.0.1"
+clients: [ "user-service", "stock-service" ]

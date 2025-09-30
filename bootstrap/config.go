@@ -22,7 +22,7 @@ import (
 var defaultComponentPaths = map[string]string{
 	constant.ConfigApp:            "app",
 	constant.ComponentLogger:      "logger",
-	constant.ComponentRegistries:  "registries",
+	constant.ComponentRegistries:  "discoveries", // Corrected to match full_config.yaml
 	constant.ComponentMiddlewares: "middlewares",
 }
 

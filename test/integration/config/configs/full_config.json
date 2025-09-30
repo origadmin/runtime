@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "my-test-app"
+  },
   "discoveries": [
     {
       "name": "internal-consul",
@@ -27,31 +30,17 @@
   "grpc_servers": [
     {
       "addr": ":9001",
-      "endpoint": "127.0.0.1:9001"
+      "endpoint": "127.0.0.0:9001"
     }
   ],
   "http_servers": [
     {
       "addr": ":8001",
-      "endpoint": "127.0.0.1:8001"
+      "endpoint": "127.0.0.0:8001"
     }
   ],
   "clients": [
-    {
-      "name": "user-service",
-      "discovery_name": "internal-consul",
-      "endpoint": "discovery:///user-service",
-      "selector": {
-        "version": "v1.5.0"
-      }
-    },
-    {
-      "name": "stock-service",
-      "discovery_name": "legacy-etcd",
-      "endpoint": "discovery:///stock-service",
-      "selector": {
-        "version": "v1.0.1"
-      }
-    }
+    "user-service",
+    "stock-service"
   ]
 }
