@@ -35,9 +35,9 @@ func NewStructured(cfg interfaces.Config, paths map[string]string) interfaces.St
 	}
 }
 
-// decodeComponent implements a simple and robust decoding logic.
+// decodeConfig implements a simple and robust decoding logic.
 // It no longer contains any fallback logic. It trusts the `paths` map provided by the bootstrap package.
-func (c *structuredConfigImpl) decodeComponent(componentKey string, value any) error {
+func (c *structuredConfigImpl) decodeConfig(componentKey string, value any) error {
 	path, ok := c.paths[componentKey]
 
 	// If the key is not in the paths map, or the path is explicitly empty, it's considered disabled or not configured.
@@ -61,7 +61,7 @@ func (c *structuredConfigImpl) decodeComponent(componentKey string, value any) e
 // DecodeApp implements the AppConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
 	appConfig := new(appv1.App)
-	if err := c.decodeComponent(constant.ConfigApp, appConfig); err != nil {
+	if err := c.decodeConfig(constant.ConfigApp, appConfig); err != nil {
 		return nil, err
 	}
 	// If the struct is still zero-valued, it means the key was not found or disabled.
@@ -74,7 +74,7 @@ func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
 // DecodeLogger implements the LoggerConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 	loggerConfig := new(loggerv1.Logger)
-	if err := c.decodeComponent(constant.ComponentLogger, loggerConfig); err != nil {
+	if err := c.decodeConfig(constant.ComponentLogger, loggerConfig); err != nil {
 		return nil, err
 	}
 	if loggerConfig.Name == "" && len(loggerConfig.Level) == 0 {
@@ -86,7 +86,7 @@ func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 // DecodeDiscoveries implements the DiscoveriesConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
 	var discoveries map[string]*discoveryv1.Discovery
-	if err := c.decodeComponent(constant.ComponentRegistries, &discoveries); err != nil {
+	if err := c.decodeConfig(constant.ComponentRegistries, &discoveries); err != nil {
 		return nil, err
 	}
 	if len(discoveries) == 0 {
@@ -99,7 +99,7 @@ func (c *structuredConfigImpl) DecodeDiscoveries() (map[string]*discoveryv1.Disc
 // This implementation correctly preserves the user's fix.
 func (c *structuredConfigImpl) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
 	var middlewares *middlewarev1.Middlewares
-	if err := c.decodeComponent(constant.ComponentMiddlewares, &middlewares); err != nil {
+	if err := c.decodeConfig(constant.ComponentMiddlewares, &middlewares); err != nil {
 		return nil, err
 	}
 	// This check correctly handles both a nil pointer and an empty inner slice.
