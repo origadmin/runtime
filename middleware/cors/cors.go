@@ -9,54 +9,41 @@ import (
 	corsv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/cors"
 )
 
-// NewGorillaCors creates a new CORS handler for Gorilla/Mux or standard HTTP servers
-func NewGorillaCors(cfg *corsv1.Cors) func(http.Handler) http.Handler {
-	if cfg == nil || !cfg.Enabled {
-		return func(next http.Handler) http.Handler {
-			return next
-		}
+// defaultCorsOptions returns default CORS options when none are provided
+func defaultCorsOptions() []handlers.CORSOption {
+	return []handlers.CORSOption{
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"}),
+		handlers.MaxAge(86400), // 24 hours
 	}
-
-	options := []handlers.CORSOption{
-		handlers.AllowedOrigins(cfg.AllowOrigins),
-		handlers.AllowedMethods(cfg.AllowMethods),
-		handlers.AllowedHeaders(cfg.AllowHeaders),
-		handlers.ExposedHeaders(cfg.ExposeHeaders),
-	}
-
-	if cfg.AllowCredentials {
-		options = append(options, handlers.AllowCredentials())
-	}
-
-	if cfg.MaxAge > 0 {
-		options = append(options, handlers.MaxAge(int(cfg.MaxAge)))
-	}
-
-	return handlers.CORS(options...)
 }
 
-// NewKratosCors creates a new CORS handler for Kratos HTTP servers
-// Deprecated: Use the implementation in runtime/service/transport/http package instead
-func NewKratosCors(cfg *corsv1.Cors) transhttp.FilterFunc {
-	if cfg == nil || !cfg.Enabled {
-		return nil
+// corsOptionsFromConfig converts a CORS config to CORS options
+func corsOptionsFromConfig(cfg *corsv1.Cors) []handlers.CORSOption {
+	var options []handlers.CORSOption
+
+	// Use default options if no values are provided
+	if len(cfg.AllowOrigins) == 0 {
+		options = append(options, handlers.AllowedOrigins([]string{"*"}))
+	} else {
+		options = append(options, handlers.AllowedOrigins(cfg.AllowOrigins))
 	}
 
-	// If CORS is enabled but no configuration is provided, use defaults
-	if len(cfg.AllowOrigins) == 0 && len(cfg.AllowMethods) == 0 && len(cfg.AllowHeaders) == 0 {
-		return handlers.CORS(
-			handlers.AllowedOrigins([]string{"*"}),
-			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}),
-			handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"}),
-			handlers.MaxAge(86400), // 24 hours
-		)
+	if len(cfg.AllowMethods) == 0 {
+		options = append(options, handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}))
+	} else {
+		options = append(options, handlers.AllowedMethods(cfg.AllowMethods))
 	}
 
-	options := []handlers.CORSOption{
-		handlers.AllowedOrigins(cfg.AllowOrigins),
-		handlers.AllowedMethods(cfg.AllowMethods),
-		handlers.AllowedHeaders(cfg.AllowHeaders),
-		handlers.ExposedHeaders(cfg.ExposeHeaders),
+	if len(cfg.AllowHeaders) == 0 {
+		options = append(options, handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"}))
+	} else {
+		options = append(options, handlers.AllowedHeaders(cfg.AllowHeaders))
+	}
+
+	if len(cfg.ExposeHeaders) > 0 {
+		options = append(options, handlers.ExposedHeaders(cfg.ExposeHeaders))
 	}
 
 	if cfg.AllowCredentials {
@@ -68,6 +55,52 @@ func NewKratosCors(cfg *corsv1.Cors) transhttp.FilterFunc {
 	} else if cfg.MaxAge == 0 {
 		// Default max age if not specified
 		options = append(options, handlers.MaxAge(86400)) // 24 hours
+	}
+
+	return options
+}
+
+// NewGorillaCors creates a new CORS handler for Gorilla/Mux or standard HTTP servers
+func NewGorillaCors(cfg *corsv1.Cors) func(http.Handler) http.Handler {
+	if cfg == nil || !cfg.Enabled {
+		return func(next http.Handler) http.Handler {
+			return next
+		}
+	}
+
+	// If CORS is enabled but no configuration is provided, use defaults
+	var options []handlers.CORSOption
+	if len(cfg.AllowOrigins) == 0 && len(cfg.AllowMethods) == 0 && len(cfg.AllowHeaders) == 0 {
+		options = defaultCorsOptions()
+	} else {
+		options = corsOptionsFromConfig(cfg)
+	}
+
+	// Add credentials option if specified
+	if cfg.AllowCredentials {
+		options = append(options, handlers.AllowCredentials())
+	}
+
+	return handlers.CORS(options...)
+}
+
+// NewKratosCors creates a new CORS handler for Kratos HTTP servers
+func NewKratosCors(cfg *corsv1.Cors) transhttp.FilterFunc {
+	if cfg == nil || !cfg.Enabled {
+		return nil
+	}
+
+	// If CORS is enabled but no configuration is provided, use defaults
+	var options []handlers.CORSOption
+	if len(cfg.AllowOrigins) == 0 && len(cfg.AllowMethods) == 0 && len(cfg.AllowHeaders) == 0 {
+		options = defaultCorsOptions()
+	} else {
+		options = corsOptionsFromConfig(cfg)
+	}
+
+	// Add credentials option if specified
+	if cfg.AllowCredentials {
+		options = append(options, handlers.AllowCredentials())
 	}
 
 	return handlers.CORS(options...)

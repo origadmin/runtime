@@ -35,6 +35,11 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 		return nil, err
 	}
 
+	// Register pprof handlers if enabled
+	if httpConfig.GetEnablePprof() {
+		registerPprofHandlers(srv)
+	}
+
 	// Register the user's business logic services if a registrar is provided.
 	if serverOpts.ServiceOptions != nil && serverOpts.ServiceOptions.Registrar != nil {
 		if httpRegistrar, ok := serverOpts.ServiceOptions.Registrar.(service.HTTPRegistrar); ok {

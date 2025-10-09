@@ -90,6 +90,8 @@ func (m *HttpServerConfig) validate(all bool) error {
 
 	// no validation rules for Network
 
+	// no validation rules for EnablePprof
+
 	if m.TlsConfig != nil {
 
 		if all {

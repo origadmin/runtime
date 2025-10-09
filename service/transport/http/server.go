@@ -73,6 +73,14 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 		kratosOpts = append(kratosOpts, transhttp.TLSConfig(tlsCfg))
 	}
 
+	// Add CORS support
+	if corsConfig := httpConfig.GetCors(); corsConfig != nil && corsConfig.GetEnabled() {
+		corsHandler := NewCorsHandler(corsConfig)
+		if corsHandler != nil {
+			kratosOpts = append(kratosOpts, transhttp.Filter(corsHandler))
+		}
+	}
+
 	// Apply any external Kratos HTTP server options passed via functional options.
 	// These are applied last, allowing them to override previous options if needed.
 	if len(serverOpts.HttpServerOptions) > 0 {

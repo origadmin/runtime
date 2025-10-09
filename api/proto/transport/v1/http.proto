@@ -3,9 +3,9 @@ syntax = "proto3";
 package transport.v1;
 
 import "google/protobuf/duration.proto";
+import "middleware/v1/cors/cors.proto";
 import "security/transport/v1/tls.proto";
 import "transport/v1/selector.proto";
-import "middleware/v1/cors/cors.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
 
@@ -27,9 +27,12 @@ message HttpServerConfig {
 
   // network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
   string network = 5;
-  
+
   // cors configuration for the HTTP server
   optional middleware.v1.cors.Cors cors = 6;
+
+  // enable_pprof indicates whether to enable pprof debugging endpoints.
+  bool enable_pprof = 7;
 }
 
 // HttpClientConfig defines the core configuration for creating a Kratos HTTP client.

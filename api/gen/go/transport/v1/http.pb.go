@@ -40,7 +40,9 @@ type HttpServerConfig struct {
 	// network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
 	Network string `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`
 	// cors configuration for the HTTP server
-	Cors          *cors.Cors `protobuf:"bytes,6,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
+	Cors *cors.Cors `protobuf:"bytes,6,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
+	// enable_pprof indicates whether to enable pprof debugging endpoints.
+	EnablePprof   bool `protobuf:"varint,7,opt,name=enable_pprof,json=enablePprof,proto3" json:"enable_pprof,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -115,6 +117,13 @@ func (x *HttpServerConfig) GetCors() *cors.Cors {
 		return x.Cors
 	}
 	return nil
+}
+
+func (x *HttpServerConfig) GetEnablePprof() bool {
+	if x != nil {
+		return x.EnablePprof
+	}
+	return false
 }
 
 // HttpClientConfig defines the core configuration for creating a Kratos HTTP client.
@@ -224,7 +233,7 @@ var File_transport_v1_http_proto protoreflect.FileDescriptor
 
 const file_transport_v1_http_proto_rawDesc = "" +
 	"\n" +
-	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x1btransport/v1/selector.proto\x1a\x1dmiddleware/v1/cors/cors.proto\"\xa8\x02\n" +
+	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1dmiddleware/v1/cors/cors.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x1btransport/v1/selector.proto\"\xcb\x02\n" +
 	"\x10HttpServerConfig\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
@@ -232,7 +241,8 @@ const file_transport_v1_http_proto_rawDesc = "" +
 	"\n" +
 	"tls_config\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01\x12\x18\n" +
 	"\anetwork\x18\x05 \x01(\tR\anetwork\x121\n" +
-	"\x04cors\x18\x06 \x01(\v2\x18.middleware.v1.cors.CorsH\x01R\x04cors\x88\x01\x01B\r\n" +
+	"\x04cors\x18\x06 \x01(\v2\x18.middleware.v1.cors.CorsH\x01R\x04cors\x88\x01\x01\x12!\n" +
+	"\fenable_pprof\x18\a \x01(\bR\venablePprofB\r\n" +
 	"\v_tls_configB\a\n" +
 	"\x05_cors\"\x8f\x03\n" +
 	"\x10HttpClientConfig\x12\x1a\n" +
