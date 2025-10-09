@@ -10,8 +10,8 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
-	"github.com/origadmin/runtime/interfaces/container"
+	"github.com/origadmin/runtime/api/gen/go/transport/v1"
+	"github.com/origadmin/runtime/interfaces"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
@@ -19,26 +19,34 @@ import (
 // NewGRPCClient creates a new concrete gRPC client connection based on the provided configuration.
 // It returns *transgrpc.ClientConn.
 func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig, clientOpts *ClientOptions) (*grpc.ClientConn, error) {
-	// 3. Prepare the Kratos gRPC client options.
+	// Prepare the Kratos gRPC client options.
 	var kratosOpts []transgrpc.ClientOption
 
-	// Introduce a local variable for the container to reduce redundant nil checks.
-	var c container.Container
+	// Check in advance and get Container instance
+	var c interfaces.Container
 	if clientOpts.ServiceOptions != nil {
 		c = clientOpts.ServiceOptions.Container
 	}
 
-	// 4. Apply options from the protobuf configuration.
+	// Return error if middlewares are configured but no container is provided.
+	if len(grpcConfig.GetMiddlewares()) > 0 && c == nil {
+		return nil, fmt.Errorf("application container is required for middleware but not found in options")
+	}
+
+	// Return error if a named discovery client is configured but no container is provided.
+	if discoveryName := grpcConfig.GetDiscoveryName(); discoveryName != "" && c == nil {
+		return nil, fmt.Errorf("application container is required for named discovery client but not found in options")
+	}
+
+	// Apply options from the protobuf configuration.
 	if grpcConfig.GetTimeout() != nil {
 		kratosOpts = append(kratosOpts, transgrpc.WithTimeout(grpcConfig.GetTimeout().AsDuration()))
 	}
 
-	// 5. Configure middlewares.
+	// Configure middlewares.
 	var mws []middleware.Middleware
 	if len(grpcConfig.GetMiddlewares()) > 0 {
-		if c == nil {
-			return nil, fmt.Errorf("application container is required for middleware but not found in options")
-		}
+		// 'c' is guaranteed to be non-nil at this point.
 		for _, name := range grpcConfig.GetMiddlewares() {
 			m, ok := c.ClientMiddleware(name)
 			if !ok {
@@ -55,7 +63,7 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 		kratosOpts = append(kratosOpts, transgrpc.WithMiddleware(mws...))
 	}
 
-	// 6. Configure service discovery and endpoint.
+	// Configure service discovery and endpoint.
 	var discoveryClient registry.Discovery
 	endpoint := grpcConfig.GetEndpoint()
 
@@ -66,9 +74,7 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 
 	// Determine the discovery client.
 	if discoveryName := grpcConfig.GetDiscoveryName(); discoveryName != "" {
-		if c == nil {
-			return nil, fmt.Errorf("application container is required for named discovery client but not found in options")
-		}
+		// 'c' is guaranteed to be non-nil at this point.
 		if d, ok := c.Discovery(discoveryName); ok {
 			discoveryClient = d
 		} else {
@@ -97,7 +103,7 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 		return nil, fmt.Errorf("endpoint '%s' requires a discovery client, but none is configured", endpoint)
 	}
 
-	// 7. Configure node filters (selector).
+	// Configure node filters (selector).
 	if selectorConfig := grpcConfig.GetSelector(); selectorConfig != nil {
 		// Call the original, trusted NewFilter function from your app's selector package.
 		nodeFilter, err := serviceselector.NewFilter(selectorConfig)
@@ -110,7 +116,7 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 		}
 	}
 
-	// 8. Configure TLS.
+	// Configure TLS.
 	useSecureDial := false
 	if tlsConfig := grpcConfig.GetTlsConfig(); tlsConfig != nil && tlsConfig.GetEnabled() {
 		tlsCfg, err := servicetls.NewClientTLSConfig(tlsConfig)
@@ -121,13 +127,13 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 		useSecureDial = true
 	}
 
-	// 9. Apply any external native gRPC dial options passed via functional options.
+	// Apply any external native gRPC dial options passed via functional options.
 	// These are applied last, allowing them to override previous options if needed.
 	if len(clientOpts.GrpcDialOptions) > 0 {
 		kratosOpts = append(kratosOpts, transgrpc.WithOptions(clientOpts.GrpcDialOptions...))
 	}
 
-	// 10. Create the Kratos gRPC client connection.
+	// Create the Kratos gRPC client connection.
 	var conn *grpc.ClientConn
 	var err error
 	if useSecureDial {

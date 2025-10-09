@@ -12,7 +12,7 @@ import (
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	runtimelog "github.com/origadmin/runtime/log"
-	runtimeMiddleware "github.com/origadmin/runtime/middleware" // 导入 runtime/middleware 包，但只在内部使用
+	runtimeMiddleware "github.com/origadmin/runtime/middleware" // Import runtime/middleware package, but only for internal use.
 	runtimeRegistry "github.com/origadmin/runtime/registry"
 )
 
@@ -24,8 +24,8 @@ type container struct {
 	registrars           map[string]registry.Registrar
 	defaultRegistrar     registry.Registrar
 	components           map[string]interface{}
-	serverMiddlewaresMap map[string]middleware.Middleware // 修正类型
-	clientMiddlewaresMap map[string]middleware.Middleware // 修正类型
+	serverMiddlewaresMap map[string]middleware.Middleware // Corrected type
+	clientMiddlewaresMap map[string]middleware.Middleware // Corrected type
 }
 
 // Statically assert that componentProviderImpl implements the interface.
@@ -45,8 +45,8 @@ type Builder struct {
 func NewContainer() interfaces.Container {
 	return &container{
 		components:           make(map[string]interface{}),
-		serverMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
-		clientMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
+		serverMiddlewaresMap: make(map[string]middleware.Middleware), // Corrected type
+		clientMiddlewaresMap: make(map[string]middleware.Middleware), // Corrected type
 	}
 }
 
@@ -59,8 +59,8 @@ func NewBuilder(componentFactories map[string]interfaces.ComponentFactory) *Buil
 			components:           make(map[string]interface{}),
 			discoveries:          make(map[string]registry.Discovery),
 			registrars:           make(map[string]registry.Registrar),
-			serverMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
-			clientMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
+			serverMiddlewaresMap: make(map[string]middleware.Middleware), // Corrected type
+			clientMiddlewaresMap: make(map[string]middleware.Middleware), // Corrected type
 		},
 	}
 }
@@ -217,7 +217,6 @@ func (b *Builder) initRegistries() error {
 	//if discoveryCfg.Default != "" {
 	//	if r, ok := b.container.registrars[discoveryCfg.Default]; ok {
 	//		helper.Infow("msg", "default registrar set", "name", discoveryCfg.Default)
-	//		b.container.defaultRegistrar = r
 	//	} else {
 	//		helper.Warnw("msg", "default registrar not found", "name", discoveryCfg.Default)
 	//	}
@@ -228,8 +227,8 @@ func (b *Builder) initRegistries() error {
 
 func (b *Builder) initMiddlewares() error {
 	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
-	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware) // 修正类型
-	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware) // 修正类型
+	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
+	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
 
 	middlewares, err := b.config.DecodeMiddleware()
 	if err != nil {
@@ -240,18 +239,18 @@ func (b *Builder) initMiddlewares() error {
 	for _, mc := range middlewares.GetMiddlewares() {
 		if mc.GetEnabled() {
 			// Assuming NewClient and NewServer support WithLogger option
-			mclient, ok := runtimeMiddleware.NewClient(mc, runtimelog.WithLogger(logger)) // 使用 runtimeMiddleware
+			mclient, ok := runtimeMiddleware.NewClient(mc, runtimelog.WithLogger(logger)) // Use runtimeMiddleware
 			if !ok {
 				helper.Warnw("msg", "failed to create client middleware", "type", mc.GetType())
 				continue
 			}
-			mserver, ok := runtimeMiddleware.NewServer(mc, runtimelog.WithLogger(logger)) // 使用 runtimeMiddleware
+			mserver, ok := runtimeMiddleware.NewServer(mc, runtimelog.WithLogger(logger)) // Use runtimeMiddleware
 			if !ok {
 				helper.Warnw("msg", "failed to create server middleware", "type", mc.GetType())
 				continue
 			}
-			b.container.serverMiddlewaresMap[mc.GetType()] = mserver // 存储 kratos middleware.Middleware
-			b.container.clientMiddlewaresMap[mc.GetType()] = mclient // 存储 kratos middleware.Middleware
+			b.container.serverMiddlewaresMap[mc.GetType()] = mserver // Store kratos middleware.Middleware
+			b.container.clientMiddlewaresMap[mc.GetType()] = mclient // Store kratos middleware.Middleware
 		}
 	}
 	return nil
