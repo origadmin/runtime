@@ -3,8 +3,8 @@ syntax = "proto3";
 package transport.v1;
 
 import "google/protobuf/duration.proto";
-import "transport/v1/selector.proto";
 import "security/transport/v1/tls.proto";
+import "transport/v1/selector.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
 
@@ -26,9 +26,6 @@ message HttpServerConfig {
 
   // network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
   string network = 5;
-
-  // shutdown_timeout is the graceful shutdown timeout for the server.
-  google.protobuf.Duration shutdown_timeout = 6;
 }
 
 // HttpClientConfig defines the core configuration for creating a Kratos HTTP client.

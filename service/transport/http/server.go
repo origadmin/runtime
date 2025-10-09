@@ -2,27 +2,20 @@ package http
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/tls"
-	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // NewHTTPServer creates a new concrete HTTP server instance based on the provided configuration.
 // It returns *transhttp.Server, not the generic interfaces.Server.
 func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerOptions) (*transhttp.Server, error) {
-	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
-	ll.Debugf("Creating new HTTP server instance with config: %+v", httpConfig)
-
-	if httpConfig == nil {
-		return nil, tkerrors.Errorf("HTTP server config is required for creation")
-	}
+	// Prepare the Kratos HTTP server options.
+	var kratosOpts []transhttp.ServerOption
 
 	// Get the container instance. It will be nil if not provided in options.
 	var c interfaces.Container
@@ -38,8 +31,6 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 	if hasMiddlewaresConfigured && c == nil {
 		return nil, fmt.Errorf("application container is required for server middlewares but not found in options")
 	}
-
-	var kOpts []transhttp.ServerOption
 
 	// Configure middlewares.
 	var mws []middleware.Middleware
@@ -58,7 +49,7 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 	}
 
 	if len(mws) > 0 {
-		kOpts = append(kOpts, transhttp.Middleware(mws...))
+		kratosOpts = append(kratosOpts, transhttp.Middleware(mws...))
 	}
 
 	// Apply other server options from protobuf config
@@ -71,17 +62,15 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 	if httpConfig.Timeout != nil {
 		kratosOpts = append(kratosOpts, transhttp.Timeout(httpConfig.Timeout.AsDuration()))
 	}
-	if httpConfig.ShutdownTimeout != nil {
-		kratosOpts = append(kOpts, transhttp.ShutdownTimeout(httpConfig.ShutdownTimeout.AsDuration()))
-	}
 
 	// Apply TLS configuration
-	if httpConfig.GetTls() != nil && httpConfig.GetTls().GetEnabled() {
-		tlsConfig, err := tls.NewServerTLSConfig(httpConfig.GetTls())
+	// Configure TLS for server
+	if tlsConfig := httpConfig.GetTlsConfig(); tlsConfig != nil && tlsConfig.GetEnabled() {
+		tlsCfg, err := tls.NewServerTLSConfig(tlsConfig)
 		if err != nil {
-			return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
+			return nil, fmt.Errorf("failed to create server TLS config: %w", err)
 		}
-		kratosOpts = append(kratosOpts, transhttp.TLSConfig(tlsConfig))
+		kratosOpts = append(kratosOpts, transhttp.TLSConfig(tlsCfg))
 	}
 
 	// Apply any external Kratos HTTP server options passed via functional options.

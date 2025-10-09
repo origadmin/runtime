@@ -4,22 +4,28 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
-	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/service/selector"
 	"github.com/origadmin/runtime/service/tls"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
-// DefaultServerMiddlewares returns the default server middlewares and options
-func DefaultServerMiddlewares() []transhttp.ServerOption {
-	return []transhttp.ServerOption{
-		transhttp.Middleware(recovery.Recovery()),
-		transhttp.ErrorEncoder(errors.NewErrorEncoder()),
+// DefaultServerMiddlewares returns the default server middlewares
+func DefaultServerMiddlewares() []middleware.Middleware {
+	return []middleware.Middleware{
+		recovery.Recovery(),
+	}
+}
+
+// DefaultClientMiddlewares returns the default client middlewares
+func DefaultClientMiddlewares() []middleware.Middleware {
+	return []middleware.Middleware{
+		recovery.Recovery(),
 	}
 }
 
