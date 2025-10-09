@@ -23,6 +23,14 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 		c = serverOpts.ServiceOptions.Container
 	}
 
+	// Add CORS support
+	if corsConfig := httpConfig.GetCors(); corsConfig != nil && corsConfig.GetEnabled() {
+		corsHandler := NewCorsHandler(corsConfig)
+		if corsHandler != nil {
+			kratosOpts = append(kratosOpts, transhttp.Filter(corsHandler))
+		}
+	}
+
 	// Check if middlewares are configured.
 	hasMiddlewaresConfigured := len(httpConfig.GetMiddlewares()) > 0
 
@@ -71,14 +79,6 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 			return nil, fmt.Errorf("failed to create server TLS config: %w", err)
 		}
 		kratosOpts = append(kratosOpts, transhttp.TLSConfig(tlsCfg))
-	}
-
-	// Add CORS support
-	if corsConfig := httpConfig.GetCors(); corsConfig != nil && corsConfig.GetEnabled() {
-		corsHandler := NewCorsHandler(corsConfig)
-		if corsHandler != nil {
-			kratosOpts = append(kratosOpts, transhttp.Filter(corsHandler))
-		}
 	}
 
 	// Apply any external Kratos HTTP server options passed via functional options.
