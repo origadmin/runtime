@@ -49,29 +49,34 @@ func adaptServerConfig(cfg *transportv1.Server) ([]transhttp.ServerOption, error
 	}
 
 	// Add network and address configurations
-	if httpCfg.GetNetwork() != "" {
-		opts = append(opts, transhttp.Network(httpCfg.GetNetwork()))
+	if httpCfg.Network != "" {
+		opts = append(opts, transhttp.Network(httpCfg.Network))
 	}
 
-	if httpCfg.GetAddr() != "" {
-		opts = append(opts, transhttp.Address(httpCfg.GetAddr()))
+	if httpCfg.Addr != "" {
+		opts = append(opts, transhttp.Address(httpCfg.Addr))
 	}
 
 	// Configure timeout
 	timeout := 5 * time.Second
-	if httpCfg.GetTimeout() != 0 {
-		timeout = time.Duration(httpCfg.GetTimeout() * 1e6)
+	if httpCfg.Timeout != nil {
+		timeout = httpCfg.Timeout.AsDuration()
 	}
 	opts = append(opts, transhttp.Timeout(timeout))
 
+	// Configure shutdown timeout
+	if httpCfg.ShutdownTimeout != nil {
+		opts = append(opts, transhttp.ShutdownTimeout(httpCfg.ShutdownTimeout.AsDuration()))
+	}
+
 	// Handle endpoint configuration
-	ll.Debugw("msg", "HTTP", "endpoint", httpCfg.GetEndpoint())
-	if httpCfg.GetEndpoint() != "" {
-		parsedEndpoint, err := url.Parse(httpCfg.GetEndpoint())
+	ll.Debugw("msg", "HTTP", "address", httpCfg.Addr)
+	if httpCfg.Addr != "" {
+		parsedAddr, err := url.Parse("http://" + httpCfg.Addr)
 		if err != nil {
-			return nil, tkerrors.Wrapf(err, "failed to parse endpoint for server creation")
+			return nil, tkerrors.Wrapf(err, "failed to parse address for server creation")
 		}
-		opts = append(opts, transhttp.Endpoint(parsedEndpoint))
+		opts = append(opts, transhttp.Endpoint(parsedAddr))
 	}
 
 	return opts, nil
@@ -92,12 +97,12 @@ func adaptClientConfig(cfg *transportv1.Client) ([]transhttp.ClientOption, error
 	var opts []transhttp.ClientOption
 
 	// 2. Processing endpoints
-	if target := httpCfg.GetTarget(); target != "" {
-		opts = append(opts, transhttp.WithEndpoint(target))
+	if httpCfg.Endpoint != "" {
+		opts = append(opts, transhttp.WithEndpoint(httpCfg.Endpoint))
 	}
 
 	// 3. Processing timeout
-	if timeout := httpCfg.GetTimeout(); timeout > 0 {
+	if httpCfg.Timeout != nil {
 		opts = append(opts, transhttp.WithTimeout(time.Duration(timeout)*time.Millisecond))
 	}
 

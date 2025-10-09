@@ -13,7 +13,6 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
 )
 
@@ -22,49 +21,53 @@ type httpProtocolFactory struct{}
 
 // init registers this factory with the framework's protocol registry.
 func init() {
-	service.RegisterProtocol("http", &httpProtocolFactory{})
+	service.RegisterProtocol(service.ProtocolHTTP, &httpProtocolFactory{})
 }
 
-// NewServer creates a new HTTP server instance.
+// NewServer creates a new HTTP server instance based on the provided configuration.
 func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error) {
-	// 1. Extract the specific HTTP server config from the container.
+	// 1. Extract the specific HTTP server config from the transport configuration.
 	httpConfig := cfg.GetHttp()
 	if httpConfig == nil {
 		return nil, fmt.Errorf("HTTP server config is missing in transport container")
 	}
 
-	// 2. Apply options to a Options struct to get a configured context.
-	initialServiceCfg := &service.Options{}
-	configuredContext := optionutil.Apply(initialServiceCfg, opts...)
+	// 2. Get all HTTP server-specific and common service-level options.
+	serverOpts := FromServerOptions(opts)
 
-	// 3. Retrieve the fully configured Options from the context.
-	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.Options](configuredContext)
-	if !ok {
-		return nil, fmt.Errorf("failed to retrieve configured service options from context")
+	// Get the container instance. It will be nil if not provided in options.
+	var c interfaces.Container
+	if serverOpts.ServiceOptions != nil {
+		c = serverOpts.ServiceOptions.Container
 	}
 
-	// 4. Get the registrar from the configured service options.
-	httpRegistrar, ok := configuredServiceCfg.Registrar.(service.HTTPRegistrar)
-	if !ok && configuredServiceCfg.Registrar != nil {
-		return nil, fmt.Errorf("invalid registrar: expected service.HTTPRegistrar, got %T", configuredServiceCfg.Registrar)
-	}
+	// Check if middlewares are configured.
+	hasMiddlewaresConfigured := len(httpConfig.GetMiddlewares()) > 0
 
-	// 5. Get the middleware provider.
-	if configuredServiceCfg.MiddlewareProvider == nil {
-		return nil, fmt.Errorf("middleware provider not found in options")
+	// If middlewares are configured but no container is provided, return an error.
+	// This consolidates the nil check for the container.
+	if hasMiddlewaresConfigured && c == nil {
+		return nil, fmt.Errorf("application container is required for server middlewares but not found in options")
 	}
 
 	var kOpts []transhttp.ServerOption
-	var mws []middleware.Middleware
 
-	// Build middleware chain using the provider
-	for _, name := range httpConfig.Middlewares {
-		m, ok := configuredServiceCfg.MiddlewareProvider.GetMiddleware(name)
-		if !ok {
-			return nil, fmt.Errorf("middleware '%s' not found via provider", name)
+	// Configure middlewares.
+	var mws []middleware.Middleware
+	if hasMiddlewaresConfigured {
+		// 'c' is guaranteed to be non-nil at this point due to the early check above.
+		for _, name := range httpConfig.GetMiddlewares() {
+			m, ok := c.ServerMiddleware(name)
+			if !ok {
+				return nil, fmt.Errorf("server middleware '%s' not found in container", name)
+			}
+			mws = append(mws, m)
 		}
-		mws = append(mws, m)
+	} else {
+		// If no specific middlewares are configured, use default ones from adapter.go.
+		mws = DefaultServerMiddlewares()
 	}
+
 	if len(mws) > 0 {
 		kOpts = append(kOpts, transhttp.Middleware(mws...))
 	}
@@ -87,64 +90,84 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	// Create the HTTP server instance
 	srv := transhttp.NewServer(kOpts...)
 
-	// Register business logic
-	if httpRegistrar != nil {
-		httpRegistrar.RegisterHTTP(srv)
+	// Register the user's business logic services if a registrar is provided.
+	if serverOpts.ServiceOptions != nil && serverOpts.ServiceOptions.Registrar != nil {
+		if httpRegistrar, ok := serverOpts.ServiceOptions.Registrar.(service.HTTPRegistrar); ok {
+			httpRegistrar.RegisterHTTP(srv)
+		} else {
+			return nil, fmt.Errorf("invalid registrar: expected service.HTTPRegistrar, got %T", serverOpts.ServiceOptions.Registrar)
+		}
 	}
 
 	return srv, nil
 }
 
-// NewClient creates a new HTTP client instance.
+// NewClient creates a new HTTP client instance based on the provided configuration.
 func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
-	// 1. Extract the specific HTTP client config from the container.
+	// 1. Extract the specific HTTP client config from the transport configuration.
 	httpConfig := cfg.GetHttp()
 	if httpConfig == nil {
 		return nil, fmt.Errorf("HTTP client config is missing in transport container")
 	}
 
-	// 2. Apply options to get the configured context and service options.
-	initialServiceCfg := &service.Options{}
-	configuredContext := optionutil.Apply(initialServiceCfg, opts...)
-	configuredServiceCfg, ok := optionutil.ConfigFromContext[*service.Options](configuredContext)
-	if !ok {
-		return nil, fmt.Errorf("failed to retrieve configured service options from context")
+	// 2. Get all HTTP client-specific and common service-level options.
+	clientOpts := FromClientOptions(opts)
+
+	// Get the container instance. It will be nil if not provided in options.
+	var c interfaces.Container
+	if clientOpts.ServiceOptions != nil {
+		c = clientOpts.ServiceOptions.Container
 	}
 
-	// 3. Get the middleware provider.
-	if configuredServiceCfg.MiddlewareProvider == nil {
-		return nil, fmt.Errorf("middleware provider not found in options")
+	// Determine if container-dependent features are configured.
+	// ClientSelectorFilter might need the container for discovery.
+	containerDependentFeaturesEnabled := len(httpConfig.GetMiddlewares()) > 0 || clientOpts.ClientSelectorFilter != nil
+
+	// If container-dependent features are enabled but no container is provided (c is nil),
+	// return an error immediately. This consolidates the nil checks for the container.
+	if containerDependentFeaturesEnabled && c == nil {
+		return nil, fmt.Errorf("application container is required for client configuration but not found in options")
 	}
 
-	var clientOpts []transhttp.ClientOption
+	var clientKratosOpts []transhttp.ClientOption
 	var mws []middleware.Middleware
 
-	// Build client interceptors (middlewares) using the provider
-	for _, name := range httpConfig.Middlewares {
-		m, ok := configuredServiceCfg.MiddlewareProvider.GetMiddleware(name)
-		if !ok {
-			return nil, fmt.Errorf("client middleware '%s' not found via provider", name)
+	// Configure middlewares.
+	if len(httpConfig.GetMiddlewares()) > 0 {
+		// 'c' is guaranteed to be non-nil at this point if middlewares are configured.
+		for _, name := range httpConfig.GetMiddlewares() {
+			m, ok := c.ClientMiddleware(name)
+			if !ok {
+				return nil, fmt.Errorf("client middleware '%s' not found in container", name)
+			}
+			mws = append(mws, m)
 		}
-		mws = append(mws, m)
+	} else {
+		// If no specific middlewares are configured, use default ones from adapter.go.
+		mws = DefaultClientMiddlewares()
 	}
+
 	if len(mws) > 0 {
-		clientOpts = append(clientOpts, transhttp.WithMiddleware(mws...))
+		clientKratosOpts = append(clientKratosOpts, transhttp.WithMiddleware(mws...))
 	}
 
 	// Apply other client options from protobuf config
 	if httpConfig.Timeout != nil {
-		clientOpts = append(clientOpts, transhttp.WithTimeout(httpConfig.Timeout.AsDuration()))
+		clientKratosOpts = append(clientKratosOpts, transhttp.WithTimeout(httpConfig.Timeout.AsDuration()))
 	}
 
 	// Determine target endpoint: prioritize endpoint from options over direct target from config
 	target := httpConfig.Endpoint
-	if configuredServiceCfg.ClientEndpoint != "" {
-		target = configuredServiceCfg.ClientEndpoint
+	if clientOpts.ClientEndpoint != "" {
+		target = clientOpts.ClientEndpoint
 	}
 
 	// Apply selector filter if provided via options
-	if configuredServiceCfg.ClientSelectorFilter != nil {
+	if clientOpts.ClientSelectorFilter != nil {
+		// 'c' is guaranteed to be non-nil at this point if a selector filter is configured.
 		// TODO: Kratos HTTP client needs a way to integrate NodeFilter with discovery.
+		// For now, we'll just ensure the container is available if a filter is set.
+		// Assuming the selector filter might need discovery from the container.
 	}
 
 	// Create a new HTTP client with custom transport to handle dial timeout and TLS
@@ -169,7 +192,7 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 	}
 
 	// Create the Kratos HTTP client
-	client, err := transhttp.NewClient(ctx, transhttp.WithEndpoint(target), transhttp.WithTransport(transport), clientOpts...)
+	client, err := transhttp.NewClient(ctx, transhttp.WithEndpoint(target), transhttp.WithTransport(transport), clientKratosOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP client to %s: %w", target, err)
 	}

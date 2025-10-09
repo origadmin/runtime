@@ -5,48 +5,69 @@ import (
 
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/optionutil"
+	"github.com/origadmin/runtime/service"
 )
 
-// Empty keys
-var (
-	// serverOptionsKey is the context key for HTTP server options
-	serverOptionsKey = optionutil.Key[[]transhttp.ServerOption]{}
-	// clientOptionsKey is the context key for HTTP client options
-	clientOptionsKey = optionutil.Key[[]transhttp.ClientOption]{}
-)
+// ServerOptions is a container for HTTP server-specific options.
+type ServerOptions struct {
+	// ServiceOptions holds common service-level configurations.
+	ServiceOptions *service.Options
 
-type httpServerOptions struct {
-	ServerOptions []transhttp.ServerOption
+	// HttpServerOptions allows passing native Kratos HTTP server options.
+	HttpServerOptions []transhttp.ServerOption
 }
 
-type httpClientOptions struct {
-	ClientOptions []transhttp.ClientOption
+// FromServerOptions creates a new HTTP ServerOptions struct by applying a slice of functional options.
+// It also initializes and includes the common service-level options, ensuring they are applied only once.
+func FromServerOptions(opts []options.Option) *ServerOptions {
+	o := &ServerOptions{}
+	// Apply HTTP server-specific options first
+	optionutil.Apply(o, opts...)
+
+	// Initialize and include common service-level options if not already set.
+	// This prevents redundant application of common options.
+	if o.ServiceOptions == nil {
+		o.ServiceOptions = service.FromOptions(opts)
+	}
+
+	return o
 }
 
-// WithServerOption adds HTTP server options to the context.
-func WithServerOption(opts ...transhttp.ServerOption) options.Option {
-	return optionutil.Update(func(o *httpServerOptions) {
-		o.ServerOptions = append(o.ServerOptions, opts...)
+// WithHttpServerOptions appends Kratos HTTP server options.
+func WithHttpServerOptions(opts ...transhttp.ServerOption) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.HttpServerOptions = append(o.HttpServerOptions, opts...)
 	})
 }
 
-// WithClientOption adds HTTP client options to the context.
-func WithClientOption(opts ...transhttp.ClientOption) options.Option {
-	return optionutil.Update(func(o *httpClientOptions) {
-		o.ClientOptions = append(o.ClientOptions, opts...)
+// ClientOptions is a container for HTTP client-specific options.
+type ClientOptions struct {
+	// ServiceOptions holds common service-level configurations.
+	ServiceOptions *service.Options
+
+	// HttpClientOptions allows passing native Kratos HTTP client options.
+	HttpClientOptions []transhttp.ClientOption
+}
+
+// FromClientOptions creates a new HTTP ClientOptions struct by applying a slice of functional options.
+// It also initializes and includes the common service-level options, ensuring they are applied only once.
+func FromClientOptions(opts []options.Option) *ClientOptions {
+	o := &ClientOptions{}
+	// Apply HTTP client-specific options first
+	optionutil.Apply(o, opts...)
+
+	// Initialize and include common service-level options if not already set.
+	// This prevents redundant application of common options.
+	if o.ServiceOptions == nil {
+		o.ServiceOptions = service.FromOptions(opts)
+	}
+
+	return o
+}
+
+// WithHttpClientOptions appends Kratos HTTP client options.
+func WithHttpClientOptions(opts ...transhttp.ClientOption) options.Option {
+	return optionutil.Update(func(o *ClientOptions) {
+		o.HttpClientOptions = append(o.HttpClientOptions, opts...)
 	})
-}
-
-// FromServerOptions retrieves HTTP server options from the service.Options.
-func FromServerOptions(opts ...options.Option) []transhttp.ServerOption {
-	var o httpServerOptions
-	optionutil.Apply(&o, opts...)
-	return o.ServerOptions
-}
-
-// FromClientOptions retrieves HTTP client options from the service.Options.
-func FromClientOptions(opts ...options.Option) []transhttp.ClientOption {
-	var o httpClientOptions
-	optionutil.Apply(&o, opts...)
-	return o.ClientOptions
 }

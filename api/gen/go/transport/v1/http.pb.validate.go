@@ -88,6 +88,37 @@ func (m *HttpServerConfig) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for Network
+
+	if all {
+		switch v := interface{}(m.GetShutdownTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, HttpServerConfigValidationError{
+					field:  "ShutdownTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, HttpServerConfigValidationError{
+					field:  "ShutdownTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetShutdownTimeout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return HttpServerConfigValidationError{
+				field:  "ShutdownTimeout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if m.TlsConfig != nil {
 
 		if all {
@@ -279,6 +310,74 @@ func (m *HttpClientConfig) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	// no validation rules for DiscoveryName
+
+	if m.TlsConfig != nil {
+
+		if all {
+			switch v := interface{}(m.GetTlsConfig()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, HttpClientConfigValidationError{
+						field:  "TlsConfig",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, HttpClientConfigValidationError{
+						field:  "TlsConfig",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetTlsConfig()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return HttpClientConfigValidationError{
+					field:  "TlsConfig",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.DialTimeout != nil {
+
+		if all {
+			switch v := interface{}(m.GetDialTimeout()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, HttpClientConfigValidationError{
+						field:  "DialTimeout",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, HttpClientConfigValidationError{
+						field:  "DialTimeout",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDialTimeout()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return HttpClientConfigValidationError{
+					field:  "DialTimeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -9,79 +8,90 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/runtime/service/tls"
-	mw "github.com/origadmin/runtime/middleware"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
-// NewServer creates a new HTTP server with the given configuration and options.
-// It is the recommended way to create a server when the protocol is known in advance.
-func NewServer(cfg *transportv1.HTTPServer, opts ...service.Option) (*transhttp.Server, error) {
+// NewHTTPServer creates a new concrete HTTP server instance based on the provided configuration.
+// It returns *transhttp.Server, not the generic interfaces.Server.
+func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerOptions) (*transhttp.Server, error) {
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
-	ll.Debugf("Creating new HTTP server instance with config: %+v", cfg)
+	ll.Debugf("Creating new HTTP server instance with config: %+v", httpConfig)
 
-	if cfg == nil {
+	if httpConfig == nil {
 		return nil, tkerrors.Errorf("HTTP server config is required for creation")
 	}
 
-	// 1. Process options to extract registrar.
-	var sOpts service.Options
-	sOpts.Apply(opts...)
-
-	httpRegistrar, ok := sOpts.Value().registrar.(service.HTTPRegistrar)
-	if !ok && sOpts.Value().registrar != nil {
-		return nil, fmt.Errorf("invalid registrar: expected service.HTTPRegistrar, got %T", sOpts.Value().registrar)
+	// Get the container instance. It will be nil if not provided in options.
+	var c interfaces.Container
+	if serverOpts.ServiceOptions != nil {
+		c = serverOpts.ServiceOptions.Container
 	}
 
-	// --- Server creation logic below uses the extracted, concrete 'cfg' ---
+	// Check if middlewares are configured.
+	hasMiddlewaresConfigured := len(httpConfig.GetMiddlewares()) > 0
+
+	// If middlewares are configured but no container is provided, return an error.
+	// This consolidates the nil check for the container.
+	if hasMiddlewaresConfigured && c == nil {
+		return nil, fmt.Errorf("application container is required for server middlewares but not found in options")
+	}
 
 	var kOpts []transhttp.ServerOption
-	var mws []middleware.Middleware
 
-	// Build middleware chain
-	for _, name := range cfg.Middlewares {
-		m, ok := mw.Get(name)
-		if !ok {
-			return nil, fmt.Errorf("middleware '%s' not found in registry", name)
+	// Configure middlewares.
+	var mws []middleware.Middleware
+	if hasMiddlewaresConfigured {
+		// 'c' is guaranteed to be non-nil at this point due to the early check above.
+		for _, name := range httpConfig.GetMiddlewares() {
+			m, ok := c.ServerMiddleware(name)
+			if !ok {
+				return nil, fmt.Errorf("server middleware '%s' not found in container", name)
+			}
+			mws = append(mws, m)
 		}
-		mws = append(mws, m)
+	} else {
+		// If no specific middlewares are configured, use default ones from adapter.go.
+		mws = DefaultServerMiddlewares()
 	}
+
 	if len(mws) > 0 {
 		kOpts = append(kOpts, transhttp.Middleware(mws...))
 	}
 
-	// Apply other server options
-	if cfg.Network != "" {
-		kOpts = append(kOpts, transhttp.Network(cfg.Network))
+	// Apply other server options from protobuf config
+	if httpConfig.Network != "" {
+		kratosOpts = append(kratosOpts, transhttp.Network(httpConfig.Network))
 	}
-	if cfg.Addr != "" {
-		kOpts = append(kOpts, transhttp.Address(cfg.Addr))
+	if httpConfig.Addr != "" {
+		kratosOpts = append(kratosOpts, transhttp.Address(httpConfig.Addr))
 	}
-	if cfg.Timeout != nil {
-		kOpts = append(kOpts, transhttp.Timeout(cfg.Timeout.AsDuration()))
+	if httpConfig.Timeout != nil {
+		kratosOpts = append(kratosOpts, transhttp.Timeout(httpConfig.Timeout.AsDuration()))
 	}
-	if cfg.ShutdownTimeout != nil {
-		kOpts = append(kOpts, transhttp.ShutdownTimeout(cfg.ShutdownTimeout.AsDuration()))
+	if httpConfig.ShutdownTimeout != nil {
+		kratosOpts = append(kOpts, transhttp.ShutdownTimeout(httpConfig.ShutdownTimeout.AsDuration()))
 	}
 
 	// Apply TLS configuration
-	if cfg.GetTls() != nil && cfg.GetTls().GetEnabled() {
-		tlsConfig, err := tls.NewServerTLSConfig(cfg.GetTls())
+	if httpConfig.GetTls() != nil && httpConfig.GetTls().GetEnabled() {
+		tlsConfig, err := tls.NewServerTLSConfig(httpConfig.GetTls())
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 		}
-		kOpts = append(kOpts, transhttp.TLSConfig(tlsConfig))
+		kratosOpts = append(kratosOpts, transhttp.TLSConfig(tlsConfig))
 	}
 
-	// Create the HTTP server instance
-	srv := transhttp.NewServer(kOpts...)
-
-	// Register business logic
-	if httpRegistrar != nil {
-		httpRegistrar.RegisterHTTP(context.Background(), srv)
+	// Apply any external Kratos HTTP server options passed via functional options.
+	// These are applied last, allowing them to override previous options if needed.
+	if len(serverOpts.HttpServerOptions) > 0 {
+		kratosOpts = append(kratosOpts, serverOpts.HttpServerOptions...)
 	}
+
+	// Create the HTTP server instance.
+	srv := transhttp.NewServer(kratosOpts...)
 
 	return srv, nil
 }

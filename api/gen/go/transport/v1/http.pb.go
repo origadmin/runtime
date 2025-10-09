@@ -35,9 +35,13 @@ type HttpServerConfig struct {
 	// The framework will look up these names in a middleware provider.
 	Middlewares []string `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	// tls_config defines the TLS settings for the HTTP server.
-	TlsConfig     *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	TlsConfig *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
+	// network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
+	Network string `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`
+	// shutdown_timeout is the graceful shutdown timeout for the server.
+	ShutdownTimeout *durationpb.Duration `protobuf:"bytes,6,opt,name=shutdown_timeout,json=shutdownTimeout,proto3" json:"shutdown_timeout,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *HttpServerConfig) Reset() {
@@ -98,6 +102,20 @@ func (x *HttpServerConfig) GetTlsConfig() *v1.TLSConfig {
 	return nil
 }
 
+func (x *HttpServerConfig) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
+}
+
+func (x *HttpServerConfig) GetShutdownTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.ShutdownTimeout
+	}
+	return nil
+}
+
 // HttpClientConfig defines the core configuration for creating a Kratos HTTP client.
 type HttpClientConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -110,7 +128,14 @@ type HttpClientConfig struct {
 	// middlewares is a list of middleware names to be applied to the client.
 	Middlewares []string `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	// selector defines the node selection strategy for the client.
-	Selector      *SelectorConfig `protobuf:"bytes,4,opt,name=selector,proto3" json:"selector,omitempty"`
+	Selector *SelectorConfig `protobuf:"bytes,4,opt,name=selector,proto3" json:"selector,omitempty"`
+	// discovery_name is the name of the discovery client to use for service discovery.
+	// This is used when the endpoint is a discovery service URI.
+	DiscoveryName string `protobuf:"bytes,5,opt,name=discovery_name,json=discoveryName,proto3" json:"discovery_name,omitempty"`
+	// tls_config defines the TLS settings for the HTTP client.
+	TlsConfig *v1.TLSConfig `protobuf:"bytes,6,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
+	// dial_timeout is the timeout for establishing a connection.
+	DialTimeout   *durationpb.Duration `protobuf:"bytes,7,opt,name=dial_timeout,json=dialTimeout,proto3,oneof" json:"dial_timeout,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -173,23 +198,52 @@ func (x *HttpClientConfig) GetSelector() *SelectorConfig {
 	return nil
 }
 
+func (x *HttpClientConfig) GetDiscoveryName() string {
+	if x != nil {
+		return x.DiscoveryName
+	}
+	return ""
+}
+
+func (x *HttpClientConfig) GetTlsConfig() *v1.TLSConfig {
+	if x != nil {
+		return x.TlsConfig
+	}
+	return nil
+}
+
+func (x *HttpClientConfig) GetDialTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.DialTimeout
+	}
+	return nil
+}
+
 var File_transport_v1_http_proto protoreflect.FileDescriptor
 
 const file_transport_v1_http_proto_rawDesc = "" +
 	"\n" +
-	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1btransport/v1/selector.proto\x1a\x1fsecurity/transport/v1/tls.proto\"\xd2\x01\n" +
+	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1btransport/v1/selector.proto\x1a\x1fsecurity/transport/v1/tls.proto\"\xb2\x02\n" +
 	"\x10HttpServerConfig\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
 	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x12D\n" +
 	"\n" +
-	"tls_config\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01B\r\n" +
-	"\v_tls_config\"\xbf\x01\n" +
+	"tls_config\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01\x12\x18\n" +
+	"\anetwork\x18\x05 \x01(\tR\anetwork\x12D\n" +
+	"\x10shutdown_timeout\x18\x06 \x01(\v2\x19.google.protobuf.DurationR\x0fshutdownTimeoutB\r\n" +
+	"\v_tls_config\"\x8f\x03\n" +
 	"\x10HttpClientConfig\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
 	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x128\n" +
-	"\bselector\x18\x04 \x01(\v2\x1c.transport.v1.SelectorConfigR\bselectorB\xb0\x01\n" +
+	"\bselector\x18\x04 \x01(\v2\x1c.transport.v1.SelectorConfigR\bselector\x12%\n" +
+	"\x0ediscovery_name\x18\x05 \x01(\tR\rdiscoveryName\x12D\n" +
+	"\n" +
+	"tls_config\x18\x06 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01\x12A\n" +
+	"\fdial_timeout\x18\a \x01(\v2\x19.google.protobuf.DurationH\x01R\vdialTimeout\x88\x01\x01B\r\n" +
+	"\v_tls_configB\x0f\n" +
+	"\r_dial_timeoutB\xb0\x01\n" +
 	"\x10com.transport.v1B\tHttpProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1\xa2\x02\x03TXX\xaa\x02\fTransport.V1\xca\x02\fTransport\\V1\xe2\x02\x18Transport\\V1\\GPBMetadata\xea\x02\rTransport::V1b\x06proto3"
 
 var (
@@ -215,13 +269,16 @@ var file_transport_v1_http_proto_goTypes = []any{
 var file_transport_v1_http_proto_depIdxs = []int32{
 	2, // 0: transport.v1.HttpServerConfig.timeout:type_name -> google.protobuf.Duration
 	3, // 1: transport.v1.HttpServerConfig.tls_config:type_name -> security.transport.v1.TLSConfig
-	2, // 2: transport.v1.HttpClientConfig.timeout:type_name -> google.protobuf.Duration
-	4, // 3: transport.v1.HttpClientConfig.selector:type_name -> transport.v1.SelectorConfig
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // 2: transport.v1.HttpServerConfig.shutdown_timeout:type_name -> google.protobuf.Duration
+	2, // 3: transport.v1.HttpClientConfig.timeout:type_name -> google.protobuf.Duration
+	4, // 4: transport.v1.HttpClientConfig.selector:type_name -> transport.v1.SelectorConfig
+	3, // 5: transport.v1.HttpClientConfig.tls_config:type_name -> security.transport.v1.TLSConfig
+	2, // 6: transport.v1.HttpClientConfig.dial_timeout:type_name -> google.protobuf.Duration
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_transport_v1_http_proto_init() }
@@ -231,6 +288,7 @@ func file_transport_v1_http_proto_init() {
 	}
 	file_transport_v1_selector_proto_init()
 	file_transport_v1_http_proto_msgTypes[0].OneofWrappers = []any{}
+	file_transport_v1_http_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
