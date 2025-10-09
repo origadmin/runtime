@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/origadmin/runtime/api/gen/go/transport/v1"
-	"github.com/origadmin/runtime/interfaces" // Corrected import path
+	"github.com/origadmin/runtime/interfaces"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
@@ -22,22 +22,10 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 	// Prepare the Kratos gRPC client options.
 	var kratosOpts []transgrpc.ClientOption
 
-	// Check and retrieve the application container.
+	// Get the container instance. It will be nil if not provided in options.
 	var c interfaces.Container
-
-	// Determine if container-dependent features are configured.
-	containerDependentFeaturesEnabled := len(grpcConfig.GetMiddlewares()) > 0 || grpcConfig.GetDiscoveryName() != ""
-
-	// Explicitly check for nil ServiceOptions and its Container.
-	if clientOpts.ServiceOptions == nil {
-		if containerDependentFeaturesEnabled {
-			return nil, fmt.Errorf("application container is required for client configuration but ServiceOptions is nil")
-		}
-	} else {
+	if clientOpts.ServiceOptions != nil {
 		c = clientOpts.ServiceOptions.Container
-		if c == nil && containerDependentFeaturesEnabled {
-			return nil, fmt.Errorf("application container is required for client configuration but ServiceOptions.Container is nil")
-		}
 	}
 
 	// Apply options from the protobuf configuration.
@@ -48,7 +36,10 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 	// Configure middlewares.
 	var mws []middleware.Middleware
 	if len(grpcConfig.GetMiddlewares()) > 0 {
-		// 'c' is guaranteed to be non-nil at this point due to the early checks above.
+		// If middlewares are configured but no container is provided, return an error.
+		if c == nil {
+			return nil, fmt.Errorf("application container is required for client middlewares but not found in options")
+		}
 		for _, name := range grpcConfig.GetMiddlewares() {
 			m, ok := c.ClientMiddleware(name)
 			if !ok {
@@ -76,14 +67,17 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 
 	// Determine the discovery client.
 	if discoveryName := grpcConfig.GetDiscoveryName(); discoveryName != "" {
-		// 'c' is guaranteed to be non-nil at this point due to the early checks above.
+		// If a named discovery client is configured but no container is provided, return an error.
+		if c == nil {
+			return nil, fmt.Errorf("application container is required for named discovery client but not found in options")
+		}
 		if d, ok := c.Discovery(discoveryName); ok {
 			discoveryClient = d
 		} else {
 			return nil, fmt.Errorf("discovery client '%s' not found in container", discoveryName)
 		}
 	} else if c != nil {
-		// If no specific discovery name, try to infer if only one is available.
+		// If no specific discovery name, try to infer if only one is available from the container.
 		// This block is only executed if 'c' is not nil.
 		discoveries := c.Discoveries()
 		if len(discoveries) == 1 {

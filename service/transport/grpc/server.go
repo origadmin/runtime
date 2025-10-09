@@ -17,15 +17,19 @@ func NewGRPCServer(grpcConfig *transportv1.GrpcServerConfig, serverOpts *ServerO
 	// Prepare the Kratos gRPC server options.
 	var kratosOpts []transgrpc.ServerOption
 
-	// Get Container instance if available.
+	// Get the container instance. It will be nil if not provided in options.
 	var c interfaces.Container
 	if serverOpts.ServiceOptions != nil {
 		c = serverOpts.ServiceOptions.Container
 	}
 
-	// Return error if middlewares are configured but no container is provided.
-	if len(grpcConfig.GetMiddlewares()) > 0 && c == nil {
-		return nil, fmt.Errorf("application container is required for middleware but not found in options")
+	// Check if middlewares are configured.
+	hasMiddlewaresConfigured := len(grpcConfig.GetMiddlewares()) > 0
+
+	// If middlewares are configured but no container is provided, return an error.
+	// This consolidates the nil check for the container.
+	if hasMiddlewaresConfigured && c == nil {
+		return nil, fmt.Errorf("application container is required for server middlewares but not found in options")
 	}
 
 	// Apply options from the protobuf configuration.
@@ -47,12 +51,12 @@ func NewGRPCServer(grpcConfig *transportv1.GrpcServerConfig, serverOpts *ServerO
 
 	// Configure middlewares.
 	var mws []middleware.Middleware
-	if len(grpcConfig.GetMiddlewares()) > 0 {
-		// 'c' is guaranteed to be non-nil at this point.
+	if hasMiddlewaresConfigured {
+		// 'c' is guaranteed to be non-nil at this point due to the early check above.
 		for _, name := range grpcConfig.GetMiddlewares() {
 			m, ok := c.ServerMiddleware(name)
 			if !ok {
-				return nil, fmt.Errorf("middleware '%s' not found in container", name)
+				return nil, fmt.Errorf("server middleware '%s' not found in container", name)
 			}
 			mws = append(mws, m)
 		}
