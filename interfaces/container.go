@@ -13,8 +13,13 @@ type ComponentFactory func(cfg StructuredConfig, container Container) (interface
 // Container defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
 type Container interface {
+
+	// --- Logger ---
+
 	// Logger returns the configured Kratos logger.
 	Logger() log.Logger
+
+	// --- Discovery and Registrar ---
 
 	// Discoveries returns a map of all configured service discovery components.
 	Discoveries() map[string]registry.Discovery
@@ -34,8 +39,14 @@ type Container interface {
 
 	// --- Middleware ---
 
+	// ServerMiddlewares returns a map of all configured server middlewares.
+	ServerMiddlewares() map[string]middleware.Middleware
+
 	// ServerMiddleware returns a server middleware by name.
 	ServerMiddleware(name string) (middleware.Middleware, bool)
+
+	// ClientMiddlewares returns a map of all configured client middlewares.
+	ClientMiddlewares() map[string]middleware.Middleware
 
 	// ClientMiddleware returns a client middleware by name.
 	ClientMiddleware(name string) (middleware.Middleware, bool)

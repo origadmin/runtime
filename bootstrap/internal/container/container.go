@@ -282,9 +282,19 @@ func (b *Builder) Logger() log.Logger {
 	return b.container.Logger()
 }
 
+// ServerMiddlewares implements the interfaces.Container interface.
+func (c *container) ServerMiddlewares() map[string]middleware.Middleware {
+	return c.serverMiddlewaresMap
+}
+
 func (c *container) ServerMiddleware(name string) (middleware.Middleware, bool) {
 	mw, ok := c.serverMiddlewaresMap[name]
 	return mw, ok
+}
+
+// ClientMiddlewares implements the interfaces.Container interface.
+func (c *container) ClientMiddlewares() map[string]middleware.Middleware {
+	return c.clientMiddlewaresMap
 }
 
 func (c *container) ClientMiddleware(name string) (middleware.Middleware, bool) {
