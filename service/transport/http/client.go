@@ -9,6 +9,7 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	mw "github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service/tls"
@@ -17,7 +18,7 @@ import (
 
 // NewClient creates a new HTTP client.
 // It is the recommended way to create a client when the protocol is known in advance.
-func NewClient(ctx context.Context, cfg *transportv1.HTTPClient, opts ...options.Option) (interfaces.Client, error) {
+func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
 	if cfg == nil {
 		return nil, tkerrors.Errorf("HTTP client config is required for creation")
 	}

@@ -7,7 +7,6 @@
 package transportv1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -24,46 +23,37 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// HTTPServer defines the configuration for an HTTP server endpoint.
-type HTTPServer struct {
+// HttpServerConfig defines the core configuration for a Kratos HTTP server.
+type HttpServerConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Network type, e.g., "tcp", "unix".
-	Network string `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	// Address for the server to listen on, e.g., ":8000".
-	Addr string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	// Request timeout.
-	Timeout *durationpb.Duration `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	// Graceful shutdown timeout.
-	ShutdownTimeout *durationpb.Duration `protobuf:"bytes,4,opt,name=shutdown_timeout,json=shutdownTimeout,proto3" json:"shutdown_timeout,omitempty"`
-	// The endpoint that this server advertises to the service registry.
-	Endpoint string `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	// Max receive message size.
-	MaxRecvMsgSize int32 `protobuf:"varint,6,opt,name=max_recv_msg_size,json=maxRecvMsgSize,proto3" json:"max_recv_msg_size,omitempty"`
-	// Max send message size.
-	MaxSendMsgSize int32 `protobuf:"varint,7,opt,name=max_send_msg_size,json=maxSendMsgSize,proto3" json:"max_send_msg_size,omitempty"`
-	// TLS configuration for the server.
-	Tls *v1.TLSConfig `protobuf:"bytes,8,opt,name=tls,proto3" json:"tls,omitempty"`
-	// Middlewares specifies the list of middleware names to apply to the server.
-	// The framework will look up these names in the middleware registry.
-	Middlewares   []string `protobuf:"bytes,9,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	// addr is the address for the server to listen on.
+	// e.g., "0.0.0.0:8000"
+	Addr string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
+	// timeout is the request handling timeout.
+	Timeout *durationpb.Duration `protobuf:"bytes,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	// middlewares is a list of middleware names to be applied to the server.
+	// The framework will look up these names in a middleware provider.
+	Middlewares []string `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	// tls_config defines the TLS settings for the HTTP server.
+	TlsConfig     *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HTTPServer) Reset() {
-	*x = HTTPServer{}
+func (x *HttpServerConfig) Reset() {
+	*x = HttpServerConfig{}
 	mi := &file_transport_v1_http_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HTTPServer) String() string {
+func (x *HttpServerConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HTTPServer) ProtoMessage() {}
+func (*HttpServerConfig) ProtoMessage() {}
 
-func (x *HTTPServer) ProtoReflect() protoreflect.Message {
+func (x *HttpServerConfig) ProtoReflect() protoreflect.Message {
 	mi := &file_transport_v1_http_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -75,105 +65,70 @@ func (x *HTTPServer) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HTTPServer.ProtoReflect.Descriptor instead.
-func (*HTTPServer) Descriptor() ([]byte, []int) {
+// Deprecated: Use HttpServerConfig.ProtoReflect.Descriptor instead.
+func (*HttpServerConfig) Descriptor() ([]byte, []int) {
 	return file_transport_v1_http_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *HTTPServer) GetNetwork() string {
-	if x != nil {
-		return x.Network
-	}
-	return ""
-}
-
-func (x *HTTPServer) GetAddr() string {
+func (x *HttpServerConfig) GetAddr() string {
 	if x != nil {
 		return x.Addr
 	}
 	return ""
 }
 
-func (x *HTTPServer) GetTimeout() *durationpb.Duration {
+func (x *HttpServerConfig) GetTimeout() *durationpb.Duration {
 	if x != nil {
 		return x.Timeout
 	}
 	return nil
 }
 
-func (x *HTTPServer) GetShutdownTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.ShutdownTimeout
-	}
-	return nil
-}
-
-func (x *HTTPServer) GetEndpoint() string {
-	if x != nil {
-		return x.Endpoint
-	}
-	return ""
-}
-
-func (x *HTTPServer) GetMaxRecvMsgSize() int32 {
-	if x != nil {
-		return x.MaxRecvMsgSize
-	}
-	return 0
-}
-
-func (x *HTTPServer) GetMaxSendMsgSize() int32 {
-	if x != nil {
-		return x.MaxSendMsgSize
-	}
-	return 0
-}
-
-func (x *HTTPServer) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
-func (x *HTTPServer) GetMiddlewares() []string {
+func (x *HttpServerConfig) GetMiddlewares() []string {
 	if x != nil {
 		return x.Middlewares
 	}
 	return nil
 }
 
-// HTTPClient defines the configuration for an HTTP client.
-type HTTPClient struct {
+func (x *HttpServerConfig) GetTlsConfig() *v1.TLSConfig {
+	if x != nil {
+		return x.TlsConfig
+	}
+	return nil
+}
+
+// HttpClientConfig defines the core configuration for creating a Kratos HTTP client.
+type HttpClientConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Target is the base URL of the HTTP server to connect to, e.g., "http://127.0.0.1:8000".
+	// endpoint is the target to connect to.
+	// It can be a direct address or a discovery service URI.
+	// e.g., "http://127.0.0.1:8000" or "discovery:///your-service-name"
 	Endpoint string `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	// Timeout is the overall request timeout for the client.
+	// timeout is the request timeout for a single HTTP call.
 	Timeout *durationpb.Duration `protobuf:"bytes,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	// DialTimeout is the timeout for establishing the connection.
-	DialTimeout *durationpb.Duration `protobuf:"bytes,3,opt,name=dial_timeout,json=dialTimeout,proto3" json:"dial_timeout,omitempty"`
-	// TLS configuration for the client.
-	Tls *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls,proto3" json:"tls,omitempty"`
-	// Middlewares specifies the list of client middleware names to apply.
-	Middlewares   []string `protobuf:"bytes,5,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	// middlewares is a list of middleware names to be applied to the client.
+	Middlewares []string `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	// selector defines the node selection strategy for the client.
+	Selector      *SelectorConfig `protobuf:"bytes,4,opt,name=selector,proto3" json:"selector,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HTTPClient) Reset() {
-	*x = HTTPClient{}
+func (x *HttpClientConfig) Reset() {
+	*x = HttpClientConfig{}
 	mi := &file_transport_v1_http_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HTTPClient) String() string {
+func (x *HttpClientConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HTTPClient) ProtoMessage() {}
+func (*HttpClientConfig) ProtoMessage() {}
 
-func (x *HTTPClient) ProtoReflect() protoreflect.Message {
+func (x *HttpClientConfig) ProtoReflect() protoreflect.Message {
 	mi := &file_transport_v1_http_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -185,42 +140,35 @@ func (x *HTTPClient) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HTTPClient.ProtoReflect.Descriptor instead.
-func (*HTTPClient) Descriptor() ([]byte, []int) {
+// Deprecated: Use HttpClientConfig.ProtoReflect.Descriptor instead.
+func (*HttpClientConfig) Descriptor() ([]byte, []int) {
 	return file_transport_v1_http_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *HTTPClient) GetEndpoint() string {
+func (x *HttpClientConfig) GetEndpoint() string {
 	if x != nil {
 		return x.Endpoint
 	}
 	return ""
 }
 
-func (x *HTTPClient) GetTimeout() *durationpb.Duration {
+func (x *HttpClientConfig) GetTimeout() *durationpb.Duration {
 	if x != nil {
 		return x.Timeout
 	}
 	return nil
 }
 
-func (x *HTTPClient) GetDialTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.DialTimeout
-	}
-	return nil
-}
-
-func (x *HTTPClient) GetTls() *v1.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
-func (x *HTTPClient) GetMiddlewares() []string {
+func (x *HttpClientConfig) GetMiddlewares() []string {
 	if x != nil {
 		return x.Middlewares
+	}
+	return nil
+}
+
+func (x *HttpClientConfig) GetSelector() *SelectorConfig {
+	if x != nil {
+		return x.Selector
 	}
 	return nil
 }
@@ -229,26 +177,19 @@ var File_transport_v1_http_proto protoreflect.FileDescriptor
 
 const file_transport_v1_http_proto_rawDesc = "" +
 	"\n" +
-	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x17validate/validate.proto\"\xc2\x03\n" +
+	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1btransport/v1/selector.proto\x1a\x1fsecurity/transport/v1/tls.proto\"\xd2\x01\n" +
+	"\x10HttpServerConfig\x12\x12\n" +
+	"\x04addr\x18\x01 \x01(\tR\x04addr\x123\n" +
+	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
+	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x12D\n" +
 	"\n" +
-	"HTTPServer\x12B\n" +
-	"\anetwork\x18\x01 \x01(\tB(\xfaB%r#R\x03tcpR\x04tcp4R\x04tcp6R\x04unixR\n" +
-	"unixpacketR\anetwork\x12\x1b\n" +
-	"\x04addr\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12D\n" +
-	"\x10shutdown_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\x0fshutdownTimeout\x12\x1a\n" +
-	"\bendpoint\x18\x05 \x01(\tR\bendpoint\x122\n" +
-	"\x11max_recv_msg_size\x18\x06 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxRecvMsgSize\x122\n" +
-	"\x11max_send_msg_size\x18\a \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x0emaxSendMsgSize\x122\n" +
-	"\x03tls\x18\b \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +
-	"\vmiddlewares\x18\t \x03(\tR\vmiddlewares\"\xfa\x01\n" +
-	"\n" +
-	"HTTPClient\x12#\n" +
-	"\bendpoint\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\bendpoint\x123\n" +
-	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12<\n" +
-	"\fdial_timeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\vdialTimeout\x122\n" +
-	"\x03tls\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigR\x03tls\x12 \n" +
-	"\vmiddlewares\x18\x05 \x03(\tR\vmiddlewaresB\xb0\x01\n" +
+	"tls_config\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01B\r\n" +
+	"\v_tls_config\"\xbf\x01\n" +
+	"\x10HttpClientConfig\x12\x1a\n" +
+	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x123\n" +
+	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
+	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x128\n" +
+	"\bselector\x18\x04 \x01(\v2\x1c.transport.v1.SelectorConfigR\bselectorB\xb0\x01\n" +
 	"\x10com.transport.v1B\tHttpProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1\xa2\x02\x03TXX\xaa\x02\fTransport.V1\xca\x02\fTransport\\V1\xe2\x02\x18Transport\\V1\\GPBMetadata\xea\x02\rTransport::V1b\x06proto3"
 
 var (
@@ -265,23 +206,22 @@ func file_transport_v1_http_proto_rawDescGZIP() []byte {
 
 var file_transport_v1_http_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_transport_v1_http_proto_goTypes = []any{
-	(*HTTPServer)(nil),          // 0: transport.v1.HTTPServer
-	(*HTTPClient)(nil),          // 1: transport.v1.HTTPClient
+	(*HttpServerConfig)(nil),    // 0: transport.v1.HttpServerConfig
+	(*HttpClientConfig)(nil),    // 1: transport.v1.HttpClientConfig
 	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
 	(*v1.TLSConfig)(nil),        // 3: security.transport.v1.TLSConfig
+	(*SelectorConfig)(nil),      // 4: transport.v1.SelectorConfig
 }
 var file_transport_v1_http_proto_depIdxs = []int32{
-	2, // 0: transport.v1.HTTPServer.timeout:type_name -> google.protobuf.Duration
-	2, // 1: transport.v1.HTTPServer.shutdown_timeout:type_name -> google.protobuf.Duration
-	3, // 2: transport.v1.HTTPServer.tls:type_name -> security.transport.v1.TLSConfig
-	2, // 3: transport.v1.HTTPClient.timeout:type_name -> google.protobuf.Duration
-	2, // 4: transport.v1.HTTPClient.dial_timeout:type_name -> google.protobuf.Duration
-	3, // 5: transport.v1.HTTPClient.tls:type_name -> security.transport.v1.TLSConfig
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	2, // 0: transport.v1.HttpServerConfig.timeout:type_name -> google.protobuf.Duration
+	3, // 1: transport.v1.HttpServerConfig.tls_config:type_name -> security.transport.v1.TLSConfig
+	2, // 2: transport.v1.HttpClientConfig.timeout:type_name -> google.protobuf.Duration
+	4, // 3: transport.v1.HttpClientConfig.selector:type_name -> transport.v1.SelectorConfig
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_transport_v1_http_proto_init() }
@@ -289,6 +229,8 @@ func file_transport_v1_http_proto_init() {
 	if File_transport_v1_http_proto != nil {
 		return
 	}
+	file_transport_v1_selector_proto_init()
+	file_transport_v1_http_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

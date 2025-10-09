@@ -8,7 +8,6 @@ package discoveryv1
 
 import (
 	_ "github.com/origadmin/runtime/api/gen/go/middleware/v1"
-	_ "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/known/durationpb"
@@ -25,7 +24,8 @@ const (
 )
 
 // Endpoint holds the complete, resolved configuration for a client-side service endpoint.
-// It is the final data structure used by runtime components to initialize a client connection.
+//
+// Deprecated: Marked as deprecated in discovery/v1/endpoint.proto.
 type Endpoint struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The name is the name of the service key in the endpoint.
@@ -99,6 +99,8 @@ func (x *Endpoint) GetSelector() *Selector {
 }
 
 // Selector defines the client-side node selection strategy.
+//
+// Deprecated: Marked as deprecated in discovery/v1/endpoint.proto.
 type Selector struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The type of selector to use, e.g., "random", "wrr", "p2c".
@@ -157,15 +159,15 @@ var File_discovery_v1_endpoint_proto protoreflect.FileDescriptor
 
 const file_discovery_v1_endpoint_proto_rawDesc = "" +
 	"\n" +
-	"\x1bdiscovery/v1/endpoint.proto\x12\fdiscovery.v1\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x19transport/v1/client.proto\"\x8c\x01\n" +
+	"\x1bdiscovery/v1/endpoint.proto\x12\fdiscovery.v1\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1emiddleware/v1/middleware.proto\"\x90\x01\n" +
 	"\bEndpoint\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12&\n" +
 	"\x0ediscovery_name\x18\x02 \x01(\tR\x0ediscovery_name\x12\x10\n" +
 	"\x03uri\x18\x03 \x01(\tR\x03uri\x122\n" +
-	"\bselector\x18\x04 \x01(\v2\x16.discovery.v1.SelectorR\bselector\"8\n" +
+	"\bselector\x18\x04 \x01(\v2\x16.discovery.v1.SelectorR\bselector:\x02\x18\x01\"<\n" +
 	"\bSelector\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversionB\xb4\x01\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion:\x02\x18\x01B\xb4\x01\n" +
 	"\x10com.discovery.v1B\rEndpointProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1\xa2\x02\x03DXX\xaa\x02\fDiscovery.V1\xca\x02\fDiscovery\\V1\xe2\x02\x18Discovery\\V1\\GPBMetadata\xea\x02\rDiscovery::V1b\x06proto3"
 
 var (

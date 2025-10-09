@@ -3,7 +3,7 @@ package http
 import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/optionutil"
 )
 

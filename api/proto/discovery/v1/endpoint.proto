@@ -5,13 +5,24 @@ package discovery.v1;
 import "discovery/v1/discovery.proto";
 import "google/protobuf/duration.proto";
 import "middleware/v1/middleware.proto";
-import "transport/v1/client.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/discovery/v1;discoveryv1";
 
+//
+// DEPRECATED: This file is deprecated and will be removed in a future version.
+// The concepts of Endpoint and Selector have been merged into the ClientConfig
+// messages within `transport/v1/transport.proto` for better cohesion and clarity.
+//
+// - Use `GrpcClientConfig.discovery_filter` or `HttpClientConfig.discovery_filter`
+//   instead of `Selector`.
+// - Use `GrpcClientConfig.endpoint` or `HttpClientConfig.endpoint`
+//   instead of `Endpoint.uri`.
+//
+
 // Endpoint holds the complete, resolved configuration for a client-side service endpoint.
-// It is the final data structure used by runtime components to initialize a client connection.
 message Endpoint {
+  option deprecated = true;
+
   // The name is the name of the service key in the endpoint.
   string name = 1;
 
@@ -27,6 +38,8 @@ message Endpoint {
 
 // Selector defines the client-side node selection strategy.
 message Selector {
+  option deprecated = true;
+
   // The type of selector to use, e.g., "random", "wrr", "p2c".
   string type = 1;
   // version is used for version-based routing.

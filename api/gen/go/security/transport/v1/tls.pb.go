@@ -28,12 +28,10 @@ type TLSConfig struct {
 	// Whether TLS is enabled
 	Enabled bool `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	// Certificate configuration
-	//
-	// Types that are valid to be assigned to Config:
-	//
-	//	*TLSConfig_File
-	//	*TLSConfig_Pem
-	Config isTLSConfig_Config `protobuf_oneof:"config"`
+	// File-based certificate configuration
+	File *FileConfig `protobuf:"bytes,2,opt,name=file,proto3,oneof" json:"file,omitempty"`
+	// Inline PEM certificate data
+	Pem *PEMConfig `protobuf:"bytes,3,opt,name=pem,proto3,oneof" json:"pem,omitempty"`
 	// Minimum TLS version
 	// Allowed values: "1.0", "1.1", "1.2", "1.3"
 	// Default: "1.2"
@@ -45,7 +43,13 @@ type TLSConfig struct {
 	// Default: false
 	RequireClientCert bool `protobuf:"varint,6,opt,name=require_client_cert,proto3" json:"require_client_cert,omitempty"`
 	// Client CA certificate file path (for client cert validation)
-	ClientCaFile  string `protobuf:"bytes,7,opt,name=client_ca_file,proto3" json:"client_ca_file,omitempty"`
+	ClientCaFile string `protobuf:"bytes,7,opt,name=client_ca_file,proto3" json:"client_ca_file,omitempty"`
+	// Whether to skip server certificate verification
+	// Default: false
+	InsecureSkipVerify bool `protobuf:"varint,8,opt,name=insecure_skip_verify,proto3" json:"insecure_skip_verify,omitempty"`
+	// Server name for SNI (Server Name Indication), used by client
+	// Default: ""
+	ServerName    string `protobuf:"bytes,9,opt,name=server_name,proto3" json:"server_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -87,27 +91,16 @@ func (x *TLSConfig) GetEnabled() bool {
 	return false
 }
 
-func (x *TLSConfig) GetConfig() isTLSConfig_Config {
-	if x != nil {
-		return x.Config
-	}
-	return nil
-}
-
 func (x *TLSConfig) GetFile() *FileConfig {
 	if x != nil {
-		if x, ok := x.Config.(*TLSConfig_File); ok {
-			return x.File
-		}
+		return x.File
 	}
 	return nil
 }
 
 func (x *TLSConfig) GetPem() *PEMConfig {
 	if x != nil {
-		if x, ok := x.Config.(*TLSConfig_Pem); ok {
-			return x.Pem
-		}
+		return x.Pem
 	}
 	return nil
 }
@@ -140,23 +133,19 @@ func (x *TLSConfig) GetClientCaFile() string {
 	return ""
 }
 
-type isTLSConfig_Config interface {
-	isTLSConfig_Config()
+func (x *TLSConfig) GetInsecureSkipVerify() bool {
+	if x != nil {
+		return x.InsecureSkipVerify
+	}
+	return false
 }
 
-type TLSConfig_File struct {
-	// File-based certificate configuration
-	File *FileConfig `protobuf:"bytes,2,opt,name=file,proto3,oneof"`
+func (x *TLSConfig) GetServerName() string {
+	if x != nil {
+		return x.ServerName
+	}
+	return ""
 }
-
-type TLSConfig_Pem struct {
-	// Inline PEM certificate data
-	Pem *PEMConfig `protobuf:"bytes,3,opt,name=pem,proto3,oneof"`
-}
-
-func (*TLSConfig_File) isTLSConfig_Config() {}
-
-func (*TLSConfig_Pem) isTLSConfig_Config() {}
 
 // File-based certificate configuration
 type FileConfig struct {
@@ -290,16 +279,19 @@ var File_security_transport_v1_tls_proto protoreflect.FileDescriptor
 
 const file_security_transport_v1_tls_proto_rawDesc = "" +
 	"\n" +
-	"\x1fsecurity/transport/v1/tls.proto\x12\x15security.transport.v1\x1a\x17validate/validate.proto\"\xdb\x02\n" +
+	"\x1fsecurity/transport/v1/tls.proto\x12\x15security.transport.v1\x1a\x17validate/validate.proto\"\xbe\x03\n" +
 	"\tTLSConfig\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x127\n" +
-	"\x04file\x18\x02 \x01(\v2!.security.transport.v1.FileConfigH\x00R\x04file\x124\n" +
-	"\x03pem\x18\x03 \x01(\v2 .security.transport.v1.PEMConfigH\x00R\x03pem\x12;\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12:\n" +
+	"\x04file\x18\x02 \x01(\v2!.security.transport.v1.FileConfigH\x00R\x04file\x88\x01\x01\x127\n" +
+	"\x03pem\x18\x03 \x01(\v2 .security.transport.v1.PEMConfigH\x01R\x03pem\x88\x01\x01\x12;\n" +
 	"\vmin_version\x18\x04 \x01(\tB\x19\xfaB\x16r\x14R\x031.0R\x031.1R\x031.2R\x031.3R\vmin_version\x12$\n" +
 	"\rcipher_suites\x18\x05 \x03(\tR\rcipher_suites\x120\n" +
 	"\x13require_client_cert\x18\x06 \x01(\bR\x13require_client_cert\x12&\n" +
-	"\x0eclient_ca_file\x18\a \x01(\tR\x0eclient_ca_fileB\b\n" +
-	"\x06config\"T\n" +
+	"\x0eclient_ca_file\x18\a \x01(\tR\x0eclient_ca_file\x122\n" +
+	"\x14insecure_skip_verify\x18\b \x01(\bR\x14insecure_skip_verify\x12 \n" +
+	"\vserver_name\x18\t \x01(\tR\vserver_nameB\a\n" +
+	"\x05_fileB\x06\n" +
+	"\x04_pem\"T\n" +
 	"\n" +
 	"FileConfig\x12\x1b\n" +
 	"\x04cert\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04cert\x12\x19\n" +
@@ -344,10 +336,7 @@ func file_security_transport_v1_tls_proto_init() {
 	if File_security_transport_v1_tls_proto != nil {
 		return
 	}
-	file_security_transport_v1_tls_proto_msgTypes[0].OneofWrappers = []any{
-		(*TLSConfig_File)(nil),
-		(*TLSConfig_Pem)(nil),
-	}
+	file_security_transport_v1_tls_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -7,13 +7,8 @@
 package servicev1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	v15 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
-	v14 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
-	v12 "github.com/origadmin/runtime/api/gen/go/msg/v1"
-	v13 "github.com/origadmin/runtime/api/gen/go/task/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	v1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
-	v11 "github.com/origadmin/runtime/api/gen/go/websocket/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -28,22 +23,22 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Service defines a complete microservice unit.
+// It encapsulates the service's identity, its server endpoints, its client dependencies,
+// and its middleware configurations.
 type Service struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Service name for service discovery
+	// name is the unique identifier for the service, used for service discovery and logging.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Protocol defines the communication protocol for the service
-	Protocol string `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
-	// Server-side transport configuration for this service.
-	// This replaces the old 'grpc' and 'http' fields.
-	ServerTransport *v1.Server     `protobuf:"bytes,10,opt,name=server_transport,proto3" json:"server_transport,omitempty"`
-	Websocket       *v11.WebSocket `protobuf:"bytes,100,opt,name=websocket,proto3" json:"websocket,omitempty"`
-	Message         *v12.Message   `protobuf:"bytes,200,opt,name=message,proto3" json:"message,omitempty"`
-	Task            *v13.Task      `protobuf:"bytes,300,opt,name=task,proto3" json:"task,omitempty"`
-	// Middleware configuration for the service.
-	Middlewares []*v14.MiddlewareConfig `protobuf:"bytes,400,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
-	// Endpoint configuration for the service.
-	Endpoint      *v15.Endpoint `protobuf:"bytes,500,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	// servers is a list of server endpoints that this service will expose.
+	// A service can listen on multiple protocols simultaneously, e.g., both gRPC and HTTP.
+	Servers []*v1.Server `protobuf:"bytes,2,rep,name=servers,proto3" json:"servers,omitempty"`
+	// clients is a list of client configurations for services that this service depends on.
+	// This list will be converted into a map in the application's bootstrap logic,
+	// using the 'name' field from each Client message as the key.
+	Clients []*v1.Client `protobuf:"bytes,3,rep,name=clients,proto3" json:"clients,omitempty"`
+	// middlewares is a list of middleware configurations to be applied to the service.
+	Middlewares   []*v11.MiddlewareConfig `protobuf:"bytes,4,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -85,51 +80,23 @@ func (x *Service) GetName() string {
 	return ""
 }
 
-func (x *Service) GetProtocol() string {
+func (x *Service) GetServers() []*v1.Server {
 	if x != nil {
-		return x.Protocol
-	}
-	return ""
-}
-
-func (x *Service) GetServerTransport() *v1.Server {
-	if x != nil {
-		return x.ServerTransport
+		return x.Servers
 	}
 	return nil
 }
 
-func (x *Service) GetWebsocket() *v11.WebSocket {
+func (x *Service) GetClients() []*v1.Client {
 	if x != nil {
-		return x.Websocket
+		return x.Clients
 	}
 	return nil
 }
 
-func (x *Service) GetMessage() *v12.Message {
-	if x != nil {
-		return x.Message
-	}
-	return nil
-}
-
-func (x *Service) GetTask() *v13.Task {
-	if x != nil {
-		return x.Task
-	}
-	return nil
-}
-
-func (x *Service) GetMiddlewares() []*v14.MiddlewareConfig {
+func (x *Service) GetMiddlewares() []*v11.MiddlewareConfig {
 	if x != nil {
 		return x.Middlewares
-	}
-	return nil
-}
-
-func (x *Service) GetEndpoint() *v15.Endpoint {
-	if x != nil {
-		return x.Endpoint
 	}
 	return nil
 }
@@ -139,18 +106,13 @@ var File_service_v1_service_proto protoreflect.FileDescriptor
 const file_service_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"\x18service/v1/service.proto\x12\n" +
-	"service.v1\x1a\x1bdiscovery/v1/endpoint.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x10msg/v1/msg.proto\x1a\x12task/v1/task.proto\x1a\x19transport/v1/server.proto\x1a\x17validate/validate.proto\x1a\x1cwebsocket/v1/websocket.proto\"\xa8\x03\n" +
+	"service.v1\x1a\x1ctransport/v1/transport.proto\x1a\x1emiddleware/v1/middleware.proto\"\xc0\x01\n" +
 	"\aService\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12G\n" +
-	"\bprotocol\x18\x02 \x01(\tB+\xfaB(r&R\x04httpR\x04grpcR\twebsocketR\amessageR\x04taskR\bprotocol\x12@\n" +
-	"\x10server_transport\x18\n" +
-	" \x01(\v2\x14.transport.v1.ServerR\x10server_transport\x125\n" +
-	"\twebsocket\x18d \x01(\v2\x17.websocket.v1.WebSocketR\twebsocket\x12*\n" +
-	"\amessage\x18\xc8\x01 \x01(\v2\x0f.msg.v1.MessageR\amessage\x12\"\n" +
-	"\x04task\x18\xac\x02 \x01(\v2\r.task.v1.TaskR\x04task\x12B\n" +
-	"\vmiddlewares\x18\x90\x03 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\x123\n" +
-	"\bendpoint\x18\xf4\x03 \x01(\v2\x16.discovery.v1.EndpointR\bendpointB\xa8\x01\n" +
-	"\x0ecom.service.v1B\fServiceProtoP\x01Z<github.com/origadmin/runtime/api/gen/go/service/v1;servicev1\xf8\x01\x01\xa2\x02\x03SXX\xaa\x02\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12.\n" +
+	"\aservers\x18\x02 \x03(\v2\x14.transport.v1.ServerR\aservers\x12.\n" +
+	"\aclients\x18\x03 \x03(\v2\x14.transport.v1.ClientR\aclients\x12A\n" +
+	"\vmiddlewares\x18\x04 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewaresB\xa5\x01\n" +
+	"\x0ecom.service.v1B\fServiceProtoP\x01Z<github.com/origadmin/runtime/api/gen/go/service/v1;servicev1\xa2\x02\x03SXX\xaa\x02\n" +
 	"Service.V1\xca\x02\n" +
 	"Service\\V1\xe2\x02\x16Service\\V1\\GPBMetadata\xea\x02\vService::V1b\x06proto3"
 
@@ -170,24 +132,18 @@ var file_service_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_service_v1_service_proto_goTypes = []any{
 	(*Service)(nil),              // 0: service.v1.Service
 	(*v1.Server)(nil),            // 1: transport.v1.Server
-	(*v11.WebSocket)(nil),        // 2: websocket.v1.WebSocket
-	(*v12.Message)(nil),          // 3: msg.v1.Message
-	(*v13.Task)(nil),             // 4: task.v1.Task
-	(*v14.MiddlewareConfig)(nil), // 5: middleware.v1.MiddlewareConfig
-	(*v15.Endpoint)(nil),         // 6: discovery.v1.Endpoint
+	(*v1.Client)(nil),            // 2: transport.v1.Client
+	(*v11.MiddlewareConfig)(nil), // 3: middleware.v1.MiddlewareConfig
 }
 var file_service_v1_service_proto_depIdxs = []int32{
-	1, // 0: service.v1.Service.server_transport:type_name -> transport.v1.Server
-	2, // 1: service.v1.Service.websocket:type_name -> websocket.v1.WebSocket
-	3, // 2: service.v1.Service.message:type_name -> msg.v1.Message
-	4, // 3: service.v1.Service.task:type_name -> task.v1.Task
-	5, // 4: service.v1.Service.middlewares:type_name -> middleware.v1.MiddlewareConfig
-	6, // 5: service.v1.Service.endpoint:type_name -> discovery.v1.Endpoint
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	1, // 0: service.v1.Service.servers:type_name -> transport.v1.Server
+	2, // 1: service.v1.Service.clients:type_name -> transport.v1.Client
+	3, // 2: service.v1.Service.middlewares:type_name -> middleware.v1.MiddlewareConfig
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_service_v1_service_proto_init() }

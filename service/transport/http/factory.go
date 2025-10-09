@@ -8,9 +8,11 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
+	transhttp "github.com/go-kratos/kratos/v2/transport/http"
+
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
 )
@@ -52,7 +54,7 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 		return nil, fmt.Errorf("middleware provider not found in options")
 	}
 
-	var kOpts []khttp.ServerOption
+	var kOpts []transhttp.ServerOption
 	var mws []middleware.Middleware
 
 	// Build middleware chain using the provider
@@ -64,26 +66,26 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 		mws = append(mws, m)
 	}
 	if len(mws) > 0 {
-		kOpts = append(kOpts, khttp.Middleware(mws...))
+		kOpts = append(kOpts, transhttp.Middleware(mws...))
 	}
 
 	// Apply other server options from protobuf config
 	if httpConfig.Network != "" {
-		kOpts = append(kOpts, khttp.Network(httpConfig.Network))
+		kOpts = append(kOpts, transhttp.Network(httpConfig.Network))
 	}
 	if httpConfig.Addr != "" {
-		kOpts = append(kOpts, khttp.Address(httpConfig.Addr))
+		kOpts = append(kOpts, transhttp.Address(httpConfig.Addr))
 	}
 	if httpConfig.Timeout != nil {
-		kOpts = append(kOpts, khttp.Timeout(httpConfig.Timeout.AsDuration()))
+		kOpts = append(kOpts, transhttp.Timeout(httpConfig.Timeout.AsDuration()))
 	}
 	if httpConfig.ShutdownTimeout != nil {
-		kOpts = append(kOpts, khttp.ShutdownTimeout(httpConfig.ShutdownTimeout.AsDuration()))
+		kOpts = append(kOpts, transhttp.ShutdownTimeout(httpConfig.ShutdownTimeout.AsDuration()))
 	}
 	// TODO: Add TLS configuration
 
 	// Create the HTTP server instance
-	srv := khttp.NewServer(kOpts...)
+	srv := transhttp.NewServer(kOpts...)
 
 	// Register business logic
 	if httpRegistrar != nil {
@@ -114,7 +116,7 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 		return nil, fmt.Errorf("middleware provider not found in options")
 	}
 
-	var clientOpts []khttp.ClientOption
+	var clientOpts []transhttp.ClientOption
 	var mws []middleware.Middleware
 
 	// Build client interceptors (middlewares) using the provider
@@ -126,16 +128,16 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 		mws = append(mws, m)
 	}
 	if len(mws) > 0 {
-		clientOpts = append(clientOpts, khttp.WithMiddleware(mws...))
+		clientOpts = append(clientOpts, transhttp.WithMiddleware(mws...))
 	}
 
 	// Apply other client options from protobuf config
 	if httpConfig.Timeout != nil {
-		clientOpts = append(clientOpts, khttp.WithTimeout(httpConfig.Timeout.AsDuration()))
+		clientOpts = append(clientOpts, transhttp.WithTimeout(httpConfig.Timeout.AsDuration()))
 	}
 
 	// Determine target endpoint: prioritize endpoint from options over direct target from config
-	target := httpConfig.Target
+	target := httpConfig.Endpoint
 	if configuredServiceCfg.ClientEndpoint != "" {
 		target = configuredServiceCfg.ClientEndpoint
 	}
@@ -167,7 +169,7 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 	}
 
 	// Create the Kratos HTTP client
-	client, err := khttp.NewClient(ctx, khttp.WithEndpoint(target), khttp.WithTransport(transport), clientOpts...)
+	client, err := transhttp.NewClient(ctx, transhttp.WithEndpoint(target), transhttp.WithTransport(transport), clientOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP client to %s: %w", target, err)
 	}

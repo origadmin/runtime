@@ -18,19 +18,22 @@ message Discovery {
   string name = 1 [json_name = "name"];
 
   // type specifies which discovery provider to use.
-  string type = 2 [(validate.rules).string = {
-    in: [
-      "none",
-      "consul",
-      "etcd",
-      "nacos",
-      "apollo",
-      "kubernetes",
-      "polaris"
-      // Users can also specify a custom type string here,
-      // and provide its configuration via the 'customize' field.
-    ]
-  }];
+  string type = 2 [
+    json_name = "type",
+    (validate.rules).string = {
+      in: [
+        "none",
+        "consul",
+        "etcd",
+        "nacos",
+        "apollo",
+        "kubernetes",
+        "polaris"
+        // Users can also specify a custom type string here,
+        // and provide its configuration via the 'customize' field.
+      ]
+    }
+  ];
 
   // debug enables verbose logging for the discovery client.
   bool debug = 5 [json_name = "debug"];

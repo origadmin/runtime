@@ -3,44 +3,41 @@ syntax = "proto3";
 package transport.v1;
 
 import "google/protobuf/duration.proto";
+import "transport/v1/selector.proto";
 import "security/transport/v1/tls.proto";
-import "validate/validate.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1"; // Updated go_package
+option go_package = "github.com/origadmin/runtime/api/gen/go/transport/v1;transportv1";
 
-// HTTPServer defines the configuration for an HTTP server endpoint.
-message HTTPServer {
-  // Network type, e.g., "tcp", "unix".
-  string network = 1 [(validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]}];
-  // Address for the server to listen on, e.g., ":8000".
-  string addr = 2 [(validate.rules).string.min_len = 1];
-  // Request timeout.
-  google.protobuf.Duration timeout = 3;
-  // Graceful shutdown timeout.
-  google.protobuf.Duration shutdown_timeout = 4;
-  // The endpoint that this server advertises to the service registry.
-  string endpoint = 5;
-  // Max receive message size.
-  int32 max_recv_msg_size = 6 [(validate.rules).int32 = {gt: 0}];
-  // Max send message size.
-  int32 max_send_msg_size = 7 [(validate.rules).int32 = {gt: 0}];
-  // TLS configuration for the server.
-  security.transport.v1.TLSConfig tls = 8;
-  // Middlewares specifies the list of middleware names to apply to the server.
-  // The framework will look up these names in the middleware registry.
-  repeated string middlewares = 9;
+// HttpServerConfig defines the core configuration for a Kratos HTTP server.
+message HttpServerConfig {
+  // addr is the address for the server to listen on.
+  // e.g., "0.0.0.0:8000"
+  string addr = 1;
+
+  // timeout is the request handling timeout.
+  google.protobuf.Duration timeout = 2;
+
+  // middlewares is a list of middleware names to be applied to the server.
+  // The framework will look up these names in a middleware provider.
+  repeated string middlewares = 3;
+
+  // tls_config defines the TLS settings for the HTTP server.
+  optional security.transport.v1.TLSConfig tls_config = 4;
 }
 
-// HTTPClient defines the configuration for an HTTP client.
-message HTTPClient {
-  // Target is the base URL of the HTTP server to connect to, e.g., "http://127.0.0.1:8000".
-  string endpoint = 1 [(validate.rules).string.min_len = 1];
-  // Timeout is the overall request timeout for the client.
+// HttpClientConfig defines the core configuration for creating a Kratos HTTP client.
+message HttpClientConfig {
+  // endpoint is the target to connect to.
+  // It can be a direct address or a discovery service URI.
+  // e.g., "http://127.0.0.1:8000" or "discovery:///your-service-name"
+  string endpoint = 1;
+
+  // timeout is the request timeout for a single HTTP call.
   google.protobuf.Duration timeout = 2;
-  // DialTimeout is the timeout for establishing the connection.
-  google.protobuf.Duration dial_timeout = 3;
-  // TLS configuration for the client.
-  security.transport.v1.TLSConfig tls = 4;
-  // Middlewares specifies the list of client middleware names to apply.
-  repeated string middlewares = 5;
+
+  // middlewares is a list of middleware names to be applied to the client.
+  repeated string middlewares = 3;
+
+  // selector defines the node selection strategy for the client.
+  SelectorConfig selector = 4;
 }

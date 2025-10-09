@@ -3,31 +3,29 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
-	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
+	mw "github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/runtime/service/tls"
-	mw "github.com/origadmin/runtime/middleware"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // NewClient creates a new gRPC client.
 // It is the recommended way to create a client when the protocol is known in advance.
-func NewClient(ctx context.Context, cfg *transportv1.GRPCClient, opts ...service.Option) (interfaces.Client, error) {
+func NewClient(ctx context.Context, cfg *transportv1.GrpcClientConfig, opts ...options.Option) (interfaces.Client, error) {
 	if cfg == nil {
 		return nil, tkerrors.Errorf("gRPC client config is required for creation")
 	}
 
 	// 1. Process options to extract client-specific settings (endpoint, selector filter).
-	var sOpts service.Options
-	sOpts.Apply(opts...)
+	var sOpts options.Context
 
 	// --- Client creation logic below uses the extracted, concrete 'cfg' and 'sOpts' ---
 
@@ -99,7 +97,7 @@ func NewClient(ctx context.Context, cfg *transportv1.GRPCClient, opts ...service
 	if err != nil {
 		return nil, tkerrors.Wrapf(err, "failed to dial gRPC client to %s", target)
 	}
-
+	transgrpc.Dial(ctx)
 	// Return the client connection (which implements interfaces.Client if type aliased correctly)
 	return conn, nil
 }

@@ -1,49 +1,74 @@
 package grpc
 
 import (
-	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	kgprc "github.com/go-kratos/kratos/v2/transport/grpc"
+	grpcx "google.golang.org/grpc"
 
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
 )
 
-// optionsKey is a private key type to avoid collisions in context.
-var (
-	serverOptionsKey = optionutil.Key[[]transgrpc.ServerOption]{}
-	clientOptionsKey = optionutil.Key[[]transgrpc.ClientOption]{}
-)
+// ServerOptions is a container for gRPC server-specific options.
+type ServerOptions struct {
+	// ServiceOptions holds common service-level configurations.
+	ServiceOptions *service.Options
 
-type httpServerOptions struct {
-	ServerOptions []transgrpc.ServerOption
+	// GrpcServerOptions allows passing native Kratos gRPC server options.
+	GrpcServerOptions []kgprc.ServerOption
 }
 
-type httpClientOptions struct {
-	ClientOptions []transgrpc.ClientOption
+// FromServerOptions creates a new gRPC ServerOptions struct by applying a slice of functional options.
+// It also initializes and includes the common service-level options, ensuring they are applied only once.
+func FromServerOptions(opts []options.Option) *ServerOptions {
+	o := &ServerOptions{}
+	// Apply gRPC server-specific options first
+	optionutil.Apply(o, opts...)
+
+	// Initialize and include common service-level options if not already set.
+	// This prevents redundant application of common options.
+	if o.ServiceOptions == nil {
+		o.ServiceOptions = service.FromOptions(opts)
+	}
+
+	return o
 }
 
-// WithServerOption is an option to add a Kratos transgrpc.ServerOption to the context.
-func WithServerOption(opt ...transgrpc.ServerOption) options.Option {
-	return optionutil.Update(func(o *httpServerOptions) {
-		o.ServerOptions = append(o.ServerOptions, opt...)
+// WithGrpcServerOptions appends Kratos gRPC server options.
+func WithGrpcServerOptions(opts ...kgprc.ServerOption) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.GrpcServerOptions = append(o.GrpcServerOptions, opts...)
 	})
 }
 
-// WithClientOption is an option to add a transgrpc.ClientOption to the context.
-func WithClientOption(opt ...transgrpc.ClientOption) options.Option { // Change parameter type
-	return optionutil.Update(func(o *httpClientOptions) {
-		o.ClientOptions = append(o.ClientOptions, opt...)
+// ClientOptions is a container for gRPC client-specific options.
+type ClientOptions struct {
+	// ServiceOptions holds common service-level configurations.
+	ServiceOptions *service.Options
+
+	// GrpcDialOptions allows passing native gRPC client dial options.
+	GrpcDialOptions []grpcx.DialOption
+}
+
+// FromClientOptions creates a new gRPC ClientOptions struct by applying a slice of functional options.
+// It also initializes and includes the common service-level options, ensuring they are applied only once.
+func FromClientOptions(opts []options.Option) *ClientOptions {
+	o := &ClientOptions{}
+	// Apply gRPC client-specific options first
+	optionutil.Apply(o, opts...)
+
+	// Initialize and include common service-level options if not already set.
+	// This prevents redundant application of common options.
+	if o.ServiceOptions == nil {
+		o.ServiceOptions = service.FromOptions(opts)
+	}
+
+	return o
+}
+
+// WithGrpcDialOptions appends native gRPC client dial options.
+func WithGrpcDialOptions(opts ...grpcx.DialOption) options.Option {
+	return optionutil.Update(func(o *ClientOptions) {
+		o.GrpcDialOptions = append(o.GrpcDialOptions, opts...)
 	})
-}
-
-// FromServerOptions returns the collected Kratos transgrpc.ServerOption from the service.Options' emptyContext.
-func FromServerOptions(options []options.Option) []transgrpc.ServerOption {
-	return optionutil.Slice(options, serverOptionsKey)
-}
-
-// FromClientOptions returns the collected transgrpc.ClientOption from the service.Options' emptyContext.
-func FromClientOptions(options []options.Option) []transgrpc.ClientOption { // Change return type
-	var o httpClientOptions
-	optionutil.Apply(&o, options...)
-	return o.ClientOptions
 }

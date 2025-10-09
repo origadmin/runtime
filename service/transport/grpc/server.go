@@ -3,22 +3,22 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
+	mw "github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/service"
 	"github.com/origadmin/runtime/service/tls"
-	mw "github.com/origadmin/runtime/middleware"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // NewServer creates a new gRPC server with the given configuration and options.
 // It is the recommended way to create a server when the protocol is known in advance.
-func NewServer(cfg *transportv1.GRPCServer, opts ...service.Option) (*transgrpc.Server, error) {
+func NewServer(cfg *transportv1.GRPCServer, opts ...options.Option) (*transgrpc.Server, error) {
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/grpc"))
 	ll.Debugf("Creating new gRPC server instance with config: %+v", cfg)
 
@@ -27,7 +27,7 @@ func NewServer(cfg *transportv1.GRPCServer, opts ...service.Option) (*transgrpc.
 	}
 
 	// 1. Process options to extract registrar.
-	var sOpts service.Options
+	var sOpts options.Option
 	sOpts.Apply(opts...)
 
 	grpcRegistrar, ok := sOpts.Value().registrar.(service.GRPCRegistrar)
@@ -74,13 +74,13 @@ func NewServer(cfg *transportv1.GRPCServer, opts ...service.Option) (*transgrpc.
 		}
 		kOpts = append(kOpts, transgrpc.TLSConfig(tlsConfig))
 	}
-
+	transgrpc.Endpoint(cfg.Endpoint)
 	// Create the gRPC server instance
 	srv := transgrpc.NewServer(kOpts...)
 
 	// Register business logic
 	if grpcRegistrar != nil {
-		grpcRegistrar.RegisterGRPC(context.Background(), srv)
+		grpcRegistrar.RegisterGRPC(srv)
 	}
 
 	return srv, nil

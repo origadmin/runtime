@@ -8,7 +8,7 @@ import (
 	"github.com/origadmin/runtime/interfaces/options"
 )
 
-// ProtocolFactory 定义了创建特定协议服务实例的工厂标准。
+// ProtocolFactory defines the factory standard for creating a specific protocol service instance。
 type ProtocolFactory interface {
 	NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error)
 	NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error)

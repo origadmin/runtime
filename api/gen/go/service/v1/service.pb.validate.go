@@ -58,131 +58,72 @@ func (m *Service) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _Service_Protocol_InLookup[m.GetProtocol()]; !ok {
-		err := ServiceValidationError{
-			field:  "Protocol",
-			reason: "value must be in list [http grpc websocket message task]",
+	for idx, item := range m.GetServers() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ServiceValidationError{
+						field:  fmt.Sprintf("Servers[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ServiceValidationError{
+						field:  fmt.Sprintf("Servers[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ServiceValidationError{
+					field:  fmt.Sprintf("Servers[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
 
-	if all {
-		switch v := interface{}(m.GetServerTransport()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "ServerTransport",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "ServerTransport",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetServerTransport()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ServiceValidationError{
-				field:  "ServerTransport",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	for idx, item := range m.GetClients() {
+		_, _ = idx, item
 
-	if all {
-		switch v := interface{}(m.GetWebsocket()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Websocket",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ServiceValidationError{
+						field:  fmt.Sprintf("Clients[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ServiceValidationError{
+						field:  fmt.Sprintf("Clients[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Websocket",
+				return ServiceValidationError{
+					field:  fmt.Sprintf("Clients[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetWebsocket()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ServiceValidationError{
-				field:  "Websocket",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
-	if all {
-		switch v := interface{}(m.GetMessage()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Message",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Message",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMessage()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ServiceValidationError{
-				field:  "Message",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetTask()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Task",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Task",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTask()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ServiceValidationError{
-				field:  "Task",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
 	}
 
 	for idx, item := range m.GetMiddlewares() {
@@ -217,35 +158,6 @@ func (m *Service) validate(all bool) error {
 			}
 		}
 
-	}
-
-	if all {
-		switch v := interface{}(m.GetEndpoint()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Endpoint",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ServiceValidationError{
-					field:  "Endpoint",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetEndpoint()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ServiceValidationError{
-				field:  "Endpoint",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
 	}
 
 	if len(errors) > 0 {
@@ -324,11 +236,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ServiceValidationError{}
-
-var _Service_Protocol_InLookup = map[string]struct{}{
-	"http":      {},
-	"grpc":      {},
-	"websocket": {},
-	"message":   {},
-	"task":      {},
-}

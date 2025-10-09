@@ -30,14 +30,10 @@ func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 	if cfg == nil {
 		return "", tkerrors.Errorf("server configuration is nil")
 	}
-	switch cfg.Protocol.(type) {
-	case *transportv1.Server_Grpc:
-		return "grpc", nil
-	case *transportv1.Server_Http:
-		return "http", nil
-	default:
-		return "", tkerrors.Errorf("unknown or missing protocol in server configuration")
+	if cfg.Protocol == "" {
+		return "", tkerrors.Errorf("protocol is not specified in server configuration")
 	}
+	return cfg.Protocol, nil
 }
 
 // getClientProtocolName extracts the protocol name from the transportv1.Client configuration.
@@ -45,14 +41,10 @@ func getClientProtocolName(cfg *transportv1.Client) (string, error) {
 	if cfg == nil {
 		return "", tkerrors.Errorf("client configuration is nil")
 	}
-	switch cfg.Protocol.(type) {
-	case *transportv1.Client_Grpc:
-		return "grpc", nil
-	case *transportv1.Client_Http:
-		return "http", nil
-	default:
-		return "", tkerrors.Errorf("unknown or missing protocol in client configuration")
+	if cfg.Protocol == "" {
+		return "", tkerrors.Errorf("protocol is not specified in client configuration")
 	}
+	return cfg.Protocol, nil
 }
 
 // NewServer creates a new server instance based on the provided configuration and options.

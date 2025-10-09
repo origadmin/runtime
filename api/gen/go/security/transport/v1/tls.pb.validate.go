@@ -74,18 +74,11 @@ func (m *TLSConfig) validate(all bool) error {
 
 	// no validation rules for ClientCaFile
 
-	switch v := m.Config.(type) {
-	case *TLSConfig_File:
-		if v == nil {
-			err := TLSConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	// no validation rules for InsecureSkipVerify
+
+	// no validation rules for ServerName
+
+	if m.File != nil {
 
 		if all {
 			switch v := interface{}(m.GetFile()).(type) {
@@ -116,17 +109,9 @@ func (m *TLSConfig) validate(all bool) error {
 			}
 		}
 
-	case *TLSConfig_Pem:
-		if v == nil {
-			err := TLSConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Pem != nil {
 
 		if all {
 			switch v := interface{}(m.GetPem()).(type) {
@@ -157,8 +142,6 @@ func (m *TLSConfig) validate(all bool) error {
 			}
 		}
 
-	default:
-		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {
