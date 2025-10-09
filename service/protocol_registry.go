@@ -10,6 +10,9 @@ import (
 	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
+// ProtocolGRPC is the name of the gRPC protocol.
+const ProtocolGRPC = "grpc"
+
 // defaultRegistry is the default, package-level instance of the protocol registry.
 var defaultRegistry = factory.New[ProtocolFactory]()
 

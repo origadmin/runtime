@@ -15,7 +15,7 @@ type grpcProtocolFactory struct{}
 
 // init registers this factory with the framework's central protocol registry.
 func init() {
-	service.RegisterProtocol("grpc", &grpcProtocolFactory{})
+	service.RegisterProtocol(service.ProtocolGRPC, &grpcProtocolFactory{})
 }
 
 // NewServer creates a new gRPC server instance based on the provided configuration.

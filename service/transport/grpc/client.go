@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
+	"github.com/origadmin/runtime/interfaces/container"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
@@ -21,6 +22,12 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 	// 3. Prepare the Kratos gRPC client options.
 	var kratosOpts []transgrpc.ClientOption
 
+	// Introduce a local variable for the container to reduce redundant nil checks.
+	var c container.Container
+	if clientOpts.ServiceOptions != nil {
+		c = clientOpts.ServiceOptions.Container
+	}
+
 	// 4. Apply options from the protobuf configuration.
 	if grpcConfig.GetTimeout() != nil {
 		kratosOpts = append(kratosOpts, transgrpc.WithTimeout(grpcConfig.GetTimeout().AsDuration()))
@@ -29,11 +36,11 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 	// 5. Configure middlewares.
 	var mws []middleware.Middleware
 	if len(grpcConfig.GetMiddlewares()) > 0 {
-		if clientOpts.ServiceOptions.Container == nil {
+		if c == nil {
 			return nil, fmt.Errorf("application container is required for middleware but not found in options")
 		}
 		for _, name := range grpcConfig.GetMiddlewares() {
-			m, ok := clientOpts.ServiceOptions.Container.ClientMiddleware(name)
+			m, ok := c.ClientMiddleware(name)
 			if !ok {
 				return nil, fmt.Errorf("client middleware '%s' not found in container", name)
 			}
@@ -59,18 +66,17 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 
 	// Determine the discovery client.
 	if discoveryName := grpcConfig.GetDiscoveryName(); discoveryName != "" {
-		if clientOpts.ServiceOptions.Container == nil {
+		if c == nil {
 			return nil, fmt.Errorf("application container is required for named discovery client but not found in options")
 		}
-		discoveries := clientOpts.ServiceOptions.Container.Discoveries()
-		if d, ok := discoveries[discoveryName]; ok {
+		if d, ok := c.Discovery(discoveryName); ok {
 			discoveryClient = d
 		} else {
 			return nil, fmt.Errorf("discovery client '%s' not found in container", discoveryName)
 		}
-	} else if clientOpts.ServiceOptions.Container != nil {
+	} else if c != nil {
 		// If no specific discovery name, try to infer if only one is available.
-		discoveries := clientOpts.ServiceOptions.Container.Discoveries()
+		discoveries := c.Discoveries()
 		if len(discoveries) == 1 {
 			for _, d := range discoveries {
 				discoveryClient = d
@@ -100,7 +106,6 @@ func NewGRPCClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig
 		}
 
 		if nodeFilter != nil {
-			// Pass the single filter to Kratos.
 			kratosOpts = append(kratosOpts, transgrpc.WithNodeFilter(nodeFilter))
 		}
 	}

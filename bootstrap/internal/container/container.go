@@ -6,12 +6,13 @@ import (
 	"reflect"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	runtimelog "github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/middleware"
+	runtimeMiddleware "github.com/origadmin/runtime/middleware" // 导入 runtime/middleware 包，但只在内部使用
 	runtimeRegistry "github.com/origadmin/runtime/registry"
 )
 
@@ -23,8 +24,8 @@ type container struct {
 	registrars           map[string]registry.Registrar
 	defaultRegistrar     registry.Registrar
 	components           map[string]interface{}
-	serverMiddlewaresMap map[string]middleware.KMiddleware
-	clientMiddlewaresMap map[string]middleware.KMiddleware
+	serverMiddlewaresMap map[string]middleware.Middleware // 修正类型
+	clientMiddlewaresMap map[string]middleware.Middleware // 修正类型
 }
 
 // Statically assert that componentProviderImpl implements the interface.
@@ -44,8 +45,8 @@ type Builder struct {
 func NewContainer() interfaces.Container {
 	return &container{
 		components:           make(map[string]interface{}),
-		serverMiddlewaresMap: make(map[string]middleware.KMiddleware),
-		clientMiddlewaresMap: make(map[string]middleware.KMiddleware),
+		serverMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
+		clientMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
 	}
 }
 
@@ -58,8 +59,8 @@ func NewBuilder(componentFactories map[string]interfaces.ComponentFactory) *Buil
 			components:           make(map[string]interface{}),
 			discoveries:          make(map[string]registry.Discovery),
 			registrars:           make(map[string]registry.Registrar),
-			serverMiddlewaresMap: make(map[string]middleware.KMiddleware),
-			clientMiddlewaresMap: make(map[string]middleware.KMiddleware),
+			serverMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
+			clientMiddlewaresMap: make(map[string]middleware.Middleware), // 修正类型
 		},
 	}
 }
@@ -226,9 +227,9 @@ func (b *Builder) initRegistries() error {
 }
 
 func (b *Builder) initMiddlewares() error {
-	helper := log.NewHelper(b.container.Logger())                              // Use log.Helper
-	b.container.serverMiddlewaresMap = make(map[string]middleware.KMiddleware) // Already initialized in NewComponentProvider
-	b.container.clientMiddlewaresMap = make(map[string]middleware.KMiddleware) // Already initialized in NewComponentProvider
+	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
+	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware) // 修正类型
+	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware) // 修正类型
 
 	middlewares, err := b.config.DecodeMiddleware()
 	if err != nil {
@@ -239,18 +240,18 @@ func (b *Builder) initMiddlewares() error {
 	for _, mc := range middlewares.GetMiddlewares() {
 		if mc.GetEnabled() {
 			// Assuming NewClient and NewServer support WithLogger option
-			mclient, ok := middleware.NewClient(mc, runtimelog.WithLogger(logger)) // Pass logger
+			mclient, ok := runtimeMiddleware.NewClient(mc, runtimelog.WithLogger(logger)) // 使用 runtimeMiddleware
 			if !ok {
 				helper.Warnw("msg", "failed to create client middleware", "type", mc.GetType())
 				continue
 			}
-			mserver, ok := middleware.NewServer(mc, runtimelog.WithLogger(logger)) // Pass logger
+			mserver, ok := runtimeMiddleware.NewServer(mc, runtimelog.WithLogger(logger)) // 使用 runtimeMiddleware
 			if !ok {
 				helper.Warnw("msg", "failed to create server middleware", "type", mc.GetType())
 				continue
 			}
-			b.container.serverMiddlewaresMap[mc.GetType()] = mserver
-			b.container.clientMiddlewaresMap[mc.GetType()] = mclient
+			b.container.serverMiddlewaresMap[mc.GetType()] = mserver // 存储 kratos middleware.Middleware
+			b.container.clientMiddlewaresMap[mc.GetType()] = mclient // 存储 kratos middleware.Middleware
 		}
 	}
 	return nil
@@ -281,60 +282,13 @@ func (b *Builder) Logger() log.Logger {
 	return b.container.Logger()
 }
 
-//// Build instantiates all registered components in a deterministic order.
-//func (c *container) Build() error {
-//	// Define a build order to ensure dependencies are met.
-//	// For example, "logger" must be built before other components that use it.
-//	buildOrder := []string{"logger", "registries", "middlewares"}
-//
-//	// Create a map of registered keys for quick lookup
-//	registeredKeys := make(map[string]struct{})
-//	for key := range c.factories {
-//		registeredKeys[key] = struct{}{}
-//	}
-//
-//	// Append remaining keys that are not in the explicit build order.
-//	// Sort them to ensure deterministic build order.
-//	var remainingKeys []string
-//	for key := range registeredKeys {
-//		isExplicit := false
-//		for _, explicitKey := range buildOrder {
-//			if key == explicitKey {
-//				isExplicit = true
-//				break
-//			}
-//		}
-//		if !isExplicit {
-//			remainingKeys = append(remainingKeys, key)
-//		}
-//	}
-//	sort.Strings(remainingKeys)
-//	buildOrder = append(buildOrder, remainingKeys...)
-//
-//	// Build components in the determined order.
-//	for _, name := range buildOrder {
-//		if _, exists := registeredKeys[name]; !exists {
-//			continue // Skip if a key in buildOrder was not registered.
-//		}
-//
-//		// Skip if component is already built (e.g., as a dependency).
-//		if _, ok := c.components[name]; ok {
-//			continue
-//		}
-//
-//		log.NewHelper(c.Logger()).Infof("component '%s' built successfully", name)
-//	}
-//
-//	return nil
-//}
-
-func (c *container) ServerMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
-	mw, ok := c.serverMiddlewaresMap[string(name)]
+func (c *container) ServerMiddleware(name string) (middleware.Middleware, bool) {
+	mw, ok := c.serverMiddlewaresMap[name]
 	return mw, ok
 }
 
-func (c *container) ClientMiddleware(name middleware.Name) (middleware.KMiddleware, bool) {
-	mw, ok := c.clientMiddlewaresMap[string(name)]
+func (c *container) ClientMiddleware(name string) (middleware.Middleware, bool) {
+	mw, ok := c.clientMiddlewaresMap[name]
 	return mw, ok
 }
 
@@ -375,9 +329,21 @@ func (c *container) Discoveries() map[string]registry.Discovery {
 	return c.discoveries
 }
 
+// Discovery implements the interfaces.Container interface.
+func (c *container) Discovery(name string) (registry.Discovery, bool) {
+	d, ok := c.discoveries[name]
+	return d, ok
+}
+
 // Registrars implements the interfaces.Container interface.
 func (c *container) Registrars() map[string]registry.Registrar {
 	return c.registrars
+}
+
+// Registrar implements the interfaces.Container interface.
+func (c *container) Registrar(name string) (registry.Registrar, bool) {
+	r, ok := c.registrars[name]
+	return r, ok
 }
 
 // DefaultRegistrar implements the interfaces.Container interface.

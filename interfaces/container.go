@@ -19,8 +19,14 @@ type Container interface {
 	// Discoveries returns a map of all configured service discovery components.
 	Discoveries() map[string]registry.Discovery
 
+	// Discovery returns a discovery client by name.
+	Discovery(name string) (registry.Discovery, bool)
+
 	// Registrars returns a map of all configured service registrar components.
 	Registrars() map[string]registry.Registrar
+
+	// Registrar returns a registrar by name.
+	Registrar(name string) (registry.Registrar, bool)
 
 	// DefaultRegistrar returns the default service registrar, used for service self-registration.
 	// It may be nil if no default registry is configured.
