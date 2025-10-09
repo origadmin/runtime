@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/registry"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
@@ -27,12 +26,12 @@ func NewHTTPClient(ctx context.Context, httpConfig *transportv1.HttpClientConfig
 
 	// Get the container instance. It will be nil if not provided in options.
 	var c interfaces.Container
-	if clientOpts.Options != nil {
-		c = clientOpts.Options.Container
+	if clientOpts.ServiceOptions != nil {
+		c = clientOpts.ServiceOptions.Container
 	}
 
 	// Determine if container-dependent features (middlewares, named discovery, or selector filter) are configured.
-	containerDependentFeaturesEnabled := len(httpConfig.GetMiddlewares()) > 0 || httpConfig.GetDiscoveryName() != "" || clientOpts.ClientSelectorFilter != nil
+	containerDependentFeaturesEnabled := len(httpConfig.GetMiddlewares()) > 0 || httpConfig.GetDiscoveryName() != ""
 
 	// If container-dependent features are enabled but no container is provided (c is nil),
 	// return an error immediately. This consolidates the nil checks for the container.
@@ -116,21 +115,21 @@ func NewHTTPClient(ctx context.Context, httpConfig *transportv1.HttpClientConfig
 		}
 
 		if nodeFilter != nil {
-			// Kratos HTTP client needs a way to integrate NodeFilter with discovery.
-			// For now, we'll just ensure the container is available if a filter is set.
-			// Assuming the selector filter might need discovery from the container.
-			// This part needs more concrete implementation based on how ClientSelectorFilter works.
-			// kratosOpts = append(kratosOpts, transhttp.WithNodeFilter(nodeFilter)) // Kratos HTTP client does not directly support WithNodeFilter
+			//Kratos HTTP client needs a way to integrate NodeFilter with discovery.
+			//For now, we'll just ensure the container is available if a filter is set.
+			//Assuming the selector filter might need discovery from the container.
+			//This part needs more concrete implementation based on how ClientSelectorFilter works.
+			kratosOpts = append(kratosOpts, transhttp.WithNodeFilter(nodeFilter))
 		}
 	}
 
 	// Configure TLS.
-	var tlsClientConfig *tls.ClientTLSConfig
-	if httpConfig.GetTls() != nil && httpConfig.GetTls().GetEnabled() {
-		tlsClientConfig, err := servicetls.NewClientTLSConfig(httpConfig.GetTls())
+	if tlsConfig := httpConfig.GetTlsConfig(); tlsConfig != nil && tlsConfig.GetEnabled() {
+		tlsCfg, err := servicetls.NewClientTLSConfig(tlsConfig)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create client TLS config: %w", err)
 		}
+		kratosOpts = append(kratosOpts, transhttp.WithTLSConfig(tlsCfg))
 	}
 
 	// Create a new HTTP client with custom transport to handle dial timeout and TLS
@@ -153,10 +152,6 @@ func NewHTTPClient(ctx context.Context, httpConfig *transportv1.HttpClientConfig
 		}).DialContext
 	}
 
-	if tlsClientConfig != nil {
-		transport.TLSClientConfig = tlsClientConfig.TLSConfig
-	}
-
 	// Apply any external Kratos HTTP client options passed via functional options.
 	// These are applied last, allowing them to override previous options if needed.
 	if len(clientOpts.HttpClientOptions) > 0 {
@@ -164,9 +159,9 @@ func NewHTTPClient(ctx context.Context, httpConfig *transportv1.HttpClientConfig
 	}
 
 	// Create the Kratos HTTP client
-	client, err := transhttp.NewClient(ctx, transhttp.WithEndpoint(target), transhttp.WithTransport(transport), kratosOpts...)
+	client, err := transhttp.NewClient(ctx, kratosOpts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create HTTP client to %s: %w", target, err)
+		return nil, fmt.Errorf("failed to create HTTP client: %w", err)
 	}
 
 	return client, nil
