@@ -7,6 +7,7 @@
 package transportv1
 
 import (
+	cors "github.com/origadmin/runtime/api/gen/go/middleware/v1/cors"
 	v1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -37,7 +38,9 @@ type HttpServerConfig struct {
 	// tls_config defines the TLS settings for the HTTP server.
 	TlsConfig *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
 	// network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
-	Network       string `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`
+	Network string `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`
+	// cors configuration for the HTTP server
+	Cors          *cors.Cors `protobuf:"bytes,6,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -105,6 +108,13 @@ func (x *HttpServerConfig) GetNetwork() string {
 		return x.Network
 	}
 	return ""
+}
+
+func (x *HttpServerConfig) GetCors() *cors.Cors {
+	if x != nil {
+		return x.Cors
+	}
+	return nil
 }
 
 // HttpClientConfig defines the core configuration for creating a Kratos HTTP client.
@@ -214,15 +224,17 @@ var File_transport_v1_http_proto protoreflect.FileDescriptor
 
 const file_transport_v1_http_proto_rawDesc = "" +
 	"\n" +
-	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x1btransport/v1/selector.proto\"\xec\x01\n" +
+	"\x17transport/v1/http.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fsecurity/transport/v1/tls.proto\x1a\x1btransport/v1/selector.proto\x1a\x1dmiddleware/v1/cors/cors.proto\"\xa8\x02\n" +
 	"\x10HttpServerConfig\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
 	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x12D\n" +
 	"\n" +
 	"tls_config\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01\x12\x18\n" +
-	"\anetwork\x18\x05 \x01(\tR\anetworkB\r\n" +
-	"\v_tls_config\"\x8f\x03\n" +
+	"\anetwork\x18\x05 \x01(\tR\anetwork\x121\n" +
+	"\x04cors\x18\x06 \x01(\v2\x18.middleware.v1.cors.CorsH\x01R\x04cors\x88\x01\x01B\r\n" +
+	"\v_tls_configB\a\n" +
+	"\x05_cors\"\x8f\x03\n" +
 	"\x10HttpClientConfig\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
@@ -254,20 +266,22 @@ var file_transport_v1_http_proto_goTypes = []any{
 	(*HttpClientConfig)(nil),    // 1: transport.v1.HttpClientConfig
 	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
 	(*v1.TLSConfig)(nil),        // 3: security.transport.v1.TLSConfig
-	(*SelectorConfig)(nil),      // 4: transport.v1.SelectorConfig
+	(*cors.Cors)(nil),           // 4: middleware.v1.cors.Cors
+	(*SelectorConfig)(nil),      // 5: transport.v1.SelectorConfig
 }
 var file_transport_v1_http_proto_depIdxs = []int32{
 	2, // 0: transport.v1.HttpServerConfig.timeout:type_name -> google.protobuf.Duration
 	3, // 1: transport.v1.HttpServerConfig.tls_config:type_name -> security.transport.v1.TLSConfig
-	2, // 2: transport.v1.HttpClientConfig.timeout:type_name -> google.protobuf.Duration
-	4, // 3: transport.v1.HttpClientConfig.selector:type_name -> transport.v1.SelectorConfig
-	3, // 4: transport.v1.HttpClientConfig.tls_config:type_name -> security.transport.v1.TLSConfig
-	2, // 5: transport.v1.HttpClientConfig.dial_timeout:type_name -> google.protobuf.Duration
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	4, // 2: transport.v1.HttpServerConfig.cors:type_name -> middleware.v1.cors.Cors
+	2, // 3: transport.v1.HttpClientConfig.timeout:type_name -> google.protobuf.Duration
+	5, // 4: transport.v1.HttpClientConfig.selector:type_name -> transport.v1.SelectorConfig
+	3, // 5: transport.v1.HttpClientConfig.tls_config:type_name -> security.transport.v1.TLSConfig
+	2, // 6: transport.v1.HttpClientConfig.dial_timeout:type_name -> google.protobuf.Duration
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_transport_v1_http_proto_init() }

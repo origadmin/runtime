@@ -123,6 +123,39 @@ func (m *HttpServerConfig) validate(all bool) error {
 
 	}
 
+	if m.Cors != nil {
+
+		if all {
+			switch v := interface{}(m.GetCors()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, HttpServerConfigValidationError{
+						field:  "Cors",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, HttpServerConfigValidationError{
+						field:  "Cors",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCors()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return HttpServerConfigValidationError{
+					field:  "Cors",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return HttpServerConfigMultiError(errors)
 	}
