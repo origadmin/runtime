@@ -43,11 +43,17 @@ func adaptServerConfig(cfg *transportv1.Server) ([]transhttp.ServerOption, error
 	ll := log.NewHelper(log.With(log.GetLogger(), "module", "service/http"))
 
 	// Start with default middlewares and options
-	opts := DefaultServerMiddlewares()
+	var opts []transhttp.ServerOption
+
+	// Add CORS configuration if needed
+	//if httpCfg.GetCors() != nil && httpCfg.GetCors().GetEnabled() {
+	//	corsHandler := middleware.NewCors(httpCfg.GetCors())
+	//	opts = append(opts, transhttp.Filter(corsHandler))
+	//}
 
 	// Add TLS configuration if needed
-	if httpCfg.GetTls() != nil && httpCfg.GetTls().GetEnabled() {
-		tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTls())
+	if httpCfg.GetTlsConfig() != nil && httpCfg.GetTlsConfig().GetEnabled() {
+		tlsConfig, err := tls.NewServerTLSConfig(httpCfg.GetTlsConfig())
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for server creation")
 		}
@@ -71,9 +77,9 @@ func adaptServerConfig(cfg *transportv1.Server) ([]transhttp.ServerOption, error
 	opts = append(opts, transhttp.Timeout(timeout))
 
 	// Configure shutdown timeout
-	if httpCfg.ShutdownTimeout != nil {
-		opts = append(opts, transhttp.ShutdownTimeout(httpCfg.ShutdownTimeout.AsDuration()))
-	}
+	//if httpCfg.ShutdownTimeout != nil {
+	//	opts = append(opts, transhttp.ShutdownTimeout(httpCfg.ShutdownTimeout.AsDuration()))
+	//}
 
 	// Handle endpoint configuration
 	ll.Debugw("msg", "HTTP", "address", httpCfg.Addr)
@@ -109,12 +115,12 @@ func adaptClientConfig(cfg *transportv1.Client) ([]transhttp.ClientOption, error
 
 	// 3. Processing timeout
 	if httpCfg.Timeout != nil {
-		opts = append(opts, transhttp.WithTimeout(time.Duration(timeout)*time.Millisecond))
+		opts = append(opts, transhttp.WithTimeout(httpCfg.Timeout.AsDuration()))
 	}
 
 	// 4. Handle TLS
-	if httpCfg.GetTls() != nil && httpCfg.GetTls().GetEnabled() {
-		tlsConfig, err := tls.NewClientTLSConfig(httpCfg.GetTls())
+	if httpCfg.GetTlsConfig() != nil && httpCfg.GetTlsConfig().GetEnabled() {
+		tlsConfig, err := tls.NewClientTLSConfig(httpCfg.GetTlsConfig())
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid TLS config for client creation")
 		}
@@ -122,7 +128,7 @@ func adaptClientConfig(cfg *transportv1.Client) ([]transhttp.ClientOption, error
 	}
 
 	// 5. Process selectors
-	if selectorCfg := cfg.GetSelector(); selectorCfg != nil {
+	if selectorCfg := httpCfg.GetSelector(); selectorCfg != nil {
 		filter, err := selector.NewFilter(selectorCfg)
 		if err != nil {
 			return nil, tkerrors.Wrapf(err, "invalid selector config for client creation")
