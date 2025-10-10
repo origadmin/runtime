@@ -15,7 +15,7 @@ import (
 // the base configuration from proto, and advanced, code-based functional options.
 func NewCorsHandler(config *corsv1.Cors, codeOpts ...CorsOption) (func(http.Handler) http.Handler, error) {
 	// If CORS is not configured or disabled, return a no-op filter.
-	if config == nil || !config.GetEnabled() {
+	if config == nil {
 		return func(h http.Handler) http.Handler {
 			return h
 		}, nil
