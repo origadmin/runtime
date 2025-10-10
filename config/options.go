@@ -7,44 +7,38 @@ import (
 	"github.com/origadmin/runtime/optionutil"
 )
 
-// ConfigOptions holds the configuration for the config module.
-type ConfigOptions struct {
-	ConfigOptions []config.Option
-	EnvPrefixes   []string
-	Sources       []KSource
+// Options holds the configuration for the config module.
+type Options struct {
+	ConfigOptions []KOption
+	//EnvPrefixes   []string
+	Sources []KSource
 }
 
-// Key is the unique key for ConfigOptions in the options.Option.
-var Key = optionutil.Key[*ConfigOptions]{}
-
-// Option is a function that configures ConfigOptions.
-type Option = options.Option
-
-// WithConfigOption appends Kratos config.Option to the ConfigOptions.
-func WithConfigOption(opts ...config.Option) Option {
-	return optionutil.Update(func(c *ConfigOptions) {
+// WithConfigOption appends Kratos config.Option to the Options.
+func WithConfigOption(opts ...config.Option) options.Option {
+	return optionutil.Update(func(c *Options) {
 		c.ConfigOptions = append(c.ConfigOptions, opts...)
 	})
 }
 
-// WithEnvPrefixes appends environment variable prefixes to the ConfigOptions.
-func WithEnvPrefixes(prefixes ...string) Option {
-	return optionutil.Update(func(c *ConfigOptions) {
-		c.EnvPrefixes = append(c.EnvPrefixes, prefixes...)
+// WithEnvPrefixes appends environment variable prefixes to the Options.
+func WithEnvPrefixes(prefixes ...string) options.Option {
+	return optionutil.Update(func(c *Options) {
+		//c.EnvPrefixes = append(c.EnvPrefixes, prefixes...)
 	})
 }
 
-// WithSource appends config.Source to the ConfigOptions.
-func WithSource(s ...config.Source) Option {
-	return optionutil.Update(func(c *ConfigOptions) {
+// WithSource appends config.Source to the Options.
+func WithSource(s ...config.Source) options.Option {
+	return optionutil.Update(func(c *Options) {
 		c.Sources = append(c.Sources, s...)
 	})
 }
 
-// FromOptions retrieves ConfigOptions pointer from the provided options.Option.
+// FromOptions retrieves Options pointer from the provided options.Option.
 // It returns nil if the options are not found or opt is nil.
-func FromOptions(opts ...Option) *ConfigOptions {
-	var configOpt ConfigOptions
+func FromOptions(opts ...options.Option) *Options {
+	var configOpt Options
 	optionutil.Apply(&configOpt, opts...)
 	return &configOpt
 }

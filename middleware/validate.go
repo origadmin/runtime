@@ -21,11 +21,11 @@ import (
 type validatorFactory struct {
 }
 
-func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
 	return nil, false
 }
 
-func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
 	log.Debug("[Middleware] ValidatorClient server middleware enabled")
 	if !middleware.GetEnabled() {
 		return nil, false
@@ -53,7 +53,7 @@ func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middlewar
 
 // Validate is a middleware validator.
 // Deprecated: use ValidateServer
-func Validate(ms []KMiddleware, validator *validatorv1.Validator) []KMiddleware {
+func Validate(ms []KratosMiddleware, validator *validatorv1.Validator) []KratosMiddleware {
 	switch validate.Version(validator.Version) {
 	case validate.V1:
 		return append(ms, validateMiddlewareV1(validator))
@@ -63,7 +63,7 @@ func Validate(ms []KMiddleware, validator *validatorv1.Validator) []KMiddleware 
 	return ms
 }
 
-func ValidateServer(ms []KMiddleware, validator *validatorv1.Validator) []KMiddleware {
+func ValidateServer(ms []KratosMiddleware, validator *validatorv1.Validator) []KratosMiddleware {
 	opts := []validate.Option{
 		validate.WithFailFast(validator.GetFailFast()),
 	}

@@ -21,7 +21,7 @@ import (
 
 type jwtFactory struct{}
 
-func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -40,7 +40,7 @@ func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts
 	return m, ok
 }
 
-func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -59,7 +59,7 @@ func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts
 	return m, ok
 }
 
-func JwtServer(cfg *jwtv1.JWT) (KMiddleware, bool) {
+func JwtServer(cfg *jwtv1.JWT) (KratosMiddleware, bool) {
 	config := cfg.GetConfig()
 	if config == nil {
 		return nil, false
@@ -68,7 +68,7 @@ func JwtServer(cfg *jwtv1.JWT) (KMiddleware, bool) {
 	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
 	return authjwt.Server(kf, opts...), true
 }
-func JwtClient(cfg *jwtv1.JWT) (KMiddleware, bool) {
+func JwtClient(cfg *jwtv1.JWT) (KratosMiddleware, bool) {
 	config := cfg.GetConfig()
 	if config == nil {
 		return nil, false

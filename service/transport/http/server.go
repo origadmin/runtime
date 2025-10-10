@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"net/http/pprof"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
@@ -90,5 +91,19 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 	// Create the HTTP server instance.
 	srv := transhttp.NewServer(kratosOpts...)
 
+	// Enable pprof debugging endpoints if configured.
+	if httpConfig.GetEnablePprof() {
+		registerPprof(srv)
+	}
+
 	return srv, nil
+}
+
+// registerPprof registers the pprof handlers with the HTTP server.
+func registerPprof(s *transhttp.Server) {
+	s.HandleFunc("/debug/pprof/", pprof.Index)
+	s.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	s.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	s.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	s.HandleFunc("/debug/pprof/trace", pprof.Trace)
 }

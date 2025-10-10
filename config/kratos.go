@@ -10,14 +10,16 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 )
 
-//go:generate adptool ./kratos.go
+//go:generate adptool .
 //go:adapter:package github.com/go-kratos/kratos/v2/config
 //go:adapter:package:type *
 //go:adapter:package:type:prefix K
 //go:adapter:package:func *
+//go:adapter:package:func:regex With([A-Z])=WithK$1
+//go:adapter:package:func *
 //go:adapter:package:func:prefix K
 //go:adapter:package:func New
-//go:adapter:package:func:rename NewKkc
+//go:adapter:package:func:rename NewKConfig
 
 // --- Adapter Layer ---
 

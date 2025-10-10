@@ -25,26 +25,26 @@ type (
 	KWatcher  = config.Watcher
 )
 
-func KWithDecoder(d config.Decoder) config.Option {
+func NewKConfig(opts ...config.Option) config.Config {
+	return config.New(opts...)
+}
+
+func WithKDecoder(d config.Decoder) config.Option {
 	return config.WithDecoder(d)
 }
 
-func KWithMergeFunc(m config.Merge) config.Option {
+func WithKMergeFunc(m config.Merge) config.Option {
 	return config.WithMergeFunc(m)
 }
 
-func KWithResolveActualTypes(enableConvertToType bool) config.Option {
+func WithKResolveActualTypes(enableConvertToType bool) config.Option {
 	return config.WithResolveActualTypes(enableConvertToType)
 }
 
-func KWithResolver(r config.Resolver) config.Option {
+func WithKResolver(r config.Resolver) config.Option {
 	return config.WithResolver(r)
 }
 
-func KWithSource(s ...config.Source) config.Option {
+func WithKSource(s ...config.Source) config.Option {
 	return config.WithSource(s...)
-}
-
-func NewKConfig(opts ...config.Option) config.Config {
-	return config.New(opts...)
 }

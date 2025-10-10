@@ -27,12 +27,18 @@ const (
 	Selector       Name = "selector"
 )
 
+// Carrier is a struct that holds the middlewares for client and server.
+type Carrier struct {
+	Clients map[string]KratosMiddleware
+	Servers map[string]KratosMiddleware
+}
+
 type (
 	// Builder is an interface that defines a method for registering a buildImpl.
 	Builder interface {
 		factory.Registry[Factory]
-		BuildClient(*middlewarev1.Middlewares, ...options.Option) []KMiddleware
-		BuildServer(*middlewarev1.Middlewares, ...options.Option) []KMiddleware
+		BuildClient(*middlewarev1.Middlewares, ...options.Option) []KratosMiddleware
+		BuildServer(*middlewarev1.Middlewares, ...options.Option) []KratosMiddleware
 	}
 
 	// Factory is an interface that defines a method for creating a new buildImpl.
@@ -40,15 +46,15 @@ type (
 	// Each factory is responsible for parsing the options it cares about (e.g., by using log.FromOptions).
 	Factory interface {
 		// NewMiddlewareClient builds a client-side middleware.
-		NewMiddlewareClient(*middlewarev1.MiddlewareConfig, ...options.Option) (KMiddleware, bool)
+		NewMiddlewareClient(*middlewarev1.MiddlewareConfig, ...options.Option) (KratosMiddleware, bool)
 		// NewMiddlewareServer builds a server-side middleware.
-		NewMiddlewareServer(*middlewarev1.MiddlewareConfig, ...options.Option) (KMiddleware, bool)
+		NewMiddlewareServer(*middlewarev1.MiddlewareConfig, ...options.Option) (KratosMiddleware, bool)
 	}
 )
 
 // NewClient creates a new client with the given configuration.
 // This function is a convenience wrapper around the default builder.
-func NewClient(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func NewClient(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
 	if mc == nil || !mc.GetEnabled() {
 		return nil, false
 	}
@@ -63,7 +69,7 @@ func NewClient(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMidd
 
 // NewServer creates a new server with the given configuration.
 // This function is a convenience wrapper around the default builder.
-func NewServer(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func NewServer(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
 	if mc == nil || !mc.GetEnabled() {
 		return nil, false
 	}

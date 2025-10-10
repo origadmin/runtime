@@ -15,7 +15,7 @@ import (
 type recoveryFactory struct {
 }
 
-func (r recoveryFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareClient(middleware *middlewarev1.MiddlewareConfig, options *Options) (KratosMiddleware, bool) {
 	log.Debug("[Middleware] Recovery client middleware enabled")
 	if middleware.GetEnabled() && middleware.GetType() == "recovery" {
 		return recovery.Recovery(), true
@@ -23,7 +23,7 @@ func (r recoveryFactory) NewMiddlewareClient(middleware *middlewarev1.Middleware
 	return nil, false
 }
 
-func (r recoveryFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareServer(middleware *middlewarev1.MiddlewareConfig, options *Options) (KratosMiddleware, bool) {
 	log.Debug("[Middleware] Recovery server middleware enabled")
 	if middleware.GetEnabled() && middleware.GetType() == "recovery" {
 		return recovery.Recovery(), true
@@ -31,7 +31,7 @@ func (r recoveryFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware
 	return nil, false
 }
 
-func Recovery(ms []KMiddleware) []KMiddleware {
+func Recovery(ms []KratosMiddleware) []KratosMiddleware {
 	log.Infof("[Middleware] Recovery middleware enabled")
 	return append(ms, recovery.Recovery())
 }

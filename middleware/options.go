@@ -1,9 +1,10 @@
 package middleware
 
 import (
+	"github.com/go-kratos/kratos/v2/middleware/selector"
+
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/middleware/selector"
 	"github.com/origadmin/runtime/optionutil"
 )
 
@@ -13,6 +14,7 @@ type Options struct {
 	Context   options.Context    // The resolved context instance.
 	Logger    log.Logger         // The resolved logger instance.
 	MatchFunc selector.MatchFunc // MatchFunc for selector middleware
+	Carrier   *Carrier
 }
 
 func WithMatchFunc(matchFunc selector.MatchFunc) options.Option {
@@ -30,6 +32,12 @@ func WithLogger(logger log.Logger) options.Option {
 func WithContext(ctx options.Context) options.Option {
 	return optionutil.Update(func(o *Options) {
 		o.Context = ctx
+	})
+}
+
+func WithCarrier(carrier *Carrier) options.Option {
+	return optionutil.Update(func(o *Options) {
+		o.Carrier = carrier
 	})
 }
 

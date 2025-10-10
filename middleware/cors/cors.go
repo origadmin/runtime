@@ -121,14 +121,14 @@ func NewCorsFactory() middleware.Factory {
 
 // NewMiddlewareClient implements middleware.Factory interface
 // Since CORS is primarily for servers, this returns nil for clients
-func (f *corsFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (middleware.KMiddleware, bool) {
+func (f *corsFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (middleware.KratosMiddleware, bool) {
 	// CORS is not typically used for client-side middleware
 	return nil, false
 }
 
 // NewMiddlewareServer implements middleware.Factory interface
 // This creates a server-side CORS middleware handler
-func (f *corsFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (middleware.KMiddleware, bool) {
+func (f *corsFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (middleware.KratosMiddleware, bool) {
 	// Resolve common options
 	mwOpts := middleware.FromOptions(opts...)
 	logger := log.NewHelper(mwOpts.Logger)

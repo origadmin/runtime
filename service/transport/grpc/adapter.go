@@ -5,14 +5,16 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 )
 
-// DefaultServerMiddlewares returns the default server middlewares as raw middleware.Middleware slice.
+// DefaultServerMiddlewares provides a default set of server-side middlewares for gRPC services.
+// These are essential for ensuring basic stability and observability.
 func DefaultServerMiddlewares() []middleware.Middleware {
 	return []middleware.Middleware{
+		// recovery middleware recovers from panics and converts them into errors.
 		recovery.Recovery(),
 	}
 }
 
-// DefaultClientMiddlewares returns the default client middlewares as raw middleware.Middleware slice.
+// DefaultClientMiddlewares provides a default set of client-side middlewares for gRPC services.
 func DefaultClientMiddlewares() []middleware.Middleware {
 	return []middleware.Middleware{
 		recovery.Recovery(),
