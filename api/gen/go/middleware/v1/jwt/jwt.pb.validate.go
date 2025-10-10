@@ -56,8 +56,6 @@ func (m *JWT) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Enabled
-
 	// no validation rules for Subject
 
 	if _, ok := _JWT_ClaimType_InLookup[m.GetClaimType()]; !ok {

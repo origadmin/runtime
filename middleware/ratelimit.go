@@ -33,7 +33,7 @@ func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig
 	helper.Debug("[Middleware] Rate limit server middleware enabled")
 
 	ratelimitConfig := cfg.GetRateLimiter()
-	if ratelimitConfig == nil || !ratelimitConfig.GetEnabled() {
+	if ratelimitConfig == nil {
 		return nil, false
 	}
 

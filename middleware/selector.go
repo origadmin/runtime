@@ -23,7 +23,7 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	helper := log.NewHelper(mwOpts.Logger)
 
 	selectorConfig := cfg.GetSelector()
-	if selectorConfig == nil || !selectorConfig.GetEnabled() {
+	if selectorConfig == nil {
 		return nil, false
 	}
 
@@ -54,13 +54,13 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig,
 	helper := log.NewHelper(mwOpts.Logger)
 
 	selectorConfig := cfg.GetSelector()
-	if selectorConfig == nil || !selectorConfig.GetEnabled() {
+	if selectorConfig == nil {
 		return nil, false
 	}
 
 	helper.Infof("enabling server selector middleware")
 	var mws []KMiddleware
-	for _, name := range selectorConfig.Names {
+	for _, name := range cfg.Names {
 		helper.Infof("enabling server selector middleware: %s", name)
 		middleware, ok := mwOpts.Carrier.Servers[name]
 		if !ok {

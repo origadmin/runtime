@@ -32,7 +32,6 @@ const (
 // Metadata configuration for the middleware.
 type Metadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	Prefixes      []string               `protobuf:"bytes,2,rep,name=prefixes,proto3" json:"prefixes,omitempty"`
 	Data          map[string]string      `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
@@ -69,13 +68,6 @@ func (*Metadata) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Metadata) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
-}
-
 func (x *Metadata) GetPrefixes() []string {
 	if x != nil {
 		return x.Prefixes
@@ -92,7 +84,6 @@ func (x *Metadata) GetData() map[string]string {
 
 type Logging struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -125,13 +116,6 @@ func (x *Logging) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Logging.ProtoReflect.Descriptor instead.
 func (*Logging) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_middleware_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Logging) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
 }
 
 // MiddlewareConfig represents a single middleware configuration with an enable switch.
@@ -326,16 +310,14 @@ var File_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"\x1emiddleware/v1/middleware.proto\x12\rmiddleware.v1\x1a\x1cextension/v1/extension.proto\x1a1middleware/v1/circuitbreaker/circuitbreaker.proto\x1a\x1dmiddleware/v1/cors/cors.proto\x1a\x1bmiddleware/v1/jwt/jwt.proto\x1a#middleware/v1/metrics/metrics.proto\x1a)middleware/v1/ratelimit/ratelimiter.proto\x1a%middleware/v1/selector/selector.proto\x1a'middleware/v1/validator/validator.proto\"\xb0\x01\n" +
-	"\bMetadata\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x1a\n" +
+	"\x1emiddleware/v1/middleware.proto\x12\rmiddleware.v1\x1a\x1cextension/v1/extension.proto\x1a1middleware/v1/circuitbreaker/circuitbreaker.proto\x1a\x1dmiddleware/v1/cors/cors.proto\x1a\x1bmiddleware/v1/jwt/jwt.proto\x1a#middleware/v1/metrics/metrics.proto\x1a)middleware/v1/ratelimit/ratelimiter.proto\x1a%middleware/v1/selector/selector.proto\x1a'middleware/v1/validator/validator.proto\"\x96\x01\n" +
+	"\bMetadata\x12\x1a\n" +
 	"\bprefixes\x18\x02 \x03(\tR\bprefixes\x125\n" +
 	"\x04data\x18\x03 \x03(\v2!.middleware.v1.Metadata.DataEntryR\x04data\x1a7\n" +
 	"\tDataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"#\n" +
-	"\aLogging\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\"\xe3\x06\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
+	"\aLogging\"\xe3\x06\n" +
 	"\x10MiddlewareConfig\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +

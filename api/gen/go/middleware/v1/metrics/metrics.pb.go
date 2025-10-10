@@ -195,8 +195,7 @@ func (x *UserMetric) GetMetadata() map[string]string {
 
 // Metrics
 type Metrics struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Enabled bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
 	// Add a list of supported metrics for enabling or disabling specific metrics
 	SupportedMetrics []string `protobuf:"bytes,5,rep,name=supported_metrics,proto3" json:"supported_metrics,omitempty"`
 	// Repeated field for user-defined metrics
@@ -233,13 +232,6 @@ func (x *Metrics) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Metrics.ProtoReflect.Descriptor instead.
 func (*Metrics) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_metrics_metrics_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Metrics) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
 }
 
 func (x *Metrics) GetSupportedMetrics() []string {
@@ -284,9 +276,8 @@ const file_middleware_v1_metrics_metrics_proto_rawDesc = "" +
 	"\x13METRIC_TYPE_COUNTER\x10\x01\x12\x15\n" +
 	"\x11METRIC_TYPE_GAUGE\x10\x02\x12\x19\n" +
 	"\x15METRIC_TYPE_HISTOGRAM\x10\x03\x12\x17\n" +
-	"\x13METRIC_TYPE_SUMMARY\x10\x04\"\x98\x01\n" +
-	"\aMetrics\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12,\n" +
+	"\x13METRIC_TYPE_SUMMARY\x10\x04\"~\n" +
+	"\aMetrics\x12,\n" +
 	"\x11supported_metrics\x18\x05 \x03(\tR\x11supported_metrics\x12E\n" +
 	"\fuser_metrics\x18\x06 \x03(\v2!.middleware.v1.metrics.UserMetricR\fuser_metricsB\xeb\x01\n" +
 	"\x19com.middleware.v1.metricsB\fMetricsProtoP\x01ZGgithub.com/origadmin/runtime/api/gen/go/middleware/v1/metrics;metricsv1\xf8\x01\x01\xa2\x02\x03MVM\xaa\x02\x15Middleware.V1.Metrics\xca\x02\x15Middleware\\V1\\Metrics\xe2\x02!Middleware\\V1\\Metrics\\GPBMetadata\xea\x02\x17Middleware::V1::Metricsb\x06proto3"

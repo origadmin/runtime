@@ -57,8 +57,6 @@ func (m *Metadata) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Enabled
-
 	// no validation rules for Data
 
 	if len(errors) > 0 {
@@ -158,8 +156,6 @@ func (m *Logging) validate(all bool) error {
 	}
 
 	var errors []error
-
-	// no validation rules for Enabled
 
 	if len(errors) > 0 {
 		return LoggingMultiError(errors)

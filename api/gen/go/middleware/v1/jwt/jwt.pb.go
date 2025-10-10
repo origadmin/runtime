@@ -27,10 +27,9 @@ const (
 // JSON Web Token
 type JWT struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
-	Enabled     bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Subject     string                 `protobuf:"bytes,2,opt,name=subject,proto3" json:"subject,omitempty"`
-	ClaimType   string                 `protobuf:"bytes,3,opt,name=claim_type,proto3" json:"claim_type,omitempty"`
-	TokenHeader map[string]string      `protobuf:"bytes,4,rep,name=token_header,proto3" json:"token_header,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Subject     string                 `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
+	ClaimType   string                 `protobuf:"bytes,2,opt,name=claim_type,proto3" json:"claim_type,omitempty"`
+	TokenHeader map[string]string      `protobuf:"bytes,3,rep,name=token_header,proto3" json:"token_header,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// The token used security.authn.v1.
 	Config        *v1.Config `protobuf:"bytes,100,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -67,13 +66,6 @@ func (*JWT) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_jwt_jwt_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *JWT) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
-}
-
 func (x *JWT) GetSubject() string {
 	if x != nil {
 		return x.Subject
@@ -106,15 +98,14 @@ var File_middleware_v1_jwt_jwt_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_jwt_jwt_proto_rawDesc = "" +
 	"\n" +
-	"\x1bmiddleware/v1/jwt/jwt.proto\x12\x11middleware.v1.jwt\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1bsecurity/authn/v1/jwt.proto\x1a\x17validate/validate.proto\"\x9a\x03\n" +
+	"\x1bmiddleware/v1/jwt/jwt.proto\x12\x11middleware.v1.jwt\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1bsecurity/authn/v1/jwt.proto\x1a\x17validate/validate.proto\"\x80\x03\n" +
 	"\x03JWT\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x18\n" +
-	"\asubject\x18\x02 \x01(\tR\asubject\x12l\n" +
+	"\asubject\x18\x01 \x01(\tR\asubject\x12l\n" +
 	"\n" +
-	"claim_type\x18\x03 \x01(\tBL\xfaB\x13r\x11R\x03mapR\n" +
+	"claim_type\x18\x02 \x01(\tBL\xfaB\x13r\x11R\x03mapR\n" +
 	"registered\xbaG3\x92\x020The type of the claim used to extract the token.R\n" +
 	"claim_type\x12K\n" +
-	"\ftoken_header\x18\x04 \x03(\v2'.middleware.v1.jwt.JWT.TokenHeaderEntryR\ftoken_header\x12d\n" +
+	"\ftoken_header\x18\x03 \x03(\v2'.middleware.v1.jwt.JWT.TokenHeaderEntryR\ftoken_header\x12d\n" +
 	"\x06config\x18d \x01(\v2\x19.security.authn.v1.ConfigB1\xbaG.\x92\x02+The configuration used to create the token.R\x06config\x1a>\n" +
 	"\x10TokenHeaderEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +

@@ -56,8 +56,6 @@ func (m *Cors) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Enabled
-
 	// no validation rules for Debug
 
 	// no validation rules for AllowAnyOrigin

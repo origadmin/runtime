@@ -57,8 +57,6 @@ func (m *Validator) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Enabled
-
 	if val := m.GetVersion(); val <= 0 || val >= 3 {
 		err := ValidatorValidationError{
 			field:  "Version",

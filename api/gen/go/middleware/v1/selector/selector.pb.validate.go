@@ -57,8 +57,6 @@ func (m *Selector) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Enabled
-
 	// no validation rules for Regex
 
 	if len(errors) > 0 {

@@ -24,9 +24,8 @@ const (
 
 type Validator struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Version       int32                  `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
-	FailFast      bool                   `protobuf:"varint,3,opt,name=fail_fast,proto3" json:"fail_fast,omitempty"`
+	Version       int32                  `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	FailFast      bool                   `protobuf:"varint,2,opt,name=fail_fast,proto3" json:"fail_fast,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,13 +60,6 @@ func (*Validator) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_validator_validator_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Validator) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
-}
-
 func (x *Validator) GetVersion() int32 {
 	if x != nil {
 		return x.Version
@@ -86,11 +78,10 @@ var File_middleware_v1_validator_validator_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_validator_validator_proto_rawDesc = "" +
 	"\n" +
-	"'middleware/v1/validator/validator.proto\x12\x17middleware.v1.validator\x1a\x17validate/validate.proto\"h\n" +
-	"\tValidator\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12#\n" +
-	"\aversion\x18\x02 \x01(\x05B\t\xfaB\x06\x1a\x04\x10\x03 \x00R\aversion\x12\x1c\n" +
-	"\tfail_fast\x18\x03 \x01(\bR\tfail_fastB\xfb\x01\n" +
+	"'middleware/v1/validator/validator.proto\x12\x17middleware.v1.validator\x1a\x17validate/validate.proto\"N\n" +
+	"\tValidator\x12#\n" +
+	"\aversion\x18\x01 \x01(\x05B\t\xfaB\x06\x1a\x04\x10\x03 \x00R\aversion\x12\x1c\n" +
+	"\tfail_fast\x18\x02 \x01(\bR\tfail_fastB\xfb\x01\n" +
 	"\x1bcom.middleware.v1.validatorB\x0eValidatorProtoP\x01ZKgithub.com/origadmin/runtime/api/gen/go/middleware/v1/validator;validatorv1\xf8\x01\x01\xa2\x02\x03MVV\xaa\x02\x17Middleware.V1.Validator\xca\x02\x17Middleware\\V1\\Validator\xe2\x02#Middleware\\V1\\Validator\\GPBMetadata\xea\x02\x19Middleware::V1::Validatorb\x06proto3"
 
 var (

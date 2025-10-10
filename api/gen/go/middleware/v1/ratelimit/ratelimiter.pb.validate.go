@@ -57,8 +57,6 @@ func (m *RateLimiter) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Enabled
-
 	if _, ok := _RateLimiter_Name_InLookup[m.GetName()]; !ok {
 		err := RateLimiterValidationError{
 			field:  "Name",

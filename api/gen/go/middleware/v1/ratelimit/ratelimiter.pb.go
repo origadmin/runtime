@@ -24,20 +24,19 @@ const (
 
 // Rate limiter
 type RateLimiter struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Enabled bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
 	// rate limiter name, supported: bbr, memory, redis.
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// The number of seconds in a rate limit window
-	Period int32 `protobuf:"varint,3,opt,name=period,proto3" json:"period,omitempty"`
+	Period int32 `protobuf:"varint,2,opt,name=period,proto3" json:"period,omitempty"`
 	// The number of requests allowed in a window of time
-	XRatelimitLimit int32 `protobuf:"varint,5,opt,name=x_ratelimit_limit,proto3" json:"x_ratelimit_limit,omitempty"`
+	XRatelimitLimit int32 `protobuf:"varint,4,opt,name=x_ratelimit_limit,proto3" json:"x_ratelimit_limit,omitempty"`
 	// The number of requests that can still be made in the current window of time
-	XRatelimitRemaining int32 `protobuf:"varint,6,opt,name=x_ratelimit_remaining,proto3" json:"x_ratelimit_remaining,omitempty"`
+	XRatelimitRemaining int32 `protobuf:"varint,5,opt,name=x_ratelimit_remaining,proto3" json:"x_ratelimit_remaining,omitempty"`
 	// The number of seconds until the current rate limit window completely resets
-	XRatelimitReset int32 `protobuf:"varint,7,opt,name=x_ratelimit_reset,proto3" json:"x_ratelimit_reset,omitempty"`
+	XRatelimitReset int32 `protobuf:"varint,6,opt,name=x_ratelimit_reset,proto3" json:"x_ratelimit_reset,omitempty"`
 	// When rate limited, the number of seconds to wait before another request will be accepted
-	RetryAfter    int32               `protobuf:"varint,8,opt,name=retry_after,proto3" json:"retry_after,omitempty"`
+	RetryAfter    int32               `protobuf:"varint,7,opt,name=retry_after,proto3" json:"retry_after,omitempty"`
 	Memory        *RateLimiter_Memory `protobuf:"bytes,101,opt,name=memory,proto3" json:"memory,omitempty"`
 	Redis         *RateLimiter_Redis  `protobuf:"bytes,102,opt,name=redis,proto3" json:"redis,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -72,13 +71,6 @@ func (x *RateLimiter) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RateLimiter.ProtoReflect.Descriptor instead.
 func (*RateLimiter) Descriptor() ([]byte, []int) {
 	return file_middleware_v1_ratelimit_ratelimiter_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *RateLimiter) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
 }
 
 func (x *RateLimiter) GetName() string {
@@ -261,15 +253,14 @@ var File_middleware_v1_ratelimit_ratelimiter_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_ratelimit_ratelimiter_proto_rawDesc = "" +
 	"\n" +
-	")middleware/v1/ratelimit/ratelimiter.proto\x12\x17middleware.v1.ratelimit\x1a\x17validate/validate.proto\"\xe4\x04\n" +
-	"\vRateLimiter\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12-\n" +
-	"\x04name\x18\x02 \x01(\tB\x19\xfaB\x16r\x14R\x03bbrR\x06memoryR\x05redisR\x04name\x12\x16\n" +
-	"\x06period\x18\x03 \x01(\x05R\x06period\x12,\n" +
-	"\x11x_ratelimit_limit\x18\x05 \x01(\x05R\x11x_ratelimit_limit\x124\n" +
-	"\x15x_ratelimit_remaining\x18\x06 \x01(\x05R\x15x_ratelimit_remaining\x12,\n" +
-	"\x11x_ratelimit_reset\x18\a \x01(\x05R\x11x_ratelimit_reset\x12 \n" +
-	"\vretry_after\x18\b \x01(\x05R\vretry_after\x12C\n" +
+	")middleware/v1/ratelimit/ratelimiter.proto\x12\x17middleware.v1.ratelimit\x1a\x17validate/validate.proto\"\xca\x04\n" +
+	"\vRateLimiter\x12-\n" +
+	"\x04name\x18\x01 \x01(\tB\x19\xfaB\x16r\x14R\x03bbrR\x06memoryR\x05redisR\x04name\x12\x16\n" +
+	"\x06period\x18\x02 \x01(\x05R\x06period\x12,\n" +
+	"\x11x_ratelimit_limit\x18\x04 \x01(\x05R\x11x_ratelimit_limit\x124\n" +
+	"\x15x_ratelimit_remaining\x18\x05 \x01(\x05R\x15x_ratelimit_remaining\x12,\n" +
+	"\x11x_ratelimit_reset\x18\x06 \x01(\x05R\x11x_ratelimit_reset\x12 \n" +
+	"\vretry_after\x18\a \x01(\x05R\vretry_after\x12C\n" +
 	"\x06memory\x18e \x01(\v2+.middleware.v1.ratelimit.RateLimiter.MemoryR\x06memory\x12@\n" +
 	"\x05redis\x18f \x01(\v2*.middleware.v1.ratelimit.RateLimiter.RedisR\x05redis\x1ac\n" +
 	"\x05Redis\x12\x12\n" +

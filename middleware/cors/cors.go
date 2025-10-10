@@ -83,7 +83,7 @@ func corsOptionsFromConfig(cfg *corsv1.Cors) []handlers.CORSOption {
 
 // NewGorillaCors creates a new CORS handler for Gorilla/Mux or standard HTTP servers
 func NewGorillaCors(cfg *corsv1.Cors) func(http.Handler) http.Handler {
-	if cfg == nil || !cfg.GetEnabled() {
+	if cfg == nil {
 		return func(next http.Handler) http.Handler {
 			return next
 		}
@@ -97,7 +97,7 @@ func NewGorillaCors(cfg *corsv1.Cors) func(http.Handler) http.Handler {
 
 // NewKratosCors creates a new CORS handler for Kratos HTTP servers
 func NewKratosCors(cfg *corsv1.Cors) transhttp.FilterFunc {
-	if cfg == nil || !cfg.GetEnabled() {
+	if cfg == nil {
 		return nil
 	}
 

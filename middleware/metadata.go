@@ -23,7 +23,7 @@ func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	helper := log.NewHelper(mwOpts.Logger)
 
 	metadataConfig := cfg.GetMetadata()
-	if metadataConfig == nil || !metadataConfig.GetEnabled() {
+	if metadataConfig == nil {
 		return nil, false
 	}
 
@@ -48,7 +48,7 @@ func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig,
 	helper := log.NewHelper(mwOpts.Logger)
 
 	metadataConfig := cfg.GetMetadata()
-	if metadataConfig == nil || !metadataConfig.GetEnabled() {
+	if metadataConfig == nil {
 		return nil, false
 	}
 

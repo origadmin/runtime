@@ -17,11 +17,11 @@ func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 
-	// Get logging-specific configuration from the Protobuf config.
-	loggingConfig := cfg.GetLogging()
-	if loggingConfig == nil || !loggingConfig.GetEnabled() {
-		return nil, false
-	}
+	//// Get logging-specific configuration from the Protobuf config.
+	//loggingConfig := cfg.GetLogging()
+	//if loggingConfig == nil {
+	//	return nil, false
+	//}
 
 	helper.Info("enabling client logging middleware")
 
@@ -37,10 +37,10 @@ func (f *loggingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig,
 	helper := log.NewHelper(mwOpts.Logger)
 
 	// Get logging-specific configuration from the Protobuf config.
-	loggingConfig := cfg.GetLogging()
-	if loggingConfig == nil || !loggingConfig.GetEnabled() {
-		return nil, false
-	}
+	//loggingConfig := cfg.GetLogging()
+	//if loggingConfig == nil {
+	//	return nil, false
+	//}
 	helper.Info("enabling server logging middleware")
 	// Kratos logging middleware expects kratosLog.Logger.
 	// Assuming origadmin/runtime/log.Logger is compatible with kratos/v2/log.Logger interface.

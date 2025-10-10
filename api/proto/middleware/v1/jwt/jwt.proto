@@ -16,9 +16,8 @@ option php_namespace = "OrigAdmin\\Runtime\\Middleware\\JWT\\V1";
 
 // JSON Web Token
 message JWT {
-  bool enabled = 1 [json_name = 'enabled'];
-  string subject = 2 [json_name = 'subject'];
-  string claim_type = 3 [
+  string subject = 1 [json_name = 'subject'];
+  string claim_type = 2 [
     json_name = 'claim_type',
     (validate.rules).string = {
       in: [
@@ -28,7 +27,7 @@ message JWT {
     },
     (gnostic.openapi.v3.property) = {description: "The type of the claim used to extract the token."}
   ];
-  map<string, string> token_header = 4 [json_name = 'token_header'];
+  map<string, string> token_header = 3 [json_name = 'token_header'];
   // The token used security.authn.v1.
   security.authn.v1.Config config = 100 [
     json_name = "config",

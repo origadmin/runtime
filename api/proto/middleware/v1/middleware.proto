@@ -21,13 +21,11 @@ option php_namespace = "OrigAdmin\\Runtime\\Middleware\\V1";
 
 // Metadata configuration for the middleware.
 message Metadata {
-  bool enabled = 1 [json_name = "enabled"];
   repeated string prefixes = 2 [json_name = "prefixes"];
   map<string, string> data = 3 [json_name = "data"];
 }
 
 message Logging {
-  bool enabled = 1 [json_name = "enabled"];
 }
 
 // MiddlewareConfig represents a single middleware configuration with an enable switch.
