@@ -22,7 +22,7 @@ type optimizeFactory struct{}
 // Modified to comply with the Factory interface definition
 func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	opts ...options.Option) (middleware.Middleware, bool) {
-	// 使用FromOptions解析选项
+	// Parse options using FromOptions
 	logger := log.FromOptions(opts...)
 	helper := log.NewHelper(logger)
 	helper.Infof("enabling client optimize middleware")
@@ -34,7 +34,7 @@ func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig
 // NewMiddlewareServer creates a new server-side optimize middleware instance.
 // Modified to comply with the Factory interface definition
 func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (middleware.Middleware, bool) {
-	// 使用FromOptions解析选项
+	// Parse options using FromOptions
 	logger := log.FromOptions(opts...)
 	helper := log.NewHelper(logger)
 	helper.Infof("enabling server optimize middleware")
