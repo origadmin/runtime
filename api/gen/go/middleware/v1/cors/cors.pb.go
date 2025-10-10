@@ -21,40 +21,69 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Cors
+// CORS configuration for cross-origin resource sharing
 type Cors struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Enabled indicates whether CORS should be enabled for the target.
+	// Enable or disable CORS middleware
 	Enabled bool `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	// AllowCredentials indicates whether the request can include user credentials like
-	// cookies, HTTP authentication or client side SSL certificates.
-	AllowCredentials bool `protobuf:"varint,2,opt,name=allow_credentials,proto3" json:"allow_credentials,omitempty"`
-	// AllowOrigins is a list of origins a cross-domain request can be executed from.
-	// If the special "*" value is present in the list, all origins will be allowed.
-	// Default value is [*]
-	AllowOrigins []string `protobuf:"bytes,3,rep,name=allow_origins,proto3" json:"allow_origins,omitempty"`
-	// AllowMethods is a list of methods the client is allowed to use with
-	// cross-domain requests. Default value is simple methods (GET, POST, PUT, PATCH, DELETE, HEAD, and OPTIONS)
-	AllowMethods []string `protobuf:"bytes,4,rep,name=allow_methods,proto3" json:"allow_methods,omitempty"`
-	// AllowHeaders is list of non simple headers the client is allowed to use with
-	// cross-domain requests.
-	AllowHeaders []string `protobuf:"bytes,5,rep,name=allow_headers,proto3" json:"allow_headers,omitempty"`
-	// ExposeHeaders indicates which headers are safe to expose to the API of a CORS
-	// API specification
-	ExposeHeaders []string `protobuf:"bytes,6,rep,name=expose_headers,proto3" json:"expose_headers,omitempty"`
-	// MaxAge indicates how long (with second-precision) the results of a preflight request
-	// can be cached
-	MaxAge int64 `protobuf:"varint,7,opt,name=max_age,proto3" json:"max_age,omitempty"`
-	// Allows to add origins like http://some-domain/*, https://api.* or http://some.*.subdomain.com
-	AllowWildcard bool `protobuf:"varint,8,opt,name=allow_wildcard,proto3" json:"allow_wildcard,omitempty"`
-	// Allows usage of popular browser extensions schemas
-	AllowBrowserExtensions bool `protobuf:"varint,9,opt,name=allow_browser_extensions,proto3" json:"allow_browser_extensions,omitempty"`
-	// Allows usage of WebSocket protocol
-	AllowWebSockets bool `protobuf:"varint,10,opt,name=allow_web_sockets,proto3" json:"allow_web_sockets,omitempty"`
-	// Allows usage of private network addresses (127.0.0.1, [::1], localhost)
-	AllowPrivateNetwork bool `protobuf:"varint,11,opt,name=allow_private_network,proto3" json:"allow_private_network,omitempty"`
-	// Allows usage of file:// schema (dangerous!) use it only when you 100% sure it's needed
-	AllowFiles    bool `protobuf:"varint,12,opt,name=allow_files,proto3" json:"allow_files,omitempty"`
+	// Enable debug logging for CORS processing
+	Debug bool `protobuf:"varint,2,opt,name=debug,proto3" json:"debug,omitempty"`
+	// When true, allows any origin (equivalent to allowed_origins = ["*"]).
+	// Security Note: Cannot be used with allow_credentials = true.
+	AllowAnyOrigin bool `protobuf:"varint,3,opt,name=allow_any_origin,proto3" json:"allow_any_origin,omitempty"`
+	// List of allowed origins (e.g., https://example.com).
+	// Use "*" to allow all origins (not recommended for production).
+	AllowedOrigins []string `protobuf:"bytes,4,rep,name=allowed_origins,proto3" json:"allowed_origins,omitempty"`
+	// List of origin patterns that are allowed to make requests.
+	// Supports wildcards (*) for subdomains (e.g., https://*.example.com).
+	// Example: ["https://*.example.com", "http://localhost:*"]
+	AllowedOriginPatterns []string `protobuf:"bytes,5,rep,name=allowed_origin_patterns,proto3" json:"allowed_origin_patterns,omitempty"`
+	// Use regular expression to match allowed origins
+	// Example: ".*\\.example\\.com$"
+	AllowOriginRegex string `protobuf:"bytes,6,opt,name=allow_origin_regex,proto3" json:"allow_origin_regex,omitempty"`
+	// Allow wildcard (*) in allowed_origins (e.g., "*.example.com")
+	AllowWildcard bool `protobuf:"varint,7,opt,name=allow_wildcard,proto3" json:"allow_wildcard,omitempty"`
+	// Allow credentials with wildcard origin (not recommended for security reasons)
+	AllowCredentialsWithWildcard bool `protobuf:"varint,8,opt,name=allow_credentials_with_wildcard,proto3" json:"allow_credentials_with_wildcard,omitempty"`
+	// List of allowed HTTP methods (e.g., GET, POST, PUT, DELETE, OPTIONS)
+	AllowedMethods []string `protobuf:"bytes,10,rep,name=allowed_methods,proto3" json:"allowed_methods,omitempty"`
+	// When true, allows any HTTP method in the Access-Control-Request-Method header.
+	// If false, only methods listed in allowed_methods are allowed.
+	AllowAnyMethod bool `protobuf:"varint,11,opt,name=allow_any_method,proto3" json:"allow_any_method,omitempty"`
+	// List of allowed HTTP headers in cross-origin requests
+	AllowedHeaders []string `protobuf:"bytes,12,rep,name=allowed_headers,proto3" json:"allowed_headers,omitempty"`
+	// When true, allows any header in the Access-Control-Request-Headers header.
+	// If false, only headers listed in allowed_headers are allowed.
+	AllowAnyHeader bool `protobuf:"varint,13,opt,name=allow_any_header,proto3" json:"allow_any_header,omitempty"`
+	// List of headers that can be exposed to the browser in the response
+	ExposedHeaders []string `protobuf:"bytes,14,rep,name=exposed_headers,proto3" json:"exposed_headers,omitempty"`
+	// List of allowed request header patterns (supports wildcards)
+	AllowedRequestHeadersPatterns []string `protobuf:"bytes,15,rep,name=allowed_request_headers_patterns,proto3" json:"allowed_request_headers_patterns,omitempty"`
+	// Maximum age (in seconds) to cache preflight requests
+	MaxAge int64 `protobuf:"varint,20,opt,name=max_age,proto3" json:"max_age,omitempty"`
+	// Custom header name for Max-Age (default: "Access-Control-Max-Age")
+	MaxAgeHeader string `protobuf:"bytes,21,opt,name=max_age_header,proto3" json:"max_age_header,omitempty"`
+	// When true, passes preflight requests to the next handler
+	PreflightContinue bool `protobuf:"varint,22,opt,name=preflight_continue,proto3" json:"preflight_continue,omitempty"`
+	// When true, passes OPTIONS requests to the next handler
+	OptionsPassthrough bool `protobuf:"varint,23,opt,name=options_passthrough,proto3" json:"options_passthrough,omitempty"`
+	// Status code to return for successful OPTIONS requests
+	OptionsSuccessStatus int32 `protobuf:"varint,24,opt,name=options_success_status,proto3" json:"options_success_status,omitempty"`
+	// Indicates whether the request can include user credentials (cookies, HTTP authentication).
+	// Security Note: Cannot be used with wildcard origins ("*") or allow_any_origin = true.
+	AllowCredentials bool `protobuf:"varint,30,opt,name=allow_credentials,proto3" json:"allow_credentials,omitempty"`
+	// List of HTTP status codes that should be exposed to the CORS client
+	ExposedStatusCodes []int32 `protobuf:"varint,31,rep,packed,name=exposed_status_codes,proto3" json:"exposed_status_codes,omitempty"`
+	// List of response headers that can be exposed to the client
+	AllowedResponseHeaders []string `protobuf:"bytes,32,rep,name=allowed_response_headers,proto3" json:"allowed_response_headers,omitempty"`
+	// Allow browser extension schemes (chrome-extension://, moz-extension://, etc.)
+	AllowBrowserExtensions bool `protobuf:"varint,33,opt,name=allow_browser_extensions,proto3" json:"allow_browser_extensions,omitempty"`
+	// Allow WebSocket connections
+	AllowWebSockets bool `protobuf:"varint,34,opt,name=allow_web_sockets,proto3" json:"allow_web_sockets,omitempty"`
+	// Allow requests from private network addresses (127.0.0.1, [::1], localhost)
+	AllowPrivateNetwork bool `protobuf:"varint,35,opt,name=allow_private_network,proto3" json:"allow_private_network,omitempty"`
+	// Allow file:// schema (use with caution, not recommended for production)
+	AllowFiles    bool `protobuf:"varint,36,opt,name=allow_files,proto3" json:"allow_files,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -96,37 +125,93 @@ func (x *Cors) GetEnabled() bool {
 	return false
 }
 
-func (x *Cors) GetAllowCredentials() bool {
+func (x *Cors) GetDebug() bool {
 	if x != nil {
-		return x.AllowCredentials
+		return x.Debug
 	}
 	return false
 }
 
-func (x *Cors) GetAllowOrigins() []string {
+func (x *Cors) GetAllowAnyOrigin() bool {
 	if x != nil {
-		return x.AllowOrigins
+		return x.AllowAnyOrigin
+	}
+	return false
+}
+
+func (x *Cors) GetAllowedOrigins() []string {
+	if x != nil {
+		return x.AllowedOrigins
 	}
 	return nil
 }
 
-func (x *Cors) GetAllowMethods() []string {
+func (x *Cors) GetAllowedOriginPatterns() []string {
 	if x != nil {
-		return x.AllowMethods
+		return x.AllowedOriginPatterns
 	}
 	return nil
 }
 
-func (x *Cors) GetAllowHeaders() []string {
+func (x *Cors) GetAllowOriginRegex() string {
 	if x != nil {
-		return x.AllowHeaders
+		return x.AllowOriginRegex
+	}
+	return ""
+}
+
+func (x *Cors) GetAllowWildcard() bool {
+	if x != nil {
+		return x.AllowWildcard
+	}
+	return false
+}
+
+func (x *Cors) GetAllowCredentialsWithWildcard() bool {
+	if x != nil {
+		return x.AllowCredentialsWithWildcard
+	}
+	return false
+}
+
+func (x *Cors) GetAllowedMethods() []string {
+	if x != nil {
+		return x.AllowedMethods
 	}
 	return nil
 }
 
-func (x *Cors) GetExposeHeaders() []string {
+func (x *Cors) GetAllowAnyMethod() bool {
 	if x != nil {
-		return x.ExposeHeaders
+		return x.AllowAnyMethod
+	}
+	return false
+}
+
+func (x *Cors) GetAllowedHeaders() []string {
+	if x != nil {
+		return x.AllowedHeaders
+	}
+	return nil
+}
+
+func (x *Cors) GetAllowAnyHeader() bool {
+	if x != nil {
+		return x.AllowAnyHeader
+	}
+	return false
+}
+
+func (x *Cors) GetExposedHeaders() []string {
+	if x != nil {
+		return x.ExposedHeaders
+	}
+	return nil
+}
+
+func (x *Cors) GetAllowedRequestHeadersPatterns() []string {
+	if x != nil {
+		return x.AllowedRequestHeadersPatterns
 	}
 	return nil
 }
@@ -138,11 +223,53 @@ func (x *Cors) GetMaxAge() int64 {
 	return 0
 }
 
-func (x *Cors) GetAllowWildcard() bool {
+func (x *Cors) GetMaxAgeHeader() string {
 	if x != nil {
-		return x.AllowWildcard
+		return x.MaxAgeHeader
+	}
+	return ""
+}
+
+func (x *Cors) GetPreflightContinue() bool {
+	if x != nil {
+		return x.PreflightContinue
 	}
 	return false
+}
+
+func (x *Cors) GetOptionsPassthrough() bool {
+	if x != nil {
+		return x.OptionsPassthrough
+	}
+	return false
+}
+
+func (x *Cors) GetOptionsSuccessStatus() int32 {
+	if x != nil {
+		return x.OptionsSuccessStatus
+	}
+	return 0
+}
+
+func (x *Cors) GetAllowCredentials() bool {
+	if x != nil {
+		return x.AllowCredentials
+	}
+	return false
+}
+
+func (x *Cors) GetExposedStatusCodes() []int32 {
+	if x != nil {
+		return x.ExposedStatusCodes
+	}
+	return nil
+}
+
+func (x *Cors) GetAllowedResponseHeaders() []string {
+	if x != nil {
+		return x.AllowedResponseHeaders
+	}
+	return nil
 }
 
 func (x *Cors) GetAllowBrowserExtensions() bool {
@@ -177,21 +304,35 @@ var File_middleware_v1_cors_cors_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_cors_cors_proto_rawDesc = "" +
 	"\n" +
-	"\x1dmiddleware/v1/cors/cors.proto\x12\x12middleware.v1.cors\"\xec\x03\n" +
+	"\x1dmiddleware/v1/cors/cors.proto\x12\x12middleware.v1.cors\"\xc6\t\n" +
 	"\x04Cors\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12,\n" +
-	"\x11allow_credentials\x18\x02 \x01(\bR\x11allow_credentials\x12$\n" +
-	"\rallow_origins\x18\x03 \x03(\tR\rallow_origins\x12$\n" +
-	"\rallow_methods\x18\x04 \x03(\tR\rallow_methods\x12$\n" +
-	"\rallow_headers\x18\x05 \x03(\tR\rallow_headers\x12&\n" +
-	"\x0eexpose_headers\x18\x06 \x03(\tR\x0eexpose_headers\x12\x18\n" +
-	"\amax_age\x18\a \x01(\x03R\amax_age\x12&\n" +
-	"\x0eallow_wildcard\x18\b \x01(\bR\x0eallow_wildcard\x12:\n" +
-	"\x18allow_browser_extensions\x18\t \x01(\bR\x18allow_browser_extensions\x12,\n" +
-	"\x11allow_web_sockets\x18\n" +
-	" \x01(\bR\x11allow_web_sockets\x124\n" +
-	"\x15allow_private_network\x18\v \x01(\bR\x15allow_private_network\x12 \n" +
-	"\vallow_files\x18\f \x01(\bR\vallow_filesB\xd3\x01\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x14\n" +
+	"\x05debug\x18\x02 \x01(\bR\x05debug\x12*\n" +
+	"\x10allow_any_origin\x18\x03 \x01(\bR\x10allow_any_origin\x12(\n" +
+	"\x0fallowed_origins\x18\x04 \x03(\tR\x0fallowed_origins\x128\n" +
+	"\x17allowed_origin_patterns\x18\x05 \x03(\tR\x17allowed_origin_patterns\x12.\n" +
+	"\x12allow_origin_regex\x18\x06 \x01(\tR\x12allow_origin_regex\x12&\n" +
+	"\x0eallow_wildcard\x18\a \x01(\bR\x0eallow_wildcard\x12H\n" +
+	"\x1fallow_credentials_with_wildcard\x18\b \x01(\bR\x1fallow_credentials_with_wildcard\x12(\n" +
+	"\x0fallowed_methods\x18\n" +
+	" \x03(\tR\x0fallowed_methods\x12*\n" +
+	"\x10allow_any_method\x18\v \x01(\bR\x10allow_any_method\x12(\n" +
+	"\x0fallowed_headers\x18\f \x03(\tR\x0fallowed_headers\x12*\n" +
+	"\x10allow_any_header\x18\r \x01(\bR\x10allow_any_header\x12(\n" +
+	"\x0fexposed_headers\x18\x0e \x03(\tR\x0fexposed_headers\x12J\n" +
+	" allowed_request_headers_patterns\x18\x0f \x03(\tR allowed_request_headers_patterns\x12\x18\n" +
+	"\amax_age\x18\x14 \x01(\x03R\amax_age\x12&\n" +
+	"\x0emax_age_header\x18\x15 \x01(\tR\x0emax_age_header\x12.\n" +
+	"\x12preflight_continue\x18\x16 \x01(\bR\x12preflight_continue\x120\n" +
+	"\x13options_passthrough\x18\x17 \x01(\bR\x13options_passthrough\x126\n" +
+	"\x16options_success_status\x18\x18 \x01(\x05R\x16options_success_status\x12,\n" +
+	"\x11allow_credentials\x18\x1e \x01(\bR\x11allow_credentials\x122\n" +
+	"\x14exposed_status_codes\x18\x1f \x03(\x05R\x14exposed_status_codes\x12:\n" +
+	"\x18allowed_response_headers\x18  \x03(\tR\x18allowed_response_headers\x12:\n" +
+	"\x18allow_browser_extensions\x18! \x01(\bR\x18allow_browser_extensions\x12,\n" +
+	"\x11allow_web_sockets\x18\" \x01(\bR\x11allow_web_sockets\x124\n" +
+	"\x15allow_private_network\x18# \x01(\bR\x15allow_private_network\x12 \n" +
+	"\vallow_files\x18$ \x01(\bR\vallow_filesB\xd3\x01\n" +
 	"\x16com.middleware.v1.corsB\tCorsProtoP\x01ZAgithub.com/origadmin/runtime/api/gen/go/middleware/v1/cors;corsv1\xf8\x01\x01\xa2\x02\x03MVC\xaa\x02\x12Middleware.V1.Cors\xca\x02\x12Middleware\\V1\\Cors\xe2\x02\x1eMiddleware\\V1\\Cors\\GPBMetadata\xea\x02\x14Middleware::V1::Corsb\x06proto3"
 
 var (

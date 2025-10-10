@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	// Corrected import path for the http package being tested
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/service/transport/http"
 )
 
@@ -16,14 +17,14 @@ func TestWithServerOption(t *testing.T) {
 	kratosServerOpt2 := transhttp.Timeout(0)
 
 	t.Run("should correctly apply a single server option", func(t *testing.T) {
-		// Create an options.Option using WithServerOption
-		option := http.WithServerOption(kratosServerOpt1)
+		// Create an options.Option using WithHttpServerOptions
+		option := http.WithHttpServerOptions(kratosServerOpt1)
 
 		// Retrieve the Kratos server options using FromServerOptions
 		// FromServerOptions internally applies the provided options.Option to its own context.
-		serverOpts := http.FromServerOptions(option)
+		serverOpts := http.FromServerOptions([]options.Option{option})
 
-		assert.Len(t, serverOpts, 1)
+		assert.Len(t, serverOpts.HttpServerOptions, 1)
 		// In a real scenario, you might want to inspect the content of serverOpts
 		// to ensure the correct Kratos option was applied.
 		// For simplicity, we only check length here.
@@ -31,13 +32,13 @@ func TestWithServerOption(t *testing.T) {
 
 	t.Run("should correctly apply multiple server options", func(t *testing.T) {
 		// Create options.Option functions for multiple Kratos server options
-		option1 := http.WithServerOption(kratosServerOpt1)
-		option2 := http.WithServerOption(kratosServerOpt2)
+		option1 := http.WithHttpServerOptions(kratosServerOpt1)
+		option2 := http.WithHttpServerOptions(kratosServerOpt2)
 
 		// Retrieve the Kratos server options
-		serverOpts := http.FromServerOptions(option1, option2)
+		serverOpts := http.FromServerOptions([]options.Option{option1, option2})
 
-		assert.Len(t, serverOpts, 2)
+		assert.Len(t, serverOpts.HttpServerOptions, 2)
 
 	})
 }
@@ -48,46 +49,46 @@ func TestWithClientOption(t *testing.T) {
 	kratosClientOpt2 := transhttp.WithTimeout(0)
 
 	t.Run("should correctly apply a single client option", func(t *testing.T) {
-		// Create an options.Option using WithClientOption
-		option := http.WithClientOption(kratosClientOpt1)
+		// Create an options.Option using WithHttpClientOptions
+		option := http.WithHttpClientOptions(kratosClientOpt1)
 
 		// Retrieve the Kratos client options using FromClientOptions
-		clientOpts := http.FromClientOptions(option)
+		clientOpts := http.FromClientOptions([]options.Option{option})
 
-		assert.Len(t, clientOpts, 1)
+		assert.Len(t, clientOpts.HttpClientOptions, 1)
 	})
 
 	t.Run("should correctly apply multiple client options", func(t *testing.T) {
 		// Create options.Option functions for multiple Kratos client options
-		option1 := http.WithClientOption(kratosClientOpt1)
-		option2 := http.WithClientOption(kratosClientOpt2)
+		option1 := http.WithHttpClientOptions(kratosClientOpt1)
+		option2 := http.WithHttpClientOptions(kratosClientOpt2)
 
 		// Retrieve the Kratos client options
-		clientOpts := http.FromClientOptions(option1, option2)
+		clientOpts := http.FromClientOptions([]options.Option{option1, option2})
 
-		assert.Len(t, clientOpts, 2)
+		assert.Len(t, clientOpts.HttpClientOptions, 2)
 	})
 }
 
 func TestFromOptions_Empty(t *testing.T) {
 	t.Run("should return empty slice when no options are provided to FromServerOptions", func(t *testing.T) {
-		serverOpts := http.FromServerOptions() // No options passed
-		assert.Empty(t, serverOpts)
+		serverOpts := http.FromServerOptions([]options.Option{}) // No options passed
+		assert.Empty(t, serverOpts.HttpServerOptions)
 	})
 
 	t.Run("should return empty slice when no options are provided to FromClientOptions", func(t *testing.T) {
-		clientOpts := http.FromClientOptions() // No options passed
-		assert.Empty(t, clientOpts)
+		clientOpts := http.FromClientOptions([]options.Option{}) // No options passed
+		assert.Empty(t, clientOpts.HttpClientOptions)
 	})
 
 	t.Run("should return empty slice when nil options are provided to FromServerOptions", func(t *testing.T) {
 		serverOpts := http.FromServerOptions(nil) // nil option passed
-		assert.Empty(t, serverOpts)
+		assert.Empty(t, serverOpts.HttpServerOptions)
 	})
 
 	t.Run("should return empty slice when nil options are provided to FromClientOptions", func(t *testing.T) {
 		clientOpts := http.FromClientOptions(nil) // nil option passed
-		assert.Empty(t, clientOpts)
+		assert.Empty(t, clientOpts.HttpClientOptions)
 	})
 }
 
@@ -97,20 +98,20 @@ func TestOptionChaining(t *testing.T) {
 	kratosClientOpt := transhttp.WithUserAgent("test")
 
 	// Create options.Option functions
-	serverOptionFunc := http.WithServerOption(kratosServerOpt)
-	clientOptionFunc := http.WithClientOption(kratosClientOpt)
+	serverOptionFunc := http.WithHttpServerOptions(kratosServerOpt)
+	clientOptionFunc := http.WithHttpClientOptions(kratosClientOpt)
 
 	t.Run("FromServerOptions should only retrieve server options", func(t *testing.T) {
 		// Pass both server and client option functions to FromServerOptions
-		serverOpts := http.FromServerOptions(serverOptionFunc, clientOptionFunc)
-		assert.Len(t, serverOpts, 1)
+		serverOpts := http.FromServerOptions([]options.Option{serverOptionFunc, clientOptionFunc})
+		assert.Len(t, serverOpts.HttpServerOptions, 1)
 		// Further checks could ensure the content of the option is correct
 	})
 
 	t.Run("FromClientOptions should only retrieve client options", func(t *testing.T) {
 		// Pass both server and client option functions to FromClientOptions
-		clientOpts := http.FromClientOptions(serverOptionFunc, clientOptionFunc)
-		assert.Len(t, clientOpts, 1)
+		clientOpts := http.FromClientOptions([]options.Option{serverOptionFunc, clientOptionFunc})
+		assert.Len(t, clientOpts.HttpClientOptions, 1)
 		// Further checks could ensure the content of the option is correct
 	})
 }

@@ -58,11 +58,31 @@ func (m *Cors) validate(all bool) error {
 
 	// no validation rules for Enabled
 
-	// no validation rules for AllowCredentials
+	// no validation rules for Debug
+
+	// no validation rules for AllowAnyOrigin
+
+	// no validation rules for AllowOriginRegex
+
+	// no validation rules for AllowWildcard
+
+	// no validation rules for AllowCredentialsWithWildcard
+
+	// no validation rules for AllowAnyMethod
+
+	// no validation rules for AllowAnyHeader
 
 	// no validation rules for MaxAge
 
-	// no validation rules for AllowWildcard
+	// no validation rules for MaxAgeHeader
+
+	// no validation rules for PreflightContinue
+
+	// no validation rules for OptionsPassthrough
+
+	// no validation rules for OptionsSuccessStatus
+
+	// no validation rules for AllowCredentials
 
 	// no validation rules for AllowBrowserExtensions
 
