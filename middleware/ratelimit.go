@@ -19,7 +19,7 @@ type rateLimitFactory struct {
 // NewMiddlewareClient creates a new client-side rate limit middleware.
 func (r rateLimitFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
-	_, mwOpts := FromOptions(opts...)
+	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 	helper.Debug("[Middleware] Rate limit client middleware enabled, not supported yet")
 	return nil, false
