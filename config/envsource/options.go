@@ -16,7 +16,7 @@ type envOptions struct {
 // Return value: Returns a options. Option function,
 // which applies the prefix configuration to the configuration options
 func WithPrefixes(prefixes ...string) options.Option {
-	return optionutil.Update(func(o *envOptions) {
+	return optionutil.WithUpdate(func(o *envOptions) {
 		o.prefixes = append(o.prefixes, prefixes...)
 	})
 }

@@ -18,25 +18,25 @@ type Options struct {
 }
 
 func WithMatchFunc(matchFunc selector.MatchFunc) options.Option {
-	return optionutil.Update(func(o *Options) {
+	return optionutil.WithUpdate(func(o *Options) {
 		o.MatchFunc = matchFunc
 	})
 }
 
 func WithLogger(logger log.Logger) options.Option {
-	return optionutil.Update(func(o *Options) {
+	return optionutil.WithUpdate(func(o *Options) {
 		o.Logger = logger
 	})
 }
 
 func WithContext(ctx options.Context) options.Option {
-	return optionutil.Update(func(o *Options) {
+	return optionutil.WithUpdate(func(o *Options) {
 		o.Context = ctx
 	})
 }
 
 func WithCarrier(carrier *Carrier) options.Option {
-	return optionutil.Update(func(o *Options) {
+	return optionutil.WithUpdate(func(o *Options) {
 		o.Carrier = carrier
 	})
 }
@@ -45,14 +45,14 @@ func WithCarrier(carrier *Carrier) options.Option {
 // It returns the resolved options.Context and a custom *Options struct.
 func FromOptions(opts ...options.Option) *Options {
 	// Use optionutil to resolve the context and matchFunc
-	// We need a temporary struct to hold these, as optionutil.ApplyNew works on a zero-value struct.
-	ctx, mwOpts := optionutil.ApplyNew[Options](opts...)
+	// We need a temporary struct to hold these, as optionutil.New works on a zero-value struct.
+	ctx, mwOpts := optionutil.New[Options](opts...)
 	if mwOpts.Context == nil {
-		// If the context is not set, use the resolved context
+		// WithCond the context is not set, use the resolved context
 		mwOpts.Context = ctx
 	}
 	if mwOpts.Logger == nil {
-		// If the logger is not set, use the default logger
+		// WithCond the logger is not set, use the default logger
 		mwOpts.Logger = log.FromContext(ctx)
 	}
 	return mwOpts

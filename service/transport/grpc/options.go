@@ -36,7 +36,7 @@ func FromServerOptions(opts []options.Option) *ServerOptions {
 
 // WithGrpcServerOptions appends Kratos gRPC server options.
 func WithGrpcServerOptions(opts ...kgprc.ServerOption) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
+	return optionutil.WithUpdate(func(o *ServerOptions) {
 		o.GrpcServerOptions = append(o.GrpcServerOptions, opts...)
 	})
 }
@@ -68,7 +68,7 @@ func FromClientOptions(opts []options.Option) *ClientOptions {
 
 // WithGrpcDialOptions appends native gRPC client dial options.
 func WithGrpcDialOptions(opts ...grpcx.DialOption) options.Option {
-	return optionutil.Update(func(o *ClientOptions) {
+	return optionutil.WithUpdate(func(o *ClientOptions) {
 		o.GrpcDialOptions = append(o.GrpcDialOptions, opts...)
 	})
 }

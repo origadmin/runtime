@@ -16,21 +16,21 @@ type Options struct {
 
 // WithConfigOption appends Kratos config.Option to the Options.
 func WithConfigOption(opts ...config.Option) options.Option {
-	return optionutil.Update(func(c *Options) {
+	return optionutil.WithUpdate(func(c *Options) {
 		c.ConfigOptions = append(c.ConfigOptions, opts...)
 	})
 }
 
 // WithEnvPrefixes appends environment variable prefixes to the Options.
 func WithEnvPrefixes(prefixes ...string) options.Option {
-	return optionutil.Update(func(c *Options) {
+	return optionutil.WithUpdate(func(c *Options) {
 		//c.EnvPrefixes = append(c.EnvPrefixes, prefixes...)
 	})
 }
 
 // WithSource appends config.Source to the Options.
 func WithSource(s ...config.Source) options.Option {
-	return optionutil.Update(func(c *Options) {
+	return optionutil.WithUpdate(func(c *Options) {
 		c.Sources = append(c.Sources, s...)
 	})
 }

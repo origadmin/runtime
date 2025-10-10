@@ -11,13 +11,13 @@ type loggerContext struct {
 }
 
 func WithLogger(logger Logger) options.Option {
-	return optionutil.Update(func(l *loggerContext) {
+	return optionutil.WithUpdate(func(l *loggerContext) {
 		l.Logger = logger
 	})
 }
 
 func FromOptions(opts ...options.Option) Logger {
-	_, l := optionutil.ApplyNew[loggerContext](opts...)
+	_, l := optionutil.New[loggerContext](opts...)
 	if l.Logger == nil {
 		l.Logger = DefaultLogger
 	}
@@ -25,7 +25,7 @@ func FromOptions(opts ...options.Option) Logger {
 }
 
 func FromContext(ctx options.Context) Logger {
-	v, ok := optionutil.FromContext[*loggerContext](ctx)
+	v, ok := optionutil.Extract[*loggerContext](ctx)
 	if !ok || v == nil || v.Logger == nil {
 		return DefaultLogger
 	}

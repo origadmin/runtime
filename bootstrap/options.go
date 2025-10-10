@@ -33,16 +33,16 @@ type ConfigLoadOptions struct {
 // WithDefaultPaths provides a default path map for components.
 // This map is used as a base and can be overridden by paths defined in the bootstrap file.
 func WithDefaultPaths(paths map[string]string) Option {
-	return optionutil.Update(func(o *ConfigLoadOptions) {
+	return optionutil.WithUpdate(func(o *ConfigLoadOptions) {
 		o.defaultPaths = paths
 	})
 }
 
 // WithConfig allows providing a custom interfaces.Config implementation.
-// If this option is used, LoadConfig will return the provided config directly,
+// WithCond this option is used, LoadConfig will return the provided config directly,
 // bypassing the default Kratos config creation and file loading.
 func WithConfig(cfg interfaces.Config) Option {
-	return optionutil.Update(func(o *ConfigLoadOptions) {
+	return optionutil.WithUpdate(func(o *ConfigLoadOptions) {
 		o.config = cfg
 	})
 }
@@ -51,7 +51,7 @@ func WithConfig(cfg interfaces.Config) Option {
 // or a function of type ConfigTransformFunc.
 // This provides a flexible way to customize the creation of interfaces.Config from kratosconfig.Config.
 func WithConfigTransformer(transformer ConfigTransformer) Option {
-	return optionutil.Update(func(o *ConfigLoadOptions) {
+	return optionutil.WithUpdate(func(o *ConfigLoadOptions) {
 		o.configTransformer = transformer
 	})
 }
@@ -82,14 +82,14 @@ type Option = options.Option
 // WithAppInfo provides the application's metadata to the provider.
 // This is a required option for New.
 func WithAppInfo(info *interfaces.AppInfo) Option {
-	return optionutil.Update(func(o *Options) {
+	return optionutil.WithUpdate(func(o *Options) {
 		o.appInfo = info
 	})
 }
 
 // WithComponent registers a component factory to be used during bootstrap.
 func WithComponent(key string, factory ComponentFactory) Option {
-	return optionutil.Update(func(o *Options) {
+	return optionutil.WithUpdate(func(o *Options) {
 		if o.componentFactories == nil {
 			o.componentFactories = make(map[string]ComponentFactory)
 		}

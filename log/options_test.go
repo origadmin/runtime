@@ -52,7 +52,7 @@ func TestFromContext(t *testing.T) {
 
 		// Manually create and store loggerContext in interfaces.Context
 		lc := &loggerContext{Logger: mockLogger}
-		optCtx := optionutil.With(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
+		optCtx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
 
 		logger := FromContext(optCtx)
 		assert.Equal(t, mockLogger, logger)
@@ -60,7 +60,7 @@ func TestFromContext(t *testing.T) {
 
 	t.Run("should return DefaultLogger if loggerContext is in context but Logger field is nil", func(t *testing.T) {
 		lc := &loggerContext{Logger: nil} // Logger field is nil
-		optCtx := optionutil.With(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
+		optCtx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
 
 		logger := FromContext(optCtx)
 		assert.Equal(t, DefaultLogger, logger)
@@ -74,7 +74,7 @@ func TestWithLogger(t *testing.T) {
 
 		// Start with a context containing mockLogger1
 		lc := &loggerContext{Logger: mockLogger1}
-		optCtx := optionutil.With(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
+		optCtx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
 
 		// Apply the WithLogger option to update the logger to mockLogger2
 		option := WithLogger(mockLogger2)
@@ -90,11 +90,11 @@ func TestWithLogger(t *testing.T) {
 		emptyOptCtx := optionutil.Empty()
 
 		// Applying WithLogger to an empty context (where loggerContext is not yet present)
-		// optionutil.Update will not create it, so FromContext should still return DefaultLogger
+		// optionutil.WithUpdate will not create it, so Extract should still return DefaultLogger
 		option := WithLogger(mockLogger)
 		option(emptyOptCtx)
 
 		retrievedLogger := FromContext(emptyOptCtx)
-		assert.Equal(t, DefaultLogger, retrievedLogger) // Expect DefaultLogger as Update doesn't add if not present
+		assert.Equal(t, DefaultLogger, retrievedLogger) // Expect DefaultLogger as WithUpdate doesn't add if not present
 	})
 }

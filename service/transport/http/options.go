@@ -67,7 +67,7 @@ func FromServerOptions(opts []options.Option) *ServerOptions {
 
 // WithHttpServerOptions appends Kratos HTTP server options.
 func WithHttpServerOptions(opts ...transhttp.ServerOption) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
+	return optionutil.WithUpdate(func(o *ServerOptions) {
 		o.HttpServerOptions = append(o.HttpServerOptions, opts...)
 	})
 }
@@ -75,7 +75,7 @@ func WithHttpServerOptions(opts ...transhttp.ServerOption) options.Option {
 // WithCorsOptions appends advanced, code-based CORS configurations.
 // These will be applied on top of the CORS settings from the proto configuration.
 func WithCorsOptions(opts ...CorsOption) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
+	return optionutil.WithUpdate(func(o *ServerOptions) {
 		o.CorsOptions = append(o.CorsOptions, opts...)
 	})
 }
@@ -107,7 +107,7 @@ func FromClientOptions(opts []options.Option) *ClientOptions {
 
 // WithHttpClientOptions appends Kratos HTTP client options.
 func WithHttpClientOptions(opts ...transhttp.ClientOption) options.Option {
-	return optionutil.Update(func(o *ClientOptions) {
+	return optionutil.WithUpdate(func(o *ClientOptions) {
 		o.HttpClientOptions = append(o.HttpClientOptions, opts...)
 	})
 }
