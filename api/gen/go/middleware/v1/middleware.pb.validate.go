@@ -234,6 +234,105 @@ var _ interface {
 	ErrorName() string
 } = LoggingValidationError{}
 
+// Validate checks the field values on Recovery with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Recovery) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Recovery with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in RecoveryMultiError, or nil
+// if none found.
+func (m *Recovery) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Recovery) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return RecoveryMultiError(errors)
+	}
+
+	return nil
+}
+
+// RecoveryMultiError is an error wrapping multiple validation errors returned
+// by Recovery.ValidateAll() if the designated constraints aren't met.
+type RecoveryMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RecoveryMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RecoveryMultiError) AllErrors() []error { return m }
+
+// RecoveryValidationError is the validation error returned by
+// Recovery.Validate if the designated constraints aren't met.
+type RecoveryValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RecoveryValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RecoveryValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RecoveryValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RecoveryValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RecoveryValidationError) ErrorName() string { return "RecoveryValidationError" }
+
+// Error satisfies the builtin error interface
+func (e RecoveryValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRecovery.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RecoveryValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RecoveryValidationError{}
+
 // Validate checks the field values on MiddlewareConfig with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -518,6 +617,39 @@ func (m *MiddlewareConfig) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return MiddlewareConfigValidationError{
 					field:  "Logging",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Recovery != nil {
+
+		if all {
+			switch v := interface{}(m.GetRecovery()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Recovery",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareConfigValidationError{
+						field:  "Recovery",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetRecovery()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareConfigValidationError{
+					field:  "Recovery",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

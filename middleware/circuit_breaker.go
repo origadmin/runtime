@@ -20,12 +20,11 @@ func (c circuitBreakerFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareC
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
-
-	if !cfg.GetEnabled() || cfg.GetType() != "circuit_breaker" {
-		return nil, false
-	}
-
 	helper.Debug("[Middleware] CircuitBreaker client middleware enabled")
+	//if !cfg.GetEnabled() || cfg.GetType() != "circuit_breaker" {
+	//	return nil, false
+	//}
+
 	return circuitbreaker.Client(), true
 }
 

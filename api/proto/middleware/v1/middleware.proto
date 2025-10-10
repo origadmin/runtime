@@ -21,12 +21,13 @@ option php_namespace = "OrigAdmin\\Runtime\\Middleware\\V1";
 
 // Metadata configuration for the middleware.
 message Metadata {
-  repeated string prefixes = 2 [json_name = "prefixes"];
-  map<string, string> data = 3 [json_name = "data"];
+  repeated string prefixes = 1 [json_name = "prefixes"];
+  map<string, string> data = 2 [json_name = "data"];
 }
 
-message Logging {
-}
+message Logging {}
+
+message Recovery {}
 
 // MiddlewareConfig represents a single middleware configuration with an enable switch.
 message MiddlewareConfig {
@@ -41,7 +42,8 @@ message MiddlewareConfig {
   optional middleware.v1.cors.Cors cors = 9 [json_name = "cors"];
   optional middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 10 [json_name = "circuit_breaker"];
   optional Logging logging = 11 [json_name = "logging"];
-  optional Metadata metadata = 12 [json_name = "metadata"];
+  optional Recovery recovery = 12 [json_name = "recovery"];
+  optional Metadata metadata = 13 [json_name = "metadata"];
   // Using Extension.Config for custom middlewares, moved to last
   optional extension.v1.Extension.Config customize = 100;
   // Add other specific middleware types here as they are defined

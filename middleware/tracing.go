@@ -21,9 +21,9 @@ func (t tracingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, 
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 
-	if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
-		return nil, false
-	}
+	//if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
+	//	return nil, false
+	//}
 
 	helper.Debug("[Middleware] Tracing client middleware enabled")
 	return tracing.Client(), true
@@ -34,9 +34,9 @@ func (t tracingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, 
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 
-	if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
-		return nil, false
-	}
+	//if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
+	//	return nil, false
+	//}
 
 	helper.Debug("[Middleware] Tracing server middleware enabled")
 	return tracing.Server(), true

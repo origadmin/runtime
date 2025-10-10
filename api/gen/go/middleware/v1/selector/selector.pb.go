@@ -23,16 +23,14 @@ const (
 
 // Selector
 type Selector struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Includes        []string               `protobuf:"bytes,1,rep,name=includes,proto3" json:"includes,omitempty"`
-	Excludes        []string               `protobuf:"bytes,2,rep,name=excludes,proto3" json:"excludes,omitempty"`
-	IncludePaths    []string               `protobuf:"bytes,3,rep,name=include_paths,proto3" json:"include_paths,omitempty"`
-	ExcludePaths    []string               `protobuf:"bytes,4,rep,name=exclude_paths,proto3" json:"exclude_paths,omitempty"`
-	IncludePrefixes []string               `protobuf:"bytes,5,rep,name=include_prefixes,proto3" json:"include_prefixes,omitempty"`
-	ExcludePrefixes []string               `protobuf:"bytes,6,rep,name=exclude_prefixes,proto3" json:"exclude_prefixes,omitempty"`
-	Regex           string                 `protobuf:"bytes,7,opt,name=regex,proto3" json:"regex,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Includes      []string               `protobuf:"bytes,1,rep,name=includes,proto3" json:"includes,omitempty"`
+	Excludes      []string               `protobuf:"bytes,2,rep,name=excludes,proto3" json:"excludes,omitempty"`
+	Paths         []string               `protobuf:"bytes,3,rep,name=paths,proto3" json:"paths,omitempty"`
+	Prefixes      []string               `protobuf:"bytes,4,rep,name=prefixes,proto3" json:"prefixes,omitempty"`
+	Regex         string                 `protobuf:"bytes,5,opt,name=regex,proto3" json:"regex,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Selector) Reset() {
@@ -79,30 +77,16 @@ func (x *Selector) GetExcludes() []string {
 	return nil
 }
 
-func (x *Selector) GetIncludePaths() []string {
+func (x *Selector) GetPaths() []string {
 	if x != nil {
-		return x.IncludePaths
+		return x.Paths
 	}
 	return nil
 }
 
-func (x *Selector) GetExcludePaths() []string {
+func (x *Selector) GetPrefixes() []string {
 	if x != nil {
-		return x.ExcludePaths
-	}
-	return nil
-}
-
-func (x *Selector) GetIncludePrefixes() []string {
-	if x != nil {
-		return x.IncludePrefixes
-	}
-	return nil
-}
-
-func (x *Selector) GetExcludePrefixes() []string {
-	if x != nil {
-		return x.ExcludePrefixes
+		return x.Prefixes
 	}
 	return nil
 }
@@ -118,15 +102,13 @@ var File_middleware_v1_selector_selector_proto protoreflect.FileDescriptor
 
 const file_middleware_v1_selector_selector_proto_rawDesc = "" +
 	"\n" +
-	"%middleware/v1/selector/selector.proto\x12\x16middleware.v1.selector\"\xfc\x01\n" +
+	"%middleware/v1/selector/selector.proto\x12\x16middleware.v1.selector\"\x8a\x01\n" +
 	"\bSelector\x12\x1a\n" +
 	"\bincludes\x18\x01 \x03(\tR\bincludes\x12\x1a\n" +
-	"\bexcludes\x18\x02 \x03(\tR\bexcludes\x12$\n" +
-	"\rinclude_paths\x18\x03 \x03(\tR\rinclude_paths\x12$\n" +
-	"\rexclude_paths\x18\x04 \x03(\tR\rexclude_paths\x12*\n" +
-	"\x10include_prefixes\x18\x05 \x03(\tR\x10include_prefixes\x12*\n" +
-	"\x10exclude_prefixes\x18\x06 \x03(\tR\x10exclude_prefixes\x12\x14\n" +
-	"\x05regex\x18\a \x01(\tR\x05regexB\xf3\x01\n" +
+	"\bexcludes\x18\x02 \x03(\tR\bexcludes\x12\x14\n" +
+	"\x05paths\x18\x03 \x03(\tR\x05paths\x12\x1a\n" +
+	"\bprefixes\x18\x04 \x03(\tR\bprefixes\x12\x14\n" +
+	"\x05regex\x18\x05 \x01(\tR\x05regexB\xf3\x01\n" +
 	"\x1acom.middleware.v1.selectorB\rSelectorProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/middleware/v1/selector;selectorv1\xf8\x01\x01\xa2\x02\x03MVS\xaa\x02\x16Middleware.V1.Selector\xca\x02\x16Middleware\\V1\\Selector\xe2\x02\"Middleware\\V1\\Selector\\GPBMetadata\xea\x02\x18Middleware::V1::Selectorb\x06proto3"
 
 var (

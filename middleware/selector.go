@@ -30,7 +30,27 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	helper.Infof("enabling client selector middleware")
 
 	var mws []KMiddleware
-	for _, name := range selectorConfig.Names {
+	// Determine target middleware names by includes/excludes before fetching instances
+	var names []string
+	includes := selectorConfig.GetIncludes()
+	excludes := selectorConfig.GetExcludes()
+	names = append(names, includes...)
+	// apply excludes filter
+	if len(excludes) > 0 {
+		ex := make(map[string]struct{}, len(excludes))
+		for _, n := range excludes {
+			ex[n] = struct{}{}
+		}
+		var filtered []string
+		for _, n := range names {
+			if _, skip := ex[n]; !skip {
+				filtered = append(filtered, n)
+			}
+		}
+		names = filtered
+	}
+	// fetch middlewares by final names
+	for _, name := range names {
 		helper.Infof("enabling client selector middleware: %s", name)
 		middleware, ok := mwOpts.Carrier.Clients[name]
 		if !ok {
@@ -60,7 +80,27 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig,
 
 	helper.Infof("enabling server selector middleware")
 	var mws []KMiddleware
-	for _, name := range cfg.Names {
+	// Determine target middleware names by includes/excludes before fetching instances
+	var names []string
+	includes := selectorConfig.GetIncludes()
+	excludes := selectorConfig.GetExcludes()
+	names = append(names, includes...)
+	// apply excludes filter
+	if len(excludes) > 0 {
+		ex := make(map[string]struct{}, len(excludes))
+		for _, n := range excludes {
+			ex[n] = struct{}{}
+		}
+		var filtered []string
+		for _, n := range names {
+			if _, skip := ex[n]; !skip {
+				filtered = append(filtered, n)
+			}
+		}
+		names = filtered
+	}
+	// fetch middlewares by final names
+	for _, name := range names {
 		helper.Infof("enabling server selector middleware: %s", name)
 		middleware, ok := mwOpts.Carrier.Servers[name]
 		if !ok {
@@ -91,7 +131,7 @@ func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, midd
 }
 
 // selectorBuilder configures and builds a Kratos selector middleware.
-// 增强selectorBuilder函数，支持exclude_middlewares
+// Enhance selectorBuilder to support exclude_middlewares
 func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchFunc selector.MatchFunc) KMiddleware {
 	if matchFunc != nil {
 		builder.Match(matchFunc)
@@ -107,16 +147,6 @@ func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchF
 	}
 	if cfg.Regex != "" {
 		builder.Regex(cfg.Regex)
-	}
-	// 实现excludePaths逻辑（如果需要）
-	if cfg.ExcludePaths != nil {
-		builder.ExcludePath(cfg.ExcludePaths...)
-	}
-	if cfg.ExcludePrefixes != nil {
-		builder.ExcludePrefix(cfg.ExcludePrefixes...)
-	}
-	if cfg.ExcludeRegex != "" {
-		builder.ExcludeRegex(cfg.ExcludeRegex)
 	}
 	return builder.Build()
 }

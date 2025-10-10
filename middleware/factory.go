@@ -34,7 +34,7 @@ type middlewareBuilder struct {
 	factory.Registry[Factory]
 }
 
-// BuildClient 构建客户端中间件链
+// BuildClient builds the client middleware chain
 func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
 	var middlewares []KMiddleware
 	var selectorConfigs []*middlewarev1.MiddlewareConfig
@@ -52,7 +52,7 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 		logger = log.DefaultLogger
 	}
 
-	// 创建中间件载体用于上下文传递
+	// Create a middleware carrier for context propagation
 	carrier := &Carrier{
 		Clients: make(map[string]KMiddleware),
 		Servers: make(map[string]KMiddleware),
@@ -61,13 +61,13 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 	helper := log.NewHelper(logger)
 	helper.Info("building client middlewares")
 
-	// 第一次遍历：分离普通中间件和selector配置
+	// First pass: separate regular middlewares and selector configs
 	for _, ms := range cfg.GetMiddlewares() {
 		if !ms.GetEnabled() {
 			continue
 		}
 		middlewareName := ms.GetType()
-		// 分离selector中间件配置，后面单独处理
+		// Defer selector middleware configs for later processing
 		if middlewareName == string(Selector) {
 			selectorConfigs = append(selectorConfigs, ms)
 			continue
@@ -80,18 +80,18 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 
 		helper.Infof("enabling client middleware: %s", middlewareName)
 
-		// 创建中间件
+		// Create middleware
 		m, ok := f.NewMiddlewareClient(ms, opts...)
 		if ok {
 			middlewares = append(middlewares, m)
-			// 将创建的中间件添加到载体中
+			// Add the created middleware into the carrier
 			carrier.Clients[middlewareName] = m
 		}
 	}
-	// 将载体添加到上下文中
+	// Attach the carrier into options context
 	opts = append(opts, WithCarrier(carrier))
 
-	// 第二次遍历：处理selector中间件配置
+	// Second pass: process selector middleware configs
 	for _, ms := range selectorConfigs {
 		middlewareName := ms.GetType()
 		f, ok := b.Get(middlewareName)
@@ -102,7 +102,7 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 
 		helper.Infof("enabling client middleware: %s", middlewareName)
 
-		// 创建selector中间件（此时可以访问已创建的中间件）
+		// Create selector middleware (can access previously created middlewares now)
 		m, ok := f.NewMiddlewareClient(ms, opts...)
 		if ok {
 			middlewares = append(middlewares, m)
@@ -112,7 +112,7 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 	return middlewares
 }
 
-// BuildServer 构建服务端中间件链（类似BuildClient的修改）
+// BuildServer builds the server middleware chain (similar to BuildClient)
 func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
 	var middlewares []KMiddleware
 	var selectorConfigs []*middlewarev1.MiddlewareConfig
@@ -130,7 +130,7 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 		logger = log.DefaultLogger
 	}
 
-	// 创建中间件载体用于上下文传递
+	// Create a middleware carrier for context propagation
 	carrier := &Carrier{
 		Clients: make(map[string]KMiddleware),
 		Servers: make(map[string]KMiddleware),
@@ -139,13 +139,13 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 	helper := log.NewHelper(logger)
 	helper.Info("building server middlewares")
 
-	// 第一次遍历：分离普通中间件和selector配置
+	// First pass: separate regular middlewares and selector configs
 	for _, ms := range cfg.GetMiddlewares() {
 		if !ms.GetEnabled() {
 			continue
 		}
 		middlewareName := ms.GetType()
-		// 分离selector中间件配置，后面单独处理
+		// Defer selector middleware configs for later processing
 		if middlewareName == string(Selector) {
 			selectorConfigs = append(selectorConfigs, ms)
 			continue
@@ -156,18 +156,18 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 			continue
 		}
 
-		// 创建中间件
+		// Create middleware
 		m, ok := f.NewMiddlewareServer(ms, opts...)
 		if ok {
 			middlewares = append(middlewares, m)
-			// 将创建的中间件添加到载体中
+			// Add the created middleware into the carrier
 			carrier.Servers[middlewareName] = m
 		}
 	}
-	// 将载体添加到上下文中
+	// Attach the carrier into options context
 	opts = append(opts, WithCarrier(carrier))
 
-	// 第二次遍历：处理selector中间件配置
+	// Second pass: process selector middleware configs
 	for _, ms := range selectorConfigs {
 		middlewareName := ms.GetType()
 		f, ok := b.Get(middlewareName)
@@ -176,7 +176,7 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 			continue
 		}
 
-		// 创建selector中间件（此时可以访问已创建的中间件）
+		// Create selector middleware (can access previously created middlewares now)
 		m, ok := f.NewMiddlewareServer(ms, opts...)
 		if ok {
 			middlewares = append(middlewares, m)

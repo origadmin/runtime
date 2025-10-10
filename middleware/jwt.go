@@ -32,12 +32,7 @@ func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts
 		return nil, false
 	}
 
-	m, ok := JwtClient(jwtConfig)
-	if ok {
-		// Note: SelectorClient expects middleware.MatchFunc, which is now in mwOpts.MatchFunc
-		m = SelectorClient(cfg.GetSelector(), mwOpts.MatchFunc, m)
-	}
-	return m, ok
+	return JwtClient(jwtConfig)
 }
 
 func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
@@ -51,12 +46,7 @@ func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts
 		return nil, false
 	}
 
-	m, ok := JwtServer(jwtConfig)
-	if ok && cfg.GetSelector().GetEnabled() {
-		// Note: SelectorServer expects middleware.MatchFunc, which is now in mwOpts.MatchFunc
-		m = SelectorServer(cfg.GetSelector(), mwOpts.MatchFunc, m)
-	}
-	return m, ok
+	return JwtServer(jwtConfig)
 }
 
 func JwtServer(cfg *jwtv1.JWT) (KMiddleware, bool) {
