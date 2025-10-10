@@ -13,8 +13,11 @@ option php_namespace = "OrigAdmin\\Runtime\\Middleware\\Selector\\V1";
 // Selector
 message Selector {
   bool enabled = 1 [json_name = "enabled"];
-  repeated string names = 2 [json_name = "names"];
-  repeated string paths = 3 [json_name = "paths"];
-  string regex = 4 [json_name = "regex"];
-  repeated string prefixes = 5 [json_name = "prefixes"];
+  repeated string includes = 2 [json_name = "includes"];
+  repeated string excludes = 3 [json_name = "excludes"];
+  repeated string include_paths = 4 [json_name = "include_paths"];
+  repeated string exclude_paths = 5 [json_name = "exclude_paths"];
+  repeated string include_prefixes = 6 [json_name = "include_prefixes"];
+  repeated string exclude_prefixes = 7 [json_name = "exclude_prefixes"];
+  string regex = 8 [json_name = "regex"];
 }

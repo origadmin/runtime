@@ -91,6 +91,7 @@ func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, midd
 }
 
 // selectorBuilder configures and builds a Kratos selector middleware.
+// 增强selectorBuilder函数，支持exclude_middlewares
 func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchFunc selector.MatchFunc) KMiddleware {
 	if matchFunc != nil {
 		builder.Match(matchFunc)
@@ -106,6 +107,16 @@ func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchF
 	}
 	if cfg.Regex != "" {
 		builder.Regex(cfg.Regex)
+	}
+	// 实现excludePaths逻辑（如果需要）
+	if cfg.ExcludePaths != nil {
+		builder.ExcludePath(cfg.ExcludePaths...)
+	}
+	if cfg.ExcludePrefixes != nil {
+		builder.ExcludePrefix(cfg.ExcludePrefixes...)
+	}
+	if cfg.ExcludeRegex != "" {
+		builder.ExcludeRegex(cfg.ExcludeRegex)
 	}
 	return builder.Build()
 }

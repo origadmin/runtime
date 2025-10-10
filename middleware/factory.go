@@ -156,8 +156,6 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 			continue
 		}
 
-		helper.Infof("enabling server middleware: %s", middlewareName)
-
 		// 创建中间件
 		m, ok := f.NewMiddlewareServer(ms, opts...)
 		if ok {
@@ -177,8 +175,6 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 			helper.Warnf("unknown server middleware: %s", middlewareName)
 			continue
 		}
-
-		helper.Infof("enabling server middleware: %s", middlewareName)
 
 		// 创建selector中间件（此时可以访问已创建的中间件）
 		m, ok := f.NewMiddlewareServer(ms, opts...)
