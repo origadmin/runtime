@@ -483,6 +483,7 @@ func TestWithNilKeyPanics(t *testing.T) {
 			t.Errorf("The code did not panic")
 		}
 	}()
+	var ctx options.Context = optionutil.Empty()
 	// This should panic because the key is nil
-	optionutil.With(optionutil.Empty(), nil, "some value")
+	ctx.With(nil, "some value")
 }

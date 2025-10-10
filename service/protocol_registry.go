@@ -2,12 +2,15 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+
+	kerrors "github.com/go-kratos/kratos/v2/errors"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
-	tkerrors "github.com/origadmin/toolkits/errors"
 )
 
 // Protocol is the name of the gRPC, HTTP, or other protocol.
@@ -34,10 +37,12 @@ func GetProtocolFactory(name string) (ProtocolFactory, bool) {
 // getServerProtocolName extracts the protocol name from the transportv1.Server configuration.
 func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 	if cfg == nil {
-		return "", tkerrors.Errorf("server configuration is nil")
+		ke := kerrors.New(http.StatusBadRequest, "ERR_NIL_SERVER_CONFIG", "server configuration is nil")
+		return "", ke
 	}
 	if cfg.Protocol == "" {
-		return "", tkerrors.Errorf("protocol is not specified in server configuration")
+		ke := kerrors.New(http.StatusBadRequest, "ERR_MISSING_SERVER_CONFIG", "protocol is not specified in server configuration")
+		return "", ke
 	}
 	return cfg.Protocol, nil
 }
@@ -45,10 +50,12 @@ func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 // getClientProtocolName extracts the protocol name from the transportv1.Client configuration.
 func getClientProtocolName(cfg *transportv1.Client) (string, error) {
 	if cfg == nil {
-		return "", tkerrors.Errorf("client configuration is nil")
+		ke := kerrors.New(http.StatusBadRequest, "ERR_NIL_CLIENT_CONFIG", "client configuration is nil")
+		return "", ke
 	}
 	if cfg.Protocol == "" {
-		return "", tkerrors.Errorf("protocol is not specified in client configuration")
+		ke := kerrors.New(http.StatusBadRequest, "ERR_MISSING_CLIENT_CONFIG", "protocol is not specified in client configuration")
+		return "", ke
 	}
 	return cfg.Protocol, nil
 }
@@ -63,12 +70,15 @@ func NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Serv
 
 	f, ok := GetProtocolFactory(protocolName)
 	if !ok {
-		return nil, tkerrors.Errorf("unsupported protocol: %s", protocolName)
+		ke := kerrors.New(http.StatusBadRequest, "ERR_UNSUPPORTED_PROTOCOL", fmt.Sprintf("unsupported protocol: %s", protocolName))
+		return nil, ke
 	}
 
 	server, err := f.NewServer(cfg, opts...)
 	if err != nil {
-		return nil, tkerrors.Errorf("failed to create server for protocol %s: %v", protocolName, err)
+		ke := kerrors.New(http.StatusInternalServerError, "ERR_SERVER_CREATION_FAILED", fmt.Sprintf("failed to create server for protocol %s", protocolName))
+		ke.Metadata = map[string]string{"error": err.Error()}
+		return nil, ke
 	}
 
 	return server, nil
@@ -83,12 +93,15 @@ func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Opt
 
 	f, ok := GetProtocolFactory(protocolName)
 	if !ok {
-		return nil, tkerrors.Errorf("unsupported protocol: %s", protocolName)
+		ke := kerrors.New(http.StatusBadRequest, "ERR_UNSUPPORTED_PROTOCOL", fmt.Sprintf("unsupported protocol: %s", protocolName))
+		return nil, ke
 	}
 
 	client, err := f.NewClient(ctx, cfg, opts...)
 	if err != nil {
-		return nil, tkerrors.Errorf("failed to create client for protocol %s: %v", protocolName, err)
+		ke := kerrors.New(http.StatusInternalServerError, "ERR_CLIENT_CREATION_FAILED", fmt.Sprintf("failed to create client for protocol %s", protocolName))
+		ke.Metadata = map[string]string{"error": err.Error()}
+		return nil, ke
 	}
 
 	return client, nil
