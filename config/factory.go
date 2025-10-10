@@ -9,6 +9,7 @@ import (
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 const (
@@ -37,10 +38,10 @@ func (f *sourceFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
 }
 
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
-type BuildFunc func(*sourcev1.SourceConfig, ...Option) (kratosconfig.Source, error)
+type BuildFunc func(*sourcev1.SourceConfig, ...options.Option) (kratosconfig.Source, error)
 
 // NewSource is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn BuildFunc) NewSource(cfg *sourcev1.SourceConfig, opts ...Option) (kratosconfig.Source, error) {
+func (fn BuildFunc) NewSource(cfg *sourcev1.SourceConfig, opts ...options.Option) (kratosconfig.Source, error) {
 	// Call the function with the given KConfig and a list of Options.
 	return fn(cfg, opts...)
 }
@@ -64,7 +65,7 @@ func getDefaultPriorityForSourceType(sourceType string) int32 {
 // NewConfig creates a new configuration object that conforms to the interfaces.Config interface.
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
-func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (interfaces.Config, error) {
+func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
 	options := FromOptions(opts...)
 	var sources []kratosconfig.Source
 
@@ -109,7 +110,7 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...Option) (inter
 	return &adapter{kc: kc}, nil
 }
 
-func (f *sourceFactory) SyncConfig(cfg *sourcev1.SourceConfig, v any, opts ...Option) error {
+func (f *sourceFactory) SyncConfig(cfg *sourcev1.SourceConfig, v any, opts ...options.Option) error {
 	// This method is a placeholder. Actual synchronization logic would go here.
 	// For now, we'll just return nil or an error if needed.
 	return nil

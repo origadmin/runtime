@@ -22,7 +22,7 @@ func init() {
 	Register(Jwt, &jwtFactory{})
 	Register(CircuitBreaker, &circuitBreakerFactory{})
 	Register(Logging, &loggingFactory{})
-	Register(RateLimit, &rateLimitFactory{})
+	Register(RateLimiter, &rateLimitFactory{})
 	Register(Metadata, &metadataFactory{})
 	Register(Selector, &selectorFactory{})
 	Register(Tracing, &tracingFactory{})

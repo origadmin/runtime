@@ -20,7 +20,7 @@ const (
 	CircuitBreaker Name = "circuit_breaker"
 	Logging        Name = "logging"
 	Metadata       Name = "metadata"
-	RateLimit      Name = "rate_limit"
+	RateLimiter    Name = "rate_limiter"
 	Tracing        Name = "tracing"
 	Validator      Name = "validator"
 	Optimize       Name = "optimize"
@@ -80,4 +80,14 @@ func NewServer(mc *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMidd
 		return nil, false
 	}
 	return f.NewMiddlewareServer(mc, opts...)
+}
+
+// BuildClient build a client middleware chain
+func BuildClient(middlewares *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+	return defaultBuilder.BuildClient(middlewares, opts...)
+}
+
+// BuildServer build a server middleware chain
+func BuildServer(middlewares *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+	return defaultBuilder.BuildServer(middlewares, opts...)
 }

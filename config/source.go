@@ -12,6 +12,7 @@ import (
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -22,7 +23,7 @@ var (
 )
 
 // NewConfig creates a new config instance.
-func NewConfig(cfg *sourcev1.Sources, opts ...Option) (interfaces.Config, error) {
+func NewConfig(cfg *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
 	return defaultBuilder.NewConfig(cfg, opts...)
 }
 
@@ -34,7 +35,7 @@ func Register(name string, sourceFactory any) {
 		factory = fty
 	case SourceFunc:
 		factory = fty
-	case func(*sourcev1.SourceConfig, ...Option) (kratosconfig.Source, error):
+	case func(*sourcev1.SourceConfig, ...options.Option) (kratosconfig.Source, error):
 		factory = SourceFunc(fty)
 	default:
 		panic(ErrInvalidConfigType)

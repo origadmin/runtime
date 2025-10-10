@@ -1,0 +1,26 @@
+middlewares:
+  - name: metadata
+    type: metadata
+    enabled: true
+    metadata:
+      key1: value1
+  - name: logging
+    type: logging
+    enabled: true
+    logging:
+      level: info
+  - name: selector
+    type: selector
+    enabled: true
+    selector:
+      match: "*"
+  - name: rate_limiter
+    type: rate_limiter
+    enabled: true
+    rate_limiter:
+      limit: 100
+  - name: circuit_breaker
+    type: circuit_breaker
+    enabled: true
+    circuit_breaker:
+      timeout: 5s
