@@ -44,7 +44,7 @@ func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 
 func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
-	_, mwOpts := FromOptions(opts...)
+	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 
 	metadataConfig := cfg.GetMetadata()

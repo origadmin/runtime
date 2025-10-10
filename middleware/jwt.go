@@ -23,7 +23,7 @@ type jwtFactory struct{}
 
 func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
-	_, mwOpts := FromOptions(opts...)
+	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 	helper.Debug("[Middleware] Jwt client middleware enabled")
 
@@ -103,7 +103,8 @@ func getSigningMethod(sm string) jwt.SigningMethod {
 		return jwt.SigningMethodHS256
 	case "HS384":
 		return jwt.SigningMethodHS384
-	case "HS512":	return jwt.SigningMethodHS512
+	case "HS512":
+		return jwt.SigningMethodHS512
 	case "RS256":
 		return jwt.SigningMethodRS256
 	case "RS384":

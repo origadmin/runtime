@@ -33,16 +33,17 @@ message Logging {
 // MiddlewareConfig represents a single middleware configuration with an enable switch.
 message MiddlewareConfig {
   bool enabled = 1 [json_name = "enabled"];
-  string type = 2 [json_name = "type"];
-  optional middleware.v1.ratelimit.RateLimiter rate_limiter = 3 [json_name = "rate_limiter"];
-  optional middleware.v1.metrics.Metrics metrics = 4 [json_name = "metrics"];
-  optional middleware.v1.validator.Validator validator = 5 [json_name = "validator"];
-  optional middleware.v1.jwt.JWT jwt = 6 [json_name = "jwt"];
-  optional middleware.v1.selector.Selector selector = 7 [json_name = "selector"];
-  optional middleware.v1.cors.Cors cors = 8 [json_name = "cors"];
-  optional middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 9 [json_name = "circuit_breaker"];
-  optional Logging logging = 10 [json_name = "logging"];
-  optional Metadata metadata = 11 [json_name = "metadata"];
+  string name = 2 [json_name = "name"];
+  string type = 3 [json_name = "type"];
+  optional middleware.v1.ratelimit.RateLimiter rate_limiter = 4 [json_name = "rate_limiter"];
+  optional middleware.v1.metrics.Metrics metrics = 5 [json_name = "metrics"];
+  optional middleware.v1.validator.Validator validator = 6 [json_name = "validator"];
+  optional middleware.v1.jwt.JWT jwt = 7 [json_name = "jwt"];
+  optional middleware.v1.selector.Selector selector = 8 [json_name = "selector"];
+  optional middleware.v1.cors.Cors cors = 9 [json_name = "cors"];
+  optional middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 10 [json_name = "circuit_breaker"];
+  optional Logging logging = 11 [json_name = "logging"];
+  optional Metadata metadata = 12 [json_name = "metadata"];
   // Using Extension.Config for custom middlewares, moved to last
   optional extension.v1.Extension.Config customize = 100;
   // Add other specific middleware types here as they are defined

@@ -262,6 +262,8 @@ func (m *MiddlewareConfig) validate(all bool) error {
 
 	// no validation rules for Enabled
 
+	// no validation rules for Name
+
 	// no validation rules for Type
 
 	if m.RateLimiter != nil {

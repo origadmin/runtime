@@ -1,3 +1,5 @@
+// Copyright (c) 2024 OrigAdmin. All rights reserved.
+
 package http
 
 import (
@@ -46,36 +48,50 @@ func defaultCorsOptions() []handlers.CORSOption {
 func corsOptionsFromConfig(cfg *corsv1.Cors) []handlers.CORSOption {
 	var options []handlers.CORSOption
 
-	// Use default options if no values are provided
-	if len(cfg.AllowOrigins) == 0 {
+	// Handle origin configuration
+	if cfg.GetAllowAnyOrigin() {
 		options = append(options, handlers.AllowedOrigins([]string{"*"}))
+	} else if len(cfg.GetAllowedOrigins()) > 0 {
+		options = append(options, handlers.AllowedOrigins(cfg.GetAllowedOrigins()))
 	} else {
-		options = append(options, handlers.AllowedOrigins(cfg.AllowOrigins))
+		// Default to allow any origin if no specific origin configuration
+		options = append(options, handlers.AllowedOrigins([]string{"*"}))
 	}
 
-	if len(cfg.AllowMethods) == 0 {
+	// Handle method configuration
+	if cfg.GetAllowAnyMethod() {
 		options = append(options, handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}))
+	} else if len(cfg.GetAllowedMethods()) > 0 {
+		options = append(options, handlers.AllowedMethods(cfg.GetAllowedMethods()))
 	} else {
-		options = append(options, handlers.AllowedMethods(cfg.AllowMethods))
+		// Default methods if none specified
+		options = append(options, handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}))
 	}
 
-	if len(cfg.AllowHeaders) == 0 {
+	// Handle header configuration
+	if cfg.GetAllowAnyHeader() {
+		options = append(options, handlers.AllowedHeaders([]string{"*"}))
+	} else if len(cfg.GetAllowedHeaders()) > 0 {
+		options = append(options, handlers.AllowedHeaders(cfg.GetAllowedHeaders()))
+	} else {
+		// Default headers if none specified
 		options = append(options, handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"}))
-	} else {
-		options = append(options, handlers.AllowedHeaders(cfg.AllowHeaders))
 	}
 
-	if len(cfg.ExposeHeaders) > 0 {
-		options = append(options, handlers.ExposedHeaders(cfg.ExposeHeaders))
+	// Add exposed headers if specified
+	if len(cfg.GetExposedHeaders()) > 0 {
+		options = append(options, handlers.ExposedHeaders(cfg.GetExposedHeaders()))
 	}
 
-	if cfg.AllowCredentials {
+	// Add credentials option if specified
+	if cfg.GetAllowCredentials() {
 		options = append(options, handlers.AllowCredentials())
 	}
 
-	if cfg.MaxAge > 0 {
-		options = append(options, handlers.MaxAge(int(cfg.MaxAge)))
-	} else if cfg.MaxAge == 0 {
+	// Handle max age configuration
+	if cfg.GetMaxAge() > 0 {
+		options = append(options, handlers.MaxAge(int(cfg.GetMaxAge())))
+	} else {
 		// Default max age if not specified
 		options = append(options, handlers.MaxAge(86400)) // 24 hours
 	}
@@ -85,23 +101,14 @@ func corsOptionsFromConfig(cfg *corsv1.Cors) []handlers.CORSOption {
 
 // NewCorsHandler creates a new CORS handler for Kratos HTTP servers
 func NewCorsHandler(cfg *corsv1.Cors) transhttp.FilterFunc {
-	if cfg == nil || !cfg.Enabled {
+	if cfg == nil || !cfg.GetEnabled() {
 		return nil
 	}
 
-	// If CORS is enabled but no configuration is provided, use defaults
-	var options []handlers.CORSOption
-	if len(cfg.AllowOrigins) == 0 && len(cfg.AllowMethods) == 0 && len(cfg.AllowHeaders) == 0 {
-		options = defaultCorsOptions()
-	} else {
-		options = corsOptionsFromConfig(cfg)
-	}
+	// Get CORS options from configuration
+	options := corsOptionsFromConfig(cfg)
 
-	// Add credentials option if specified
-	if cfg.AllowCredentials {
-		options = append(options, handlers.AllowCredentials())
-	}
-
+	// Create and return the CORS filter function
 	return handlers.CORS(options...)
 }
 
@@ -151,11 +158,6 @@ func adaptServerConfig(cfg *transportv1.Server) ([]transhttp.ServerOption, error
 		timeout = httpCfg.Timeout.AsDuration()
 	}
 	opts = append(opts, transhttp.Timeout(timeout))
-
-	// Configure shutdown timeout
-	//if httpCfg.ShutdownTimeout != nil {
-	//	opts = append(opts, transhttp.ShutdownTimeout(httpCfg.ShutdownTimeout.AsDuration()))
-	//}
 
 	// Handle endpoint configuration
 	ll.Debugw("msg", "HTTP", "address", httpCfg.Addr)

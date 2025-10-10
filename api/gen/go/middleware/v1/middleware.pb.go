@@ -138,16 +138,17 @@ func (x *Logging) GetEnabled() bool {
 type MiddlewareConfig struct {
 	state          protoimpl.MessageState         `protogen:"open.v1"`
 	Enabled        bool                           `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Type           string                         `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	RateLimiter    *ratelimit.RateLimiter         `protobuf:"bytes,3,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"`
-	Metrics        *metrics.Metrics               `protobuf:"bytes,4,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
-	Validator      *validator.Validator           `protobuf:"bytes,5,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
-	Jwt            *jwt.JWT                       `protobuf:"bytes,6,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
-	Selector       *selector.Selector             `protobuf:"bytes,7,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
-	Cors           *cors.Cors                     `protobuf:"bytes,8,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
-	CircuitBreaker *circuitbreaker.CircuitBreaker `protobuf:"bytes,9,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
-	Logging        *Logging                       `protobuf:"bytes,10,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
-	Metadata       *Metadata                      `protobuf:"bytes,11,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Name           string                         `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Type           string                         `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	RateLimiter    *ratelimit.RateLimiter         `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"`
+	Metrics        *metrics.Metrics               `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
+	Validator      *validator.Validator           `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
+	Jwt            *jwt.JWT                       `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
+	Selector       *selector.Selector             `protobuf:"bytes,8,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
+	Cors           *cors.Cors                     `protobuf:"bytes,9,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
+	CircuitBreaker *circuitbreaker.CircuitBreaker `protobuf:"bytes,10,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
+	Logging        *Logging                       `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
+	Metadata       *Metadata                      `protobuf:"bytes,12,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	// Using Extension.Config for custom middlewares, moved to last
 	Customize     *v1.Extension_Config `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields protoimpl.UnknownFields
@@ -189,6 +190,13 @@ func (x *MiddlewareConfig) GetEnabled() bool {
 		return x.Enabled
 	}
 	return false
+}
+
+func (x *MiddlewareConfig) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 func (x *MiddlewareConfig) GetType() string {
@@ -327,20 +335,21 @@ const file_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"#\n" +
 	"\aLogging\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\"\xcf\x06\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\"\xe3\x06\n" +
 	"\x10MiddlewareConfig\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12M\n" +
-	"\frate_limiter\x18\x03 \x01(\v2$.middleware.v1.ratelimit.RateLimiterH\x00R\frate_limiter\x88\x01\x01\x12=\n" +
-	"\ametrics\x18\x04 \x01(\v2\x1e.middleware.v1.metrics.MetricsH\x01R\ametrics\x88\x01\x01\x12E\n" +
-	"\tvalidator\x18\x05 \x01(\v2\".middleware.v1.validator.ValidatorH\x02R\tvalidator\x88\x01\x01\x12-\n" +
-	"\x03jwt\x18\x06 \x01(\v2\x16.middleware.v1.jwt.JWTH\x03R\x03jwt\x88\x01\x01\x12A\n" +
-	"\bselector\x18\a \x01(\v2 .middleware.v1.selector.SelectorH\x04R\bselector\x88\x01\x01\x121\n" +
-	"\x04cors\x18\b \x01(\v2\x18.middleware.v1.cors.CorsH\x05R\x04cors\x88\x01\x01\x12[\n" +
-	"\x0fcircuit_breaker\x18\t \x01(\v2,.middleware.v1.circuitbreaker.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x125\n" +
-	"\alogging\x18\n" +
-	" \x01(\v2\x16.middleware.v1.LoggingH\aR\alogging\x88\x01\x01\x128\n" +
-	"\bmetadata\x18\v \x01(\v2\x17.middleware.v1.MetadataH\bR\bmetadata\x88\x01\x01\x12A\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04type\x18\x03 \x01(\tR\x04type\x12M\n" +
+	"\frate_limiter\x18\x04 \x01(\v2$.middleware.v1.ratelimit.RateLimiterH\x00R\frate_limiter\x88\x01\x01\x12=\n" +
+	"\ametrics\x18\x05 \x01(\v2\x1e.middleware.v1.metrics.MetricsH\x01R\ametrics\x88\x01\x01\x12E\n" +
+	"\tvalidator\x18\x06 \x01(\v2\".middleware.v1.validator.ValidatorH\x02R\tvalidator\x88\x01\x01\x12-\n" +
+	"\x03jwt\x18\a \x01(\v2\x16.middleware.v1.jwt.JWTH\x03R\x03jwt\x88\x01\x01\x12A\n" +
+	"\bselector\x18\b \x01(\v2 .middleware.v1.selector.SelectorH\x04R\bselector\x88\x01\x01\x121\n" +
+	"\x04cors\x18\t \x01(\v2\x18.middleware.v1.cors.CorsH\x05R\x04cors\x88\x01\x01\x12[\n" +
+	"\x0fcircuit_breaker\x18\n" +
+	" \x01(\v2,.middleware.v1.circuitbreaker.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x125\n" +
+	"\alogging\x18\v \x01(\v2\x16.middleware.v1.LoggingH\aR\alogging\x88\x01\x01\x128\n" +
+	"\bmetadata\x18\f \x01(\v2\x17.middleware.v1.MetadataH\bR\bmetadata\x88\x01\x01\x12A\n" +
 	"\tcustomize\x18d \x01(\v2\x1e.extension.v1.Extension.ConfigH\tR\tcustomize\x88\x01\x01B\x0f\n" +
 	"\r_rate_limiterB\n" +
 	"\n" +

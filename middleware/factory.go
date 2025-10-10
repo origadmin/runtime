@@ -42,14 +42,15 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 		return middlewares
 	}
 
-	ctx, opt := FromOptions(opts...)
-	var logger log.Logger
-	if opt != nil && opt.Logger != nil {
-		logger = opt.Logger
-	} else {
-		logger = log.FromContext(ctx)
+	opt := FromOptions(opts...)
+	if opt == nil {
+		return middlewares
 	}
-	opt.Logger = logger // Corrected typo: opt.l -> opt.Logger
+
+	logger := opt.Logger
+	if logger == nil {
+		logger = log.DefaultLogger
+	}
 
 	// This logger is for the factory's own internal logging, not for the middlewares themselves.
 	helper := log.NewHelper(logger)
@@ -70,7 +71,7 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 
 		// Pass the raw options slice directly to the factory.
 		// The factory is responsible for parsing the options it needs.
-		m, ok := f.NewMiddlewareClient(ms, optionutil.WithContext(ctx), withOptions(opt))
+		m, ok := f.NewMiddlewareClient(ms, optionutil.WithContext(opt.Context), withOptions(opt))
 		if ok {
 			middlewares = append(middlewares, m)
 		}
@@ -85,14 +86,15 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 		return middlewares
 	}
 
-	ctx, opt := FromOptions(opts...)
-	var logger log.Logger
-	if opt != nil && opt.Logger != nil {
-		logger = opt.Logger
-	} else {
-		logger = log.FromContext(ctx)
+	opt := FromOptions(opts...)
+	if opt == nil {
+		return middlewares
 	}
-	opt.Logger = logger // Corrected typo: opt.l -> opt.Logger
+
+	logger := opt.Logger
+	if logger == nil {
+		logger = log.DefaultLogger
+	}
 
 	// This logger is for the factory's own internal logging.
 	helper := log.NewHelper(logger)
@@ -113,7 +115,7 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 
 		// Pass the raw options slice directly to the factory.
 		// The factory is responsible for parsing the options it needs.
-		m, ok := f.NewMiddlewareServer(ms, optionutil.WithContext(ctx), withOptions(opt))
+		m, ok := f.NewMiddlewareServer(ms, optionutil.WithContext(opt.Context), withOptions(opt))
 		if ok {
 			middlewares = append(middlewares, m)
 		}

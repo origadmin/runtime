@@ -28,7 +28,7 @@ func (r rateLimitFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig
 // NewMiddlewareServer creates a new server-side rate limit middleware.
 func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
-	_, mwOpts := FromOptions(opts...)
+	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 	helper.Debug("[Middleware] Rate limit server middleware enabled")
 
