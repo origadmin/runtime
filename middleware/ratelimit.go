@@ -17,7 +17,7 @@ type rateLimitFactory struct {
 }
 
 // NewMiddlewareClient creates a new client-side rate limit middleware.
-func (r rateLimitFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (r rateLimitFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -26,7 +26,7 @@ func (r rateLimitFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig
 }
 
 // NewMiddlewareServer creates a new server-side rate limit middleware.
-func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

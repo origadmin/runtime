@@ -35,9 +35,9 @@ type middlewareBuilder struct {
 }
 
 // BuildClient 构建客户端中间件链
-func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KratosMiddleware {
-	var middlewares []KratosMiddleware
-	var selectorMiddlewares []KratosMiddleware
+func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+	var middlewares []KMiddleware
+	var selectorMiddlewares []KMiddleware
 	if cfg == nil {
 		return middlewares
 	}
@@ -54,8 +54,8 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 
 	// 创建中间件载体用于上下文传递
 	carrier := &Carrier{
-		Clients: make(map[string]KratosMiddleware),
-		Servers: make(map[string]KratosMiddleware),
+		Clients: make(map[string]KMiddleware),
+		Servers: make(map[string]KMiddleware),
 	}
 	// 将载体添加到上下文中
 	opt.Context = WithMiddlewaresToContext(opt.Context, carrier)
@@ -121,9 +121,9 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 }
 
 // BuildServer 构建服务端中间件链（类似BuildClient的修改）
-func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KratosMiddleware {
-	var middlewares []KratosMiddleware
-	var selectorMiddlewares []KratosMiddleware
+func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+	var middlewares []KMiddleware
+	var selectorMiddlewares []KMiddleware
 	if cfg == nil {
 		return middlewares
 	}
@@ -140,8 +140,8 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 
 	// 创建中间件载体用于上下文传递
 	carrier := &Carrier{
-		Clients: make(map[string]KratosMiddleware),
-		Servers: make(map[string]KratosMiddleware),
+		Clients: make(map[string]KMiddleware),
+		Servers: make(map[string]KMiddleware),
 	}
 	// 将载体添加到上下文中
 	opt.Context = WithMiddlewaresToContext(opt.Context, carrier)

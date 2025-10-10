@@ -17,7 +17,7 @@ import (
 type selectorFactory struct {
 }
 
-func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -37,7 +37,7 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	return selectorBuilder(selectorConfig, builder, mwOpts.MatchFunc), true
 }
 
-func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -59,18 +59,18 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig,
 
 // SelectorServer creates a selector middleware for server-side.
 // This helper function is still available for direct use if needed to wrap specific middlewares.
-func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KratosMiddleware) KratosMiddleware {
+func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KMiddleware) KMiddleware {
 	return selectorBuilder(cfg, selector.Server(middlewares...), matchFunc)
 }
 
 // SelectorClient creates a selector middleware for client-side.
 // This helper function is still available for direct use if needed to wrap specific middlewares.
-func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KratosMiddleware) KratosMiddleware {
+func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KMiddleware) KMiddleware {
 	return selectorBuilder(cfg, selector.Client(middlewares...), matchFunc)
 }
 
 // selectorBuilder configures and builds a Kratos selector middleware.
-func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchFunc selector.MatchFunc) KratosMiddleware {
+func selectorBuilder(cfg *selectorv1.Selector, builder *selector.Builder, matchFunc selector.MatchFunc) KMiddleware {
 	if matchFunc != nil {
 		builder.Match(matchFunc)
 	}

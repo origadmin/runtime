@@ -16,7 +16,7 @@ import (
 type circuitBreakerFactory struct {
 }
 
-func (c circuitBreakerFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (c circuitBreakerFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -29,7 +29,7 @@ func (c circuitBreakerFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareC
 	return circuitbreaker.Client(), true
 }
 
-func (c circuitBreakerFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (c circuitBreakerFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

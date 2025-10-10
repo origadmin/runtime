@@ -17,7 +17,7 @@ import (
 type metadataFactory struct {
 }
 
-func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -42,7 +42,7 @@ func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	return middlewareMetadata.Client(metadataOpts...), true
 }
 
-func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KratosMiddleware, bool) {
+func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

@@ -2,7 +2,7 @@
 package middleware
 
 // Empty returns an empty middleware.
-func Empty() KratosMiddleware {
+func Empty() KMiddleware {
 	return func(handler KHandler) KHandler {
 		return handler
 	}
