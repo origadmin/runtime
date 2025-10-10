@@ -37,11 +37,12 @@ func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	}
 
 	// 9. Register the user's business logic services if a registrar is provided.
+	ctx := context.Background()
 	if serverOpts.ServiceOptions != nil && serverOpts.ServiceOptions.Registrar != nil {
 		if grpcRegistrar, ok := serverOpts.ServiceOptions.Registrar.(service.GRPCRegistrar); ok {
-			grpcRegistrar.RegisterGRPC(srv)
+			grpcRegistrar.RegisterGRPC(ctx, srv)
 		} else {
-			return nil, fmt.Errorf("invalid registrar: expected service.GRPCRegistrar, got %T", serverOpts.ServiceOptions.Registrar)
+			serverOpts.ServiceOptions.Registrar.Register(ctx, srv)
 		}
 	}
 

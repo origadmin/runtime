@@ -37,15 +37,16 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 
 	// Register pprof handlers if enabled
 	if httpConfig.GetEnablePprof() {
-		registerPprofHandlers(srv)
+		registerPprof(srv)
 	}
 
+	ctx := context.Background()
 	// Register the user's business logic services if a registrar is provided.
 	if serverOpts.ServiceOptions != nil && serverOpts.ServiceOptions.Registrar != nil {
 		if httpRegistrar, ok := serverOpts.ServiceOptions.Registrar.(service.HTTPRegistrar); ok {
-			httpRegistrar.RegisterHTTP(srv)
+			httpRegistrar.RegisterHTTP(ctx, srv)
 		} else {
-			return nil, fmt.Errorf("invalid registrar: expected service.HTTPRegistrar, got %T", serverOpts.ServiceOptions.Registrar)
+			serverOpts.ServiceOptions.Registrar.Register(ctx, srv)
 		}
 	}
 

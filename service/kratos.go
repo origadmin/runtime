@@ -58,7 +58,7 @@ type (
 
 // GRPCRegistrar is a capability interface for services that can register gRPC endpoints.
 type GRPCRegistrar interface {
-	RegisterGRPC(srv *GRPCServer)
+	RegisterGRPC(ctx context.Context, srv *GRPCServer)
 }
 
 // GRPCRegisterFunc is a function that implements GRPCRegistrar.
@@ -78,7 +78,7 @@ func (f GRPCRegisterFunc) Register(ctx context.Context, srv any) {
 
 // HTTPRegistrar is a capability interface for services that can register HTTP endpoints.
 type HTTPRegistrar interface {
-	RegisterHTTP(srv *HTTPServer)
+	RegisterHTTP(ctx context.Context, srv *HTTPServer)
 }
 
 // HTTPRegisterFunc is a function that implements HTTPRegistrar.

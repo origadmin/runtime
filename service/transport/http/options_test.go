@@ -21,7 +21,7 @@ func TestWithServerOption(t *testing.T) {
 		option := http.WithHttpServerOptions(kratosServerOpt1)
 
 		// Retrieve the Kratos server options using FromServerOptions
-		// FromServerOptions internally applies the provided options.Option to its own context.
+		// internally applies the provided options.Option to its own context.
 		serverOpts := http.FromServerOptions([]options.Option{option})
 
 		assert.Len(t, serverOpts.HttpServerOptions, 1)
