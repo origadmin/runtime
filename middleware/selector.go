@@ -29,10 +29,21 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 
 	helper.Infof("enabling client selector middleware")
 
+	var mws []KMiddleware
+	for _, name := range selectorConfig.Names {
+		helper.Infof("enabling client selector middleware: %s", name)
+		middleware, ok := mwOpts.Carrier.Clients[name]
+		if !ok {
+			helper.Warnf("unknown client selector middleware: %s", name)
+			continue
+		}
+		mws = append(mws, middleware)
+	}
+
 	// Create a selector builder that wraps no initial middlewares.
 	// The actual middlewares to be selected will be determined by the selector logic
 	// when it's applied in the chain.
-	builder := selector.Client()
+	builder := selector.Client(mws...)
 
 	return selectorBuilder(selectorConfig, builder, mwOpts.MatchFunc), true
 }
@@ -48,11 +59,21 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig,
 	}
 
 	helper.Infof("enabling server selector middleware")
+	var mws []KMiddleware
+	for _, name := range selectorConfig.Names {
+		helper.Infof("enabling server selector middleware: %s", name)
+		middleware, ok := mwOpts.Carrier.Servers[name]
+		if !ok {
+			helper.Warnf("unknown server selector middleware: %s", name)
+			continue
+		}
+		mws = append(mws, middleware)
+	}
 
 	// Create a selector builder that wraps no initial middlewares.
 	// The actual middlewares to be selected will be determined by the selector logic
 	// when it's applied in the chain.
-	builder := selector.Server()
+	builder := selector.Server(mws...)
 
 	return selectorBuilder(selectorConfig, builder, mwOpts.MatchFunc), true
 }

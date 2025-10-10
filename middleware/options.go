@@ -57,13 +57,3 @@ func FromOptions(opts ...options.Option) *Options {
 	}
 	return mwOpts
 }
-
-// withOptions is a helper to wrap a *middleware.Options struct into a generic options.Option.
-// This is used when passing the resolved common options down to individual factories.
-func withOptions(mwOpts *Options) options.Option {
-	return optionutil.Update(func(o *Options) {
-		// This updates a middleware.Options struct. This is used when a factory
-		// needs to receive a middleware.Options struct via functional options.
-		*o = *mwOpts // Copy the resolved options
-	})
-}
