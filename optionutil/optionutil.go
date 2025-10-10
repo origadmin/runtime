@@ -106,6 +106,17 @@ func ValueOr[T any](ctx options.Context, key Key[T], defaultValue T) T {
 	return defaultValue
 }
 
+// WithUpdate returns an options.Option that modifies a configuration struct *T in the options.Context chain.
+func WithUpdate[T any](updater func(T)) options.Option {
+	return func(ctx options.Context) options.Context {
+		key := Key[T]{}
+		if v, ok := Value(ctx, key); ok {
+			updater(v)
+		}
+		return ctx
+	}
+}
+
 // WithAppend appends values to a slice in the options.Context.
 func WithAppend[T any](ctx options.Context, key Key[[]T], values ...T) options.Context {
 	if ctx == nil {
@@ -137,26 +148,6 @@ func Slice[T any](ctx options.Context, key Key[[]T]) []T {
 // 4) Apply/Update & Context Utilities
 // =============================
 
-// WithUpdate returns an options.Option that modifies a configuration struct *T in the options.Context chain.
-func WithUpdate[T any](updater func(T)) options.Option {
-	return func(ctx options.Context) options.Context {
-		key := Key[T]{}
-		if v, ok := Value(ctx, key); ok {
-			updater(v)
-		}
-		return ctx
-	}
-}
-
-// ApplyUpdate applies a series of options.Option to a given configuration object.
-func ApplyUpdate[T any](cfg T, opts ...options.Option) options.Context {
-	ctx := WithValue(Empty(), Key[T]{}, cfg)
-	for _, option := range opts {
-		ctx = option(ctx)
-	}
-	return ctx
-}
-
 // New creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
 func New[T any](opts ...options.Option) (options.Context, *T) {
 	cfg := new(T)
@@ -167,8 +158,17 @@ func New[T any](opts ...options.Option) (options.Context, *T) {
 	return ctx, cfg
 }
 
-// UpdateContext applies a series of options.Option to a given options.Context.
-func UpdateContext(ctx options.Context, opts ...options.Option) options.Context {
+// Apply applies a series of options.Option to a given configuration object.
+func Apply[T any](cfg T, opts ...options.Option) options.Context {
+	ctx := WithValue(Empty(), Key[T]{}, cfg)
+	for _, option := range opts {
+		ctx = option(ctx)
+	}
+	return ctx
+}
+
+// ApplyContext applies a series of options.Option to a given options.Context.
+func ApplyContext(ctx options.Context, opts ...options.Option) options.Context {
 	if ctx == nil {
 		ctx = Empty()
 	}
@@ -207,6 +207,6 @@ func WithCond(condition bool, opt options.Option) options.Option {
 // WithGroup returns an options.Option that applies a group of options.Option to the context.
 func WithGroup(opts ...options.Option) options.Option {
 	return func(ctx options.Context) options.Context {
-		return UpdateContext(ctx, opts...)
+		return ApplyContext(ctx, opts...)
 	}
 }
