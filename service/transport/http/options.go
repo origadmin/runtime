@@ -1,20 +1,51 @@
 package http
 
 import (
+	"net/http"
+
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/rs/cors"
 
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
 )
 
+// CorsOption defines a functional option for configuring advanced CORS settings in code.
+// It allows developers to override or enhance the base configuration provided by the proto file.
+type CorsOption func(*cors.Options)
+
+// WithAllowOriginFunc sets the `AllowOriginFunc` on the underlying `cors.Options`.
+// This provides dynamic, request-based control over allowed origins, which cannot be defined in a static proto file.
+// Example: `WithAllowOriginFunc(func(origin string) bool { return origin == "https://example.com" })`
+func WithAllowOriginFunc(f func(origin string) bool) CorsOption {
+	return func(o *cors.Options) {
+		o.AllowOriginFunc = f
+	}
+}
+
+// WithAllowOriginVaryRequestFunc sets the `AllowOriginVaryRequestFunc` on the underlying `cors.Options`.
+// This allows dynamic origin control based on the full http.Request.
+// Example: `WithAllowOriginVaryRequestFunc(func(r *http.Request, origin string) bool { return r.Header.Get("X-Custom") == "true" })`
+func WithAllowOriginVaryRequestFunc(f func(r *http.Request, origin string) (bool, []string)) CorsOption {
+	return func(o *cors.Options) {
+		o.AllowOriginVaryRequestFunc = f
+	}
+}
+
 // ServerOptions is a container for HTTP server-specific options.
 type ServerOptions struct {
+	options.Context
+
 	// ServiceOptions holds common service-level configurations.
 	ServiceOptions *service.Options
 
 	// HttpServerOptions allows passing native Kratos HTTP server options.
 	HttpServerOptions []transhttp.ServerOption
+
+	// CorsOptions allows applying advanced, code-based configurations to the CORS handler.
+	// These options will be applied *after* the base configuration from the proto file.
+	CorsOptions []CorsOption
 }
 
 // FromServerOptions creates a new HTTP ServerOptions struct by applying a slice of functional options.
@@ -22,14 +53,15 @@ type ServerOptions struct {
 func FromServerOptions(opts []options.Option) *ServerOptions {
 	o := &ServerOptions{}
 	// Apply HTTP server-specific options first
-	optionutil.Apply(o, opts...)
-
+	ctx := optionutil.Apply(o, opts...)
+	if o.Context == nil {
+		o.Context = ctx
+	}
 	// Initialize and include common service-level options if not already set.
 	// This prevents redundant application of common options.
 	if o.ServiceOptions == nil {
 		o.ServiceOptions = service.FromOptions(opts)
 	}
-
 	return o
 }
 
@@ -37,6 +69,14 @@ func FromServerOptions(opts []options.Option) *ServerOptions {
 func WithHttpServerOptions(opts ...transhttp.ServerOption) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
 		o.HttpServerOptions = append(o.HttpServerOptions, opts...)
+	})
+}
+
+// WithCorsOptions appends advanced, code-based CORS configurations.
+// These will be applied on top of the CORS settings from the proto configuration.
+func WithCorsOptions(opts ...CorsOption) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.CorsOptions = append(o.CorsOptions, opts...)
 	})
 }
 

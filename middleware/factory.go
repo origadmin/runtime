@@ -37,7 +37,7 @@ type middlewareBuilder struct {
 // BuildClient 构建客户端中间件链
 func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
 	var middlewares []KMiddleware
-	var selectorMiddlewares []KMiddleware
+	var selectorConfigs []*middlewarev1.MiddlewareConfig
 	if cfg == nil {
 		return middlewares
 	}
@@ -63,14 +63,15 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 	helper := log.NewHelper(logger)
 	helper.Info("building client middlewares")
 
-	// 首先构建普通中间件
+	// 第一次遍历：分离普通中间件和selector配置
 	for _, ms := range cfg.GetMiddlewares() {
 		if !ms.GetEnabled() {
 			continue
 		}
 		middlewareName := ms.GetType()
-		// 跳过selector中间件，后面单独处理
+		// 分离selector中间件配置，后面单独处理
 		if middlewareName == string(Selector) {
+			selectorConfigs = append(selectorConfigs, ms)
 			continue
 		}
 		f, ok := b.Get(middlewareName)
@@ -86,20 +87,13 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 		if ok {
 			middlewares = append(middlewares, m)
 			// 将创建的中间件添加到载体中
-			carrier.ClientMiddlewares[middlewareName] = m
+			carrier.Clients[middlewareName] = m
 		}
 	}
 
-	// 然后构建selector中间件（此时所有普通中间件已经创建完成）
-	for _, ms := range cfg.GetMiddlewares() {
-		if !ms.GetEnabled() {
-			continue
-		}
+	// 第二次遍历：处理selector中间件配置
+	for _, ms := range selectorConfigs {
 		middlewareName := ms.GetType()
-		// 只处理selector中间件
-		if middlewareName != string(Selector) {
-			continue
-		}
 		f, ok := b.Get(middlewareName)
 		if !ok {
 			helper.Warnf("unknown client middleware: %s", middlewareName)
@@ -111,19 +105,17 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 		// 创建selector中间件（此时可以访问已创建的中间件）
 		m, ok := f.NewMiddlewareClient(ms, options.WithContext(opt.Context), withOptions(opt))
 		if ok {
-			selectorMiddlewares = append(selectorMiddlewares, m)
+			middlewares = append(middlewares, m)
 		}
 	}
 
-	// 合并普通中间件和selector中间件
-	middlewares = append(middlewares, selectorMiddlewares...)
 	return middlewares
 }
 
 // BuildServer 构建服务端中间件链（类似BuildClient的修改）
 func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
 	var middlewares []KMiddleware
-	var selectorMiddlewares []KMiddleware
+	var selectorConfigs []*middlewarev1.MiddlewareConfig
 	if cfg == nil {
 		return middlewares
 	}
@@ -149,14 +141,15 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 	helper := log.NewHelper(logger)
 	helper.Info("building server middlewares")
 
-	// 首先构建普通中间件
+	// 第一次遍历：分离普通中间件和selector配置
 	for _, ms := range cfg.GetMiddlewares() {
 		if !ms.GetEnabled() {
 			continue
 		}
 		middlewareName := ms.GetType()
-		// 跳过selector中间件，后面单独处理
+		// 分离selector中间件配置，后面单独处理
 		if middlewareName == string(Selector) {
+			selectorConfigs = append(selectorConfigs, ms)
 			continue
 		}
 		f, ok := b.Get(middlewareName)
@@ -172,20 +165,13 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 		if ok {
 			middlewares = append(middlewares, m)
 			// 将创建的中间件添加到载体中
-			carrier.ServerMiddlewares[middlewareName] = m
+			carrier.Servers[middlewareName] = m
 		}
 	}
 
-	// 然后构建selector中间件（此时所有普通中间件已经创建完成）
-	for _, ms := range cfg.GetMiddlewares() {
-		if !ms.GetEnabled() {
-			continue
-		}
+	// 第二次遍历：处理selector中间件配置
+	for _, ms := range selectorConfigs {
 		middlewareName := ms.GetType()
-		// 只处理selector中间件
-		if middlewareName != string(Selector) {
-			continue
-		}
 		f, ok := b.Get(middlewareName)
 		if !ok {
 			helper.Warnf("unknown server middleware: %s", middlewareName)
@@ -197,12 +183,10 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 		// 创建selector中间件（此时可以访问已创建的中间件）
 		m, ok := f.NewMiddlewareServer(ms, options.WithContext(opt.Context), withOptions(opt))
 		if ok {
-			selectorMiddlewares = append(selectorMiddlewares, m)
+			middlewares = append(middlewares, m)
 		}
 	}
 
-	// 合并普通中间件和selector中间件
-	middlewares = append(middlewares, selectorMiddlewares...)
 	return middlewares
 }
 

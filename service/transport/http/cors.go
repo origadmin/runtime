@@ -1,65 +1,62 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 
-	corsv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/cors"
+	"github.com/goexts/generic/configure"
 	"github.com/rs/cors"
+
+	corsv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/cors"
 )
 
-// NewCorsHandler creates a Kratos filter for CORS based on the provided configuration.
-// It uses the github.com/rs/cors library, which offers a rich set of options
-// that map well to our detailed Cors proto definition.
-func NewCorsHandler(config *corsv1.Cors) func(http.Handler) http.Handler {
+// NewCorsHandler creates a Kratos filter for CORS by merging the base configuration from proto
+// with advanced, code-based functional options.
+func NewCorsHandler(config *corsv1.Cors, codeOpts ...CorsOption) (func(http.Handler) http.Handler, error) {
 	// If CORS is not configured or disabled, return a no-op filter.
 	if config == nil || !config.GetEnabled() {
 		return func(h http.Handler) http.Handler {
 			return h
-		}
+		}, nil
 	}
 
-	// Map the protobuf configuration to the rs/cors Options struct.
+	// 1. Apply base configuration from the proto file.
 	opts := cors.Options{
-		AllowedMethods:   config.GetAllowedMethods(),
-		AllowedHeaders:   config.GetAllowedHeaders(),
-		ExposedHeaders:   config.GetExposedHeaders(),
-		MaxAge:           int(config.GetMaxAge()),
-		AllowCredentials: config.GetAllowCredentials(),
-		AllowWildcard:    config.GetAllowWildcard(),
-		// The proto's `preflight_continue` and `options_passthrough` both map to this concept.
+		AllowedMethods:       config.GetAllowedMethods(),
+		AllowedHeaders:       config.GetAllowedHeaders(),
+		ExposedHeaders:       config.GetExposedHeaders(),
+		MaxAge:               int(config.GetMaxAge()),
+		AllowCredentials:     config.GetAllowCredentials(),
 		OptionsPassthrough:   config.GetOptionsPassthrough() || config.GetPreflightContinue(),
 		OptionsSuccessStatus: int(config.GetOptionsSuccessStatus()),
 		Debug:                config.GetDebug(),
 	}
 
-	// Origin control is complex, handle it with priority.
-	// 1. Allow any origin (highest priority).
+	configure.Apply(&opts, codeOpts)
+
+	// --- Origin Control Logic (Backward-Compatible) ---
+	allOrigins := config.GetAllowedOrigins()
+	if len(config.GetAllowedOriginPatterns()) > 0 {
+		allOrigins = append(allOrigins, config.GetAllowedOriginPatterns()...)
+	}
+	opts.AllowedOrigins = allOrigins
+
 	if config.GetAllowAnyOrigin() {
 		opts.AllowedOrigins = []string{"*"}
-	} else {
-		opts.AllowedOrigins = config.GetAllowedOrigins()
 	}
 
-	// 2. Origin patterns (wildcards).
-	if len(config.GetAllowedOriginPatterns()) > 0 {
-		opts.AllowedOriginPatterns = config.GetAllowedOriginPatterns()
-	}
-
-	// 3. Origin regex (provides ultimate flexibility).
 	if config.GetAllowOriginRegex() != "" {
-		// Silently ignore invalid regex from config to prevent server startup failure.
-		if regex, err := regexp.Compile(config.GetAllowOriginRegex()); err == nil {
-			opts.AllowOriginFunc = func(origin string) bool {
-				return regex.MatchString(origin)
-			}
+		re, err := regexp.Compile(config.GetAllowOriginRegex())
+		if err != nil {
+			return nil, fmt.Errorf("invalid CORS allow_origin_regex: %w", err)
+		}
+		opts.AllowOriginFunc = func(origin string) bool {
+			return re.MatchString(origin)
 		}
 	}
 
-	// Create a new CORS handler with the specified options.
 	c := cors.New(opts)
 
-	// The `c.Handler` method returns a function with the signature `func(http.Handler) http.Handler`,
-	// which is exactly what a Kratos HTTP filter needs.
-	return c.Handler
+	return c.Handler, nil
 }

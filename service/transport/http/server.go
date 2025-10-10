@@ -24,9 +24,13 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 		c = serverOpts.ServiceOptions.Container
 	}
 
-	// Add CORS support
+	// Add CORS support, merging proto config with code-based options.
 	if corsConfig := httpConfig.GetCors(); corsConfig != nil && corsConfig.GetEnabled() {
-		corsHandler := NewCorsHandler(corsConfig)
+		corsHandler, err := NewCorsHandler(corsConfig, serverOpts.CorsOptions...)
+		if err != nil {
+			// Propagate the configuration error upwards.
+			return nil, fmt.Errorf("failed to create CORS handler: %w", err)
+		}
 		if corsHandler != nil {
 			kratosOpts = append(kratosOpts, transhttp.Filter(corsHandler))
 		}
@@ -100,10 +104,16 @@ func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerO
 }
 
 // registerPprof registers the pprof handlers with the HTTP server.
-func registerPprof(s *transhttp.Server) {
-	s.HandleFunc("/debug/pprof/", pprof.Index)
-	s.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	s.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	s.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	s.HandleFunc("/debug/pprof/trace", pprof.Trace)
+func registerPprof(srv *transhttp.Server) {
+	srv.HandleFunc("/debug/pprof", pprof.Index)
+	srv.HandleFunc("/debug/cmdline", pprof.Cmdline)
+	srv.HandleFunc("/debug/profile", pprof.Profile)
+	srv.HandleFunc("/debug/symbol", pprof.Symbol)
+	srv.HandleFunc("/debug/trace", pprof.Trace)
+	srv.HandleFunc("/debug/allocs", pprof.Handler("allocs").ServeHTTP)
+	srv.HandleFunc("/debug/block", pprof.Handler("block").ServeHTTP)
+	srv.HandleFunc("/debug/goroutine", pprof.Handler("goroutine").ServeHTTP)
+	srv.HandleFunc("/debug/heap", pprof.Handler("heap").ServeHTTP)
+	srv.HandleFunc("/debug/mutex", pprof.Handler("mutex").ServeHTTP)
+	srv.HandleFunc("/debug/threadcreate", pprof.Handler("threadcreate").ServeHTTP)
 }
