@@ -186,7 +186,14 @@ func Convert(err error) *kerrors.Error {
 		return ke
 	}
 
-	// 2. Check if the error is already a Kratos error (from Kratos itself or a plugin)
+	// 2. Check if the error is a Structured internal error
+	var se *Structured
+	if errors.As(err, &se) {
+		// Delegate to ToKratos for unified conversion logic
+		return ToKratos(se, commonv1.ErrorReason_UNKNOWN_ERROR)
+	}
+
+	// 3. Check if the error is already a Kratos error (from Kratos itself or a plugin)
 	var ke *kerrors.Error
 	if errors.As(err, &ke) {
 		// Try to map the existing Kratos error's Reason to our commonv1.ErrorReason

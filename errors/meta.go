@@ -2,6 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
+// Package errors provides a centralized hub for handling, converting, and rendering errors.
 package errors
 
 import (
