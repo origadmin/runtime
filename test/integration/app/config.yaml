@@ -32,7 +32,7 @@ servers:
 # A list of downstream clients, each with its own specific middleware.
 # This structure is also defined inside bootstrap.proto.
 clients:
-  - discovery:
+  - discoveries:
       discovery_name: "consul-prod" # Which discovery to use to find this client
       service_name: "user-service"   # The name of the service to find
     middlewares:
@@ -41,7 +41,7 @@ clients:
         options:
           attempts: 3
           backoff: "0.1s"
-  - discovery:
+  - discoveries:
       discovery_name: "etcd-legacy"
       service_name: "order-service"
     middlewares:

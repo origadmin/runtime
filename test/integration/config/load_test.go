@@ -1,83 +1,23 @@
 package config
 
 import (
-	"encoding/xml"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file"
-	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
-	"gopkg.in/yaml.v3"
 
-	"github.com/origadmin/toolkits/codec/toml"
+	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/config/file"
+	"github.com/origadmin/runtime/test/helper"
 	// Import our test-specific, generated bootstrap proto package
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 
 	// Import Kratos's XML codec to enable XML format support for loading
 	_ "github.com/go-kratos/kratos/v2/encoding/xml"
 )
-
-func init() {
-	encoding.RegisterCodec(toml.Codec)
-}
-
-// loadFromFile is a helper to load a config from a given path into a Bootstrap struct.
-func loadFromFile(t *testing.T, path string, bc any) {
-	t.Helper()
-	cleanPath := filepath.Clean(path)
-	ext := filepath.Ext(cleanPath)
-
-	source := file.NewSource(cleanPath)
-	c := config.New(config.WithSource(source))
-	defer c.Close()
-
-	err := c.Load()
-	if !assert.NoError(t, err, "Failed to load config from %s", cleanPath) {
-		t.FailNow()
-	}
-
-	err = c.Scan(bc)
-	if !assert.NoError(t, err, "Failed to scan config into Bootstrap struct for format %s", ext) {
-		t.FailNow()
-	}
-}
-
-// saveToFile is a helper to save a Bootstrap struct to a given path in a specific format.
-func saveToFile(t *testing.T, bc *testconfigs.Bootstrap, path string, formatName string) {
-	t.Helper()
-	var (
-		data []byte
-		err  error
-	)
-
-	switch strings.ToUpper(formatName) {
-	case "YAML":
-		data, err = yaml.Marshal(bc)
-	case "JSON":
-		data, err = protojson.Marshal(bc)
-	case "TOML":
-		data, err = toml.Marshal(bc)
-	case "XML":
-		data, err = xml.Marshal(bc)
-	case "ProtoText":
-		opts := prototext.MarshalOptions{Multiline: true, Indent: "  "}
-		data, err = opts.Marshal(bc)
-	default:
-		t.Fatalf("Unsupported format for saving: %s", formatName)
-	}
-
-	assert.NoError(t, err, "Failed to marshal data to %s", formatName)
-	err = os.WriteFile(path, data, 0644)
-	assert.NoError(t, err, "Failed to write temporary file for %s", formatName)
-}
 
 // runAssertions contains all the validation logic for the Bootstrap config.
 // It is reused across all configuration format tests to ensure consistency.
@@ -122,6 +62,10 @@ func TestMultiFormatConfigLoading(t *testing.T) {
 		{name: "YAML", filePath: "./configs/full_config.yaml"},
 		{name: "JSON", filePath: "./configs/full_config.json"},
 		{name: "TOML", filePath: "./configs/full_config.toml"},
+		//{name: "INI", filePath: "./configs/full_config.ini"},
+		//{name: "HCL", filePath: "./configs/full_config.hcl"},
+		//{name: "ENV", filePath: "./configs/full_config.env"},
+		//{name: "PROPERTIES", filePath: "./configs/full_config.properties"},
 		//{name: "XML", filePath: "./configs/full_config.xml"},
 		//{name: "ProtoText", filePath: "./configs/full_config.pb.txt"},
 	}
@@ -130,10 +74,7 @@ func TestMultiFormatConfigLoading(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var bc testconfigs.Bootstrap
-			loadFromFile(t, tc.filePath, &bc)
-			//var mapConfig map[string]interface{}
-			//loadFromFile(t, tc.filePath, &mapConfig)
-			//t.Logf("Loaded %s config: %+v", tc.name, mapConfig)
+			helper.LoadConfigFromFile(t, tc.filePath, &bc)
 			// 3. --- Run the exact same assertion validation for every format ---
 			runAssertions(t, &bc)
 			t.Logf("%s config loaded and verified successfully!", tc.name)
@@ -153,9 +94,15 @@ func TestConfigInteroperability(t *testing.T) {
 		{name: "YAML", filePath: "./configs/full_config.yaml"},
 		{name: "JSON", filePath: "./configs/full_config.json"},
 		{name: "TOML", filePath: "./configs/full_config.toml"},
+		//{name: "INI", filePath: "./configs/full_config.ini"},
+		//{name: "HCL", filePath: "./configs/full_config.hcl"},
+		//{name: "ENV", filePath: "./configs/full_config.env"},
+		//{name: "PROPERTIES", filePath: "./configs/full_config.properties"},
 		//{name: "XML", filePath: "./configs/full_config.xml"},
 		//{name: "ProtoJSON", filePath: "./configs/full_config.protojson"},
 	}
+	// 仅 yaml/json/toml/hcl 当前受支持，其他作为占位并在运行时跳过
+	//supportedInterop := map[string]bool{"YAML": true, "JSON": true, "TOML": true, "HCL": true}
 
 	// 2. Outer loop: Iterate through each format as the SOURCE
 	for _, src := range formats {
@@ -163,21 +110,25 @@ func TestConfigInteroperability(t *testing.T) {
 		for _, dst := range formats {
 			// Define a unique name for this specific conversion test
 			testName := fmt.Sprintf("LoadFrom%s_SaveTo%s", src.name, dst.name)
-
+			name := strings.ToLower(dst.name)
 			t.Run(testName, func(t *testing.T) {
 				// STEP A: Load the original source file into a Go struct.
 				var originalBC testconfigs.Bootstrap
-				loadFromFile(t, src.filePath, &originalBC)
+				helper.LoadConfigFromFile(t, src.filePath, &originalBC)
 
 				// STEP B: Save the Go struct into the target format in a temporary file.
 				tempDir := t.TempDir()
-				tempFilePath := filepath.Join(tempDir, "temp_config."+dst.name)
+				tempFilePath := filepath.Join(tempDir, "temp_config."+name)
 
-				saveToFile(t, &originalBC, tempFilePath, dst.name)
+				// Only save to formats that have encoders implemented
+				if !(name == "yaml" || name == "json" || name == "toml") {
+					t.Skipf("skip saving to unsupported target format: %s", dst.name)
+				}
+				helper.SaveConfigToFile(t, &originalBC, tempFilePath, name)
 
 				// STEP C: Load the newly created target file back into another Go struct.
 				var convertedBC testconfigs.Bootstrap
-				loadFromFile(t, tempFilePath, &convertedBC)
+				helper.LoadConfigFromFile(t, tempFilePath, &convertedBC)
 
 				// STEP D: The ultimate proof. Assert that the original struct and the
 				// converted struct are semantically identical using proto.Equal.
@@ -188,52 +139,50 @@ func TestConfigInteroperability(t *testing.T) {
 	}
 }
 
-func generateAllFormatsFromYAML(t *testing.T) {
+func init() {
+	if err := generateAllFormatsFromYAML(); err != nil {
+		panic(fmt.Errorf("failed to generate test files: %v", err))
+	}
+}
+
+func generateAllFormatsFromYAML() error {
 	// 1. Load YAML configuration using Kratos
-	source := file.NewSource("configs/full_config.yaml")
-	c := config.New(config.WithSource(source))
+	source := file.NewSource("full_config_source.yaml")
+	c := config.NewKConfig(config.WithKSource(source))
 	if err := c.Load(); err != nil {
-		fmt.Printf("Failed to load YAML config: %v\n", err)
-		return
+		return fmt.Errorf("failed to load YAML config: %v", err)
 	}
 	defer c.Close()
 
 	// 2. Parse configuration into a struct
 	var configBootstrap testconfigs.Bootstrap
 	if err := c.Scan(&configBootstrap); err != nil {
-		fmt.Printf("Failed to scan config: %v\n", err)
-		return
+		return fmt.Errorf("failed to scan config: %v", err)
 	}
-	var configsMap map[string]any
-	if err := c.Scan(&configsMap); err != nil {
-		fmt.Printf("Failed to scan config: %v\n", err)
-		return
-	}
-	// 3. define the supported formats and their encoders
+
+	// 3. Define the supported formats and their encoders
 	formats := []struct {
 		name string
 	}{
-		{
-			name: "yaml",
-		},
-		{
-			name: "json",
-		},
-		{
-			name: "toml",
-		},
-		{
-			name: "xml",
-		},
+		{name: "yaml"},
+		{name: "json"},
+		{name: "toml"},
+		//{name: "ini"},
+		//{name: "hcl"},
+		//{name: "env"},
+		//{name: "properties"},
 	}
 
-	// 4. generate and save profiles in various formats
+	// 4. Generate and save profiles in various formats
 	for _, format := range formats {
-		saveToFile(t, &configBootstrap, "full_config."+format.name, format.name)
-		t.Logf("Successfully generated %s\n", format.name)
+		//if !supportedGen[format.name] {
+		//	continue
+		//}
+		// Create a minimal testing.T object for logging
+	t := &testing.T{}
+	helper.SaveConfigToFile(t, &configBootstrap, "configs/full_config."+format.name, format.name)
 	}
+	return nil
 }
 
-func TestGenerateAllFormats(t *testing.T) {
-	generateAllFormatsFromYAML(t)
-}
+

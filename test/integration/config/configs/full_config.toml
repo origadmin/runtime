@@ -1,35 +1,27 @@
-# 所有根级配置必须放在最前面
-registration_discovery_name = "internal-consul"
-clients = ["user-service", "stock-service"]
+clients = ['user-service', 'stock-service']
+registration_discovery_name = 'internal-consul'
 
-# 应用程序配置
-[app]
-name = "my-test-app"
-
-# 服务发现配置
 [[discoveries]]
-name = "internal-consul"
+name = 'internal-consul'
+
 [discoveries.config]
-name = "my-test-app"
-service_name = "my-test-app"
-type = "consul"
+name = 'my-test-app'
+type = 'consul'
+
 [discoveries.config.consul]
-address = "consul.internal:8500"
+address = 'consul.internal:8500'
 
 [[discoveries]]
-name = "legacy-etcd"
-[discoveries.config]
-service_name = ""
-type = "etcd"
-[discoveries.config.etcd]
-endpoints = ["etcd.legacy:2379"]
+name = 'legacy-etcd'
 
-# 服务端点
+[discoveries.config]
+type = 'etcd'
+
+[discoveries.config.etcd]
+endpoints = ['etcd.legacy:2379']
+
 [[grpc_servers]]
-addr = ":9001"
-endpoint = "127.0.0.1:9001"
+addr = ':9001'
 
 [[http_servers]]
-addr = ":8001"
-endpoint = "127.0.0.1:8001"
-
+addr = ':8001'
