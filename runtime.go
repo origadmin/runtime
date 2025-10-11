@@ -79,14 +79,12 @@ func (r *Runtime) DefaultRegistrar() registry.Registrar {
 
 // Discovery returns a service discovery component by its configured name.
 func (r *Runtime) Discovery(name string) (registry.Discovery, bool) {
-	disc, ok := r.container.Discoveries()[name]
-	return disc, ok
+	return r.container.Discovery(name)
 }
 
 // Registrar returns a service registrar component by its configured name.
 func (r *Runtime) Registrar(name string) (registry.Registrar, bool) {
-	reg, ok := r.container.Registrars()[name]
-	return reg, ok
+	return r.container.Registrar(name)
 }
 
 // Component retrieves a generic, user-defined component by its registered name.
