@@ -112,15 +112,6 @@ func Value[T any](ctx options.Context, key Key[T]) (T, bool) {
 	return zero, false
 }
 
-// ValueOr returns the value associated with the given key in the options.Context,
-// or a default value if the key is not found.
-func ValueOr[T any](ctx options.Context, key Key[T], defaultValue T) T {
-	if v, ok := Value(ctx, key); ok {
-		return v
-	}
-	return defaultValue
-}
-
 // SliceValue retrieves a copy of a slice from the options.Context.
 func SliceValue[T any](ctx options.Context, key Key[[]T]) []T {
 	if ctx == nil {
@@ -133,15 +124,6 @@ func SliceValue[T any](ctx options.Context, key Key[[]T]) []T {
 	}
 
 	return val
-}
-
-// SliceValueOr returns a copy of the slice associated with the given key in the options.Context,
-// or a default value if the key is not found.
-func SliceValueOr[T any](ctx options.Context, key Key[[]T], defaultValue []T) []T {
-	if v := SliceValue(ctx, key); v != nil {
-		return v
-	}
-	return defaultValue
 }
 
 // =============================
