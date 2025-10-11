@@ -11,7 +11,7 @@ type loggerContext struct {
 }
 
 func WithLogger(logger Logger) options.Option {
-	return optionutil.WithUpdate(func(l *loggerContext) {
+	return optionutil.Update(func(l *loggerContext) {
 		l.Logger = logger
 	})
 }

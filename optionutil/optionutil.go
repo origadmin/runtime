@@ -106,10 +106,10 @@ func ValueOr[T any](ctx options.Context, key Key[T], defaultValue T) T {
 	return defaultValue
 }
 
-// WithUpdate returns an options.Option that modifies a configuration struct *T in the options.Context chain.
-func WithUpdate[T any](updater func(T)) options.Option {
+// Update returns an options.Option that modifies a configuration struct *T in the options.Context chain.
+func Update[T any](updater func(T)) options.Option {
+	var key Key[T]
 	return func(ctx options.Context) options.Context {
-		key := Key[T]{}
 		if v, ok := Value(ctx, key); ok {
 			updater(v)
 		}

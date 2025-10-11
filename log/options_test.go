@@ -90,11 +90,11 @@ func TestWithLogger(t *testing.T) {
 		emptyOptCtx := optionutil.Empty()
 
 		// Applying WithLogger to an empty context (where loggerContext is not yet present)
-		// optionutil.WithUpdate will not create it, so Extract should still return DefaultLogger
+		// optionutil.Update will not create it, so Extract should still return DefaultLogger
 		option := WithLogger(mockLogger)
 		option(emptyOptCtx)
 
 		retrievedLogger := FromContext(emptyOptCtx)
-		assert.Equal(t, DefaultLogger, retrievedLogger) // Expect DefaultLogger as WithUpdate doesn't add if not present
+		assert.Equal(t, DefaultLogger, retrievedLogger) // Expect DefaultLogger as Update doesn't add if not present
 	})
 }

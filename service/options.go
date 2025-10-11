@@ -26,14 +26,14 @@ func FromOptions(opts []options.Option) *Options {
 
 // WithRegistrar sets the ServerRegistrar for the service.
 func WithRegistrar(r ServerRegistrar) options.Option {
-	return optionutil.WithUpdate(func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.Registrar = r
 	})
 }
 
 // WithContainer sets the application component container.
 func WithContainer(c interfaces.Container) options.Option {
-	return optionutil.WithUpdate(func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.Container = c
 	})
 }

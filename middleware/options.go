@@ -18,25 +18,25 @@ type Options struct {
 }
 
 func WithMatchFunc(matchFunc selector.MatchFunc) options.Option {
-	return optionutil.WithUpdate(func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.MatchFunc = matchFunc
 	})
 }
 
 func WithLogger(logger log.Logger) options.Option {
-	return optionutil.WithUpdate(func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.Logger = logger
 	})
 }
 
 func WithContext(ctx options.Context) options.Option {
-	return optionutil.WithUpdate(func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.Context = ctx
 	})
 }
 
 func WithCarrier(carrier *Carrier) options.Option {
-	return optionutil.WithUpdate(func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.Carrier = carrier
 	})
 }

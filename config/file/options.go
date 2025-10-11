@@ -17,13 +17,13 @@ type Formatter func(key string, value []byte) (*config.KeyValue, error)
 type Option = options.Option
 
 func WithIgnores(ignores ...string) options.Option {
-	return optionutil.WithUpdate(func(o *file) {
+	return optionutil.Update(func(o *file) {
 		o.ignores = append(o.ignores, ignores...)
 	})
 }
 
 func WithFormatter(formatter Formatter) options.Option {
-	return optionutil.WithUpdate(func(o *file) {
+	return optionutil.Update(func(o *file) {
 		o.formatter = formatter
 	})
 }

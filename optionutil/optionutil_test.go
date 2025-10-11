@@ -102,7 +102,7 @@ func TestGetSliceOption_NonExistent(t *testing.T) {
 	assert.Equal(t, nilSlice, slice)
 }
 
-func TestWithUpdateAndApply(t *testing.T) {
+func TestUpdateAndApply(t *testing.T) {
 	type configA struct {
 		Name  string
 		Value int
@@ -114,16 +114,16 @@ func TestWithUpdateAndApply(t *testing.T) {
 	var opts []options.Option
 
 	// Create an option to update configA
-	opts = append(opts, optionutil.WithUpdate(func(cfg *configA) {
+	opts = append(opts, optionutil.Update(func(cfg *configA) {
 		cfg.Name = "updated A"
 	}))
 
-	opts = append(opts, optionutil.WithUpdate(func(cfg *configA) {
+	opts = append(opts, optionutil.Update(func(cfg *configA) {
 		cfg.Value = 42
 	}))
 
 	// Create an option to update configB
-	opts = append(opts, optionutil.WithUpdate(func(cfg *configB) {
+	opts = append(opts, optionutil.Update(func(cfg *configB) {
 		cfg.Value = 123
 	}))
 
@@ -159,13 +159,13 @@ type dbConfig struct {
 }
 
 func withHost(host string) options.Option {
-	return optionutil.WithUpdate(func(c *serverConfig) {
+	return optionutil.Update(func(c *serverConfig) {
 		c.Host = host
 	})
 }
 
 func withPort(port int) options.Option {
-	return optionutil.WithUpdate(func(c *serverConfig) {
+	return optionutil.Update(func(c *serverConfig) {
 		c.Port = port
 	})
 }
@@ -243,12 +243,12 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, 3000, cfg.Port)
 }
 
-func TestWithUpdate(t *testing.T) {
-	t.Run("WithUpdate existing object", func(t *testing.T) {
+func TestUpdate(t *testing.T) {
+	t.Run("Update existing object", func(t *testing.T) {
 		cfg := &serverConfig{Port: 80}
 		ctx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*serverConfig]{}, cfg)
 
-		opt := optionutil.WithUpdate(func(c *serverConfig) {
+		opt := optionutil.Update(func(c *serverConfig) {
 			c.Port = 443
 		})
 
@@ -258,7 +258,7 @@ func TestWithUpdate(t *testing.T) {
 		assert.Equal(t, 443, retrievedCfg.Port)
 	})
 
-	t.Run("WithUpdate does nothing if type not found", func(t *testing.T) {
+	t.Run("Update does nothing if type not found", func(t *testing.T) {
 		ctx := optionutil.Empty() // Empty context
 		opt := withPort(9999)     // An option that targets *serverConfig
 
@@ -327,7 +327,7 @@ func TestChainingAndDependencies(t *testing.T) {
 		return func(ctx options.Context) options.Context {
 			if db, ok := optionutil.Value(ctx, optionutil.Key[*dbConfig]{}); ok {
 				// Now, update the serverConfig based on the dbConfig
-				updateOpt := optionutil.WithUpdate(func(sc *serverConfig) {
+				updateOpt := optionutil.Update(func(sc *serverConfig) {
 					sc.Host = db.DSN // e.g., use DSN as host
 				})
 				return updateOpt(ctx)
