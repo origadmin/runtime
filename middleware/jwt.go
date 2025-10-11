@@ -15,13 +15,12 @@ import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	jwtv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/jwt"
 	authnv1 "github.com/origadmin/runtime/api/gen/go/security/authn/v1"
-	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
 
 type jwtFactory struct{}
 
-func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -35,7 +34,7 @@ func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts
 	return JwtClient(jwtConfig)
 }
 
-func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

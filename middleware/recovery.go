@@ -9,14 +9,13 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
-	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
 
 type recoveryFactory struct {
 }
 
-func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -29,7 +28,7 @@ func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	return recovery.Recovery(), true
 }
 
-func (r recoveryFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

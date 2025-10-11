@@ -10,14 +10,13 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	selectorv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/selector"
-	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
 
 type selectorFactory struct {
 }
 
-func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -68,7 +67,7 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	return selectorBuilder(selectorConfig, builder, mwOpts.MatchFunc), true
 }
 
-func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

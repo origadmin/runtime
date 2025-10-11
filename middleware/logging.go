@@ -4,7 +4,6 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
-	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -12,7 +11,7 @@ import (
 type loggingFactory struct{}
 
 // NewMiddlewareClient creates a new client-side logging middleware.
-func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -31,7 +30,7 @@ func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 }
 
 // NewMiddlewareServer creates a new server-side logging middleware.
-func (f *loggingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...options.Option) (KMiddleware, bool) {
+func (f *loggingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

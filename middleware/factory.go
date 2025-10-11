@@ -8,7 +8,6 @@ package middleware
 import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
-	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -35,7 +34,7 @@ type middlewareBuilder struct {
 }
 
 // BuildClient builds the client middleware chain
-func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	var middlewares []KMiddleware
 	var selectorConfigs []*middlewarev1.MiddlewareConfig
 	if cfg == nil {
@@ -127,7 +126,7 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 }
 
 // BuildServer builds the server middleware chain (similar to BuildClient)
-func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...options.Option) []KMiddleware {
+func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	var middlewares []KMiddleware
 	var selectorConfigs []*middlewarev1.MiddlewareConfig
 	if cfg == nil {
