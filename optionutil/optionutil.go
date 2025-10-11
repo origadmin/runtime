@@ -214,44 +214,40 @@ func AppendValues[T any](ctx options.Context, values ...T) options.Context {
 // Context Utilities
 // =============================
 
-// New creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
-func New[T any](opts ...options.Option) (options.Context, *T) {
-	cfg := new(T)
+// apply is the new, powerful internal core.
+// It handles instance creation, context initialization, and option application.
+func apply[T any](cfg *T, opts []options.Option) (options.Context, *T) {
 	key := Key[*T]{}
 	ctx := WithValue(Empty(), key, cfg)
+
+	// Apply all options using the simple loop
 	for _, option := range opts {
 		ctx = option(ctx)
 	}
+
 	return ctx, cfg
+}
+
+// New creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
+func New[T any](opts ...options.Option) (options.Context, *T) {
+	return apply(new(T), opts)
+}
+
+// NewContext creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
+func NewContext[T any](opts ...options.Option) (options.Context, *T) {
+	return apply(new(T), opts)
+}
+
+// NewT creates a new context, initializes a *T object within it,
+// and applies the given options. It's a safe entry point for configuration.
+func NewT[T any](opts ...options.Option) *T {
+	_, t := apply(new(T), opts)
+	return t
 }
 
 // Apply applies a series of options.Option to a given configuration object.
 func Apply[T any](cfg *T, opts ...options.Option) options.Context {
-	key := Key[*T]{}
-	ctx := WithValue(Empty(), key, cfg)
-	for _, option := range opts {
-		ctx = option(ctx)
-	}
-	return ctx
-}
-
-// Configure creates a new context, initializes a *T object within it,
-// and applies the given options. It's a safe entry point for configuration.
-func Configure[T any](opts ...options.Option) options.Context {
-	cfg := new(T)
-	key := Key[*T]{}
-	ctx := WithValue(Empty(), key, cfg)
-	return ApplyContext(ctx, opts...)
-}
-
-// ApplyContext applies a series of options.Option to a given options.Context.
-func ApplyContext(ctx options.Context, opts ...options.Option) options.Context {
-	if ctx == nil {
-		ctx = Empty()
-	}
-	for _, option := range opts {
-		ctx = option(ctx)
-	}
+	ctx, _ := apply(cfg, opts)
 	return ctx
 }
 
@@ -275,6 +271,9 @@ func WithCond(condition bool, opt options.Option) options.Option {
 // WithGroup returns an options.Option that applies a group of options.Option to the context.
 func WithGroup(opts ...options.Option) options.Option {
 	return func(ctx options.Context) options.Context {
-		return ApplyContext(ctx, opts...)
+		for _, opt := range opts {
+			ctx = opt(ctx)
+		}
+		return ctx
 	}
 }
