@@ -60,8 +60,8 @@ func initGrpcServerOptions(grpcConfig *transportv1.GrpcServerConfig, serverOpts 
 		kratosOpts = append(kratosOpts, transgrpc.Address(grpcConfig.GetAddr()))
 	}
 	// Configure TLS for server
-	if tlsConfig := grpcConfig.GetTlsConfig(); tlsConfig != nil && tlsConfig.GetEnabled() {
-		tlsCfg, err := servicetls.NewServerTLSConfig(tlsConfig)
+	if grpcConfig.GetTlsConfig().GetEnabled() {
+		tlsCfg, err := servicetls.NewServerTLSConfig(grpcConfig.GetTlsConfig())
 		if err != nil {
 			return nil, fmt.Errorf("failed to create server TLS config: %w", err)
 		}

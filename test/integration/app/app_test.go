@@ -59,7 +59,7 @@ func TestAppBootstrap(t *testing.T) {
 		t.Errorf("Expected 2 clients, got %d", len(bootstrap.Clients))
 	}
 	for _, cli := range bootstrap.Clients {
-		target := cli.Discovery.DiscoveryName
+		target := cli.Discoveries[0].Name
 		fmt.Printf("Client for target '%s' has %d specific middlewares:\n", target, len(cli.Middlewares))
 
 		// 断言以证明我们加载了正确的、专属的数据

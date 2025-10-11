@@ -26,16 +26,19 @@ const (
 // GrpcServerConfig defines the core configuration for a Kratos gRPC server.
 type GrpcServerConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// network is the network type for the server to listen on.
+	// e.g., "tcp", "unix"
+	Network string `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
 	// addr is the address for the server to listen on.
 	// e.g., "0.0.0.0:9000"
-	Addr string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
+	Addr string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
 	// timeout is the request handling timeout.
-	Timeout *durationpb.Duration `protobuf:"bytes,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	Timeout *durationpb.Duration `protobuf:"bytes,3,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	// middlewares is a list of middleware names to be applied to the server.
 	// The framework will look up these names in a middleware provider.
-	Middlewares []string `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Middlewares []string `protobuf:"bytes,4,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	// tls_config defines the TLS settings for the gRPC server.
-	TlsConfig     *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
+	TlsConfig     *v1.TLSConfig `protobuf:"bytes,5,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -68,6 +71,13 @@ func (x *GrpcServerConfig) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GrpcServerConfig.ProtoReflect.Descriptor instead.
 func (*GrpcServerConfig) Descriptor() ([]byte, []int) {
 	return file_transport_v1_grpc_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GrpcServerConfig) GetNetwork() string {
+	if x != nil {
+		return x.Network
+	}
+	return ""
 }
 
 func (x *GrpcServerConfig) GetAddr() string {
@@ -196,13 +206,14 @@ var File_transport_v1_grpc_proto protoreflect.FileDescriptor
 
 const file_transport_v1_grpc_proto_rawDesc = "" +
 	"\n" +
-	"\x17transport/v1/grpc.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1btransport/v1/selector.proto\x1a\x1fsecurity/transport/v1/tls.proto\"\xd2\x01\n" +
-	"\x10GrpcServerConfig\x12\x12\n" +
-	"\x04addr\x18\x01 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
-	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x12D\n" +
+	"\x17transport/v1/grpc.proto\x12\ftransport.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1btransport/v1/selector.proto\x1a\x1fsecurity/transport/v1/tls.proto\"\xec\x01\n" +
+	"\x10GrpcServerConfig\x12\x18\n" +
+	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
+	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
+	"\vmiddlewares\x18\x04 \x03(\tR\vmiddlewares\x12D\n" +
 	"\n" +
-	"tls_config\x18\x04 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01B\r\n" +
+	"tls_config\x18\x05 \x01(\v2 .security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01B\r\n" +
 	"\v_tls_config\"\xd3\x02\n" +
 	"\x10GrpcClientConfig\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x123\n" +

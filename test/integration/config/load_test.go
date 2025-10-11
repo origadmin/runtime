@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/encoding/prototext"
@@ -17,7 +18,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/origadmin/toolkits/codec/toml"
-
 	// Import our test-specific, generated bootstrap proto package
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 
@@ -25,9 +25,12 @@ import (
 	_ "github.com/go-kratos/kratos/v2/encoding/xml"
 )
 
+func init() {
+	encoding.RegisterCodec(toml.Codec)
+}
+
 // loadFromFile is a helper to load a config from a given path into a Bootstrap struct.
-// It now includes special handling for the TOML loading quirk in Kratos.
-func loadFromFile(t *testing.T, path string, bc *testconfigs.Bootstrap) {
+func loadFromFile(t *testing.T, path string, bc any) {
 	t.Helper()
 	cleanPath := filepath.Clean(path)
 	ext := filepath.Ext(cleanPath)
@@ -35,10 +38,16 @@ func loadFromFile(t *testing.T, path string, bc *testconfigs.Bootstrap) {
 	source := file.NewSource(cleanPath)
 	c := config.New(config.WithSource(source))
 	defer c.Close()
-	err := c.Load()
-	assert.NoError(t, err)
 
-	assert.NoError(t, c.Scan(bc), "Scan failed for format %s", ext)
+	err := c.Load()
+	if !assert.NoError(t, err, "Failed to load config from %s", cleanPath) {
+		t.FailNow()
+	}
+
+	err = c.Scan(bc)
+	if !assert.NoError(t, err, "Failed to scan config into Bootstrap struct for format %s", ext) {
+		t.FailNow()
+	}
 }
 
 // saveToFile is a helper to save a Bootstrap struct to a given path in a specific format.
@@ -113,7 +122,7 @@ func TestMultiFormatConfigLoading(t *testing.T) {
 		{name: "YAML", filePath: "./configs/full_config.yaml"},
 		{name: "JSON", filePath: "./configs/full_config.json"},
 		{name: "TOML", filePath: "./configs/full_config.toml"},
-		//{name: "XML", filePath: "./configs/full_config.xml"},
+		{name: "XML", filePath: "./configs/full_config.xml"},
 		//{name: "ProtoText", filePath: "./configs/full_config.pb.txt"},
 	}
 
@@ -122,7 +131,9 @@ func TestMultiFormatConfigLoading(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var bc testconfigs.Bootstrap
 			loadFromFile(t, tc.filePath, &bc)
-
+			//var mapConfig map[string]interface{}
+			//loadFromFile(t, tc.filePath, &mapConfig)
+			//t.Logf("Loaded %s config: %+v", tc.name, mapConfig)
 			// 3. --- Run the exact same assertion validation for every format ---
 			runAssertions(t, &bc)
 			t.Logf("%s config loaded and verified successfully!", tc.name)

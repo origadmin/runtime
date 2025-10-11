@@ -52,7 +52,7 @@ func TestFromContext(t *testing.T) {
 
 		// Manually create and store loggerContext in interfaces.Context
 		lc := &loggerContext{Logger: mockLogger}
-		optCtx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
+		optCtx := optionutil.WithValue(optionutil.Empty(), lc)
 
 		logger := FromContext(optCtx)
 		assert.Equal(t, mockLogger, logger)
@@ -60,7 +60,7 @@ func TestFromContext(t *testing.T) {
 
 	t.Run("should return DefaultLogger if loggerContext is in context but Logger field is nil", func(t *testing.T) {
 		lc := &loggerContext{Logger: nil} // Logger field is nil
-		optCtx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
+		optCtx := optionutil.WithValue(optionutil.Empty(), lc)
 
 		logger := FromContext(optCtx)
 		assert.Equal(t, DefaultLogger, logger)
@@ -74,7 +74,7 @@ func TestWithLogger(t *testing.T) {
 
 		// Start with a context containing mockLogger1
 		lc := &loggerContext{Logger: mockLogger1}
-		optCtx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*loggerContext]{}, lc)
+		optCtx := optionutil.WithValue(optionutil.Empty(), lc)
 
 		// Apply the WithLogger option to update the logger to mockLogger2
 		option := WithLogger(mockLogger2)

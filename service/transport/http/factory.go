@@ -23,7 +23,7 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	// 1. Extract the specific HTTP server config from the transport configuration.
 	httpConfig := cfg.GetHttp()
 	if httpConfig == nil {
-		return nil, fmt.Errorf("HTTP server config is missing in transport container")
+		return nil, service.ErrMissingServerConfig
 	}
 
 	// 2. Get all HTTP server-specific and common service-level options.

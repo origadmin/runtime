@@ -97,8 +97,8 @@ func initHttpServerOptions(httpConfig *transportv1.HttpServerConfig, serverOpts 
 
 	// Apply TLS configuration
 	// Configure TLS for server
-	if tlsConfig := httpConfig.GetTlsConfig(); tlsConfig != nil && tlsConfig.GetEnabled() {
-		tlsCfg, err := servicetls.NewServerTLSConfig(tlsConfig)
+	if httpConfig.TlsConfig.GetEnabled() {
+		tlsCfg, err := servicetls.NewServerTLSConfig(httpConfig.TlsConfig)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create server TLS config: %w", err)
 		}

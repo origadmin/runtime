@@ -17,7 +17,7 @@ func WithLogger(logger Logger) options.Option {
 }
 
 func FromOptions(opts ...options.Option) Logger {
-	_, l := optionutil.New[loggerContext](opts...)
+	l := optionutil.NewT[loggerContext](opts...)
 	if l.Logger == nil {
 		l.Logger = DefaultLogger
 	}
@@ -25,7 +25,7 @@ func FromOptions(opts ...options.Option) Logger {
 }
 
 func FromContext(ctx options.Context) Logger {
-	v := optionutil.ValueCond(ctx, func(l *loggerContext) bool { return l != nil }, &loggerContext{
+	v := optionutil.ValueCond(ctx, func(l *loggerContext) bool { return l != nil && l.Logger != nil }, &loggerContext{
 		Logger: DefaultLogger,
 	})
 	return v.Logger

@@ -57,6 +57,8 @@ func (m *GrpcServerConfig) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Network
+
 	// no validation rules for Addr
 
 	if all {

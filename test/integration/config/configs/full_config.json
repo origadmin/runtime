@@ -6,6 +6,7 @@
     {
       "name": "internal-consul",
       "config": {
+        "name": "my-test-app",
         "service_name": "my-test-app",
         "type": "consul",
         "consul": {
@@ -30,13 +31,13 @@
   "grpc_servers": [
     {
       "addr": ":9001",
-      "endpoint": "127.0.0.0:9001"
+      "endpoint": "127.0.0.1:9001"
     }
   ],
   "http_servers": [
     {
       "addr": ":8001",
-      "endpoint": "127.0.0.0:8001"
+      "endpoint": "127.0.0.1:8001"
     }
   ],
   "clients": [

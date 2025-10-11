@@ -28,8 +28,8 @@ message Bootstrap {
   string registration_discovery_name = 2;
 
   // 3. Define the list of service endpoints that the current service will expose.
-  repeated transport.v1.GRPCServer grpc_servers = 3;
-  repeated transport.v1.HTTPServer http_servers = 4;
+  repeated transport.v1.GrpcServerConfig grpc_servers = 3;
+  repeated transport.v1.HttpServerConfig http_servers = 4;
 
   // 4. Define the list of downstream clients that the current service will connect to.
   repeated string clients = 5;

@@ -18,8 +18,8 @@ message Server {
 
   // 使用 oneof 将框架的 GRPC 和 HTTP "砖头" 组合在一起。
   oneof config {
-    transport.v1.GRPCServer grpc = 2;
-    transport.v1.HTTPServer http = 3;
+    transport.v1.GrpcServerConfig grpc = 2;
+    transport.v1.HttpServerConfig http = 3;
   }
 }
 
@@ -30,7 +30,7 @@ message Client {
   string client_name = 1;
 
   // 使用框架的 "客户端发现" 砖头。
-  repeated  discovery.v1.Discovery discovery = 2;
+  repeated  discovery.v1.Discovery discoveries = 2;
 
   // 将 "中间件" 砖头与上面的 "客户端发现" 砖头绑定在一起。
   repeated middleware.v1.MiddlewareConfig middlewares = 3;

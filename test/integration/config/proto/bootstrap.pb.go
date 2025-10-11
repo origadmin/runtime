@@ -86,8 +86,8 @@ type Bootstrap struct {
 	// 2. Specify which configuration the current service should use to **register itself**.
 	RegistrationDiscoveryName string `protobuf:"bytes,2,opt,name=registration_discovery_name,json=registrationDiscoveryName,proto3" json:"registration_discovery_name,omitempty"`
 	// 3. Define the list of service endpoints that the current service will expose.
-	GrpcServers []*v11.GRPCServer `protobuf:"bytes,3,rep,name=grpc_servers,json=grpcServers,proto3" json:"grpc_servers,omitempty"`
-	HttpServers []*v11.HTTPServer `protobuf:"bytes,4,rep,name=http_servers,json=httpServers,proto3" json:"http_servers,omitempty"`
+	GrpcServers []*v11.GrpcServerConfig `protobuf:"bytes,3,rep,name=grpc_servers,json=grpcServers,proto3" json:"grpc_servers,omitempty"`
+	HttpServers []*v11.HttpServerConfig `protobuf:"bytes,4,rep,name=http_servers,json=httpServers,proto3" json:"http_servers,omitempty"`
 	// 4. Define the list of downstream clients that the current service will connect to.
 	Clients       []string `protobuf:"bytes,5,rep,name=clients,proto3" json:"clients,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -138,14 +138,14 @@ func (x *Bootstrap) GetRegistrationDiscoveryName() string {
 	return ""
 }
 
-func (x *Bootstrap) GetGrpcServers() []*v11.GRPCServer {
+func (x *Bootstrap) GetGrpcServers() []*v11.GrpcServerConfig {
 	if x != nil {
 		return x.GrpcServers
 	}
 	return nil
 }
 
-func (x *Bootstrap) GetHttpServers() []*v11.HTTPServer {
+func (x *Bootstrap) GetHttpServers() []*v11.HttpServerConfig {
 	if x != nil {
 		return x.HttpServers
 	}
@@ -166,12 +166,12 @@ const file_bootstrap_proto_rawDesc = "" +
 	"\x0fbootstrap.proto\x12\ftest.configs\x1a\x1cdiscovery/v1/discovery.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"V\n" +
 	"\x0fDiscoveryConfig\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
-	"\x06config\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x06config\"\xa0\x02\n" +
+	"\x06config\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x06config\"\xac\x02\n" +
 	"\tBootstrap\x12?\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2\x1d.test.configs.DiscoveryConfigR\vdiscoveries\x12>\n" +
-	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12;\n" +
-	"\fgrpc_servers\x18\x03 \x03(\v2\x18.transport.v1.GRPCServerR\vgrpcServers\x12;\n" +
-	"\fhttp_servers\x18\x04 \x03(\v2\x18.transport.v1.HTTPServerR\vhttpServers\x12\x18\n" +
+	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12A\n" +
+	"\fgrpc_servers\x18\x03 \x03(\v2\x1e.transport.v1.GrpcServerConfigR\vgrpcServers\x12A\n" +
+	"\fhttp_servers\x18\x04 \x03(\v2\x1e.transport.v1.HttpServerConfigR\vhttpServers\x12\x18\n" +
 	"\aclients\x18\x05 \x03(\tR\aclientsBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
@@ -188,17 +188,17 @@ func file_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_bootstrap_proto_goTypes = []any{
-	(*DiscoveryConfig)(nil), // 0: test.configs.DiscoveryConfig
-	(*Bootstrap)(nil),       // 1: test.configs.Bootstrap
-	(*v1.Discovery)(nil),    // 2: discovery.v1.Discovery
-	(*v11.GRPCServer)(nil),  // 3: transport.v1.GRPCServer
-	(*v11.HTTPServer)(nil),  // 4: transport.v1.HTTPServer
+	(*DiscoveryConfig)(nil),      // 0: test.configs.DiscoveryConfig
+	(*Bootstrap)(nil),            // 1: test.configs.Bootstrap
+	(*v1.Discovery)(nil),         // 2: discovery.v1.Discovery
+	(*v11.GrpcServerConfig)(nil), // 3: transport.v1.GrpcServerConfig
+	(*v11.HttpServerConfig)(nil), // 4: transport.v1.HttpServerConfig
 }
 var file_bootstrap_proto_depIdxs = []int32{
 	2, // 0: test.configs.DiscoveryConfig.config:type_name -> discovery.v1.Discovery
 	0, // 1: test.configs.Bootstrap.discoveries:type_name -> test.configs.DiscoveryConfig
-	3, // 2: test.configs.Bootstrap.grpc_servers:type_name -> transport.v1.GRPCServer
-	4, // 3: test.configs.Bootstrap.http_servers:type_name -> transport.v1.HTTPServer
+	3, // 2: test.configs.Bootstrap.grpc_servers:type_name -> transport.v1.GrpcServerConfig
+	4, // 3: test.configs.Bootstrap.http_servers:type_name -> transport.v1.HttpServerConfig
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
