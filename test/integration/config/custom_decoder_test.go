@@ -67,7 +67,7 @@ func TestRuntimeDecoder(t *testing.T) {
 			ID:      "test-decoder",
 			Name:    "TestDecoder",
 			Version: "1.0.0",
-			//Env:     "test",
+			Env:     "dev", // Changed from "test" to "dev" to match config
 		}),
 	)
 	if err != nil {
@@ -77,9 +77,10 @@ func TestRuntimeDecoder(t *testing.T) {
 
 	// 2. Verify core components are still initialized correctly.
 	assert.NotNil(rt.Logger())
-	assert.Equal("test-decoder", rt.AppInfo().Name)
+	assert.Equal("test-decoder", rt.AppInfo().ID)
+	assert.Equal("TestDecoder", rt.AppInfo().Name)
 	assert.Equal("1.0.0", rt.AppInfo().Version)
-	assert.Equal("test", rt.AppInfo().Env)
+	assert.Equal("dev", rt.AppInfo().Env) // Changed expected value
 
 	// 3. Get the ConfigDecoder from the runtime.
 	decoder := rt.Config()
@@ -87,7 +88,8 @@ func TestRuntimeDecoder(t *testing.T) {
 
 	// 4. Verify custom_settings are decoded correctly using the exposed decoder.
 	var customSettings TestCustomSettings
-	err = decoder.Decode("custom_settings", &customSettings)
+	// Updated to use "components.my-custom-settings" path to match config structure
+	err = decoder.Decode("components.my-custom-settings", &customSettings)
 	assert.NoError(err)
 	assert.True(customSettings.FeatureEnabled)
 	assert.Equal("super-secret-key-123", customSettings.APIKey)
