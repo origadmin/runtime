@@ -2,26 +2,28 @@ package app_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
-	"gopkg.in/yaml.v3"
+	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/config/file"
 
 	configs "github.com/origadmin/runtime/test/integration/app/proto"
 )
 
 // TestAppBootstrap demonstrates the advantages of defining a unified structure in the application-specific bootstrap.proto
 func TestAppBootstrap(t *testing.T) {
-	// 1. 加载我们新的、与图纸完全对应的 YAML 配置文件
-	yamlFile, err := os.ReadFile("config.yaml")
-	if err != nil {
-		t.Fatalf("Failed to read config.yaml: %v", err)
+	// 1. 使用 runtime/config 加载 YAML 配置文件
+	source := file.NewSource("config.yaml")
+	c := config.NewKConfig(config.WithKSource(source))
+	if err := c.Load(); err != nil {
+		t.Fatalf("Failed to load config: %v", err)
 	}
+	defer c.Close()
 
-	// 将 YAML 直接解析到我们测试专属的 Bootstrap 结构体中
+	// 解析配置到 Bootstrap 结构体
 	var bootstrap configs.Bootstrap
-	if err := yaml.Unmarshal(yamlFile, &bootstrap); err != nil {
-		t.Fatalf("Failed to unmarshal YAML: %v", err)
+	if err := c.Scan(&bootstrap); err != nil {
+		t.Fatalf("Failed to unmarshal config: %v", err)
 	}
 
 	// 2. 证明: "transport不分" 的问题已解决
@@ -45,7 +47,7 @@ func TestAppBootstrap(t *testing.T) {
 				t.Errorf("Unexpected HTTP addr: %s", c.Http.Addr)
 			}
 		default:
-			t.Errorf("Unknown server type in unified list")
+			t.Errorf("Unknown server type in unified list: %T", c)
 		}
 	}
 	fmt.Println("--- Server Processing Complete ---")
