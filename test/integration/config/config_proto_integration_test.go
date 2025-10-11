@@ -50,16 +50,16 @@ func TestConfigProtoIntegration(t *testing.T) {
 
 	// 1. Initialize Runtime with the default decoder provider.
 	rt, cleanup, err := runtime.NewFromBootstrap(
-		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "test-proto-config",
-			Name:    "TestProtoConfig",
-			Version: "1.0.0",
-			//Env:     "test",
-		}),
+	    bootstrapPath,
+	    bootstrap.WithAppInfo(&interfaces.AppInfo{
+	        ID:      "test-proto-config",
+	        Name:    "TestProtoConfig",
+	        Version: "1.0.0",
+	        //Env:     "test",
+	    }),
 	)
 	if err != nil {
-		t.Fatalf("Failed to initialize runtime: %v", err)
+	    t.Fatalf("Failed to initialize runtime: %v", err)
 	}
 	defer cleanup()
 

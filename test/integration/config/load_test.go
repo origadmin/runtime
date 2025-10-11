@@ -101,7 +101,7 @@ func TestConfigInteroperability(t *testing.T) {
 		//{name: "XML", filePath: "./configs/full_config.xml"},
 		//{name: "ProtoJSON", filePath: "./configs/full_config.protojson"},
 	}
-	// 仅 yaml/json/toml/hcl 当前受支持，其他作为占位并在运行时跳过
+	// Only yaml/json/toml/hcl are currently supported, others are placeholders and will be skipped at runtime
 	//supportedInterop := map[string]bool{"YAML": true, "JSON": true, "TOML": true, "HCL": true}
 
 	// 2. Outer loop: Iterate through each format as the SOURCE
@@ -139,12 +139,6 @@ func TestConfigInteroperability(t *testing.T) {
 	}
 }
 
-func init() {
-	if err := generateAllFormatsFromYAML(); err != nil {
-		panic(fmt.Errorf("failed to generate test files: %v", err))
-	}
-}
-
 func generateAllFormatsFromYAML() error {
 	// 1. Load YAML configuration using Kratos
 	source := file.NewSource("full_config_source.yaml")
@@ -179,10 +173,8 @@ func generateAllFormatsFromYAML() error {
 		//	continue
 		//}
 		// Create a minimal testing.T object for logging
-	t := &testing.T{}
-	helper.SaveConfigToFile(t, &configBootstrap, "configs/full_config."+format.name, format.name)
+		t := &testing.T{}
+		helper.SaveConfigToFile(t, &configBootstrap, "configs/full_config."+format.name, format.name)
 	}
 	return nil
 }
-
-

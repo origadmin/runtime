@@ -15,7 +15,7 @@ import (
 	"github.com/origadmin/runtime/middleware"
 )
 
-// 定义所有支持的中间件类型
+// Define all supported middleware types
 var supportedMiddlewareTypes = map[string]struct{}{
 	"metadata":        {},
 	"logging":         {},
@@ -149,9 +149,9 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 					Logging: &middlewarev1.Logging{},
 				},
 				{
-					Name:    "", // 测试未命名的中间件
-					Type:    "metadata",
-					Enabled: true,
+					Name:     "", // 测试未命名的中间件
+					Type:     "metadata",
+					Enabled:  true,
 					Metadata: &middlewarev1.Metadata{},
 				},
 			},
@@ -292,7 +292,7 @@ func TestSelectorMiddleware(t *testing.T) {
 				},
 			},
 			expectCount: 2, // selector + logging
-			side:       "client",
+			side:        "client",
 		},
 		{
 			name: "selector_with_excludes",
@@ -319,7 +319,7 @@ func TestSelectorMiddleware(t *testing.T) {
 				},
 			},
 			expectCount: 2, // selector + logging
-			side:       "server",
+			side:        "server",
 		},
 	}
 

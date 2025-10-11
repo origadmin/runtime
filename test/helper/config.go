@@ -119,7 +119,7 @@ func LoadConfigFromFile(t *testing.T, path string, msg proto.Message) {
 
 	if err := v.ReadInConfig(); err != nil {
 		if strings.Contains(err.Error(), "decoder not found") {
-			t.Skipf("跳过：当前环境未启用 %s 解码器: %v", ext, err)
+			t.Skipf("Skip: %s decoder not enabled in current environment: %v", ext, err)
 			return
 		}
 		t.Fatalf("Failed to read config file %s: %v", cleanPath, err)
