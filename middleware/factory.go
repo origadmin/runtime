@@ -66,25 +66,32 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 		if !ms.GetEnabled() {
 			continue
 		}
-		middlewareName := ms.GetType()
+		// Use Name if provided, otherwise fall back to Type
+		middlewareType := ms.GetType()
+		middlewareName := ms.GetName()
+		if middlewareName == "" {
+			middlewareName = middlewareType
+		}
+
 		// Defer selector middleware configs for later processing
-		if middlewareName == string(Selector) {
+		if middlewareType == string(Selector) {
 			selectorConfigs = append(selectorConfigs, ms)
 			continue
 		}
-		f, ok := b.Get(middlewareName)
+
+		f, ok := b.Get(middlewareType)
 		if !ok {
-			helper.Warnf("unknown client middleware: %s", middlewareName)
+			helper.Warnf("unknown client middleware type: %s", middlewareType)
 			continue
 		}
 
-		helper.Infof("enabling client middleware: %s", middlewareName)
+		helper.Infof("enabling client middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create middleware
 		m, ok := f.NewMiddlewareClient(ms, opts...)
 		if ok {
 			middlewares = append(middlewares, m)
-			// Add the created middleware into the carrier
+			// Add the created middleware into the carrier using the middlewareName
 			carrier.Clients[middlewareName] = m
 		}
 	}
@@ -93,19 +100,26 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...o
 
 	// Second pass: process selector middleware configs
 	for _, ms := range selectorConfigs {
-		middlewareName := ms.GetType()
-		f, ok := b.Get(middlewareName)
+		middlewareType := ms.GetType()
+		middlewareName := ms.GetName()
+		if middlewareName == "" {
+			middlewareName = middlewareType
+		}
+
+		f, ok := b.Get(middlewareType)
 		if !ok {
-			helper.Warnf("unknown client middleware: %s", middlewareName)
+			helper.Warnf("unknown client middleware type: %s", middlewareType)
 			continue
 		}
 
-		helper.Infof("enabling client middleware: %s", middlewareName)
+		helper.Infof("enabling client middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create selector middleware (can access previously created middlewares now)
 		m, ok := f.NewMiddlewareClient(ms, opts...)
 		if ok {
 			middlewares = append(middlewares, m)
+			// Add the created middleware into the carrier using the middlewareName
+			carrier.Clients[middlewareName] = m
 		}
 	}
 
@@ -144,17 +158,29 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 		if !ms.GetEnabled() {
 			continue
 		}
-		middlewareName := ms.GetType()
+		// Use Name if provided, otherwise fall back to Type
+		middlewareType := ms.GetType()
+		middlewareName := ms.GetName()
+		if middlewareName == "" {
+			middlewareName = middlewareType
+		}
+
 		// Defer selector middleware configs for later processing
-		if middlewareName == string(Selector) {
+		if middlewareType == string(Selector) {
 			selectorConfigs = append(selectorConfigs, ms)
 			continue
 		}
+
 		f, ok := b.Get(middlewareName)
 		if !ok {
-			helper.Warnf("unknown server middleware: %s", middlewareName)
-			continue
+			f, ok = b.Get(middlewareType)
+			if !ok {
+				helper.Warnf("unknown server middleware type: %s", middlewareType)
+				continue
+			}
 		}
+
+		helper.Infof("enabling server middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create middleware
 		m, ok := f.NewMiddlewareServer(ms, opts...)
@@ -164,22 +190,32 @@ func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...o
 			carrier.Servers[middlewareName] = m
 		}
 	}
+
 	// Attach the carrier into options context
 	opts = append(opts, WithCarrier(carrier))
 
 	// Second pass: process selector middleware configs
 	for _, ms := range selectorConfigs {
-		middlewareName := ms.GetType()
-		f, ok := b.Get(middlewareName)
+		middlewareType := ms.GetType()
+		middlewareName := ms.GetName()
+		if middlewareName == "" {
+			middlewareName = middlewareType
+		}
+
+		f, ok := b.Get(middlewareType)
 		if !ok {
-			helper.Warnf("unknown server middleware: %s", middlewareName)
+			helper.Warnf("unknown server middleware type: %s", middlewareType)
 			continue
 		}
+
+		helper.Infof("enabling server middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create selector middleware (can access previously created middlewares now)
 		m, ok := f.NewMiddlewareServer(ms, opts...)
 		if ok {
 			middlewares = append(middlewares, m)
+			// Add the created middleware into the carrier
+			carrier.Servers[middlewareName] = m
 		}
 	}
 
