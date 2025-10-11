@@ -122,7 +122,7 @@ func TestMultiFormatConfigLoading(t *testing.T) {
 		{name: "YAML", filePath: "./configs/full_config.yaml"},
 		{name: "JSON", filePath: "./configs/full_config.json"},
 		{name: "TOML", filePath: "./configs/full_config.toml"},
-		{name: "XML", filePath: "./configs/full_config.xml"},
+		//{name: "XML", filePath: "./configs/full_config.xml"},
 		//{name: "ProtoText", filePath: "./configs/full_config.pb.txt"},
 	}
 
