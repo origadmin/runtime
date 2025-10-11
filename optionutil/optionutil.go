@@ -136,6 +136,14 @@ func ValueOr[T any](ctx options.Context, defaultValue T) T {
 	return defaultValue
 }
 
+// ValueCond retrieves a value if the condition is true, or a default otherwise.
+func ValueCond[T any](ctx options.Context, condition func(T) bool, defaultValue T) T {
+	if v, ok := Value[T](ctx); ok && condition(v) {
+		return v
+	}
+	return defaultValue
+}
+
 // WithValue sets a value using an implicit key.
 func WithValue[T any](ctx options.Context, value T) options.Context {
 	return withValue(ctx, Key[T]{}, value)
@@ -152,6 +160,13 @@ func SliceOr[T any](ctx options.Context, defaultValue []T) []T {
 		return v
 	}
 	return defaultValue
+}
+
+func SliceCond[T any](ctx options.Context, condition func([]T) bool) []T {
+	if v := Slice[T](ctx); v != nil && condition(v) {
+		return v
+	}
+	return nil
 }
 
 // Append appends values to a slice using an implicit key.

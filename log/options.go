@@ -25,9 +25,8 @@ func FromOptions(opts ...options.Option) Logger {
 }
 
 func FromContext(ctx options.Context) Logger {
-	v, ok := optionutil.Extract[*loggerContext](ctx)
-	if !ok || v == nil || v.Logger == nil {
-		return DefaultLogger
-	}
+	v := optionutil.ValueCond(ctx, func(l *loggerContext) bool { return l != nil }, &loggerContext{
+		Logger: DefaultLogger,
+	})
 	return v.Logger
 }
