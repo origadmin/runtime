@@ -53,20 +53,20 @@ func TestWithSliceOption(t *testing.T) {
 
 	// Test initial slice
 	opt := optionutil.Empty()
-	opt = optionutil.WithAppend(opt, key, 1, 2, 3)
-	slice1 := optionutil.Slice(opt, key)
+	opt = optionutil.Append(opt, key, 1, 2, 3)
+	slice1 := optionutil.SliceValue(opt, key)
 	assert.Equal(t, []int{1, 2, 3}, slice1)
 
 	// Test appending to slice
-	opt = optionutil.WithAppend(opt, key, 4, 5)
-	slice2 := optionutil.Slice(opt, key)
+	opt = optionutil.Append(opt, key, 4, 5)
+	slice2 := optionutil.SliceValue(opt, key)
 	assert.Equal(t, []int{1, 2, 3, 4, 5}, slice2)
 
 	// Test with struct values
 	type item struct{ Name string }
 	var itemsKey = optionutil.Key[[]item]{}
-	opt = optionutil.WithAppend(opt, itemsKey, item{"a"}, item{"b"})
-	items := optionutil.Slice(opt, itemsKey)
+	opt = optionutil.Append(opt, itemsKey, item{"a"}, item{"b"})
+	items := optionutil.SliceValue(opt, itemsKey)
 	assert.Len(t, items, 2)
 	assert.Equal(t, "a", items[0].Name)
 }
@@ -93,12 +93,12 @@ func TestGetSliceOption_NonExistent(t *testing.T) {
 	opt := optionutil.Empty()
 
 	// Test with non-existent key
-	slice := optionutil.Slice(opt, key)
+	slice := optionutil.SliceValue(opt, key)
 	nilSlice := []int(nil)
 	assert.Equal(t, nilSlice, slice)
 
 	// Test with nil context
-	slice = optionutil.Slice(nil, key)
+	slice = optionutil.SliceValue(nil, key)
 	assert.Equal(t, nilSlice, slice)
 }
 
@@ -294,24 +294,24 @@ func TestWithContext(t *testing.T) {
 	assert.False(t, ok1)
 }
 
-func TestWithAppendAndSlice(t *testing.T) {
+func TestAppendAndSlice(t *testing.T) {
 	key := optionutil.Key[[]string]{}
 	ctx := optionutil.Empty()
 
-	// WithAppend to a nil context
-	ctx = optionutil.WithAppend(ctx, key, "a", "b")
-	slice1 := optionutil.Slice(ctx, key)
+	// Append to a nil context
+	ctx = optionutil.Append(ctx, key, "a", "b")
+	slice1 := optionutil.SliceValue(ctx, key)
 	assert.Equal(t, []string{"a", "b"}, slice1)
 
-	// WithAppend to an existing slice
-	ctx = optionutil.WithAppend(ctx, key, "c")
-	slice2 := optionutil.Slice(ctx, key)
+	// Append to an existing slice
+	ctx = optionutil.Append(ctx, key, "c")
+	slice2 := optionutil.SliceValue(ctx, key)
 	assert.Equal(t, []string{"a", "b", "c"}, slice2)
 
-	// Test that Slice returns a copy
+	// Test that SliceValue returns a copy
 	slice2[0] = "z"
-	slice3 := optionutil.Slice(ctx, key)
-	assert.Equal(t, "a", slice3[0], "Slice should return a copy, original should not be modified")
+	slice3 := optionutil.SliceValue(ctx, key)
+	assert.Equal(t, "a", slice3[0], "SliceValue should return a copy, original should not be modified")
 }
 
 func TestChainingAndDependencies(t *testing.T) {
