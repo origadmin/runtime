@@ -16,16 +16,6 @@ type serverConfig struct {
 	Port int
 }
 
-type dbConfig struct {
-	DSN string
-}
-
-var (
-	stringKey = optionutil.Key[string]{}
-	intKey    = optionutil.Key[int]{}
-	sliceKey  = optionutil.Key[[]int]{}
-)
-
 func withHost(host string) options.Option {
 	return optionutil.Update(func(c *serverConfig) {
 		c.Host = host
@@ -41,7 +31,6 @@ func withPort(port int) options.Option {
 // --- Core API Tests ---
 
 func TestNew(t *testing.T) {
-	// New should create a new instance, configure it, and return both context and config.
 	ctx, cfg := optionutil.New[serverConfig](
 		withHost("new.example.com"),
 		withPort(3000),
@@ -51,14 +40,12 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, "new.example.com", cfg.Host)
 	assert.Equal(t, 3000, cfg.Port)
 
-	// Verify the returned context also contains the config
-	retrievedCfg, ok := optionutil.Extract[*serverConfig](ctx)
+	retrievedCfg, ok := optionutil.Value[*serverConfig](ctx)
 	assert.True(t, ok)
-	assert.Same(t, cfg, retrievedCfg, "Context should contain the same instance that was returned")
+	assert.Same(t, cfg, retrievedCfg)
 }
 
 func TestNewT(t *testing.T) {
-	// NewT should create a new instance, configure it, and return only the config.
 	cfg := optionutil.NewT[serverConfig](
 		withHost("newt.example.com"),
 		withPort(3001),
@@ -70,7 +57,6 @@ func TestNewT(t *testing.T) {
 }
 
 func TestNewContext(t *testing.T) {
-	// NewContext should create a new instance, configure it, and return only the context.
 	ctx := optionutil.NewContext[serverConfig](
 		withHost("newcontext.example.com"),
 		withPort(3002),
@@ -78,8 +64,7 @@ func TestNewContext(t *testing.T) {
 
 	assert.NotNil(t, ctx)
 
-	// Verify the returned context contains the configured value
-	retrievedCfg, ok := optionutil.Extract[*serverConfig](ctx)
+	retrievedCfg, ok := optionutil.Value[*serverConfig](ctx)
 	assert.True(t, ok)
 	assert.NotNil(t, retrievedCfg)
 	assert.Equal(t, "newcontext.example.com", retrievedCfg.Host)
@@ -87,164 +72,121 @@ func TestNewContext(t *testing.T) {
 }
 
 func TestApply(t *testing.T) {
-	// Start with a default config
-	cfg := &serverConfig{
-		Host: "localhost",
-		Port: 8080,
-	}
+	cfg := &serverConfig{Host: "localhost", Port: 8080}
 
-	// Apply options to it
 	ctx := optionutil.Apply(cfg,
 		withHost("example.com"),
 		withPort(9090),
 	)
 
-	// The original object should be modified
 	assert.Equal(t, "example.com", cfg.Host)
 	assert.Equal(t, 9090, cfg.Port)
 
-	// Retrieve the configured object from the resulting context
-	retrievedCfg, ok := optionutil.Extract[*serverConfig](ctx)
+	retrievedCfg, ok := optionutil.Value[*serverConfig](ctx)
 	assert.True(t, ok)
-	assert.Equal(t, "example.com", retrievedCfg.Host)
-	assert.Equal(t, 9090, retrievedCfg.Port)
-	// Ensure it's the same pointer
 	assert.Same(t, cfg, retrievedCfg)
 }
 
-// --- Update and Implicit Key Tests ---
+// --- Implicit Key Data Access ---
+
+func TestValue(t *testing.T) {
+	ctx := optionutil.Empty()
+	ctx = optionutil.WithValue(ctx, "hello")
+	ctx = optionutil.WithValue(ctx, 123)
+
+	valStr, okStr := optionutil.Value[string](ctx)
+	assert.True(t, okStr)
+	assert.Equal(t, "hello", valStr)
+
+	valInt, okInt := optionutil.Value[int](ctx)
+	assert.True(t, okInt)
+	assert.Equal(t, 123, valInt)
+}
+
+func TestValueOr(t *testing.T) {
+	ctx := optionutil.WithValue(optionutil.Empty(), "actual")
+
+	val1 := optionutil.ValueOr(ctx, "default")
+	assert.Equal(t, "actual", val1)
+
+	val2 := optionutil.ValueOr(ctx, 999)
+	assert.Equal(t, 999, val2)
+}
+
+func TestSliceAndAppend(t *testing.T) {
+	ctx := optionutil.Empty()
+	ctx = optionutil.Append(ctx, "a", "b")
+	ctx = optionutil.Append(ctx, "c")
+
+	slice := optionutil.Slice[string](ctx)
+	assert.Equal(t, []string{"a", "b", "c"}, slice)
+}
+
+func TestSliceOr(t *testing.T) {
+	ctx := optionutil.Append(optionutil.Empty(), "a")
+	defaultValue := []string{"default"}
+
+	val1 := optionutil.SliceOr(ctx, defaultValue)
+	assert.Equal(t, []string{"a"}, val1)
+
+	val2 := optionutil.SliceOr(ctx, []int{99})
+	assert.Equal(t, []int{99}, val2)
+}
+
+// --- Explicit Key (ByKey) Data Access ---
+
+func TestByKeyFunctions(t *testing.T) {
+	ctx := optionutil.Empty()
+
+	// Test WithValue
+	ctx = optionutil.WithValue(ctx, "value A")
+	valA, okA := optionutil.Value[string](ctx)
+	assert.True(t, okA)
+	assert.Equal(t, "value A", valA)
+
+	ctx = optionutil.WithValue(ctx, "value B")
+	valB, okB := optionutil.Value[string](ctx)
+	assert.True(t, okB)
+	assert.Equal(t, "value B", valB)
+
+	// Test appendValues
+	ctx = optionutil.Append(ctx, 1, 2)
+	ctx = optionutil.Append(ctx, 3)
+
+	// Test slice
+	slice := optionutil.Slice[int](ctx)
+	assert.Equal(t, []int{1, 2, 3}, slice)
+}
+
+// --- Update Function Test ---
 
 func TestUpdate(t *testing.T) {
-	t.Run("Update existing object", func(t *testing.T) {
-		cfg := &serverConfig{Port: 80}
-		ctx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*serverConfig]{}, cfg)
+	// This test now implicitly tests that Update calls UpdateByKey correctly
+	opt := optionutil.Update(
+		func(c *serverConfig) { c.Host = "updated" },
+		func(c *serverConfig) { c.Port = 443 },
+	)
 
-		opt := optionutil.Update(func(c *serverConfig) {
-			c.Port = 443
-		})
+	ctx, cfg := optionutil.New[serverConfig](opt)
 
-		newCtx := opt(ctx)
+	assert.Equal(t, "updated", cfg.Host)
+	assert.Equal(t, 443, cfg.Port)
 
-		retrievedCfg, _ := optionutil.Extract[*serverConfig](newCtx)
-		assert.Equal(t, 443, retrievedCfg.Port)
-	})
-
-	t.Run("Update with multiple updaters", func(t *testing.T) {
-		cfg := &serverConfig{Host: "initial", Port: 80}
-		ctx := optionutil.WithValue(optionutil.Empty(), optionutil.Key[*serverConfig]{}, cfg)
-
-		opt := optionutil.Update(
-			func(c *serverConfig) { c.Host = "updated" },
-			func(c *serverConfig) { c.Port = 443 },
-		)
-		newCtx := opt(ctx)
-		retrievedCfg, _ := optionutil.Extract[*serverConfig](newCtx)
-		assert.Equal(t, "updated", retrievedCfg.Host)
-		assert.Equal(t, 443, retrievedCfg.Port)
-	})
-
-	t.Run("Update does nothing if type not found", func(t *testing.T) {
-		ctx := optionutil.Empty() // Empty context
-		opt := withPort(9999)     // An option that targets *serverConfig
-
-		// Apply the option, it should not panic or error
-		newCtx := opt(ctx)
-
-		// The context should still not contain the config
-		_, ok := optionutil.Extract[*serverConfig](newCtx)
-		assert.False(t, ok)
-	})
-}
-
-func TestImplicitFunctions(t *testing.T) {
-	t.Run("Extract and ExtractOr", func(t *testing.T) {
-		ctx := optionutil.NewContext[serverConfig](withHost("host"))
-
-		// Value exists
-		val, ok := optionutil.Extract[*serverConfig](ctx)
-		assert.True(t, ok)
-		assert.Equal(t, "host", val.Host)
-
-		// Or returns existing
-		valOr := optionutil.ExtractOr(ctx, &serverConfig{Host: "default"})
-		assert.Equal(t, "host", valOr.Host)
-
-		// Value does not exist, Or returns default
-		dbVal := optionutil.ExtractOr(ctx, &dbConfig{DSN: "default"})
-		assert.Equal(t, "default", dbVal.DSN)
-	})
-
-	t.Run("AppendValues and ExtractSlice", func(t *testing.T) {
-		ctx := optionutil.Empty()
-		ctx = optionutil.AppendValues(ctx, 1, 2)
-		ctx = optionutil.AppendValues(ctx, 3)
-
-		slice := optionutil.ExtractSlice[int](ctx)
-		assert.Equal(t, []int{1, 2, 3}, slice)
-	})
-
-	t.Run("ExtractSliceOr", func(t *testing.T) {
-		ctx := optionutil.Empty()
-
-		// Slice exists
-		ctx = optionutil.AppendValues(ctx, 10)
-		slice1 := optionutil.ExtractSliceOr(ctx, []int{99})
-		assert.Equal(t, []int{10}, slice1)
-
-		// Slice does not exist
-		type dummy struct{}
-		slice2 := optionutil.ExtractSliceOr(ctx, []dummy{{}})
-		assert.Equal(t, []dummy{{}}, slice2)
-	})
-}
-
-// --- Explicit Key Tests ---
-
-func TestWithValue(t *testing.T) {
-	ctx := optionutil.Empty()
-
-	ctx = optionutil.WithValue(ctx, stringKey, "hello")
-	ctx = optionutil.WithValue(ctx, intKey, 123)
-
-	// Test retrieving values
-	val1, ok1 := optionutil.Value(ctx, stringKey)
-	assert.True(t, ok1)
-	assert.Equal(t, "hello", val1)
-
-	val2, ok2 := optionutil.Value(ctx, intKey)
-	assert.True(t, ok2)
-	assert.Equal(t, 123, val2)
-
-	// Test retrieving non-existent value
-	_, ok3 := optionutil.Value(ctx, optionutil.Key[bool]{})
-	assert.False(t, ok3)
-}
-
-func TestAppendAndSliceValue(t *testing.T) {
-	ctx := optionutil.Empty()
-
-	// Append to a nil context
-	ctx = optionutil.Append(ctx, sliceKey, 1, 2)
-	slice1 := optionutil.SliceValue(ctx, sliceKey)
-	assert.Equal(t, []int{1, 2}, slice1)
-
-	// Append to an existing slice
-	ctx = optionutil.Append(ctx, sliceKey, 3)
-	slice2 := optionutil.SliceValue(ctx, sliceKey)
-	assert.Equal(t, []int{1, 2, 3}, slice2)
+	retrieved, _ := optionutil.Value[*serverConfig](ctx)
+	assert.Same(t, cfg, retrieved)
 }
 
 // --- Utility Option Tests ---
 
 func TestWithCond(t *testing.T) {
 	opt := func(ctx options.Context) options.Context {
-		return optionutil.WithValue(ctx, stringKey, "applied")
+		return optionutil.WithValue(ctx, "applied")
 	}
 
 	t.Run("Condition is true", func(t *testing.T) {
 		conditionalOpt := optionutil.WithCond(true, opt)
 		ctx := conditionalOpt(optionutil.Empty())
-		val, ok := optionutil.Value(ctx, stringKey)
+		val, ok := optionutil.Value[string](ctx)
 		assert.True(t, ok)
 		assert.Equal(t, "applied", val)
 	})
@@ -252,27 +194,27 @@ func TestWithCond(t *testing.T) {
 	t.Run("Condition is false", func(t *testing.T) {
 		conditionalOpt := optionutil.WithCond(false, opt)
 		ctx := conditionalOpt(optionutil.Empty())
-		_, ok := optionutil.Value(ctx, stringKey)
+		_, ok := optionutil.Value[string](ctx)
 		assert.False(t, ok)
 	})
 }
 
 func TestWithGroup(t *testing.T) {
 	opt1 := func(ctx options.Context) options.Context {
-		return optionutil.WithValue(ctx, stringKey, "from group 1")
+		return optionutil.WithValue(ctx, "from group 1")
 	}
 	opt2 := func(ctx options.Context) options.Context {
-		return optionutil.WithValue(ctx, intKey, 456)
+		return optionutil.WithValue(ctx, 456)
 	}
 
 	groupedOpt := optionutil.WithGroup(opt1, opt2)
 	ctx := groupedOpt(optionutil.Empty())
 
-	val1, ok1 := optionutil.Value(ctx, stringKey)
+	val1, ok1 := optionutil.Value[string](ctx)
 	assert.True(t, ok1)
 	assert.Equal(t, "from group 1", val1)
 
-	val2, ok2 := optionutil.Value(ctx, intKey)
+	val2, ok2 := optionutil.Value[int](ctx)
 	assert.True(t, ok2)
 	assert.Equal(t, 456, val2)
 }
@@ -281,14 +223,12 @@ func TestWithGroup(t *testing.T) {
 
 func TestImmutability(t *testing.T) {
 	ctx1 := optionutil.Empty()
-	ctx2 := optionutil.WithValue(ctx1, stringKey, "hello")
+	ctx2 := optionutil.WithValue(ctx1, "hello")
 
-	// ctx1 should not be changed
-	_, ok := optionutil.Value(ctx1, stringKey)
+	_, ok := optionutil.Value[string](ctx1)
 	assert.False(t, ok)
 
-	// ctx2 should have the value
-	val, ok := optionutil.Value(ctx2, stringKey)
+	val, ok := optionutil.Value[string](ctx2)
 	assert.True(t, ok)
 	assert.Equal(t, "hello", val)
 }
@@ -300,6 +240,5 @@ func TestWithNilKeyPanics(t *testing.T) {
 		}
 	}()
 	var ctx options.Context = optionutil.Empty()
-	// This should panic because the key is nil
 	ctx.With(nil, "some value")
 }

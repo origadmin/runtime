@@ -66,35 +66,11 @@ func Default() options.Context {
 }
 
 // =============================
-// Explicit Key Functions
+// Data Access Functions
 // =============================
 
-// --- Setters (Explicit Key) ---
-
-// WithValue sets a key-value pair in the specified options.Context.
-// If the context is nil, a new empty context is created.
-func WithValue[T any](ctx options.Context, key Key[T], value T) options.Context {
-	if ctx == nil {
-		ctx = &emptyContext{}
-	}
-	return ctx.With(key, value)
-}
-
-// Append appends values to a slice in the options.Context.
-func Append[T any](ctx options.Context, key Key[[]T], values ...T) options.Context {
-	if ctx == nil {
-		ctx = &emptyContext{}
-	}
-
-	existing := SliceValue(ctx, key)
-	newSlice := append(existing, values...)
-	return WithValue(ctx, key, newSlice)
-}
-
-// --- Getters (Explicit Key) ---
-
-// Value retrieves a value of the specified type from the options.Context.
-func Value[T any](ctx options.Context, key Key[T]) (T, bool) {
+// value retrieves a value with an explicit key.
+func value[T any](ctx options.Context, key Key[T]) (T, bool) {
 	var zero T
 	if ctx == nil {
 		return zero, false
@@ -112,13 +88,21 @@ func Value[T any](ctx options.Context, key Key[T]) (T, bool) {
 	return zero, false
 }
 
-// SliceValue retrieves a copy of a slice from the options.Context.
-func SliceValue[T any](ctx options.Context, key Key[[]T]) []T {
+// withValue sets a key-value pair with an explicit key.
+func withValue[T any](ctx options.Context, key Key[T], value T) options.Context {
+	if ctx == nil {
+		ctx = &emptyContext{}
+	}
+	return ctx.With(key, value)
+}
+
+// slice retrieves a slice with an explicit key.
+func slice[T any](ctx options.Context, key Key[[]T]) []T {
 	if ctx == nil {
 		return nil
 	}
 
-	val, ok := Value(ctx, key)
+	val, ok := value(ctx, key)
 	if !ok {
 		return nil
 	}
@@ -126,22 +110,59 @@ func SliceValue[T any](ctx options.Context, key Key[[]T]) []T {
 	return val
 }
 
-// =============================
-// Implicit Key Functions
-// =============================
+// appendValues appends values to a slice with an explicit key.
+func appendValues[T any](ctx options.Context, key Key[[]T], values ...T) options.Context {
+	if ctx == nil {
+		ctx = &emptyContext{}
+	}
 
-// --- Setters (Implicit Key) ---
-
-// AppendValues appends values to a slice in the options.Context using an implicit key.
-func AppendValues[T any](ctx options.Context, values ...T) options.Context {
-	key := Key[[]T]{}
-	return Append[T](ctx, key, values...)
+	existing := slice(ctx, key)
+	newSlice := append(existing, values...)
+	return withValue(ctx, key, newSlice)
 }
 
-// Update returns an options.Option that modifies a configuration struct *T in the options.Context chain.
+// --- Implicit Key --- //
+
+// Value retrieves a value using an implicit key.
+func Value[T any](ctx options.Context) (T, bool) {
+	return value(ctx, Key[T]{})
+}
+
+// ValueOr retrieves a value, or a default if not found.
+func ValueOr[T any](ctx options.Context, defaultValue T) T {
+	if v, ok := Value[T](ctx); ok {
+		return v
+	}
+	return defaultValue
+}
+
+// WithValue sets a value using an implicit key.
+func WithValue[T any](ctx options.Context, value T) options.Context {
+	return withValue(ctx, Key[T]{}, value)
+}
+
+// Slice retrieves a slice using an implicit key.
+func Slice[T any](ctx options.Context) []T {
+	return slice[T](ctx, Key[[]T]{})
+}
+
+// SliceOr retrieves a slice, or a default if not found.
+func SliceOr[T any](ctx options.Context, defaultValue []T) []T {
+	if v := Slice[T](ctx); v != nil {
+		return v
+	}
+	return defaultValue
+}
+
+// Append appends values to a slice using an implicit key.
+func Append[T any](ctx options.Context, values ...T) options.Context {
+	return appendValues[T](ctx, Key[[]T]{}, values...)
+}
+
+// Update returns an options.Option that modifies a configuration struct *T using an implicit key.
 func Update[T any](updaters ...func(*T)) options.Option {
 	return func(ctx options.Context) options.Context {
-		if v, ok := Value(ctx, Key[*T]{}); ok {
+		if v, ok := value(ctx, Key[*T]{}); ok {
 			for _, updater := range updaters {
 				updater(v)
 			}
@@ -150,54 +171,15 @@ func Update[T any](updaters ...func(*T)) options.Option {
 	}
 }
 
-// --- Getters (Implicit Key) ---
-
-// Extract retrieves a value of type T from the given options.Context.
-func Extract[T any](ctx options.Context) (T, bool) {
-	if v, ok := Value(ctx, Key[T]{}); ok {
-		return v, ok
-	}
-	var zero T
-	return zero, false
-}
-
-// ExtractOr retrieves a value of type T from the given options.Context, or a default value if not found.
-func ExtractOr[T any](ctx options.Context, defaultValue T) T {
-	if v, ok := Extract[T](ctx); ok {
-		return v
-	}
-	return defaultValue
-}
-
-// ExtractSlice retrieves a slice of type []T from the given options.Context.
-func ExtractSlice[T any](ctx options.Context) []T {
-	val, ok := Extract[[]T](ctx)
-	if !ok {
-		return nil
-	}
-	return val
-}
-
-// ExtractSliceOr retrieves a slice of type []T from the given options.Context, or a default value if not found.
-func ExtractSliceOr[T any](ctx options.Context, defaultValue []T) []T {
-	if v := ExtractSlice[T](ctx); v != nil {
-		return v
-	}
-	return defaultValue
-}
-
 // =============================
 // Context Application Core
 // =============================
 
 // apply is the internal core for applying options.
-// It handles instance creation, context initialization, and option application.
 func apply[T any](cfg *T, opts ...options.Option) (options.Context, *T) {
-	// Centralized setup logic
 	key := Key[*T]{}
-	ctx := WithValue(Empty(), key, cfg)
+	ctx := withValue(Empty(), key, cfg)
 
-	// Apply all options
 	for _, option := range opts {
 		ctx = option(ctx)
 	}
@@ -212,14 +194,12 @@ func New[T any](opts ...options.Option) (options.Context, *T) {
 }
 
 // NewT creates a new instance of T, applies options, and returns the configured instance.
-// This is a convenience wrapper around New for when the context is not needed.
 func NewT[T any](opts ...options.Option) *T {
 	_, cfg := apply[T](new(T), opts...)
 	return cfg
 }
 
 // NewContext creates a new instance of T, applies options, and returns the resulting context.
-// It's useful for creating a configured context template.
 func NewContext[T any](opts ...options.Option) options.Context {
 	ctx, _ := apply[T](new(T), opts...)
 	return ctx
