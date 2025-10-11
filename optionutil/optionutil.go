@@ -148,22 +148,38 @@ func SliceValueOr[T any](ctx options.Context, key Key[[]T], defaultValue []T) []
 // Implicit Key Functions
 // =============================
 
-// Note: These functions use automatically inferred keys
-
 // --- Setters (Implicit Key) ---
+
+// AppendValues appends values to a slice in the options.Context using an implicit key.
+func AppendValues[T any](ctx options.Context, values ...T) options.Context {
+	key := Key[[]T]{}
+	return Append[T](ctx, key, values...)
+}
+
+// Update returns an options.Option that modifies a configuration struct *T in the options.Context chain.
+func Update[T any](updaters ...func(*T)) options.Option {
+	return func(ctx options.Context) options.Context {
+		if v, ok := Value(ctx, Key[*T]{}); ok {
+			for _, updater := range updaters {
+				updater(v)
+			}
+		}
+		return ctx
+	}
+}
+
+// --- Getters (Implicit Key) ---
 
 // Extract retrieves a value of type T from the given options.Context.
 func Extract[T any](ctx options.Context) (T, bool) {
-	key := Key[T]{}
-	if v, ok := Value(ctx, key); ok {
+	if v, ok := Value(ctx, Key[T]{}); ok {
 		return v, ok
 	}
 	var zero T
 	return zero, false
 }
 
-// ExtractOr returns the value associated with the given key in the options.Context,
-// or a default value if the key is not found.
+// ExtractOr retrieves a value of type T from the given options.Context, or a default value if not found.
 func ExtractOr[T any](ctx options.Context, defaultValue T) T {
 	if v, ok := Extract[T](ctx); ok {
 		return v
@@ -171,17 +187,16 @@ func ExtractOr[T any](ctx options.Context, defaultValue T) T {
 	return defaultValue
 }
 
-// ExtractSlice retrieves a copy of the slice associated with the given key in the options.Context.
+// ExtractSlice retrieves a slice of type []T from the given options.Context.
 func ExtractSlice[T any](ctx options.Context) []T {
-	key := Key[[]T]{}
-	if v, ok := Value(ctx, key); ok {
-		return v
+	val, ok := Extract[[]T](ctx)
+	if !ok {
+		return nil
 	}
-	return nil
+	return val
 }
 
-// ExtractSliceOr returns a copy of the slice associated with the given key in the options.Context,
-// or a default value if the key is not found.
+// ExtractSliceOr retrieves a slice of type []T from the given options.Context, or a default value if not found.
 func ExtractSliceOr[T any](ctx options.Context, defaultValue []T) []T {
 	if v := ExtractSlice[T](ctx); v != nil {
 		return v
@@ -189,38 +204,18 @@ func ExtractSliceOr[T any](ctx options.Context, defaultValue []T) []T {
 	return defaultValue
 }
 
-// --- Getters (Implicit Key) ---
-
-// Update returns an options.Option that modifies a configuration struct *T in the options.Context chain.
-func Update[T any](us ...func(*T)) options.Option {
-	key := Key[*T]{}
-	return func(ctx options.Context) options.Context {
-		if v, ok := Value(ctx, key); ok {
-			for _, u := range us {
-				u(v)
-			}
-		}
-		return ctx
-	}
-}
-
-// AppendValues appends values to a slice in the options.Context.
-func AppendValues[T any](ctx options.Context, values ...T) options.Context {
-	key := Key[[]T]{}
-	return Append(ctx, key, values...)
-}
-
 // =============================
-// Context Utilities
+// Context Application Core
 // =============================
 
-// apply is the new, powerful internal core.
+// apply is the internal core for applying options.
 // It handles instance creation, context initialization, and option application.
-func apply[T any](cfg *T, opts []options.Option) (options.Context, *T) {
+func apply[T any](cfg *T, opts ...options.Option) (options.Context, *T) {
+	// Centralized setup logic
 	key := Key[*T]{}
 	ctx := WithValue(Empty(), key, cfg)
 
-	// Apply all options using the simple loop
+	// Apply all options
 	for _, option := range opts {
 		ctx = option(ctx)
 	}
@@ -228,28 +223,35 @@ func apply[T any](cfg *T, opts []options.Option) (options.Context, *T) {
 	return ctx, cfg
 }
 
-// New creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
+// New creates a new instance of T, applies options, and returns both the final
+// context and the configured instance.
 func New[T any](opts ...options.Option) (options.Context, *T) {
-	return apply(new(T), opts)
+	return apply[T](new(T), opts...)
 }
 
-// NewContext creates a new instance of T, applies options to it, and returns a pointer to the configured instance.
-func NewContext[T any](opts ...options.Option) (options.Context, *T) {
-	return apply(new(T), opts)
-}
-
-// NewT creates a new context, initializes a *T object within it,
-// and applies the given options. It's a safe entry point for configuration.
+// NewT creates a new instance of T, applies options, and returns the configured instance.
+// This is a convenience wrapper around New for when the context is not needed.
 func NewT[T any](opts ...options.Option) *T {
-	_, t := apply(new(T), opts)
-	return t
+	_, cfg := apply[T](new(T), opts...)
+	return cfg
+}
+
+// NewContext creates a new instance of T, applies options, and returns the resulting context.
+// It's useful for creating a configured context template.
+func NewContext[T any](opts ...options.Option) options.Context {
+	ctx, _ := apply[T](new(T), opts...)
+	return ctx
 }
 
 // Apply applies a series of options.Option to a given configuration object.
 func Apply[T any](cfg *T, opts ...options.Option) options.Context {
-	ctx, _ := apply(cfg, opts)
+	ctx, _ := apply[T](cfg, opts...)
 	return ctx
 }
+
+// =============================
+// Context Utilities
+// =============================
 
 // WithContext returns an options.Option that sets the given options.Context as the current context.
 func WithContext(ctx options.Context) options.Option {
@@ -271,8 +273,11 @@ func WithCond(condition bool, opt options.Option) options.Option {
 // WithGroup returns an options.Option that applies a group of options.Option to the context.
 func WithGroup(opts ...options.Option) options.Option {
 	return func(ctx options.Context) options.Context {
-		for _, opt := range opts {
-			ctx = opt(ctx)
+		if ctx == nil {
+			ctx = Empty()
+		}
+		for _, option := range opts {
+			ctx = option(ctx)
 		}
 		return ctx
 	}
