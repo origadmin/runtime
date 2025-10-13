@@ -28,8 +28,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      actions: read
+      contents: read # 明确赋予读取权限
+      actions: read # 明确赋予读取 Actions 的权限
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -39,7 +39,7 @@ jobs:
         with:
           go-version: '^1.23.0' # The Go version to download (if necessary) and use.
 
-      - name: Install protoc
+      - name: Install protoc # 手动安装 protoc
         run: |
           PROTOBUF_VERSION="25.3" # 您可以根据需要指定 protoc 版本
           PROTOC_ZIP="protoc-${PROTOBUF_VERSION}-linux-x86_64.zip"
@@ -48,17 +48,15 @@ jobs:
           sudo unzip -o ${PROTOC_ZIP} -d /usr/local include/*
           rm -f ${PROTOC_ZIP}
 
-      - name: Install Buf CLI
-        uses: bufbuild/buf-action@v1
-        with:
-          version: '1.29.0'
+      - name: Install Buf CLI # 使用 go install 安装 Buf CLI
+        run: go install github.com/bufbuild/buf/cmd/buf@latest
 
       - name: Run tests
         run: make test
 
   release:
     # The release job depends on the test job succeeding.
-    needs: [ test ]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
