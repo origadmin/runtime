@@ -21,7 +21,7 @@ require (
 	github.com/origadmin/slog-kratos v1.0.5
 	github.com/origadmin/toolkits v0.3.21
 	github.com/origadmin/toolkits/errors v0.3.20
-	github.com/origadmin/toolkits/slogx v0.3.20
+	github.com/origadmin/toolkits/slogx v0.3.22
 	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
