@@ -35,6 +35,9 @@ jobs:
         with:
           go-version: '^1.23.0' # The Go version to download (if necessary) and use.
 
+      - name: Install protoc
+        uses: arduino/setup-protoc@v2
+
       - name: Run tests
         run: make test
 
@@ -44,23 +47,34 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, '[release]')
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '^1.23.0'
+
       - name: Create Release and Changelog
-        # This action automates the entire release process based on
-        # Conventional Commit messages.
+        id: release
         uses: googleapis/release-please-action@v4
         with:
-          # The release-type for a standard Go module.
-          # It automatically finds the go.mod file, reads the module path,
-          # and creates tags like `v1.2.3`.
           config-file: release-please-config.json
           manifest-file: .github/.release-please-manifest.json # 已更新路径
-          # The token is required for release-please to create releases.
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Optional: If you want to do something after a release is created (e.g., notify Slack)
+      - name: Install Buf CLI
+        if: ${{ steps.release.outputs.release_created }}
+        run: go install github.com/bufbuild/buf/cmd/buf@latest
+
+      - name: Push to Buf Schema Registry
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+        run: buf push --tag ${{ steps.release.outputs.tag_name }}
+
       - name: Notify on new release
         if: ${{ steps.release.outputs.release_created }}
         run: |
           echo "New release created: ${{ steps.release.outputs.tag_name }}"
           echo "Release notes: ${{ steps.release.outputs.release_notes }}"
-          # Add your notification logic here (e.g., curl to Slack webhook)
