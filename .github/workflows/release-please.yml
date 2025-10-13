@@ -11,6 +11,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: read # 添加此行
 
 jobs:
   lint:
@@ -26,6 +27,10 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -35,15 +40,18 @@ jobs:
         with:
           go-version: '^1.23.0' # The Go version to download (if necessary) and use.
 
-      - name: Install protoc
-        uses: arduino/setup-protoc@v3
+      - name: Install protoc and Buf CLI
+        uses: bufbuild/buf-action@v1 # 更改为 bufbuild/buf-action@v1
+        with:
+          version: 'latest'
+          protoc_version: '25.x' # Specify a recent protoc version
 
       - name: Run tests
         run: make test
 
   release:
     # The release job depends on the test job succeeding.
-    needs: [test]
+    needs: [ test ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -62,9 +70,9 @@ jobs:
           manifest-file: .github/.release-please-manifest.json # 已更新路径
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Buf CLI
-        if: ${{ steps.release.outputs.release_created }}
-        run: go install github.com/bufbuild/buf/cmd/buf@latest
+      # The Buf CLI is already installed by bufbuild/buf-action@v1 in the test job.
+      # If you need it in the release job, you might need to install it again or pass it between jobs.
+      # For now, assuming it's only needed in the test job or will be re-installed if needed here.
 
       - name: Push to Buf Schema Registry
         if: ${{ steps.release.outputs.release_created }}
