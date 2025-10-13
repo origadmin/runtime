@@ -12,11 +12,11 @@ ifeq ($(GOHOSTOS), windows)
 	#Git_Bash= $(subst cmd\,bin\bash.exe,$(dir $(shell where git)))
 	#GIT_BASH=$(subst \,/,$(subst cmd\,bin\bash.exe,$(dir $(shell which git))))
 
+	# gitHash Current commit id, same as gitCommit result
+	gitHash = $(shell git rev-parse HEAD)
 	VERSION=$(shell git describe --tags --always)
 	BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 	HEAD_TAG=$(shell git tag --points-at '${gitHash}')
-	# gitHash Current commit id, same as gitCommit result
-	gitHash = $(shell git rev-parse HEAD)
 
 	# Use PowerShell to find .proto files, convert to relative paths, and replace \ with /
 	RUNTIME_PROTO_FILES := $(shell powershell -Command "Get-ChildItem -Recurse proto -Filter *.proto | Resolve-Path -Relative")
@@ -35,11 +35,11 @@ ifeq ($(GOHOSTOS), windows)
 	# same as gitHash previously
 	COMMIT = $(shell git log --pretty=format:'%h' -n 1)
 else
+	# gitHash Current commit id, same as gitCommit result
+    gitHash = $(shell git rev-parse HEAD)
 	VERSION=$(shell git describe --tags --always)
 	BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 	HEAD_TAG=$(shell git tag --points-at '${gitHash}')
-	# gitHash Current commit id, same as gitCommit result
-    gitHash = $(shell git rev-parse HEAD)
 
 	RUNTIME_PROTO_FILES=$(shell find runtime -name *.proto)
 	# TOOLKITS_PROTO_FILES=$(shell find toolkits -name *.proto)
