@@ -67,4 +67,4 @@ jobs:
           echo "Failed to merge the PR after $MAX_RETRIES attempts due to failing status checks."
           exit 1
       - name: Auto-merge for Dependabot PRs
-        run: gh pr merge --auto --merge ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --rebase ${{ github.event.pull_request.html_url }}
