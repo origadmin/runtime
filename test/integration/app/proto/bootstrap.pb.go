@@ -262,25 +262,25 @@ var File_bootstrap_proto protoreflect.FileDescriptor
 
 const file_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\x0fbootstrap.proto\x12\x10test.app.configs\x1a\x1cdiscovery/v1/discovery.proto\x1a\x1emiddleware/v1/middleware.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"\x92\x01\n" +
+	"\x0fbootstrap.proto\x12\x10test.app.configs\x1a$runtime/discovery/v1/discovery.proto\x1a&runtime/middleware/v1/middleware.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\"\xa2\x01\n" +
 	"\x06Server\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x124\n" +
-	"\x04grpc\x18\x02 \x01(\v2\x1e.transport.v1.GrpcServerConfigH\x00R\x04grpc\x124\n" +
-	"\x04http\x18\x03 \x01(\v2\x1e.transport.v1.HttpServerConfigH\x00R\x04httpB\b\n" +
-	"\x06config\"\xa7\x01\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12<\n" +
+	"\x04grpc\x18\x02 \x01(\v2&.runtime.transport.v1.GrpcServerConfigH\x00R\x04grpc\x12<\n" +
+	"\x04http\x18\x03 \x01(\v2&.runtime.transport.v1.HttpServerConfigH\x00R\x04httpB\b\n" +
+	"\x06config\"\xb7\x01\n" +
 	"\x06Client\x12\x1f\n" +
 	"\vclient_name\x18\x01 \x01(\tR\n" +
-	"clientName\x129\n" +
-	"\vdiscoveries\x18\x02 \x03(\v2\x17.discovery.v1.DiscoveryR\vdiscoveries\x12A\n" +
-	"\vmiddlewares\x18\x03 \x03(\v2\x1f.middleware.v1.MiddlewareConfigR\vmiddlewares\"\xdc\x02\n" +
+	"clientName\x12A\n" +
+	"\vdiscoveries\x18\x02 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\x12I\n" +
+	"\vmiddlewares\x18\x03 \x03(\v2'.runtime.middleware.v1.MiddlewareConfigR\vmiddlewares\"\xe4\x02\n" +
 	"\tBootstrap\x12N\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2,.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
 	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x122\n" +
 	"\aservers\x18\x03 \x03(\v2\x18.test.app.configs.ServerR\aservers\x122\n" +
-	"\aclients\x18\x04 \x03(\v2\x18.test.app.configs.ClientR\aclients\x1aW\n" +
+	"\aclients\x18\x04 \x03(\v2\x18.test.app.configs.ClientR\aclients\x1a_\n" +
 	"\x10DiscoveriesEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12-\n" +
-	"\x05value\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x05value:\x028\x01BCZAgithub.com/origadmin/framework/test/integration/app/proto;configsb\x06proto3"
+	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
+	"\x05value\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x05value:\x028\x01BCZAgithub.com/origadmin/framework/test/integration/app/proto;configsb\x06proto3"
 
 var (
 	file_bootstrap_proto_rawDescOnce sync.Once
@@ -300,20 +300,20 @@ var file_bootstrap_proto_goTypes = []any{
 	(*Client)(nil),               // 1: test.app.configs.Client
 	(*Bootstrap)(nil),            // 2: test.app.configs.Bootstrap
 	nil,                          // 3: test.app.configs.Bootstrap.DiscoveriesEntry
-	(*v1.GrpcServerConfig)(nil),  // 4: transport.v1.GrpcServerConfig
-	(*v1.HttpServerConfig)(nil),  // 5: transport.v1.HttpServerConfig
-	(*v11.Discovery)(nil),        // 6: discovery.v1.Discovery
-	(*v12.MiddlewareConfig)(nil), // 7: middleware.v1.MiddlewareConfig
+	(*v1.GrpcServerConfig)(nil),  // 4: runtime.transport.v1.GrpcServerConfig
+	(*v1.HttpServerConfig)(nil),  // 5: runtime.transport.v1.HttpServerConfig
+	(*v11.Discovery)(nil),        // 6: runtime.discovery.v1.Discovery
+	(*v12.MiddlewareConfig)(nil), // 7: runtime.middleware.v1.MiddlewareConfig
 }
 var file_bootstrap_proto_depIdxs = []int32{
-	4, // 0: test.app.configs.Server.grpc:type_name -> transport.v1.GrpcServerConfig
-	5, // 1: test.app.configs.Server.http:type_name -> transport.v1.HttpServerConfig
-	6, // 2: test.app.configs.Client.discoveries:type_name -> discovery.v1.Discovery
-	7, // 3: test.app.configs.Client.middlewares:type_name -> middleware.v1.MiddlewareConfig
+	4, // 0: test.app.configs.Server.grpc:type_name -> runtime.transport.v1.GrpcServerConfig
+	5, // 1: test.app.configs.Server.http:type_name -> runtime.transport.v1.HttpServerConfig
+	6, // 2: test.app.configs.Client.discoveries:type_name -> runtime.discovery.v1.Discovery
+	7, // 3: test.app.configs.Client.middlewares:type_name -> runtime.middleware.v1.MiddlewareConfig
 	3, // 4: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry
 	0, // 5: test.app.configs.Bootstrap.servers:type_name -> test.app.configs.Server
 	1, // 6: test.app.configs.Bootstrap.clients:type_name -> test.app.configs.Client
-	6, // 7: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> discovery.v1.Discovery
+	6, // 7: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name

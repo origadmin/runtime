@@ -3,9 +3,9 @@ syntax = "proto3";
 package test.configs;
 
 // Import all required building blocks from the framework's api directory
-import "discovery/v1/discovery.proto";
-import "transport/v1/grpc.proto";
-import "transport/v1/http.proto";
+import "runtime/discovery/v1/discovery.proto";
+import "runtime/transport/v1/grpc.proto";
+import "runtime/transport/v1/http.proto";
 
 // go_package points to where the generated Go code for this test module should be placed
 // Explicitly map transport.v1 protobuf package to its generated Go package with the correct alias
@@ -16,7 +16,7 @@ message DiscoveryConfig {
   // Unique name for this discovery configuration, e.g., "internal-consul", "legacy-etcd"
   string name = 1;
   // Specific service discovery configuration
-  discovery.v1.Discovery config = 2;
+  runtime.discovery.v1.Discovery config = 2;
 }
 
 // Bootstrap is the top-level configuration structure for our test application.
@@ -28,8 +28,8 @@ message Bootstrap {
   string registration_discovery_name = 2;
 
   // 3. Define the list of service endpoints that the current service will expose.
-  repeated transport.v1.GrpcServerConfig grpc_servers = 3;
-  repeated transport.v1.HttpServerConfig http_servers = 4;
+  repeated runtime.transport.v1.GrpcServerConfig grpc_servers = 3;
+  repeated runtime.transport.v1.HttpServerConfig http_servers = 4;
 
   // 4. Define the list of downstream clients that the current service will connect to.
   repeated string clients = 5;

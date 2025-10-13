@@ -163,15 +163,15 @@ var File_bootstrap_proto protoreflect.FileDescriptor
 
 const file_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\x0fbootstrap.proto\x12\ftest.configs\x1a\x1cdiscovery/v1/discovery.proto\x1a\x17transport/v1/grpc.proto\x1a\x17transport/v1/http.proto\"V\n" +
+	"\x0fbootstrap.proto\x12\ftest.configs\x1a$runtime/discovery/v1/discovery.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\"^\n" +
 	"\x0fDiscoveryConfig\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
-	"\x06config\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x06config\"\xac\x02\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
+	"\x06config\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x06config\"\xbc\x02\n" +
 	"\tBootstrap\x12?\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2\x1d.test.configs.DiscoveryConfigR\vdiscoveries\x12>\n" +
-	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12A\n" +
-	"\fgrpc_servers\x18\x03 \x03(\v2\x1e.transport.v1.GrpcServerConfigR\vgrpcServers\x12A\n" +
-	"\fhttp_servers\x18\x04 \x03(\v2\x1e.transport.v1.HttpServerConfigR\vhttpServers\x12\x18\n" +
+	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12I\n" +
+	"\fgrpc_servers\x18\x03 \x03(\v2&.runtime.transport.v1.GrpcServerConfigR\vgrpcServers\x12I\n" +
+	"\fhttp_servers\x18\x04 \x03(\v2&.runtime.transport.v1.HttpServerConfigR\vhttpServers\x12\x18\n" +
 	"\aclients\x18\x05 \x03(\tR\aclientsBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
@@ -190,15 +190,15 @@ var file_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_bootstrap_proto_goTypes = []any{
 	(*DiscoveryConfig)(nil),      // 0: test.configs.DiscoveryConfig
 	(*Bootstrap)(nil),            // 1: test.configs.Bootstrap
-	(*v1.Discovery)(nil),         // 2: discovery.v1.Discovery
-	(*v11.GrpcServerConfig)(nil), // 3: transport.v1.GrpcServerConfig
-	(*v11.HttpServerConfig)(nil), // 4: transport.v1.HttpServerConfig
+	(*v1.Discovery)(nil),         // 2: runtime.discovery.v1.Discovery
+	(*v11.GrpcServerConfig)(nil), // 3: runtime.transport.v1.GrpcServerConfig
+	(*v11.HttpServerConfig)(nil), // 4: runtime.transport.v1.HttpServerConfig
 }
 var file_bootstrap_proto_depIdxs = []int32{
-	2, // 0: test.configs.DiscoveryConfig.config:type_name -> discovery.v1.Discovery
+	2, // 0: test.configs.DiscoveryConfig.config:type_name -> runtime.discovery.v1.Discovery
 	0, // 1: test.configs.Bootstrap.discoveries:type_name -> test.configs.DiscoveryConfig
-	3, // 2: test.configs.Bootstrap.grpc_servers:type_name -> transport.v1.GrpcServerConfig
-	4, // 3: test.configs.Bootstrap.http_servers:type_name -> transport.v1.HttpServerConfig
+	3, // 2: test.configs.Bootstrap.grpc_servers:type_name -> runtime.transport.v1.GrpcServerConfig
+	4, // 3: test.configs.Bootstrap.http_servers:type_name -> runtime.transport.v1.HttpServerConfig
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
