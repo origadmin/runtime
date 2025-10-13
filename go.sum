@@ -147,8 +147,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/origadmin/slog-kratos v1.0.5 h1:yDLxVaN8A8MMmIny3xy65uT1wLKl3S9tVZVijn+1Vhc=
 github.com/origadmin/slog-kratos v1.0.5/go.mod h1:zuOf6B1cMjPwwMJ2or2sPbzNAdx/fMn/6MekdG30Xh4=
-github.com/origadmin/toolkits v0.3.21 h1:Rt9ZipjG1U6m9Wy5m/lpDjitGxMhBS9QcaIalxe1YgM=
-github.com/origadmin/toolkits v0.3.21/go.mod h1:y1NQW8rf8I0rHpDH/1X64rdQ/urSb1LR7iaZwX1Ycbg=
+github.com/origadmin/toolkits v0.3.22 h1:qvIyYTdeg5kVtWm6CHxBJ28eKU2kTWfr3UvUGZkqqR8=
+github.com/origadmin/toolkits v0.3.22/go.mod h1:y1NQW8rf8I0rHpDH/1X64rdQ/urSb1LR7iaZwX1Ycbg=
 github.com/origadmin/toolkits/errors v0.3.20 h1:3gBTTqDGZGAmJVwYATOP0d2rPF1sw0TjlfwdrbjKMZs=
 github.com/origadmin/toolkits/errors v0.3.20/go.mod h1:YCPShNuAmn0ns0JB43iKbVdWcPA8XCTiFG+7UA2+tJw=
 github.com/origadmin/toolkits/slogx v0.3.20 h1:fIzOEQfzfeTDb52n7cevsmv0qEdAwGetk5Q3SRdQ810=
