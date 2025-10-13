@@ -8,7 +8,6 @@ on:
     branches:
       - main
 
-
 permissions:
   contents: write
   pull-requests: write
@@ -27,11 +26,9 @@ jobs:
           go-version: '^1.23.0'
 
   test:
-    needs: [ lint ]
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
       actions: read
     steps:
       - name: Checkout code
@@ -42,8 +39,22 @@ jobs:
         with:
           go-version: '^1.23.0' # The Go version to download (if necessary) and use.
 
-#      - name: Run tests
-#        run: make test
+      - name: Install protoc
+        run: |
+          PROTOBUF_VERSION="25.3" # 您可以根据需要指定 protoc 版本
+          PROTOC_ZIP="protoc-${PROTOBUF_VERSION}-linux-x86_64.zip"
+          curl -LO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/${PROTOC_ZIP}"
+          sudo unzip -o ${PROTOC_ZIP} -d /usr/local bin/protoc
+          sudo unzip -o ${PROTOC_ZIP} -d /usr/local include/*
+          rm -f ${PROTOC_ZIP}
+
+      - name: Install Buf CLI
+        uses: bufbuild/buf-action@v1
+        with:
+          version: '1.29.0'
+
+      - name: Run tests
+        run: make test
 
   release:
     # The release job depends on the test job succeeding.
@@ -69,12 +80,6 @@ jobs:
       # The Buf CLI is already installed by bufbuild/buf-action@v1 in the test job.
       # If you need it in the release job, you might need to install it again or pass it between jobs.
       # For now, assuming it's only needed in the test job or will be re-installed if needed here.
-      - name: Install protoc and Buf CLI
-        uses: bufbuild/buf-action@v1 # 更改为 bufbuild/buf-action@v1
-        with:
-          token: ${{ secrets.BUF_TOKEN }}
-          version: 'latest'
-          protoc_version: '25.x' # Specify a recent protoc version
 
       - name: Push to Buf Schema Registry
         if: ${{ steps.release.outputs.release_created }}
