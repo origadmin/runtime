@@ -9,8 +9,8 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/gorilla/handlers"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
-	corsv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/cors"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	corsv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/cors"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"

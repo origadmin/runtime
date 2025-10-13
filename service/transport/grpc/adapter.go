@@ -11,7 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
-	"github.com/origadmin/runtime/api/gen/go/transport/v1"
+	"github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"

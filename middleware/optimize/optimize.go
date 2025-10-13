@@ -9,8 +9,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
-	optimizev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/optimize"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	optimizev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/optimize"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )

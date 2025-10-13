@@ -12,7 +12,7 @@ import (
 
 	kslog "github.com/origadmin/slog-kratos"
 
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	"github.com/origadmin/toolkits/slogx"
 )
 

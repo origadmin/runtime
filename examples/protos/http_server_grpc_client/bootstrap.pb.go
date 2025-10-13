@@ -12,8 +12,8 @@
 package conf
 
 import (
-	v11 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

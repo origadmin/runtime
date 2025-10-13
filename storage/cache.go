@@ -6,7 +6,7 @@ import (
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	"github.com/origadmin/runtime/storage/cache"
 )
 

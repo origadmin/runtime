@@ -10,7 +10,7 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
-	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/toolkits/errors"

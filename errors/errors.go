@@ -18,7 +18,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/common/v1"
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	"github.com/origadmin/runtime/log"
 	tkerrors "github.com/origadmin/toolkits/errors"
 )

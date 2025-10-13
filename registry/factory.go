@@ -5,8 +5,8 @@
 package registry
 
 import (
-	commonv1 "github.com/origadmin/runtime/api/gen/go/common/v1"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"

@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	extensionv1 "github.com/origadmin/runtime/api/gen/go/extension/v1"
+	extensionv1 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
 )
 
 // GetTypedConfig retrieves a configuration of the specified type and name from the ExtensionMap

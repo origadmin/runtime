@@ -8,7 +8,7 @@ import (
 	"github.com/goexts/generic/configure"
 	"github.com/rs/cors"
 
-	corsv1 "github.com/origadmin/runtime/api/gen/go/middleware/v1/cors"
+	corsv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/cors"
 )
 
 // NewCorsHandler creates a Kratos filter for CORS by merging framework defaults,

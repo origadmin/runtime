@@ -13,8 +13,8 @@ import (
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	// Import the generated Go code from the load_with_runtime proto definition.
 	conf "github.com/origadmin/runtime/examples/protos/load_with_runtime"
 	"github.com/origadmin/runtime/log" // Import the log package

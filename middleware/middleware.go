@@ -6,7 +6,7 @@
 package middleware
 
 import (
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 )
 

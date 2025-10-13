@@ -4,7 +4,7 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"google.golang.org/protobuf/proto"
 
-	sourcev1 "github.com/origadmin/runtime/api/gen/go/source/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"

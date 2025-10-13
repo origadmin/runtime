@@ -14,7 +14,7 @@ import (
 
 	"github.com/goexts/generic/configure"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/security/transport/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 

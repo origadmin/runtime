@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	runtimelog "github.com/origadmin/runtime/log"
 	runtimeMiddleware "github.com/origadmin/runtime/middleware" // Import runtime/middleware package, but only for internal use.
@@ -226,7 +226,7 @@ func (b *Builder) initRegistries() error {
 }
 
 func (b *Builder) initMiddlewares() error {
-	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
+	helper := log.NewHelper(b.container.Logger())                             // Use log.Helper
 	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
 	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
 

@@ -7,7 +7,7 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 
-	"github.com/origadmin/runtime/api/gen/go/transport/v1"
+	"github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 )
 
 // NewGRPCClient creates a new concrete gRPC client connection based on the provided configuration.

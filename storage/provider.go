@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/config/v1"
+	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/runtime/storage/filestore"
 )

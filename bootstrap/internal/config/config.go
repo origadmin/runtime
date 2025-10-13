@@ -5,10 +5,10 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/app/v1"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/logger/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/middleware/v1"
+	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces"
 )

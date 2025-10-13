@@ -9,7 +9,7 @@ import (
 
 	kerrors "github.com/go-kratos/kratos/v2/errors"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/common/v1"
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 )
 
 // ToKratos converts an internal Structured error to a Kratos error for API responses.

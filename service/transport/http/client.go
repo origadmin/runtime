@@ -6,7 +6,7 @@ import (
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/transport/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 )
 
 // NewHTTPClient creates a new concrete HTTP client connection based on the provided configuration.

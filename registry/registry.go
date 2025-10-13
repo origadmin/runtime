@@ -6,7 +6,7 @@
 package registry
 
 import (
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/discovery/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
 )
