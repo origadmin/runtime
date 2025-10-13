@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package runtime.security.transport.v1;
+
+import "validate/validate.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1;transportv1";
+option java_multiple_files = true;
+option java_outer_classname = "TLSProto";
+option java_package = "com.github.origadmin.api.runtime.security.transport.v1";
+option objc_class_prefix = "ORST";
+
+// TLS configuration for secure connections
+message TLSConfig {
+  // Whether TLS is enabled
+  bool enabled = 1 [json_name = "enabled"];
+
+  // Certificate configuration
+  // File-based certificate configuration
+  optional FileConfig file = 2 [json_name = "file"];
+  // Inline PEM certificate data
+  optional PEMConfig pem = 3 [json_name = "pem"];
+
+  // Minimum TLS version
+  // Allowed values: "1.0", "1.1", "1.2", "1.3"
+  // Default: "1.2"
+  string min_version = 4 [
+    (validate.rules).string = {
+      in: [
+        "1.0",
+        "1.1",
+        "1.2",
+        "1.3"
+      ]
+    },
+    json_name = "min_version"
+  ];
+
+  // List of supported cipher suites
+  // Example: ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"]
+  repeated string cipher_suites = 5 [json_name = "cipher_suites"];
+
+  // Require client certificate
+  // Default: false
+  bool require_client_cert = 6 [json_name = "require_client_cert"];
+
+  // Client CA certificate file path (for client cert validation)
+  string client_ca_file = 7 [json_name = "client_ca_file"];
+
+  // Whether to skip server certificate verification
+  // Default: false
+  bool insecure_skip_verify = 8 [json_name = "insecure_skip_verify"];
+
+  // Server name for SNI (Server Name Indication), used by client
+  // Default: ""
+  string server_name = 9 [json_name = "server_name"];
+}
+
+// File-based certificate configuration
+message FileConfig {
+  // Path to certificate file
+  string cert = 1 [
+    (validate.rules).string.min_len = 1,
+    json_name = "cert"
+  ];
+
+  // Path to private key file
+  string key = 2 [
+    (validate.rules).string.min_len = 1,
+    json_name = "key"
+  ];
+
+  // Path to CA certificate file (optional)
+  string ca = 3 [json_name = "ca"];
+}
+
+// Inline PEM certificate configuration
+message PEMConfig {
+  // Certificate data in PEM format
+  bytes cert = 1 [
+    (validate.rules).bytes.min_len = 1,
+    json_name = "cert"
+  ];
+
+  // Private key data in PEM format
+  bytes key = 2 [
+    (validate.rules).bytes.min_len = 1,
+    json_name = "key"
+  ];
+
+  // CA certificate data in PEM format (optional)
+  bytes ca = 3 [json_name = "ca"];
+}

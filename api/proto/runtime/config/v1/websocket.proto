@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package runtime.config.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/config/v1;configv1";
+
+import "google/protobuf/duration.proto";
+
+// WebSocket defines the configuration for a WebSocket server.
+message WebSocket {
+  string network = 1;
+  string addr = 2;
+  google.protobuf.Duration timeout = 3;
+  // The endpoint that this server advertises to the service registry.
+  string endpoint = 4;
+}

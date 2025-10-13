@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package runtime.middleware.v1.selector;
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/selector;selectorv1";
+option java_multiple_files = true;
+option java_outer_classname = "SelectorProto";
+option java_package = "com.github.origadmin.api.runtime.middleware.v1.selector";
+option objc_class_prefix = "OMM";
+option php_namespace = "OrigAdmin\\Runtime\\Middleware\\Selector\\V1";
+
+// Selector
+message Selector {
+  repeated string includes = 1 [json_name = "includes"];
+  repeated string excludes = 2 [json_name = "excludes"];
+  repeated string paths = 3 [json_name = "paths"];
+  repeated string prefixes = 4 [json_name = "prefixes"];
+  string regex = 5 [json_name = "regex"];
+}

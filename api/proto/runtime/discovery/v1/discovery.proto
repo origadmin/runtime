@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package runtime.discovery.v1;
+
+import "runtime/extension/v1/extension.proto";
+import "validate/validate.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1;discoveryv1";
+option java_multiple_files = true;
+option java_outer_classname = "DiscoveryProto";
+option java_package = "com.github.origadmin.api.runtime.discovery.v1";
+option objc_class_prefix = "ORD";
+
+// Discovery defines the configuration for service registration.
+message Discovery {
+  // name is the the service key in the registry.
+  string name = 1 [json_name = "name"];
+
+  // type specifies which discovery provider to use.
+  string type = 2 [
+    json_name = "type",
+    (validate.rules).string = {
+      in: [
+        "none",
+        "consul",
+        "etcd",
+        "nacos",
+        "apollo",
+        "kubernetes",
+        "polaris"
+        // Users can also specify a custom type string here,
+        // and provide its configuration via the 'customize' field.
+      ]
+    }
+  ];
+
+  // debug enables verbose logging for the discovery client.
+  bool debug = 5 [json_name = "debug"];
+
+  // --- Standard Provider Configurations ---
+  optional Consul consul = 300 [json_name = "consul"];
+  optional ETCD etcd = 400 [json_name = "etcd"];
+  optional Nacos nacos = 500 [json_name = "nacos"];
+  optional Apollo apollo = 600 [json_name = "apollo"];
+  optional Kubernetes kubernetes = 700 [json_name = "kubernetes"];
+  optional Polaris polaris = 800 [json_name = "polaris"];
+
+  // customize is used for non-standard, user-defined discovery providers.
+  extension.v1.Extension customize = 900 [json_name = "customize"];
+}
+
+// --- Message Definitions for Each Provider ---
+
+// Consul provider specific configuration.
+message Consul {
+  string address = 1;
+  string scheme = 2;
+  string token = 3;
+  bool heart_beat = 4;
+  bool health_check = 5;
+  string datacenter = 6;
+  uint32 health_check_interval = 8;
+  int64 timeout = 10;
+  uint32 deregister_critical_service_after = 11;
+}
+
+// ETCD provider specific configuration.
+message ETCD {
+  repeated string endpoints = 1;
+}
+
+// Nacos provider specific configuration (placeholder).
+message Nacos {
+  // e.g., string server_addr = 1;
+  // e.g., string namespace_id = 2;
+}
+
+// Apollo provider specific configuration (placeholder).
+message Apollo {
+  // e.g., string meta_server_addr = 1;
+  // e.g., string app_id = 2;
+}
+
+// Kubernetes provider specific configuration (placeholder).
+message Kubernetes {
+  // e.g., string kube_config_path = 1;
+}
+
+// Polaris provider specific configuration (placeholder).
+message Polaris {}

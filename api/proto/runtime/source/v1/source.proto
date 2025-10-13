@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package runtime.source.v1;
+
+import "runtime/extension/v1/extension.proto";
+import "runtime/security/transport/v1/tls.proto";
+import "validate/validate.proto";
+
+import "runtime/source/v1/file_source.proto";
+import "runtime/source/v1/env_source.proto";
+import "runtime/source/v1/consul_source.proto";
+import "runtime/source/v1/etcd_source.proto";
+import "runtime/source/v1/nacos_source.proto";
+import "runtime/source/v1/apollo_source.proto";
+import "runtime/source/v1/kubernetes_source.proto";
+import "runtime/source/v1/polaris_source.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/source/v1;sourcev1";
+option java_multiple_files = true;
+option java_outer_classname = "SourceProto";
+option java_package = "com.github.origadmin.api.runtime.source.v1";
+option objc_class_prefix = "ORS";
+
+message Sources {
+  // name specifies the configuration set name
+  string name = 1 [json_name = "name"];
+  // version specifies the configuration set version
+  string version = 2 [json_name = "version"];
+  // sources is a list of configuration sources
+  repeated SourceConfig sources = 3 [json_name = "sources"];
+}
+
+// SourceConfig is the source file for load configuration
+message SourceConfig {
+  // type specifies the type of the configuration source
+  string type = 1 [
+    json_name = "type",
+    (validate.rules).string = {
+      in: [
+        "env",
+        "file",
+        "etcd",
+        "consul",
+        "apollo",
+        "nacos",
+        "kubernetes",
+        "polaris",
+        "customize"
+      ]
+    }
+  ]; // Type
+
+  // name specifies the configuration name
+  string name = 2 [json_name = "name"];
+  // version specifies the configuration version
+  string version = 3 [json_name = "version"];
+  // set the supported file format, if not set, all formats are supported
+  repeated string formats = 4 [json_name = "formats"];
+
+  // priority for this configuration source.
+  // Sources will be loaded in ascending order of priority (e.g., 0, 1, 2, ...),
+  // with later sources (higher priority value) overriding earlier ones.
+  int32 priority = 5 [json_name = "priority"];
+
+  oneof config {
+    EnvSource env = 100 [json_name = "env"];
+    FileSource file = 200 [json_name = "file"];
+    ETCDSource etcd = 300 [json_name = "etcd"];
+    ConsulSource consul = 400 [json_name = "consul"];
+    NacosSource nacos = 500 [json_name = "nacos"];
+    ApolloSource apollo = 600 [json_name = "apollo"];
+    KubernetesSource kubernetes = 700 [json_name = "kubernetes"];
+    PolarisSource polaris = 800 [json_name = "polaris"];
+    extension.v1.Extension customize = 900 [json_name = "customize"];
+  }
+}

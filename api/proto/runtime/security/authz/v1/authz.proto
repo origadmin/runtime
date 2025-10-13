@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package runtime.security.authz.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "runtime/security/authn/v1/authn.proto";
+import "runtime/security/authz/v1/casbin.proto";
+import "validate/validate.proto";
+
+option cc_enable_arenas = true;
+option csharp_namespace = "OrigAdmin.Runtime.Security.Authz.V1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1;authzv1";
+option java_multiple_files = true;
+option java_outer_classname = "AuthZProto";
+option java_package = "com.github.origadmin.api.runtime.security.authz.v1";
+option objc_class_prefix = "ORSZ";
+option php_namespace = "OrigAdmin\\Runtime\\Security\\Authz\\V1";
+
+message CasbinAuth {
+  Policy policy = 1 [
+    json_name = "policy",
+    (gnostic.openapi.v3.property) = {description: "The Casbin policy associated with the authorization."}
+  ];
+  security.authn.v1.Claims claims = 20 [
+    json_name = "claims",
+    (gnostic.openapi.v3.property) = {description: "The claims embedded in the token."}
+  ]; // Claims
+}
+
+message AuthZ {
+  bool root = 1 [
+    json_name = "root",
+    (gnostic.openapi.v3.property) = {description: "Indicates if the user has root privileges."}
+  ];
+  string id = 2 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = {description: "The unique identifier of the user."}
+  ];
+  string user_type = 3 [
+    json_name = "user_type",
+    (validate.rules).string = {
+      in: [
+        "admin",
+        "user",
+        "guest"
+      ]
+    },
+    (gnostic.openapi.v3.property) = {description: "The type of user, either 'admin', 'user', or 'guest'."}
+  ];
+  string username = 4 [
+    json_name = "username",
+    (gnostic.openapi.v3.property) = {description: "The username of the user."}
+  ];
+  repeated string roles = 5 [
+    json_name = "roles",
+    (gnostic.openapi.v3.property) = {description: "The roles assigned to the user."}
+  ];
+  int64 timestamp = 6 [
+    json_name = "timestamp",
+    (gnostic.openapi.v3.property) = {description: "The timestamp of the authorization."}
+  ];
+  CasbinAuth casbin = 7 [
+    json_name = "casbin",
+    (gnostic.openapi.v3.property) = {description: "The Casbin authorization details."}
+  ];
+}

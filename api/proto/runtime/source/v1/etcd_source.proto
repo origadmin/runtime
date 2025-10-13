@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package runtime.source.v1;
+
+import "runtime/security/transport/v1/tls.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/source/v1;sourcev1";
+option java_multiple_files = true;
+option java_outer_classname = "EtcdSourceProto";
+option java_package = "com.github.origadmin.api.runtime.source.v1";
+option objc_class_prefix = "ORS";
+
+// ETCDSource defines the configuration for ETCD configuration source
+message ETCDSource {
+  // ETCD server address (e.g., "localhost:2379")
+  string address = 1 [json_name = "address"];
+  // Username for authentication (if required)
+  string username = 2 [json_name = "username"];
+  // Password for authentication (if required)
+  string password = 3 [json_name = "password"];
+  // Path to the configuration in ETCD (e.g., "/config/app")
+  string path = 4 [json_name = "path"];
+  // TLS configuration for secure connection
+  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
+}

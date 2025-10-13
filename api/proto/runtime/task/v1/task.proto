@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package runtime.task.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/task/v1;taskv1";
+option java_multiple_files = true;
+option java_outer_classname = "TaskProto";
+option java_package = "com.github.origadmin.api.runtime.task.v1";
+option objc_class_prefix = "ORC";
+
+// Task defines the configuration for a background task or cron job service.
+message Task {
+  // Add task-specific configurations here.
+  // For example, scheduler settings, concurrency limits, etc.
+}

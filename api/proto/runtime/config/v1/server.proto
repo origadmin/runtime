@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package runtime.config.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/config/v1;configv1";
+
+import "google/protobuf/duration.proto";
+import "runtime/security/transport/v1/tls.proto";
+import "validate/validate.proto";
+
+// Server defines the server-side configuration for the service.
+message Server {
+  // GRPC server configuration.
+  message GRPC {
+    string network = 1 [(validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]}];
+    string addr = 2 [(validate.rules).string.min_len = 1];
+    google.protobuf.Duration timeout = 3;
+    google.protobuf.Duration shutdown_timeout = 4;
+    // The endpoint that this server advertises to the service registry.
+    string endpoint = 5;
+    bool enable_reflection = 6;
+    int32 max_recv_msg_size = 7 [(validate.rules).int32 = {gt: 0}];
+    int32 max_send_msg_size = 8 [(validate.rules).int32 = {gt: 0}];
+    security.transport.v1.TLSConfig tls = 9;
+  }
+
+  // HTTP server configuration.
+  message HTTP {
+    string network = 1 [(validate.rules).string = {in: ["tcp", "tcp4", "tcp6", "unix", "unixpacket"]}];
+    string addr = 2 [(validate.rules).string.min_len = 1];
+    google.protobuf.Duration timeout = 3;
+    google.protobuf.Duration shutdown_timeout = 4;
+    // The endpoint that this server advertises to the service registry.
+    string endpoint = 5;
+    int32 max_recv_msg_size = 6 [(validate.rules).int32 = {gt: 0}];
+    int32 max_send_msg_size = 7 [(validate.rules).int32 = {gt: 0}];
+    security.transport.v1.TLSConfig tls = 8;
+  }
+
+  GRPC grpc = 1;
+  HTTP http = 2;
+}

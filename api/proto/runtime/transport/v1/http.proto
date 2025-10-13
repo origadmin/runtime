@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package runtime.transport.v1;
+
+import "google/protobuf/duration.proto";
+import "runtime/middleware/v1/cors/cors.proto";
+import "runtime/security/transport/v1/tls.proto";
+import "runtime/transport/v1/selector.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1";
+
+// HttpServerConfig defines the core configuration for a Kratos HTTP server.
+message HttpServerConfig {
+  // addr is the address for the server to listen on.
+  // e.g., "0.0.0.0:8000"
+  string addr = 1;
+
+  // timeout is the request handling timeout.
+  google.protobuf.Duration timeout = 2;
+
+  // middlewares is a list of middleware names to be applied to the server.
+  // The framework will look up these names in a middleware provider.
+  repeated string middlewares = 3;
+
+  // tls_config defines the TLS settings for the HTTP server.
+  optional security.transport.v1.TLSConfig tls_config = 4;
+
+  // network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
+  string network = 5;
+
+  // cors configuration for the HTTP server
+  optional middleware.v1.cors.Cors cors = 6;
+
+  // enable_pprof indicates whether to enable pprof debugging endpoints.
+  bool enable_pprof = 7;
+}
+
+// HttpClientConfig defines the core configuration for creating a Kratos HTTP client.
+message HttpClientConfig {
+  // endpoint is the target to connect to.
+  // It can be a direct address or a discovery service URI.
+  // e.g., "http://127.0.0.1:8000" or "discovery:///your-service-name"
+  string endpoint = 1;
+
+  // timeout is the request timeout for a single HTTP call.
+  google.protobuf.Duration timeout = 2;
+
+  // middlewares is a list of middleware names to be applied to the client.
+  repeated string middlewares = 3;
+
+  // selector defines the node selection strategy for the client.
+  SelectorConfig selector = 4;
+
+  // discovery_name is the name of the discovery client to use for service discovery.
+  // This is used when the endpoint is a discovery service URI.
+  string discovery_name = 5;
+
+  // tls_config defines the TLS settings for the HTTP client.
+  optional security.transport.v1.TLSConfig tls_config = 6;
+
+  // dial_timeout is the timeout for establishing a connection.
+  optional google.protobuf.Duration dial_timeout = 7;
+}

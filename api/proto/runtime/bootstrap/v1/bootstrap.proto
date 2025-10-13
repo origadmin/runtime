@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package runtime.bootstrap.v1;
+
+import "runtime/source/v1/source.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/bootstrap/v1;v1";
+
+// Bootstrap defines the structure of the bootstrap configuration file.
+message Bootstrap {
+  // sources defines the list of configuration sources to be loaded.
+  repeated source.v1.SourceConfig sources = 1;
+
+  // paths provides an optional mapping from a component name to its configuration path.
+  // The keys of this map should correspond to the predefined Component* constants
+  // in the Go bootstrap package (e.g., "logger", "registries").
+  map<string, string> paths = 2;
+}

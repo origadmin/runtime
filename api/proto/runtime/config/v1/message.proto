@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package runtime.config.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/config/v1;configv1";
+
+// Message defines the configuration for a message queue service consumer/producer.
+message Message {
+  // Add message queue specific configurations here.
+  // For example, broker addresses, topics, consumer group, etc.
+}

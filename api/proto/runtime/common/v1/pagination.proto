@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package runtime.common.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/field_mask.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/common/v1;commonv1";
+option java_multiple_files = true;
+option java_outer_classname = "PaginationProto";
+option java_package = "com.github.origadmin.api.runtime.pagination.v1";
+option objc_class_prefix = "ORP";
+option php_namespace = "OrigAdmin\\Runtime\\Pagination\\V1";
+
+// PaginationRequest provides a flexible structure for pagination requests, supporting
+// both cursor-based (infinite scroll) and offset-based (numbered pages) pagination.
+// The server should prioritize `page_token` if both `page_token` and `page` are provided.
+message PaginationRequest {
+  // For offset-based pagination: the page number to retrieve (1-indexed).
+  optional int32 page = 1 [
+    json_name = "page",
+    (gnostic.openapi.v3.property) = {
+      description: "The page number to retrieve (1-indexed)."
+      default: {number: 1}
+    }
+  ];
+
+  // The maximum number of items to return per page. The server may enforce a
+  // maximum limit to this value.
+  optional int32 page_size = 2 [
+    json_name = "page_size",
+    (gnostic.openapi.v3.property) = {
+      description: "The maximum number of items to return per page."
+      default: {number: 15}
+    }
+  ];
+
+  // For cursor-based pagination: a token identifying a page of results the server
+  // should return. This is the `next_page_token` from a previous response.
+  string page_token = 3 [
+    json_name = "page_token",
+    (gnostic.openapi.v3.property) = {description: "paging token"}
+  ];
+
+  // If true, the server will only return the `total_size` in the response Pagination
+  // message, and the `items` list will be empty. This is useful for fetching
+  // only the total count of items.
+  bool only_count = 4 [
+    json_name = "only_count",
+    (gnostic.openapi.v3.property) = {description: "query total only"}
+  ];
+
+  // The no_paging is used to disable pagination.
+  optional bool no_paging = 5 [
+    json_name = "no_paging",
+    (gnostic.openapi.v3.property) = {description: "whether not paging"}
+  ];
+
+  // sort condition
+  string order_by = 6 [
+    json_name = "order_by",
+    (gnostic.openapi.v3.property) = {
+      description: "sort condition, field name followed by 'asc' (ascending) or 'desc' (descending)"
+      example: {yaml: "id:asc"}
+    }
+  ];
+
+  // Field mask
+  google.protobuf.FieldMask field_mask = 7 [
+    json_name = "field_mask",
+    (gnostic.openapi.v3.property) = {
+      description: "It is used to Update the request message, which is used to perform a partial update to the resource. This mask is related to the resource, not the request message."
+      example: {yaml: "id,name,age"}
+    }
+  ];
+}
+
+// Pagination provides a comprehensive structure for pagination responses, supporting
+// both cursor-based (infinite scroll) and offset-based (numbered pages) pagination.
+message Pagination {
+  // For offset-based pagination: the current page number (1-indexed).
+  int32 page = 1 [
+    json_name = "page",
+    (gnostic.openapi.v3.property) = {description: "The current page number (1-indexed)."}
+  ];
+
+  // The number of items retrieved on the current page.
+  int32 page_size = 2 [
+    json_name = "page_size",
+    (gnostic.openapi.v3.property) = {description: "The number of items retrieved on the current page."}
+  ];
+
+  // For offset-based pagination: the total number of items available across all pages.
+  // This is optional and may be expensive to calculate for large datasets.
+  int64 total_size = 3 [
+    json_name = "total_size",
+    (gnostic.openapi.v3.property) = {description: "The total number of items available across all pages."}
+  ];
+
+  // For cursor-based pagination: a token to retrieve the next page of results.
+  // If empty, there are no more results.
+  string next_page_token = 4 [
+    json_name = "next_page_token",
+    (gnostic.openapi.v3.property) = {description: "Token to retrieve the next page of results, or empty if there are no more results."}
+  ];
+
+  // Additional information about this response.
+  // content to be added without destroying the current data format
+  map<string, google.protobuf.Any> extra = 5 [
+    json_name = "extra",
+    (gnostic.openapi.v3.property) = {description: "additional information about this response"}
+  ];
+}

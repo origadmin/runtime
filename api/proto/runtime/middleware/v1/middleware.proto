@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package runtime.middleware.v1;
+
+import "runtime/extension/v1/extension.proto";
+import "runtime/middleware/v1/circuitbreaker/circuitbreaker.proto";
+import "runtime/middleware/v1/cors/cors.proto";
+import "runtime/middleware/v1/jwt/jwt.proto";
+import "runtime/middleware/v1/metrics/metrics.proto";
+import "runtime/middleware/v1/ratelimit/ratelimiter.proto";
+import "runtime/middleware/v1/selector/selector.proto";
+import "runtime/middleware/v1/validator/validator.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1;middlewarev1";
+option java_multiple_files = true;
+option java_outer_classname = "MiddlewareProto";
+option java_package = "com.github.origadmin.api.runtime.middleware.v1";
+option objc_class_prefix = "OMX";
+option php_namespace = "OrigAdmin\\Runtime\\Middleware\\V1";
+
+// Metadata configuration for the middleware.
+message Metadata {
+  repeated string prefixes = 1 [json_name = "prefixes"];
+  map<string, string> data = 2 [json_name = "data"];
+}
+
+message Logging {}
+
+message Recovery {}
+
+// MiddlewareConfig represents a single middleware configuration with an enable switch.
+message MiddlewareConfig {
+  bool enabled = 1 [json_name = "enabled"];
+  string name = 2 [json_name = "name"];
+  string type = 3 [json_name = "type"];
+  optional middleware.v1.ratelimit.RateLimiter rate_limiter = 4 [json_name = "rate_limiter"];
+  optional middleware.v1.metrics.Metrics metrics = 5 [json_name = "metrics"];
+  optional middleware.v1.validator.Validator validator = 6 [json_name = "validator"];
+  optional middleware.v1.jwt.JWT jwt = 7 [json_name = "jwt"];
+  optional middleware.v1.selector.Selector selector = 8 [json_name = "selector"];
+  optional middleware.v1.cors.Cors cors = 9 [json_name = "cors"];
+  optional middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 10 [json_name = "circuit_breaker"];
+  optional Logging logging = 11 [json_name = "logging"];
+  optional Recovery recovery = 12 [json_name = "recovery"];
+  optional Metadata metadata = 13 [json_name = "metadata"];
+  // Using Extension.Config for custom middlewares, moved to last
+  optional extension.v1.Extension.Config customize = 100;
+  // Add other specific middleware types here as they are defined
+}
+
+// Middlewares is used to configure a chain of middlewares for an entry point.
+message Middlewares {
+  // A list of middleware configurations to be applied in order.
+  repeated MiddlewareConfig middlewares = 1 [json_name = "middlewares"];
+}

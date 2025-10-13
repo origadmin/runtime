@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package runtime.websocket.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/websocket/v1;websocketv1";
+option java_multiple_files = true;
+option java_outer_classname = "WebsocketProto";
+option java_package = "com.github.origadmin.api.runtime.websocket.v1";
+option objc_class_prefix = "ORC";
+
+import "google/protobuf/duration.proto";
+
+// WebSocket defines the configuration for a WebSocket server.
+message WebSocket {
+  string network = 1;
+  string addr = 2;
+  google.protobuf.Duration timeout = 3;
+  // The endpoint that this server advertises to the service registry.
+  string endpoint = 4;
+}

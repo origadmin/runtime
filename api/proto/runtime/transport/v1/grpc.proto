@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package runtime.transport.v1;
+
+import "google/protobuf/duration.proto";
+import "runtime/transport/v1/selector.proto";
+import "runtime/security/transport/v1/tls.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1";
+
+// GrpcServerConfig defines the core configuration for a Kratos gRPC server.
+message GrpcServerConfig {
+  // network is the network type for the server to listen on.
+  // e.g., "tcp", "unix"
+  string network = 1;
+  
+  // addr is the address for the server to listen on.
+  // e.g., "0.0.0.0:9000"
+  string addr = 2;
+
+  // timeout is the request handling timeout.
+  google.protobuf.Duration timeout = 3;
+
+  // middlewares is a list of middleware names to be applied to the server.
+  // The framework will look up these names in a middleware provider.
+  repeated string middlewares = 4;
+
+  // tls_config defines the TLS settings for the gRPC server.
+  optional security.transport.v1.TLSConfig tls_config = 5;
+}
+
+// GrpcClientConfig defines the core configuration for creating a Kratos gRPC client.
+message GrpcClientConfig {
+  // endpoint is the target to connect to.
+  // It can be a direct address or a discovery service URI.
+  // e.g., "direct://127.0.0.1:9000" or "discovery:///your-service-name"
+  string endpoint = 1;
+
+  // timeout is the request timeout for a single RPC call.
+  google.protobuf.Duration timeout = 2;
+
+  // middlewares is a list of middleware names to be applied to the client.
+  repeated string middlewares = 3;
+
+  // selector defines the node selection strategy for the client.
+  SelectorConfig selector = 4;
+
+  // discovery_name specifies the name of the discovery client to use from the application container.
+  // If empty, and multiple discovery clients are available, an error will be returned.
+  optional string discovery_name = 5;
+
+  // tls_config defines the TLS settings for the gRPC client.
+  optional security.transport.v1.TLSConfig tls_config = 6;
+}

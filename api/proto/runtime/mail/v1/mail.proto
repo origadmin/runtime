@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package runtime.config.v1;
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/mail/v1;mailv1";
+option java_multiple_files = true;
+option java_outer_classname = "MailProto";
+option java_package = "com.github.origadmin.api.runtime.config.v1";
+option objc_class_prefix = "ORC";
+
+// Mail represents the general configuration for a mail service.
+message Mail {
+  // Common mailer settings
+  string nickname = 1 [json_name = "nickname"];
+  string from = 2 [json_name = "from"];
+  int32 max_retries = 3 [json_name = "max_retries"];
+  int64 retry_interval = 4 [json_name = "retry_interval"];
+
+  // Mailer-specific configuration. Only one of these can be set.
+  oneof mailer_config {
+    SmtpConfig smtp_config = 10;
+    // Add other mailer types here as needed, e.g.:
+    // SendgridConfig sendgrid_config = 11;
+    // MailgunConfig mailgun_config = 12;
+  }
+}
+
+// SmtpConfig represents the configuration for an SMTP mailer.
+message SmtpConfig {
+  string host = 1 [json_name = "host"];
+  int32 port = 2 [json_name = "port"];
+  string username = 3 [json_name = "username"];
+  string password = 4 [json_name = "password"];
+  string token_secret = 5 [json_name = "token_secret"]; // Specific to some SMTP setups or OAuth
+  bool ssl = 6 [json_name = "ssl"];
+}

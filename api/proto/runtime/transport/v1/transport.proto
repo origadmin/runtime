@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package runtime.transport.v1;
+
+import "google/protobuf/struct.proto";
+import "runtime/transport/v1/grpc.proto";
+import "runtime/transport/v1/http.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1";
+
+// Server is a generic container for various server-side transport configurations.
+message Server {
+  // protocol is the name of the transport protocol to use.
+  // e.g., "grpc", "http". This name is used to look up a registered ProtocolFactory.
+  string protocol = 1;
+
+  // The following fields are transport-specific configurations.
+  // Using `optional` provides better forward and backward compatibility.
+
+  // gRPC server configuration.
+  optional GrpcServerConfig grpc = 2;
+
+  // HTTP server configuration.
+  optional HttpServerConfig http = 3;
+
+  // custom_config is used for non-standard or user-defined transport protocols.
+  // It allows for flexible configuration without modifying this core proto file.
+  optional google.protobuf.Struct custom_config = 4;
+}
+
+// Client is a generic container for various client-side transport configurations.
+message Client {
+  // name is the logical name for this client configuration.
+  // It is used to uniquely identify this client dependency in the application.
+  // If empty, the protocol name may be used as a default identifier.
+  string name = 1;
+
+  // protocol is the name of the transport protocol to use.
+  // e.g., "grpc", "http". This name is used to look up a registered ProtocolFactory.
+  string protocol = 2;
+
+  // The following fields are transport-specific configurations.
+  // Using `optional` provides better forward and backward compatibility.
+
+  // gRPC client configuration.
+  optional GrpcClientConfig grpc = 3;
+
+  // HTTP client configuration.
+  optional HttpClientConfig http = 4;
+
+  // custom_config is used for non-standard or user-defined transport protocols.
+  optional google.protobuf.Struct custom_config = 5;
+}
