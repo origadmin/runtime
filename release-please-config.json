@@ -7,6 +7,7 @@
       "package-name": "github.com/origadmin/runtime",
       "include-component-in-tag": false,
       "include-v-in-tag": true,
+      "major-version-bump-on-breaking-change": false,
       "changelog-path": "CHANGELOG.md"
     }
   }
