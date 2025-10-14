@@ -144,13 +144,7 @@ endif
 
 generate-examples-protos: ## 🧬 Generate all example protos
 	@echo "Generating example protos..."
-ifeq ($(GOHOSTOS), windows)
 	@protoc $(PROTOC_INCLUDES) $(EXAMPLE_PLUGINS) $(EXAMPLE_PROTO_FILES)
-else
-	@protoc $(PROTOC_INCLUDES) \
-		$(EXAMPLE_PLUGINS) \
-		$(EXAMPLE_PROTO_FILES)
-endif
 
 generate-test-protos: ## Generate protos for integration tests (cross-platform)
 	@echo "Generating protos for integration tests..."
