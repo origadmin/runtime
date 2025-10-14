@@ -17,12 +17,14 @@ servers:
   - http:
       network: tcp
       addr: ":8080"
-      timeout: 1s
+      timeout:
+        seconds: 1
   # gRPC server for internal access
   - grpc:
       network: tcp
       addr: ":9090"
-      timeout: 1s
+      timeout:
+        seconds: 1
 
 registries:
   discoveries:

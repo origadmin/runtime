@@ -1,8 +1,6 @@
 package bootstrap
 
 import (
-	kratosconfig "github.com/go-kratos/kratos/v2/config"
-
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/optionutil"
@@ -16,10 +14,10 @@ type ConfigTransformer interface {
 }
 
 // ConfigTransformFunc is a function type that implements the ConfigTransformer interface.
-type ConfigTransformFunc func(kratosconfig.Config) (interfaces.Config, error)
+type ConfigTransformFunc func(interfaces.Config) (interfaces.StructuredConfig, error)
 
 // Transform implements the ConfigTransformer interface for ConfigTransformFunc.
-func (f ConfigTransformFunc) Transform(config kratosconfig.Config) (interfaces.Config, error) {
+func (f ConfigTransformFunc) Transform(config interfaces.Config) (interfaces.StructuredConfig, error) {
 	return f(config)
 }
 

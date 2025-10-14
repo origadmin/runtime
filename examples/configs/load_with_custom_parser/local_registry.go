@@ -8,6 +8,7 @@ import (
 	kratosregistry "github.com/go-kratos/kratos/v2/registry"
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/registry"
 )
 
@@ -73,12 +74,12 @@ func (w *localWatcher) Stop() error {
 
 type localFactory struct{}
 
-func (f *localFactory) NewDiscovery(cfg *discoveryv1.Discovery, opts ...registry.Option) (kratosregistry.Discovery, error) {
+func (f *localFactory) NewDiscovery(cfg *discoveryv1.Discovery, opts ...options.Option) (kratosregistry.Discovery, error) {
 	fmt.Printf("Creating Local Discovery for service: %s\n", cfg.GetName())
 	return &localDiscovery{}, nil
 }
 
-func (f *localFactory) NewRegistrar(cfg *discoveryv1.Discovery, opts ...registry.Option) (kratosregistry.Registrar, error) {
+func (f *localFactory) NewRegistrar(cfg *discoveryv1.Discovery, opts ...options.Option) (kratosregistry.Registrar, error) {
 	fmt.Printf("Creating Local Registrar for service: %s\n", cfg.GetName())
 	return &localRegistrar{}, nil
 }

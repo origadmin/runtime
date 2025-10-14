@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/origadmin/runtime"
+	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
@@ -23,36 +27,84 @@ type Endpoint struct {
 
 // CustomSettings represents the structure of our custom configuration section.
 type CustomSettings struct {
+	config         interfaces.Config
 	FeatureEnabled bool       `json:"feature_enabled"`
 	APIKey         string     `json:"api_key"`
 	RateLimit      int        `json:"rate_limit"`
 	Endpoints      []Endpoint `json:"endpoints"`
 }
 
-// Register the component factory function for our custom settings
-func init() {
-	bootstrap.RegisterComponentFactory("custom_settings", func(cfg interfaces.Config, componentConfig map[string]interface{}) (interface{}, error) {
-		// Create a new instance of CustomSettings
-		settings := &CustomSettings{}
+func (c *CustomSettings) Load() error {
+	return errors.New("already loaded")
+}
 
-		// If config is provided, we can unmarshal it into our settings
-		if componentConfig != nil {
-			// Remove the "type" field as it's metadata for the factory, not part of the component struct
-			delete(componentConfig, "type")
-
-			// Convert config to JSON and back to handle different config formats
-			configBytes, err := json.Marshal(componentConfig)
-			if err != nil {
-				return nil, fmt.Errorf("failed to marshal config: %w", err)
-			}
-
-			if err := json.Unmarshal(configBytes, settings); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal config into CustomSettings: %w", err)
-			}
+func (c *CustomSettings) Decode(key string, value any) error {
+	switch key {
+	case "feature_enabled":
+		if value, ok := value.(*bool); ok {
+			*value = c.FeatureEnabled
+			return nil
 		}
+	case "api_key":
+		if value, ok := value.(*string); ok {
+			*value = c.APIKey
+			return nil
+		}
+	case "rate_limit":
+		if value, ok := value.(*int); ok {
+			*value = c.RateLimit
+			return nil
+		}
+	case "endpoints":
+		if value, ok := value.(*[]Endpoint); ok {
+			*value = c.Endpoints
+			return nil
+		}
+	}
+	return c.config.Decode(key, value)
+}
 
-		return settings, nil
-	})
+func (c *CustomSettings) Raw() any {
+	return c.config
+}
+
+func (c *CustomSettings) Close() error {
+	return c.config.Close()
+}
+
+func (c *CustomSettings) DecodeApp() (*appv1.App, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (c *CustomSettings) DecodeLogger() (*loggerv1.Logger, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (c *CustomSettings) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (c *CustomSettings) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
+	return nil, errors.New("not implemented")
+}
+
+func TransformConfig(cfg interfaces.Config) (interfaces.StructuredConfig, error) {
+	//if err := cfg.Load(); err != nil {
+	//	return nil, err
+	//}
+	// Create a new instance of CustomSettings
+	log.Infof("Loaded config: %+v", cfg)
+	var settings CustomSettings
+	//log.Infof("Decoded config: %v", settingMap)
+	settings.config = cfg
+	var settingMap map[string]any
+	if err := cfg.Decode("", &settingMap); err != nil {
+		log.Errorf("Failed to decode config: %v", err)
+		return nil, err
+	}
+	log.Infof("Decoded config: %v", settingMap)
+
+	return &settings, nil
 }
 
 func main() {
@@ -72,7 +124,15 @@ func main() {
 	// 1. Create a new Runtime instance from the bootstrap config
 	rt, cleanup, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_custom_parser/config/bootstrap.yaml",
-		bootstrap.WithAppInfo(appInfo), // Pass the AppInfo struct
+		bootstrap.WithAppInfo(&appInfo), // Pass the AppInfo struct
+		bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)),
+		bootstrap.WithComponent("my-custom-settings", func(cfg interfaces.StructuredConfig, container interfaces.Container) (interface{}, error) {
+			cfg, ok := cfg.(*CustomSettings)
+			if ok {
+				fmt.Printf("Custom Settings: %+v\n", cfg)
+			}
+			return cfg, nil
+		}),
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
@@ -82,6 +142,7 @@ func main() {
 	// Get logger from runtime
 	logger := rt.Logger()
 	appLogger := log.NewHelper(logger)
+	log.SetLogger(logger)
 	appLogger.Info("Application started successfully!")
 
 	// 2. Get the custom settings component

@@ -79,11 +79,11 @@ func New(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) 
 
 	// 3. Create the component provider implementation.
 	// This will hold all the initialized components.
-	p := container.NewBuilder(providerOpts.componentFactories).WithConfig(cfg)
+	builder := container.NewBuilder(providerOpts.componentFactories).WithConfig(cfg)
 
 	// 4. Initialize core components by consuming the config.
 	// This is where the magic happens: logger, registries, etc., are created.
-	c, err := p.Build()
+	c, err := builder.Build()
 	if err != nil {
 		// Even if initialization fails, we should still call the cleanup function.
 		cleanup()
