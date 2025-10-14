@@ -8,6 +8,7 @@ import (
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // Runtime defines the application's runtime environment, providing convenient access to core components.
@@ -16,6 +17,10 @@ type Runtime struct {
 	appInfo   *interfaces.AppInfo
 	container interfaces.Container
 	config    interfaces.Config
+}
+
+func WithAppInfo(info *AppInfo) options.Option {
+	return bootstrap.WithAppInfo((*interfaces.AppInfo)(info))
 }
 
 // New is the core constructor for a Runtime instance.
