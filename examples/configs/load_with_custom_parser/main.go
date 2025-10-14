@@ -89,21 +89,20 @@ func (c *CustomSettings) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
 }
 
 func TransformConfig(cfg interfaces.Config) (interfaces.StructuredConfig, error) {
-	//if err := cfg.Load(); err != nil {
+	log.Infof("Loaded config: %+v", cfg)
+	//var settingMap map[string]any
+	//if err := cfg.Decode("", &settingMap); err != nil {
+	//	log.Errorf("Failed to decode config: %v", err)
 	//	return nil, err
 	//}
-	// Create a new instance of CustomSettings
-	log.Infof("Loaded config: %+v", cfg)
+	//log.Infof("Decoded config: %v", settingMap)
 	var settings CustomSettings
 	//log.Infof("Decoded config: %v", settingMap)
 	settings.config = cfg
-	var settingMap map[string]any
-	if err := cfg.Decode("", &settingMap); err != nil {
+	if err := cfg.Decode("components.my-custom-settings", &settings); err != nil {
 		log.Errorf("Failed to decode config: %v", err)
 		return nil, err
 	}
-	log.Infof("Decoded config: %v", settingMap)
-
 	return &settings, nil
 }
 
