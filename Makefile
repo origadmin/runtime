@@ -53,20 +53,29 @@ PROTOC_HTTP_OUT     := --go-http_out=paths=source_relative
 PROTOC_ERRORS_OUT   := --go-errors_out=paths=source_relative
 PROTOC_VALIDATE_OUT := --validate_out=lang=go,paths=source_relative
 
-# A single variable for all proto plugins, used for protoc fallback
+# A single variable for all proto plugins used in the main API generation
 PLUGINS := $(PROTOC_GO_OUT):./api/gen/go \
 		$(PROTOC_GRPC_OUT):./api/gen/go \
 		$(PROTOC_HTTP_OUT):./api/gen/go \
 		$(PROTOC_ERRORS_OUT):./api/gen/go \
 		$(PROTOC_VALIDATE_OUT):./api/gen/go
 
+# A single variable for all proto plugins used in example generation (output to current dir)
+EXAMPLE_PLUGINS := $(PROTOC_GO_OUT):. \
+		$(PROTOC_GRPC_OUT):. \
+		$(PROTOC_HTTP_OUT):. \
+		$(PROTOC_ERRORS_OUT):. \
+		$(PROTOC_VALIDATE_OUT):.
+
 # Proto file discovery
 ifeq ($(GOHOSTOS), windows)
     API_PROTO_FILES     := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./api/proto -Filter *.proto | Resolve-Path -Relative) -join ' '"))
     TEST_PROTO_DIRS     := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./test/integration -Directory -Filter proto | Resolve-Path -Relative) -join ' '"))
+    EXAMPLE_PROTO_FILES := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./examples/protos -Filter *.proto | Resolve-Path -Relative) -join ' '"))
 else
     API_PROTO_FILES     := $(shell find ./api/proto -name '*.proto')
     TEST_PROTO_DIRS     := $(shell find ./test/integration -maxdepth 2 -type d -name "proto")
+    EXAMPLE_PROTO_FILES := $(shell find ./examples/protos -name '*.proto')
 endif
 
 
@@ -74,9 +83,9 @@ endif
 #                           LIFECYCLE TARGETS
 # ============================================================================ #
 
-.PHONY: all init deps update update-tools protos generate-test-protos generate test clean
+.PHONY: all init deps update update-tools protos generate-examples-protos generate-test-protos generate test clean clean-api-gen clean-examples-protos clean-test-protos
 
-all: init deps protos generate-test-protos generate ## ✅ Run the full build process
+all: init deps protos generate-examples-protos generate-test-protos generate ## ✅ Run the full build process
 
 init: ## 🔧 Install tools from tools.go, ensuring reproducible builds
 	@echo "Ensuring tool dependencies are in go.mod..."
@@ -121,7 +130,7 @@ update-tools: ## ⚠️  Update all Go tools in tools.go to latest. High-risk, u
 protos: ## 🧬 Generate API protos (smartly uses buf, falls back to protoc)
 	@echo "Generating API protos..."
 ifeq ($(GOHOSTOS), windows)
-	@if (Get-Command buf -ErrorAction SilentlyContinue) { echo '--> `buf` command found. Using buf to generate protos (recommended).'; buf generate } else { echo '--> WARNING: `buf` command not found. Falling back to protoc.'; echo '--> Please run ''make init'' to install buf for reproducible builds.'; protoc --proto_path=./api/proto --proto_path=$(THIRD_PARTY_PATH) $(PLUGINS) $(API_PROTO_FILES) }
+	@if (Get-Command buf -ErrorAction SilentlyContinue) { echo '--> `buf` command found. Using buf to generate protos (recommended).'; buf generate } else { echo '--> WARNING: `buf` command not found. Falling back to protoc.'; echo '--> Please run ''make init'' to install buf for reproducible builds.'; protoc $(PROTOC_INCLUDES) $(PLUGINS) $(API_PROTO_FILES) }
 else
 	@if command -v buf >/dev/null 2>&1; then \
 		echo "--> 'buf' command found. Using buf to generate protos (recommended)."; \
@@ -129,12 +138,18 @@ else
 	else \
 		echo "--> WARNING: 'buf' command not found. Falling back to protoc."; \
 		echo "--> Please run 'make init' to install buf for reproducible builds."; \
-		protoc \
-			--proto_path=./api/proto \
-			--proto_path=$(THIRD_PARTY_PATH) \
-			$(PLUGINS) \
-			$(API_PROTO_FILES); \
+		protoc $(PROTOC_INCLUDES) $(PLUGINS) $(API_PROTO_FILES); \
 	fi
+endif
+
+generate-examples-protos: ## 🧬 Generate all example protos
+	@echo "Generating example protos..."
+ifeq ($(GOHOSTOS), windows)
+	@protoc $(PROTOC_INCLUDES) $(EXAMPLE_PLUGINS) $(EXAMPLE_PROTO_FILES)
+else
+	@protoc $(PROTOC_INCLUDES) \
+		$(EXAMPLE_PLUGINS) \
+		$(EXAMPLE_PROTO_FILES)
 endif
 
 generate-test-protos: ## Generate protos for integration tests (cross-platform)
@@ -155,9 +170,27 @@ generate: ## 🧬 Run go generate to generate code (e.g., wire)
 test: generate-test-protos ## 🧪 Run all Go tests
 	go test ./...
 
-clean: ## 🧹 Clean up generated files
-	@echo "Cleaning up generated files..."
+clean: clean-api-gen clean-examples-protos clean-test-protos ## 🧹 Clean up all generated files
+
+clean-api-gen: ## 🧹 Clean up API generated files
+	@echo "Cleaning up API generated files..."
 	@rm -rf ./api/gen
+
+clean-examples-protos: ## 🧹 Clean up example generated protos
+	@echo "Cleaning up example generated protos..."
+ifeq ($(GOHOSTOS), windows)
+	@Get-ChildItem -Recurse ./examples/protos -Filter *.pb.go | Remove-Item -Force
+else
+	@find ./examples/protos -name '*.pb.go' -delete
+endif
+
+clean-test-protos: ## 🧹 Clean up test generated protos
+	@echo "Cleaning up test generated protos..."
+ifeq ($(GOHOSTOS), windows)
+	@Get-ChildItem -Recurse ./test/integration -Filter *.pb.go | Remove-Item -Force
+else
+	@find ./test/integration -name '*.pb.go' -delete
+endif
 
 
 # ============================================================================ #
