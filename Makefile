@@ -43,17 +43,17 @@ ifeq ($(ENV), release)
 endif
 
 # ------------------------ Protobuf Configuration ------------------------ #
-# Common protoc include paths
+# Common protoc include paths, used for both buf and protoc fallback
 PROTOC_INCLUDES := -I. -I./api/proto -I$(THIRD_PARTY_PATH)
 
-# Protoc plugin definitions
+# Protoc plugin definitions, used for protoc fallback
 PROTOC_GO_OUT       := --go_out=paths=source_relative
 PROTOC_GRPC_OUT     := --go-grpc_out=paths=source_relative
 PROTOC_HTTP_OUT     := --go-http_out=paths=source_relative
 PROTOC_ERRORS_OUT   := --go-errors_out=paths=source_relative
 PROTOC_VALIDATE_OUT := --validate_out=lang=go,paths=source_relative
 
-# A single variable for all proto plugins used in the main generation
+# A single variable for all proto plugins, used for protoc fallback
 PLUGINS := $(PROTOC_GO_OUT):./api/gen/go \
 		$(PROTOC_GRPC_OUT):./api/gen/go \
 		$(PROTOC_HTTP_OUT):./api/gen/go \
@@ -118,9 +118,24 @@ update-tools: ## ⚠️  Update all Go tools in tools.go to latest. High-risk, u
 	@go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 	@go mod tidy
 
-protos: ## 🧬 Generate all API protos into ./api/gen/go
+protos: ## 🧬 Generate API protos (smartly uses buf, falls back to protoc)
 	@echo "Generating API protos..."
-	@protoc $(PROTOC_INCLUDES) $(PLUGINS) $(API_PROTO_FILES)
+ifeq ($(GOHOSTOS), windows)
+	@if (Get-Command buf -ErrorAction SilentlyContinue) { echo '--> `buf` command found. Using buf to generate protos (recommended).'; buf generate } else { echo '--> WARNING: `buf` command not found. Falling back to protoc.'; echo '--> Please run ''make init'' to install buf for reproducible builds.'; protoc --proto_path=./api/proto --proto_path=$(THIRD_PARTY_PATH) $(PLUGINS) $(API_PROTO_FILES) }
+else
+	@if command -v buf >/dev/null 2>&1; then \
+		echo "--> 'buf' command found. Using buf to generate protos (recommended)."; \
+		buf generate; \
+	else \
+		echo "--> WARNING: 'buf' command not found. Falling back to protoc."; \
+		echo "--> Please run 'make init' to install buf for reproducible builds."; \
+		protoc \
+			--proto_path=./api/proto \
+			--proto_path=$(THIRD_PARTY_PATH) \
+			$(PLUGINS) \
+			$(API_PROTO_FILES); \
+	fi
+endif
 
 generate-test-protos: ## Generate protos for integration tests (cross-platform)
 	@echo "Generating protos for integration tests..."
