@@ -1,22 +1,22 @@
 # Makefile for the OrigAdmin Framework Runtime
 
-# ---------------------------------------------------------------------------- #
-#                             Build Configuration                              #
-# ---------------------------------------------------------------------------- #
+# ============================================================================ #
+#                              CONFIGURATION
+# ============================================================================ #
 
-# Basic configuration
+# --------------------------- Basic Configuration ---------------------------- #
 GOHOSTOS         ?= $(shell go env GOHOSTOS)
 ENV              ?= dev
 PROJECT_ORG      := OrigAdmin
 THIRD_PARTY_PATH := ./third_party
 BUILT_BY         := $(PROJECT_ORG)
 
-# Common Git information
+# ---------------------------- Git Information ----------------------------- #
 GIT_COMMIT      := $(shell git rev-parse --short HEAD)
 GIT_BRANCH      := $(shell git rev-parse --abbrev-ref HEAD)
 GIT_VERSION     := $(shell git describe --tags --always)
 
-# OS-specific variables
+# ------------------------- OS-Specific Variables -------------------------- #
 ifeq ($(GOHOSTOS), windows)
     SHELL          := powershell.exe
     .SHELLFLAGS    := -NoProfile -Command
@@ -37,15 +37,14 @@ ifneq ($(GIT_TREE_STATE), clean)
     GIT_VERSION := $(GIT_VERSION)-dirty
 endif
 
-# Build flags for release
+# ----------------------------- Build Flags ------------------------------ #
 ifeq ($(ENV), release)
     LDFLAGS = -s -w
 endif
 
-
-# ---------------------------------------------------------------------------- #
-#                         Proto File & Plugin Config                         #
-# ---------------------------------------------------------------------------- #
+# ------------------------ Protobuf Configuration ------------------------ #
+# Common protoc include paths
+PROTOC_INCLUDES := -I. -I./api/proto -I$(THIRD_PARTY_PATH)
 
 # Protoc plugin definitions
 PROTOC_GO_OUT       := --go_out=paths=source_relative
@@ -53,6 +52,13 @@ PROTOC_GRPC_OUT     := --go-grpc_out=paths=source_relative
 PROTOC_HTTP_OUT     := --go-http_out=paths=source_relative
 PROTOC_ERRORS_OUT   := --go-errors_out=paths=source_relative
 PROTOC_VALIDATE_OUT := --validate_out=lang=go,paths=source_relative
+
+# A single variable for all proto plugins used in the main generation
+PLUGINS := $(PROTOC_GO_OUT):./api/gen/go \
+		$(PROTOC_GRPC_OUT):./api/gen/go \
+		$(PROTOC_HTTP_OUT):./api/gen/go \
+		$(PROTOC_ERRORS_OUT):./api/gen/go \
+		$(PROTOC_VALIDATE_OUT):./api/gen/go
 
 # Proto file discovery
 ifeq ($(GOHOSTOS), windows)
@@ -64,22 +70,26 @@ else
 endif
 
 
-# ---------------------------------------------------------------------------- #
-#                         Tooling & Dependency Management                      #
-# ---------------------------------------------------------------------------- #
+# ============================================================================ #
+#                           LIFECYCLE TARGETS
+# ============================================================================ #
 
-.PHONY: init deps update
+.PHONY: all init deps update update-tools protos generate-test-protos generate test clean
 
-init: ## 🔧 Install all required Go tools for development
-	@echo "Installing development tools..."
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
-	go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2@latest
-	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
-	go install github.com/google/wire/cmd/wire@latest
-	go install github.com/envoyproxy/protoc-gen-validate@latest
-	go install github.com/bufbuild/buf/cmd/buf@latest
+all: init deps protos generate-test-protos generate ## ✅ Run the full build process
+
+init: ## 🔧 Install tools from tools.go, ensuring reproducible builds
+	@echo "Ensuring tool dependencies are in go.mod..."
+	@go mod tidy
+	@echo "Installing tools listed in tools.go..."
+	@go install github.com/bufbuild/buf/cmd/buf
+	@go install github.com/envoyproxy/protoc-gen-validate
+	@go install github.com/go-kratos/kratos/cmd/kratos/v2
+	@go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2
+	@go install github.com/google/gnostic/cmd/protoc-gen-openapi
+	@go install github.com/google/wire/cmd/wire
+	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	@go install google.golang.org/protobuf/cmd/protoc-gen-go
 
 deps: ## 📦 Export and install all third-party protobuf dependencies
 	@echo "Exporting protobuf dependencies to $(THIRD_PARTY_PATH)..."
@@ -90,67 +100,57 @@ deps: ## 📦 Export and install all third-party protobuf dependencies
 	@buf export buf.build/envoyproxy/protoc-gen-validate -o $(THIRD_PARTY_PATH)
 	@buf export buf.build/gnostic/gnostic -o $(THIRD_PARTY_PATH)
 
-update: ## 🔄 Update Go module dependencies
+update: ## 🔄 Update Go module dependencies (libraries only)
 	@echo "Updating Go dependencies..."
 	go get -u github.com/goexts/generic@latest
 	go get -u github.com/origadmin/toolkits@latest
 	go mod tidy
 
-
-# ---------------------------------------------------------------------------- #
-#                             Proto Generation                               #
-# ---------------------------------------------------------------------------- #
-
-.PHONY: protos generate-test-protos
+update-tools: ## ⚠️  Update all Go tools in tools.go to latest. High-risk, use with caution!
+	@echo "Updating all tools in tools.go to @latest..."
+	@go get -u github.com/bufbuild/buf/cmd/buf
+	@go get -u github.com/envoyproxy/protoc-gen-validate
+	@go get -u github.com/go-kratos/kratos/cmd/kratos/v2
+	@go get -u github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2
+	@go get -u github.com/google/gnostic/cmd/protoc-gen-openapi
+	@go get -u github.com/google/wire/cmd/wire
+	@go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	@go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+	@go mod tidy
 
 protos: ## 🧬 Generate all API protos into ./api/gen/go
 	@echo "Generating API protos..."
-ifeq ($(GOHOSTOS), windows)
-	@protoc --proto_path=./api/proto --proto_path=$(THIRD_PARTY_PATH) $(PROTOC_GO_OUT):./api/gen/go $(PROTOC_GRPC_OUT):./api/gen/go $(PROTOC_HTTP_OUT):./api/gen/go $(PROTOC_ERRORS_OUT):./api/gen/go $(PROTOC_VALIDATE_OUT):./api/gen/go $(API_PROTO_FILES)
-else
-	@protoc \
-		--proto_path=./api/proto \
-		--proto_path=$(THIRD_PARTY_PATH) \
-		$(PROTOC_GO_OUT):./api/gen/go \
-		$(PROTOC_GRPC_OUT):./api/gen/go \
-		$(PROTOC_HTTP_OUT):./api/gen/go \
-		$(PROTOC_ERRORS_OUT):./api/gen/go \
-		$(PROTOC_VALIDATE_OUT):./api/gen/go \
-		$(API_PROTO_FILES)
-endif
+	@protoc $(PROTOC_INCLUDES) $(PLUGINS) $(API_PROTO_FILES)
 
 generate-test-protos: ## Generate protos for integration tests (cross-platform)
 	@echo "Generating protos for integration tests..."
 ifeq ($(GOHOSTOS), windows)
-	@foreach ($$dir in '$(TEST_PROTO_DIRS)'.Split(' ')) { if ($$dir) { Write-Host "  Processing $$dir"; protoc -I. -I$(THIRD_PARTY_PATH) -I./api/proto --go_out=paths=source_relative:. "$$dir/*.proto" } }
+	@foreach ($$dir in '$(TEST_PROTO_DIRS)'.Split(' ')) { if ($$dir) { Write-Host "  Processing $$dir"; protoc $(PROTOC_INCLUDES) --go_out=paths=source_relative:. "$$dir/*.proto" } }
 else
 	@for dir in $(TEST_PROTO_DIRS); do \
 		echo "  Processing $$dir"; \
-		protoc -I. -I$(THIRD_PARTY_PATH) -I./api/proto --go_out=paths=source_relative:. $$dir/*.proto; \
+		protoc $(PROTOC_INCLUDES) --go_out=paths=source_relative:. $$dir/*.proto; \
 	done
 endif
 
-
-# ---------------------------------------------------------------------------- #
-#                           Main Lifecycle Targets                           #
-# ---------------------------------------------------------------------------- #
-
-.PHONY: test generate all
+generate: ## 🧬 Run go generate to generate code (e.g., wire)
+	@echo "Running go generate..."
+	go generate ./...
 
 test: generate-test-protos ## 🧪 Run all Go tests
 	go test ./...
 
-generate: ## 🧬 Run go generate to generate code (e.g., wire)
-	go generate ./...
+clean: ## 🧹 Clean up generated files
+	@echo "Cleaning up generated files..."
+	@rm -rf ./api/gen
 
-all: init deps protos generate-test-protos generate ## ✅ Run the full build process
 
-
-# ---------------------------------------------------------------------------- #
-#                                     Help                                     #
-# ---------------------------------------------------------------------------- #
+# ============================================================================ #
+#                                     HELP
+# ============================================================================ #
 
 .PHONY: help
+
 help: ## ✨ Show this help message
 	@echo ''
 	@echo 'Usage:'
