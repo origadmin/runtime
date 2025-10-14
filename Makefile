@@ -8,7 +8,7 @@ THIRD_PARTY_PATH=third_party
 ifeq ($(GOHOSTOS), windows)
 	#the `find.exe` is different from `find` in bash/shell.
 	#to see https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/find.
-	#changed to use git-bash.exe to run find cli or other cli friendly, caused of every developer has a Git.
+	#changed to use git-bash.exe to run git-bash.exe to run find cli or other cli friendly, caused of every developer has a Git.
 	#Git_Bash= $(subst cmd\,bin\bash.exe,$(dir $(shell where git)))
 	#GIT_BASH=$(subst \,/,$(subst cmd\,bin\bash.exe,$(dir $(shell which git))))
 
@@ -144,15 +144,15 @@ update:
 # generate internal proto or use ./internal/generate.go
 runtime:
 	protoc \
-	--proto_path=./proto \
+	--proto_path=./api/proto \
 	--proto_path=./third_party \
-	--go_out=paths=source_relative:./gen/go \
-	--validate_out=lang=go,paths=source_relative:./gen/go \
+	--go_out=paths=source_relative:./api/gen/go \
+	--validate_out=lang=go,paths=source_relative:./api/gen/go \
 	$(RUNTIME_PROTO_FILES)
 
-.PHONY: test
-# generate internal proto or use ./internal/generate.go
-test:
+.PHONY: generate-test-protos
+# generate proto files for integration tests
+generate-test-protos:
 	protoc \
 	--proto_path=./test/integration/config/proto \
 	--proto_path=./api/proto \
@@ -165,6 +165,11 @@ test:
 	--proto_path=./third_party \
 	--go_out=paths=source_relative:./test/integration/app/proto \
 	./test/integration/app/proto/*.proto
+
+.PHONY: test
+# run Go unit and integration tests
+test: generate-test-protos
+	go test ./...
 
 .PHONY: generate
 # run go generate to generate code
