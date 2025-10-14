@@ -9,7 +9,7 @@ package examples.api_gateway;
 import "runtime/config/v1/server.proto";
 import "runtime/config/v1/client.proto";
 // Import client configuration related to service discovery
-import "runtime/discovery/v1/endpoint.proto";
+// import "runtime/discovery/v1/endpoint.proto"; // Deprecated, removed from here
 
 // Specify the import path and package name for the generated Go code
 option go_package = "./api_gateway/conf;conf";
@@ -22,7 +22,7 @@ message Bootstrap {
   // Gateways typically expose multiple server interfaces, for example:
   // - HTTP RESTful API for external access
   // - gRPC interface
-  // - WebSocket service
+  // - - WebSocket service
   repeated runtime.config.v1.Server servers = 1;
 
   // Downstream client configuration mapping
@@ -34,21 +34,8 @@ message Bootstrap {
 }
 
 // ClientConfig combines all configurations needed for a client
-// It includes both business-level and transport-level configurations
-// It includes both business-level and transport-level configurations
+// It now directly wraps the runtime.config.v1.Client message.
 message ClientConfig {
-  // Business-level client configuration
-  // Mainly configures how to discover and select service instances, for example:
-  // - Service discovery method (direct, DNS, Consul, etc.)
-  // - Load balancing strategy
-  // - Circuit breaking and fallback configuration
-  runtime.discovery.v1.Endpoint endpoint = 1;
-
-  // Transport-level client configuration
-// Mainly configures how to communicate with selected service instances, for example:
-  // - Communication protocol (HTTP/gRPC)
-  // - Timeout settings
-  // - Retry policy
-  // - TLS configuration
-  runtime.config.v1.Client transport = 2;
+  // Transport-level client configuration, now encapsulating all client-side settings.
+  runtime.config.v1.Client client = 1;
 }

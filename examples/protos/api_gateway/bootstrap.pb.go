@@ -13,7 +13,6 @@ package conf
 
 import (
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
-	v11 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -37,7 +36,7 @@ type Bootstrap struct {
 	// Gateways typically expose multiple server interfaces, for example:
 	// - HTTP RESTful API for external access
 	// - gRPC interface
-	// - WebSocket service
+	// - - WebSocket service
 	Servers []*v1.Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
 	// Downstream client configuration mapping
 	// The key is the logical name of the client, used to reference specific clients in code
@@ -94,23 +93,11 @@ func (x *Bootstrap) GetClients() map[string]*ClientConfig {
 }
 
 // ClientConfig combines all configurations needed for a client
-// It includes both business-level and transport-level configurations
-// It includes both business-level and transport-level configurations
+// It now directly wraps the runtime.config.v1.Client message.
 type ClientConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Business-level client configuration
-	// Mainly configures how to discover and select service instances, for example:
-	// - Service discovery method (direct, DNS, Consul, etc.)
-	// - Load balancing strategy
-	// - Circuit breaking and fallback configuration
-	Endpoint *v11.Endpoint `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	// Transport-level client configuration
-	// Mainly configures how to communicate with selected service instances, for example:
-	// - Communication protocol (HTTP/gRPC)
-	// - Timeout settings
-	// - Retry policy
-	// - TLS configuration
-	Transport     *v1.Client `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
+	// Transport-level client configuration, now encapsulating all client-side settings.
+	Client        *v1.Client `protobuf:"bytes,1,opt,name=client,proto3" json:"client,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -145,16 +132,9 @@ func (*ClientConfig) Descriptor() ([]byte, []int) {
 	return file_examples_protos_api_gateway_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ClientConfig) GetEndpoint() *v11.Endpoint {
+func (x *ClientConfig) GetClient() *v1.Client {
 	if x != nil {
-		return x.Endpoint
-	}
-	return nil
-}
-
-func (x *ClientConfig) GetTransport() *v1.Client {
-	if x != nil {
-		return x.Transport
+		return x.Client
 	}
 	return nil
 }
@@ -163,16 +143,15 @@ var File_examples_protos_api_gateway_bootstrap_proto protoreflect.FileDescriptor
 
 const file_examples_protos_api_gateway_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"+examples/protos/api_gateway/bootstrap.proto\x12\x14examples.api_gateway\x1a\x1eruntime/config/v1/server.proto\x1a\x1eruntime/config/v1/client.proto\x1a#runtime/discovery/v1/endpoint.proto\"\xe8\x01\n" +
+	"+examples/protos/api_gateway/bootstrap.proto\x12\x14examples.api_gateway\x1a\x1eruntime/config/v1/server.proto\x1a\x1eruntime/config/v1/client.proto\"\xe8\x01\n" +
 	"\tBootstrap\x123\n" +
 	"\aservers\x18\x01 \x03(\v2\x19.runtime.config.v1.ServerR\aservers\x12F\n" +
 	"\aclients\x18\x02 \x03(\v2,.examples.api_gateway.Bootstrap.ClientsEntryR\aclients\x1a^\n" +
 	"\fClientsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
-	"\x05value\x18\x02 \x01(\v2\".examples.api_gateway.ClientConfigR\x05value:\x028\x01\"\x83\x01\n" +
-	"\fClientConfig\x12:\n" +
-	"\bendpoint\x18\x01 \x01(\v2\x1e.runtime.discovery.v1.EndpointR\bendpoint\x127\n" +
-	"\ttransport\x18\x02 \x01(\v2\x19.runtime.config.v1.ClientR\ttransportB\x19Z\x17./api_gateway/conf;confb\x06proto3"
+	"\x05value\x18\x02 \x01(\v2\".examples.api_gateway.ClientConfigR\x05value:\x028\x01\"A\n" +
+	"\fClientConfig\x121\n" +
+	"\x06client\x18\x01 \x01(\v2\x19.runtime.config.v1.ClientR\x06clientB\x19Z\x17./api_gateway/conf;confb\x06proto3"
 
 var (
 	file_examples_protos_api_gateway_bootstrap_proto_rawDescOnce sync.Once
@@ -192,20 +171,18 @@ var file_examples_protos_api_gateway_bootstrap_proto_goTypes = []any{
 	(*ClientConfig)(nil), // 1: examples.api_gateway.ClientConfig
 	nil,                  // 2: examples.api_gateway.Bootstrap.ClientsEntry
 	(*v1.Server)(nil),    // 3: runtime.config.v1.Server
-	(*v11.Endpoint)(nil), // 4: runtime.discovery.v1.Endpoint
-	(*v1.Client)(nil),    // 5: runtime.config.v1.Client
+	(*v1.Client)(nil),    // 4: runtime.config.v1.Client
 }
 var file_examples_protos_api_gateway_bootstrap_proto_depIdxs = []int32{
 	3, // 0: examples.api_gateway.Bootstrap.servers:type_name -> runtime.config.v1.Server
 	2, // 1: examples.api_gateway.Bootstrap.clients:type_name -> examples.api_gateway.Bootstrap.ClientsEntry
-	4, // 2: examples.api_gateway.ClientConfig.endpoint:type_name -> runtime.discovery.v1.Endpoint
-	5, // 3: examples.api_gateway.ClientConfig.transport:type_name -> runtime.config.v1.Client
-	1, // 4: examples.api_gateway.Bootstrap.ClientsEntry.value:type_name -> examples.api_gateway.ClientConfig
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	4, // 2: examples.api_gateway.ClientConfig.client:type_name -> runtime.config.v1.Client
+	1, // 3: examples.api_gateway.Bootstrap.ClientsEntry.value:type_name -> examples.api_gateway.ClientConfig
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_examples_protos_api_gateway_bootstrap_proto_init() }

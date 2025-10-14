@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/origadmin/runtime"
+	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 
@@ -22,21 +23,30 @@ import (
 
 // ProtoConfig is a custom implementation of interfaces.Config that handles Protobuf decoding.
 type ProtoConfig struct {
-	kratosCfg kratosconfig.Config // Keep for Raw() and Close()
-	bootstrap *conf.Bootstrap     // The fully decoded protobuf config
+	ifconfig  interfaces.Config // Keep for Raw() and Close()
+	bootstrap *conf.Bootstrap   // The fully decoded protobuf config
+}
+
+func (d *ProtoConfig) Load() error {
+	return d.ifconfig.Load()
+}
+
+func (d *ProtoConfig) DecodeApp() (*appv1.App, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (d *ProtoConfig) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
+	return nil, errors.New("not implemented")
 }
 
 // NewProtoConfig creates a new ProtoConfig instance and decodes the entire Kratos config into the Bootstrap proto.
-func NewProtoConfig(c kratosconfig.Config) (*ProtoConfig, error) {
+func NewProtoConfig(c interfaces.Config) (*ProtoConfig, error) {
 	var bc conf.Bootstrap
-	if err := c.Load(); err != nil {
-		return nil, err
-	}
-	if err := c.Scan(&bc); err != nil {
+	if err := c.Decode("", &bc); err != nil {
 		return nil, err
 	}
 	return &ProtoConfig{
-		kratosCfg: c,
+		ifconfig:  c,
 		bootstrap: &bc,
 	}, nil
 }
@@ -59,7 +69,7 @@ func (d *ProtoConfig) Decode(key string, target interface{}) error {
 			// If the key is not a direct top-level field of Bootstrap, and not empty/root,
 			// we can try to scan it from the original Kratos config as a fallback.
 			// This handles cases where some config might not be explicitly defined in the proto.
-			return d.kratosCfg.Value(key).Scan(target)
+			return d.ifconfig.Decode(key, target)
 		}
 	}
 
@@ -91,13 +101,13 @@ func (d *ProtoConfig) Decode(key string, target interface{}) error {
 }
 
 // Raw implements the interfaces.Config interface.
-func (d *ProtoConfig) Raw() kratosconfig.Config {
-	return d.kratosCfg
+func (d *ProtoConfig) Raw() any {
+	return d.ifconfig
 }
 
 // Close implements the interfaces.Config interface.
 func (d *ProtoConfig) Close() error {
-	return d.kratosCfg.Close()
+	return d.ifconfig.Close()
 }
 
 // DecodeLogger implements the interfaces.LoggerConfigDecoder interface.
@@ -149,7 +159,7 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 				return nil, fmt.Errorf("endpoint '%s' references non-existent discovery provider '%s'", endpointName, providerName)
 			}
 		}
-
+		_ = providerCfg
 		// 5. Assemble the final, "rich" Endpoint object
 		resolvedEndpoints[endpointName] = &discoveryv1.Endpoint{
 			//Provider: providerCfg, // Link the found provider
@@ -169,7 +179,7 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 
 func main() {
 	// Define the ConfigTransformFunc to create our custom ProtoConfig.
-	configTransformer := bootstrap.ConfigTransformFunc(func(kc kratosconfig.Config) (interfaces.Config, error) {
+	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.Config) (interfaces.StructuredConfig, error) {
 		protoCfg, err := NewProtoConfig(kc)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ProtoConfig: %w", err)
@@ -181,13 +191,13 @@ func main() {
 	//    Path is now relative to the CWD (runtime directory), pointing to the bootstrap.yaml.
 	rt, cleanup, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml
-		bootstrap.WithAppInfo(interfaces.AppInfo{
+		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "rich-config-runtime-example",
 			Name:    "RichConfigRuntimeExample",
 			Version: "1.0.0",
 			Env:     "dev",
 		}),
-		bootstrap.WithDecoderOptions(bootstrap.WithConfigTransformer(configTransformer)), // Inject custom transformer
+		bootstrap.WithConfigTransformer(configTransformer), // Inject custom transformer
 	)
 	if err != nil {
 		panic(err)
@@ -267,10 +277,10 @@ func main() {
 		for name, endpoint := range resolvedEndpoints {
 			appLogger.Infof("Endpoint '%s':", name)
 
-			if endpoint.GetProvider() != nil {
+			if endpoint != nil {
 				appLogger.Infof("  Provider: Type=%s, ServiceName=%s",
-					endpoint.GetProvider().GetType(),
-					endpoint.GetProvider().GetServiceName())
+					endpoint.GetName(),
+					endpoint.GetDiscoveryName())
 			} else {
 				appLogger.Info("  Provider: None (static endpoint or missing discovery_name)")
 			}
@@ -283,13 +293,6 @@ func main() {
 					selector.GetVersion())
 			}
 
-			if transport := endpoint.GetTransport(); transport != nil {
-				if grpcCfg := transport.GetGrpc(); grpcCfg != nil {
-					appLogger.Infof("  Transport gRPC: Target=%s, Timeout=%s",
-						grpcCfg.GetTarget(),
-						grpcCfg.GetDialTimeout().AsDuration())
-				}
-			}
 		}
 	} else {
 		appLogger.Info("No resolved endpoints found")
@@ -301,7 +304,7 @@ func main() {
 		appLogger.Infof("Found %d raw discovery configurations", len(discoveries))
 		for name, disc := range discoveries {
 			appLogger.Infof("Discovery '%s': Type=%s, ServiceName=%s",
-				name, disc.GetType(), disc.GetServiceName())
+				name, disc.GetType(), disc.GetName())
 		}
 	} else {
 		appLogger.Info("No raw discovery configurations found in registries")

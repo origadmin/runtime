@@ -14,19 +14,4 @@ servers:
 clients:
   # Configuration for the downstream 'user-service'
   user-service:
-    discovery:
-      # The name of the service as registered in the discovery service
-      name: "user-service"
-      # The endpoint format for Kratos service discovery
-      endpoint: "discovery:///user-service"
-      selector:
-        # Use p2c (pick of 2 choices) load balancing
-        type: "p2c"
-        # Route to a specific version of the service
-        version: "1.0.0"
-    transport:
-      # This client communicates via gRPC
-      grpc:
-        # The target also uses the discovery endpoint
-        target: "discovery:///user-service"
-        dial_timeout: "2s"
+    client: {} # Simplified to an empty client object

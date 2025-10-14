@@ -19,7 +19,11 @@ type ProtoDecoder struct {
 	c kratosconfig.Config
 }
 
-func (d *ProtoDecoder) Raw() kratosconfig.Config {
+func (d *ProtoDecoder) Load() error {
+	return d.c.Load()
+}
+
+func (d *ProtoDecoder) Raw() any {
 	return d.c
 }
 
@@ -82,10 +86,12 @@ func main() {
 
 	var clients map[string]*conf.ClientConfig = make(map[string]*conf.ClientConfig)
 	for name, rawClient := range rawClients {
+		fmt.Printf("DEBUG: rawClient for '%s': %+v\n", name, rawClient) // Added debug print for rawClient
 		jsonClient, err := json.Marshal(rawClient)
 		if err != nil {
 			panic(fmt.Errorf("failed to marshal client config '%s' to JSON: %w", name, err))
 		}
+		fmt.Printf("DEBUG: JSON for client '%s': %s\n", name, jsonClient) // Debug print for jsonClient
 		var client conf.ClientConfig
 		if err := protojson.Unmarshal(jsonClient, &client); err != nil {
 			panic(fmt.Errorf("failed to protojson unmarshal JSON to client '%s': %w", name, err))
@@ -105,7 +111,12 @@ func main() {
 
 	// Verify client config
 	if userService, ok := clients["user-service"]; ok {
-		fmt.Printf("Client 'user-service' Endpoint: %s\n", userService.GetEndpoint())
+		// Access the nested client field
+		if userService.GetClient() != nil {
+			fmt.Printf("Client 'user-service' Endpoint: %s\n", userService.GetClient().GetEndpoint())
+		} else {
+			fmt.Println("Client 'user-service' has no nested client configuration.")
+		}
 	} else {
 		fmt.Println("No 'user-service' client configuration found.")
 	}

@@ -237,11 +237,11 @@ func (m *ClientConfig) validate(all bool) error {
 	var errors []error
 
 	if all {
-		switch v := interface{}(m.GetEndpoint()).(type) {
+		switch v := interface{}(m.GetClient()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, ClientConfigValidationError{
-					field:  "Endpoint",
+					field:  "Client",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -249,45 +249,16 @@ func (m *ClientConfig) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, ClientConfigValidationError{
-					field:  "Endpoint",
+					field:  "Client",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetEndpoint()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetClient()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return ClientConfigValidationError{
-				field:  "Endpoint",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetTransport()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ClientConfigValidationError{
-					field:  "Transport",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ClientConfigValidationError{
-					field:  "Transport",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTransport()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ClientConfigValidationError{
-				field:  "Transport",
+				field:  "Client",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
