@@ -5,15 +5,15 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v5.28.3
-// source: protos/api_gateway/bootstrap.proto
+// source: examples/protos/api_gateway/bootstrap.proto
 
 // Package name to prevent naming conflicts
 
 package conf
 
 import (
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -51,7 +51,7 @@ type Bootstrap struct {
 
 func (x *Bootstrap) Reset() {
 	*x = Bootstrap{}
-	mi := &file_protos_api_gateway_bootstrap_proto_msgTypes[0]
+	mi := &file_examples_protos_api_gateway_bootstrap_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -63,7 +63,7 @@ func (x *Bootstrap) String() string {
 func (*Bootstrap) ProtoMessage() {}
 
 func (x *Bootstrap) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_api_gateway_bootstrap_proto_msgTypes[0]
+	mi := &file_examples_protos_api_gateway_bootstrap_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -76,7 +76,7 @@ func (x *Bootstrap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bootstrap.ProtoReflect.Descriptor instead.
 func (*Bootstrap) Descriptor() ([]byte, []int) {
-	return file_protos_api_gateway_bootstrap_proto_rawDescGZIP(), []int{0}
+	return file_examples_protos_api_gateway_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Bootstrap) GetServers() []*v1.Server {
@@ -94,6 +94,7 @@ func (x *Bootstrap) GetClients() map[string]*ClientConfig {
 }
 
 // ClientConfig combines all configurations needed for a client
+// It includes both business-level and transport-level configurations
 // It includes both business-level and transport-level configurations
 type ClientConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -116,7 +117,7 @@ type ClientConfig struct {
 
 func (x *ClientConfig) Reset() {
 	*x = ClientConfig{}
-	mi := &file_protos_api_gateway_bootstrap_proto_msgTypes[1]
+	mi := &file_examples_protos_api_gateway_bootstrap_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -128,7 +129,7 @@ func (x *ClientConfig) String() string {
 func (*ClientConfig) ProtoMessage() {}
 
 func (x *ClientConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_api_gateway_bootstrap_proto_msgTypes[1]
+	mi := &file_examples_protos_api_gateway_bootstrap_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -141,7 +142,7 @@ func (x *ClientConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClientConfig.ProtoReflect.Descriptor instead.
 func (*ClientConfig) Descriptor() ([]byte, []int) {
-	return file_protos_api_gateway_bootstrap_proto_rawDescGZIP(), []int{1}
+	return file_examples_protos_api_gateway_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ClientConfig) GetEndpoint() *v11.Endpoint {
@@ -158,47 +159,47 @@ func (x *ClientConfig) GetTransport() *v1.Client {
 	return nil
 }
 
-var File_protos_api_gateway_bootstrap_proto protoreflect.FileDescriptor
+var File_examples_protos_api_gateway_bootstrap_proto protoreflect.FileDescriptor
 
-const file_protos_api_gateway_bootstrap_proto_rawDesc = "" +
+const file_examples_protos_api_gateway_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"\"protos/api_gateway/bootstrap.proto\x12\x14examples.api_gateway\x1a\x19transport/v1/server.proto\x1a\x19transport/v1/client.proto\x1a\x1bdiscovery/v1/endpoint.proto\"\xe3\x01\n" +
-	"\tBootstrap\x12.\n" +
-	"\aservers\x18\x01 \x03(\v2\x14.transport.v1.ServerR\aservers\x12F\n" +
+	"+examples/protos/api_gateway/bootstrap.proto\x12\x14examples.api_gateway\x1a\x1eruntime/config/v1/server.proto\x1a\x1eruntime/config/v1/client.proto\x1a#runtime/discovery/v1/endpoint.proto\"\xe8\x01\n" +
+	"\tBootstrap\x123\n" +
+	"\aservers\x18\x01 \x03(\v2\x19.runtime.config.v1.ServerR\aservers\x12F\n" +
 	"\aclients\x18\x02 \x03(\v2,.examples.api_gateway.Bootstrap.ClientsEntryR\aclients\x1a^\n" +
 	"\fClientsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
-	"\x05value\x18\x02 \x01(\v2\".examples.api_gateway.ClientConfigR\x05value:\x028\x01\"v\n" +
-	"\fClientConfig\x122\n" +
-	"\bendpoint\x18\x01 \x01(\v2\x16.discovery.v1.EndpointR\bendpoint\x122\n" +
-	"\ttransport\x18\x02 \x01(\v2\x14.transport.v1.ClientR\ttransportB\x19Z\x17./api_gateway/conf;confb\x06proto3"
+	"\x05value\x18\x02 \x01(\v2\".examples.api_gateway.ClientConfigR\x05value:\x028\x01\"\x83\x01\n" +
+	"\fClientConfig\x12:\n" +
+	"\bendpoint\x18\x01 \x01(\v2\x1e.runtime.discovery.v1.EndpointR\bendpoint\x127\n" +
+	"\ttransport\x18\x02 \x01(\v2\x19.runtime.config.v1.ClientR\ttransportB\x19Z\x17./api_gateway/conf;confb\x06proto3"
 
 var (
-	file_protos_api_gateway_bootstrap_proto_rawDescOnce sync.Once
-	file_protos_api_gateway_bootstrap_proto_rawDescData []byte
+	file_examples_protos_api_gateway_bootstrap_proto_rawDescOnce sync.Once
+	file_examples_protos_api_gateway_bootstrap_proto_rawDescData []byte
 )
 
-func file_protos_api_gateway_bootstrap_proto_rawDescGZIP() []byte {
-	file_protos_api_gateway_bootstrap_proto_rawDescOnce.Do(func() {
-		file_protos_api_gateway_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protos_api_gateway_bootstrap_proto_rawDesc), len(file_protos_api_gateway_bootstrap_proto_rawDesc)))
+func file_examples_protos_api_gateway_bootstrap_proto_rawDescGZIP() []byte {
+	file_examples_protos_api_gateway_bootstrap_proto_rawDescOnce.Do(func() {
+		file_examples_protos_api_gateway_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_examples_protos_api_gateway_bootstrap_proto_rawDesc), len(file_examples_protos_api_gateway_bootstrap_proto_rawDesc)))
 	})
-	return file_protos_api_gateway_bootstrap_proto_rawDescData
+	return file_examples_protos_api_gateway_bootstrap_proto_rawDescData
 }
 
-var file_protos_api_gateway_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_protos_api_gateway_bootstrap_proto_goTypes = []any{
+var file_examples_protos_api_gateway_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_examples_protos_api_gateway_bootstrap_proto_goTypes = []any{
 	(*Bootstrap)(nil),    // 0: examples.api_gateway.Bootstrap
 	(*ClientConfig)(nil), // 1: examples.api_gateway.ClientConfig
 	nil,                  // 2: examples.api_gateway.Bootstrap.ClientsEntry
-	(*v1.Server)(nil),    // 3: transport.v1.Server
-	(*v11.Endpoint)(nil), // 4: discovery.v1.Endpoint
-	(*v1.Client)(nil),    // 5: transport.v1.Client
+	(*v1.Server)(nil),    // 3: runtime.config.v1.Server
+	(*v11.Endpoint)(nil), // 4: runtime.discovery.v1.Endpoint
+	(*v1.Client)(nil),    // 5: runtime.config.v1.Client
 }
-var file_protos_api_gateway_bootstrap_proto_depIdxs = []int32{
-	3, // 0: examples.api_gateway.Bootstrap.servers:type_name -> transport.v1.Server
+var file_examples_protos_api_gateway_bootstrap_proto_depIdxs = []int32{
+	3, // 0: examples.api_gateway.Bootstrap.servers:type_name -> runtime.config.v1.Server
 	2, // 1: examples.api_gateway.Bootstrap.clients:type_name -> examples.api_gateway.Bootstrap.ClientsEntry
-	4, // 2: examples.api_gateway.ClientConfig.endpoint:type_name -> discovery.v1.Endpoint
-	5, // 3: examples.api_gateway.ClientConfig.transport:type_name -> transport.v1.Client
+	4, // 2: examples.api_gateway.ClientConfig.endpoint:type_name -> runtime.discovery.v1.Endpoint
+	5, // 3: examples.api_gateway.ClientConfig.transport:type_name -> runtime.config.v1.Client
 	1, // 4: examples.api_gateway.Bootstrap.ClientsEntry.value:type_name -> examples.api_gateway.ClientConfig
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
@@ -207,26 +208,26 @@ var file_protos_api_gateway_bootstrap_proto_depIdxs = []int32{
 	0, // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_protos_api_gateway_bootstrap_proto_init() }
-func file_protos_api_gateway_bootstrap_proto_init() {
-	if File_protos_api_gateway_bootstrap_proto != nil {
+func init() { file_examples_protos_api_gateway_bootstrap_proto_init() }
+func file_examples_protos_api_gateway_bootstrap_proto_init() {
+	if File_examples_protos_api_gateway_bootstrap_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_api_gateway_bootstrap_proto_rawDesc), len(file_protos_api_gateway_bootstrap_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_examples_protos_api_gateway_bootstrap_proto_rawDesc), len(file_examples_protos_api_gateway_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_protos_api_gateway_bootstrap_proto_goTypes,
-		DependencyIndexes: file_protos_api_gateway_bootstrap_proto_depIdxs,
-		MessageInfos:      file_protos_api_gateway_bootstrap_proto_msgTypes,
+		GoTypes:           file_examples_protos_api_gateway_bootstrap_proto_goTypes,
+		DependencyIndexes: file_examples_protos_api_gateway_bootstrap_proto_depIdxs,
+		MessageInfos:      file_examples_protos_api_gateway_bootstrap_proto_msgTypes,
 	}.Build()
-	File_protos_api_gateway_bootstrap_proto = out.File
-	file_protos_api_gateway_bootstrap_proto_goTypes = nil
-	file_protos_api_gateway_bootstrap_proto_depIdxs = nil
+	File_examples_protos_api_gateway_bootstrap_proto = out.File
+	file_examples_protos_api_gateway_bootstrap_proto_goTypes = nil
+	file_examples_protos_api_gateway_bootstrap_proto_depIdxs = nil
 }

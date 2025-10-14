@@ -2,14 +2,14 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v5.28.3
-// source: protos/load_with_runtime/bootstrap.proto
+// source: examples/protos/load_with_runtime/bootstrap.proto
 
 package conf
 
 import (
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -43,7 +43,7 @@ type Bootstrap struct {
 
 func (x *Bootstrap) Reset() {
 	*x = Bootstrap{}
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[0]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -55,7 +55,7 @@ func (x *Bootstrap) String() string {
 func (*Bootstrap) ProtoMessage() {}
 
 func (x *Bootstrap) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[0]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -68,7 +68,7 @@ func (x *Bootstrap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bootstrap.ProtoReflect.Descriptor instead.
 func (*Bootstrap) Descriptor() ([]byte, []int) {
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{0}
+	return file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Bootstrap) GetServers() []*v1.Server {
@@ -117,7 +117,7 @@ type EndpointConfig struct {
 
 func (x *EndpointConfig) Reset() {
 	*x = EndpointConfig{}
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[1]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -129,7 +129,7 @@ func (x *EndpointConfig) String() string {
 func (*EndpointConfig) ProtoMessage() {}
 
 func (x *EndpointConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[1]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -142,7 +142,7 @@ func (x *EndpointConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndpointConfig.ProtoReflect.Descriptor instead.
 func (*EndpointConfig) Descriptor() ([]byte, []int) {
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{1}
+	return file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *EndpointConfig) GetDiscoveryName() string {
@@ -183,7 +183,7 @@ type RegistriesConfig struct {
 
 func (x *RegistriesConfig) Reset() {
 	*x = RegistriesConfig{}
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -195,7 +195,7 @@ func (x *RegistriesConfig) String() string {
 func (*RegistriesConfig) ProtoMessage() {}
 
 func (x *RegistriesConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -208,7 +208,7 @@ func (x *RegistriesConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegistriesConfig.ProtoReflect.Descriptor instead.
 func (*RegistriesConfig) Descriptor() ([]byte, []int) {
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{2}
+	return file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RegistriesConfig) GetDiscoveries() map[string]*v12.Discovery {
@@ -229,7 +229,7 @@ type EndpointConfig_Selector struct {
 
 func (x *EndpointConfig_Selector) Reset() {
 	*x = EndpointConfig_Selector{}
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -241,7 +241,7 @@ func (x *EndpointConfig_Selector) String() string {
 func (*EndpointConfig_Selector) ProtoMessage() {}
 
 func (x *EndpointConfig_Selector) ProtoReflect() protoreflect.Message {
-	mi := &file_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
+	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -254,7 +254,7 @@ func (x *EndpointConfig_Selector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndpointConfig_Selector.ProtoReflect.Descriptor instead.
 func (*EndpointConfig_Selector) Descriptor() ([]byte, []int) {
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{1, 0}
+	return file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{1, 0}
 }
 
 func (x *EndpointConfig_Selector) GetType() string {
@@ -271,70 +271,70 @@ func (x *EndpointConfig_Selector) GetVersion() string {
 	return ""
 }
 
-var File_protos_load_with_runtime_bootstrap_proto protoreflect.FileDescriptor
+var File_examples_protos_load_with_runtime_bootstrap_proto protoreflect.FileDescriptor
 
-const file_protos_load_with_runtime_bootstrap_proto_rawDesc = "" +
+const file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"(protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a\x1cdiscovery/v1/discovery.proto\x1a\x16logger/v1/logger.proto\x1a\x19transport/v1/client.proto\x1a\x19transport/v1/server.proto\"\xf2\x02\n" +
-	"\tBootstrap\x12.\n" +
-	"\aservers\x18\x01 \x03(\v2\x14.transport.v1.ServerR\aservers\x12R\n" +
-	"\tendpoints\x18\x02 \x03(\v24.examples.load_with_runtime.Bootstrap.EndpointsEntryR\tendpoints\x12)\n" +
-	"\x06logger\x18\x03 \x01(\v2\x11.logger.v1.LoggerR\x06logger\x12L\n" +
+	"1examples/protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a\x1eruntime/config/v1/client.proto\x1a\x1eruntime/config/v1/server.proto\"\xff\x02\n" +
+	"\tBootstrap\x123\n" +
+	"\aservers\x18\x01 \x03(\v2\x19.runtime.config.v1.ServerR\aservers\x12R\n" +
+	"\tendpoints\x18\x02 \x03(\v24.examples.load_with_runtime.Bootstrap.EndpointsEntryR\tendpoints\x121\n" +
+	"\x06logger\x18\x03 \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x12L\n" +
 	"\n" +
 	"registries\x18\x04 \x01(\v2,.examples.load_with_runtime.RegistriesConfigR\n" +
 	"registries\x1ah\n" +
 	"\x0eEndpointsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
-	"\x05value\x18\x02 \x01(\v2*.examples.load_with_runtime.EndpointConfigR\x05value:\x028\x01\"\x89\x02\n" +
+	"\x05value\x18\x02 \x01(\v2*.examples.load_with_runtime.EndpointConfigR\x05value:\x028\x01\"\x8e\x02\n" +
 	"\x0eEndpointConfig\x12&\n" +
 	"\x0ediscovery_name\x18\x01 \x01(\tR\x0ediscovery_name\x12\x10\n" +
 	"\x03uri\x18\x02 \x01(\tR\x03uri\x12O\n" +
-	"\bselector\x18\x03 \x01(\v23.examples.load_with_runtime.EndpointConfig.SelectorR\bselector\x122\n" +
-	"\ttransport\x18\x04 \x01(\v2\x14.transport.v1.ClientR\ttransport\x1a8\n" +
+	"\bselector\x18\x03 \x01(\v23.examples.load_with_runtime.EndpointConfig.SelectorR\bselector\x127\n" +
+	"\ttransport\x18\x04 \x01(\v2\x19.runtime.config.v1.ClientR\ttransport\x1a8\n" +
 	"\bSelector\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\"\xcc\x01\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\"\xd4\x01\n" +
 	"\x10RegistriesConfig\x12_\n" +
-	"\vdiscoveries\x18\x01 \x03(\v2=.examples.load_with_runtime.RegistriesConfig.DiscoveriesEntryR\vdiscoveries\x1aW\n" +
+	"\vdiscoveries\x18\x01 \x03(\v2=.examples.load_with_runtime.RegistriesConfig.DiscoveriesEntryR\vdiscoveries\x1a_\n" +
 	"\x10DiscoveriesEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12-\n" +
-	"\x05value\x18\x02 \x01(\v2\x17.discovery.v1.DiscoveryR\x05value:\x028\x01B\x1fZ\x1d./load_with_runtime/conf;confb\x06proto3"
+	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
+	"\x05value\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x05value:\x028\x01B\x1fZ\x1d./load_with_runtime/conf;confb\x06proto3"
 
 var (
-	file_protos_load_with_runtime_bootstrap_proto_rawDescOnce sync.Once
-	file_protos_load_with_runtime_bootstrap_proto_rawDescData []byte
+	file_examples_protos_load_with_runtime_bootstrap_proto_rawDescOnce sync.Once
+	file_examples_protos_load_with_runtime_bootstrap_proto_rawDescData []byte
 )
 
-func file_protos_load_with_runtime_bootstrap_proto_rawDescGZIP() []byte {
-	file_protos_load_with_runtime_bootstrap_proto_rawDescOnce.Do(func() {
-		file_protos_load_with_runtime_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protos_load_with_runtime_bootstrap_proto_rawDesc), len(file_protos_load_with_runtime_bootstrap_proto_rawDesc)))
+func file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP() []byte {
+	file_examples_protos_load_with_runtime_bootstrap_proto_rawDescOnce.Do(func() {
+		file_examples_protos_load_with_runtime_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc), len(file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc)))
 	})
-	return file_protos_load_with_runtime_bootstrap_proto_rawDescData
+	return file_examples_protos_load_with_runtime_bootstrap_proto_rawDescData
 }
 
-var file_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_protos_load_with_runtime_bootstrap_proto_goTypes = []any{
+var file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_examples_protos_load_with_runtime_bootstrap_proto_goTypes = []any{
 	(*Bootstrap)(nil),               // 0: examples.load_with_runtime.Bootstrap
 	(*EndpointConfig)(nil),          // 1: examples.load_with_runtime.EndpointConfig
 	(*RegistriesConfig)(nil),        // 2: examples.load_with_runtime.RegistriesConfig
 	nil,                             // 3: examples.load_with_runtime.Bootstrap.EndpointsEntry
 	(*EndpointConfig_Selector)(nil), // 4: examples.load_with_runtime.EndpointConfig.Selector
 	nil,                             // 5: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
-	(*v1.Server)(nil),               // 6: transport.v1.Server
-	(*v11.Logger)(nil),              // 7: logger.v1.Logger
-	(*v1.Client)(nil),               // 8: transport.v1.Client
-	(*v12.Discovery)(nil),           // 9: discovery.v1.Discovery
+	(*v1.Server)(nil),               // 6: runtime.config.v1.Server
+	(*v11.Logger)(nil),              // 7: runtime.logger.v1.Logger
+	(*v1.Client)(nil),               // 8: runtime.config.v1.Client
+	(*v12.Discovery)(nil),           // 9: runtime.discovery.v1.Discovery
 }
-var file_protos_load_with_runtime_bootstrap_proto_depIdxs = []int32{
-	6, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> transport.v1.Server
+var file_examples_protos_load_with_runtime_bootstrap_proto_depIdxs = []int32{
+	6, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> runtime.config.v1.Server
 	3, // 1: examples.load_with_runtime.Bootstrap.endpoints:type_name -> examples.load_with_runtime.Bootstrap.EndpointsEntry
-	7, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> logger.v1.Logger
+	7, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> runtime.logger.v1.Logger
 	2, // 3: examples.load_with_runtime.Bootstrap.registries:type_name -> examples.load_with_runtime.RegistriesConfig
 	4, // 4: examples.load_with_runtime.EndpointConfig.selector:type_name -> examples.load_with_runtime.EndpointConfig.Selector
-	8, // 5: examples.load_with_runtime.EndpointConfig.transport:type_name -> transport.v1.Client
+	8, // 5: examples.load_with_runtime.EndpointConfig.transport:type_name -> runtime.config.v1.Client
 	5, // 6: examples.load_with_runtime.RegistriesConfig.discoveries:type_name -> examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
 	1, // 7: examples.load_with_runtime.Bootstrap.EndpointsEntry.value:type_name -> examples.load_with_runtime.EndpointConfig
-	9, // 8: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry.value:type_name -> discovery.v1.Discovery
+	9, // 8: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
 	9, // [9:9] is the sub-list for method output_type
 	9, // [9:9] is the sub-list for method input_type
 	9, // [9:9] is the sub-list for extension type_name
@@ -342,26 +342,26 @@ var file_protos_load_with_runtime_bootstrap_proto_depIdxs = []int32{
 	0, // [0:9] is the sub-list for field type_name
 }
 
-func init() { file_protos_load_with_runtime_bootstrap_proto_init() }
-func file_protos_load_with_runtime_bootstrap_proto_init() {
-	if File_protos_load_with_runtime_bootstrap_proto != nil {
+func init() { file_examples_protos_load_with_runtime_bootstrap_proto_init() }
+func file_examples_protos_load_with_runtime_bootstrap_proto_init() {
+	if File_examples_protos_load_with_runtime_bootstrap_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protos_load_with_runtime_bootstrap_proto_rawDesc), len(file_protos_load_with_runtime_bootstrap_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc), len(file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_protos_load_with_runtime_bootstrap_proto_goTypes,
-		DependencyIndexes: file_protos_load_with_runtime_bootstrap_proto_depIdxs,
-		MessageInfos:      file_protos_load_with_runtime_bootstrap_proto_msgTypes,
+		GoTypes:           file_examples_protos_load_with_runtime_bootstrap_proto_goTypes,
+		DependencyIndexes: file_examples_protos_load_with_runtime_bootstrap_proto_depIdxs,
+		MessageInfos:      file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes,
 	}.Build()
-	File_protos_load_with_runtime_bootstrap_proto = out.File
-	file_protos_load_with_runtime_bootstrap_proto_goTypes = nil
-	file_protos_load_with_runtime_bootstrap_proto_depIdxs = nil
+	File_examples_protos_load_with_runtime_bootstrap_proto = out.File
+	file_examples_protos_load_with_runtime_bootstrap_proto_goTypes = nil
+	file_examples_protos_load_with_runtime_bootstrap_proto_depIdxs = nil
 }

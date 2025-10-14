@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package examples.load_with_runtime;
 
-import "discovery/v1/discovery.proto";
-import "logger/v1/logger.proto";
-import "transport/v1/client.proto";
-import "transport/v1/server.proto";
+import "runtime/discovery/v1/discovery.proto";
+import "runtime/logger/v1/logger.proto";
+import "runtime/config/v1/client.proto";
+import "runtime/config/v1/server.proto";
 
 option go_package = "./load_with_runtime/conf;conf";
 
@@ -13,14 +13,14 @@ option go_package = "./load_with_runtime/conf;conf";
 // It uses references (like discovery_name) to link configurations.
 message Bootstrap {
   // Server configurations (e.g., HTTP, gRPC servers)
-  repeated transport.v1.Server servers = 1;
+  repeated runtime.config.v1.Server servers = 1;
 
   // Endpoints defines the configuration for all downstream services.
   // The key of the map is the logical name of the endpoint (e.g., "user-service").
   map<string, EndpointConfig> endpoints = 2;
 
   // Logging configuration
-  logger.v1.Logger logger = 3;
+  runtime.logger.v1.Logger logger = 3;
 
   // RegistriesConfig holds the definitions of available discovery service providers.
   RegistriesConfig registries = 4;
@@ -39,7 +39,7 @@ message EndpointConfig {
   Selector selector = 3;
 
   // Transport configuration for this client.
-  transport.v1.Client transport = 4;
+  runtime.config.v1.Client transport = 4;
 
   // We need to define Selector here as it was in the old client.proto/endpoint.proto
   message Selector {
@@ -50,5 +50,5 @@ message EndpointConfig {
 
 // RegistriesConfig holds the definitions of available discovery service providers.
 message RegistriesConfig {
-  map<string, discovery.v1.Discovery> discoveries = 1;
+  map<string, runtime.discovery.v1.Discovery> discoveries = 1;
 }
