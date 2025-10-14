@@ -20,7 +20,7 @@ GIT_VERSION     := $(shell git describe --tags --always)
 ifeq ($(GOHOSTOS), windows)
     SHELL          := powershell.exe
     .SHELLFLAGS    := -NoProfile -Command
-    GIT_HEAD_TAG   := $(shell git tag --points-at HEAD 2>$null)
+    GIT_HEAD_TAG   := $(shell git tag --points-at HEAD 2>$$null)
     BUILD_DATE     := $(shell powershell -Command "Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'")
     GIT_TREE_STATE := $(shell powershell -Command "if ((git status --porcelain)) { 'dirty' } else { 'clean' }")
     GIT_TAG        := $(shell powershell -Command "if ('${GIT_HEAD_TAG}') { '${GIT_HEAD_TAG}' } else { '${GIT_COMMIT}' }")
