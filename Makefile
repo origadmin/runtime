@@ -8,7 +8,7 @@ THIRD_PARTY_PATH=third_party
 ifeq ($(GOHOSTOS), windows)
 	#the `find.exe` is different from `find` in bash/shell.
 	#to see https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/find.
-	#changed to use git-bash.exe to run git-bash.exe to run find cli or other cli friendly, caused of every developer has a Git.
+	#changed to use git-bash.exe to run cli or other cli friendly, caused of every developer has a Git.
 	#Git_Bash= $(subst cmd\,bin\bash.exe,$(dir $(shell where git)))
 	#GIT_BASH=$(subst \,/,$(subst cmd\,bin\bash.exe,$(dir $(shell which git))))
 
@@ -62,13 +62,15 @@ endif
 ifeq ($(ENV), release)
     LDFLAGS = -s -w
 endif
-MODULE_PATH=github.com/origadmin/toolkits/version
-LDFLAGS := -X $(MODULE_PATH).gitTag=$(TAG) \
-           -X $(MODULE_PATH).buildDate=$(BUILT_DATE) \
-           -X $(MODULE_PATH).gitCommit=$(COMMIT) \
-           -X $(MODULE_PATH).gitTreeState=$(TREE_STATE) \
-           -X $(MODULE_PATH).gitBranch=$(BRANCH) \
-           -X $(MODULE_PATH).version=$(VERSION)
+
+# Protoc Plugin Output Flags - 定义所有 protoc 插件的输出标志为变量
+PROTOC_GO_OUT          = --go_out=paths=source_relative
+PROTOC_GRPC_OUT        = --go-grpc_out=paths=source_relative
+PROTOC_HTTP_OUT        = --go-http_out=paths=source_relative
+PROTOC_ERRORS_OUT      = --go-errors_out=paths=source_relative
+PROTOC_VALIDATE_OUT    = --validate_out=lang=go,paths=source_relative
+PROTOC_OPENAPI_OUT     = --openapi_out=paths=source_relative
+PROTOC_GINS_OUT        = --go-gins_out=paths=source_relative # 这个插件目前只在 examples 中使用
 
 .PHONY: init
 # init env
@@ -107,17 +109,17 @@ deps:
 
 
 .PHONY: examples
-# generate examples proto or use ./examples/generate.go
+# generate examples proto
 examples:
 	cd examples && protoc \
-	--proto_path=./proto \
-	--proto_path=../third_party \
-	--go_out=paths=source_relative:./proto \
-	--go-gins_out=paths=source_relative:./proto \
-	--go-grpc_out=paths=source_relative:./proto \
-	--go-http_out=paths=source_relative:./proto \
-	--go-errors_out=paths=source_relative:./proto \
-	--openapi_out=paths=source_relative:./proto \
+	-I./proto \
+	-I../third_party \
+	$(PROTOC_GO_OUT):./proto \
+	$(PROTOC_GINS_OUT):./proto \
+	$(PROTOC_GRPC_OUT):./proto \
+	$(PROTOC_HTTP_OUT):./proto \
+	$(PROTOC_ERRORS_OUT):./proto \
+	$(PROTOC_OPENAPI_OUT):./proto \
 	./proto/helloworld/v1/helloworld.proto
 
 #.PHONY: server
@@ -141,30 +143,31 @@ update:
 	go mod tidy
 
 .PHONY: runtime
-# generate internal proto or use ./internal/generate.go
+# generate internal proto
 runtime:
 	protoc \
-	--proto_path=./api/proto \
-	--proto_path=./third_party \
-	--go_out=paths=source_relative:./api/gen/go \
-	--validate_out=lang=go,paths=source_relative:./api/gen/go \
+	-I./api/proto \
+	-I$(THIRD_PARTY_PATH) \
+	$(PROTOC_GO_OUT):./api/gen/go \
+	$(PROTOC_VALIDATE_OUT):./api/gen/go \
 	$(RUNTIME_PROTO_FILES)
+
+# Find all 'proto' directories under 'test/integration' for dynamic generation
+TEST_INTEGRATION_PROTO_DIRS = $(shell find test/integration -maxdepth 2 -type d -name "proto")
 
 .PHONY: generate-test-protos
 # generate proto files for integration tests
 generate-test-protos:
-	protoc \
-	--proto_path=./test/integration/config/proto \
-	--proto_path=./api/proto \
-	--proto_path=./third_party \
-	--go_out=paths=source_relative:./test/integration/config/proto \
-	./test/integration/config/proto/*.proto
-	protoc \
-	--proto_path=./test/integration/app/proto \
-	--proto_path=./api/proto \
-	--proto_path=./third_party \
-	--go_out=paths=source_relative:./test/integration/app/proto \
-	./test/integration/app/proto/*.proto
+	@echo "Generating protos for integration tests..."
+	@for dir in $(TEST_INTEGRATION_PROTO_DIRS); do \
+		echo "  Processing $$dir"; \
+		protoc \
+		-I$$dir \
+		-I./api/proto \
+		-I$(THIRD_PARTY_PATH) \
+		$(PROTOC_GO_OUT):$$dir \
+		$$dir/*.proto; \
+		done
 
 .PHONY: test
 # run Go unit and integration tests
@@ -183,21 +186,6 @@ all:
 	$(MAKE) update
 	$(MAKE) runtime
 	$(MAKE) generate
-
-.PHONY: version
-# run version example
-version:
-	go run -ldflags "$(LDFLAGS)" $(BUILD_FLAGS) -gcflags=all="-N -l" ./cmd/version/main.go
-
-.PHONY: build-gins
-# build protoc-gen-go-gins with current snapshot to dist
-build-gins:
-	goreleaser build --single-target --clean --snapshot -f ./cmd/protoc-gen-go-gins/.goreleaser.yaml
-
-.PHONY: release-gins
-# release
-release:
-	goreleaser release --clean -f ./cmd/protoc-gen-go-gins/.goreleaser.yaml
 
 # show help
 help:
