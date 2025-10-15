@@ -47,52 +47,27 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 
 		// Case 2: Default flow - load from bootstrapPath.
 	} else {
-		sources := &sourcev1.Sources{Sources: []*sourcev1.SourceConfig{SourceWithFile(bootstrapPath)}}
+		// Determine the full path for the initial bootstrap file.
+		fullBootstrapPath := bootstrapPath
+		if providerOpts.directory != "" && !filepath.IsAbs(bootstrapPath) {
+			fullBootstrapPath = filepath.Join(providerOpts.directory, bootstrapPath)
+		}
+
+		var sources []*sourcev1.SourceConfig
+		// If not in 'directly' mode, try to load sources from the bootstrap file.
 		if !providerOpts.directly {
-			if providerOpts.directory != "" {
-				bootstrapPath = filepath.Join(providerOpts.directory, bootstrapPath)
-			}
-			// Load the bootstrap file to get sources.
-			bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath)
-			if err != nil {
-				return nil, fmt.Errorf("failed to load bootstrap config: %w", err)
-			}
-
-			if bootstrapCfg != nil {
-				sources = &sourcev1.Sources{Sources: bootstrapCfg.GetSources()}
-			}
-		}
-		if providerOpts.directory != "" {
-			for i, source := range sources.Sources {
-				switch v := source.Config.(type) {
-				case *sourcev1.SourceConfig_File:
-					if providerOpts.directory == "" {
-						continue
-					}
-					path := v.File.Path
-					if path == "" {
-						path = providerOpts.directory
-					} else {
-						path = filepath.Join(providerOpts.directory, path)
-					}
-					logger.Info("Load bootstrap file", "path", path)
-					sources.Sources[i].Config = &sourcev1.SourceConfig_File{
-						File: &sourcev1.FileSource{
-							Path:    path,
-							Format:  v.File.Format,
-							Ignores: v.File.Ignores,
-							Formats: v.File.Formats,
-							Reload:  v.File.Reload,
-						},
-					}
-				default:
-					continue
-				}
-			}
+			sources = loadSourcesFromBootstrapFile(fullBootstrapPath, providerOpts, logger)
 		}
 
+		// Fallback or 'directly' mode: use the bootstrapPath as the single source.
+		if len(sources) == 0 {
+			logger.Info("Load bootstrap file", "path", fullBootstrapPath)
+			sources = append(sources, SourceWithFile(fullBootstrapPath))
+		}
+
+		// Create the base config from the collected and resolved sources.
 		var err error
-		baseConfig, err = runtimeconfig.NewConfig(sources, opts...)
+		baseConfig, err = runtimeconfig.NewConfig(&sourcev1.Sources{Sources: sources}, opts...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create base config: %w", err)
 		}
@@ -123,6 +98,38 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 	// Final Step: If no transformer is used, apply the default structured implementation.
 	// We take the loaded base interfaces.Config and enhance it with structured, path-based decoding.
 	return bootstrapconfig.NewStructured(baseConfig, paths), nil
+}
+
+// loadSourcesFromBootstrapFile attempts to load a bootstrap configuration and resolve the paths of its sources.
+// It returns a slice of source configurations or nil if loading fails or no sources are found.
+func loadSourcesFromBootstrapFile(fullBootstrapPath string, providerOpts *ConfigLoadOptions, logger *log.Helper) []*sourcev1.SourceConfig {
+	bootstrapCfg, err := LoadBootstrapConfig(fullBootstrapPath)
+	if err != nil || bootstrapCfg == nil || len(bootstrapCfg.GetSources()) == 0 {
+		return nil
+	}
+
+	// Successfully loaded sources, now resolve their paths.
+	var sources []*sourcev1.SourceConfig
+	bootstrapDir := filepath.Dir(fullBootstrapPath) // Base for relative paths
+	for _, source := range bootstrapCfg.GetSources() {
+		if fileSource, ok := source.Config.(*sourcev1.SourceConfig_File); ok {
+			path := fileSource.File.Path
+			resolvedPath := path
+
+			// Use custom path resolver if provided, otherwise use default logic.
+			if providerOpts.pathResolver != nil {
+				resolvedPath = providerOpts.pathResolver(bootstrapDir, path)
+			} else if !filepath.IsAbs(path) {
+				// Default logic: It's a relative path, join it with the bootstrap file's directory.
+				resolvedPath = filepath.Join(bootstrapDir, path)
+			}
+
+			fileSource.File.Path = resolvedPath
+			logger.Info("Load bootstrap file", "path", resolvedPath)
+		}
+		sources = append(sources, source)
+	}
+	return sources
 }
 
 // LoadBootstrapConfig loads the bootstrapv1.Bootstrap definition from a local bootstrap configuration file.

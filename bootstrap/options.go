@@ -8,6 +8,11 @@ import (
 
 // --- Options for LoadConfig ---
 
+// PathResolverFunc defines the signature for a function that resolves a configuration path.
+// It takes the base directory (of the bootstrap file) and the path from the config source
+// and returns the final, resolved path.
+type PathResolverFunc func(baseDir, path string) string
+
 // ConfigTransformer defines an interface for custom transformation of kratosconfig.Config to interfaces.Config.
 type ConfigTransformer interface {
 	Transform(interfaces.Config) (interfaces.StructuredConfig, error)
@@ -28,6 +33,15 @@ type ConfigLoadOptions struct {
 	configTransformer ConfigTransformer // Custom interface for transformation (now also handles function form)
 	directory         string
 	directly          bool
+	pathResolver      PathResolverFunc // Custom path resolver
+}
+
+// WithPathResolver provides a custom function to resolve relative paths in configuration sources.
+// This allows for flexible path mapping strategies beyond the default file-relative approach.
+func WithPathResolver(resolver PathResolverFunc) Option {
+	return optionutil.Update(func(o *ConfigLoadOptions) {
+		o.pathResolver = resolver
+	})
 }
 
 // WithDirectly sets whether to directly return the loaded kratosconfig.Config.
