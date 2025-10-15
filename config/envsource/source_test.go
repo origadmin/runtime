@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package source implements the functions, types, and interfaces for the module.
+// Package envsource is a configuration source that loads environment variables.
 package envsource
 
 import (

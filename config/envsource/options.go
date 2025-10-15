@@ -1,8 +1,12 @@
-// Package envsrouce implements the functions, types, and interfaces for the module.
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
+// Package envsource is a configuration source that loads environment variables.
 package envsource
 
 import (
-	options "github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/optionutil"
 )
 

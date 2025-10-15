@@ -2,6 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
+// Package envsource is a configuration source that loads environment variables.
 package envsource
 
 import (
