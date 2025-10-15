@@ -31,6 +31,9 @@ type adapter struct {
 
 // Load implements the interfaces.kc interface.
 func (a *adapter) Load() error {
+	if a.kc == nil {
+		return nil
+	}
 	return a.kc.Load()
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/log"
 )
 
 const (
@@ -66,7 +67,8 @@ func getDefaultPriorityForSourceType(sourceType string) int32 {
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
 func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
-	options := FromOptions(opts...)
+	logger := log.NewHelper(log.FromOptions(opts))
+	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
 
 	// Get the list of sources from the protobuf config.
@@ -96,15 +98,17 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 		if err != nil {
 			return nil, err
 		}
+		logger.Infof("Created source: %s with priority: %d", src.Type, src.Priority)
 		sources = append(sources, source)
 	}
-	if options.Sources != nil {
-		sources = append(sources, options.Sources...)
+	if fromOptions.Sources != nil {
+		sources = append(sources, fromOptions.Sources...)
+		logger.Infof("Added %d sources from options", len(fromOptions.Sources))
 	}
-	options.ConfigOptions = append(options.ConfigOptions, kratosconfig.WithSource(sources...))
+	fromOptions.ConfigOptions = append(fromOptions.ConfigOptions, kratosconfig.WithSource(sources...))
 
 	// Create the underlying Kratos config
-	kc := kratosconfig.New(options.ConfigOptions...)
+	kc := kratosconfig.New(fromOptions.ConfigOptions...)
 
 	// Wrap it in our adapter and return the interface
 	return &adapter{kc: kc}, nil

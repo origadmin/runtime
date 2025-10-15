@@ -76,7 +76,7 @@ func NewEnvSource(sourceCfg *sourcev1.SourceConfig, opts ...options.Option) (run
 	if envSrc == nil {
 		// This can happen if the source type is "file" but the `file` oneof is not set.
 		// Returning nil, nil is a safe default, allowing other sources to proceed.
-		return nil, nil
+		return NewSource(prefixes...), nil
 	}
 	if len(prefixes) == 0 {
 		prefixes = envSrc.GetPrefixes()
