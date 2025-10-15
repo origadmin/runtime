@@ -61,7 +61,7 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 
 		// Fallback or 'directly' mode: use the bootstrapPath as the single source.
 		if len(sources) == 0 {
-			logger.Info("Load bootstrap file", "path", fullBootstrapPath)
+			logger.Infof("No sources found in bootstrap file, using it directly: %s", fullBootstrapPath)
 			sources = append(sources, SourceWithFile(fullBootstrapPath))
 		}
 
@@ -125,7 +125,7 @@ func loadSourcesFromBootstrapFile(fullBootstrapPath string, providerOpts *Config
 			}
 
 			fileSource.File.Path = resolvedPath
-			logger.Info("Load bootstrap file", "path", resolvedPath)
+			logger.Infof("Load bootstrap file: %s", resolvedPath)
 		}
 		sources = append(sources, source)
 	}
