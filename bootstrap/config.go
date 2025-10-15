@@ -3,9 +3,9 @@ package bootstrap
 
 import (
 	"fmt"
+	"path/filepath"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/log"
 
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/runtime/bootstrap/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
@@ -14,6 +14,7 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/log"
 )
 
 // defaultComponentPaths provides the framework's default path map for core components.
@@ -29,6 +30,7 @@ var defaultComponentPaths = map[string]string{
 // LoadConfig creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, following a clear, layered approach.
 func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConfig, error) {
+	logger := log.NewHelper(log.FromOptions(opts))
 	// 1. Apply Options to determine the configuration flow.
 	providerOpts := FromConfigLoadOptions(opts...)
 
@@ -45,17 +47,51 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 
 		// Case 2: Default flow - load from bootstrapPath.
 	} else {
-		// Load the bootstrap file to get sources.
-		bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load bootstrap config: %w", err)
+		sources := &sourcev1.Sources{Sources: []*sourcev1.SourceConfig{SourceWithFile(bootstrapPath)}}
+		if !providerOpts.directly {
+			if providerOpts.directory != "" {
+				bootstrapPath = filepath.Join(providerOpts.directory, bootstrapPath)
+			}
+			// Load the bootstrap file to get sources.
+			bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load bootstrap config: %w", err)
+			}
+
+			if bootstrapCfg != nil {
+				sources = &sourcev1.Sources{Sources: bootstrapCfg.GetSources()}
+			}
+		}
+		if providerOpts.directory != "" {
+			for i, source := range sources.Sources {
+				switch v := source.Config.(type) {
+				case *sourcev1.SourceConfig_File:
+					if providerOpts.directory == "" {
+						continue
+					}
+					path := v.File.Path
+					if path == "" {
+						path = providerOpts.directory
+					} else {
+						path = filepath.Join(providerOpts.directory, path)
+					}
+					logger.Info("Load bootstrap file", "path", path)
+					sources.Sources[i].Config = &sourcev1.SourceConfig_File{
+						File: &sourcev1.FileSource{
+							Path:    path,
+							Format:  v.File.Format,
+							Ignores: v.File.Ignores,
+							Formats: v.File.Formats,
+							Reload:  v.File.Reload,
+						},
+					}
+				default:
+					continue
+				}
+			}
 		}
 
-		var sources *sourcev1.Sources
-		if bootstrapCfg != nil {
-			sources = &sourcev1.Sources{Sources: bootstrapCfg.GetSources()}
-		}
-
+		var err error
 		baseConfig, err = runtimeconfig.NewConfig(sources, opts...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create base config: %w", err)
@@ -116,4 +152,15 @@ func LoadBootstrapConfig(bootstrapPath string) (*bootstrapv1.Bootstrap, error) {
 	}
 
 	return &bc, nil
+}
+
+func SourceWithFile(path string) *sourcev1.SourceConfig {
+	return &sourcev1.SourceConfig{
+		Type: "file",
+		Config: &sourcev1.SourceConfig_File{
+			File: &sourcev1.FileSource{
+				Path: path,
+			},
+		},
+	}
 }

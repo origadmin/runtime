@@ -26,6 +26,22 @@ type ConfigLoadOptions struct {
 	defaultPaths      map[string]string
 	config            interfaces.Config // Added: Custom interfaces.Config implementation
 	configTransformer ConfigTransformer // Custom interface for transformation (now also handles function form)
+	directory         string
+	directly          bool
+}
+
+// WithDirectly sets whether to directly return the loaded kratosconfig.Config.
+func WithDirectly(directly bool) Option {
+	return optionutil.Update(func(o *ConfigLoadOptions) {
+		o.directly = directly
+	})
+}
+
+// WithWorkDirectory sets the directory where the bootstrap configuration file is located.
+func WithWorkDirectory(directory string) Option {
+	return optionutil.Update(func(o *ConfigLoadOptions) {
+		o.directory = directory
+	})
 }
 
 // WithDefaultPaths provides a default path map for components.
@@ -72,6 +88,7 @@ type ComponentFactory = interfaces.ComponentFactory
 type Options struct {
 	appInfo            *interfaces.AppInfo
 	componentFactories map[string]ComponentFactory
+	directory          string
 }
 
 // Option configures the New function.
