@@ -9,9 +9,9 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 )
 
-// NewHTTPClient creates a new concrete HTTP client connection based on the provided configuration.
+// NewClient creates a new concrete HTTP client connection based on the provided configuration.
 // It returns *transhttp.Client, not the generic interfaces.Client.
-func NewHTTPClient(ctx context.Context, httpConfig *transportv1.HttpClientConfig, clientOpts *ClientOptions) (*transhttp.Client, error) {
+func NewClient(ctx context.Context, httpConfig *transportv1.HttpClientConfig, clientOpts *ClientOptions) (*transhttp.Client, error) {
 	// Initialize the Kratos HTTP client options using the adapter function.
 	kratosOpts, err := initHttpClientOptions(ctx, httpConfig, clientOpts)
 	if err != nil {

@@ -31,7 +31,7 @@ func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	serverOpts := FromServerOptions(opts)
 
 	// Call the concrete server creation function.
-	srv, err := NewGRPCServer(grpcConfig, serverOpts)
+	srv, err := NewServer(grpcConfig, serverOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 	clientOpts := FromClientOptions(opts)
 
 	// Call the concrete client creation function.
-	conn, err := NewGRPCClient(ctx, grpcConfig, clientOpts)
+	conn, err := NewClient(ctx, grpcConfig, clientOpts)
 	if err != nil {
 		return nil, err
 	}

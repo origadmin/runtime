@@ -30,7 +30,7 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	serverOpts := FromServerOptions(opts)
 
 	// Call the concrete server creation function.
-	srv, err := NewHTTPServer(httpConfig, serverOpts)
+	srv, err := NewServer(httpConfig, serverOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Cl
 	clientOpts := FromClientOptions(opts)
 
 	// Call the concrete client creation function.
-	client, err := NewHTTPClient(ctx, httpConfig, clientOpts)
+	client, err := NewClient(ctx, httpConfig, clientOpts)
 	if err != nil {
 		return nil, err
 	}

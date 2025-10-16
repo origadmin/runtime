@@ -27,18 +27,11 @@ type Structured struct {
 }
 
 // NewStructured creates a new structured error
-func NewStructured(module, message string) *Structured {
+func NewStructured(module, format string, args ...interface{}) *Structured {
+	message := fmt.Sprintf(format, args...)
 	return &Structured{
 		Module:  module,
 		Message: message,
-	}
-}
-
-// NewFormatStructured creates a new formatted structured error
-func NewFormatStructured(module, format string, args ...interface{}) *Structured {
-	return &Structured{
-		Module:  module,
-		Message: fmt.Sprintf(format, args...),
 	}
 }
 

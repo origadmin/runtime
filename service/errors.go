@@ -4,6 +4,8 @@ import (
 	"github.com/origadmin/runtime/errors"
 )
 
+const Module = "service"
+
 // Predefined errors using the common StructuredError
 var (
 	ErrNilServerConfig     = newServiceError("server configuration is nil")
@@ -18,9 +20,5 @@ var (
 
 // Helper functions to create new errors
 func newServiceError(message string) *errors.Structured {
-	return errors.NewStructured("service", message).WithCaller()
-}
-
-func newServiceErrorf(format string, args ...interface{}) *errors.Structured {
-	return errors.NewFormatStructured("service", format, args...).WithCaller()
+	return errors.NewStructured(Module, message).WithCaller()
 }

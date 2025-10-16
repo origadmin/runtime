@@ -8,9 +8,9 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 )
 
-// NewHTTPServer creates a new concrete HTTP server instance based on the provided configuration.
+// NewServer creates a new concrete HTTP server instance based on the provided configuration.
 // It returns *transhttp.Server, not the generic interfaces.Server.
-func NewHTTPServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerOptions) (*transhttp.Server, error) {
+func NewServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerOptions) (*transhttp.Server, error) {
 	// Initialize the Kratos HTTP server options using the adapter function.
 	kratosOpts, err := initHttpServerOptions(httpConfig, serverOpts)
 	if err != nil {

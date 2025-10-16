@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -16,8 +15,6 @@ import (
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
-
-const defaultTimeout = 5 * time.Second
 
 // DefaultServerMiddlewares provides a default set of server-side middlewares for gRPC services.
 // These are essential for ensuring basic stability and observability.
