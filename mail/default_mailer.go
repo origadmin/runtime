@@ -11,8 +11,12 @@ import (
 	"strings"
 
 	mailv1 "github.com/origadmin/runtime/api/gen/go/runtime/mail/v1"
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 )
+
+const Module = "mail.defaultMailer"
 
 // defaultMailer is a default implementation of the interfaces.Mailer.
 type defaultMailer struct {
@@ -30,11 +34,11 @@ func NewDefaultMailer(cfg *mailv1.Mail) interfaces.Mailer {
 func (m *defaultMailer) Send(msg *interfaces.Message) error {
 	smtpConfig := m.cfg.GetSmtpConfig()
 	if smtpConfig == nil {
-		return fmt.Errorf("mail: SMTP configuration is not provided in the Mail config")
+		return runtimeerrors.NewStructured(Module, "SMTP configuration is not provided in the Mail config").WithReason(commonv1.ErrorReason_MISSING_PARAMETER).WithCaller()
 	}
 
 	if smtpConfig.Host == "" || smtpConfig.Port == 0 {
-		return fmt.Errorf("mail: SMTP configuration (host, port) is missing")
+		return runtimeerrors.NewStructured(Module, "SMTP configuration (host, port) is missing").WithReason(commonv1.ErrorReason_MISSING_PARAMETER).WithCaller()
 	}
 
 	addr := fmt.Sprintf("%s:%d", smtpConfig.Host, smtpConfig.Port)
@@ -74,7 +78,7 @@ func (m *defaultMailer) Send(msg *interfaces.Message) error {
 	// Send the email
 	err := smtp.SendMail(addr, auth, msg.From, recipients, b.Bytes())
 	if err != nil {
-		return fmt.Errorf("mail: failed to send email: %w", err)
+		return runtimeerrors.WrapStructured(err, Module, "failed to send email").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
 	}
 
 	fmt.Printf("Mail: Successfully sent email from %s to %v with subject '%s' via %s\n", msg.From, msg.To, msg.Subject, addr)

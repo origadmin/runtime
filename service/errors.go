@@ -19,6 +19,6 @@ var (
 )
 
 // Helper functions to create new errors
-func newServiceError(message string) *errors.Structured {
+func newServiceError(message string) error {
 	return errors.NewStructured(Module, message).WithCaller()
 }

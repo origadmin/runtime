@@ -2,12 +2,10 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
-	kerrors "github.com/go-kratos/kratos/v2/errors"
-
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
@@ -37,12 +35,10 @@ func GetProtocolFactory(name string) (ProtocolFactory, bool) {
 // getServerProtocolName extracts the protocol name from the transportv1.Server configuration.
 func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 	if cfg == nil {
-		ke := kerrors.New(http.StatusBadRequest, "ERR_NIL_SERVER_CONFIG", "server configuration is nil")
-		return "", ke
+		return "", errors.WithReason(errors.NewStructured(Module, "server configuration is nil").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 	if cfg.Protocol == "" {
-		ke := kerrors.New(http.StatusBadRequest, "ERR_MISSING_SERVER_CONFIG", "protocol is not specified in server configuration")
-		return "", ke
+		return "", errors.WithReason(errors.NewStructured(Module, "protocol is not specified in server configuration").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 	return cfg.Protocol, nil
 }
@@ -50,12 +46,10 @@ func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 // getClientProtocolName extracts the protocol name from the transportv1.Client configuration.
 func getClientProtocolName(cfg *transportv1.Client) (string, error) {
 	if cfg == nil {
-		ke := kerrors.New(http.StatusBadRequest, "ERR_NIL_CLIENT_CONFIG", "client configuration is nil")
-		return "", ke
+		return "", errors.WithReason(errors.NewStructured(Module, "client configuration is nil").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 	if cfg.Protocol == "" {
-		ke := kerrors.New(http.StatusBadRequest, "ERR_MISSING_CLIENT_CONFIG", "protocol is not specified in client configuration")
-		return "", ke
+		return "", errors.WithReason(errors.NewStructured(Module, "protocol is not specified in client configuration").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 	return cfg.Protocol, nil
 }
@@ -70,21 +64,19 @@ func NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Serv
 
 	f, ok := GetProtocolFactory(protocolName)
 	if !ok {
-		ke := kerrors.New(http.StatusBadRequest, "ERR_UNSUPPORTED_PROTOCOL", fmt.Sprintf("unsupported protocol: %s", protocolName))
-		return nil, ke
+		return nil, errors.WithReason(errors.NewStructured(Module, "unsupported protocol: %s", protocolName).WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 
 	server, err := f.NewServer(cfg, opts...)
 	if err != nil {
-		ke := kerrors.New(http.StatusInternalServerError, "ERR_SERVER_CREATION_FAILED", fmt.Sprintf("failed to create server for protocol %s", protocolName))
-		ke.Metadata = map[string]string{"error": err.Error()}
-		return nil, ke
+		return nil, errors.WithReason(errors.NewStructured(Module, "failed to create server for protocol %s", protocolName).WithField("error", err.Error()).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
 	}
 
 	return server, nil
 }
 
 // NewClient creates a new client instance based on the provided configuration and options.
+// It automatically looks up the appropriate protocol factory from the default registry.
 func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
 	protocolName, err := getClientProtocolName(cfg)
 	if err != nil {
@@ -93,15 +85,12 @@ func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Opt
 
 	f, ok := GetProtocolFactory(protocolName)
 	if !ok {
-		ke := kerrors.New(http.StatusBadRequest, "ERR_UNSUPPORTED_PROTOCOL", fmt.Sprintf("unsupported protocol: %s", protocolName))
-		return nil, ke
+		return nil, errors.WithReason(errors.NewStructured(Module, "unsupported protocol: %s", protocolName).WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 
 	client, err := f.NewClient(ctx, cfg, opts...)
 	if err != nil {
-		ke := kerrors.New(http.StatusInternalServerError, "ERR_CLIENT_CREATION_FAILED", fmt.Sprintf("failed to create client for protocol %s", protocolName))
-		ke.Metadata = map[string]string{"error": err.Error()}
-		return nil, ke
+		return nil, errors.WithReason(errors.NewStructured(Module, "failed to create client for protocol %s", protocolName).WithField("error", err.Error()).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
 	}
 
 	return client, nil

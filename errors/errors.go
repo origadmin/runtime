@@ -180,66 +180,101 @@ func Convert(err error) *kerrors.Error {
 	// 1. Check if the error is a TaggedError (explicitly mapped by developer)
 	var taggedErr *TaggedError
 	if errors.As(err, &taggedErr) {
-		// Use the tagged reason, and preserve the original error message
 		ke := FromReason(taggedErr.Reason)
-		ke.Message = fmt.Sprintf("%s", taggedErr.Error()) // Directly set the message
+		ke.Message = fmt.Sprintf("%s", taggedErr.Error())
 		return ke
 	}
 
 	// 2. Check if the error is a Structured internal error
 	var se *Structured
 	if errors.As(err, &se) {
-		// Delegate to ToKratos for unified conversion logic
-		return ToKratos(se, commonv1.ErrorReason_UNKNOWN_ERROR)
+		var reason commonv1.ErrorReason = commonv1.ErrorReason_UNKNOWN_ERROR // Default if no TaggedError is found
+
+		var wrappedTaggedErr *TaggedError
+		if errors.As(se.Err, &wrappedTaggedErr) {
+			reason = wrappedTaggedErr.Reason
+		}
+
+		ke := FromReason(reason)
+
+		if se.Message != "" {
+			ke.Message = se.Message
+		} else if wrappedTaggedErr != nil && wrappedTaggedErr.Err != nil {
+			ke.Message = wrappedTaggedErr.Err.Error()
+		}
+
+		if len(se.Metadata) > 0 {
+			if ke.Metadata == nil {
+				ke.Metadata = make(map[string]string)
+			}
+			for k, v := range se.Metadata {
+				ke.Metadata[k] = v
+			}
+		}
+		if se.Module != "" {
+			if ke.Metadata == nil {
+				ke.Metadata = make(map[string]string)
+			}
+			if _, ok := ke.Metadata["module"]; !ok {
+				ke.Metadata["module"] = se.Module
+			}
+		}
+		if se.Op != "" {
+			if ke.Metadata == nil {
+				ke.Metadata = make(map[string]string)
+			}
+			if _, ok := ke.Metadata["operation"]; !ok {
+				ke.Metadata["operation"] = se.Op
+			}
+		}
+
+		return ke
 	}
 
 	// 3. Check if the error is already a Kratos error (from Kratos itself or a plugin)
-	var ke *kerrors.Error
-	if errors.As(err, &ke) {
-		// Try to map the existing Kratos error's Reason to our commonv1.ErrorReason
-		parsedReason, ok := commonv1.ErrorReason_value[ke.Reason]
+	var existingKratosErr *kerrors.Error // Use a different name to avoid confusion with the top-level 'ke'
+	if errors.As(err, &existingKratosErr) {
+		parsedReason, ok := commonv1.ErrorReason_value[existingKratosErr.Reason]
 		if ok {
-			// If the reason matches one of our predefined reasons, use our FromReason
-			// to ensure consistency (e.g., default message, code from our proto)
-			// and merge metadata.
-			newKe := FromReason(commonv1.ErrorReason(parsedReason))
-			newKe.Message = fmt.Sprintf("%s", ke.Message) // Directly set the message
-			if newKe.Metadata == nil {
-				newKe.Metadata = make(map[string]string)
+			ke := FromReason(commonv1.ErrorReason(parsedReason))
+			ke.Message = fmt.Sprintf("%s", existingKratosErr.Message)
+			if ke.Metadata == nil {
+				ke.Metadata = make(map[string]string)
 			}
-			for k, v := range ke.Metadata {
-				newKe.Metadata[k] = v // Directly set metadata
+			for k, v := range existingKratosErr.Metadata {
+				ke.Metadata[k] = v
 			}
-			return newKe
+			return ke
 		}
-		// If the reason does not match our predefined reasons,
-		// it's an external Kratos error with an unknown reason.
-		// Convert it to a generic external service error, and put the original reason and code into metadata.
-		newKe := FromReason(commonv1.ErrorReason_EXTERNAL_SERVICE_ERROR)
-		newKe.Message = fmt.Sprintf("External Kratos error: %s", ke.Message) // Directly set the message
-		if newKe.Metadata == nil {
-			newKe.Metadata = make(map[string]string)
+		ke := FromReason(commonv1.ErrorReason_EXTERNAL_SERVICE_ERROR)
+		ke.Message = fmt.Sprintf("External Kratos error: %s", existingKratosErr.Message)
+		if ke.Metadata == nil {
+			ke.Metadata = make(map[string]string)
 		}
-		newKe.Metadata["original_reason"] = ke.Reason
-		newKe.Metadata["original_code"] = fmt.Sprintf("%d", ke.Code)
-		return newKe
+		ke.Metadata["original_reason"] = existingKratosErr.Reason
+		ke.Metadata["original_code"] = fmt.Sprintf("%d", existingKratosErr.Code)
+		return ke
 	}
 
-	// 3. Handle specific standard library errors (implicit mapping)
+	// 4. Handle specific standard library errors (implicit mapping)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
-		return FromReason(commonv1.ErrorReason_RECORD_NOT_FOUND)
+		ke := FromReason(commonv1.ErrorReason_RECORD_NOT_FOUND)
+		return ke
 	case errors.Is(err, context.DeadlineExceeded):
-		return FromReason(commonv1.ErrorReason_REQUEST_TIMEOUT)
+		ke := FromReason(commonv1.ErrorReason_REQUEST_TIMEOUT)
+		return ke
 	case errors.Is(err, context.Canceled):
-		return FromReason(commonv1.ErrorReason_CANCELLED)
+		ke := FromReason(commonv1.ErrorReason_CANCELLED)
+		return ke
 	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
-		return FromReason(commonv1.ErrorReason_VALIDATION_ERROR)
+		ke := FromReason(commonv1.ErrorReason_VALIDATION_ERROR)
+		return ke
 	}
 
-	// 4. Default to INTERNAL_SERVER_ERROR for any other unhandled error
-	ke = FromReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
-	ke.Message = fmt.Sprintf("%s", err.Error()) // Directly set the message
+	// 5. Default to INTERNAL_SERVER_ERROR for any other unhandled error
+	ke := FromReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+	ke.Message = fmt.Sprintf("%s", err.Error())
 	return ke
 }
 
@@ -250,15 +285,15 @@ func NewErrorEncoder() transhttp.EncodeErrorFunc {
 			return
 		}
 
-		ke := Convert(err)
+		var convertedErr *kerrors.Error = Convert(err) // Use a new variable name to avoid any confusion
 
 		if tr, ok := transport.FromServerContext(r.Context()); ok {
 			fields := []interface{}{
 				"kind", "server", "operation", tr.Operation(),
-				"code", ke.Code, "reason", ke.Reason, "error", ke.Message,
+				"code", convertedErr.Code, "reason", convertedErr.Reason, "error", convertedErr.Message,
 			}
-			if len(ke.Metadata) > 0 {
-				fields = append(fields, "metadata", ke.Metadata)
+			if len(convertedErr.Metadata) > 0 {
+				fields = append(fields, "metadata", convertedErr.Metadata)
 			}
 
 			type stackTracer interface {
@@ -273,6 +308,6 @@ func NewErrorEncoder() transhttp.EncodeErrorFunc {
 			log.Context(r.Context()).Errorw(fields...)
 		}
 
-		transhttp.DefaultErrorEncoder(w, r, ke)
+		transhttp.DefaultErrorEncoder(w, r, convertedErr)
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/origadmin/runtime/optionutil"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // MockLogger implements the Logger interface for testing purposes.
@@ -22,20 +23,20 @@ func (m *MockLogger) Log(level kratoslog.Level, keyvals ...interface{}) error {
 
 func TestFromOptions(t *testing.T) {
 	t.Run("should return DefaultLogger when no options are provided", func(t *testing.T) {
-		logger := FromOptions()
+		logger := FromOptions([]options.Option{})
 		assert.Equal(t, DefaultLogger, logger)
 	})
 
 	t.Run("should return the logger provided by WithLogger option", func(t *testing.T) {
 		mockLogger := &MockLogger{name: "test-logger-from-options"}
-		logger := FromOptions(WithLogger(mockLogger))
+		logger := FromOptions([]options.Option{WithLogger(mockLogger)})
 		assert.Equal(t, mockLogger, logger)
 	})
 
 	t.Run("should return the last logger when multiple WithLogger options are provided", func(t *testing.T) {
 		mockLogger1 := &MockLogger{name: "test-logger-1"}
 		mockLogger2 := &MockLogger{name: "test-logger-2"}
-		logger := FromOptions(WithLogger(mockLogger1), WithLogger(mockLogger2))
+		logger := FromOptions([]options.Option{WithLogger(mockLogger1), WithLogger(mockLogger2)})
 		assert.Equal(t, mockLogger2, logger)
 	})
 }

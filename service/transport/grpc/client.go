@@ -7,8 +7,12 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 
-	"github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
+	runtimeerrors "github.com/origadmin/runtime/errors"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 )
+
+const Module = "grpc.client"
 
 // NewClient creates a new concrete gRPC client connection based on the provided configuration.
 // It returns *transgrpc.ClientConn.
@@ -31,7 +35,7 @@ func NewClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig, cl
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create gRPC client: %w", err)
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to create gRPC client").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
 	}
 
 	return conn, nil

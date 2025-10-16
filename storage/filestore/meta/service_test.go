@@ -4,203 +4,471 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"os"
+	"sync"
 	"testing"
+	"time"
+
+	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
+	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
+	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
-// setupTest creates a temporary directory for the test and returns its path.
-// It also returns a cleanup function to remove the directory.
-func setupTest(t *testing.T) (string, func()) {
-	tmpDir, err := os.MkdirTemp("", "meta_test_")
-	if err != nil {
-		t.Fatalf("failed to create temp dir: %v", err)
-	}
-	return tmpDir, func() {
-		os.RemoveAll(tmpDir)
+// Mock implementations for interfaces
+
+type mockMetaStore struct {
+	sync.RWMutex
+	data map[string]metaiface.FileMeta
+}
+
+func newMockMetaStore() *mockMetaStore {
+	return &mockMetaStore{
+		data: make(map[string]metaiface.FileMeta),
 	}
 }
 
-type dummyBlobStorage struct {
+func (m *mockMetaStore) Create(id string, fileMeta metaiface.FileMeta) error {
+	m.Lock()
+	defer m.Unlock()
+	if _, ok := m.data[id]; ok {
+		return fmt.Errorf("meta with id %s already exists", id)
+	}
+	m.data[id] = fileMeta
+	return nil
+}
+
+func (m *mockMetaStore) Get(id string) (metaiface.FileMeta, error) {
+	m.RLock()
+	defer m.RUnlock()
+	if meta, ok := m.data[id]; ok {
+		return meta, nil
+	}
+	return nil, os.ErrNotExist
+}
+
+func (m *mockMetaStore) Exists(id string) (bool, error) {
+	m.RLock()
+	defer m.RUnlock()
+	_, ok := m.data[id]
+	return ok, nil
+}
+
+func (m *mockMetaStore) Update(id string, fileMeta metaiface.FileMeta) error {
+	m.Lock()
+	defer m.Unlock()
+	if _, ok := m.data[id]; !ok {
+		return os.ErrNotExist
+	}
+	m.data[id] = fileMeta
+	return nil
+}
+
+func (m *mockMetaStore) Delete(id string) error {
+	m.Lock()
+	defer m.Unlock()
+	if _, ok := m.data[id]; !ok {
+		return os.ErrNotExist
+	}
+	delete(m.data, id)
+	return nil
+}
+
+func (m *mockMetaStore) Migrate(id string) (metaiface.FileMeta, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockMetaStore) CurrentVersion() int {
+	return metav2.Version
+}
+
+type mockBlobStore struct {
+	sync.RWMutex
 	data map[string][]byte
 }
 
-func (d *dummyBlobStorage) Store(content []byte) (string, error) {
-	if d.data == nil {
-		d.data = make(map[string][]byte)
+func (m *mockBlobStore) Read(hash string) ([]byte, error) {
+	return m.data[hash], nil
+}
+
+func (m *mockBlobStore) Exists(hash string) (bool, error) {
+	_, ok := m.data[hash]
+	return ok, nil
+}
+
+func newMockBlobStore() *mockBlobStore {
+	return &mockBlobStore{
+		data: make(map[string][]byte),
 	}
+}
+
+func (m *mockBlobStore) Write(content []byte) (string, error) {
+	m.Lock()
+	defer m.Unlock()
 	h := sha256.New()
 	h.Write(content)
 	hash := hex.EncodeToString(h.Sum(nil))
-	d.data[hash] = content
+	m.data[hash] = content
 	return hash, nil
 }
 
-func (d *dummyBlobStorage) Retrieve(hash string) ([]byte, error) {
-	if d.data == nil {
-		return nil, os.ErrNotExist
+func (m *mockBlobStore) Delete(hash string) error {
+	m.Lock()
+	defer m.Unlock()
+	if _, ok := m.data[hash]; !ok {
+		return os.ErrNotExist
 	}
-	content, ok := d.data[hash]
-	if !ok {
-		return nil, os.ErrNotExist
-	}
-	return content, nil
+	delete(m.data, hash)
+	return nil
 }
 
-func TestNewMeta(t *testing.T) {
-	tmpDir, cleanup := setupTest(t)
-	defer cleanup()
-
-	blob := &dummyBlobStorage{}
-	_, err := New(tmpDir, blob)
-	if err != nil {
-		t.Fatalf("NewMeta failed: %v", err)
+func (m *mockBlobStore) Retrieve(hash string) ([]byte, error) {
+	m.RLock()
+	defer m.RUnlock()
+	if content, ok := m.data[hash]; ok {
+		return content, nil
 	}
-
-	// No specific checks for root metaFile or directory structure as meta now only handles files.
+	return nil, os.ErrNotExist
 }
 
-func TestWriteFile(t *testing.T) {
-	tmpDir, cleanup := setupTest(t)
-	defer cleanup()
+type mockAssembler struct {
+	blobStore blobiface.Store
+	chunkSize int64
+}
 
-	blob := &dummyBlobStorage{}
-	m, err := New(tmpDir, blob)
+func newMockAssembler(blobStore blobiface.Store, chunkSize int64) *mockAssembler {
+	return &mockAssembler{
+		blobStore: blobStore,
+		chunkSize: chunkSize,
+	}
+}
+
+func (ma *mockAssembler) NewReader(fileMeta metaiface.FileMeta) (io.Reader, error) {
+	if fileMetaV2, ok := fileMeta.(*metav2.FileMetaV2); ok {
+		if fileMetaV2.EmbeddedData != nil {
+			return bytes.NewReader(fileMetaV2.EmbeddedData), nil
+		} else if len(fileMetaV2.BlobHashes) > 0 {
+			readers := make([]io.Reader, len(fileMetaV2.BlobHashes))
+			for i, hash := range fileMetaV2.BlobHashes {
+				data, err := ma.blobStore.Read(hash)
+				if err != nil {
+					return nil, err
+				}
+				readers[i] = bytes.NewReader(data)
+			}
+			return io.MultiReader(readers...), nil
+		}
+	}
+	return nil, fmt.Errorf("unsupported file meta type or empty file")
+}
+
+func (ma *mockAssembler) WriteContent(r io.Reader, size int64) (contentID string, fileMeta metaiface.FileMeta, err error) {
+	var buf bytes.Buffer
+	tee := io.TeeReader(r, &buf)
+
+	// Calculate content ID
+	h := sha256.New()
+	if _, err := io.Copy(h, tee); err != nil {
+		return "", nil, fmt.Errorf("failed to hash content: %w", err)
+	}
+	contentID = hex.EncodeToString(h.Sum(nil))
+
+	fullContent := buf.Bytes()
+	actualSize := int64(len(fullContent))
+
+	if size > 0 && size != actualSize {
+		return "", nil, fmt.Errorf("size mismatch: expected %d, got %d", size, actualSize)
+	}
+
+	if actualSize <= metav2.EmbeddedFileSizeThreshold {
+		// Small file, embed data
+		fileMeta = &metav2.FileMetaV2{
+			FileSize:     actualSize,
+			ModifyTime:   time.Now().Unix(),
+			MimeType:     "application/octet-stream",
+			RefCount:     1,
+			EmbeddedData: fullContent,
+		}
+	} else {
+		// Large file, chunk data
+		var blobHashes []string
+		reader := bytes.NewReader(fullContent)
+		for {
+			chunk := make([]byte, ma.chunkSize)
+			n, err := reader.Read(chunk)
+			if err != nil && err != io.EOF {
+				return "", nil, fmt.Errorf("failed to read chunk: %w", err)
+			}
+			if n == 0 {
+				break
+			}
+			hash, storeErr := ma.blobStore.Write(chunk[:n])
+			if storeErr != nil {
+				return "", nil, fmt.Errorf("failed to store blob chunk: %w", storeErr)
+			}
+			blobHashes = append(blobHashes, hash)
+			if err == io.EOF {
+				break
+			}
+		}
+
+		fileMeta = &metav2.FileMetaV2{
+			FileSize:   actualSize,
+			ModifyTime: time.Now().Unix(),
+			MimeType:   "application/octet-stream",
+			RefCount:   1,
+			BlobHashes: blobHashes,
+			BlobSize:   int32(ma.chunkSize),
+		}
+	}
+
+	return contentID, fileMeta, nil
+}
+
+func (ma *mockAssembler) NewWriter(r io.Reader) (contentiface.Writer, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+// Test functions for the new Service API
+
+func TestService_CreateAndRead(t *testing.T) {
+	metaStore := newMockMetaStore()
+	blobStore := newMockBlobStore()
+	assembler := newMockAssembler(blobStore, 1024) // Use a small chunk size for testing
+
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
 	if err != nil {
-		t.Fatalf("NewMeta failed: %v", err)
+		t.Fatalf("NewService failed: %v", err)
 	}
 
-	// Write a small metaFile
-	content := "Hello, world!"
-	err = m.WriteFile("/test.txt", bytes.NewReader([]byte(content)), 0644)
+	// Test small file
+	smallContent := "Hello, world!"
+	smallReader := bytes.NewReader([]byte(smallContent))
+	smallID, err := service.Create(smallReader, int64(len(smallContent)))
 	if err != nil {
-		t.Fatalf("WriteFile failed: %v", err)
+		t.Fatalf("Create small file failed: %v", err)
 	}
 
-	// Verify metaFile exists and content is correct
-	file, err := m.Open("/test.txt")
+	readCloser, err := service.Read(smallID)
 	if err != nil {
-		t.Fatalf("Open /test.txt failed: %v", err)
+		t.Fatalf("Read small file failed: %v", err)
 	}
-	defer file.Close()
+	defer readCloser.Close()
 
-	readContent, err := io.ReadAll(file)
+	readContent, err := io.ReadAll(readCloser)
 	if err != nil {
-		t.Fatalf("ReadAll /test.txt failed: %v", err)
+		t.Fatalf("ReadAll small file failed: %v", err)
 	}
-	if string(readContent) != content {
-		t.Fatalf("expected '%s', got '%s'", content, string(readContent))
-	}
-
-	// Overwrite existing metaFile
-	newContent := "New content here."
-	err = m.WriteFile("/test.txt", bytes.NewReader([]byte(newContent)), 0644)
-	if err != nil {
-		t.Fatalf("Overwrite WriteFile failed: %v", err)
+	if string(readContent) != smallContent {
+		t.Fatalf("Small file content mismatch: expected %q, got %q", smallContent, string(readContent))
 	}
 
-	file, err = m.Open("/test.txt")
-	if err != nil {
-		t.Fatalf("Open /test.txt after overwrite failed: %v", err)
-	}
-	defer file.Close()
-
-	readContent, err = io.ReadAll(file)
-	if err != nil {
-		t.Fatalf("ReadAll /test.txt after overwrite failed: %v", err)
-	}
-	if string(readContent) != newContent {
-		t.Fatalf("expected '%s', got '%s' after overwrite", newContent, string(readContent))
-	}
-
-	// Write a larger metaFile to test chunking (e.g., 5MB)
-	largeContent := make([]byte, DefaultBlockSize+1024) // Slightly larger than one block
+	// Test large file (larger than EmbeddedFileSizeThreshold)
+	largeContent := make([]byte, metav2.EmbeddedFileSizeThreshold+100)
 	for i := range largeContent {
 		largeContent[i] = byte(i % 256)
 	}
-	err = m.WriteFile("/large.bin", bytes.NewReader(largeContent), 0644)
+	largeReader := bytes.NewReader(largeContent)
+	largeID, err := service.Create(largeReader, int64(len(largeContent)))
 	if err != nil {
-		t.Fatalf("WriteFile large.bin failed: %v", err)
+		t.Fatalf("Create large file failed: %v", err)
 	}
 
-	file, err = m.Open("/large.bin")
+	readCloser, err = service.Read(largeID)
 	if err != nil {
-		t.Fatalf("Open /large.bin failed: %v", err)
+		t.Fatalf("Read large file failed: %v", err)
 	}
-	defer file.Close()
+	defer readCloser.Close()
 
-	readContent, err = io.ReadAll(file)
+	readContent, err = io.ReadAll(readCloser)
 	if err != nil {
-		t.Fatalf("ReadAll /large.bin failed: %v", err)
+		t.Fatalf("ReadAll large file failed: %v", err)
 	}
 	if !bytes.Equal(readContent, largeContent) {
-		t.Fatalf("large metaFile content mismatch")
+		t.Fatalf("Large file content mismatch")
+	}
+
+	// Test non-existent file
+	_, err = service.Read("non-existent-id")
+	if !os.IsNotExist(err) {
+		t.Fatalf("Expected ErrNotExist for non-existent file, got %v", err)
 	}
 }
 
-func TestOpen(t *testing.T) {
-	tmpDir, cleanup := setupTest(t)
-	defer cleanup()
+func TestService_Get(t *testing.T) {
+	metaStore := newMockMetaStore()
+	blobStore := newMockBlobStore()
+	assembler := newMockAssembler(blobStore, 1024)
 
-	blob := &dummyBlobStorage{}
-	m, err := New(tmpDir, blob)
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
 	if err != nil {
-		t.Fatalf("NewMeta failed: %v", err)
+		t.Fatalf("NewService failed: %v", err)
 	}
 
-	// Write a metaFile
-	content := "This is the metaFile content."
-	err = m.WriteFile("/my_file.txt", bytes.NewReader([]byte(content)), 0644)
+	content := "Metadata test content"
+	reader := bytes.NewReader([]byte(content))
+	id, err := service.Create(reader, int64(len(content)))
 	if err != nil {
-		t.Fatalf("WriteFile failed: %v", err)
+		t.Fatalf("Create failed: %v", err)
 	}
 
-	// Open and read the metaFile
-	file, err := m.Open("/my_file.txt")
+	fileMeta, err := service.Get(id)
 	if err != nil {
-		t.Fatalf("Open /my_file.txt failed: %v", err)
+		t.Fatalf("Get failed: %v", err)
 	}
-	defer file.Close()
-
-	readContent, err := io.ReadAll(file)
-	if err != nil {
-		t.Fatalf("ReadAll /my_file.txt failed: %v", err)
-	}
-	if string(readContent) != content {
-		t.Fatalf("expected '%s', got '%s'", content, string(readContent))
+	if fileMeta.Size() != int64(len(content)) {
+		t.Fatalf("Expected file size %d, got %d", len(content), fileMeta.Size())
 	}
 
-	// Attempt to open a non-existent metaFile
-	_, err = m.Open("/nonexistent_file.txt")
+	// Test non-existent meta
+	_, err = service.Get("non-existent-id")
 	if !os.IsNotExist(err) {
-		t.Fatalf("expected ErrNotExist for non-existent metaFile, got %v", err)
+		t.Fatalf("Expected ErrNotExist for non-existent meta, got %v", err)
 	}
 }
 
-func TestStat(t *testing.T) {
-	tmpDir, cleanup := setupTest(t)
-	defer cleanup()
+func TestService_Delete(t *testing.T) {
+	metaStore := newMockMetaStore()
+	blobStore := newMockBlobStore()
+	assembler := newMockAssembler(blobStore, 1024)
 
-	blob := &dummyBlobStorage{}
-	m, err := New(tmpDir, blob)
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
 	if err != nil {
-		t.Fatalf("NewMeta failed: %v", err)
+		t.Fatalf("NewService failed: %v", err)
 	}
 
-	// Stat a created metaFile
-	content := "metaFile content"
-	m.WriteFile("/testfile.txt", bytes.NewReader([]byte(content)), 0644)
-	fileInfo, err := m.Stat("/testfile.txt")
+	// Create a small file
+	smallContent := "Small file for deletion"
+	smallReader := bytes.NewReader([]byte(smallContent))
+	smallID, err := service.Create(smallReader, int64(len(smallContent)))
 	if err != nil {
-		t.Fatalf("Stat /testfile.txt failed: %v", err)
-	}
-	if fileInfo.Name() != "testfile.txt" || fileInfo.IsDir() || fileInfo.Size() != int64(len(content)) || fileInfo.Mode() != 0644 {
-		t.Fatalf("expected testfile info, got %+v", fileInfo)
+		t.Fatalf("Create small file failed: %v", err)
 	}
 
-	// Stat non-existent path
-	_, err = m.Stat("/nonexistent")
+	// Verify it exists
+	_, err = service.Get(smallID)
+	if err != nil {
+		t.Fatalf("Small file not found before deletion: %v", err)
+	}
+
+	// Delete the small file
+	err = service.Delete(smallID)
+	if err != nil {
+		t.Fatalf("Delete small file failed: %v", err)
+	}
+
+	// Verify it's gone
+	_, err = service.Get(smallID)
 	if !os.IsNotExist(err) {
-		t.Fatalf("expected ErrNotExist for non-existent path, got %v", err)
+		t.Fatalf("Expected ErrNotExist after deleting small file, got %v", err)
+	}
+
+	// Create a large file
+	largeContent := make([]byte, metav2.EmbeddedFileSizeThreshold+100)
+	for i := range largeContent {
+		largeContent[i] = byte(i % 256)
+	}
+	largeReader := bytes.NewReader(largeContent)
+	largeID, err := service.Create(largeReader, int64(len(largeContent)))
+	if err != nil {
+		t.Fatalf("Create large file failed: %v", err)
+	}
+
+	// Verify its blobs exist
+	fileMeta, err := metaStore.Get(largeID)
+	if err != nil {
+		t.Fatalf("Failed to get large file meta: %v", err)
+	}
+	if fileMetaV2, ok := fileMeta.(*metav2.FileMetaV2); ok {
+		for _, hash := range fileMetaV2.BlobHashes {
+			_, err := blobStore.Retrieve(hash)
+			if err != nil {
+				t.Fatalf("Blob %s not found before deletion: %v", hash, err)
+			}
+		}
+	} else {
+		t.Fatalf("Unexpected file meta type for large file")
+	}
+
+	// Delete the large file
+	err = service.Delete(largeID)
+	if err != nil {
+		t.Fatalf("Delete large file failed: %v", err)
+	}
+
+	// Verify meta is gone
+	_, err = service.Get(largeID)
+	if !os.IsNotExist(err) {
+		t.Fatalf("Expected ErrNotExist after deleting large file meta, got %v", err)
+	}
+
+	// Verify blobs are gone
+	if fileMetaV2, ok := fileMeta.(*metav2.FileMetaV2); ok {
+		for _, hash := range fileMetaV2.BlobHashes {
+			_, err := blobStore.Retrieve(hash)
+			if !os.IsNotExist(err) {
+				t.Fatalf("Expected ErrNotExist for blob %s after deletion, got %v", hash, err)
+			}
+		}
+	}
+}
+
+func TestService_Create_UnknownSize(t *testing.T) {
+	metaStore := newMockMetaStore()
+	blobStore := newMockBlobStore()
+	assembler := newMockAssembler(blobStore, 1024)
+
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
+	if err != nil {
+		t.Fatalf("NewService failed: %v", err)
+	}
+
+	// Test small file with unknown size
+	smallContent := "Unknown size small file"
+	smallReader := bytes.NewReader([]byte(smallContent))
+	smallID, err := service.Create(smallReader, 0) // Pass 0 for unknown size
+	if err != nil {
+		t.Fatalf("Create unknown size small file failed: %v", err)
+	}
+
+	readCloser, err := service.Read(smallID)
+	if err != nil {
+		t.Fatalf("Read unknown size small file failed: %v", err)
+	}
+	defer readCloser.Close()
+
+	readContent, err := io.ReadAll(readCloser)
+	if err != nil {
+		t.Fatalf("ReadAll unknown size small file failed: %v", err)
+	}
+	if string(readContent) != smallContent {
+		t.Fatalf("Unknown size small file content mismatch: expected %q, got %q", smallContent, string(readContent))
+	}
+
+	// Test large file with unknown size
+	largeContent := make([]byte, metav2.EmbeddedFileSizeThreshold+500)
+	for i := range largeContent {
+		largeContent[i] = byte(i % 256)
+	}
+	largeReader := bytes.NewReader(largeContent)
+	largeID, err := service.Create(largeReader, 0) // Pass 0 for unknown size
+	if err != nil {
+		t.Fatalf("Create unknown size large file failed: %v", err)
+	}
+
+	readCloser, err = service.Read(largeID)
+	if err != nil {
+		t.Fatalf("Read unknown size large file failed: %v", err)
+	}
+	defer readCloser.Close()
+
+	readContent, err = io.ReadAll(readCloser)
+	if err != nil {
+		t.Fatalf("ReadAll unknown size large file failed: %v", err)
+	}
+	if !bytes.Equal(readContent, largeContent) {
+		t.Fatalf("Unknown size large file content mismatch")
 	}
 }

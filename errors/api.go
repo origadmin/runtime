@@ -21,7 +21,7 @@ func ToKratos(e *Structured, reason commonv1.ErrorReason) *kerrors.Error {
 
 	// Prefer explicit reason when provided
 	if reason != commonv1.ErrorReason_UNKNOWN_ERROR {
-		err := NewMessage(reason, e.Message)
+		err := NewMessage(reason, "%s", e.Message) // Fixed: Pass e.Message as an argument to a format string
 		// Attach metadata hints
 		if err.Metadata == nil {
 			err.Metadata = make(map[string]string)

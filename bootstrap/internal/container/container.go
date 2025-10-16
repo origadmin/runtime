@@ -1,7 +1,7 @@
 package container
 
 import (
-	"errors"
+	// stderrors "errors" // REMOVED: imported and not used
 	"fmt"
 	"reflect"
 
@@ -10,6 +10,8 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	runtimelog "github.com/origadmin/runtime/log"
 	runtimeMiddleware "github.com/origadmin/runtime/middleware" // Import runtime/middleware package, but only for internal use.
@@ -113,7 +115,9 @@ func (b *Builder) Build() (interfaces.Container, error) {
 	}
 
 	if b.config == nil {
-		return nil, errors.New("config must be provided using WithConfig()")
+		// FIX: Correctly use WithReason as a function
+		structuredErr := runtimeerrors.NewStructured("bootstrap", "config must be provided using WithConfig()").WithCaller()
+		return nil, runtimeerrors.WithReason(structuredErr, commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 
 	// 1. Initialize Logger with graceful fallback.

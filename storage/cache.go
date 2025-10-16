@@ -1,8 +1,10 @@
 package storage
 
 import (
-	"fmt"
+	// "fmt" // REMOVED: imported and not used
 
+	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
 
@@ -11,6 +13,7 @@ import (
 )
 
 const (
+	CacheModule = "storage.cache"
 	ErrCacheConfigNil = errors.String("cache: config is nil")
 )
 
@@ -28,6 +31,8 @@ func New(cfg *configv1.Cache) (storageiface.Cache, error) {
 	// case "memcached":
 	//     return memcached.New(cfg.GetMemcached()), nil
 	default:
-		return nil, fmt.Errorf("unsupported cache driver: %s", cfg.GetDriver())
+		// FIX: Correctly use WithReason as a function
+		structuredErr := runtimeerrors.NewStructured(CacheModule, "unsupported cache driver: %s", cfg.GetDriver()).WithCaller()
+		return nil, runtimeerrors.WithReason(structuredErr, commonv1.ErrorReason_VALIDATION_ERROR)
 	}
 }

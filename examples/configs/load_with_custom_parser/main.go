@@ -190,8 +190,8 @@ func main() {
 
 	// Log client configurations
 	for name, client := range bc.Clients {
-		if client.GetEndpoint() != nil {
-			appLogger.Infof("Client '%s' Endpoint: %s", name, client.GetEndpoint())
+		if client.GetClient() != nil {
+			appLogger.Infof("Client '%s' Endpoint: %s", name, client.GetClient().GetEndpoint())
 		}
 	}
 
