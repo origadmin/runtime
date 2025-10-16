@@ -5,8 +5,6 @@
 package config
 
 import (
-	"fmt"
-
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
@@ -16,10 +14,10 @@ import (
 	"github.com/origadmin/runtime/interfaces/options"
 )
 
-const Type = "config"
+const Module = "config"
 
 var (
-	ErrInvalidConfigType = runtimeerrors.NewStructured(Type, "invalid config type")
+	ErrInvalidConfigType = runtimeerrors.NewStructured(Module, "invalid config type")
 )
 
 // NewConfig creates a new config instance.
@@ -65,13 +63,13 @@ func Load(configPath string, target interface{}) (kratosconfig.Config, error) {
 	if err := c.Load(); err != nil {
 		// Ensure config is closed on load error to prevent resource leaks
 		c.Close()
-		return nil, runtimeerrors.WrapStructured(err, Type, fmt.Sprintf("failed to load config from %s", configPath)).WithCaller()
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to load config from %s", configPath).WithCaller()
 	}
 
 	if err := c.Scan(target); err != nil {
 		// Ensure config is closed on scan error
 		c.Close()
-		return nil, runtimeerrors.WrapStructured(err, Type, "failed to scan config into target").WithCaller()
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to scan config into target").WithCaller()
 	}
 
 	return c, nil

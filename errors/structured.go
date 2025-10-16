@@ -28,13 +28,9 @@ type Structured struct {
 
 // NewStructured creates a new structured error
 func NewStructured(module, format string, args ...interface{}) *Structured {
-	message := format
-	if len(args) > 0 {
-		message = fmt.Sprintf(format, args...)
-	}
 	return &Structured{
 		Module:  module,
-		Message: message,
+		Message: fmt.Sprintf(format, args...),
 	}
 }
 
@@ -126,13 +122,9 @@ func WrapStructured(err error, module, format string, args ...interface{}) *Stru
 	if err == nil {
 		return nil
 	}
-	message := format
-	if len(args) > 0 {
-		message = fmt.Sprintf(format, args...)
-	}
 	return &Structured{
 		Module:  module,
-		Message: message,
+		Message: fmt.Sprintf(format, args...),
 		Err:     err,
 	}
 }

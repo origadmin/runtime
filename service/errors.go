@@ -20,5 +20,5 @@ var (
 
 // Helper functions to create new errors
 func newServiceError(message string) error {
-	return runtimeerrors.NewStructured(Module, message).WithCaller()
+	return runtimeerrors.NewStructured(Module, "%s", message).WithCaller()
 }
