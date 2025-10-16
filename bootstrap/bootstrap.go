@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	"github.com/origadmin/runtime/bootstrap/internal/container"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
@@ -71,9 +70,7 @@ func New(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) 
 	// 5. Set runtime values and validate.
 	if finalAppInfo.ID == "" || finalAppInfo.Name == "" || finalAppInfo.Version == "" {
 		cleanup() // Call cleanup as we are failing.
-		// FIX: Correctly use WithReason as a function
-		structuredErr := runtimeerrors.NewStructured("bootstrap", "app info (ID, Name, Version) is required but was not found in config or WithAppInfo option").WithCaller()
-		return nil, runtimeerrors.WithReason(structuredErr, commonv1.ErrorReason_VALIDATION_ERROR)
+		return nil, runtimeerrors.NewStructured("bootstrap", "app info (ID, Name, Version) is required but was not found in config or WithAppInfo option").WithCaller()
 	}
 
 	// 3. Create the component provider implementation.

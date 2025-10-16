@@ -119,19 +119,7 @@ func (e *Structured) Is(target error) bool {
 }
 
 // WrapStructured wraps an error with additional context
-func WrapStructured(err error, module, message string) *Structured {
-	if err == nil {
-		return nil
-	}
-	return &Structured{
-		Module:  module,
-		Message: message,
-		Err:     err,
-	}
-}
-
-// WrapFormatStructured wraps an error with additional formatted context
-func WrapFormatStructured(err error, module, format string, args ...interface{}) *Structured {
+func WrapStructured(err error, module, format string, args ...interface{}) *Structured {
 	if err == nil {
 		return nil
 	}

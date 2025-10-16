@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -9,7 +8,6 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/context"
 	runtimeerrors "github.com/origadmin/runtime/errors"
@@ -18,7 +16,7 @@ import (
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
 
-const Module = "http.adapter"
+const Module = "transport.http"
 
 // DefaultServerMiddlewares provides a default set of server-side middlewares for HTTP services.
 // These are essential for ensuring basic stability and observability.
@@ -65,7 +63,7 @@ func initHttpServerOptions(httpConfig *transportv1.HttpServerConfig, serverOpts 
 	// If middlewares are configured but no container is provided, return an error.
 	// This consolidates the nil check for the container.
 	if hasMiddlewaresConfigured && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options").WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
 	}
 
 	// Configure middlewares.
@@ -75,7 +73,7 @@ func initHttpServerOptions(httpConfig *transportv1.HttpServerConfig, serverOpts 
 		for _, name := range httpConfig.GetMiddlewares() {
 			m, ok := c.ServerMiddleware(name)
 			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "server middleware '%s' not found in container", name).WithReason(commonv1.ErrorReason_NOT_FOUND).WithCaller()
+				return nil, runtimeerrors.NewStructured(Module, "server middleware '%s' not found in container", name)
 			}
 			mws = append(mws, m)
 		}
@@ -104,7 +102,7 @@ func initHttpServerOptions(httpConfig *transportv1.HttpServerConfig, serverOpts 
 	if httpConfig.TlsConfig.GetEnabled() {
 		tlsCfg, err := servicetls.NewServerTLSConfig(httpConfig.TlsConfig)
 		if err != nil {
-			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create server TLS config").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
+			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create server TLS config")
 		}
 		kratosOpts = append(kratosOpts, transhttp.TLSConfig(tlsCfg))
 	}
@@ -131,7 +129,7 @@ func initHttpClientOptions(ctx context.Context, httpConfig *transportv1.HttpClie
 
 	// Centralized check for container dependency.
 	if (len(httpConfig.GetMiddlewares()) > 0 || httpConfig.GetDiscoveryName() != "" || httpConfig.GetSelector() != nil) && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for client configuration (middlewares, discovery, or selector) but not found in options").WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+		return nil, runtimeerrors.NewStructured(Module, "application container is required for client configuration (middlewares, discovery, or selector) but not found in options")
 	}
 
 	// Apply options from the protobuf configuration.
@@ -145,7 +143,7 @@ func initHttpClientOptions(ctx context.Context, httpConfig *transportv1.HttpClie
 		for _, name := range httpConfig.GetMiddlewares() {
 			m, ok := c.ClientMiddleware(name)
 			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "client middleware '%s' not found in container", name).WithReason(commonv1.ErrorReason_NOT_FOUND).WithCaller()
+				return nil, runtimeerrors.NewStructured(Module, "client middleware '%s' not found in container", name)
 			}
 			mws = append(mws, m)
 		}
@@ -167,7 +165,7 @@ func initHttpClientOptions(ctx context.Context, httpConfig *transportv1.HttpClie
 		if d, ok := c.Discovery(discoveryName); ok {
 			discoveryClient = d
 		} else {
-			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in container", discoveryName).WithReason(commonv1.ErrorReason_NOT_FOUND).WithCaller()
+			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in container", discoveryName)
 		}
 	} else if c != nil {
 		discoveries := c.Discoveries()
@@ -184,14 +182,14 @@ func initHttpClientOptions(ctx context.Context, httpConfig *transportv1.HttpClie
 	}
 
 	if strings.HasPrefix(endpoint, "discovery:///") && discoveryClient == nil {
-		return nil, runtimeerrors.NewStructured(Module, "endpoint '%s' requires a discovery client, but none is configured", endpoint).WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+		return nil, runtimeerrors.NewStructured(Module, "endpoint '%s' requires a discovery client, but none is configured", endpoint)
 	}
 
 	// Configure node filters (selector).
 	if selectorConfig := httpConfig.GetSelector(); selectorConfig != nil {
 		nodeFilter, err := serviceselector.NewFilter(selectorConfig)
 		if err != nil {
-			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create node filter").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
+			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create node filter")
 		}
 		if nodeFilter != nil {
 			kratosOpts = append(kratosOpts, transhttp.WithNodeFilter(nodeFilter))
@@ -202,7 +200,7 @@ func initHttpClientOptions(ctx context.Context, httpConfig *transportv1.HttpClie
 	if tlsConfig := httpConfig.GetTlsConfig(); tlsConfig != nil && tlsConfig.GetEnabled() {
 		tlsCfg, err := servicetls.NewClientTLSConfig(tlsConfig)
 		if err != nil {
-			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create client TLS config").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
+			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create client TLS config")
 		}
 		kratosOpts = append(kratosOpts, transhttp.WithTLSConfig(tlsCfg))
 	}

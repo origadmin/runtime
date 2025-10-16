@@ -3,9 +3,8 @@ package service
 import (
 	"context"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
-	"github.com/origadmin/runtime/errors"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
@@ -35,10 +34,10 @@ func GetProtocolFactory(name string) (ProtocolFactory, bool) {
 // getServerProtocolName extracts the protocol name from the transportv1.Server configuration.
 func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 	if cfg == nil {
-		return "", errors.WithReason(errors.NewStructured(Module, "server configuration is nil").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+		return "", runtimeerrors.NewStructured(Module, "server configuration is nil").WithCaller()
 	}
 	if cfg.Protocol == "" {
-		return "", errors.WithReason(errors.NewStructured(Module, "protocol is not specified in server configuration").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+		return "", runtimeerrors.NewStructured(Module, "protocol is not specified in server configuration")
 	}
 	return cfg.Protocol, nil
 }
@@ -46,10 +45,10 @@ func getServerProtocolName(cfg *transportv1.Server) (string, error) {
 // getClientProtocolName extracts the protocol name from the transportv1.Client configuration.
 func getClientProtocolName(cfg *transportv1.Client) (string, error) {
 	if cfg == nil {
-		return "", errors.WithReason(errors.NewStructured(Module, "client configuration is nil").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+		return "", runtimeerrors.NewStructured(Module, "client configuration is nil").WithCaller()
 	}
 	if cfg.Protocol == "" {
-		return "", errors.WithReason(errors.NewStructured(Module, "protocol is not specified in client configuration").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+		return "", runtimeerrors.NewStructured(Module, "protocol is not specified in client configuration").WithCaller()
 	}
 	return cfg.Protocol, nil
 }
@@ -64,12 +63,12 @@ func NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Serv
 
 	f, ok := GetProtocolFactory(protocolName)
 	if !ok {
-		return nil, errors.WithReason(errors.NewStructured(Module, "unsupported protocol: %s", protocolName).WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+		return nil, runtimeerrors.NewStructured(Module, "unsupported protocol: %s", protocolName).WithCaller()
 	}
 
 	server, err := f.NewServer(cfg, opts...)
 	if err != nil {
-		return nil, errors.WithReason(errors.NewStructured(Module, "failed to create server for protocol %s", protocolName).WithField("error", err.Error()).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to create server for protocol %s", protocolName).WithCaller()
 	}
 
 	return server, nil
@@ -85,12 +84,12 @@ func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Opt
 
 	f, ok := GetProtocolFactory(protocolName)
 	if !ok {
-		return nil, errors.WithReason(errors.NewStructured(Module, "unsupported protocol: %s", protocolName).WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+		return nil, runtimeerrors.NewStructured(Module, "unsupported protocol: %s", protocolName).WithCaller()
 	}
 
 	client, err := f.NewClient(ctx, cfg, opts...)
 	if err != nil {
-		return nil, errors.WithReason(errors.NewStructured(Module, "failed to create client for protocol %s", protocolName).WithField("error", err.Error()).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to create client for protocol %s", protocolName).WithCaller()
 	}
 
 	return client, nil

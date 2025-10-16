@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	CacheModule = "storage.cache"
+	CacheModule       = "storage.cache"
 	ErrCacheConfigNil = errors.String("cache: config is nil")
 )
 
@@ -31,8 +31,6 @@ func New(cfg *configv1.Cache) (storageiface.Cache, error) {
 	// case "memcached":
 	//     return memcached.New(cfg.GetMemcached()), nil
 	default:
-		// FIX: Correctly use WithReason as a function
-		structuredErr := runtimeerrors.NewStructured(CacheModule, "unsupported cache driver: %s", cfg.GetDriver()).WithCaller()
-		return nil, runtimeerrors.WithReason(structuredErr, commonv1.ErrorReason_VALIDATION_ERROR)
+		return nil, runtimeerrors.NewStructured(CacheModule, "unsupported cache driver: %s", cfg.GetDriver()).WithCaller()
 	}
 }

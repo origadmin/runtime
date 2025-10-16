@@ -10,7 +10,6 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
@@ -20,7 +19,7 @@ import (
 const Type = "config"
 
 var (
-	ErrInvalidConfigType = runtimeerrors.WithReason(runtimeerrors.NewStructured(Type, "invalid config type").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+	ErrInvalidConfigType = runtimeerrors.NewStructured(Type, "invalid config type")
 )
 
 // NewConfig creates a new config instance.
@@ -66,13 +65,13 @@ func Load(configPath string, target interface{}) (kratosconfig.Config, error) {
 	if err := c.Load(); err != nil {
 		// Ensure config is closed on load error to prevent resource leaks
 		c.Close()
-		return nil, runtimeerrors.WithReason(runtimeerrors.WrapStructured(err, Type, fmt.Sprintf("failed to load config from %s", configPath)).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+		return nil, runtimeerrors.WrapStructured(err, Type, fmt.Sprintf("failed to load config from %s", configPath)).WithCaller()
 	}
 
 	if err := c.Scan(target); err != nil {
 		// Ensure config is closed on scan error
 		c.Close()
-		return nil, runtimeerrors.WithReason(runtimeerrors.WrapStructured(err, Type, "failed to scan config into target").WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+		return nil, runtimeerrors.WrapStructured(err, Type, "failed to scan config into target").WithCaller()
 	}
 
 	return c, nil

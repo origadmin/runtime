@@ -26,7 +26,6 @@ func TestManager(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create Manage: %v", err)
 	}
-	defer manager.Close()
 
 	// 1. Test Root Node Creation and GetNodeByPath("/")
 	rootNode, err := manager.GetNodeByPath("/")

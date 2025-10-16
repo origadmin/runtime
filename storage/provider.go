@@ -1,10 +1,8 @@
 package storage
 
 import (
-	"fmt"
 	"sync"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
@@ -36,7 +34,7 @@ type provider struct {
 // NewProvider creates a new storage provider based on the given configuration.
 func NewProvider(cfg *configv1.Storage) (storageiface.Provider, error) {
 	if cfg == nil {
-		return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "storage config cannot be nil").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+		return nil, runtimeerrors.NewStructured(ProviderModule, "storage config cannot be nil").WithCaller()
 	}
 
 	p := &provider{
@@ -68,13 +66,13 @@ func (p *provider) FileStore(name string) (storageiface.FileStore, error) {
 	// Get configuration
 	fsCfg, ok := p.fileStoreConfigs[name]
 	if !ok {
-		return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "filestore '%s' not found in configuration", name).WithCaller(), commonv1.ErrorReason_NOT_FOUND)
+		return nil, runtimeerrors.NewStructured(ProviderModule, "filestore '%s' not found in configuration", name).WithCaller()
 	}
 
 	// Initialize and cache
 	fs, err := filestore.New(fsCfg)
 	if err != nil {
-		return nil, runtimeerrors.WithReason(runtimeerrors.WrapStructured(err, ProviderModule, fmt.Sprintf("failed to create filestore '%s'", name)).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+		return nil, runtimeerrors.WrapStructured(err, ProviderModule, "failed to create filestore '%s'", name).WithCaller()
 	}
 	p.initializedFileStores[name] = fs
 
@@ -93,7 +91,7 @@ func (p *provider) DefaultFileStore() (storageiface.FileStore, error) {
 		}
 	}
 
-	return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "no default filestore configured and multiple instances exist").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+	return nil, runtimeerrors.NewStructured(ProviderModule, "no default filestore configured and multiple instances exist").WithCaller()
 }
 
 // Cache returns the configured cache service by name.
@@ -109,18 +107,18 @@ func (p *provider) Cache(name string) (storageiface.Cache, error) {
 	// Get configuration
 	cacheCfg, ok := p.cacheConfigs[name]
 	if !ok {
-		return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "cache '%s' not found in configuration", name).WithCaller(), commonv1.ErrorReason_NOT_FOUND)
+		return nil, runtimeerrors.NewStructured(ProviderModule, "cache '%s' not found in configuration", name).WithCaller()
 	}
 
 	// Initialize and cache (TODO: Implement actual cache initialization)
 	_ = cacheCfg // Suppress unused variable warning
 	// c, err := cache.New(cacheCfg)
 	// if err != nil {
-	// 	return nil, runtimeerrors.WithReason(runtimeerrors.WrapStructured(err, ProviderModule, fmt.Sprintf("failed to create cache '%s'", name)).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+	// 	return nil, runtimeerrors.WrapStructured(err, ProviderModule, fmt.Sprintf("failed to create cache '%s'", name)).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
 	// }
 	// p.initializedCaches[name] = c
 
-	return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "cache initialization not yet implemented").WithCaller(), commonv1.ErrorReason_OPERATION_NOT_ALLOWED)
+	return nil, runtimeerrors.NewStructured(ProviderModule, "cache initialization not yet implemented").WithCaller()
 }
 
 // DefaultCache returns the default cache service.
@@ -135,7 +133,7 @@ func (p *provider) DefaultCache() (storageiface.Cache, error) {
 		}
 	}
 
-	return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "no default cache configured and multiple instances exist").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+	return nil, runtimeerrors.NewStructured(ProviderModule, "no default cache configured and multiple instances exist").WithCaller()
 }
 
 // Database returns the configured database service by name.
@@ -151,18 +149,18 @@ func (p *provider) Database(name string) (storageiface.Database, error) {
 	// Get configuration
 	dbCfg, ok := p.databaseConfigs[name]
 	if !ok {
-		return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "database '%s' not found in configuration", name).WithCaller(), commonv1.ErrorReason_NOT_FOUND)
+		return nil, runtimeerrors.NewStructured(ProviderModule, "database '%s' not found in configuration", name).WithCaller()
 	}
 
 	// Initialize and cache (TODO: Implement actual database initialization)
 	_ = dbCfg // Suppress unused variable warning
 	// db, err := database.New(dbCfg)
 	// if err != nil {
-	// 	return nil, runtimeerrors.WithReason(runtimeerrors.WrapStructured(err, ProviderModule, fmt.Sprintf("failed to create database '%s'", name)).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+	// 	return nil, runtimeerrors.WrapStructured(err, ProviderModule, fmt.Sprintf("failed to create database '%s'", name)).WithCaller(), commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
 	// }
 	// p.initializedDatabases[name] = db
 
-	return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "database initialization not yet implemented").WithCaller(), commonv1.ErrorReason_OPERATION_NOT_ALLOWED)
+	return nil, runtimeerrors.NewStructured(ProviderModule, "database initialization not yet implemented").WithCaller()
 }
 
 // DefaultDatabase returns the default database service.
@@ -177,5 +175,5 @@ func (p *provider) DefaultDatabase() (storageiface.Database, error) {
 		}
 	}
 
-	return nil, runtimeerrors.WithReason(runtimeerrors.NewStructured(ProviderModule, "no default database configured and multiple instances exist").WithCaller(), commonv1.ErrorReason_VALIDATION_ERROR)
+	return nil, runtimeerrors.NewStructured(ProviderModule, "no default database configured and multiple instances exist").WithCaller()
 }

@@ -6,7 +6,6 @@
 package registry
 
 import (
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
@@ -20,5 +19,5 @@ import (
 //go:adapter:package:func:prefix K
 
 var (
-	ErrRegistryNotFound = runtimeerrors.WithReason(runtimeerrors.NewStructured("registry", "registry not found").WithCaller(), commonv1.ErrorReason_NOT_FOUND)
+	ErrRegistryNotFound = runtimeerrors.NewStructured("registry", "registry not found")
 )

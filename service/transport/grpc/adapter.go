@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -10,7 +9,6 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
@@ -18,7 +16,7 @@ import (
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
 
-const Module = "grpc.adapter"
+const Module = "transport.grpc"
 
 // DefaultServerMiddlewares provides a default set of server-side middlewares for gRPC services.
 // These are essential for ensuring basic stability and observability.
@@ -53,7 +51,7 @@ func initGrpcServerOptions(grpcConfig *transportv1.GrpcServerConfig, serverOpts 
 	// If middlewares are configured but no container is provided, return an error.
 	// This consolidates the nil check for the container.
 	if hasMiddlewaresConfigured && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options").WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
 	}
 
 	// Apply options from the protobuf configuration.
@@ -64,7 +62,7 @@ func initGrpcServerOptions(grpcConfig *transportv1.GrpcServerConfig, serverOpts 
 	if grpcConfig.GetTlsConfig().GetEnabled() {
 		tlsCfg, err := servicetls.NewServerTLSConfig(grpcConfig.GetTlsConfig())
 		if err != nil {
-			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create server TLS config").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
+			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create server TLS config")
 		}
 		kratosOpts = append(kratosOpts, transgrpc.TLSConfig(tlsCfg))
 	}
@@ -80,7 +78,7 @@ func initGrpcServerOptions(grpcConfig *transportv1.GrpcServerConfig, serverOpts 
 		for _, name := range grpcConfig.GetMiddlewares() {
 			m, ok := c.ServerMiddleware(name)
 			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "server middleware '%s' not found in container", name).WithReason(commonv1.ErrorReason_NOT_FOUND).WithCaller()
+				return nil, runtimeerrors.NewStructured(Module, "server middleware '%s' not found in container", name)
 			}
 			mws = append(mws, m)
 		}
@@ -123,12 +121,12 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 	if len(grpcConfig.GetMiddlewares()) > 0 {
 		// If middlewares are configured but no container is provided, return an error.
 		if c == nil {
-			return nil, runtimeerrors.NewStructured(Module, "application container is required for client middlewares but not found in options").WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+			return nil, runtimeerrors.NewStructured(Module, "application container is required for client middlewares but not found in options")
 		}
 		for _, name := range grpcConfig.GetMiddlewares() {
 			m, ok := c.ClientMiddleware(name)
 			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "client middleware '%s' not found in container", name).WithReason(commonv1.ErrorReason_NOT_FOUND).WithCaller()
+				return nil, runtimeerrors.NewStructured(Module, "client middleware '%s' not found in container", name)
 			}
 			mws = append(mws, m)
 		}
@@ -154,12 +152,12 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 	if discoveryName := grpcConfig.GetDiscoveryName(); discoveryName != "" {
 		// If a named discovery client is configured but no container is provided, return an error.
 		if c == nil {
-			return nil, runtimeerrors.NewStructured(Module, "application container is required for named discovery client but not found in options").WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+			return nil, runtimeerrors.NewStructured(Module, "application container is required for named discovery client but not found in options")
 		}
 		if d, ok := c.Discovery(discoveryName); ok {
 			discoveryClient = d
 		} else {
-			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in container", discoveryName).WithReason(commonv1.ErrorReason_NOT_FOUND).WithCaller()
+			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in container", discoveryName)
 		}
 	} else if c != nil {
 		// If no specific discovery name, try to infer if only one is available from the container.
@@ -171,7 +169,7 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 				break
 			}
 		} else if len(discoveries) > 1 {
-			return nil, runtimeerrors.NewStructured(Module, "multiple discovery clients found in container, but no specific discovery client is configured for gRPC client").WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+			return nil, runtimeerrors.NewStructured(Module, "multiple discovery clients found in container, but no specific discovery client is configured for gRPC client")
 		}
 	}
 
@@ -182,7 +180,7 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 
 	// Crucial check: If the endpoint implies discovery but no discovery client is configured.
 	if strings.HasPrefix(endpoint, "discovery:///") && discoveryClient == nil {
-		return nil, runtimeerrors.NewStructured(Module, "endpoint '%s' requires a discovery client, but none is configured", endpoint).WithReason(commonv1.ErrorReason_VALIDATION_ERROR).WithCaller()
+		return nil, runtimeerrors.NewStructured(Module, "endpoint '%s' requires a discovery client, but none is configured", endpoint)
 	}
 
 	// Configure node filters (selector).
@@ -190,7 +188,7 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 		// Call the original, trusted NewFilter function from your app's selector package.
 		nodeFilter, err := serviceselector.NewFilter(selectorConfig)
 		if err != nil {
-			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create node filter").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
+			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create node filter")
 		}
 
 		if nodeFilter != nil {
@@ -202,7 +200,7 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 	if tlsConfig := grpcConfig.GetTlsConfig(); tlsConfig != nil && tlsConfig.GetEnabled() {
 		tlsCfg, err := servicetls.NewClientTLSConfig(tlsConfig)
 		if err != nil {
-			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create client TLS config").WithReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR).WithCaller()
+			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create client TLS config")
 		}
 		kratosOpts = append(kratosOpts, transgrpc.WithTLSConfig(tlsCfg))
 	}

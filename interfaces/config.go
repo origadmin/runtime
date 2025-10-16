@@ -1,18 +1,16 @@
 package interfaces
 
 import (
-	"github.com/origadmin/runtime/errors"
-
 	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
 // ErrNotImplemented is returned when a specific decoder method is not implemented
 // by a custom decoder. This signals the runtime to fall back to generic decoding.
-var ErrNotImplemented = errors.WithReason(errors.NewStructured("config", "method not implemented by this decoder").WithCaller(), commonv1.ErrorReason_OPERATION_NOT_ALLOWED)
+var ErrNotImplemented = runtimeerrors.NewStructured("config", "method not implemented by this decoder")
 
 // Config is the minimal contract for providing a custom configuration source.
 // Developers wishing to extend the framework with a new config system should implement this interface.

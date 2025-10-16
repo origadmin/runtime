@@ -10,7 +10,6 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	runtimelog "github.com/origadmin/runtime/log"
@@ -115,9 +114,7 @@ func (b *Builder) Build() (interfaces.Container, error) {
 	}
 
 	if b.config == nil {
-		// FIX: Correctly use WithReason as a function
-		structuredErr := runtimeerrors.NewStructured("bootstrap", "config must be provided using WithConfig()").WithCaller()
-		return nil, runtimeerrors.WithReason(structuredErr, commonv1.ErrorReason_VALIDATION_ERROR)
+		return nil, runtimeerrors.NewStructured("bootstrap", "config must be provided using WithConfig()").WithCaller()
 	}
 
 	// 1. Initialize Logger with graceful fallback.

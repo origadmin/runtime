@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/origadmin/runtime/errors"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
 const Module = "service"
@@ -20,5 +20,5 @@ var (
 
 // Helper functions to create new errors
 func newServiceError(message string) error {
-	return errors.NewStructured(Module, message).WithCaller()
+	return runtimeerrors.NewStructured(Module, message).WithCaller()
 }
