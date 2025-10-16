@@ -5,11 +5,14 @@
 package registry
 
 import (
-	commonv1 "github.com/origadmin/runtime/api/gen/go/runtime/common/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
-	"github.com/origadmin/runtime/errors"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
+)
+
+const (
+	Module = "registry.factory"
 )
 
 // Factory is the interface for creating new registrar and discovery components.
@@ -25,37 +28,32 @@ type buildImpl struct {
 
 func (b *buildImpl) NewRegistrar(cfg *discoveryv1.Discovery, opts ...options.Option) (KRegistrar, error) {
 	if cfg == nil || cfg.Type == "" {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR,
-			"registry configuration or type is missing")
+		return nil, runtimeerrors.NewStructured(Module, "registry configuration or type is missing").WithCaller()
 	}
 
 	f, ok := b.Get(cfg.Type)
 	if !ok {
-		return nil, errors.NewMessageWithMeta(commonv1.ErrorReason_NOT_FOUND, map[string]string{"type": cfg.Type}, "no registry factory found for type: %s", cfg.Type)
+		return nil, runtimeerrors.NewStructured(Module, "no registry factory found for type: %s", cfg.Type).WithMetadata(map[string]string{"type": cfg.Type}).WithCaller()
 	}
 	registrar, err := f.NewRegistrar(cfg, opts...)
 	if err != nil {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_INTERNAL_SERVER_ERROR, "failed to create registrar for type %s", cfg.Type)
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to create registrar for type %s", cfg.Type).WithCaller()
 	}
 	return registrar, nil
 }
 
 func (b *buildImpl) NewDiscovery(cfg *discoveryv1.Discovery, opts ...options.Option) (KDiscovery, error) {
 	if cfg == nil || cfg.Type == "" {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.NewMessage(commonv1.ErrorReason_VALIDATION_ERROR, "registry configuration or type is missing")
+		return nil, runtimeerrors.NewStructured(Module, "registry configuration or type is missing").WithCaller()
 	}
 
 	f, ok := b.Get(cfg.Type)
 	if !ok {
-		return nil, errors.NewMessageWithMeta(commonv1.ErrorReason_NOT_FOUND, map[string]string{"type": cfg.Type}, "no registry factory found for type: %s", cfg.Type)
+		return nil, runtimeerrors.NewStructured(Module, "no registry factory found for type: %s", cfg.Type).WithMetadata(map[string]string{"type": cfg.Type}).WithCaller()
 	}
 	discovery, err := f.NewDiscovery(cfg, opts...)
 	if err != nil {
-		// TODO: Refactor to use a registry-specific error reason instead of a generic one.
-		return nil, errors.WrapAndConvert(err, commonv1.ErrorReason_INTERNAL_SERVER_ERROR, "failed to create discovery for type %s", cfg.Type)
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to create discovery for type %s", cfg.Type).WithCaller()
 	}
 	return discovery, nil
 }
