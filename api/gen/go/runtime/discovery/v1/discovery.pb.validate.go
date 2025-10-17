@@ -386,6 +386,139 @@ var _Discovery_Type_InLookup = map[string]struct{}{
 	"polaris":    {},
 }
 
+// Validate checks the field values on Discoveries with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Discoveries) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Discoveries with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in DiscoveriesMultiError, or
+// nil if none found.
+func (m *Discoveries) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Discoveries) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetDiscoveries() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DiscoveriesValidationError{
+						field:  fmt.Sprintf("Discoveries[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DiscoveriesValidationError{
+						field:  fmt.Sprintf("Discoveries[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DiscoveriesValidationError{
+					field:  fmt.Sprintf("Discoveries[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return DiscoveriesMultiError(errors)
+	}
+
+	return nil
+}
+
+// DiscoveriesMultiError is an error wrapping multiple validation errors
+// returned by Discoveries.ValidateAll() if the designated constraints aren't met.
+type DiscoveriesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DiscoveriesMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DiscoveriesMultiError) AllErrors() []error { return m }
+
+// DiscoveriesValidationError is the validation error returned by
+// Discoveries.Validate if the designated constraints aren't met.
+type DiscoveriesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DiscoveriesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DiscoveriesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DiscoveriesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DiscoveriesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DiscoveriesValidationError) ErrorName() string { return "DiscoveriesValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DiscoveriesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDiscoveries.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DiscoveriesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DiscoveriesValidationError{}
+
 // Validate checks the field values on Consul with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.

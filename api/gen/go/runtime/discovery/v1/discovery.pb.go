@@ -145,6 +145,50 @@ func (x *Discovery) GetCustomize() *v1.Extension {
 	return nil
 }
 
+type Discoveries struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Discoveries   []*Discovery           `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Discoveries) Reset() {
+	*x = Discoveries{}
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Discoveries) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Discoveries) ProtoMessage() {}
+
+func (x *Discoveries) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Discoveries.ProtoReflect.Descriptor instead.
+func (*Discoveries) Descriptor() ([]byte, []int) {
+	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Discoveries) GetDiscoveries() []*Discovery {
+	if x != nil {
+		return x.Discoveries
+	}
+	return nil
+}
+
 // Consul provider specific configuration.
 type Consul struct {
 	state                          protoimpl.MessageState `protogen:"open.v1"`
@@ -163,7 +207,7 @@ type Consul struct {
 
 func (x *Consul) Reset() {
 	*x = Consul{}
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[1]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -175,7 +219,7 @@ func (x *Consul) String() string {
 func (*Consul) ProtoMessage() {}
 
 func (x *Consul) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[1]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -188,7 +232,7 @@ func (x *Consul) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Consul.ProtoReflect.Descriptor instead.
 func (*Consul) Descriptor() ([]byte, []int) {
-	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{1}
+	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Consul) GetAddress() string {
@@ -264,7 +308,7 @@ type ETCD struct {
 
 func (x *ETCD) Reset() {
 	*x = ETCD{}
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[2]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -276,7 +320,7 @@ func (x *ETCD) String() string {
 func (*ETCD) ProtoMessage() {}
 
 func (x *ETCD) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[2]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -289,7 +333,7 @@ func (x *ETCD) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ETCD.ProtoReflect.Descriptor instead.
 func (*ETCD) Descriptor() ([]byte, []int) {
-	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{2}
+	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ETCD) GetEndpoints() []string {
@@ -308,7 +352,7 @@ type Nacos struct {
 
 func (x *Nacos) Reset() {
 	*x = Nacos{}
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[3]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -320,7 +364,7 @@ func (x *Nacos) String() string {
 func (*Nacos) ProtoMessage() {}
 
 func (x *Nacos) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[3]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -333,7 +377,7 @@ func (x *Nacos) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Nacos.ProtoReflect.Descriptor instead.
 func (*Nacos) Descriptor() ([]byte, []int) {
-	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{3}
+	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{4}
 }
 
 // Apollo provider specific configuration (placeholder).
@@ -345,7 +389,7 @@ type Apollo struct {
 
 func (x *Apollo) Reset() {
 	*x = Apollo{}
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[4]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +401,7 @@ func (x *Apollo) String() string {
 func (*Apollo) ProtoMessage() {}
 
 func (x *Apollo) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[4]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +414,7 @@ func (x *Apollo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Apollo.ProtoReflect.Descriptor instead.
 func (*Apollo) Descriptor() ([]byte, []int) {
-	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{4}
+	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{5}
 }
 
 // Kubernetes provider specific configuration (placeholder).
@@ -382,7 +426,7 @@ type Kubernetes struct {
 
 func (x *Kubernetes) Reset() {
 	*x = Kubernetes{}
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[5]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -394,7 +438,7 @@ func (x *Kubernetes) String() string {
 func (*Kubernetes) ProtoMessage() {}
 
 func (x *Kubernetes) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[5]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -407,7 +451,7 @@ func (x *Kubernetes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Kubernetes.ProtoReflect.Descriptor instead.
 func (*Kubernetes) Descriptor() ([]byte, []int) {
-	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{5}
+	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{6}
 }
 
 // Polaris provider specific configuration (placeholder).
@@ -419,7 +463,7 @@ type Polaris struct {
 
 func (x *Polaris) Reset() {
 	*x = Polaris{}
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[6]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -431,7 +475,7 @@ func (x *Polaris) String() string {
 func (*Polaris) ProtoMessage() {}
 
 func (x *Polaris) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[6]
+	mi := &file_runtime_discovery_v1_discovery_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -444,7 +488,7 @@ func (x *Polaris) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Polaris.ProtoReflect.Descriptor instead.
 func (*Polaris) Descriptor() ([]byte, []int) {
-	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{6}
+	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{7}
 }
 
 var File_runtime_discovery_v1_discovery_proto protoreflect.FileDescriptor
@@ -472,7 +516,9 @@ const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\a_apolloB\r\n" +
 	"\v_kubernetesB\n" +
 	"\n" +
-	"\b_polaris\"\xcb\x02\n" +
+	"\b_polaris\"P\n" +
+	"\vDiscoveries\x12A\n" +
+	"\vdiscoveries\x18\x01 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\"\xcb\x02\n" +
 	"\x06Consul\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
 	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
@@ -508,30 +554,32 @@ func file_runtime_discovery_v1_discovery_proto_rawDescGZIP() []byte {
 	return file_runtime_discovery_v1_discovery_proto_rawDescData
 }
 
-var file_runtime_discovery_v1_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_runtime_discovery_v1_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_runtime_discovery_v1_discovery_proto_goTypes = []any{
 	(*Discovery)(nil),    // 0: runtime.discovery.v1.Discovery
-	(*Consul)(nil),       // 1: runtime.discovery.v1.Consul
-	(*ETCD)(nil),         // 2: runtime.discovery.v1.ETCD
-	(*Nacos)(nil),        // 3: runtime.discovery.v1.Nacos
-	(*Apollo)(nil),       // 4: runtime.discovery.v1.Apollo
-	(*Kubernetes)(nil),   // 5: runtime.discovery.v1.Kubernetes
-	(*Polaris)(nil),      // 6: runtime.discovery.v1.Polaris
-	(*v1.Extension)(nil), // 7: runtime.extension.v1.Extension
+	(*Discoveries)(nil),  // 1: runtime.discovery.v1.Discoveries
+	(*Consul)(nil),       // 2: runtime.discovery.v1.Consul
+	(*ETCD)(nil),         // 3: runtime.discovery.v1.ETCD
+	(*Nacos)(nil),        // 4: runtime.discovery.v1.Nacos
+	(*Apollo)(nil),       // 5: runtime.discovery.v1.Apollo
+	(*Kubernetes)(nil),   // 6: runtime.discovery.v1.Kubernetes
+	(*Polaris)(nil),      // 7: runtime.discovery.v1.Polaris
+	(*v1.Extension)(nil), // 8: runtime.extension.v1.Extension
 }
 var file_runtime_discovery_v1_discovery_proto_depIdxs = []int32{
-	1, // 0: runtime.discovery.v1.Discovery.consul:type_name -> runtime.discovery.v1.Consul
-	2, // 1: runtime.discovery.v1.Discovery.etcd:type_name -> runtime.discovery.v1.ETCD
-	3, // 2: runtime.discovery.v1.Discovery.nacos:type_name -> runtime.discovery.v1.Nacos
-	4, // 3: runtime.discovery.v1.Discovery.apollo:type_name -> runtime.discovery.v1.Apollo
-	5, // 4: runtime.discovery.v1.Discovery.kubernetes:type_name -> runtime.discovery.v1.Kubernetes
-	6, // 5: runtime.discovery.v1.Discovery.polaris:type_name -> runtime.discovery.v1.Polaris
-	7, // 6: runtime.discovery.v1.Discovery.customize:type_name -> runtime.extension.v1.Extension
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	2, // 0: runtime.discovery.v1.Discovery.consul:type_name -> runtime.discovery.v1.Consul
+	3, // 1: runtime.discovery.v1.Discovery.etcd:type_name -> runtime.discovery.v1.ETCD
+	4, // 2: runtime.discovery.v1.Discovery.nacos:type_name -> runtime.discovery.v1.Nacos
+	5, // 3: runtime.discovery.v1.Discovery.apollo:type_name -> runtime.discovery.v1.Apollo
+	6, // 4: runtime.discovery.v1.Discovery.kubernetes:type_name -> runtime.discovery.v1.Kubernetes
+	7, // 5: runtime.discovery.v1.Discovery.polaris:type_name -> runtime.discovery.v1.Polaris
+	8, // 6: runtime.discovery.v1.Discovery.customize:type_name -> runtime.extension.v1.Extension
+	0, // 7: runtime.discovery.v1.Discoveries.discoveries:type_name -> runtime.discovery.v1.Discovery
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_runtime_discovery_v1_discovery_proto_init() }
@@ -546,7 +594,7 @@ func file_runtime_discovery_v1_discovery_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_discovery_v1_discovery_proto_rawDesc), len(file_runtime_discovery_v1_discovery_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

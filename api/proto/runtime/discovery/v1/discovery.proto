@@ -50,6 +50,10 @@ message Discovery {
   extension.v1.Extension customize = 900 [json_name = "customize"];
 }
 
+message Discoveries {
+  repeated Discovery discoveries = 1;
+}
+
 // --- Message Definitions for Each Provider ---
 
 // Consul provider specific configuration.

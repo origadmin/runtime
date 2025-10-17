@@ -32,7 +32,7 @@ func (s *DirectLoadConfigTestSuite) TestDirectConfigLoading() {
 		name     string
 		filePath string
 	}{
-		{name: "YAML", filePath: "test/integration/config/test_cases/direct_load_config/config.yaml"},
+		{name: "YAML", filePath: "config/test_cases/direct_load_config/config.yaml"},
 	}
 
 	for _, tc := range testCases {

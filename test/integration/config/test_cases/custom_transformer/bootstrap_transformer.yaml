@@ -1,7 +1,7 @@
 sources:
   - type: file
     file:
-      path: "test/integration/config/test_cases/custom_transformer/config.yaml"
+      path: "config.yaml"
 transformers:
   - type: "test-transformer"
     options:

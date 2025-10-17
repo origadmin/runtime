@@ -1,60 +1,87 @@
 package custom_transformer
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/source/memory"
+	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/interfaces"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
-	"gopkg.in/yaml.v3"
 )
 
 // TestTransformer is a custom transformer for testing purposes.
 type TestTransformer struct {
-	suffix string
+	Suffix string
+	c      interfaces.Config
+	cfg    *testconfigs.TestConfig
 }
 
-// NewTestTransformer creates a new TestTransformer.
-func NewTestTransformer(suffix string) *TestTransformer {
-	return &TestTransformer{suffix: suffix}
+func (t *TestTransformer) Load() error {
+	return t.c.Load()
 }
 
-// Transform implements the bootstrap.Transformer interface.
-func (t *TestTransformer) Transform(ctx context.Context, c config.Config) (config.Config, error) {
+func (t *TestTransformer) Decode(key string, value any) error {
+	if err := t.c.Decode(key, value); err != nil {
+		return fmt.Errorf("failed to decode config in transformer: %w", err)
+	}
+	return nil
+}
+
+func (t *TestTransformer) Raw() any {
+	return t.c.Raw()
+}
+
+func (t *TestTransformer) Close() error {
+	return t.c.Close()
+}
+
+func (t *TestTransformer) DecodeApp() (*appv1.App, error) {
+	return t.cfg.App, nil
+}
+
+func (t *TestTransformer) DecodeLogger() (*loggerv1.Logger, error) {
+	return t.cfg.Logger, nil
+}
+
+func (t *TestTransformer) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
+	var discoveries map[string]*discoveryv1.Discovery
+	for _, discovery := range t.cfg.GetDiscoveries().GetDiscoveries() {
+		key := discovery.GetName()
+		if key == "" {
+			key = discovery.GetType()
+		}
+		discoveries[key] = discovery
+	}
+
+	return discoveries, nil
+}
+
+func (t *TestTransformer) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
+	return t.cfg.Middlewares, nil
+}
+
+func (t *TestTransformer) Transform(c interfaces.Config) (interfaces.StructuredConfig, error) {
+	t.c = c
 	// Decode the current configuration into our TestConfig struct.
 	var cfg testconfigs.TestConfig
-	if err := c.Scan(&cfg); err != nil {
+	if err := c.Decode("", &cfg); err != nil {
 		return nil, fmt.Errorf("failed to scan config in transformer: %w", err)
 	}
 
 	// Perform the transformation: append suffix to App.Name.
 	if cfg.App != nil {
-		cfg.App.Name = cfg.App.Name + t.suffix
+		cfg.App.Name = cfg.App.Name + t.Suffix
 	} else {
 		// If App is nil, create it and set the name.
-		cfg.App = &testconfigs.App{}
-		cfg.App.Name = "TransformedApp" + t.suffix
+		cfg.App = &appv1.App{}
+		cfg.App.Name = "TransformedApp" + t.Suffix
 	}
 
-	// Re-encode the modified struct back to a map[string]interface{} for memory source.
-	var modifiedMap map[string]interface{}
-	modifiedBytes, err := yaml.Marshal(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal modified config in transformer: %w", err)
-	}
-	if err := yaml.Unmarshal(modifiedBytes, &modifiedMap); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal modified bytes to map: %w", err)
-	}
-
-	// Create a new config.Config from the modified map using a memory source.
-	newConfig := config.New(config.WithSource(memory.NewSource(modifiedMap)))
-	if err := newConfig.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load new config from memory source: %w", err)
-	}
-
-	return newConfig, nil
+	t.cfg = &cfg
+	return t, nil
 }
 
 // String returns the name of the transformer.
@@ -62,13 +89,9 @@ func (t *TestTransformer) String() string {
 	return "test-transformer"
 }
 
-// Register the custom transformer with the bootstrap package.
-func init() {
-	bootstrap.RegisterTransformer("test-transformer", func(options map[string]interface{}) (bootstrap.Transformer, error) {
-		suffix, ok := options["suffix"].(string)
-		if !ok {
-			return nil, fmt.Errorf("transformer 'test-transformer' requires a 'suffix' option of type string")
-		}
-		return NewTestTransformer(suffix), nil
-	})
+// NewTestTransformer creates a new TestTransformer.
+func NewTestTransformer(suffix string) *TestTransformer {
+	return &TestTransformer{Suffix: suffix}
 }
+
+var _ bootstrap.ConfigTransformer = (*TestTransformer)(nil)

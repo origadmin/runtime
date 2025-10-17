@@ -43,19 +43,19 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assert.Equal("v1.0.0", cfg.Client.GetSelector().GetVersion())
 
 	// Discovery configuration assertions
-	assert.Len(cfg.Discoveries, 2)
-	assert.Equal("internal-consul", cfg.Discoveries[0].GetName())
-	assert.NotNil(cfg.Discoveries[0].GetConfig())
-	assert.Equal("consul", cfg.Discoveries[0].GetConfig().GetType())
-	assert.NotNil(cfg.Discoveries[0].GetConfig().GetConsul())
-	assert.Equal("consul.internal:8500", cfg.Discoveries[0].GetConfig().GetConsul().GetAddress())
+	assert.Len(cfg.GetDiscoveries().GetDiscoveries(), 2)
+	assert.Equal("internal-consul", cfg.GetDiscoveries().GetDiscoveries()[0].GetName())
+	assert.NotNil(cfg.GetDiscoveries().GetDiscoveries()[0])
+	assert.Equal("consul", cfg.GetDiscoveries().GetDiscoveries()[0].GetType())
+	assert.NotNil(cfg.GetDiscoveries().GetDiscoveries()[0].GetConsul())
+	assert.Equal("consul.internal:8500", cfg.GetDiscoveries().GetDiscoveries()[0].GetConsul().GetAddress())
 
-	assert.Equal("legacy-etcd", cfg.Discoveries[1].GetName())
-	assert.NotNil(cfg.Discoveries[1].GetConfig())
-	assert.Equal("etcd", cfg.Discoveries[1].GetConfig().GetType())
-	assert.NotNil(cfg.Discoveries[1].GetConfig().GetEtcd())
-	assert.Len(cfg.Discoveries[1].GetConfig().GetEtcd().GetEndpoints(), 1)
-	assert.Equal("etcd.legacy:2379", cfg.Discoveries[1].GetConfig().GetEtcd().GetEndpoints()[0])
+	assert.Equal("legacy-etcd", cfg.GetDiscoveries().GetDiscoveries()[1].GetName())
+	assert.NotNil(cfg.GetDiscoveries().GetDiscoveries()[1])
+	assert.Equal("etcd", cfg.GetDiscoveries().GetDiscoveries()[1].GetType())
+	assert.NotNil(cfg.GetDiscoveries().GetDiscoveries()[1].GetEtcd())
+	assert.Len(cfg.GetDiscoveries().GetDiscoveries()[1].GetEtcd().GetEndpoints(), 1)
+	assert.Equal("etcd.legacy:2379", cfg.GetDiscoveries().GetDiscoveries()[1].GetEtcd().GetEndpoints()[0])
 
 	// Registration discovery name assertion
 	assert.Equal("internal-consul", cfg.GetRegistrationDiscoveryName())

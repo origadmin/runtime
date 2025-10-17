@@ -24,13 +24,12 @@ client:
     version: "v1.0.0"
 
 discoveries:
-  - name: "internal-consul"
-    config:
+  discoveries:
+    - name: "internal-consul"
       type: "consul"
       consul:
         address: "consul.internal:8500"
-  - name: "legacy-etcd"
-    config:
+    - name: "legacy-etcd"
       type: "etcd"
       etcd:
         endpoints:
@@ -47,10 +46,11 @@ tracer:
   name: "jaeger"
   endpoint: "http://jaeger:14268/api/traces"
 
-middleware:
+middlewares:
   middlewares:
-    - type: cors
+    - name: "cors-middleware"
+      type: cors
       enabled: true
       cors:
-        allow_origins: ["*"]
-        allow_methods: ["GET", "POST"]
+        allowed_origins: [ "*" ]
+        allowed_methods: [ "GET", "POST" ]

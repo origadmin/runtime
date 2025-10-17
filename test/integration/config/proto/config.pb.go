@@ -7,9 +7,9 @@
 package configs
 
 import (
-	v11 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	v13 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
+	v13 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	v16 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
 	v14 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
@@ -18,7 +18,7 @@ import (
 	v19 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	_ "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	_ "github.com/origadmin/runtime/api/gen/go/runtime/task/v1"
-	v12 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -33,93 +33,41 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// DiscoveryConfig binds a service discovery configuration with a unique name.
-type DiscoveryConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Config        *v1.Discovery          `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DiscoveryConfig) Reset() {
-	*x = DiscoveryConfig{}
-	mi := &file_test_integration_config_proto_config_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DiscoveryConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DiscoveryConfig) ProtoMessage() {}
-
-func (x *DiscoveryConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_test_integration_config_proto_config_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DiscoveryConfig.ProtoReflect.Descriptor instead.
-func (*DiscoveryConfig) Descriptor() ([]byte, []int) {
-	return file_test_integration_config_proto_config_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *DiscoveryConfig) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *DiscoveryConfig) GetConfig() *v1.Discovery {
-	if x != nil {
-		return x.Config
-	}
-	return nil
-}
-
 // TestConfig is the unified configuration structure for all integration tests.
 type TestConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// App configuration from app.proto
-	App *v11.App `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
+	App *v1.App `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
 	// Server configurations
-	GrpcServers []*v12.GrpcServerConfig `protobuf:"bytes,2,rep,name=grpc_servers,json=grpcServers,proto3" json:"grpc_servers,omitempty"`
-	HttpServers []*v12.HttpServerConfig `protobuf:"bytes,3,rep,name=http_servers,json=httpServers,proto3" json:"http_servers,omitempty"`
+	GrpcServers []*v11.GrpcServerConfig `protobuf:"bytes,2,rep,name=grpc_servers,json=grpcServers,proto3" json:"grpc_servers,omitempty"`
+	HttpServers []*v11.HttpServerConfig `protobuf:"bytes,3,rep,name=http_servers,json=httpServers,proto3" json:"http_servers,omitempty"`
+	Server      *v12.Server             `protobuf:"bytes,4,opt,name=server,proto3" json:"server,omitempty"`
 	// Client configuration for downstream services
-	Client *v13.Client `protobuf:"bytes,4,opt,name=client,proto3" json:"client,omitempty"`
+	Client *v12.Client `protobuf:"bytes,5,opt,name=client,proto3" json:"client,omitempty"`
 	// Service discovery configurations
-	Discoveries []*DiscoveryConfig `protobuf:"bytes,5,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
+	Discoveries *v13.Discoveries `protobuf:"bytes,6,opt,name=discoveries,proto3" json:"discoveries,omitempty"`
 	// Service registration configuration
-	RegistrationDiscoveryName string `protobuf:"bytes,6,opt,name=registration_discovery_name,json=registrationDiscoveryName,proto3" json:"registration_discovery_name,omitempty"`
+	RegistrationDiscoveryName string `protobuf:"bytes,7,opt,name=registration_discovery_name,json=registrationDiscoveryName,proto3" json:"registration_discovery_name,omitempty"`
 	// Other component configurations
-	Logger        *v14.Logger      `protobuf:"bytes,7,opt,name=logger,proto3" json:"logger,omitempty"`
-	Tracer        *v13.Tracer      `protobuf:"bytes,8,opt,name=tracer,proto3" json:"tracer,omitempty"`
-	Middlewares   *v15.Middlewares `protobuf:"bytes,9,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
-	Gateway       *v13.Gateway     `protobuf:"bytes,10,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Storage       *v13.Storage     `protobuf:"bytes,11,opt,name=storage,proto3" json:"storage,omitempty"`
-	Task          *v13.Task        `protobuf:"bytes,12,opt,name=task,proto3" json:"task,omitempty"`
-	Websocket     *v13.WebSocket   `protobuf:"bytes,13,opt,name=websocket,proto3" json:"websocket,omitempty"`
-	Extension     *v16.Extension   `protobuf:"bytes,14,opt,name=extension,proto3" json:"extension,omitempty"`
-	Authn         *v17.AuthN       `protobuf:"bytes,15,opt,name=authn,proto3" json:"authn,omitempty"`
-	Authz         *v18.AuthZ       `protobuf:"bytes,16,opt,name=authz,proto3" json:"authz,omitempty"`
-	Tls           *v19.TLSConfig   `protobuf:"bytes,17,opt,name=tls,proto3" json:"tls,omitempty"`
-	Transport     *v12.Transport   `protobuf:"bytes,18,opt,name=transport,proto3" json:"transport,omitempty"`
+	Logger        *v14.Logger      `protobuf:"bytes,8,opt,name=logger,proto3" json:"logger,omitempty"`
+	Tracer        *v12.Tracer      `protobuf:"bytes,9,opt,name=tracer,proto3" json:"tracer,omitempty"`
+	Middlewares   *v15.Middlewares `protobuf:"bytes,10,opt,name=middlewares,proto3" json:"middlewares,omitempty"` // Corrected: changed type to Middlewares and field name to middlewares
+	Gateway       *v12.Gateway     `protobuf:"bytes,11,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Storage       *v12.Storage     `protobuf:"bytes,12,opt,name=storage,proto3" json:"storage,omitempty"`
+	Task          *v12.Task        `protobuf:"bytes,13,opt,name=task,proto3" json:"task,omitempty"`
+	Websocket     *v12.WebSocket   `protobuf:"bytes,14,opt,name=websocket,proto3" json:"websocket,omitempty"`
+	Extension     *v16.Extension   `protobuf:"bytes,15,opt,name=extension,proto3" json:"extension,omitempty"`
+	Authn         *v17.AuthN       `protobuf:"bytes,16,opt,name=authn,proto3" json:"authn,omitempty"`
+	Authz         *v18.AuthZ       `protobuf:"bytes,17,opt,name=authz,proto3" json:"authz,omitempty"`
+	Tls           *v19.TLSConfig   `protobuf:"bytes,18,opt,name=tls,proto3" json:"tls,omitempty"`
+	Transport     *v11.Transport   `protobuf:"bytes,19,opt,name=transport,proto3" json:"transport,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TestConfig) Reset() {
 	*x = TestConfig{}
-	mi := &file_test_integration_config_proto_config_proto_msgTypes[1]
+	mi := &file_test_integration_config_proto_config_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -131,7 +79,7 @@ func (x *TestConfig) String() string {
 func (*TestConfig) ProtoMessage() {}
 
 func (x *TestConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_test_integration_config_proto_config_proto_msgTypes[1]
+	mi := &file_test_integration_config_proto_config_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -144,38 +92,45 @@ func (x *TestConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestConfig.ProtoReflect.Descriptor instead.
 func (*TestConfig) Descriptor() ([]byte, []int) {
-	return file_test_integration_config_proto_config_proto_rawDescGZIP(), []int{1}
+	return file_test_integration_config_proto_config_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *TestConfig) GetApp() *v11.App {
+func (x *TestConfig) GetApp() *v1.App {
 	if x != nil {
 		return x.App
 	}
 	return nil
 }
 
-func (x *TestConfig) GetGrpcServers() []*v12.GrpcServerConfig {
+func (x *TestConfig) GetGrpcServers() []*v11.GrpcServerConfig {
 	if x != nil {
 		return x.GrpcServers
 	}
 	return nil
 }
 
-func (x *TestConfig) GetHttpServers() []*v12.HttpServerConfig {
+func (x *TestConfig) GetHttpServers() []*v11.HttpServerConfig {
 	if x != nil {
 		return x.HttpServers
 	}
 	return nil
 }
 
-func (x *TestConfig) GetClient() *v13.Client {
+func (x *TestConfig) GetServer() *v12.Server {
+	if x != nil {
+		return x.Server
+	}
+	return nil
+}
+
+func (x *TestConfig) GetClient() *v12.Client {
 	if x != nil {
 		return x.Client
 	}
 	return nil
 }
 
-func (x *TestConfig) GetDiscoveries() []*DiscoveryConfig {
+func (x *TestConfig) GetDiscoveries() *v13.Discoveries {
 	if x != nil {
 		return x.Discoveries
 	}
@@ -196,7 +151,7 @@ func (x *TestConfig) GetLogger() *v14.Logger {
 	return nil
 }
 
-func (x *TestConfig) GetTracer() *v13.Tracer {
+func (x *TestConfig) GetTracer() *v12.Tracer {
 	if x != nil {
 		return x.Tracer
 	}
@@ -210,28 +165,28 @@ func (x *TestConfig) GetMiddlewares() *v15.Middlewares {
 	return nil
 }
 
-func (x *TestConfig) GetGateway() *v13.Gateway {
+func (x *TestConfig) GetGateway() *v12.Gateway {
 	if x != nil {
 		return x.Gateway
 	}
 	return nil
 }
 
-func (x *TestConfig) GetStorage() *v13.Storage {
+func (x *TestConfig) GetStorage() *v12.Storage {
 	if x != nil {
 		return x.Storage
 	}
 	return nil
 }
 
-func (x *TestConfig) GetTask() *v13.Task {
+func (x *TestConfig) GetTask() *v12.Task {
 	if x != nil {
 		return x.Task
 	}
 	return nil
 }
 
-func (x *TestConfig) GetWebsocket() *v13.WebSocket {
+func (x *TestConfig) GetWebsocket() *v12.WebSocket {
 	if x != nil {
 		return x.Websocket
 	}
@@ -266,7 +221,7 @@ func (x *TestConfig) GetTls() *v19.TLSConfig {
 	return nil
 }
 
-func (x *TestConfig) GetTransport() *v12.Transport {
+func (x *TestConfig) GetTransport() *v11.Transport {
 	if x != nil {
 		return x.Transport
 	}
@@ -277,31 +232,29 @@ var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
 
 const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x18runtime/app/v1/app.proto\x1a\x1eruntime/config/v1/client.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1eruntime/config/v1/server.proto\x1a\x1fruntime/config/v1/storage.proto\x1a\x1cruntime/config/v1/task.proto\x1a\x1eruntime/config/v1/tracer.proto\x1a!runtime/config/v1/websocket.proto\x1a$runtime/discovery/v1/discovery.proto\x1a$runtime/extension/v1/extension.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a runtime/storage/v1/storage.proto\x1a\x1aruntime/task/v1/task.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\x1a$runtime/transport/v1/transport.proto\"^\n" +
-	"\x0fDiscoveryConfig\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
-	"\x06config\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x06config\"\xa8\b\n" +
+	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x18runtime/app/v1/app.proto\x1a\x1eruntime/config/v1/client.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1eruntime/config/v1/server.proto\x1a\x1fruntime/config/v1/storage.proto\x1a\x1cruntime/config/v1/task.proto\x1a\x1eruntime/config/v1/tracer.proto\x1a!runtime/config/v1/websocket.proto\x1a$runtime/discovery/v1/discovery.proto\x1a$runtime/extension/v1/extension.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a runtime/storage/v1/storage.proto\x1a\x1aruntime/task/v1/task.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\x1a$runtime/transport/v1/transport.proto\"\xdf\b\n" +
 	"\n" +
 	"TestConfig\x12%\n" +
 	"\x03app\x18\x01 \x01(\v2\x13.runtime.app.v1.AppR\x03app\x12I\n" +
 	"\fgrpc_servers\x18\x02 \x03(\v2&.runtime.transport.v1.GrpcServerConfigR\vgrpcServers\x12I\n" +
 	"\fhttp_servers\x18\x03 \x03(\v2&.runtime.transport.v1.HttpServerConfigR\vhttpServers\x121\n" +
-	"\x06client\x18\x04 \x01(\v2\x19.runtime.config.v1.ClientR\x06client\x12?\n" +
-	"\vdiscoveries\x18\x05 \x03(\v2\x1d.test.configs.DiscoveryConfigR\vdiscoveries\x12>\n" +
-	"\x1bregistration_discovery_name\x18\x06 \x01(\tR\x19registrationDiscoveryName\x121\n" +
-	"\x06logger\x18\a \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x121\n" +
-	"\x06tracer\x18\b \x01(\v2\x19.runtime.config.v1.TracerR\x06tracer\x12D\n" +
-	"\vmiddlewares\x18\t \x01(\v2\".runtime.middleware.v1.MiddlewaresR\vmiddlewares\x124\n" +
-	"\agateway\x18\n" +
-	" \x01(\v2\x1a.runtime.config.v1.GatewayR\agateway\x124\n" +
-	"\astorage\x18\v \x01(\v2\x1a.runtime.config.v1.StorageR\astorage\x12+\n" +
-	"\x04task\x18\f \x01(\v2\x17.runtime.config.v1.TaskR\x04task\x12:\n" +
-	"\twebsocket\x18\r \x01(\v2\x1c.runtime.config.v1.WebSocketR\twebsocket\x12=\n" +
-	"\textension\x18\x0e \x01(\v2\x1f.runtime.extension.v1.ExtensionR\textension\x126\n" +
-	"\x05authn\x18\x0f \x01(\v2 .runtime.security.authn.v1.AuthNR\x05authn\x126\n" +
-	"\x05authz\x18\x10 \x01(\v2 .runtime.security.authz.v1.AuthZR\x05authz\x12:\n" +
-	"\x03tls\x18\x11 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x03tls\x12=\n" +
-	"\ttransport\x18\x12 \x01(\v2\x1f.runtime.transport.v1.TransportR\ttransportBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
+	"\x06server\x18\x04 \x01(\v2\x19.runtime.config.v1.ServerR\x06server\x121\n" +
+	"\x06client\x18\x05 \x01(\v2\x19.runtime.config.v1.ClientR\x06client\x12C\n" +
+	"\vdiscoveries\x18\x06 \x01(\v2!.runtime.discovery.v1.DiscoveriesR\vdiscoveries\x12>\n" +
+	"\x1bregistration_discovery_name\x18\a \x01(\tR\x19registrationDiscoveryName\x121\n" +
+	"\x06logger\x18\b \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x121\n" +
+	"\x06tracer\x18\t \x01(\v2\x19.runtime.config.v1.TracerR\x06tracer\x12D\n" +
+	"\vmiddlewares\x18\n" +
+	" \x01(\v2\".runtime.middleware.v1.MiddlewaresR\vmiddlewares\x124\n" +
+	"\agateway\x18\v \x01(\v2\x1a.runtime.config.v1.GatewayR\agateway\x124\n" +
+	"\astorage\x18\f \x01(\v2\x1a.runtime.config.v1.StorageR\astorage\x12+\n" +
+	"\x04task\x18\r \x01(\v2\x17.runtime.config.v1.TaskR\x04task\x12:\n" +
+	"\twebsocket\x18\x0e \x01(\v2\x1c.runtime.config.v1.WebSocketR\twebsocket\x12=\n" +
+	"\textension\x18\x0f \x01(\v2\x1f.runtime.extension.v1.ExtensionR\textension\x126\n" +
+	"\x05authn\x18\x10 \x01(\v2 .runtime.security.authn.v1.AuthNR\x05authn\x126\n" +
+	"\x05authz\x18\x11 \x01(\v2 .runtime.security.authz.v1.AuthZR\x05authz\x12:\n" +
+	"\x03tls\x18\x12 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x03tls\x12=\n" +
+	"\ttransport\x18\x13 \x01(\v2\x1f.runtime.transport.v1.TransportR\ttransportBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
 	file_test_integration_config_proto_config_proto_rawDescOnce sync.Once
@@ -315,35 +268,35 @@ func file_test_integration_config_proto_config_proto_rawDescGZIP() []byte {
 	return file_test_integration_config_proto_config_proto_rawDescData
 }
 
-var file_test_integration_config_proto_config_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_test_integration_config_proto_config_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_test_integration_config_proto_config_proto_goTypes = []any{
-	(*DiscoveryConfig)(nil),      // 0: test.configs.DiscoveryConfig
-	(*TestConfig)(nil),           // 1: test.configs.TestConfig
-	(*v1.Discovery)(nil),         // 2: runtime.discovery.v1.Discovery
-	(*v11.App)(nil),              // 3: runtime.app.v1.App
-	(*v12.GrpcServerConfig)(nil), // 4: runtime.transport.v1.GrpcServerConfig
-	(*v12.HttpServerConfig)(nil), // 5: runtime.transport.v1.HttpServerConfig
-	(*v13.Client)(nil),           // 6: runtime.config.v1.Client
+	(*TestConfig)(nil),           // 0: test.configs.TestConfig
+	(*v1.App)(nil),               // 1: runtime.app.v1.App
+	(*v11.GrpcServerConfig)(nil), // 2: runtime.transport.v1.GrpcServerConfig
+	(*v11.HttpServerConfig)(nil), // 3: runtime.transport.v1.HttpServerConfig
+	(*v12.Server)(nil),           // 4: runtime.config.v1.Server
+	(*v12.Client)(nil),           // 5: runtime.config.v1.Client
+	(*v13.Discoveries)(nil),      // 6: runtime.discovery.v1.Discoveries
 	(*v14.Logger)(nil),           // 7: runtime.logger.v1.Logger
-	(*v13.Tracer)(nil),           // 8: runtime.config.v1.Tracer
+	(*v12.Tracer)(nil),           // 8: runtime.config.v1.Tracer
 	(*v15.Middlewares)(nil),      // 9: runtime.middleware.v1.Middlewares
-	(*v13.Gateway)(nil),          // 10: runtime.config.v1.Gateway
-	(*v13.Storage)(nil),          // 11: runtime.config.v1.Storage
-	(*v13.Task)(nil),             // 12: runtime.config.v1.Task
-	(*v13.WebSocket)(nil),        // 13: runtime.config.v1.WebSocket
+	(*v12.Gateway)(nil),          // 10: runtime.config.v1.Gateway
+	(*v12.Storage)(nil),          // 11: runtime.config.v1.Storage
+	(*v12.Task)(nil),             // 12: runtime.config.v1.Task
+	(*v12.WebSocket)(nil),        // 13: runtime.config.v1.WebSocket
 	(*v16.Extension)(nil),        // 14: runtime.extension.v1.Extension
 	(*v17.AuthN)(nil),            // 15: runtime.security.authn.v1.AuthN
 	(*v18.AuthZ)(nil),            // 16: runtime.security.authz.v1.AuthZ
 	(*v19.TLSConfig)(nil),        // 17: runtime.security.transport.v1.TLSConfig
-	(*v12.Transport)(nil),        // 18: runtime.transport.v1.Transport
+	(*v11.Transport)(nil),        // 18: runtime.transport.v1.Transport
 }
 var file_test_integration_config_proto_config_proto_depIdxs = []int32{
-	2,  // 0: test.configs.DiscoveryConfig.config:type_name -> runtime.discovery.v1.Discovery
-	3,  // 1: test.configs.TestConfig.app:type_name -> runtime.app.v1.App
-	4,  // 2: test.configs.TestConfig.grpc_servers:type_name -> runtime.transport.v1.GrpcServerConfig
-	5,  // 3: test.configs.TestConfig.http_servers:type_name -> runtime.transport.v1.HttpServerConfig
-	6,  // 4: test.configs.TestConfig.client:type_name -> runtime.config.v1.Client
-	0,  // 5: test.configs.TestConfig.discoveries:type_name -> test.configs.DiscoveryConfig
+	1,  // 0: test.configs.TestConfig.app:type_name -> runtime.app.v1.App
+	2,  // 1: test.configs.TestConfig.grpc_servers:type_name -> runtime.transport.v1.GrpcServerConfig
+	3,  // 2: test.configs.TestConfig.http_servers:type_name -> runtime.transport.v1.HttpServerConfig
+	4,  // 3: test.configs.TestConfig.server:type_name -> runtime.config.v1.Server
+	5,  // 4: test.configs.TestConfig.client:type_name -> runtime.config.v1.Client
+	6,  // 5: test.configs.TestConfig.discoveries:type_name -> runtime.discovery.v1.Discoveries
 	7,  // 6: test.configs.TestConfig.logger:type_name -> runtime.logger.v1.Logger
 	8,  // 7: test.configs.TestConfig.tracer:type_name -> runtime.config.v1.Tracer
 	9,  // 8: test.configs.TestConfig.middlewares:type_name -> runtime.middleware.v1.Middlewares
@@ -374,7 +327,7 @@ func file_test_integration_config_proto_config_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_test_integration_config_proto_config_proto_rawDesc), len(file_test_integration_config_proto_config_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

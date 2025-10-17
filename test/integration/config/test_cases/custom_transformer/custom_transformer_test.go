@@ -11,6 +11,7 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/test/helper"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	"github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer"
 	_ "github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer" // Import for transformer registration
 )
 
@@ -31,7 +32,7 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	cleanup := helper.SetupIntegrationTest(t)
 	defer cleanup()
 
-	bootstrapPath := "test/integration/config/test_cases/custom_transformer/bootstrap_transformer.yaml"
+	bootstrapPath := "config/test_cases/custom_transformer/bootstrap_transformer.yaml"
 
 	// Initialize Runtime, which should apply the registered custom transformer.
 	rtInstance, rtCleanup, err := rt.NewFromBootstrap(
@@ -41,6 +42,7 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 			Name:    "TransformerTestApp",
 			Version: "1.0.0",
 		}),
+		bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{Suffix: "-transformed"}),
 	)
 	assert.NoError(err, "Failed to initialize runtime from bootstrap with custom transformer: %v", err)
 	defer rtCleanup()
