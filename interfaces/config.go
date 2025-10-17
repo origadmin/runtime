@@ -5,6 +5,7 @@ import (
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	servicev1 "github.com/origadmin/runtime/api/gen/go/runtime/service/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
@@ -65,4 +66,11 @@ type DiscoveriesConfigDecoder interface {
 // interface to provide an optimized decoding path.
 type MiddlewareConfigDecoder interface {
 	DecodeMiddlewares() (*middlewarev1.Middlewares, error)
+}
+
+// ServiceConfigDecoder defines an OPTIONAL interface for providing a "fast path"
+// to decode service configurations. Custom Config implementations can implement this
+// interface to provide an optimized decoding path.
+type ServiceConfigDecoder interface {
+	DecodeService() (*servicev1.Service, error)
 }
