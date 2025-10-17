@@ -1,6 +1,0 @@
-sources:
-  - type: "file"
-    name: "test-app-config"
-    file:
-      path: "test/integration/config/configs/test_config.yaml" # Corrected path
-    priority: 100

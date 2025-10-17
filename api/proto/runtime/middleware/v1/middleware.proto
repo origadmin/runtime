@@ -25,9 +25,15 @@ message Metadata {
   map<string, string> data = 2 [json_name = "data"];
 }
 
-message Logging {}
+message Logging {
+  // empty is allowed, because parent type will handle it
+  // to decide whether to enable or not logging middleware
+}
 
-message Recovery {}
+message Recovery {
+  // empty is allowed, because parent type will handle it
+  // to decide whether to enable or not recovery middleware
+}
 
 // Middleware represents a single middleware configuration with an enable switch.
 message Middleware {

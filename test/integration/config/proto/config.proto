@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package test.configs;
+
+// Import all required configuration proto files
+import "runtime/app/v1/app.proto";
+import "runtime/config/v1/client.proto";
+import "runtime/config/v1/gateway.proto";
+import "runtime/config/v1/server.proto";
+import "runtime/config/v1/storage.proto";
+import "runtime/config/v1/task.proto";
+import "runtime/config/v1/tracer.proto";
+import "runtime/config/v1/websocket.proto";
+import "runtime/discovery/v1/discovery.proto";
+import "runtime/extension/v1/extension.proto";
+import "runtime/logger/v1/logger.proto";
+import "runtime/middleware/v1/middleware.proto";
+import "runtime/security/authn/v1/authn.proto";
+import "runtime/security/authz/v1/authz.proto";
+import "runtime/security/transport/v1/tls.proto";
+import "runtime/storage/v1/storage.proto";
+import "runtime/task/v1/task.proto";
+import "runtime/transport/v1/grpc.proto";
+import "runtime/transport/v1/http.proto";
+import "runtime/transport/v1/transport.proto";
+
+option go_package = "github.com/origadmin/runtime/test/integration/config/proto;configs";
+
+// DiscoveryConfig binds a service discovery configuration with a unique name.
+message DiscoveryConfig {
+  string name = 1;
+  runtime.discovery.v1.Discovery config = 2;
+}
+
+// TestConfig is the unified configuration structure for all integration tests.
+message TestConfig {
+  // App configuration from app.proto
+  runtime.app.v1.App app = 1;
+
+  // Server configurations
+  repeated runtime.transport.v1.GrpcServerConfig grpc_servers = 2;
+  repeated runtime.transport.v1.HttpServerConfig http_servers = 3;
+
+  // Client configuration for downstream services
+  runtime.config.v1.Client client = 4;
+
+  // Service discovery configurations
+  repeated DiscoveryConfig discoveries = 5;
+
+  // Service registration configuration
+  string registration_discovery_name = 6;
+
+  // Other component configurations
+  runtime.logger.v1.Logger logger = 7;
+  runtime.config.v1.Tracer tracer = 8;
+  runtime.middleware.v1.Middlewares middlewares = 9; // Corrected: changed type to Middlewares and field name to middlewares
+  runtime.config.v1.Gateway gateway = 10;
+  runtime.config.v1.Storage storage = 11;
+  runtime.config.v1.Task task = 12;
+  runtime.config.v1.WebSocket websocket = 13;
+  runtime.extension.v1.Extension extension = 14;
+  runtime.security.authn.v1.AuthN authn = 15;
+  runtime.security.authz.v1.AuthZ authz = 16;
+  runtime.security.transport.v1.TLSConfig tls = 17;
+  runtime.transport.v1.Transport transport = 18;
+}

@@ -48,8 +48,8 @@ func init() {
 	}
 }
 
-// SaveConfigToFile saves a protobuf message to a file in the specified format.
-func SaveConfigToFile(t *testing.T, msg proto.Message, path string, formatName string) {
+// SaveConfigToFileWithViper saves a protobuf message to a file in the specified format.
+func SaveConfigToFileWithViper(t *testing.T, msg proto.Message, path string, formatName string) {
 	t.Helper()
 
 	// Convert format name to lowercase and handle special cases
@@ -100,8 +100,8 @@ func SaveConfigToFile(t *testing.T, msg proto.Message, path string, formatName s
 	}
 }
 
-// LoadConfigFromFile loads a config file into a protobuf message.
-func LoadConfigFromFile(t *testing.T, path string, msg proto.Message) {
+// LoadConfigFromFileWithViper loads a config file into a protobuf message.
+func LoadConfigFromFileWithViper(t *testing.T, path string, msg proto.Message) {
 	t.Helper()
 
 	// Clean and get file extension
