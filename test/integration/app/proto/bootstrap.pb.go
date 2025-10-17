@@ -128,7 +128,7 @@ type Client struct {
 	// 使用框架的 "客户端发现" 砖头。
 	Discoveries []*v11.Discovery `protobuf:"bytes,2,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
 	// 将 "中间件" 砖头与上面的 "客户端发现" 砖头绑定在一起。
-	Middlewares   []*v12.MiddlewareConfig `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Middlewares   []*v12.Middleware `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -177,7 +177,7 @@ func (x *Client) GetDiscoveries() []*v11.Discovery {
 	return nil
 }
 
-func (x *Client) GetMiddlewares() []*v12.MiddlewareConfig {
+func (x *Client) GetMiddlewares() []*v12.Middleware {
 	if x != nil {
 		return x.Middlewares
 	}
@@ -267,12 +267,12 @@ const file_test_integration_app_proto_bootstrap_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12<\n" +
 	"\x04grpc\x18\x02 \x01(\v2&.runtime.transport.v1.GrpcServerConfigH\x00R\x04grpc\x12<\n" +
 	"\x04http\x18\x03 \x01(\v2&.runtime.transport.v1.HttpServerConfigH\x00R\x04httpB\b\n" +
-	"\x06config\"\xb7\x01\n" +
+	"\x06config\"\xb1\x01\n" +
 	"\x06Client\x12\x1f\n" +
 	"\vclient_name\x18\x01 \x01(\tR\n" +
 	"clientName\x12A\n" +
-	"\vdiscoveries\x18\x02 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\x12I\n" +
-	"\vmiddlewares\x18\x03 \x03(\v2'.runtime.middleware.v1.MiddlewareConfigR\vmiddlewares\"\xe4\x02\n" +
+	"\vdiscoveries\x18\x02 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\x12C\n" +
+	"\vmiddlewares\x18\x03 \x03(\v2!.runtime.middleware.v1.MiddlewareR\vmiddlewares\"\xe4\x02\n" +
 	"\tBootstrap\x12N\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2,.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
 	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x122\n" +
@@ -296,20 +296,20 @@ func file_test_integration_app_proto_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_test_integration_app_proto_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_test_integration_app_proto_bootstrap_proto_goTypes = []any{
-	(*Server)(nil),               // 0: test.app.configs.Server
-	(*Client)(nil),               // 1: test.app.configs.Client
-	(*Bootstrap)(nil),            // 2: test.app.configs.Bootstrap
-	nil,                          // 3: test.app.configs.Bootstrap.DiscoveriesEntry
-	(*v1.GrpcServerConfig)(nil),  // 4: runtime.transport.v1.GrpcServerConfig
-	(*v1.HttpServerConfig)(nil),  // 5: runtime.transport.v1.HttpServerConfig
-	(*v11.Discovery)(nil),        // 6: runtime.discovery.v1.Discovery
-	(*v12.MiddlewareConfig)(nil), // 7: runtime.middleware.v1.MiddlewareConfig
+	(*Server)(nil),              // 0: test.app.configs.Server
+	(*Client)(nil),              // 1: test.app.configs.Client
+	(*Bootstrap)(nil),           // 2: test.app.configs.Bootstrap
+	nil,                         // 3: test.app.configs.Bootstrap.DiscoveriesEntry
+	(*v1.GrpcServerConfig)(nil), // 4: runtime.transport.v1.GrpcServerConfig
+	(*v1.HttpServerConfig)(nil), // 5: runtime.transport.v1.HttpServerConfig
+	(*v11.Discovery)(nil),       // 6: runtime.discovery.v1.Discovery
+	(*v12.Middleware)(nil),      // 7: runtime.middleware.v1.Middleware
 }
 var file_test_integration_app_proto_bootstrap_proto_depIdxs = []int32{
 	4, // 0: test.app.configs.Server.grpc:type_name -> runtime.transport.v1.GrpcServerConfig
 	5, // 1: test.app.configs.Server.http:type_name -> runtime.transport.v1.HttpServerConfig
 	6, // 2: test.app.configs.Client.discoveries:type_name -> runtime.discovery.v1.Discovery
-	7, // 3: test.app.configs.Client.middlewares:type_name -> runtime.middleware.v1.MiddlewareConfig
+	7, // 3: test.app.configs.Client.middlewares:type_name -> runtime.middleware.v1.Middleware
 	3, // 4: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry
 	0, // 5: test.app.configs.Bootstrap.servers:type_name -> test.app.configs.Server
 	1, // 6: test.app.configs.Bootstrap.clients:type_name -> test.app.configs.Client

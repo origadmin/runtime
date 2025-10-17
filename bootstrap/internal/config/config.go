@@ -120,9 +120,9 @@ func (c *structuredConfigImpl) DecodeDiscoveries() (map[string]*discoveryv1.Disc
 	return discoveriesMap, nil
 }
 
-// DecodeMiddleware implements the MiddlewareConfigDecoder interface.
+// DecodeMiddlewares implements the MiddlewareConfigDecoder interface.
 // This implementation correctly preserves the user's fix.
-func (c *structuredConfigImpl) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
+func (c *structuredConfigImpl) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 	var middlewares *middlewarev1.Middlewares
 	if err := c.decodeComponent(constant.ComponentMiddlewares, &middlewares); err != nil {
 		return nil, err

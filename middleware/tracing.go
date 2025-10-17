@@ -15,7 +15,7 @@ import (
 type tracingFactory struct {
 }
 
-func (t tracingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (t tracingFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -28,7 +28,7 @@ func (t tracingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, 
 	return tracing.Client(), true
 }
 
-func (t tracingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (t tracingFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

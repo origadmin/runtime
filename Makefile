@@ -83,9 +83,9 @@ endif
 #                           LIFECYCLE TARGETS
 # ============================================================================ #
 
-.PHONY: all init deps update update-tools protos generate-examples-protos generate-test-protos generate test clean clean-api-gen clean-examples-protos clean-test-protos buf-push
+.PHONY: all init deps update update-tools protos examples-protos test-protos generate test clean clean-api-gen clean-examples-protos clean-test-protos buf-push
 
-all: init deps protos generate-examples-protos generate-test-protos generate ## ✅ Run the full build process
+all: init deps protos examples-protos test-protos generate ## ✅ Run the full build process
 
 init: ## 🔧 Install tools from tools.go, ensuring reproducible builds
 	@echo "Ensuring tool dependencies are in go.mod..."
@@ -132,11 +132,12 @@ update-tools: ## ⚠️  Update all Go tools in tools.go to latest. High-risk, u
 protos: ## 🧬 Generate API protos (smartly uses buf, falls back to protoc)
 	@echo "Generating API protos..."
 ifeq ($(GOHOSTOS), windows)
-	@if (Get-Command buf -ErrorAction SilentlyContinue) { echo '--> `buf` command found. Using buf to build and generate protos (recommended).'; buf build && buf generate } else { echo '--> WARNING: `buf` command not found. Falling back to protoc.'; echo '--> Please run ''make init'' to install buf for reproducible builds.'; protoc $(PROTOC_INCLUDES) $(PLUGINS) $(API_PROTO_FILES) }
+	@if (Get-Command buf -ErrorAction SilentlyContinue) { echo '--> `buf` command found. Using buf to build and generate protos (recommended).'; buf build; buf generate } else { echo '--> WARNING: `buf` command not found. Falling back to protoc.'; echo '--> Please run ''make init'' to install buf for reproducible builds.'; protoc $(PROTOC_INCLUDES) $(PLUGINS) $(API_PROTO_FILES) }
 else
 	@if command -v buf >/dev/null 2>&1; then \
 		echo "--> 'buf' command found. Using buf to build and generate protos (recommended)."; \
-		buf build && buf generate; \
+		buf build;
+		buf generate
 	else \
 		echo "--> WARNING: 'buf' command not found. Falling back to protoc."; \
 		echo "--> Please run 'make init' to install buf for reproducible builds."; \
@@ -144,7 +145,7 @@ else
 	fi
 endif
 
-generate-examples-protos: ## 🧬 Generate all example protos
+examples-protos: ## 🧬 Generate all example protos
 	@echo "Generating example protos..."
 ifeq ($(GOHOSTOS), windows)
 	@protoc $(PROTOC_INCLUDES) $(EXAMPLE_PLUGINS) $(EXAMPLE_PROTO_FILES)
@@ -154,7 +155,7 @@ else
 		$(EXAMPLE_PROTO_FILES)
 endif
 
-generate-test-protos: ## Generate protos for integration tests (cross-platform)
+test-protos: ## Generate protos for integration tests (cross-platform)
 	@echo "Generating protos for integration tests..."
 ifeq ($(GOHOSTOS), windows)
 	@foreach ($$dir in '$(TEST_PROTO_DIRS)'.Split(' ')) { if ($$dir) { Write-Host "  Processing $$dir"; protoc $(PROTOC_INCLUDES) --go_out=paths=source_relative:. "$$dir/*.proto" } }
@@ -165,12 +166,13 @@ else
 	done
 endif
 
+test: test-protos ## 🧪 Run all Go tests
+	go test ./...
+
 generate: ## 🧬 Run go generate to generate code (e.g., wire)
 	@echo "Running go generate..."
 	go generate ./...
 
-test: generate-test-protos ## 🧪 Run all Go tests
-	go test ./...
 
 clean: clean-api-gen clean-examples-protos clean-test-protos ## 🧹 Clean up all generated files
 

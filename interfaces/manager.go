@@ -1,10 +1,10 @@
 package interfaces
 
 //type MiddlewareProvider interface {
-//	// BuildClient builds client-side middleware using the provided ConfigDecoder and config path.
-//	BuildClient(decoder ConfigDecoder, path string, opts ...interface{}) []kratosmiddleware.Middleware
-//	// BuildServer builds server-side middleware using the provided ConfigDecoder and config path.
-//	BuildServer(decoder ConfigDecoder, path string, opts ...interface{}) []kratosmiddleware.Middleware
+//	// BuildClientMiddlewares builds client-side middleware using the provided ConfigDecoder and config path.
+//	BuildClientMiddlewares(decoder ConfigDecoder, path string, opts ...interface{}) []kratosmiddleware.Middleware
+//	// BuildServers builds server-side middleware using the provided ConfigDecoder and config path.
+//	BuildServers(decoder ConfigDecoder, path string, opts ...interface{}) []kratosmiddleware.Middleware
 //}
 //
 //// ServerBuilder is an interface for building transport servers (HTTP, gRPC).

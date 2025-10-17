@@ -10,7 +10,7 @@ This directory contains integration tests for middleware configuration and insta
 
 ## Test Cases
 
-1. **TestMiddlewareConfigToInstance**:
+1. **TestMiddlewareToInstance**:
    - Tests loading of middleware configuration from YAML file.
    - Verifies creation of middleware instances using NewClient and NewServer methods.
    - Checks middleware chain construction using BuildClient method.

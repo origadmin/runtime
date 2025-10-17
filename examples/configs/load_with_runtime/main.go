@@ -35,7 +35,7 @@ func (d *ProtoConfig) DecodeApp() (*appv1.App, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (d *ProtoConfig) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
+func (d *ProtoConfig) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 	return nil, errors.New("not implemented")
 }
 

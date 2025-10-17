@@ -21,8 +21,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Trace config.
-type Trace struct {
+// Tracer config.
+type Tracer struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// name of trace service
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -32,20 +32,20 @@ type Trace struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Trace) Reset() {
-	*x = Trace{}
+func (x *Tracer) Reset() {
+	*x = Tracer{}
 	mi := &file_runtime_config_v1_tracer_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Trace) String() string {
+func (x *Tracer) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Trace) ProtoMessage() {}
+func (*Tracer) ProtoMessage() {}
 
-func (x *Trace) ProtoReflect() protoreflect.Message {
+func (x *Tracer) ProtoReflect() protoreflect.Message {
 	mi := &file_runtime_config_v1_tracer_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -57,19 +57,19 @@ func (x *Trace) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Trace.ProtoReflect.Descriptor instead.
-func (*Trace) Descriptor() ([]byte, []int) {
+// Deprecated: Use Tracer.ProtoReflect.Descriptor instead.
+func (*Tracer) Descriptor() ([]byte, []int) {
 	return file_runtime_config_v1_tracer_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Trace) GetName() string {
+func (x *Tracer) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *Trace) GetEndpoint() string {
+func (x *Tracer) GetEndpoint() string {
 	if x != nil {
 		return x.Endpoint
 	}
@@ -80,8 +80,8 @@ var File_runtime_config_v1_tracer_proto protoreflect.FileDescriptor
 
 const file_runtime_config_v1_tracer_proto_rawDesc = "" +
 	"\n" +
-	"\x1eruntime/config/v1/tracer.proto\x12\x11runtime.config.v1\"7\n" +
-	"\x05Trace\x12\x12\n" +
+	"\x1eruntime/config/v1/tracer.proto\x12\x11runtime.config.v1\"8\n" +
+	"\x06Tracer\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
 	"\bendpoint\x18\x03 \x01(\tR\bendpointB\xd1\x01\n" +
 	"\x15com.runtime.config.v1B\vTracerProtoP\x01ZBgithub.com/origadmin/runtime/api/gen/go/runtime/config/v1;configv1\xf8\x01\x01\xa2\x02\x03RCX\xaa\x02\x11Runtime.Config.V1\xca\x02\x11Runtime\\Config\\V1\xe2\x02\x1dRuntime\\Config\\V1\\GPBMetadata\xea\x02\x13Runtime::Config::V1b\x06proto3"
@@ -100,7 +100,7 @@ func file_runtime_config_v1_tracer_proto_rawDescGZIP() []byte {
 
 var file_runtime_config_v1_tracer_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_runtime_config_v1_tracer_proto_goTypes = []any{
-	(*Trace)(nil), // 0: runtime.config.v1.Trace
+	(*Tracer)(nil), // 0: runtime.config.v1.Tracer
 }
 var file_runtime_config_v1_tracer_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type

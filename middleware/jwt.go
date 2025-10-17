@@ -20,7 +20,7 @@ import (
 
 type jwtFactory struct{}
 
-func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -34,7 +34,7 @@ func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts
 	return JwtClient(jwtConfig)
 }
 
-func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

@@ -29,8 +29,8 @@ message Logging {}
 
 message Recovery {}
 
-// MiddlewareConfig represents a single middleware configuration with an enable switch.
-message MiddlewareConfig {
+// Middleware represents a single middleware configuration with an enable switch.
+message Middleware {
   bool enabled = 1 [json_name = "enabled"];
   string name = 2 [json_name = "name"];
   string type = 3 [json_name = "type"];
@@ -52,5 +52,5 @@ message MiddlewareConfig {
 // Middlewares is used to configure a chain of middlewares for an entry point.
 message Middlewares {
   // A list of middleware configurations to be applied in order.
-  repeated MiddlewareConfig middlewares = 1 [json_name = "middlewares"];
+  repeated Middleware middlewares = 1 [json_name = "middlewares"];
 }

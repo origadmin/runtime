@@ -51,3 +51,7 @@ message Client {
   // custom_config is used for non-standard or user-defined transport protocols.
   optional google.protobuf.Struct custom_config = 5;
 }
+
+message Transport {
+
+}

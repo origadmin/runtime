@@ -41,8 +41,8 @@ func LoadYAMLConfig(filename string) ([]byte, error) {
 	return yaml.Marshal(configMap) // YAML library can directly convert map to JSON
 }
 
-// LoadMiddlewareConfig loads and parses middleware configuration file
-func LoadMiddlewareConfig(t *testing.T, configPath string) (*middlewarev1.Middlewares, error) {
+// LoadMiddleware loads and parses middleware configuration file
+func LoadMiddleware(t *testing.T, configPath string) (*middlewarev1.Middlewares, error) {
 	// Set to continue execution when test fails
 	t.Helper()
 

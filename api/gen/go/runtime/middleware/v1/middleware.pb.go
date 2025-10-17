@@ -154,8 +154,8 @@ func (*Recovery) Descriptor() ([]byte, []int) {
 	return file_runtime_middleware_v1_middleware_proto_rawDescGZIP(), []int{2}
 }
 
-// MiddlewareConfig represents a single middleware configuration with an enable switch.
-type MiddlewareConfig struct {
+// Middleware represents a single middleware configuration with an enable switch.
+type Middleware struct {
 	state          protoimpl.MessageState         `protogen:"open.v1"`
 	Enabled        bool                           `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	Name           string                         `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -176,20 +176,20 @@ type MiddlewareConfig struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *MiddlewareConfig) Reset() {
-	*x = MiddlewareConfig{}
+func (x *Middleware) Reset() {
+	*x = Middleware{}
 	mi := &file_runtime_middleware_v1_middleware_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *MiddlewareConfig) String() string {
+func (x *Middleware) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MiddlewareConfig) ProtoMessage() {}
+func (*Middleware) ProtoMessage() {}
 
-func (x *MiddlewareConfig) ProtoReflect() protoreflect.Message {
+func (x *Middleware) ProtoReflect() protoreflect.Message {
 	mi := &file_runtime_middleware_v1_middleware_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -201,103 +201,103 @@ func (x *MiddlewareConfig) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use MiddlewareConfig.ProtoReflect.Descriptor instead.
-func (*MiddlewareConfig) Descriptor() ([]byte, []int) {
+// Deprecated: Use Middleware.ProtoReflect.Descriptor instead.
+func (*Middleware) Descriptor() ([]byte, []int) {
 	return file_runtime_middleware_v1_middleware_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *MiddlewareConfig) GetEnabled() bool {
+func (x *Middleware) GetEnabled() bool {
 	if x != nil {
 		return x.Enabled
 	}
 	return false
 }
 
-func (x *MiddlewareConfig) GetName() string {
+func (x *Middleware) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *MiddlewareConfig) GetType() string {
+func (x *Middleware) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-func (x *MiddlewareConfig) GetRateLimiter() *ratelimit.RateLimiter {
+func (x *Middleware) GetRateLimiter() *ratelimit.RateLimiter {
 	if x != nil {
 		return x.RateLimiter
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetMetrics() *metrics.Metrics {
+func (x *Middleware) GetMetrics() *metrics.Metrics {
 	if x != nil {
 		return x.Metrics
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetValidator() *validator.Validator {
+func (x *Middleware) GetValidator() *validator.Validator {
 	if x != nil {
 		return x.Validator
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetJwt() *jwt.JWT {
+func (x *Middleware) GetJwt() *jwt.JWT {
 	if x != nil {
 		return x.Jwt
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetSelector() *selector.Selector {
+func (x *Middleware) GetSelector() *selector.Selector {
 	if x != nil {
 		return x.Selector
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetCors() *cors.Cors {
+func (x *Middleware) GetCors() *cors.Cors {
 	if x != nil {
 		return x.Cors
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetCircuitBreaker() *circuitbreaker.CircuitBreaker {
+func (x *Middleware) GetCircuitBreaker() *circuitbreaker.CircuitBreaker {
 	if x != nil {
 		return x.CircuitBreaker
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetLogging() *Logging {
+func (x *Middleware) GetLogging() *Logging {
 	if x != nil {
 		return x.Logging
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetRecovery() *Recovery {
+func (x *Middleware) GetRecovery() *Recovery {
 	if x != nil {
 		return x.Recovery
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetMetadata() *Metadata {
+func (x *Middleware) GetMetadata() *Metadata {
 	if x != nil {
 		return x.Metadata
 	}
 	return nil
 }
 
-func (x *MiddlewareConfig) GetCustomize() *v1.Extension_Config {
+func (x *Middleware) GetCustomize() *v1.Extension_Config {
 	if x != nil {
 		return x.Customize
 	}
@@ -308,7 +308,7 @@ func (x *MiddlewareConfig) GetCustomize() *v1.Extension_Config {
 type Middlewares struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// A list of middleware configurations to be applied in order.
-	Middlewares   []*MiddlewareConfig `protobuf:"bytes,1,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Middlewares   []*Middleware `protobuf:"bytes,1,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -343,7 +343,7 @@ func (*Middlewares) Descriptor() ([]byte, []int) {
 	return file_runtime_middleware_v1_middleware_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *Middlewares) GetMiddlewares() []*MiddlewareConfig {
+func (x *Middlewares) GetMiddlewares() []*Middleware {
 	if x != nil {
 		return x.Middlewares
 	}
@@ -363,8 +363,9 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
 	"\aLogging\"\n" +
 	"\n" +
-	"\bRecovery\"\x82\b\n" +
-	"\x10MiddlewareConfig\x12\x18\n" +
+	"\bRecovery\"\xfc\a\n" +
+	"\n" +
+	"Middleware\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04type\x18\x03 \x01(\tR\x04type\x12U\n" +
@@ -395,9 +396,9 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\t_recoveryB\v\n" +
 	"\t_metadataB\f\n" +
 	"\n" +
-	"_customize\"X\n" +
-	"\vMiddlewares\x12I\n" +
-	"\vmiddlewares\x18\x01 \x03(\v2'.runtime.middleware.v1.MiddlewareConfigR\vmiddlewaresB\xf1\x01\n" +
+	"_customize\"R\n" +
+	"\vMiddlewares\x12C\n" +
+	"\vmiddlewares\x18\x01 \x03(\v2!.runtime.middleware.v1.MiddlewareR\vmiddlewaresB\xf1\x01\n" +
 	"\x19com.runtime.middleware.v1B\x0fMiddlewareProtoP\x01ZJgithub.com/origadmin/runtime/api/gen/go/runtime/middleware/v1;middlewarev1\xf8\x01\x01\xa2\x02\x03RMX\xaa\x02\x15Runtime.Middleware.V1\xca\x02\x15Runtime\\Middleware\\V1\xe2\x02!Runtime\\Middleware\\V1\\GPBMetadata\xea\x02\x17Runtime::Middleware::V1b\x06proto3"
 
 var (
@@ -417,7 +418,7 @@ var file_runtime_middleware_v1_middleware_proto_goTypes = []any{
 	(*Metadata)(nil),                      // 0: runtime.middleware.v1.Metadata
 	(*Logging)(nil),                       // 1: runtime.middleware.v1.Logging
 	(*Recovery)(nil),                      // 2: runtime.middleware.v1.Recovery
-	(*MiddlewareConfig)(nil),              // 3: runtime.middleware.v1.MiddlewareConfig
+	(*Middleware)(nil),                    // 3: runtime.middleware.v1.Middleware
 	(*Middlewares)(nil),                   // 4: runtime.middleware.v1.Middlewares
 	nil,                                   // 5: runtime.middleware.v1.Metadata.DataEntry
 	(*ratelimit.RateLimiter)(nil),         // 6: runtime.middleware.v1.ratelimit.RateLimiter
@@ -431,18 +432,18 @@ var file_runtime_middleware_v1_middleware_proto_goTypes = []any{
 }
 var file_runtime_middleware_v1_middleware_proto_depIdxs = []int32{
 	5,  // 0: runtime.middleware.v1.Metadata.data:type_name -> runtime.middleware.v1.Metadata.DataEntry
-	6,  // 1: runtime.middleware.v1.MiddlewareConfig.rate_limiter:type_name -> runtime.middleware.v1.ratelimit.RateLimiter
-	7,  // 2: runtime.middleware.v1.MiddlewareConfig.metrics:type_name -> runtime.middleware.v1.metrics.Metrics
-	8,  // 3: runtime.middleware.v1.MiddlewareConfig.validator:type_name -> runtime.middleware.v1.validator.Validator
-	9,  // 4: runtime.middleware.v1.MiddlewareConfig.jwt:type_name -> runtime.middleware.v1.jwt.JWT
-	10, // 5: runtime.middleware.v1.MiddlewareConfig.selector:type_name -> runtime.middleware.v1.selector.Selector
-	11, // 6: runtime.middleware.v1.MiddlewareConfig.cors:type_name -> runtime.middleware.v1.cors.Cors
-	12, // 7: runtime.middleware.v1.MiddlewareConfig.circuit_breaker:type_name -> runtime.middleware.v1.circuitbreaker.CircuitBreaker
-	1,  // 8: runtime.middleware.v1.MiddlewareConfig.logging:type_name -> runtime.middleware.v1.Logging
-	2,  // 9: runtime.middleware.v1.MiddlewareConfig.recovery:type_name -> runtime.middleware.v1.Recovery
-	0,  // 10: runtime.middleware.v1.MiddlewareConfig.metadata:type_name -> runtime.middleware.v1.Metadata
-	13, // 11: runtime.middleware.v1.MiddlewareConfig.customize:type_name -> runtime.extension.v1.Extension.Config
-	3,  // 12: runtime.middleware.v1.Middlewares.middlewares:type_name -> runtime.middleware.v1.MiddlewareConfig
+	6,  // 1: runtime.middleware.v1.Middleware.rate_limiter:type_name -> runtime.middleware.v1.ratelimit.RateLimiter
+	7,  // 2: runtime.middleware.v1.Middleware.metrics:type_name -> runtime.middleware.v1.metrics.Metrics
+	8,  // 3: runtime.middleware.v1.Middleware.validator:type_name -> runtime.middleware.v1.validator.Validator
+	9,  // 4: runtime.middleware.v1.Middleware.jwt:type_name -> runtime.middleware.v1.jwt.JWT
+	10, // 5: runtime.middleware.v1.Middleware.selector:type_name -> runtime.middleware.v1.selector.Selector
+	11, // 6: runtime.middleware.v1.Middleware.cors:type_name -> runtime.middleware.v1.cors.Cors
+	12, // 7: runtime.middleware.v1.Middleware.circuit_breaker:type_name -> runtime.middleware.v1.circuitbreaker.CircuitBreaker
+	1,  // 8: runtime.middleware.v1.Middleware.logging:type_name -> runtime.middleware.v1.Logging
+	2,  // 9: runtime.middleware.v1.Middleware.recovery:type_name -> runtime.middleware.v1.Recovery
+	0,  // 10: runtime.middleware.v1.Middleware.metadata:type_name -> runtime.middleware.v1.Metadata
+	13, // 11: runtime.middleware.v1.Middleware.customize:type_name -> runtime.extension.v1.Extension.Config
+	3,  // 12: runtime.middleware.v1.Middlewares.middlewares:type_name -> runtime.middleware.v1.Middleware
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name

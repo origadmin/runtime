@@ -15,7 +15,7 @@ import (
 	"github.com/origadmin/runtime/middleware"
 )
 
-// Define all supported middleware types
+// 定义所有支持的中间件类型
 var supportedMiddlewareTypes = map[string]struct{}{
 	"metadata":        {},
 	"logging":         {},
@@ -35,8 +35,8 @@ func TestMiddleware(t *testing.T) {
 	t.Run("EdgeCases", TestMiddleware_EdgeCases)
 }
 
-// getMiddlewareConfigField 获取中间件配置字段
-func getMiddlewareConfigField(mw *middlewarev1.MiddlewareConfig, fieldName string) interface{} {
+// getMiddlewareField 获取中间件配置字段
+func getMiddlewareField(mw *middlewarev1.Middleware, fieldName string) interface{} {
 	switch fieldName {
 	case "metadata":
 		return mw.Metadata
@@ -100,7 +100,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 				assert.True(t, exists, "Unsupported middleware type: %s", mw.Type)
 
 				// 验证配置字段是否存在
-				configValue := getMiddlewareConfigField(mw, mw.Type)
+				configValue := getMiddlewareField(mw, mw.Type)
 				assert.NotNil(t, configValue, "Config for %s should not be nil", mw.Type)
 			})
 		}
@@ -108,7 +108,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 	t.Run("BuildClientMiddleware", func(t *testing.T) {
 		// 构建客户端中间件链
-		clientMWs := middleware.BuildClient(configs)
+		clientMWs := middleware.BuildClientMiddlewares(configs)
 
 		// 计算实际支持的客户端中间件数量（排除不支持的中间件类型）
 		expectedCount := 0
@@ -124,7 +124,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 	t.Run("BuildServerMiddleware", func(t *testing.T) {
 		// 构建服务端中间件链
-		serverMWs := middleware.BuildServer(configs)
+		serverMWs := middleware.BuildServerMiddlewares(configs)
 
 		// 计算实际支持的服务端中间件数量（排除不支持的中间件类型）
 		expectedCount := 0
@@ -141,7 +141,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 	t.Run("MiddlewareNaming", func(t *testing.T) {
 		// 创建一个自定义的中间件配置
 		customConfig := &middlewarev1.Middlewares{
-			Middlewares: []*middlewarev1.MiddlewareConfig{
+			Middlewares: []*middlewarev1.Middleware{
 				{
 					Name:    "custom-name",
 					Type:    "logging",
@@ -158,11 +158,11 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		}
 
 		// 测试客户端中间件
-		clientMWs := middleware.BuildClient(customConfig)
+		clientMWs := middleware.BuildClientMiddlewares(customConfig)
 		assert.NotEmpty(t, clientMWs, "Client middlewares should not be empty")
 
 		// 测试服务端中间件
-		serverMWs := middleware.BuildServer(customConfig)
+		serverMWs := middleware.BuildServerMiddlewares(customConfig)
 		assert.NotEmpty(t, serverMWs, "Server middlewares should not be empty")
 	})
 
@@ -183,7 +183,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 				assert.True(t, exists, "Unsupported middleware type: %s", mw.Type)
 
 				// 验证配置字段是否存在
-				configValue := getMiddlewareConfigField(mw, mw.Type)
+				configValue := getMiddlewareField(mw, mw.Type)
 				assert.NotNil(t, configValue, "Config for %s should not be nil", mw.Type)
 			})
 		}
@@ -192,7 +192,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 	// 测试客户端中间件构建
 	t.Run("BuildClientMiddleware", func(t *testing.T) {
 		// 构建客户端中间件链
-		clientMWs := middleware.BuildClient(configs)
+		clientMWs := middleware.BuildClientMiddlewares(configs)
 
 		// 计算实际支持的客户端中间件数量（排除不支持的中间件类型）
 		expectedCount := 0
@@ -226,7 +226,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 	// 测试服务端中间件构建
 	t.Run("BuildServerMiddleware", func(t *testing.T) {
 		// 构建服务端中间件链
-		serverMWs := middleware.BuildServer(configs)
+		serverMWs := middleware.BuildServerMiddlewares(configs)
 
 		// 计算实际支持的服务端中间件数量（排除不支持的中间件类型）
 		expectedCount := 0
@@ -270,7 +270,7 @@ func TestSelectorMiddleware(t *testing.T) {
 		{
 			name: "selector_with_includes",
 			config: &middlewarev1.Middlewares{
-				Middlewares: []*middlewarev1.MiddlewareConfig{
+				Middlewares: []*middlewarev1.Middleware{
 					{
 						Name:    "metadata",
 						Type:    "metadata",
@@ -297,7 +297,7 @@ func TestSelectorMiddleware(t *testing.T) {
 		{
 			name: "selector_with_excludes",
 			config: &middlewarev1.Middlewares{
-				Middlewares: []*middlewarev1.MiddlewareConfig{
+				Middlewares: []*middlewarev1.Middleware{
 					{
 						Name:    "metadata",
 						Type:    "metadata",
@@ -327,10 +327,10 @@ func TestSelectorMiddleware(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			switch tt.side {
 			case "client":
-				mw := middleware.BuildClient(tt.config)
+				mw := middleware.BuildClientMiddlewares(tt.config)
 				assert.Len(t, mw, tt.expectCount, "Unexpected number of client middlewares")
 			case "server":
-				mw := middleware.BuildServer(tt.config)
+				mw := middleware.BuildServerMiddlewares(tt.config)
 				assert.Len(t, mw, tt.expectCount, "Unexpected number of server middlewares")
 			}
 		})
@@ -342,14 +342,14 @@ func TestMiddleware_Creation(t *testing.T) {
 	// 测试不同类型的中间件创建
 	tests := []struct {
 		name     string
-		config   *middlewarev1.MiddlewareConfig
+		config   *middlewarev1.Middleware
 		exists   bool
 		clientMW bool
 		serverMW bool
 	}{
 		{
 			name: "valid logging middleware",
-			config: &middlewarev1.MiddlewareConfig{
+			config: &middlewarev1.Middleware{
 				Name:    "test-logging",
 				Type:    "logging",
 				Enabled: true,
@@ -361,7 +361,7 @@ func TestMiddleware_Creation(t *testing.T) {
 		},
 		{
 			name: "disabled middleware",
-			config: &middlewarev1.MiddlewareConfig{
+			config: &middlewarev1.Middleware{
 				Name:    "disabled-mw",
 				Type:    "logging",
 				Enabled: false,
@@ -372,7 +372,7 @@ func TestMiddleware_Creation(t *testing.T) {
 		},
 		{
 			name: "unknown middleware type",
-			config: &middlewarev1.MiddlewareConfig{
+			config: &middlewarev1.Middleware{
 				Name:    "unknown",
 				Type:    "nonexistent",
 				Enabled: true,
@@ -422,27 +422,27 @@ func TestMiddleware_Creation(t *testing.T) {
 func TestMiddleware_EdgeCases(t *testing.T) {
 	t.Run("NilConfig", func(t *testing.T) {
 		// 测试nil配置
-		nilMWs := middleware.BuildClient(nil)
-		assert.Empty(t, nilMWs, "BuildClient with nil config should return empty middlewares")
-		nilMWs = middleware.BuildServer(nil)
-		assert.Empty(t, nilMWs, "BuildServer with nil config should return empty middlewares")
+		nilMWs := middleware.BuildClientMiddlewares(nil)
+		assert.Empty(t, nilMWs, "BuildClientMiddlewares with nil config should return empty middlewares")
+		nilMWs = middleware.BuildServerMiddlewares(nil)
+		assert.Empty(t, nilMWs, "BuildServerMiddlewares with nil config should return empty middlewares")
 	})
 
 	t.Run("EmptyConfig", func(t *testing.T) {
 		emptyConfigs := &middlewarev1.Middlewares{}
 
 		// 测试空配置的客户端中间件
-		clientMWs := middleware.BuildClient(emptyConfigs)
-		assert.Empty(t, clientMWs, "BuildClient with empty config should return empty middlewares")
+		clientMWs := middleware.BuildClientMiddlewares(emptyConfigs)
+		assert.Empty(t, clientMWs, "BuildClientMiddlewares with empty config should return empty middlewares")
 
 		// 测试空配置的服务端中间件
-		serverMWs := middleware.BuildServer(emptyConfigs)
-		assert.Empty(t, serverMWs, "BuildServer with empty config should return empty middlewares")
+		serverMWs := middleware.BuildServerMiddlewares(emptyConfigs)
+		assert.Empty(t, serverMWs, "BuildServerMiddlewares with empty config should return empty middlewares")
 	})
 
 	t.Run("DisabledMiddleware", func(t *testing.T) {
 		disabledConfig := &middlewarev1.Middlewares{
-			Middlewares: []*middlewarev1.MiddlewareConfig{
+			Middlewares: []*middlewarev1.Middleware{
 				{
 					Name:    "disabled-mw",
 					Type:    "logging",
@@ -453,16 +453,16 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 		}
 
 		// 测试禁用的中间件不会被创建
-		clientMWs := middleware.BuildClient(disabledConfig)
+		clientMWs := middleware.BuildClientMiddlewares(disabledConfig)
 		assert.Empty(t, clientMWs, "Disabled middleware should not be created")
 
-		serverMWs := middleware.BuildServer(disabledConfig)
+		serverMWs := middleware.BuildServerMiddlewares(disabledConfig)
 		assert.Empty(t, serverMWs, "Disabled middleware should not be created")
 	})
 
 	t.Run("UnknownMiddlewareType", func(t *testing.T) {
 		unknownConfig := &middlewarev1.Middlewares{
-			Middlewares: []*middlewarev1.MiddlewareConfig{
+			Middlewares: []*middlewarev1.Middleware{
 				{
 					Name:    "unknown-mw",
 					Type:    "nonexistent",
@@ -472,10 +472,10 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 		}
 
 		// 测试未知类型的中间件不会被创建
-		clientMWs := middleware.BuildClient(unknownConfig)
+		clientMWs := middleware.BuildClientMiddlewares(unknownConfig)
 		assert.Empty(t, clientMWs, "Unknown middleware type should not be created")
 
-		serverMWs := middleware.BuildServer(unknownConfig)
+		serverMWs := middleware.BuildServerMiddlewares(unknownConfig)
 		assert.Empty(t, serverMWs, "Unknown middleware type should not be created")
 	})
 }

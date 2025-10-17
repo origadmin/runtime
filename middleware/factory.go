@@ -33,10 +33,10 @@ type middlewareBuilder struct {
 	factory.Registry[Factory]
 }
 
-// BuildClient builds the client middleware chain
-func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+// BuildClientMiddlewares builds the client middleware chain
+func (b *middlewareBuilder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	var middlewares []KMiddleware
-	var selectorConfigs []*middlewarev1.MiddlewareConfig
+	var selectorConfigs []*middlewarev1.Middleware
 	if cfg == nil {
 		return middlewares
 	}
@@ -125,10 +125,10 @@ func (b *middlewareBuilder) BuildClient(cfg *middlewarev1.Middlewares, opts ...O
 	return middlewares
 }
 
-// BuildServer builds the server middleware chain (similar to BuildClient)
-func (b *middlewareBuilder) BuildServer(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+// BuildServerMiddlewares builds the server middleware chain (similar to BuildClient)
+func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	var middlewares []KMiddleware
-	var selectorConfigs []*middlewarev1.MiddlewareConfig
+	var selectorConfigs []*middlewarev1.Middleware
 	if cfg == nil {
 		return middlewares
 	}

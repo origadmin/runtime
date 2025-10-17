@@ -38,7 +38,7 @@ type Service struct {
 	// using the 'name' field from each Client message as the key.
 	Clients []*v1.Client `protobuf:"bytes,3,rep,name=clients,proto3" json:"clients,omitempty"`
 	// middlewares is a list of middleware configurations to be applied to the service.
-	Middlewares   []*v11.MiddlewareConfig `protobuf:"bytes,4,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Middlewares   []*v11.Middleware `protobuf:"bytes,4,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -94,7 +94,7 @@ func (x *Service) GetClients() []*v1.Client {
 	return nil
 }
 
-func (x *Service) GetMiddlewares() []*v11.MiddlewareConfig {
+func (x *Service) GetMiddlewares() []*v11.Middleware {
 	if x != nil {
 		return x.Middlewares
 	}
@@ -105,12 +105,12 @@ var File_runtime_service_v1_service_proto protoreflect.FileDescriptor
 
 const file_runtime_service_v1_service_proto_rawDesc = "" +
 	"\n" +
-	" runtime/service/v1/service.proto\x12\x12runtime.service.v1\x1a$runtime/transport/v1/transport.proto\x1a&runtime/middleware/v1/middleware.proto\"\xd8\x01\n" +
+	" runtime/service/v1/service.proto\x12\x12runtime.service.v1\x1a$runtime/transport/v1/transport.proto\x1a&runtime/middleware/v1/middleware.proto\"\xd2\x01\n" +
 	"\aService\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x126\n" +
 	"\aservers\x18\x02 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\x126\n" +
-	"\aclients\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclients\x12I\n" +
-	"\vmiddlewares\x18\x04 \x03(\v2'.runtime.middleware.v1.MiddlewareConfigR\vmiddlewaresB\xd6\x01\n" +
+	"\aclients\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclients\x12C\n" +
+	"\vmiddlewares\x18\x04 \x03(\v2!.runtime.middleware.v1.MiddlewareR\vmiddlewaresB\xd6\x01\n" +
 	"\x16com.runtime.service.v1B\fServiceProtoP\x01ZDgithub.com/origadmin/runtime/api/gen/go/runtime/service/v1;servicev1\xa2\x02\x03RSX\xaa\x02\x12Runtime.Service.V1\xca\x02\x12Runtime\\Service\\V1\xe2\x02\x1eRuntime\\Service\\V1\\GPBMetadata\xea\x02\x14Runtime::Service::V1b\x06proto3"
 
 var (
@@ -127,15 +127,15 @@ func file_runtime_service_v1_service_proto_rawDescGZIP() []byte {
 
 var file_runtime_service_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_runtime_service_v1_service_proto_goTypes = []any{
-	(*Service)(nil),              // 0: runtime.service.v1.Service
-	(*v1.Server)(nil),            // 1: runtime.transport.v1.Server
-	(*v1.Client)(nil),            // 2: runtime.transport.v1.Client
-	(*v11.MiddlewareConfig)(nil), // 3: runtime.middleware.v1.MiddlewareConfig
+	(*Service)(nil),        // 0: runtime.service.v1.Service
+	(*v1.Server)(nil),      // 1: runtime.transport.v1.Server
+	(*v1.Client)(nil),      // 2: runtime.transport.v1.Client
+	(*v11.Middleware)(nil), // 3: runtime.middleware.v1.Middleware
 }
 var file_runtime_service_v1_service_proto_depIdxs = []int32{
 	1, // 0: runtime.service.v1.Service.servers:type_name -> runtime.transport.v1.Server
 	2, // 1: runtime.service.v1.Service.clients:type_name -> runtime.transport.v1.Client
-	3, // 2: runtime.service.v1.Service.middlewares:type_name -> runtime.middleware.v1.MiddlewareConfig
+	3, // 2: runtime.service.v1.Service.middlewares:type_name -> runtime.middleware.v1.Middleware
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

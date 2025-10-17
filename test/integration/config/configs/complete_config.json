@@ -1,0 +1,64 @@
+{
+  "app": {
+    "id": "test-app-id",
+    "name": "TestApp",
+    "version": "1.0.0",
+    "env": "test",
+    "metadata": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  },
+  "bootstrap": {
+    "app_info": {
+      "id": "bootstrap-app",
+      "name": "BootstrapApp",
+      "version": "1.0.0"
+    },
+    "config": {
+      "sources": [
+        {
+          "type": "file",
+          "name": "app-config",
+          "file": {
+            "path": "config.yaml"
+          }
+        }
+      ]
+    }
+  },
+  "client": {
+    "endpoint": "discovery:///user-service",
+    "timeout": "3s",
+    "selector": {
+      "version": "v1.0.0"
+    }
+  },
+  "server": {
+    "grpc": {
+      "network": "tcp",
+      "addr": ":9000",
+      "timeout": "1s",
+      "shutdown_timeout": "5s",
+      "endpoint": "grpc://localhost:9000",
+      "enable_reflection": true,
+      "max_recv_msg_size": 4194304,
+      "max_send_msg_size": 4194304
+    },
+    "http": {
+      "network": "tcp",
+      "addr": ":8000",
+      "timeout": "2s",
+      "shutdown_timeout": "5s",
+      "endpoint": "http://localhost:8000",
+      "max_recv_msg_size": 4194304,
+      "max_send_msg_size": 4194304
+    }
+  },
+  "logger": {
+    "level": "info",
+    "format": "json",
+    "stdout": true,
+    "file": "logs/app.log"
+  }
+}

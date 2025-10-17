@@ -231,7 +231,7 @@ func (b *Builder) initMiddlewares() error {
 	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
 	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
 
-	middlewares, err := b.config.DecodeMiddleware()
+	middlewares, err := b.config.DecodeMiddlewares()
 	if err != nil {
 		return fmt.Errorf("failed to decode middlewares: %w", err)
 	}

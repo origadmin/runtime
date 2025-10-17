@@ -36,8 +36,8 @@ type (
 	// Builder is an interface that defines a method for registering a buildImpl.
 	Builder interface {
 		factory.Registry[Factory]
-		BuildClient(*middlewarev1.Middlewares, ...Option) []KMiddleware
-		BuildServer(*middlewarev1.Middlewares, ...Option) []KMiddleware
+		BuildClientMiddlewares(*middlewarev1.Middlewares, ...Option) []KMiddleware
+		BuildServerMiddlewares(*middlewarev1.Middlewares, ...Option) []KMiddleware
 	}
 
 	// Factory is an interface that defines a method for creating a new buildImpl.
@@ -45,15 +45,15 @@ type (
 	// Each factory is responsible for parsing the options it cares about (e.g., by using log.FromOptions).
 	Factory interface {
 		// NewMiddlewareClient builds a client-side middleware.
-		NewMiddlewareClient(*middlewarev1.MiddlewareConfig, ...Option) (KMiddleware, bool)
+		NewMiddlewareClient(*middlewarev1.Middleware, ...Option) (KMiddleware, bool)
 		// NewMiddlewareServer builds a server-side middleware.
-		NewMiddlewareServer(*middlewarev1.MiddlewareConfig, ...Option) (KMiddleware, bool)
+		NewMiddlewareServer(*middlewarev1.Middleware, ...Option) (KMiddleware, bool)
 	}
 )
 
 // NewClient creates a new client with the given configuration.
 // This function is a convenience wrapper around the default builder.
-func NewClient(mc *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func NewClient(mc *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	if mc == nil || !mc.GetEnabled() {
 		return nil, false
 	}
@@ -68,7 +68,7 @@ func NewClient(mc *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, 
 
 // NewServer creates a new server with the given configuration.
 // This function is a convenience wrapper around the default builder.
-func NewServer(mc *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func NewServer(mc *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	if mc == nil || !mc.GetEnabled() {
 		return nil, false
 	}
@@ -81,12 +81,12 @@ func NewServer(mc *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, 
 	return f.NewMiddlewareServer(mc, opts...)
 }
 
-// BuildClient build a client middleware chain
-func BuildClient(middlewares *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
-	return defaultBuilder.BuildClient(middlewares, opts...)
+// BuildClientMiddlewares build a client middleware chain
+func BuildClientMiddlewares(middlewares *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+	return defaultBuilder.BuildClientMiddlewares(middlewares, opts...)
 }
 
-// BuildServer build a server middleware chain
-func BuildServer(middlewares *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
-	return defaultBuilder.BuildServer(middlewares, opts...)
+// BuildServerMiddlewares build a server middleware chain
+func BuildServerMiddlewares(middlewares *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+	return defaultBuilder.BuildServerMiddlewares(middlewares, opts...)
 }

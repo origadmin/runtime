@@ -24,5 +24,5 @@ message Service {
   repeated transport.v1.Client clients = 3;
 
   // middlewares is a list of middleware configurations to be applied to the service.
-  repeated middleware.v1.MiddlewareConfig middlewares = 4;
+  repeated middleware.v1.Middleware middlewares = 4;
 }

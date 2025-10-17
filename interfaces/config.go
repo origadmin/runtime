@@ -64,5 +64,5 @@ type DiscoveriesConfigDecoder interface {
 // to decode middleware configurations. Custom Config implementations can implement this
 // interface to provide an optimized decoding path.
 type MiddlewareConfigDecoder interface {
-	DecodeMiddleware() (*middlewarev1.Middlewares, error)
+	DecodeMiddlewares() (*middlewarev1.Middlewares, error)
 }

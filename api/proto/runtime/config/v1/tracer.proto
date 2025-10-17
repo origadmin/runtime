@@ -9,8 +9,8 @@ option java_outer_classname = "TraceProto";
 option java_package = "com.github.origadmin.api.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
-// Trace config.
-message Trace {
+// Tracer config.
+message Tracer {
   // name of trace service
   string name = 2 [json_name = "name"];
   // endpoint is the endpoint of trace service

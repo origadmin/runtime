@@ -33,7 +33,7 @@ message Client {
   repeated  runtime.discovery.v1.Discovery discoveries = 2;
 
   // 将 "中间件" 砖头与上面的 "客户端发现" 砖头绑定在一起。
-  repeated runtime.middleware.v1.MiddlewareConfig middlewares = 3;
+  repeated runtime.middleware.v1.Middleware middlewares = 3;
 }
 
 // 4. 构造顶层的 Bootstrap "蓝图"

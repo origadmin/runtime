@@ -15,7 +15,7 @@ import (
 type recoveryFactory struct {
 }
 
-func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -28,7 +28,7 @@ func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 	return recovery.Recovery(), true
 }
 
-func (r recoveryFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (r recoveryFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)

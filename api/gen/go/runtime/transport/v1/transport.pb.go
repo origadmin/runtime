@@ -182,6 +182,42 @@ func (x *Client) GetCustomConfig() *structpb.Struct {
 	return nil
 }
 
+type Transport struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Transport) Reset() {
+	*x = Transport{}
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Transport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Transport) ProtoMessage() {}
+
+func (x *Transport) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Transport.ProtoReflect.Descriptor instead.
+func (*Transport) Descriptor() ([]byte, []int) {
+	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{2}
+}
+
 var File_runtime_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_runtime_transport_v1_transport_proto_rawDesc = "" +
@@ -203,7 +239,8 @@ const file_runtime_transport_v1_transport_proto_rawDesc = "" +
 	"\rcustom_config\x18\x05 \x01(\v2\x17.google.protobuf.StructH\x02R\fcustomConfig\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
 	"\x05_httpB\x10\n" +
-	"\x0e_custom_configB\xe6\x01\n" +
+	"\x0e_custom_config\"\v\n" +
+	"\tTransportB\xe6\x01\n" +
 	"\x18com.runtime.transport.v1B\x0eTransportProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1\xa2\x02\x03RTX\xaa\x02\x14Runtime.Transport.V1\xca\x02\x14Runtime\\Transport\\V1\xe2\x02 Runtime\\Transport\\V1\\GPBMetadata\xea\x02\x16Runtime::Transport::V1b\x06proto3"
 
 var (
@@ -218,23 +255,24 @@ func file_runtime_transport_v1_transport_proto_rawDescGZIP() []byte {
 	return file_runtime_transport_v1_transport_proto_rawDescData
 }
 
-var file_runtime_transport_v1_transport_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_runtime_transport_v1_transport_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_runtime_transport_v1_transport_proto_goTypes = []any{
 	(*Server)(nil),           // 0: runtime.transport.v1.Server
 	(*Client)(nil),           // 1: runtime.transport.v1.Client
-	(*GrpcServerConfig)(nil), // 2: runtime.transport.v1.GrpcServerConfig
-	(*HttpServerConfig)(nil), // 3: runtime.transport.v1.HttpServerConfig
-	(*structpb.Struct)(nil),  // 4: google.protobuf.Struct
-	(*GrpcClientConfig)(nil), // 5: runtime.transport.v1.GrpcClientConfig
-	(*HttpClientConfig)(nil), // 6: runtime.transport.v1.HttpClientConfig
+	(*Transport)(nil),        // 2: runtime.transport.v1.Transport
+	(*GrpcServerConfig)(nil), // 3: runtime.transport.v1.GrpcServerConfig
+	(*HttpServerConfig)(nil), // 4: runtime.transport.v1.HttpServerConfig
+	(*structpb.Struct)(nil),  // 5: google.protobuf.Struct
+	(*GrpcClientConfig)(nil), // 6: runtime.transport.v1.GrpcClientConfig
+	(*HttpClientConfig)(nil), // 7: runtime.transport.v1.HttpClientConfig
 }
 var file_runtime_transport_v1_transport_proto_depIdxs = []int32{
-	2, // 0: runtime.transport.v1.Server.grpc:type_name -> runtime.transport.v1.GrpcServerConfig
-	3, // 1: runtime.transport.v1.Server.http:type_name -> runtime.transport.v1.HttpServerConfig
-	4, // 2: runtime.transport.v1.Server.custom_config:type_name -> google.protobuf.Struct
-	5, // 3: runtime.transport.v1.Client.grpc:type_name -> runtime.transport.v1.GrpcClientConfig
-	6, // 4: runtime.transport.v1.Client.http:type_name -> runtime.transport.v1.HttpClientConfig
-	4, // 5: runtime.transport.v1.Client.custom_config:type_name -> google.protobuf.Struct
+	3, // 0: runtime.transport.v1.Server.grpc:type_name -> runtime.transport.v1.GrpcServerConfig
+	4, // 1: runtime.transport.v1.Server.http:type_name -> runtime.transport.v1.HttpServerConfig
+	5, // 2: runtime.transport.v1.Server.custom_config:type_name -> google.protobuf.Struct
+	6, // 3: runtime.transport.v1.Client.grpc:type_name -> runtime.transport.v1.GrpcClientConfig
+	7, // 4: runtime.transport.v1.Client.http:type_name -> runtime.transport.v1.HttpClientConfig
+	5, // 5: runtime.transport.v1.Client.custom_config:type_name -> google.protobuf.Struct
 	6, // [6:6] is the sub-list for method output_type
 	6, // [6:6] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name
@@ -257,7 +295,7 @@ func file_runtime_transport_v1_transport_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_transport_v1_transport_proto_rawDesc), len(file_runtime_transport_v1_transport_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

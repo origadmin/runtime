@@ -84,7 +84,7 @@ func (c *CustomSettings) DecodeDiscoveries() (map[string]*discoveryv1.Discovery,
 	return nil, errors.New("not implemented")
 }
 
-func (c *CustomSettings) DecodeMiddleware() (*middlewarev1.Middlewares, error) {
+func (c *CustomSettings) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 	return nil, errors.New("not implemented")
 }
 

@@ -11,7 +11,7 @@ import (
 type loggingFactory struct{}
 
 // NewMiddlewareClient creates a new client-side logging middleware.
-func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
@@ -30,7 +30,7 @@ func (f *loggingFactory) NewMiddlewareClient(cfg *middlewarev1.MiddlewareConfig,
 }
 
 // NewMiddlewareServer creates a new server-side logging middleware.
-func (f *loggingFactory) NewMiddlewareServer(cfg *middlewarev1.MiddlewareConfig, opts ...Option) (KMiddleware, bool) {
+func (f *loggingFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
