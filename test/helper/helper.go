@@ -108,6 +108,28 @@ func LoadConfigFromFile(t *testing.T, configPath string, v proto.Message) {
 	}
 }
 
+// mockWatcher implements frameworkConfig.Watcher for testing purposes.
+type mockWatcher struct {
+	data map[string]string
+}
+
+func (mw *mockWatcher) Next() ([]*kratosconfig.KeyValue, error) {
+	kvs := make([]*runtimeconfig.KKeyValue, 0, len(mw.data))
+	for k, v := range mw.data {
+		kvs = append(kvs, &runtimeconfig.KKeyValue{
+			Key:    k,
+			Value:  []byte(v),
+			Format: "yaml", // Assuming YAML format for simplicity in mock
+		})
+	}
+	return kvs, nil
+}
+
+// Stop is a no-op for the mock watcher.
+func (mw *mockWatcher) Stop() error {
+	return nil
+}
+
 // MockConsulSource is a mock implementation of runtimeconfig.Source for Consul.
 type MockConsulSource struct {
 	config *sourcev1.SourceConfig
@@ -134,7 +156,7 @@ func (m *MockConsulSource) Load() ([]*runtimeconfig.KKeyValue, error) {
 
 // Watch is not implemented for the mock source.
 func (m *MockConsulSource) Watch() (runtimeconfig.KWatcher, error) {
-	return nil, fmt.Errorf("watch not implemented for MockConsulSource")
+	return &mockWatcher{data: m.data}, nil
 }
 
 // String returns the name of the mock source.
