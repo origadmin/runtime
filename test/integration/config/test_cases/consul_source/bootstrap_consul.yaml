@@ -1,0 +1,18 @@
+sources:
+  - type: consul
+    name: "consul-config"
+    consul:
+      address: "127.0.0.1:8500" # This address won't be used by MockConsulSource
+      path: "config/test/app_config" # This path will be used by MockConsulSource to identify the config
+      # Custom field to pass mock data to our MockConsulSource
+      mock_data:
+        config/test/app_config: |
+          app:
+            id: "consul-app-id"
+            name: "ConsulApp"
+            version: "1.0.0"
+            env: "consul-test"
+          logger:
+            level: "warn"
+            format: "json"
+    priority: 100

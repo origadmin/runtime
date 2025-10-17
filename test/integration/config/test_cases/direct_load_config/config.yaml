@@ -1,0 +1,56 @@
+app:
+  id: "test-app-id"
+  name: "TestApp"
+  version: "1.0.0"
+  env: "test"
+  metadata:
+    key1: "value1"
+    key2: "value2"
+
+grpc_servers:
+  - network: "tcp"
+    addr: ":9000"
+    timeout: "1s"
+
+http_servers:
+  - network: "tcp"
+    addr: ":8000"
+    timeout: "2s"
+
+client:
+  endpoint: "discovery:///user-service"
+  timeout: "3s"
+  selector:
+    version: "v1.0.0"
+
+discoveries:
+  - name: "internal-consul"
+    config:
+      type: "consul"
+      consul:
+        address: "consul.internal:8500"
+  - name: "legacy-etcd"
+    config:
+      type: "etcd"
+      etcd:
+        endpoints:
+          - "etcd.legacy:2379"
+
+registration_discovery_name: "internal-consul"
+
+logger:
+  level: "info"
+  format: "json"
+  stdout: true
+
+tracer:
+  name: "jaeger"
+  endpoint: "http://jaeger:14268/api/traces"
+
+middleware:
+  middlewares:
+    - type: cors
+      enabled: true
+      cors:
+        allow_origins: ["*"]
+        allow_methods: ["GET", "POST"]

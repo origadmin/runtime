@@ -72,16 +72,16 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assert.Equal("http://jaeger:14268/api/traces", cfg.Tracer.GetEndpoint())
 
 	// Middleware configuration assertions
-	assert.NotNil(cfg.Middleware)
-	assert.Len(cfg.Middleware.GetMiddlewares(), 1, "Should have 1 middleware configured")
+	assert.NotNil(cfg.Middlewares) // Corrected: changed from cfg.Middleware to cfg.Middlewares
+	assert.Len(cfg.Middlewares.GetMiddlewares(), 1, "Should have 1 middleware configured")
 
-	corsMiddleware := cfg.Middleware.GetMiddlewares()[0]
+	corsMiddleware := cfg.Middlewares.GetMiddlewares()[0]
 	assert.Equal("cors", corsMiddleware.GetType())
 	assert.True(corsMiddleware.GetEnabled())
 	assert.NotNil(corsMiddleware.GetCors(), "CORS config should not be nil for middleware of type cors")
-	assert.Len(corsMiddleware.GetCors().GetAllowOrigins(), 1)
-	assert.Equal("*", corsMiddleware.GetCors().GetAllowOrigins()[0])
-	assert.Len(corsMiddleware.GetCors().GetAllowMethods(), 2)
-	assert.Equal("GET", corsMiddleware.GetCors().GetAllowMethods()[0])
-	assert.Equal("POST", corsMiddleware.GetCors().GetAllowMethods()[1])
+	assert.Len(corsMiddleware.GetCors().GetAllowedOrigins(), 1)
+	assert.Equal("*", corsMiddleware.GetCors().GetAllowedOrigins()[0])
+	assert.Len(corsMiddleware.GetCors().GetAllowedMethods(), 2)
+	assert.Equal("GET", corsMiddleware.GetCors().GetAllowedMethods()[0])
+	assert.Equal("POST", corsMiddleware.GetCors().GetAllowedMethods()[1])
 }

@@ -1,0 +1,8 @@
+app:
+  name: "ProdApp"
+  env: "prod"
+  metadata:
+    env_specific_key: "prod_value"
+
+logger:
+  level: "error"

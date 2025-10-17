@@ -1,0 +1,8 @@
+app:
+  name: "DevApp"
+  env: "dev"
+  metadata:
+    env_specific_key: "dev_value"
+
+logger:
+  level: "info"

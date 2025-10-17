@@ -7,12 +7,15 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/go-kratos/kratos/v2/config"
+	kratosconfig "github.com/go-kratos/kratos/v2/config"
 	"google.golang.org/protobuf/proto"
 	"gopkg.in/yaml.v3"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	"github.com/origadmin/runtime/config/file"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
+	runtimeconfig "github.com/origadmin/runtime/config"
+	filesource "github.com/origadmin/runtime/config/file"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // LoadYAMLConfig loads a YAML configuration file and converts it to a JSON format byte array.
@@ -35,12 +38,12 @@ func LoadYAMLConfig(filename string) ([]byte, error) {
 	return yaml.Marshal(configMap)
 }
 
-// LoadMiddleware loads and parses a middleware configuration file.
+// LoadMiddleware loads and parses a middleware configuration file using the framework's config.
 func LoadMiddleware(t *testing.T, configPath string) (*middlewarev1.Middlewares, error) {
 	t.Helper()
 
-	source := file.NewSource(configPath)
-	c := config.New(config.WithSource(source))
+	source := filesource.NewSource(configPath)
+	c := runtimeconfig.NewKConfig(runtimeconfig.WithKSource(source))
 	if err := c.Load(); err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
@@ -89,36 +92,38 @@ func SetupIntegrationTest(t *testing.T) func() {
 	}
 }
 
-// LoadConfigFromFile loads a configuration from the specified file path into a proto.Message.
-func LoadConfigFromFile(t *testing.T, filePath string, v proto.Message) {
+// LoadConfigFromFile loads a configuration from the specified file path into a proto.Message
+// using the framework's config package.
+func LoadConfigFromFile(t *testing.T, configPath string, v proto.Message) {
 	t.Helper()
-	source := file.NewSource(filePath)
-	c := config.New(config.WithSource(source))
+	source := filesource.NewSource(configPath)
+	c := runtimeconfig.NewKConfig(runtimeconfig.WithKSource(source))
 	if err := c.Load(); err != nil {
-		t.Fatalf("Failed to load config from %s: %v", filePath, err)
+		t.Fatalf("Failed to load config from %s: %v", configPath, err)
 	}
 	defer c.Close()
 
 	if err := c.Scan(v); err != nil {
-		t.Fatalf("Failed to scan config from %s into struct: %v", filePath, err)
+		t.Fatalf("Failed to scan config from %s into struct: %v", configPath, err)
 	}
 }
 
-// MockConsulSource is a mock implementation of config.Source for Consul.
+// MockConsulSource is a mock implementation of runtimeconfig.Source for Consul.
 type MockConsulSource struct {
-	data map[string]string
+	config *sourcev1.SourceConfig
+	data   map[string]string
 }
 
-// NewMockConsulSource creates a new MockConsulSource.
-func NewMockConsulSource(data map[string]string) *MockConsulSource {
-	return &MockConsulSource{data: data}
+func (m *MockConsulSource) NewSource(config *sourcev1.SourceConfig, option ...options.Option) (kratosconfig.Source, error) {
+	m.config = config
+	return m, nil
 }
 
 // Load returns the mock data as KeyValue pairs.
-func (m *MockConsulSource) Load() ([]*config.KeyValue, error) {
-	kvs := make([]*config.KeyValue, 0, len(m.data))
+func (m *MockConsulSource) Load() ([]*runtimeconfig.KKeyValue, error) {
+	kvs := make([]*runtimeconfig.KKeyValue, 0, len(m.data))
 	for k, v := range m.data {
-		kvs = append(kvs, &config.KeyValue{
+		kvs = append(kvs, &runtimeconfig.KKeyValue{
 			Key:    k,
 			Value:  []byte(v),
 			Format: "yaml", // Assuming YAML format for simplicity in mock
@@ -128,7 +133,7 @@ func (m *MockConsulSource) Load() ([]*config.KeyValue, error) {
 }
 
 // Watch is not implemented for the mock source.
-func (m *MockConsulSource) Watch() (config.Watcher, error) {
+func (m *MockConsulSource) Watch() (runtimeconfig.KWatcher, error) {
 	return nil, fmt.Errorf("watch not implemented for MockConsulSource")
 }
 
@@ -136,3 +141,11 @@ func (m *MockConsulSource) Watch() (config.Watcher, error) {
 func (m *MockConsulSource) String() string {
 	return "mock-consul-source"
 }
+
+// Register the MockConsulSource with the framework's config package.
+// This init function ensures the mock source is registered when the helper package is imported.
+func init() {
+	runtimeconfig.Register("consul", &MockConsulSource{})
+}
+
+var _ runtimeconfig.SourceFactory = (*MockConsulSource)(nil)

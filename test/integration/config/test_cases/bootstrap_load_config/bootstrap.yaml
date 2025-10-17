@@ -1,0 +1,4 @@
+sources:
+  - type: file
+    file:
+      path: "test/integration/config/test_cases/direct_load_config/config.yaml"

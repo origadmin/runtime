@@ -1,0 +1,13 @@
+app:
+  name: "Source2App"
+  env: "prod"
+  metadata:
+    key3: "value3"
+
+logger:
+  level: "info"
+
+client:
+  timeout: "5s"
+  selector:
+    version: "v2.0.0"

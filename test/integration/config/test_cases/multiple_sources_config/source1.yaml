@@ -1,0 +1,13 @@
+app:
+  id: "source1-app-id"
+  name: "Source1App"
+  version: "1.0.0"
+  env: "dev"
+
+logger:
+  level: "debug"
+  format: "text"
+
+client:
+  endpoint: "discovery:///source1-service"
+  timeout: "1s"
