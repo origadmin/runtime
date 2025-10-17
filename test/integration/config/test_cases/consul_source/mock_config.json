@@ -1,0 +1,14 @@
+{
+  "config/test/app_config": {
+    "app": {
+      "id": "consul-app-id",
+      "name": "ConsulApp",
+      "version": "1.0.0",
+      "env": "consul-test"
+    },
+    "logger": {
+      "level": "warn",
+      "format": "json"
+    }
+  }
+}

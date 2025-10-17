@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"encoding/json" // Add json import
 	"fmt"
 	"os"
 	"path/filepath"
@@ -36,7 +37,8 @@ func LoadYAMLConfig(filename string) ([]byte, error) {
 		return nil, err
 	}
 
-	return yaml.Marshal(configMap)
+	// Fix: Marshal to JSON as per the function comment.
+	return json.Marshal(configMap)
 }
 
 // LoadMiddleware loads and parses a middleware configuration file using the framework's config.
@@ -134,14 +136,100 @@ func (mw *mockWatcher) Stop() error {
 // MockConsulSource is a mock implementation of runtimeconfig.Source for Consul.
 type MockConsulSource struct {
 	config *sourcev1.SourceConfig
-	data   map[string]string
-}
-
-func WithData(data map[string]string) func(*MockConsulSource) {
-	return func(m *MockConsulSource) {
-		m.data = data
+	// mockEntries stores the data for each key, along with its intended format.
+	mockEntries map[string]struct {
+		Value  interface{} // Can be string, map[string]interface{}, etc.
+		Format string      // "string", "json", "yaml"
 	}
 }
+
+// WithMockData provides mock data for MockConsulSource.
+// It expects string values, which will be treated as YAML content.
+// This function maintains backward compatibility with the original signature.
+func WithMockData(data map[string]string) func(*MockConsulSource) {
+	return func(m *MockConsulSource) {
+		if m.mockEntries == nil {
+			m.mockEntries = make(map[string]struct {
+				Value  interface{}
+				Format string
+			})
+		}
+		for k, v := range data {
+			m.mockEntries[k] = struct {
+				Value  interface{}
+				Format string
+			}{
+				Value:  v,
+				Format: "yaml", // Original behavior was to treat these as YAML strings
+			}
+		}
+	}
+}
+
+// WithMockDataString provides mock data for MockConsulSource, allowing specification of the format for string values.
+func WithMockDataString(data map[string]string, format string) func(*MockConsulSource) {
+	return func(m *MockConsulSource) {
+		if m.mockEntries == nil {
+			m.mockEntries = make(map[string]struct {
+				Value  interface{}
+				Format string
+			})
+		}
+		for k, v := range data {
+			m.mockEntries[k] = struct {
+				Value  interface{}
+				Format string
+			}{
+				Value:  v,
+				Format: format,
+			}
+		}
+	}
+}
+
+// WithMockDataJSON provides mock data for MockConsulSource, marshaling values to JSON.
+func WithMockDataJSON(data map[string]interface{}) options.Option {
+	return optionutil.Update(func(m *MockConsulSource) {
+		if m.mockEntries == nil {
+			m.mockEntries = make(map[string]struct {
+				Value  interface{}
+				Format string
+			})
+		}
+		for k, v := range data {
+			m.mockEntries[k] = struct {
+				Value  interface{}
+				Format string
+			}{
+				Value:  v,
+				Format: "json",
+			}
+		}
+	})
+}
+
+// WithMockDataYAML provides mock data for MockConsulSource, marshaling values to YAML.
+func WithMockDataYAML(data map[string]interface{}) options.Option {
+	return optionutil.Update(func(m *MockConsulSource) {
+		if m.mockEntries == nil {
+			m.mockEntries = make(map[string]struct {
+				Value  interface{}
+				Format string
+			})
+		}
+		for k, v := range data {
+			m.mockEntries[k] = struct {
+				Value  interface{}
+				Format string
+			}{
+				Value:  v,
+				Format: "yaml",
+			}
+		}
+	})
+}
+
+// NewSource creates a new instance of MockConsulSource.
 func (m *MockConsulSource) NewSource(config *sourcev1.SourceConfig, opts ...options.Option) (kratosconfig.Source,
 	error) {
 	optionutil.Apply(m, opts...)
@@ -151,12 +239,37 @@ func (m *MockConsulSource) NewSource(config *sourcev1.SourceConfig, opts ...opti
 
 // Load returns the mock data as KeyValue pairs.
 func (m *MockConsulSource) Load() ([]*runtimeconfig.KKeyValue, error) {
-	kvs := make([]*runtimeconfig.KKeyValue, 0, len(m.data))
-	for k, v := range m.data {
+	kvs := make([]*runtimeconfig.KKeyValue, 0, len(m.mockEntries))
+	for k, entry := range m.mockEntries {
+		var valueBytes []byte
+		var err error
+
+		switch entry.Format {
+		case "json":
+			valueBytes, err = json.Marshal(entry.Value)
+		case "yaml":
+			valueBytes, err = yaml.Marshal(entry.Value)
+		default:
+			// If format is unknown, or if entry.Value is already []byte or string, use it directly.
+			if b, ok := entry.Value.([]byte); ok {
+				valueBytes = b
+			} else if s, ok := entry.Value.(string); ok {
+				valueBytes = []byte(s)
+			} else {
+				// If it's not a string or []byte, and format is not json/yaml, default to json marshal
+				valueBytes, err = json.Marshal(entry.Value)
+				entry.Format = "json" // Update format if we marshaled as JSON
+			}
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal mock data for key %s (format %s): %w", k, entry.Format, err)
+		}
+
 		kvs = append(kvs, &runtimeconfig.KKeyValue{
 			Key:    k,
-			Value:  []byte(v),
-			Format: "yaml", // Assuming YAML format for simplicity in mock
+			Value:  valueBytes,
+			Format: entry.Format, // Use the specified or inferred format
 		})
 	}
 	return kvs, nil
@@ -164,7 +277,18 @@ func (m *MockConsulSource) Load() ([]*runtimeconfig.KKeyValue, error) {
 
 // Watch is not implemented for the mock source.
 func (m *MockConsulSource) Watch() (runtimeconfig.KWatcher, error) {
-	return &mockWatcher{data: m.data}, nil
+	return &noopWatcher{}, nil
+}
+
+// A no-op watcher for MockConsulSource
+type noopWatcher struct{}
+
+func (nw *noopWatcher) Next() ([]*kratosconfig.KeyValue, error) {
+	select {} // Block indefinitely, simulating no new events
+}
+
+func (nw *noopWatcher) Stop() error {
+	return nil
 }
 
 // String returns the name of the mock source.
