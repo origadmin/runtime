@@ -10,9 +10,72 @@ import (
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/test/helper"
-	parentconfig "github.com/origadmin/runtime/test/integration/config" // Import the parent package for AssertTestConfig
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 )
+
+// assertBootstrapTestConfig contains the validation logic for the TestConfig struct
+// specific to the bootstrap_load_config test case, omitting discovery assertions.
+func assertBootstrapTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
+	assert := assert.New(t)
+
+	// App configuration assertions
+	assert.NotNil(cfg.App)
+	assert.Equal("test-app-id", cfg.App.GetId())
+	assert.Equal("TestApp", cfg.App.GetName())
+	assert.Equal("1.0.0", cfg.App.GetVersion())
+	assert.Equal("test", cfg.App.GetEnv())
+	assert.Contains(cfg.App.GetMetadata(), "key1")
+	assert.Contains(cfg.App.GetMetadata(), "key2")
+	assert.Equal("value1", cfg.App.GetMetadata()["key1"])
+	assert.Equal("value2", cfg.App.GetMetadata()["key2"])
+
+	// Server configuration assertions
+	assert.Len(cfg.GrpcServers, 1)
+	assert.Equal("tcp", cfg.GrpcServers[0].GetNetwork())
+	assert.Equal(":9000", cfg.GrpcServers[0].GetAddr())
+	assert.Equal("1s", cfg.GrpcServers[0].GetTimeout().AsDuration().String())
+
+	assert.Len(cfg.HttpServers, 1)
+	assert.Equal("tcp", cfg.HttpServers[0].GetNetwork())
+	assert.Equal(":8000", cfg.HttpServers[0].GetAddr())
+	assert.Equal("2s", cfg.HttpServers[0].GetTimeout().AsDuration().String())
+
+	// Client configuration assertions
+	assert.NotNil(cfg.Client)
+	assert.Equal("discovery:///user-service", cfg.Client.GetEndpoint())
+	assert.Equal("3s", cfg.Client.GetTimeout().AsDuration().String())
+	assert.NotNil(cfg.Client.GetSelector())
+	assert.Equal("v1.0.0", cfg.Client.GetSelector().GetVersion())
+
+	// Discovery configuration assertions (omitted for this test case)
+	assert.Len(cfg.Discoveries, 0, "Discoveries should be empty for this test case")
+	assert.Empty(cfg.GetRegistrationDiscoveryName(), "RegistrationDiscoveryName should be empty for this test case")
+
+	// Logger configuration assertions
+	assert.NotNil(cfg.Logger)
+	assert.Equal("info", cfg.Logger.GetLevel())
+	assert.Equal("json", cfg.Logger.GetFormat())
+	assert.True(cfg.Logger.GetStdout())
+
+	// Tracer configuration assertions
+	assert.NotNil(cfg.Tracer)
+	assert.Equal("jaeger", cfg.Tracer.GetName())
+	assert.Equal("http://jaeger:14268/api/traces", cfg.Tracer.GetEndpoint())
+
+	// Middleware configuration assertions
+	assert.NotNil(cfg.Middlewares)
+	assert.Len(cfg.Middlewares.GetMiddlewares(), 1, "Should have 1 middleware configured")
+
+	corsMiddleware := cfg.Middlewares.GetMiddlewares()[0]
+	assert.Equal("cors", corsMiddleware.GetType())
+	assert.True(corsMiddleware.GetEnabled())
+	assert.NotNil(corsMiddleware.GetCors(), "CORS config should not be nil for middleware of type cors")
+	assert.Len(corsMiddleware.GetCors().GetAllowedOrigins(), 1)
+	assert.Equal("*", corsMiddleware.GetCors().GetAllowedOrigins()[0])
+	assert.Len(corsMiddleware.GetCors().GetAllowedMethods(), 2)
+	assert.Equal("GET", corsMiddleware.GetCors().GetAllowedMethods()[0])
+	assert.Equal("POST", corsMiddleware.GetCors().GetAllowedMethods()[1])
+}
 
 // BootstrapLoadConfigTestSuite tests the loading of configuration via the bootstrap process.
 type BootstrapLoadConfigTestSuite struct {
@@ -37,7 +100,7 @@ func (s *BootstrapLoadConfigTestSuite) TestBootstrapLoading() {
 		name     string
 		filePath string
 	}{
-		{name: "YAML", filePath: "test/integration/config/test_cases/bootstrap_load_config/bootstrap.yaml"},
+		{name: "YAML", filePath: "config/test_cases/bootstrap_load_config/bootstrap.yaml"},
 	}
 
 	for _, tc := range testCases {
@@ -64,8 +127,8 @@ func (s *BootstrapLoadConfigTestSuite) TestBootstrapLoading() {
 			err = configDecoder.Decode("", &cfg) // Decode the root of the config
 			assert.NoError(err, "Failed to decode config from runtime: %v", err)
 
-			// Run assertions on the loaded configuration.
-			parentconfig.AssertTestConfig(t, &cfg)
+			// Run assertions on the loaded configuration using the custom assertion.
+			assertBootstrapTestConfig(t, &cfg)
 			t.Logf("Runtime loaded and verified %s bootstrap config successfully!", tc.name)
 		})
 	}
