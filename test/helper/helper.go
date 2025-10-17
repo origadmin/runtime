@@ -16,6 +16,7 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	filesource "github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/optionutil"
 )
 
 // LoadYAMLConfig loads a YAML configuration file and converts it to a JSON format byte array.
@@ -136,7 +137,14 @@ type MockConsulSource struct {
 	data   map[string]string
 }
 
-func (m *MockConsulSource) NewSource(config *sourcev1.SourceConfig, option ...options.Option) (kratosconfig.Source, error) {
+func WithData(data map[string]string) func(*MockConsulSource) {
+	return func(m *MockConsulSource) {
+		m.data = data
+	}
+}
+func (m *MockConsulSource) NewSource(config *sourcev1.SourceConfig, opts ...options.Option) (kratosconfig.Source,
+	error) {
+	optionutil.Apply(m, opts...)
 	m.config = config
 	return m, nil
 }
