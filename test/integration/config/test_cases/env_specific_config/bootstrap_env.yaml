@@ -1,4 +1,11 @@
 sources:
+  - type: env
+    env:
+      prefix: "ORIGADMIN_"
   - type: file
     file:
-      path: "test/integration/config/test_cases/env_specific_config/config.yaml"
+      path: "config_${APP_ENV:}.yaml"
+      optional: true
+  - type: file
+    file:
+      path: "config.yaml"

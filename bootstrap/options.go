@@ -103,6 +103,7 @@ type Options struct {
 	appInfo            *interfaces.AppInfo
 	componentFactories map[string]ComponentFactory
 	directory          string
+	bootstrapPrefix    string
 }
 
 // Option configures the New function.
@@ -123,6 +124,13 @@ func WithComponent(key string, factory ComponentFactory) Option {
 			o.componentFactories = make(map[string]ComponentFactory)
 		}
 		o.componentFactories[key] = factory
+	})
+}
+
+// WithBootstrapPrefix sets the prefix for bootstrap configuration keys.
+func WithBootstrapPrefix(prefix string) Option {
+	return optionutil.Update(func(o *Options) {
+		o.bootstrapPrefix = prefix
 	})
 }
 

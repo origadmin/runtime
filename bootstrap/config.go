@@ -12,6 +12,7 @@ import (
 	"github.com/origadmin/runtime/bootstrap/constant"
 	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
 	runtimeconfig "github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/config/envsource"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
@@ -135,10 +136,11 @@ func loadSourcesFromBootstrapFile(fullBootstrapPath string, providerOpts *Config
 // LoadBootstrapConfig loads the bootstrapv1.Bootstrap definition from a local bootstrap configuration file.
 // This function is the first step in the configuration process.
 // The temporary config used to load the sources is closed internally.
-func LoadBootstrapConfig(bootstrapPath string) (*bootstrapv1.Bootstrap, error) {
+func LoadBootstrapConfig(bootstrapPath string, opts ...Option) (*bootstrapv1.Bootstrap, error) {
+	providerOpts := FromOptions(opts...)
 	// Create a temporary Kratos config instance to load the bootstrap.yaml file.
 	bootConfig := kratosconfig.New(
-		kratosconfig.WithSource(file.NewSource(bootstrapPath)),
+		kratosconfig.WithSource(file.NewSource(bootstrapPath), envsource.NewSource(providerOpts.bootstrapPrefix)),
 	)
 
 	// Defer closing the config and handle its error

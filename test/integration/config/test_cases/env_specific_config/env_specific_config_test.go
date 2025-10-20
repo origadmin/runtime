@@ -9,9 +9,10 @@ import (
 
 	rt "github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/bootstrap"
+	_ "github.com/origadmin/runtime/config/envsource"
+	_ "github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/test/helper"
-	parentconfig "github.com/origadmin/runtime/test/integration/config" // Import the parent package for AssertTestConfig
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 )
 
@@ -31,42 +32,42 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 	cleanup := helper.SetupIntegrationTest(t)
 	defer cleanup()
 
-	bootstrapPath := "test/integration/config/test_cases/env_specific_config/bootstrap_env.yaml"
+	bootstrapPath := "config/test_cases/env_specific_config/bootstrap_env.yaml"
 
 	// Test cases for different environments
 	testCases := []struct {
-		name        string
-		envVar      string
-		expectedAppID string
-		expectedAppName string
-		expectedAppEnv string
+		name                string
+		envVar              string
+		expectedAppID       string
+		expectedAppName     string
+		expectedAppEnv      string
 		expectedLoggerLevel string
 		expectedMetadataKey string
 	}{
 		{
-			name:        "DevEnvironment",
-			envVar:      "dev",
-			expectedAppID: "base-app-id", // Not overridden by config_dev.yaml
-			expectedAppName: "DevApp",    // Overridden by config_dev.yaml
-			expectedAppEnv: "dev",       // Overridden by config_dev.yaml
-			expectedLoggerLevel: "info",  // Overridden by config_dev.yaml
+			name:                "DevEnvironment",
+			envVar:              "dev",
+			expectedAppID:       "base-app-id", // Not overridden by config_dev.yaml
+			expectedAppName:     "DevApp",      // Overridden by config_dev.yaml
+			expectedAppEnv:      "dev",         // Overridden by config_dev.yaml
+			expectedLoggerLevel: "info",        // Overridden by config_dev.yaml
 			expectedMetadataKey: "dev_value",
 		},
 		{
-			name:        "ProdEnvironment",
-			envVar:      "prod",
-			expectedAppID: "base-app-id", // Not overridden by config_prod.yaml
-			expectedAppName: "ProdApp",   // Overridden by config_prod.yaml
-			expectedAppEnv: "prod",      // Overridden by config_prod.yaml
-			expectedLoggerLevel: "error", // Overridden by config_prod.yaml
+			name:                "ProdEnvironment",
+			envVar:              "prod",
+			expectedAppID:       "base-app-id", // Not overridden by config_prod.yaml
+			expectedAppName:     "ProdApp",     // Overridden by config_prod.yaml
+			expectedAppEnv:      "prod",        // Overridden by config_prod.yaml
+			expectedLoggerLevel: "error",       // Overridden by config_prod.yaml
 			expectedMetadataKey: "prod_value",
 		},
 		{
-			name:        "DefaultEnvironment", // No specific env config, should load base
-			envVar:      "nonexistent",
-			expectedAppID: "base-app-id",
-			expectedAppName: "BaseApp",
-			expectedAppEnv: "default",
+			name:                "DefaultEnvironment", // No specific env config, should load base
+			envVar:              "nonexistent",
+			expectedAppID:       "base-app-id",
+			expectedAppName:     "BaseApp",
+			expectedAppEnv:      "default",
 			expectedLoggerLevel: "debug",
 			expectedMetadataKey: "", // Should not exist
 		},
