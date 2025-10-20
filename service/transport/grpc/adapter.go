@@ -111,6 +111,15 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 		c = clientOpts.ServiceOptions.Container
 	}
 
+	// Check if middlewares are configured.
+	hasMiddlewaresConfigured := len(grpcConfig.GetMiddlewares()) > 0
+
+	// If middlewares are configured but no container is provided, return an error.
+	// This consolidates the nil check for the container.
+	if hasMiddlewaresConfigured && c == nil {
+		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
+	}
+
 	// Apply options from the protobuf configuration.
 	if grpcConfig.GetTimeout() != nil {
 		kratosOpts = append(kratosOpts, transgrpc.WithTimeout(grpcConfig.GetTimeout().AsDuration()))
@@ -118,7 +127,7 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClie
 
 	// Configure middlewares.
 	var mws []middleware.Middleware
-	if len(grpcConfig.GetMiddlewares()) > 0 {
+	if hasMiddlewaresConfigured {
 		// If middlewares are configured but no container is provided, return an error.
 		if c == nil {
 			return nil, runtimeerrors.NewStructured(Module, "application container is required for client middlewares but not found in options")

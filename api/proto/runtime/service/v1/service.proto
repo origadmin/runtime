@@ -11,9 +11,6 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/service/v1;
 // It encapsulates the service's identity, its server endpoints, its client dependencies,
 // and its middleware configurations.
 message Service {
-  // name is the unique identifier for the service, used for service discovery and logging.
-  string name = 1;
-
   // servers is a list of server endpoints that this service will expose.
   // A service can listen on multiple protocols simultaneously, e.g., both gRPC and HTTP.
   repeated transport.v1.Server servers = 2;

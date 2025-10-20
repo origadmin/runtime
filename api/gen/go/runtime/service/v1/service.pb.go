@@ -28,8 +28,6 @@ const (
 // and its middleware configurations.
 type Service struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// name is the unique identifier for the service, used for service discovery and logging.
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// servers is a list of server endpoints that this service will expose.
 	// A service can listen on multiple protocols simultaneously, e.g., both gRPC and HTTP.
 	Servers []*v1.Server `protobuf:"bytes,2,rep,name=servers,proto3" json:"servers,omitempty"`
@@ -73,13 +71,6 @@ func (*Service) Descriptor() ([]byte, []int) {
 	return file_runtime_service_v1_service_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Service) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
 func (x *Service) GetServers() []*v1.Server {
 	if x != nil {
 		return x.Servers
@@ -105,9 +96,8 @@ var File_runtime_service_v1_service_proto protoreflect.FileDescriptor
 
 const file_runtime_service_v1_service_proto_rawDesc = "" +
 	"\n" +
-	" runtime/service/v1/service.proto\x12\x12runtime.service.v1\x1a$runtime/transport/v1/transport.proto\x1a&runtime/middleware/v1/middleware.proto\"\xd2\x01\n" +
-	"\aService\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x126\n" +
+	" runtime/service/v1/service.proto\x12\x12runtime.service.v1\x1a$runtime/transport/v1/transport.proto\x1a&runtime/middleware/v1/middleware.proto\"\xbe\x01\n" +
+	"\aService\x126\n" +
 	"\aservers\x18\x02 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\x126\n" +
 	"\aclients\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclients\x12C\n" +
 	"\vmiddlewares\x18\x04 \x03(\v2!.runtime.middleware.v1.MiddlewareR\vmiddlewaresB\xd6\x01\n" +

@@ -127,9 +127,11 @@ func initHttpClientOptions(ctx context.Context, httpConfig *transportv1.HttpClie
 		c = clientOpts.ServiceOptions.Container
 	}
 
+	hasMiddlewaresConfigured := len(httpConfig.GetMiddlewares()) > 0
+
 	// Centralized check for container dependency.
-	if (len(httpConfig.GetMiddlewares()) > 0 || httpConfig.GetDiscoveryName() != "" || httpConfig.GetSelector() != nil) && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for client configuration (middlewares, discovery, or selector) but not found in options")
+	if hasMiddlewaresConfigured && c == nil {
+		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
 	}
 
 	// Apply options from the protobuf configuration.
@@ -139,7 +141,7 @@ func initHttpClientOptions(ctx context.Context, httpConfig *transportv1.HttpClie
 
 	// Configure middlewares.
 	var mws []middleware.Middleware
-	if len(httpConfig.GetMiddlewares()) > 0 {
+	if hasMiddlewaresConfigured {
 		for _, name := range httpConfig.GetMiddlewares() {
 			m, ok := c.ClientMiddleware(name)
 			if !ok {

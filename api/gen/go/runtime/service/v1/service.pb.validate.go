@@ -56,8 +56,6 @@ func (m *Service) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Name
-
 	for idx, item := range m.GetServers() {
 		_, _ = idx, item
 
