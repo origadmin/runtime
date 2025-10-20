@@ -30,6 +30,7 @@ type FileSource struct {
 	// supported file formats, if not set, all formats are supported
 	Formats       []string `protobuf:"bytes,4,rep,name=formats,proto3" json:"formats,omitempty"`
 	Reload        bool     `protobuf:"varint,6,opt,name=reload,proto3" json:"reload,omitempty"`
+	Optional      bool     `protobuf:"varint,7,opt,name=optional,proto3" json:"optional,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -99,18 +100,26 @@ func (x *FileSource) GetReload() bool {
 	return false
 }
 
+func (x *FileSource) GetOptional() bool {
+	if x != nil {
+		return x.Optional
+	}
+	return false
+}
+
 var File_runtime_source_v1_file_source_proto protoreflect.FileDescriptor
 
 const file_runtime_source_v1_file_source_proto_rawDesc = "" +
 	"\n" +
-	"#runtime/source/v1/file_source.proto\x12\x11runtime.source.v1\"\x84\x01\n" +
+	"#runtime/source/v1/file_source.proto\x12\x11runtime.source.v1\"\xa0\x01\n" +
 	"\n" +
 	"FileSource\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\x12\x16\n" +
 	"\x06format\x18\x02 \x01(\tR\x06format\x12\x18\n" +
 	"\aignores\x18\x03 \x03(\tR\aignores\x12\x18\n" +
 	"\aformats\x18\x04 \x03(\tR\aformats\x12\x16\n" +
-	"\x06reload\x18\x06 \x01(\bR\x06reloadB\xd5\x01\n" +
+	"\x06reload\x18\x06 \x01(\bR\x06reload\x12\x1a\n" +
+	"\boptional\x18\a \x01(\bR\boptionalB\xd5\x01\n" +
 	"\x15com.runtime.source.v1B\x0fFileSourceProtoP\x01ZBgithub.com/origadmin/runtime/api/gen/go/runtime/source/v1;sourcev1\xf8\x01\x01\xa2\x02\x03RSX\xaa\x02\x11Runtime.Source.V1\xca\x02\x11Runtime\\Source\\V1\xe2\x02\x1dRuntime\\Source\\V1\\GPBMetadata\xea\x02\x13Runtime::Source::V1b\x06proto3"
 
 var (

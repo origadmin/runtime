@@ -16,6 +16,12 @@ type Formatter func(key string, value []byte) (*config.KeyValue, error)
 
 type Option = options.Option
 
+func WithOptional() options.Option {
+	return optionutil.Update(func(o *file) {
+		o.optional = true
+	})
+}
+
 func WithIgnores(ignores ...string) options.Option {
 	return optionutil.Update(func(o *file) {
 		o.ignores = append(o.ignores, ignores...)

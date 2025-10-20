@@ -63,6 +63,8 @@ func (m *FileSource) validate(all bool) error {
 
 	// no validation rules for Reload
 
+	// no validation rules for Optional
+
 	if len(errors) > 0 {
 		return FileSourceMultiError(errors)
 	}

@@ -78,6 +78,7 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 			// Set APP_ENV environment variable
 			os.Setenv("APP_ENV", tc.envVar)
 			defer os.Unsetenv("APP_ENV") // Clean up env var after test
+			t.Logf("Setting APP_ENV to %s for %s", tc.envVar, tc.name)
 
 			rtInstance, rtCleanup, err := rt.NewFromBootstrap(
 				bootstrapPath,

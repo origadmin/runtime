@@ -1,11 +1,16 @@
 sources:
+  # Load environment variables first (lowest priority)
   - type: env
     env:
       prefix: "ORIGADMIN_"
-  - type: file
-    file:
-      path: "config_${APP_ENV:}.yaml"
-      optional: true
+
+  # Always load the base config
   - type: file
     file:
       path: "config.yaml"
+
+  # Only load environment-specific config if APP_ENV is set and not empty
+  - type: file
+    file:
+      path: "config/config_${APP_ENV}.yaml"
+      optional: true

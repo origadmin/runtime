@@ -17,4 +17,5 @@ message FileSource {
   // supported file formats, if not set, all formats are supported
   repeated string formats = 4 [json_name = "formats"];
   bool reload = 6 [json_name = "reload"];
+  bool optional = 7 [json_name = "optional"];
 }

@@ -11,6 +11,18 @@ import (
 )
 
 var _ config.Watcher = (*watcher)(nil)
+var _ config.Watcher = (*emptyWatcher)(nil)
+
+// emptyWatcher is a no-op watcher for optional files that don't exist
+type emptyWatcher struct{}
+
+func (w *emptyWatcher) Next() ([]*config.KeyValue, error) {
+	return []*config.KeyValue{}, nil
+}
+
+func (w *emptyWatcher) Stop() error {
+	return nil
+}
 
 type watcher struct {
 	f  *file
@@ -18,18 +30,6 @@ type watcher struct {
 
 	ctx    context.Context
 	cancel context.CancelFunc
-}
-
-func newWatcher(f *file) (config.Watcher, error) {
-	fw, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-	if err := fw.Add(f.path); err != nil {
-		return nil, err
-	}
-	ctx, cancel := context.WithCancel(context.Background())
-	return &watcher{f: f, fw: fw, ctx: ctx, cancel: cancel}, nil
 }
 
 func (w *watcher) Next() ([]*config.KeyValue, error) {
@@ -71,4 +71,21 @@ func (w *watcher) Next() ([]*config.KeyValue, error) {
 func (w *watcher) Stop() error {
 	w.cancel()
 	return w.fw.Close()
+}
+
+func newWatcher(f *file) (config.Watcher, error) {
+	if f.optional {
+		if _, err := os.Stat(f.path); os.IsNotExist(err) {
+			return &emptyWatcher{}, nil
+		}
+	}
+	fw, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+	if err := fw.Add(f.path); err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	return &watcher{f: f, fw: fw, ctx: ctx, cancel: cancel}, nil
 }

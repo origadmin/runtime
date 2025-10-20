@@ -33,11 +33,6 @@ type sourceFactory struct {
 	factory.Registry[SourceFactory]
 }
 
-// RegisterConfigFunc registers a new ConfigBuilder with the given name and function.
-func (f *sourceFactory) RegisterConfigFunc(name string, buildFunc BuildFunc) {
-	f.Register(name, buildFunc)
-}
-
 // BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
 type BuildFunc func(*sourcev1.SourceConfig, ...options.Option) (kratosconfig.Source, error)
 
@@ -72,10 +67,10 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 	var sources []kratosconfig.Source
 
 	// Get the list of sources from the protobuf config.
-	userSources := srcs.GetSources()
+	sourceConfigs := srcs.GetSources()
 
 	// --- START: Assign Default Priorities if not set ---
-	for _, src := range userSources {
+	for _, src := range sourceConfigs {
 		if src.GetPriority() == 0 {
 			src.Priority = getDefaultPriorityForSourceType(src.GetType())
 		}
@@ -83,13 +78,13 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 	// --- END: Assign Default Priorities if not set ---
 
 	// Sort the sources by priority before creating them.
-	sort.SliceStable(userSources, func(i, j int) bool {
+	sort.SliceStable(sourceConfigs, func(i, j int) bool {
 		// Sources with lower priority values are loaded first.
 		// Sources with higher priority values are loaded later, thus overriding earlier ones.
-		return userSources[i].GetPriority() < userSources[j].GetPriority()
+		return sourceConfigs[i].GetPriority() < sourceConfigs[j].GetPriority()
 	})
 
-	for _, src := range userSources {
+	for _, src := range sourceConfigs {
 		buildFactory, ok := f.Get(src.Type)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", src.Type)

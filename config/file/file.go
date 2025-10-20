@@ -34,12 +34,14 @@ type file struct {
 	path      string
 	ignores   []string
 	formatter Formatter
+	optional  bool
 }
 
 // NewSource creates a new file source instance
 func NewSource(path string, opts ...Option) kratosconfig.Source {
 	f := &file{
 		path:      path,
+		optional:  false,
 		ignores:   defaultIgnores,
 		formatter: defaultFormatter,
 	}
@@ -109,6 +111,10 @@ func (f *file) loadDir(path string) (kvs []*kratosconfig.KeyValue, err error) {
 func (f *file) Load() (kvs []*kratosconfig.KeyValue, err error) {
 	fi, err := os.Stat(f.path)
 	if err != nil {
+		if os.IsNotExist(err) && f.optional {
+			// File doesn't exist, but it's optional, return empty config
+			return []*kratosconfig.KeyValue{}, nil
+		}
 		return nil, err
 	}
 	if fi.IsDir() {
@@ -120,7 +126,14 @@ func (f *file) Load() (kvs []*kratosconfig.KeyValue, err error) {
 	}
 	kv, err := f.loadFile(f.path)
 	if err != nil {
+		if f.optional && (os.IsNotExist(err) || os.IsPermission(err)) {
+			return []*kratosconfig.KeyValue{}, nil
+		}
 		return nil, err
+	}
+
+	if kv == nil {
+		return []*kratosconfig.KeyValue{}, nil
 	}
 	return []*kratosconfig.KeyValue{kv}, nil
 }
@@ -147,6 +160,10 @@ func NewFileSource(cfg *sourcev1.SourceConfig, opts ...options.Option) (kratosco
 		// This can happen if the source type is "file" but the `file` oneof is not set.
 		// Returning nil, nil is a safe default, allowing other sources to proceed.
 		return nil, nil
+	}
+	optional := fileSrc.GetOptional()
+	if optional {
+		opts = append(opts, WithOptional())
 	}
 
 	return NewSource(fileSrc.GetPath(), opts...), nil
