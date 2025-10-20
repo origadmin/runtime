@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rt "github.com/origadmin/runtime"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
@@ -97,12 +98,12 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 			assert.NotNil(configDecoder)
 
 			// Decode into complete config structure
-			var config testconfigs.AllConfigs
+			var config testconfigs.TestConfig
 			err = configDecoder.Decode("", &config)
 			assert.NoError(err)
 
 			// Run assertions
-			runCompleteConfigAssertions(t, &config)
+			AssertTestConfig(t, &config)
 			t.Logf("Runtime loaded and verified %s format complete config successfully!", format)
 		})
 	}
@@ -163,7 +164,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	assert.NotNil(configDecoder)
 
 	// 3. Decode entire config into generated Bootstrap struct
-	var bootstrapConfig testconfigs.Bootstrap
+	var bootstrapConfig testconfigs.TestConfig
 	err = configDecoder.Decode("", &bootstrapConfig)
 	assert.NoError(err)
 
@@ -176,22 +177,31 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	assert.Equal("test-discovery", bootstrapConfig.RegistrationDiscoveryName)
 
 	// Verify servers
-	assert.Len(bootstrapConfig.GrpcServers, 1) // Check GrpcServers length
-	assert.Len(bootstrapConfig.HttpServers, 1) // Check HttpServers length
+	assert.Len(bootstrapConfig.GetServers(), 1, "Should have 1 Servers message")
+	serverConfigs := bootstrapConfig.GetServers()[0].GetServers()
+	assert.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
 
-	// GRPC Server
-	grpcServer := bootstrapConfig.GrpcServers[0]
-	assert.NotNil(grpcServer)
-	assert.Equal("tcp", grpcServer.Network)
-	assert.Equal(":9000", grpcServer.Addr)
-	assert.Equal("1s", grpcServer.Timeout.AsDuration().String())
+	var grpcServer *transportv1.Server
+	var httpServer *transportv1.Server
 
-	// HTTP Server
-	httpServer := bootstrapConfig.HttpServers[0]
-	assert.NotNil(httpServer)
-	assert.Equal("tcp", httpServer.Network)
-	assert.Equal(":8000", httpServer.Addr)
-	assert.Equal("2s", httpServer.Timeout.AsDuration().String())
+	for _, s := range serverConfigs {
+		if s.GetGrpc() != nil {
+			grpcServer = s
+		}
+		if s.GetHttp() != nil {
+			httpServer = s
+		}
+	}
+
+	assert.NotNil(grpcServer, "gRPC server configuration not found")
+	assert.Equal("tcp", grpcServer.GetGrpc().GetNetwork())
+	assert.Equal(":9000", grpcServer.GetGrpc().GetAddr())
+	assert.Equal("1s", grpcServer.GetGrpc().GetTimeout().AsDuration().String())
+
+	assert.NotNil(httpServer, "HTTP server configuration not found")
+	assert.Equal("tcp", httpServer.GetHttp().GetNetwork())
+	assert.Equal(":8000", httpServer.GetHttp().GetAddr())
+	assert.Equal("2s", httpServer.GetHttp().GetTimeout().AsDuration().String())
 
 	// Verify clients (should be empty as not defined in test_config.yaml)
 	assert.Empty(bootstrapConfig.Clients)

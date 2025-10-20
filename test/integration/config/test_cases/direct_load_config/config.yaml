@@ -7,15 +7,21 @@ app:
     key1: "value1"
     key2: "value2"
 
-grpc_servers:
-  - network: "tcp"
-    addr: ":9000"
-    timeout: "1s"
-
-http_servers:
-  - network: "tcp"
-    addr: ":8000"
-    timeout: "2s"
+# 注意这里的结构变化
+servers:
+  - servers:
+      - name: "grpc_server"
+        protocol: "grpc"
+        grpc:
+          network: "tcp"
+          addr: ":9000"
+          timeout: "1s"
+      - name: "http_server"
+        protocol: "http"
+        http:
+          network: "tcp"
+          addr: ":8000"
+          timeout: "2s"
 
 client:
   endpoint: "discovery:///user-service"
@@ -24,16 +30,15 @@ client:
     version: "v1.0.0"
 
 discoveries:
-  discoveries:
-    - name: "internal-consul"
-      type: "consul"
-      consul:
-        address: "consul.internal:8500"
-    - name: "legacy-etcd"
-      type: "etcd"
-      etcd:
-        endpoints:
-          - "etcd.legacy:2379"
+  - name: "internal-consul"
+    type: "consul"
+    consul:
+      address: "consul.internal:8500"
+  - name: "legacy-etcd"
+    type: "etcd"
+    etcd:
+      endpoints:
+        - "etcd.legacy:2379"
 
 registration_discovery_name: "internal-consul"
 
@@ -47,10 +52,9 @@ tracer:
   endpoint: "http://jaeger:14268/api/traces"
 
 middlewares:
-  middlewares:
-    - name: "cors-middleware"
-      type: cors
-      enabled: true
-      cors:
-        allowed_origins: [ "*" ]
-        allowed_methods: [ "GET", "POST" ]
+  - name: "cors-middleware"
+    type: "cors"
+    enabled: true
+    cors:
+      allowed_origins: ["*"]
+      allowed_methods: ["GET", "POST"]

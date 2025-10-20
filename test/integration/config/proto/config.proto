@@ -7,8 +7,6 @@ import "runtime/app/v1/app.proto";
 import "runtime/config/v1/client.proto";
 import "runtime/config/v1/gateway.proto";
 import "runtime/config/v1/server.proto";
-import "runtime/config/v1/storage.proto";
-import "runtime/config/v1/task.proto";
 import "runtime/config/v1/tracer.proto";
 import "runtime/config/v1/websocket.proto";
 import "runtime/discovery/v1/discovery.proto";
@@ -20,8 +18,6 @@ import "runtime/security/authz/v1/authz.proto";
 import "runtime/security/transport/v1/tls.proto";
 import "runtime/storage/v1/storage.proto";
 import "runtime/task/v1/task.proto";
-import "runtime/transport/v1/grpc.proto";
-import "runtime/transport/v1/http.proto";
 import "runtime/transport/v1/transport.proto";
 
 option go_package = "github.com/origadmin/runtime/test/integration/config/proto;configs";
@@ -32,8 +28,8 @@ message TestConfig {
   runtime.app.v1.App app = 1;
 
   // Server configurations
-  repeated runtime.transport.v1.GrpcServerConfig grpc_servers = 2;
-  repeated runtime.transport.v1.HttpServerConfig http_servers = 3;
+  repeated runtime.transport.v1.Servers servers = 2;
+  repeated runtime.transport.v1.Clients clients = 3;
 
   runtime.config.v1.Server server = 4;
 
@@ -51,12 +47,11 @@ message TestConfig {
   runtime.config.v1.Tracer tracer = 9;
   runtime.middleware.v1.Middlewares middlewares = 10; // Corrected: changed type to Middlewares and field name to middlewares
   runtime.config.v1.Gateway gateway = 11;
-  runtime.config.v1.Storage storage = 12;
-  runtime.config.v1.Task task = 13;
+  runtime.storage.v1.Storage storage = 12;
+  runtime.task.v1.Task task = 13;
   runtime.config.v1.WebSocket websocket = 14;
   runtime.extension.v1.Extension extension = 15;
   runtime.security.authn.v1.AuthN authn = 16;
   runtime.security.authz.v1.AuthZ authz = 17;
   runtime.security.transport.v1.TLSConfig tls = 18;
-  runtime.transport.v1.Transport transport = 19;
 }

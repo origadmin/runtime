@@ -9,7 +9,6 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	runtimelog "github.com/origadmin/runtime/log"
@@ -169,8 +168,10 @@ func (b *Builder) Initialize(cfg interfaces.Config) error {
 
 // initLogger handles the initialization of the logger component.
 func (b *Builder) initLogger() error {
-	var loggerCfg *loggerv1.Logger
-
+	loggerCfg, err := b.config.DecodeLogger()
+	if err != nil {
+		return fmt.Errorf("failed to decode logger config: %w", err)
+	}
 	// 4. Create the logger instance. NewLogger handles the nil config gracefully.
 	logger := runtimelog.NewLogger(loggerCfg)
 
@@ -180,23 +181,37 @@ func (b *Builder) initLogger() error {
 	return nil
 }
 
+func firstRegistry(registrars map[string]registry.Registrar) registry.Registrar {
+	for _, registrar := range registrars {
+		return registrar
+	}
+	return nil
+}
+
 // initRegistries handles the initialization of the service discovery and registration components.
 func (b *Builder) initRegistries() error {
 	helper := log.NewHelper(b.Logger()) // Use log.Helper
 
-	discoveries, err := b.config.DecodeDiscoveries()
+	discoveriesCfg, err := b.config.DecodeDiscoveries()
 	// Graceful Fallback: If there's an error or no registries are configured, run in local mode.
-	if err != nil || len(discoveries) == 0 {
+	if err != nil {
 		helper.Infow("msg", "no registries configured or failed to decode, running in local mode", "error", err)
+		return nil // Not a fatal error
+	}
+
+	if discoveriesCfg == nil || len(discoveriesCfg.GetDiscoveries()) == 0 {
+		helper.Infow("msg", "no registries configured, running in local mode")
 		b.container.discoveries = make(map[string]registry.Discovery)
 		b.container.registrars = make(map[string]registry.Registrar)
 		return nil // Not a fatal error
 	}
 
+	discoveries := discoveriesCfg.GetDiscoveries()
 	b.container.discoveries = make(map[string]registry.Discovery, len(discoveries))
 	b.container.registrars = make(map[string]registry.Registrar, len(discoveries))
 
-	for name, discoveryCfg := range discoveries {
+	for _, discoveryCfg := range discoveries {
+		name := discoveryCfg.GetName()
 		// Create Discovery
 		d, err := runtimeRegistry.NewDiscovery(discoveryCfg)
 		if err != nil {
@@ -214,6 +229,16 @@ func (b *Builder) initRegistries() error {
 		b.container.registrars[name] = r
 	}
 
+	if len(b.container.registrars) == 1 {
+		b.container.defaultRegistrar = firstRegistry(b.container.registrars)
+	} else if len(b.container.discoveries) > 1 && discoveriesCfg.DefaultRegistryName != "" {
+		if d, ok := b.container.registrars[discoveriesCfg.DefaultRegistryName]; ok {
+			b.container.defaultRegistrar = d
+		}
+	} else {
+		helper.Warnw("msg", "no default registrar set")
+	}
+
 	// Set the default registrar
 	//if discoveryCfg.Default != "" {
 	//	if r, ok := b.container.registrars[discoveryCfg.Default]; ok {
@@ -227,16 +252,22 @@ func (b *Builder) initRegistries() error {
 }
 
 func (b *Builder) initMiddlewares() error {
-	helper := log.NewHelper(b.container.Logger())                             // Use log.Helper
-	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
-	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware) // Corrected type
+	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
 
 	middlewares, err := b.config.DecodeMiddlewares()
+
 	if err != nil {
 		return fmt.Errorf("failed to decode middlewares: %w", err)
 	}
+	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware)
+	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware)
+	if middlewares == nil || len(middlewares.GetMiddlewares()) == 0 {
+		helper.Infow("msg", "no middlewares configured, skipping")
+		return nil
+	}
 	// Get the logger to pass to middleware options
 	logger := b.container.Logger()
+
 	for _, mc := range middlewares.GetMiddlewares() {
 		if mc.GetEnabled() {
 			// Assuming NewClient and NewServer support WithLogger option

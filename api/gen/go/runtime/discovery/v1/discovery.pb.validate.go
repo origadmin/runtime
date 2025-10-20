@@ -408,6 +408,8 @@ func (m *Discoveries) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for DefaultRegistryName
+
 	for idx, item := range m.GetDiscoveries() {
 		_, _ = idx, item
 

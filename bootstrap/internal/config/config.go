@@ -156,11 +156,22 @@ func (c *structuredConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, er
 		return discoveryConverter.FromMap(m), nil
 	}
 
-	var s []*discoveryv1.Discovery
+	var s discoveryv1.Discoveries
 	if err := c.decodeComponent(constant.ComponentRegistries, &s); err != nil {
 		return nil, err
 	}
-	return discoveryConverter.FromSlice(s), nil
+	return &s, nil
+}
+
+func (c *structuredConfigImpl) DecodeDefaultDiscovery() (string, error) {
+	defaultRegistry := ""
+	if err := c.decodeComponent(constant.ComponentDefaultRegistry, &defaultRegistry); err != nil {
+		return "", err
+	}
+	if defaultRegistry == "" {
+		return "", nil
+	}
+	return defaultRegistry, nil
 }
 
 // DecodeMiddlewares implements the MiddlewareConfigDecoder interface.
@@ -170,11 +181,11 @@ func (c *structuredConfigImpl) DecodeMiddlewares() (*middlewarev1.Middlewares, e
 		return middlewareConverter.FromMap(m), nil
 	}
 
-	var s []*middlewarev1.Middleware
+	var s middlewarev1.Middlewares
 	if err := c.decodeComponent(constant.ComponentMiddlewares, &s); err != nil {
 		return nil, err
 	}
-	return middlewareConverter.FromSlice(s), nil
+	return &s, nil
 }
 
 // DecodeServers implements the ServiceConfigDecoder interface.
@@ -184,11 +195,11 @@ func (c *structuredConfigImpl) DecodeServers() (*transportv1.Servers, error) {
 		return serverConverter.FromMap(m), nil
 	}
 
-	var s []*transportv1.Server
+	var s transportv1.Servers
 	if err := c.decodeComponent(constant.ComponentServers, &s); err != nil {
 		return nil, err
 	}
-	return serverConverter.FromSlice(s), nil
+	return &s, nil
 }
 
 // DecodeClients implements the ServiceConfigDecoder interface.
@@ -198,9 +209,9 @@ func (c *structuredConfigImpl) DecodeClients() (*transportv1.Clients, error) {
 		return clientConverter.FromMap(m), nil
 	}
 
-	var s []*transportv1.Client
+	var s transportv1.Clients
 	if err := c.decodeComponent(constant.ComponentClients, &s); err != nil {
 		return nil, err
 	}
-	return clientConverter.FromSlice(s), nil
+	return &s, nil
 }

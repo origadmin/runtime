@@ -20,23 +20,22 @@ func New(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) 
 	providerOpts := FromOptions(opts...)
 
 	// 2. Load configuration first. This is a critical change in the flow.
-	cfg, err := LoadConfig(bootstrapPath, opts...)
+	cfg, sc, err := LoadConfig(bootstrapPath, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
-
-	// The cleanup function will be built up, starting with closing the config.
 	cleanup := func() {
-		if err := cfg.Close(); err != nil {
-			log.Errorf("failed to close config: %v", err)
+		if cfg != nil {
+			cfg.Close()
 		}
 	}
 
 	// 3. Decode AppInfo from the configuration.
-	configAppInfo, err := cfg.DecodeApp()
+	configAppInfo, err := sc.DecodeApp()
 	// It's okay if this fails (e.g., 'app' key not in config), so we don't return the error immediately.
 	// A hard error would prevent using WithAppInfo as the only source.
 	if err != nil {
+		cleanup()
 		log.Debugf("failed to decode app info from config, will rely on WithAppInfo option: %v", err)
 	}
 
@@ -69,20 +68,20 @@ func New(bootstrapPath string, opts ...Option) (interfaces.Bootstrapper, error) 
 
 	// 5. Set runtime values and validate.
 	if finalAppInfo.ID == "" || finalAppInfo.Name == "" || finalAppInfo.Version == "" {
-		cleanup() // Call cleanup as we are failing.
+		cleanup()
 		return nil, runtimeerrors.NewStructured("bootstrap", "app info (ID, Name, Version) is required but was not found in config or WithAppInfo option").WithCaller()
 	}
 
 	// 3. Create the component provider implementation.
 	// This will hold all the initialized components.
-	builder := container.NewBuilder(providerOpts.componentFactories).WithConfig(cfg)
+	builder := container.NewBuilder(providerOpts.componentFactories).WithConfig(sc)
 
 	// 4. Initialize core components by consuming the config.
 	// This is where the magic happens: logger, registries, etc., are created.
 	c, err := builder.Build()
 	if err != nil {
-		// Even if initialization fails, we should still call the cleanup function.
 		cleanup()
+		// Even if initialization fails, we should still call the cleanup function.
 		return nil, fmt.Errorf("failed to initialize components: %w", err)
 	}
 

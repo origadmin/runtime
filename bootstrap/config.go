@@ -22,17 +22,18 @@ import (
 // It is now a private variable within the bootstrap package, ensuring that the default
 // path logic is cohesive and contained within this package.
 var defaultComponentPaths = map[string]string{
-	constant.ConfigApp:            "app",
-	constant.ComponentLogger:      "logger",
-	constant.ComponentRegistries:  "discoveries", // Corrected to match full_config.yaml
-	constant.ComponentMiddlewares: "middlewares",
-	constant.ComponentServers:     "servers",
-	constant.ComponentClients:     "clients",
+	constant.ConfigApp:                "app",
+	constant.ComponentLogger:          "logger",
+	constant.ComponentRegistries:      "discoveries",
+	constant.ComponentDefaultRegistry: "default_registry_name",
+	constant.ComponentMiddlewares:     "middlewares",
+	constant.ComponentServers:         "servers",
+	constant.ComponentClients:         "clients",
 }
 
 // LoadConfig creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, following a clear, layered approach.
-func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConfig, error) {
+func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.Config, interfaces.StructuredConfig, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	// 1. Apply Options to determine the configuration flow.
 	providerOpts := FromConfigLoadOptions(opts...)
@@ -43,7 +44,7 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 	if providerOpts.config != nil {
 		// If it's already a StructuredConfig, the user has provided a complete, loaded implementation.
 		if sc, ok := providerOpts.config.(interfaces.StructuredConfig); ok {
-			return sc, nil
+			return nil, sc, nil
 		}
 		// Otherwise, we'll use it as the base for our default structured implementation.
 		baseConfig = providerOpts.config
@@ -72,7 +73,7 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 		var err error
 		baseConfig, err = runtimeconfig.NewConfig(&sourcev1.Sources{Sources: sources}, opts...)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create base config: %w", err)
+			return nil, nil, fmt.Errorf("failed to create base config: %w", err)
 		}
 	}
 
@@ -90,19 +91,23 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 
 	// Step 3: Load the configuration. This is the responsibility of the bootstrap module.
 	if err := baseConfig.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
+		return nil, nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
 	sc := bootstrapconfig.NewStructured(baseConfig, paths)
 
 	// Step 4: (Optional) Apply a high-level transformer if provided.
 	if providerOpts.configTransformer != nil {
-		return providerOpts.configTransformer.Transform(baseConfig, sc)
+		wrapped, err := providerOpts.configTransformer.Transform(baseConfig, sc)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to transform config: %w", err)
+		}
+		return baseConfig, wrapped, nil
 	}
 
 	// Final Step: If no transformer is used, apply the default structured implementation.
 	// We take the loaded base interfaces.Config and enhance it with structured, path-based decoding.
-	return sc, nil
+	return baseConfig, sc, nil
 }
 
 // loadSourcesFromBootstrapFile attempts to load a bootstrap configuration and resolve the paths of its sources.

@@ -35,7 +35,6 @@ type Config interface {
 // StructuredConfig defines a set of type-safe, recommended methods for decoding configuration.
 // It embeds the generic Config interface to allow for decoding arbitrary values.
 type StructuredConfig interface {
-	Config // Embed the generic config interface
 	AppConfigDecoder
 	LoggerConfigDecoder
 	DiscoveriesConfigDecoder
@@ -58,6 +57,7 @@ type LoggerConfigDecoder interface {
 // to decode service discovery configurations. Custom Config implementations can implement this
 // interface to provide an optimized decoding path.
 type DiscoveriesConfigDecoder interface {
+	DecodeDefaultDiscovery() (string, error)
 	DecodeDiscoveries() (*discoveryv1.Discoveries, error)
 }
 

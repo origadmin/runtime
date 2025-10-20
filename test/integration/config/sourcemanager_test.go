@@ -12,6 +12,16 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 )
 
+type CustomSettings struct {
+	FeatureEnabled bool   `json:"feature_enabled"`
+	APIKey         string `json:"api_key"`
+	RateLimit      int    `json:"rate_limit"`
+	Endpoints      []struct {
+		Name string `json:"name"`
+		Path string `json:"path"`
+	} `json:"endpoints"`
+}
+
 // TestConfigSourceMergingAndPriority verifies that the configuration manager correctly
 // merges settings from multiple sources, respecting their defined priorities.
 // It uses a bootstrap file that loads a base config and a higher-priority override config.

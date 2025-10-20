@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rt "github.com/origadmin/runtime"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/test/helper"
@@ -30,15 +31,32 @@ func assertBootstrapTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assert.Equal("value2", cfg.App.GetMetadata()["key2"])
 
 	// Server configuration assertions
-	assert.Len(cfg.GrpcServers, 1)
-	assert.Equal("tcp", cfg.GrpcServers[0].GetNetwork())
-	assert.Equal(":9000", cfg.GrpcServers[0].GetAddr())
-	assert.Equal("1s", cfg.GrpcServers[0].GetTimeout().AsDuration().String())
+	// Server configuration assertions
+	assert.Len(cfg.GetServers(), 1, "Should have 2 Servers message")
+	serverConfigs := cfg.GetServers()[0].GetServers()
+	assert.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
 
-	assert.Len(cfg.HttpServers, 1)
-	assert.Equal("tcp", cfg.HttpServers[0].GetNetwork())
-	assert.Equal(":8000", cfg.HttpServers[0].GetAddr())
-	assert.Equal("2s", cfg.HttpServers[0].GetTimeout().AsDuration().String())
+	var grpcServer *transportv1.Server
+	var httpServer *transportv1.Server
+
+	for _, s := range serverConfigs {
+		if s.GetGrpc() != nil {
+			grpcServer = s
+		}
+		if s.GetHttp() != nil {
+			httpServer = s
+		}
+	}
+
+	assert.NotNil(grpcServer, "gRPC server configuration not found")
+	assert.Equal("tcp", grpcServer.GetGrpc().GetNetwork())
+	assert.Equal(":9000", grpcServer.GetGrpc().GetAddr())
+	assert.Equal("1s", grpcServer.GetGrpc().GetTimeout().AsDuration().String())
+
+	assert.NotNil(httpServer, "HTTP server configuration not found")
+	assert.Equal("tcp", httpServer.GetHttp().GetNetwork())
+	assert.Equal(":8000", httpServer.GetHttp().GetAddr())
+	assert.Equal("2s", httpServer.GetHttp().GetTimeout().AsDuration().String())
 
 	// Client configuration assertions
 	assert.NotNil(cfg.Client)
@@ -48,7 +66,7 @@ func assertBootstrapTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assert.Equal("v1.0.0", cfg.Client.GetSelector().GetVersion())
 
 	// Discovery configuration assertions (omitted for this test case)
-	assert.Len(cfg.Discoveries, 0, "Discoveries should be empty for this test case")
+	assert.Nil(cfg.Discoveries, "Discoveries should be empty for this test case")
 	assert.Empty(cfg.GetRegistrationDiscoveryName(), "RegistrationDiscoveryName should be empty for this test case")
 
 	// Logger configuration assertions
@@ -125,8 +143,8 @@ func (s *BootstrapLoadConfigTestSuite) TestBootstrapLoading() {
 			// Decode the entire configuration into our unified TestConfig struct.
 			var cfg testconfigs.TestConfig
 			err = configDecoder.Decode("", &cfg) // Decode the root of the config
-			assert.NoError(err, "Failed to decode config from runtime: %v", err)
 
+			assert.NoError(err, "Failed to decode config from runtime: %v", err)
 			// Run assertions on the loaded configuration using the custom assertion.
 			assertBootstrapTestConfig(t, &cfg)
 			t.Logf("Runtime loaded and verified %s bootstrap config successfully!", tc.name)

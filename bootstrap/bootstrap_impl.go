@@ -9,7 +9,7 @@ import (
 type bootstrapperImpl struct {
 	appInfo   *interfaces.AppInfo
 	container interfaces.Container
-	config    interfaces.StructuredConfig
+	config    interfaces.Config
 	cleanup   func()
 }
 
@@ -22,7 +22,7 @@ func (b *bootstrapperImpl) Container() interfaces.Container {
 }
 
 // Config implements interfaces.Bootstrapper.
-func (b *bootstrapperImpl) Config() interfaces.StructuredConfig {
+func (b *bootstrapperImpl) Config() interfaces.Config {
 	return b.config
 }
 

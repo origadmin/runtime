@@ -9,7 +9,7 @@ type Bootstrapper interface {
 	// Container returns the initialized component provider.
 	Container() Container
 	// Config returns the configuration decoder.
-	Config() StructuredConfig
+	Config() Config
 	// Cleanup returns the cleanup function.
 	Cleanup() func()
 }

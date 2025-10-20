@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 )
 
@@ -25,15 +26,31 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assert.Equal("value2", cfg.App.GetMetadata()["key2"])
 
 	// Server configuration assertions
-	assert.Len(cfg.GrpcServers, 1)
-	assert.Equal("tcp", cfg.GrpcServers[0].GetNetwork())
-	assert.Equal(":9000", cfg.GrpcServers[0].GetAddr())
-	assert.Equal("1s", cfg.GrpcServers[0].GetTimeout().AsDuration().String())
+	assert.Len(cfg.GetServers(), 2, "Should have 1 Servers message")
+	serverConfigs := cfg.GetServers()[0].GetServers()
+	assert.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
 
-	assert.Len(cfg.HttpServers, 1)
-	assert.Equal("tcp", cfg.HttpServers[0].GetNetwork())
-	assert.Equal(":8000", cfg.HttpServers[0].GetAddr())
-	assert.Equal("2s", cfg.HttpServers[0].GetTimeout().AsDuration().String())
+	var grpcServer *transportv1.Server
+	var httpServer *transportv1.Server
+
+	for _, s := range serverConfigs {
+		if s.GetGrpc() != nil {
+			grpcServer = s
+		}
+		if s.GetHttp() != nil {
+			httpServer = s
+		}
+	}
+
+	assert.NotNil(grpcServer, "gRPC server configuration not found")
+	assert.Equal("tcp", grpcServer.GetGrpc().GetNetwork())
+	assert.Equal(":9000", grpcServer.GetGrpc().GetAddr())
+	assert.Equal("1s", grpcServer.GetGrpc().GetTimeout().AsDuration().String())
+
+	assert.NotNil(httpServer, "HTTP server configuration not found")
+	assert.Equal("tcp", httpServer.GetHttp().GetNetwork())
+	assert.Equal(":8000", httpServer.GetHttp().GetAddr())
+	assert.Equal("2s", httpServer.GetHttp().GetTimeout().AsDuration().String())
 
 	// Client configuration assertions
 	assert.NotNil(cfg.Client)
@@ -72,7 +89,7 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assert.Equal("http://jaeger:14268/api/traces", cfg.Tracer.GetEndpoint())
 
 	// Middleware configuration assertions
-	assert.NotNil(cfg.Middlewares) // Corrected: changed from cfg.Middleware to cfg.Middlewares
+	assert.NotNil(cfg.Middlewares)
 	assert.Len(cfg.Middlewares.GetMiddlewares(), 1, "Should have 1 middleware configured")
 
 	corsMiddleware := cfg.Middlewares.GetMiddlewares()[0]

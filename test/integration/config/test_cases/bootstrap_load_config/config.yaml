@@ -7,15 +7,18 @@ app:
     key1: "value1"
     key2: "value2"
 
-grpc_servers:
-  - network: "tcp"
-    addr: ":9000"
-    timeout: "1s"
-
-http_servers:
-  - network: "tcp"
-    addr: ":8000"
-    timeout: "2s"
+servers:
+  - servers:
+      - name: "grpc_servers"
+        grpc:
+          addr: ":9000"
+          network: "tcp"
+          timeout: "1s"
+      - name: "http_servers"
+        http:
+          addr: ":8000"
+          network: "tcp"
+          timeout: "2s"
 
 client:
   endpoint: "discovery:///user-service"
@@ -23,19 +26,22 @@ client:
   selector:
     version: "v1.0.0"
 
+
 logger:
   level: "info"
   format: "json"
   stdout: true
 
+# 确保 tracer 字段结构正确
 tracer:
   name: "jaeger"
   endpoint: "http://jaeger:14268/api/traces"
 
-middlewares: # Corrected key
+middlewares:
   middlewares:
-    - type: cors
-      enabled: true
-      cors:
-        allowed_origins: [ "*" ]
+    - cors:
         allowed_methods: [ "GET", "POST" ]
+        allowed_origins: [ "*" ]
+      enabled: true
+      name: "cors-middleware"
+      type: "cors"

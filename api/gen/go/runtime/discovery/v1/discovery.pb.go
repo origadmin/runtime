@@ -146,10 +146,11 @@ func (x *Discovery) GetCustomize() *v1.Extension {
 }
 
 type Discoveries struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Discoveries   []*Discovery           `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	DefaultRegistryName string                 `protobuf:"bytes,1,opt,name=default_registry_name,proto3" json:"default_registry_name,omitempty"`
+	Discoveries         []*Discovery           `protobuf:"bytes,2,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *Discoveries) Reset() {
@@ -180,6 +181,13 @@ func (x *Discoveries) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Discoveries.ProtoReflect.Descriptor instead.
 func (*Discoveries) Descriptor() ([]byte, []int) {
 	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Discoveries) GetDefaultRegistryName() string {
+	if x != nil {
+		return x.DefaultRegistryName
+	}
+	return ""
 }
 
 func (x *Discoveries) GetDiscoveries() []*Discovery {
@@ -516,9 +524,10 @@ const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\a_apolloB\r\n" +
 	"\v_kubernetesB\n" +
 	"\n" +
-	"\b_polaris\"P\n" +
-	"\vDiscoveries\x12A\n" +
-	"\vdiscoveries\x18\x01 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\"\xcb\x02\n" +
+	"\b_polaris\"\x86\x01\n" +
+	"\vDiscoveries\x124\n" +
+	"\x15default_registry_name\x18\x01 \x01(\tR\x15default_registry_name\x12A\n" +
+	"\vdiscoveries\x18\x02 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\"\xcb\x02\n" +
 	"\x06Consul\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
 	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +

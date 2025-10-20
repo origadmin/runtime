@@ -11,6 +11,8 @@ const (
 	// ComponentRegistries is the key for the service registries component.
 	ComponentRegistries = "registries"
 
+	ComponentDefaultRegistry = "default-registry"
+
 	// ComponentMiddlewares is the key for the middlewares component.
 	ComponentMiddlewares = "middlewares"
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap"
@@ -14,6 +13,7 @@ import (
 
 // TestTransformer is a custom transformer for testing purposes.
 type TestTransformer struct {
+	interfaces.StructuredConfig
 	Suffix string
 	c      interfaces.Config
 	cfg    *testconfigs.TestConfig
@@ -46,24 +46,11 @@ func (t *TestTransformer) DecodeLogger() (*loggerv1.Logger, error) {
 	return t.cfg.Logger, nil
 }
 
-func (t *TestTransformer) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	var discoveries map[string]*discoveryv1.Discovery
-	for _, discovery := range t.cfg.GetDiscoveries().GetDiscoveries() {
-		key := discovery.GetName()
-		if key == "" {
-			key = discovery.GetType()
-		}
-		discoveries[key] = discovery
-	}
-
-	return discoveries, nil
-}
-
 func (t *TestTransformer) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 	return t.cfg.Middlewares, nil
 }
 
-func (t *TestTransformer) Transform(c interfaces.Config) (interfaces.StructuredConfig, error) {
+func (t *TestTransformer) Transform(c interfaces.Config, sc interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
 	t.c = c
 	// Decode the current configuration into our TestConfig struct.
 	var cfg testconfigs.TestConfig
@@ -79,7 +66,7 @@ func (t *TestTransformer) Transform(c interfaces.Config) (interfaces.StructuredC
 		cfg.App = &appv1.App{}
 		cfg.App.Name = "TransformedApp" + t.Suffix
 	}
-
+	t.StructuredConfig = sc
 	t.cfg = &cfg
 	return t, nil
 }
