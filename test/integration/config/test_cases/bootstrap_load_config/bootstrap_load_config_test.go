@@ -9,6 +9,7 @@ import (
 	rt "github.com/origadmin/runtime"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/test/helper"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
@@ -131,6 +132,9 @@ func (s *BootstrapLoadConfigTestSuite) TestBootstrapLoading() {
 					ID:      "bootstrap-test-app",
 					Name:    "BootstrapTestApp",
 					Version: "1.0.0",
+				}),
+				bootstrap.WithDefaultPaths(map[string]string{
+					constant.ComponentMiddlewares: "middlewares.middlewares",
 				}),
 			)
 			assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)

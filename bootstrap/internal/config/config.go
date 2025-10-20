@@ -156,6 +156,11 @@ func (c *structuredConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, er
 		return discoveryConverter.FromMap(m), nil
 	}
 
+	var ds []*discoveryv1.Discovery
+	if err := c.decodeComponent(constant.ComponentRegistries, &ds); err == nil {
+		return discoveryConverter.FromSlice(ds), nil
+	}
+
 	var s discoveryv1.Discoveries
 	if err := c.decodeComponent(constant.ComponentRegistries, &s); err != nil {
 		return nil, err
@@ -181,6 +186,11 @@ func (c *structuredConfigImpl) DecodeMiddlewares() (*middlewarev1.Middlewares, e
 		return middlewareConverter.FromMap(m), nil
 	}
 
+	var ms []*middlewarev1.Middleware
+	if err := c.decodeComponent(constant.ComponentMiddlewares, &ms); err == nil {
+		return middlewareConverter.FromSlice(ms), nil
+	}
+
 	var s middlewarev1.Middlewares
 	if err := c.decodeComponent(constant.ComponentMiddlewares, &s); err != nil {
 		return nil, err
@@ -195,6 +205,11 @@ func (c *structuredConfigImpl) DecodeServers() (*transportv1.Servers, error) {
 		return serverConverter.FromMap(m), nil
 	}
 
+	var ss []*transportv1.Server
+	if err := c.decodeComponent(constant.ComponentServers, &ss); err == nil {
+		return serverConverter.FromSlice(ss), nil
+	}
+
 	var s transportv1.Servers
 	if err := c.decodeComponent(constant.ComponentServers, &s); err != nil {
 		return nil, err
@@ -207,6 +222,10 @@ func (c *structuredConfigImpl) DecodeClients() (*transportv1.Clients, error) {
 	var m map[string]*transportv1.Client
 	if err := c.decodeComponent(constant.ComponentClients, &m); err == nil && len(m) > 0 {
 		return clientConverter.FromMap(m), nil
+	}
+	var cs []*transportv1.Client
+	if err := c.decodeComponent(constant.ComponentClients, &cs); err == nil {
+		return clientConverter.FromSlice(cs), nil
 	}
 
 	var s transportv1.Clients
