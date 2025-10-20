@@ -12,6 +12,7 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/toolkits/decode"
 )
 
 // structuredConfigImpl implements the interfaces.StructuredConfig interface.
@@ -23,6 +24,70 @@ type structuredConfigImpl struct {
 
 // Statically assert that structuredConfigImpl implements the full StructuredConfig interface.
 var _ interfaces.StructuredConfig = (*structuredConfigImpl)(nil)
+
+// --- Reusable Converters ---
+
+var (
+	serverConverter = decode.NewConverter(
+		func(name string, item *transportv1.Server) (*transportv1.Server, bool) {
+			if item.Name == "" {
+				item.Name = name
+			}
+			return item, true
+		},
+		func(items []*transportv1.Server) *transportv1.Servers {
+			if items == nil {
+				return nil
+			}
+			return &transportv1.Servers{Servers: items}
+		},
+	)
+
+	clientConverter = decode.NewConverter(
+		func(name string, item *transportv1.Client) (*transportv1.Client, bool) {
+			if item.Name == "" {
+				item.Name = name
+			}
+			return item, true
+		},
+		func(items []*transportv1.Client) *transportv1.Clients {
+			if items == nil {
+				return nil
+			}
+			return &transportv1.Clients{Clients: items}
+		},
+	)
+
+	discoveryConverter = decode.NewConverter(
+		func(name string, item *discoveryv1.Discovery) (*discoveryv1.Discovery, bool) {
+			if item.Name == "" {
+				item.Name = name
+			}
+			return item, true
+		},
+		func(items []*discoveryv1.Discovery) *discoveryv1.Discoveries {
+			if items == nil {
+				return nil
+			}
+			return &discoveryv1.Discoveries{Discoveries: items}
+		},
+	)
+
+	middlewareConverter = decode.NewConverter(
+		func(name string, item *middlewarev1.Middleware) (*middlewarev1.Middleware, bool) {
+			if item.Name == "" {
+				item.Name = name
+			}
+			return item, true
+		},
+		func(items []*middlewarev1.Middleware) *middlewarev1.Middlewares {
+			if items == nil {
+				return nil
+			}
+			return &middlewarev1.Middlewares{Middlewares: items}
+		},
+	)
+)
 
 // NewStructured creates a new structured config implementation.
 // It takes a generic interfaces.Config and a path map to provide high-level decoding methods.
@@ -86,98 +151,56 @@ func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 
 // DecodeDiscoveries implements the DiscoveriesConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
-	var list []*discoveryv1.Discovery
 	var m map[string]*discoveryv1.Discovery
-
-	// Try to decode as a map first.
 	if err := c.decodeComponent(constant.ComponentRegistries, &m); err == nil && len(m) > 0 {
-		for name, item := range m {
-			if item.Name == "" {
-				item.Name = name
-			}
-			list = append(list, item)
-		}
-		return &discoveryv1.Discoveries{Discoveries: list}, nil
+		return discoveryConverter.FromMap(m), nil
 	}
 
-	// If map fails or is empty, try to decode as a list.
-	if err := c.decodeComponent(constant.ComponentRegistries, &list); err != nil {
+	var s []*discoveryv1.Discovery
+	if err := c.decodeComponent(constant.ComponentRegistries, &s); err != nil {
 		return nil, err
 	}
-
-	if len(list) == 0 {
-		return nil, nil
-	}
-
-	return &discoveryv1.Discoveries{Discoveries: list}, nil
+	return discoveryConverter.FromSlice(s), nil
 }
 
 // DecodeMiddlewares implements the MiddlewareConfigDecoder interface.
 func (c *structuredConfigImpl) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
-	val := new(middlewarev1.Middlewares)
-	if err := c.decodeComponent(constant.ComponentMiddlewares, val); err != nil {
+	var m map[string]*middlewarev1.Middleware
+	if err := c.decodeComponent(constant.ComponentMiddlewares, &m); err == nil && len(m) > 0 {
+		return middlewareConverter.FromMap(m), nil
+	}
+
+	var s []*middlewarev1.Middleware
+	if err := c.decodeComponent(constant.ComponentMiddlewares, &s); err != nil {
 		return nil, err
 	}
-	if val == nil || len(val.Middlewares) == 0 {
-		return nil, nil
-	}
-	return val, nil
+	return middlewareConverter.FromSlice(s), nil
 }
 
 // DecodeServers implements the ServiceConfigDecoder interface.
-// It intelligently handles both map and slice formats for server configurations.
 func (c *structuredConfigImpl) DecodeServers() (*transportv1.Servers, error) {
-	var list []*transportv1.Server
 	var m map[string]*transportv1.Server
-
-	// Try to decode as a map first.
 	if err := c.decodeComponent(constant.ComponentServers, &m); err == nil && len(m) > 0 {
-		for name, item := range m {
-			if item.Name == "" {
-				item.Name = name
-			}
-			list = append(list, item)
-		}
-		return &transportv1.Servers{Servers: list}, nil
+		return serverConverter.FromMap(m), nil
 	}
 
-	// If map fails or is empty, try to decode as a list.
-	if err := c.decodeComponent(constant.ComponentServers, &list); err != nil {
+	var s []*transportv1.Server
+	if err := c.decodeComponent(constant.ComponentServers, &s); err != nil {
 		return nil, err
 	}
-
-	if len(list) == 0 {
-		return nil, nil
-	}
-
-	return &transportv1.Servers{Servers: list}, nil
+	return serverConverter.FromSlice(s), nil
 }
 
 // DecodeClients implements the ServiceConfigDecoder interface.
-// It intelligently handles both map and slice formats for client configurations.
 func (c *structuredConfigImpl) DecodeClients() (*transportv1.Clients, error) {
-	var list []*transportv1.Client
 	var m map[string]*transportv1.Client
-
-	// Try to decode as a map first.
 	if err := c.decodeComponent(constant.ComponentClients, &m); err == nil && len(m) > 0 {
-		for name, item := range m {
-			if item.Name == "" {
-				item.Name = name
-			}
-			list = append(list, item)
-		}
-		return &transportv1.Clients{Clients: list}, nil
+		return clientConverter.FromMap(m), nil
 	}
 
-	// If map fails or is empty, try to decode as a list.
-	if err := c.decodeComponent(constant.ComponentClients, &list); err != nil {
+	var s []*transportv1.Client
+	if err := c.decodeComponent(constant.ComponentClients, &s); err != nil {
 		return nil, err
 	}
-
-	if len(list) == 0 {
-		return nil, nil
-	}
-
-	return &transportv1.Clients{Clients: list}, nil
+	return clientConverter.FromSlice(s), nil
 }
