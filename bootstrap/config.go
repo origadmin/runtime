@@ -26,6 +26,8 @@ var defaultComponentPaths = map[string]string{
 	constant.ComponentLogger:      "logger",
 	constant.ComponentRegistries:  "discoveries", // Corrected to match full_config.yaml
 	constant.ComponentMiddlewares: "middlewares",
+	constant.ComponentServers:     "servers",
+	constant.ComponentClients:     "clients",
 }
 
 // LoadConfig creates a new configuration decoder instance.
@@ -91,14 +93,16 @@ func LoadConfig(bootstrapPath string, opts ...Option) (interfaces.StructuredConf
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
+	sc := bootstrapconfig.NewStructured(baseConfig, paths)
+
 	// Step 4: (Optional) Apply a high-level transformer if provided.
 	if providerOpts.configTransformer != nil {
-		return providerOpts.configTransformer.Transform(baseConfig)
+		return providerOpts.configTransformer.Transform(baseConfig, sc)
 	}
 
 	// Final Step: If no transformer is used, apply the default structured implementation.
 	// We take the loaded base interfaces.Config and enhance it with structured, path-based decoding.
-	return bootstrapconfig.NewStructured(baseConfig, paths), nil
+	return sc, nil
 }
 
 // loadSourcesFromBootstrapFile attempts to load a bootstrap configuration and resolve the paths of its sources.

@@ -15,15 +15,16 @@ type PathResolverFunc func(baseDir, path string) string
 
 // ConfigTransformer defines an interface for custom transformation of kratosconfig.Config to interfaces.Config.
 type ConfigTransformer interface {
-	Transform(interfaces.Config) (interfaces.StructuredConfig, error)
+	Transform(interfaces.Config, interfaces.StructuredConfig) (interfaces.StructuredConfig, error)
 }
 
 // ConfigTransformFunc is a function type that implements the ConfigTransformer interface.
-type ConfigTransformFunc func(interfaces.Config) (interfaces.StructuredConfig, error)
+type ConfigTransformFunc func(interfaces.Config, interfaces.StructuredConfig) (interfaces.StructuredConfig, error)
 
 // Transform implements the ConfigTransformer interface for ConfigTransformFunc.
-func (f ConfigTransformFunc) Transform(config interfaces.Config) (interfaces.StructuredConfig, error) {
-	return f(config)
+func (f ConfigTransformFunc) Transform(config interfaces.Config, sc interfaces.StructuredConfig) (
+	interfaces.StructuredConfig, error) {
+	return f(config, sc)
 }
 
 // ConfigLoadOptions holds configuration for the LoadConfig function.

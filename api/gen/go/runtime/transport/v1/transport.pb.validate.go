@@ -56,6 +56,8 @@ func (m *Server) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
 	// no validation rules for Protocol
 
 	if m.Grpc != nil {
@@ -233,6 +235,138 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ServerValidationError{}
+
+// Validate checks the field values on Servers with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Servers) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Servers with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ServersMultiError, or nil if none found.
+func (m *Servers) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Servers) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetServers() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ServersValidationError{
+						field:  fmt.Sprintf("Servers[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ServersValidationError{
+						field:  fmt.Sprintf("Servers[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ServersValidationError{
+					field:  fmt.Sprintf("Servers[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ServersMultiError(errors)
+	}
+
+	return nil
+}
+
+// ServersMultiError is an error wrapping multiple validation errors returned
+// by Servers.ValidateAll() if the designated constraints aren't met.
+type ServersMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ServersMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ServersMultiError) AllErrors() []error { return m }
+
+// ServersValidationError is the validation error returned by Servers.Validate
+// if the designated constraints aren't met.
+type ServersValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ServersValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ServersValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ServersValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ServersValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ServersValidationError) ErrorName() string { return "ServersValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ServersValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sServers.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ServersValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ServersValidationError{}
 
 // Validate checks the field values on Client with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -435,41 +569,74 @@ var _ interface {
 	ErrorName() string
 } = ClientValidationError{}
 
-// Validate checks the field values on Transport with the rules defined in the
+// Validate checks the field values on Clients with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *Transport) Validate() error {
+func (m *Clients) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Transport with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in TransportMultiError, or nil
-// if none found.
-func (m *Transport) ValidateAll() error {
+// ValidateAll checks the field values on Clients with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ClientsMultiError, or nil if none found.
+func (m *Clients) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Transport) validate(all bool) error {
+func (m *Clients) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
+	for idx, item := range m.GetClients() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ClientsValidationError{
+						field:  fmt.Sprintf("Clients[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ClientsValidationError{
+						field:  fmt.Sprintf("Clients[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ClientsValidationError{
+					field:  fmt.Sprintf("Clients[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
-		return TransportMultiError(errors)
+		return ClientsMultiError(errors)
 	}
 
 	return nil
 }
 
-// TransportMultiError is an error wrapping multiple validation errors returned
-// by Transport.ValidateAll() if the designated constraints aren't met.
-type TransportMultiError []error
+// ClientsMultiError is an error wrapping multiple validation errors returned
+// by Clients.ValidateAll() if the designated constraints aren't met.
+type ClientsMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m TransportMultiError) Error() string {
+func (m ClientsMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -478,11 +645,11 @@ func (m TransportMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m TransportMultiError) AllErrors() []error { return m }
+func (m ClientsMultiError) AllErrors() []error { return m }
 
-// TransportValidationError is the validation error returned by
-// Transport.Validate if the designated constraints aren't met.
-type TransportValidationError struct {
+// ClientsValidationError is the validation error returned by Clients.Validate
+// if the designated constraints aren't met.
+type ClientsValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -490,22 +657,22 @@ type TransportValidationError struct {
 }
 
 // Field function returns field value.
-func (e TransportValidationError) Field() string { return e.field }
+func (e ClientsValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e TransportValidationError) Reason() string { return e.reason }
+func (e ClientsValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e TransportValidationError) Cause() error { return e.cause }
+func (e ClientsValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e TransportValidationError) Key() bool { return e.key }
+func (e ClientsValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e TransportValidationError) ErrorName() string { return "TransportValidationError" }
+func (e ClientsValidationError) ErrorName() string { return "ClientsValidationError" }
 
 // Error satisfies the builtin error interface
-func (e TransportValidationError) Error() string {
+func (e ClientsValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -517,14 +684,14 @@ func (e TransportValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sTransport.%s: %s%s",
+		"invalid %sClients.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = TransportValidationError{}
+var _ error = ClientsValidationError{}
 
 var _ interface {
 	Field() string
@@ -532,4 +699,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = TransportValidationError{}
+} = ClientsValidationError{}

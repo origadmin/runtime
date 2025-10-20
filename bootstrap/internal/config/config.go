@@ -9,6 +9,7 @@ import (
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces"
 )
@@ -84,52 +85,99 @@ func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 }
 
 // DecodeDiscoveries implements the DiscoveriesConfigDecoder interface.
-func (c *structuredConfigImpl) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	// Attempt 1: Try to decode directly into a map (if config is structured as a map).
-	var discoveriesMap map[string]*discoveryv1.Discovery
-	err := c.decodeComponent(constant.ComponentRegistries, &discoveriesMap)
-	if err == nil {
-		// If decoding into a map was successful and it's not empty, return it.
-		if len(discoveriesMap) > 0 {
-			return discoveriesMap, nil
+func (c *structuredConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
+	var list []*discoveryv1.Discovery
+	var m map[string]*discoveryv1.Discovery
+
+	// Try to decode as a map first.
+	if err := c.decodeComponent(constant.ComponentRegistries, &m); err == nil && len(m) > 0 {
+		for name, item := range m {
+			if item.Name == "" {
+				item.Name = name
+			}
+			list = append(list, item)
 		}
-		// If it was successful but empty, proceed to try list or return nil.
+		return &discoveryv1.Discoveries{Discoveries: list}, nil
 	}
 
-	// Attempt 2: If decoding into a map failed or resulted in an empty map,
-	// try to decode into a list and convert it (if config is structured as a list).
-	var discoveryList []*discoveryv1.Discovery
-	err = c.decodeComponent(constant.ComponentRegistries, &discoveryList)
-	if err != nil {
-		// If both attempts failed, return the error from the second attempt.
+	// If map fails or is empty, try to decode as a list.
+	if err := c.decodeComponent(constant.ComponentRegistries, &list); err != nil {
 		return nil, err
 	}
 
-	// If the list is empty, return nil.
-	if len(discoveryList) == 0 {
+	if len(list) == 0 {
 		return nil, nil
 	}
 
-	// Convert the list to a map.
-	discoveriesMap = make(map[string]*discoveryv1.Discovery)
-	for _, d := range discoveryList {
-		if d.Name != "" {
-			discoveriesMap[d.Name] = d
-		}
-	}
-	return discoveriesMap, nil
+	return &discoveryv1.Discoveries{Discoveries: list}, nil
 }
 
 // DecodeMiddlewares implements the MiddlewareConfigDecoder interface.
-// This implementation correctly preserves the user's fix.
 func (c *structuredConfigImpl) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
-	var middlewares *middlewarev1.Middlewares
-	if err := c.decodeComponent(constant.ComponentMiddlewares, &middlewares); err != nil {
+	val := new(middlewarev1.Middlewares)
+	if err := c.decodeComponent(constant.ComponentMiddlewares, val); err != nil {
 		return nil, err
 	}
-	// This check correctly handles both a nil pointer and an empty inner slice.
-	if middlewares == nil || (len(middlewares.Middlewares) == 0) {
+	if val == nil || len(val.Middlewares) == 0 {
 		return nil, nil
 	}
-	return middlewares, nil
+	return val, nil
+}
+
+// DecodeServers implements the ServiceConfigDecoder interface.
+// It intelligently handles both map and slice formats for server configurations.
+func (c *structuredConfigImpl) DecodeServers() (*transportv1.Servers, error) {
+	var list []*transportv1.Server
+	var m map[string]*transportv1.Server
+
+	// Try to decode as a map first.
+	if err := c.decodeComponent(constant.ComponentServers, &m); err == nil && len(m) > 0 {
+		for name, item := range m {
+			if item.Name == "" {
+				item.Name = name
+			}
+			list = append(list, item)
+		}
+		return &transportv1.Servers{Servers: list}, nil
+	}
+
+	// If map fails or is empty, try to decode as a list.
+	if err := c.decodeComponent(constant.ComponentServers, &list); err != nil {
+		return nil, err
+	}
+
+	if len(list) == 0 {
+		return nil, nil
+	}
+
+	return &transportv1.Servers{Servers: list}, nil
+}
+
+// DecodeClients implements the ServiceConfigDecoder interface.
+// It intelligently handles both map and slice formats for client configurations.
+func (c *structuredConfigImpl) DecodeClients() (*transportv1.Clients, error) {
+	var list []*transportv1.Client
+	var m map[string]*transportv1.Client
+
+	// Try to decode as a map first.
+	if err := c.decodeComponent(constant.ComponentClients, &m); err == nil && len(m) > 0 {
+		for name, item := range m {
+			if item.Name == "" {
+				item.Name = name
+			}
+			list = append(list, item)
+		}
+		return &transportv1.Clients{Clients: list}, nil
+	}
+
+	// If map fails or is empty, try to decode as a list.
+	if err := c.decodeComponent(constant.ComponentClients, &list); err != nil {
+		return nil, err
+	}
+
+	if len(list) == 0 {
+		return nil, nil
+	}
+
+	return &transportv1.Clients{Clients: list}, nil
 }

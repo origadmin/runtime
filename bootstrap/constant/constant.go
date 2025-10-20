@@ -13,4 +13,10 @@ const (
 
 	// ComponentMiddlewares is the key for the middlewares component.
 	ComponentMiddlewares = "middlewares"
+
+	// ComponentServers is the key for the servers component.
+	ComponentServers = "servers"
+
+	// ComponentClients is the key for the clients component.
+	ComponentClients = "clients"
 )
