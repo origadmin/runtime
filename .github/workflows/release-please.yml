@@ -8,13 +8,16 @@ on:
     branches:
       - main
   pull_request:
-    types: [closed]
+    types: [ closed ]
 
 permissions:
   contents: write
   pull-requests: write
-  actions: read # 添加此行
+  actions: read
   checks: write
+
+env:
+  PROTOC_VERSION: "33.0"
 
 jobs:
   lint:
@@ -83,7 +86,7 @@ jobs:
 
   release:
     # The release job depends on the test job succeeding.
-    needs: [test]
+    needs: [ test ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
