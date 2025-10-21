@@ -4,9 +4,7 @@ package test.configs;
 
 // Import all required configuration proto files
 import "runtime/app/v1/app.proto";
-import "runtime/config/v1/client.proto";
 import "runtime/config/v1/gateway.proto";
-import "runtime/config/v1/server.proto";
 import "runtime/config/v1/tracer.proto";
 import "runtime/config/v1/websocket.proto";
 import "runtime/discovery/v1/discovery.proto";
@@ -29,11 +27,6 @@ message TestConfig {
 
   runtime.transport.v1.Servers servers = 2;
   runtime.transport.v1.Clients clients = 3;
-
-  runtime.config.v1.Server server = 4;
-
-  // Client configuration for downstream services
-  runtime.config.v1.Client client = 5;
 
   // Service discovery configurations
   runtime.discovery.v1.Discoveries discoveries = 6;

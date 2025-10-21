@@ -12,7 +12,7 @@ import (
 
 	"github.com/goexts/generic/configure"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/runtime/storage"
 )
@@ -61,9 +61,9 @@ func (obj *tokenCacheStorage) Close(ctx context.Context) error {
 func New(ss ...StorageOption) CacheStorage {
 	service := configure.New[tokenCacheStorage](ss)
 	if service.c == nil {
-		defaultCacheConfig := &configv1.Cache{
+		defaultCacheConfig := &storagev1.Cache{
 			Driver: "memory",
-			Memory: &configv1.Memory{},
+			Memory: &storagev1.Memory{},
 		}
 		c, err := storage.New(defaultCacheConfig)
 		if err != nil {
