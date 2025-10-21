@@ -31,8 +31,8 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	asserts.Equal("value2", cfg.App.GetMetadata()["key2"])
 
 	// Server configuration assertions
-	asserts.Len(cfg.GetServers(), 1, "Should have 1 Servers message")
-	serverConfigs := cfg.GetServers()[0].GetServers()
+	asserts.Len(cfg.GetServers().GetServers(), 2, "Should have 2 Servers messages")
+	serverConfigs := cfg.GetServers().GetServers()
 	asserts.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
 
 	var grpcServer *transportv1.Server
@@ -186,8 +186,8 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	assertions.Equal("test-discovery", bootstrapConfig.RegistrationDiscoveryName)
 
 	// Verify servers
-	assertions.Len(bootstrapConfig.GetServers(), 1, "Should have 1 Servers message")
-	serverConfigs := bootstrapConfig.GetServers()[0].GetServers()
+	assertions.Len(bootstrapConfig.GetServers().GetServers(), 2, "Should have 2 Servers message")
+	serverConfigs := bootstrapConfig.GetServers().GetServers()
 	assertions.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
 
 	var grpcServer *transportv1.Server

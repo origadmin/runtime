@@ -8,17 +8,19 @@ app:
     key2: "value2"
 
 servers:
-  - servers:
-      - name: "grpc_servers"
-        grpc:
-          addr: ":9000"
-          network: "tcp"
-          timeout: "1s"
-      - name: "http_servers"
-        http:
-          addr: ":8000"
-          network: "tcp"
-          timeout: "2s"
+  servers:
+    - name: "grpc_servers"
+      protocol: "grpc"
+      grpc:
+        addr: ":9000"
+        network: "tcp"
+        timeout: "1s"
+    - name: "http_servers"
+      protocol: "http"
+      http:
+        addr: ":8000"
+        network: "tcp"
+        timeout: "2s"
 
 client:
   endpoint: "discovery:///user-service"

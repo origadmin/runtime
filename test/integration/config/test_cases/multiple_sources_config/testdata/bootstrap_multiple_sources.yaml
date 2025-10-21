@@ -1,0 +1,11 @@
+sources:
+  - name: "source1"
+    priority: 1
+    type: "file"
+    file:
+      path: "source1.yaml"
+  - name: "source2"
+    priority: 10
+    type: "file"
+    file:
+      path: "source2.yaml"

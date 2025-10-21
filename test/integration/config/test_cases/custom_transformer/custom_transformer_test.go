@@ -9,7 +9,6 @@ import (
 	rt "github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/test/helper"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 	"github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer"
 	_ "github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer" // Import for transformer registration
@@ -28,11 +27,9 @@ func TestCustomTransformerTestSuite(t *testing.T) {
 // during the bootstrap process and modifies the configuration as expected.
 func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	t := s.T()
-	assert := assert.New(t)
-	cleanup := helper.SetupIntegrationTest(t)
-	defer cleanup()
+	assertions := assert.New(t)
 
-	bootstrapPath := "config/test_cases/custom_transformer/bootstrap_transformer.yaml"
+	bootstrapPath := "bootstrap_transformer.yaml"
 
 	// Initialize Runtime, which should apply the registered custom transformer.
 	rtInstance, err := rt.NewFromBootstrap(
@@ -44,22 +41,22 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 		}),
 		bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{Suffix: "-transformed"}),
 	)
-	assert.NoError(err, "Failed to initialize runtime from bootstrap with custom transformer: %v", err)
+	assertions.NoError(err, "Failed to initialize runtime from bootstrap with custom transformer: %v", err)
 	defer rtInstance.Cleanup()
 
 	configDecoder := rtInstance.Config()
-	assert.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
+	assertions.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
 
 	var cfg testconfigs.TestConfig
 	err = configDecoder.Decode("app", &cfg.App) // Decode only the app section for specific assertions
-	assert.NoError(err, "Failed to decode app config from runtime: %v", err)
+	assertions.NoError(err, "Failed to decode app config from runtime: %v", err)
 
 	// Assert that the App.Name has been transformed by our custom transformer.
-	assert.NotNil(cfg.App)
-	assert.Equal("transformer-app-id", cfg.App.Id, "App ID should remain unchanged")
-	assert.Equal("OriginalApp-transformed", cfg.App.Name, "App Name should be transformed by the custom transformer")
-	assert.Equal("1.0.0", cfg.App.Version, "App Version should remain unchanged")
-	assert.Equal("transformer-test", cfg.App.Env, "App Env should remain unchanged")
+	assertions.NotNil(cfg.App)
+	assertions.Equal("transformer-app-id", cfg.App.Id, "App ID should remain unchanged")
+	assertions.Equal("OriginalApp-transformed", cfg.App.Name, "App Name should be transformed by the custom transformer")
+	assertions.Equal("1.0.0", cfg.App.Version, "App Version should remain unchanged")
+	assertions.Equal("transformer-test", cfg.App.Env, "App Env should remain unchanged")
 
 	t.Logf("Custom transformer applied and verified successfully!")
 }

@@ -6,14 +6,14 @@ app:
 registration_discovery_name: "test-discovery"
 
 servers:
-  - servers:
-      - name: "grpc_servers"
-        grpc:
-          addr: ":9000"
-          network: "tcp"
-          timeout: "1s"
-      - name: "http_servers"
-        http:
-          addr: ":8000"
-          network: "tcp"
-          timeout: "2s"
+  servers:
+    - name: "grpc_servers"
+      grpc:
+        addr: ":9000"
+        network: "tcp"
+        timeout: "1s"
+    - name: "http_servers"
+      http:
+        addr: ":8000"
+        network: "tcp"
+        timeout: "2s"

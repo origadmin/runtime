@@ -40,8 +40,11 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 			Version: "1.0.0",
 		}),
 	)
-	assertions.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
-	defer rtInstance.Cleanup()
+	// Use NoError to halt the test immediately on failure, preventing a panic
+	// from the deferred Cleanup call on a nil rtInstance.
+	if !assertions.NoError(err, "Failed to initialize runtime from bootstrap: %v", err) {
+		return
+	}
 
 	configDecoder := rtInstance.Config()
 	assertions.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
