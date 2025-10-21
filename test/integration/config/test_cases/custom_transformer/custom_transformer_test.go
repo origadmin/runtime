@@ -44,19 +44,22 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	assertions.NoError(err, "Failed to initialize runtime from bootstrap with custom transformer: %v", err)
 	defer rtInstance.Cleanup()
 
+	// Use StructuredConfig() to get the transformed configuration, not Config().
+	// Config() returns the raw, untransformed configuration.
 	configDecoder := rtInstance.Config()
 	assertions.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
 
 	var cfg testconfigs.TestConfig
-	err = configDecoder.Decode("app", &cfg.App) // Decode only the app section for specific assertions
+	err = configDecoder.Decode("", &cfg) // Decode only the app section for specific assertions
 	assertions.NoError(err, "Failed to decode app config from runtime: %v", err)
-
 	// Assert that the App.Name has been transformed by our custom transformer.
-	assertions.NotNil(cfg.App)
-	assertions.Equal("transformer-app-id", cfg.App.Id, "App ID should remain unchanged")
-	assertions.Equal("OriginalApp-transformed", cfg.App.Name, "App Name should be transformed by the custom transformer")
-	assertions.Equal("1.0.0", cfg.App.Version, "App Version should remain unchanged")
-	assertions.Equal("transformer-test", cfg.App.Env, "App Env should remain unchanged")
+	app, err := rtInstance.StructuredConfig().DecodeApp()
+	assertions.NoError(err, "Failed to decode app config from runtime: %v", err)
+	assertions.NotNil(app, "App section should be decoded")
+	assertions.Equal("transformer-app-id", app.Id, "App ID should remain unchanged")
+	assertions.Equal("OriginalApp-transformed", app.Name, "App Name should be transformed by the custom transformer")
+	assertions.Equal("1.0.0", app.Version, "App Version should remain unchanged")
+	assertions.Equal("transformer-test", app.Env, "App Env should remain unchanged")
 
 	t.Logf("Custom transformer applied and verified successfully!")
 }
