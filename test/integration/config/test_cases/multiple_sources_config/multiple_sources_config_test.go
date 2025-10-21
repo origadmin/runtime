@@ -1,6 +1,7 @@
 package multiple_sources_config_test
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,7 +10,6 @@ import (
 	rt "github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/test/helper"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 )
 
@@ -26,11 +26,10 @@ func TestMultipleSourcesConfigTestSuite(t *testing.T) {
 // loaded, merged, and prioritized by the runtime.
 func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 	t := s.T()
-	assert := assert.New(t)
-	cleanup := helper.SetupIntegrationTest(t)
-	defer cleanup()
+	assertions := assert.New(t)
 
-	bootstrapPath := "test/integration/config/test_cases/multiple_sources_config/bootstrap_multiple_sources.yaml"
+	// Use a robust relative path from the test file to the dedicated test data.
+	bootstrapPath := filepath.Join("testdata", "bootstrap_multiple_sources.yaml")
 
 	// Initialize Runtime from the bootstrap file that defines multiple sources.
 	rtInstance, err := rt.NewFromBootstrap(
@@ -41,45 +40,45 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 			Version: "1.0.0",
 		}),
 	)
-	assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
+	assertions.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
 	defer rtInstance.Cleanup()
 
 	configDecoder := rtInstance.Config()
-	assert.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
+	assertions.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
 
 	var cfg testconfigs.TestConfig
 	err = configDecoder.Decode("", &cfg)
-	assert.NoError(err, "Failed to decode config from runtime: %v", err)
+	assertions.NoError(err, "Failed to decode config from runtime: %v", err)
 
 	// Assertions for merged configuration:
 	// app.id should be from source1 (not overridden)
-	assert.NotNil(cfg.App)
-	assert.Equal("source1-app-id", cfg.App.Id)
+	assertions.NotNil(cfg.App)
+	assertions.Equal("source1-app-id", cfg.App.Id)
 
 	// app.name should be overridden by source2
-	assert.Equal("Source2App", cfg.App.Name)
+	assertions.Equal("Source2App", cfg.App.Name)
 
 	// app.env should be overridden by source2
-	assert.Equal("prod", cfg.App.Env)
+	assertions.Equal("prod", cfg.App.Env)
 
 	// app.metadata should contain key3 from source2
-	assert.Contains(cfg.App.Metadata, "key3")
-	assert.Equal("value3", cfg.App.Metadata["key3"])
+	assertions.Contains(cfg.App.Metadata, "key3")
+	assertions.Equal("value3", cfg.App.Metadata["key3"])
 
 	// logger.level should be overridden by source2
-	assert.NotNil(cfg.Logger)
-	assert.Equal("info", cfg.Logger.Level)
+	assertions.NotNil(cfg.Logger)
+	assertions.Equal("info", cfg.Logger.Level)
 
 	// client.timeout should be overridden by source2
-	assert.NotNil(cfg.Client)
-	assert.Equal("5s", cfg.Client.Timeout.AsDuration().String())
+	assertions.NotNil(cfg.Client)
+	assertions.Equal("5s", cfg.Client.Timeout.AsDuration().String())
 
 	// client.endpoint should be from source1 (not overridden)
-	assert.Equal("discovery:///source1-service", cfg.Client.Endpoint)
+	assertions.Equal("discovery:///source1-service", cfg.Client.Endpoint)
 
 	// client.selector.version should be from source2 (new field)
-	assert.NotNil(cfg.Client.Selector)
-	assert.Equal("v2.0.0", cfg.Client.Selector.Version)
+	assertions.NotNil(cfg.Client.Selector)
+	assertions.Equal("v2.0.0", cfg.Client.Selector.Version)
 
 	t.Log("Multiple sources config loaded and merged successfully!")
 }

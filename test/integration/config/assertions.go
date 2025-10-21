@@ -26,8 +26,8 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assertions.Equal("value2", cfg.App.GetMetadata()["key2"])
 
 	// Server configuration assertions
-	assertions.Len(cfg.GetServers(), 2, "Should have 1 Servers message")
-	serverConfigs := cfg.GetServers()[0].GetServers()
+	assertions.Len(cfg.GetServers().GetServers(), 2, "Should have 1 Servers message")
+	serverConfigs := cfg.GetServers().GetServers()
 	assertions.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
 
 	var grpcServer *transportv1.Server

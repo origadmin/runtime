@@ -27,9 +27,8 @@ message TestConfig {
   // App configuration from app.proto
   runtime.app.v1.App app = 1;
 
-  // Server configurations
-  repeated runtime.transport.v1.Servers servers = 2;
-  repeated runtime.transport.v1.Clients clients = 3;
+  runtime.transport.v1.Servers servers = 2;
+  runtime.transport.v1.Clients clients = 3;
 
   runtime.config.v1.Server server = 4;
 

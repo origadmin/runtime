@@ -1,60 +1,57 @@
 app:
-  id: "test-app-id"
-  name: "TestApp"
-  version: "1.0.0"
-  env: "test"
-  metadata:
-    key1: "value1"
-    key2: "value2"
-
-# 注意这里的结构变化
-servers:
-  - servers:
-      - name: "grpc_server"
-        protocol: "grpc"
-        grpc:
-          network: "tcp"
-          addr: ":9000"
-          timeout: "1s"
-      - name: "http_server"
-        protocol: "http"
-        http:
-          network: "tcp"
-          addr: ":8000"
-          timeout: "2s"
-
+    env: test
+    id: test-app-id
+    metadata:
+        key1: value1
+        key2: value2
+    name: TestApp
+    version: 1.0.0
 client:
-  endpoint: "discovery:///user-service"
-  timeout: "3s"
-  selector:
-    version: "v1.0.0"
-
+    endpoint: discovery:///user-service
+    selector:
+        version: v1.0.0
+    timeout: 3s
 discoveries:
-  - name: "internal-consul"
-    type: "consul"
-    consul:
-      address: "consul.internal:8500"
-  - name: "legacy-etcd"
-    type: "etcd"
-    etcd:
-      endpoints:
-        - "etcd.legacy:2379"
-
-registration_discovery_name: "internal-consul"
-
+    discoveries:
+        - consul:
+            address: consul.internal:8500
+          name: internal-consul
+          type: consul
+        - etcd:
+            endpoints:
+                - etcd.legacy:2379
+          name: legacy-etcd
+          type: etcd
 logger:
-  level: "info"
-  format: "json"
-  stdout: true
-
-tracer:
-  name: "jaeger"
-  endpoint: "http://jaeger:14268/api/traces"
-
+    format: json
+    level: info
+    stdout: true
 middlewares:
-  - name: "cors-middleware"
-    type: "cors"
-    enabled: true
-    cors:
-      allowed_origins: ["*"]
-      allowed_methods: ["GET", "POST"]
+    middlewares:
+        - cors:
+            allowed_methods:
+                - GET
+                - POST
+            allowed_origins:
+                - '*'
+          enabled: true
+          name: cors-middleware
+          type: cors
+registration_discovery_name: internal-consul
+servers:
+    servers:
+        - grpc:
+            addr: :9000
+            network: tcp
+            timeout: 1s
+          name: grpc_server
+          protocol: grpc
+        - http:
+            addr: :8000
+            network: tcp
+            timeout: 2s
+          name: http_server
+          protocol: http
+tracer:
+    endpoint: http://jaeger:14268/api/traces
+    name: jaeger

@@ -37,11 +37,10 @@ const (
 type TestConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// App configuration from app.proto
-	App *v1.App `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
-	// Server configurations
-	Servers []*v11.Servers `protobuf:"bytes,2,rep,name=servers,proto3" json:"servers,omitempty"`
-	Clients []*v11.Clients `protobuf:"bytes,3,rep,name=clients,proto3" json:"clients,omitempty"`
-	Server  *v12.Server    `protobuf:"bytes,4,opt,name=server,proto3" json:"server,omitempty"`
+	App     *v1.App      `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
+	Servers *v11.Servers `protobuf:"bytes,2,opt,name=servers,proto3" json:"servers,omitempty"`
+	Clients *v11.Clients `protobuf:"bytes,3,opt,name=clients,proto3" json:"clients,omitempty"`
+	Server  *v12.Server  `protobuf:"bytes,4,opt,name=server,proto3" json:"server,omitempty"`
 	// Client configuration for downstream services
 	Client *v12.Client `protobuf:"bytes,5,opt,name=client,proto3" json:"client,omitempty"`
 	// Service discovery configurations
@@ -101,14 +100,14 @@ func (x *TestConfig) GetApp() *v1.App {
 	return nil
 }
 
-func (x *TestConfig) GetServers() []*v11.Servers {
+func (x *TestConfig) GetServers() *v11.Servers {
 	if x != nil {
 		return x.Servers
 	}
 	return nil
 }
 
-func (x *TestConfig) GetClients() []*v11.Clients {
+func (x *TestConfig) GetClients() *v11.Clients {
 	if x != nil {
 		return x.Clients
 	}
@@ -228,8 +227,8 @@ const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
 	"TestConfig\x12%\n" +
 	"\x03app\x18\x01 \x01(\v2\x13.runtime.app.v1.AppR\x03app\x127\n" +
-	"\aservers\x18\x02 \x03(\v2\x1d.runtime.transport.v1.ServersR\aservers\x127\n" +
-	"\aclients\x18\x03 \x03(\v2\x1d.runtime.transport.v1.ClientsR\aclients\x121\n" +
+	"\aservers\x18\x02 \x01(\v2\x1d.runtime.transport.v1.ServersR\aservers\x127\n" +
+	"\aclients\x18\x03 \x01(\v2\x1d.runtime.transport.v1.ClientsR\aclients\x121\n" +
 	"\x06server\x18\x04 \x01(\v2\x19.runtime.config.v1.ServerR\x06server\x121\n" +
 	"\x06client\x18\x05 \x01(\v2\x19.runtime.config.v1.ClientR\x06client\x12C\n" +
 	"\vdiscoveries\x18\x06 \x01(\v2!.runtime.discovery.v1.DiscoveriesR\vdiscoveries\x12>\n" +
