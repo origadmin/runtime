@@ -51,7 +51,7 @@ func (s *ConfigTestSuite) TestConfigSourceMergingAndPriority() {
 	bootstrapPath := "test/integration/config/configs/bootstrap.yaml"
 
 	// 1. Initialize Runtime from the bootstrap file.
-	instance, cleanup, err := rt.NewFromBootstrap(
+	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "test-source-merging",
@@ -62,10 +62,10 @@ func (s *ConfigTestSuite) TestConfigSourceMergingAndPriority() {
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	defer cleanup()
+	defer rtInstance.Cleanup()
 
 	// 2. Get the configuration decoder from the runtime.
-	configDecoder := instance.Config()
+	configDecoder := rtInstance.Config()
 	assert.NotNil(configDecoder)
 
 	// 3. Decode and verify the logger configuration.

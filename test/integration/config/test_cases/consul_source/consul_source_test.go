@@ -57,7 +57,7 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 	// Initialize Runtime. The framework should automatically use the registered MockConsulSource
 	// based on the 'type: consul' in bootstrap_consul.yaml.
 	// We now explicitly pass the mock data using bootstrap.WithSourceOption and helper.WithMockDataJSON.
-	rtInstance, rtCleanup, err := rt.NewFromBootstrap(
+	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:   "consul-test-app",
@@ -67,7 +67,7 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 		helper.WithMockDataJSON(mockData),
 	)
 	assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
-	defer rtCleanup()
+	defer rtInstance.Cleanup()
 
 	configDecoder := rtInstance.Config()
 	assert.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")

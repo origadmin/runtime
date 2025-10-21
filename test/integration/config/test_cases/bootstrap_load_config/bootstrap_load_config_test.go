@@ -126,7 +126,7 @@ func (s *BootstrapLoadConfigTestSuite) TestBootstrapLoading() {
 		t.Run(tc.name, func(t *testing.T) {
 			// Initialize Runtime from the bootstrap file.
 			// The AppInfo here is minimal as the main config is loaded via bootstrap.
-			rtInstance, rtCleanup, err := rt.NewFromBootstrap(
+			rtInstance, err := rt.NewFromBootstrap(
 				tc.filePath,
 				bootstrap.WithAppInfo(&interfaces.AppInfo{
 					ID:      "bootstrap-test-app",
@@ -138,7 +138,7 @@ func (s *BootstrapLoadConfigTestSuite) TestBootstrapLoading() {
 				}),
 			)
 			assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
-			defer rtCleanup()
+			defer rtInstance.Cleanup()
 
 			// Get the configuration decoder from the runtime.
 			configDecoder := rtInstance.Config()

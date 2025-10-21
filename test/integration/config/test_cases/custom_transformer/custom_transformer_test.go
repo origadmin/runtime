@@ -35,7 +35,7 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	bootstrapPath := "config/test_cases/custom_transformer/bootstrap_transformer.yaml"
 
 	// Initialize Runtime, which should apply the registered custom transformer.
-	rtInstance, rtCleanup, err := rt.NewFromBootstrap(
+	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "transformer-test-app",
@@ -45,7 +45,7 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 		bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{Suffix: "-transformed"}),
 	)
 	assert.NoError(err, "Failed to initialize runtime from bootstrap with custom transformer: %v", err)
-	defer rtCleanup()
+	defer rtInstance.Cleanup()
 
 	configDecoder := rtInstance.Config()
 	assert.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")

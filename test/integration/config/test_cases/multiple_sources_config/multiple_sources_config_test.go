@@ -33,7 +33,7 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 	bootstrapPath := "test/integration/config/test_cases/multiple_sources_config/bootstrap_multiple_sources.yaml"
 
 	// Initialize Runtime from the bootstrap file that defines multiple sources.
-	rtInstance, rtCleanup, err := rt.NewFromBootstrap(
+	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "multi-source-test-app",
@@ -42,7 +42,7 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 		}),
 	)
 	assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
-	defer rtCleanup()
+	defer rtInstance.Cleanup()
 
 	configDecoder := rtInstance.Config()
 	assert.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")

@@ -80,7 +80,7 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 			defer os.Unsetenv("APP_ENV") // Clean up env var after test
 			t.Logf("Setting APP_ENV to %s for %s", tc.envVar, tc.name)
 
-			rtInstance, rtCleanup, err := rt.NewFromBootstrap(
+			rtInstance, err := rt.NewFromBootstrap(
 				bootstrapPath,
 				bootstrap.WithAppInfo(&interfaces.AppInfo{
 					ID:      "env-test-app",
@@ -89,7 +89,7 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 				}),
 			)
 			assert.NoError(err, "Failed to initialize runtime from bootstrap for %s: %v", tc.name, err)
-			defer rtCleanup()
+			defer rtInstance.Cleanup()
 
 			configDecoder := rtInstance.Config()
 			assert.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil for %s", tc.name)

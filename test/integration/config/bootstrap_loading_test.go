@@ -80,7 +80,7 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 			}
 
 			// Initialize Runtime
-			rt, cleanup, err := rt.NewFromBootstrap(
+			rtInstance, err := rt.NewFromBootstrap(
 				tempBootstrapPath,
 				bootstrap.WithAppInfo(&interfaces.AppInfo{
 					ID:      "test-complete-config",
@@ -91,10 +91,10 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 			if err != nil {
 				t.Fatalf("Failed to initialize runtime with %s config: %v", format, err)
 			}
-			defer cleanup()
+			defer rtInstance.Cleanup()
 
 			// Get configuration decoder
-			configDecoder := rt.Config()
+			configDecoder := rtInstance.Config()
 			assert.NotNil(configDecoder)
 
 			// Decode into complete config structure
@@ -146,7 +146,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	bootstrapPath := "test/integration/config/configs/bootstrap.yaml"
 
 	// 1. Initialize Runtime with default decoder provider
-	boot, cleanup, err := rt.NewFromBootstrap(
+	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "test-proto-config",
@@ -157,10 +157,10 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	defer cleanup()
+	defer rtInstance.Cleanup()
 
 	// 2. Get ConfigDecoder from runtime
-	configDecoder := boot.Config()
+	configDecoder := rtInstance.Config()
 	assert.NotNil(configDecoder)
 
 	// 3. Decode entire config into generated Bootstrap struct
@@ -170,7 +170,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 
 	// 4. Assert decoded values
 	// Verify logger (from test_config.yaml)
-	logger := boot.Logger()
+	logger := rtInstance.Logger()
 	assert.NotNil(logger)
 
 	// Verify registration_discovery_name
@@ -258,7 +258,7 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	bootstrapPath := "examples/configs/load_with_custom_parser/config/bootstrap.yaml"
 
 	// 1. Initialize Runtime with correct AppInfo
-	rt, cleanup, err := rt.NewFromBootstrap(
+	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath, // Use path relative to the new working directory
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "test-decoder",
@@ -270,17 +270,17 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	defer cleanup()
+	defer rtInstance.Cleanup()
 
 	// 2. Verify core components are properly initialized
-	assert.NotNil(rt.Logger())
-	assert.Equal("test-decoder", rt.AppInfo().ID)
-	assert.Equal("TestDecoder", rt.AppInfo().Name)
-	assert.Equal("1.0.0", rt.AppInfo().Version)
-	assert.Equal("dev", rt.AppInfo().Env) // Changed expected value
+	assert.NotNil(rtInstance.Logger())
+	assert.Equal("test-decoder", rtInstance.AppInfo().ID)
+	assert.Equal("TestDecoder", rtInstance.AppInfo().Name)
+	assert.Equal("1.0.0", rtInstance.AppInfo().Version)
+	assert.Equal("dev", rtInstance.AppInfo().Env) // Changed expected value
 
 	// 3. Get ConfigDecoder from runtime
-	decoder := rt.Config()
+	decoder := rtInstance.Config()
 	assert.NotNil(decoder)
 
 	// 4. Verify custom_settings is properly decoded using the exposed decoder
