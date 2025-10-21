@@ -113,7 +113,7 @@ func main() {
 	if userService, ok := clients["user-service"]; ok {
 		// Access the nested client field
 		if userService.GetClient() != nil {
-			fmt.Printf("Client 'user-service' Endpoint: %s\n", userService.GetClient().GetEndpoint())
+			fmt.Printf("Client 'user-service' Endpoint: %s\n", userService.GetClient())
 		} else {
 			fmt.Println("Client 'user-service' has no nested client configuration.")
 		}

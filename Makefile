@@ -83,9 +83,9 @@ endif
 #                           LIFECYCLE TARGETS
 # ============================================================================ #
 
-.PHONY: all init deps update update-tools protos examples-protos test-protos generate test clean clean-api-gen clean-examples-protos clean-test-protos buf-push
+.PHONY: all init deps update update-tools protos example-protos test-protos generate test clean clean-api-gen clean-examples-protos clean-test-protos buf-push
 
-all: init deps protos examples-protos test-protos generate ## ✅ Run the full build process
+all: init deps protos example-protos test-protos generate ## ✅ Run the full build process
 
 init: ## 🔧 Install tools from tools.go, ensuring reproducible builds
 	@echo "Ensuring tool dependencies are in go.mod..."
@@ -145,7 +145,7 @@ else
 	fi
 endif
 
-examples-protos: ## 🧬 Generate all example protos
+example-protos: ## 🧬 Generate all example protos
 	@echo "Generating example protos..."
 ifeq ($(GOHOSTOS), windows)
 	@protoc $(PROTOC_INCLUDES) $(EXAMPLE_PLUGINS) $(EXAMPLE_PROTO_FILES)

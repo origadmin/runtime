@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/uuid"
 
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	"github.com/origadmin/toolkits/errors"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	indexiface "github.com/origadmin/runtime/interfaces/storage/components/index"
 	"github.com/origadmin/runtime/log"
@@ -233,9 +233,9 @@ func (s *storage) Write(filepath string, data io.Reader, size int64) error {
 	return nil
 }
 
-// NewStorage creates a new Storage service instance based on the provided protobuf configuration.
+// New creates a new Storage service instance based on the provided protobuf configuration.
 // This function acts as the entry point for creating the storage system.
-func New(cfg *configv1.FileStore) (storageiface.FileStore, error) {
+func New(cfg *storagev1.FileStore) (storageiface.FileStore, error) {
 
 	if cfg.GetDriver() != "local" {
 		return nil, fmt.Errorf("this New function only supports 'local' filestore driver, got '%s'", cfg.GetDriver())

@@ -9,16 +9,15 @@ import (
 	"database/sql"
 	"time"
 
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	"github.com/origadmin/toolkits/errors"
-
-	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 )
 
 const (
 	ErrDatabaseConfigNil = errors.String("database: config is nil")
 )
 
-func OpenDatabase(database *configv1.Database) (*sql.DB, error) {
+func OpenDatabase(database *storagev1.Database) (*sql.DB, error) {
 	if database == nil {
 		return nil, ErrDatabaseConfigNil
 	}

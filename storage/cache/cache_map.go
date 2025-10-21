@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
@@ -123,7 +123,7 @@ func (s *mapCache) putElement(elem *element) {
 	s.elems.Put(elem)
 }
 
-func NewMemoryCache(cfg *configv1.Memory) storageiface.Cache {
+func NewMemoryCache(cfg *storagev1.Memory) storageiface.Cache {
 	interval := DefaultCleanupInterval // Default cleanup interval
 	if cfg != nil && cfg.CleanupInterval > 0 {
 		interval = time.Duration(cfg.CleanupInterval) * time.Second

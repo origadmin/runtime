@@ -3,7 +3,7 @@ package storage
 import (
 	"sync"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/runtime/storage/filestore"
@@ -13,11 +13,11 @@ const ProviderModule = "storage.provider"
 
 // provider implements the storage.Provider interface.
 type provider struct {
-	cfg *configv1.Storage
+	cfg *storagev1.Storage
 	// 存储配置，而不是实例
-	fileStoreConfigs map[string]*configv1.FileStore
-	cacheConfigs     map[string]*configv1.Cache
-	databaseConfigs  map[string]*configv1.Database
+	fileStoreConfigs map[string]*storagev1.FileStore
+	cacheConfigs     map[string]*storagev1.Cache
+	databaseConfigs  map[string]*storagev1.Database
 
 	// 缓存已初始化的实例
 	initializedFileStores map[string]storageiface.FileStore
@@ -32,7 +32,7 @@ type provider struct {
 }
 
 // NewProvider creates a new storage provider based on the given configuration.
-func NewProvider(cfg *configv1.Storage) (storageiface.Provider, error) {
+func NewProvider(cfg *storagev1.Storage) (storageiface.Provider, error) {
 	if cfg == nil {
 		return nil, runtimeerrors.NewStructured(ProviderModule, "storage config cannot be nil").WithCaller()
 	}

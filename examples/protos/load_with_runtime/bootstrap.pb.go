@@ -7,9 +7,9 @@
 package conf
 
 import (
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -36,7 +36,7 @@ type Bootstrap struct {
 	// Logging configuration
 	Logger *v11.Logger `protobuf:"bytes,3,opt,name=logger,proto3" json:"logger,omitempty"`
 	// RegistriesConfig holds the definitions of available discovery service providers.
-	Registries    *RegistriesConfig `protobuf:"bytes,4,opt,name=registries,proto3" json:"registries,omitempty"`
+	Discoveries   map[string]*v12.Discovery `protobuf:"bytes,4,rep,name=discoveries,proto3" json:"discoveries,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -92,9 +92,9 @@ func (x *Bootstrap) GetLogger() *v11.Logger {
 	return nil
 }
 
-func (x *Bootstrap) GetRegistries() *RegistriesConfig {
+func (x *Bootstrap) GetDiscoveries() map[string]*v12.Discovery {
 	if x != nil {
-		return x.Registries
+		return x.Discoveries
 	}
 	return nil
 }
@@ -110,7 +110,7 @@ type EndpointConfig struct {
 	// Selector for client-side load balancing and node filtering.
 	Selector *EndpointConfig_Selector `protobuf:"bytes,3,opt,name=selector,proto3" json:"selector,omitempty"`
 	// Transport configuration for this client.
-	Transport     *v1.Client `protobuf:"bytes,4,opt,name=transport,proto3" json:"transport,omitempty"`
+	Client        *v1.Client `protobuf:"bytes,4,opt,name=client,proto3" json:"client,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -166,54 +166,9 @@ func (x *EndpointConfig) GetSelector() *EndpointConfig_Selector {
 	return nil
 }
 
-func (x *EndpointConfig) GetTransport() *v1.Client {
+func (x *EndpointConfig) GetClient() *v1.Client {
 	if x != nil {
-		return x.Transport
-	}
-	return nil
-}
-
-// RegistriesConfig holds the definitions of available discovery service providers.
-type RegistriesConfig struct {
-	state         protoimpl.MessageState    `protogen:"open.v1"`
-	Discoveries   map[string]*v12.Discovery `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegistriesConfig) Reset() {
-	*x = RegistriesConfig{}
-	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegistriesConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegistriesConfig) ProtoMessage() {}
-
-func (x *RegistriesConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegistriesConfig.ProtoReflect.Descriptor instead.
-func (*RegistriesConfig) Descriptor() ([]byte, []int) {
-	return file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *RegistriesConfig) GetDiscoveries() map[string]*v12.Discovery {
-	if x != nil {
-		return x.Discoveries
+		return x.Client
 	}
 	return nil
 }
@@ -275,30 +230,26 @@ var File_examples_protos_load_with_runtime_bootstrap_proto protoreflect.FileDesc
 
 const file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"1examples/protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a\x1eruntime/config/v1/client.proto\x1a\x1eruntime/config/v1/server.proto\"\xff\x02\n" +
-	"\tBootstrap\x123\n" +
-	"\aservers\x18\x01 \x03(\v2\x19.runtime.config.v1.ServerR\aservers\x12R\n" +
+	"1examples/protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a$runtime/transport/v1/transport.proto\"\xef\x03\n" +
+	"\tBootstrap\x126\n" +
+	"\aservers\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\x12R\n" +
 	"\tendpoints\x18\x02 \x03(\v24.examples.load_with_runtime.Bootstrap.EndpointsEntryR\tendpoints\x121\n" +
-	"\x06logger\x18\x03 \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x12L\n" +
-	"\n" +
-	"registries\x18\x04 \x01(\v2,.examples.load_with_runtime.RegistriesConfigR\n" +
-	"registries\x1ah\n" +
+	"\x06logger\x18\x03 \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x12X\n" +
+	"\vdiscoveries\x18\x04 \x03(\v26.examples.load_with_runtime.Bootstrap.DiscoveriesEntryR\vdiscoveries\x1ah\n" +
 	"\x0eEndpointsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
-	"\x05value\x18\x02 \x01(\v2*.examples.load_with_runtime.EndpointConfigR\x05value:\x028\x01\"\x8e\x02\n" +
+	"\x05value\x18\x02 \x01(\v2*.examples.load_with_runtime.EndpointConfigR\x05value:\x028\x01\x1a_\n" +
+	"\x10DiscoveriesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
+	"\x05value\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x05value:\x028\x01\"\x8b\x02\n" +
 	"\x0eEndpointConfig\x12&\n" +
 	"\x0ediscovery_name\x18\x01 \x01(\tR\x0ediscovery_name\x12\x10\n" +
 	"\x03uri\x18\x02 \x01(\tR\x03uri\x12O\n" +
-	"\bselector\x18\x03 \x01(\v23.examples.load_with_runtime.EndpointConfig.SelectorR\bselector\x127\n" +
-	"\ttransport\x18\x04 \x01(\v2\x19.runtime.config.v1.ClientR\ttransport\x1a8\n" +
+	"\bselector\x18\x03 \x01(\v23.examples.load_with_runtime.EndpointConfig.SelectorR\bselector\x124\n" +
+	"\x06client\x18\x04 \x01(\v2\x1c.runtime.transport.v1.ClientR\x06client\x1a8\n" +
 	"\bSelector\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\"\xd4\x01\n" +
-	"\x10RegistriesConfig\x12_\n" +
-	"\vdiscoveries\x18\x01 \x03(\v2=.examples.load_with_runtime.RegistriesConfig.DiscoveriesEntryR\vdiscoveries\x1a_\n" +
-	"\x10DiscoveriesEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
-	"\x05value\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x05value:\x028\x01B\x1fZ\x1d./load_with_runtime/conf;confb\x06proto3"
+	"\aversion\x18\x02 \x01(\tR\aversionB\x1fZ\x1d./load_with_runtime/conf;confb\x06proto3"
 
 var (
 	file_examples_protos_load_with_runtime_bootstrap_proto_rawDescOnce sync.Once
@@ -312,34 +263,32 @@ func file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP() []byte
 	return file_examples_protos_load_with_runtime_bootstrap_proto_rawDescData
 }
 
-var file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_examples_protos_load_with_runtime_bootstrap_proto_goTypes = []any{
 	(*Bootstrap)(nil),               // 0: examples.load_with_runtime.Bootstrap
 	(*EndpointConfig)(nil),          // 1: examples.load_with_runtime.EndpointConfig
-	(*RegistriesConfig)(nil),        // 2: examples.load_with_runtime.RegistriesConfig
-	nil,                             // 3: examples.load_with_runtime.Bootstrap.EndpointsEntry
+	nil,                             // 2: examples.load_with_runtime.Bootstrap.EndpointsEntry
+	nil,                             // 3: examples.load_with_runtime.Bootstrap.DiscoveriesEntry
 	(*EndpointConfig_Selector)(nil), // 4: examples.load_with_runtime.EndpointConfig.Selector
-	nil,                             // 5: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
-	(*v1.Server)(nil),               // 6: runtime.config.v1.Server
-	(*v11.Logger)(nil),              // 7: runtime.logger.v1.Logger
-	(*v1.Client)(nil),               // 8: runtime.config.v1.Client
-	(*v12.Discovery)(nil),           // 9: runtime.discovery.v1.Discovery
+	(*v1.Server)(nil),               // 5: runtime.transport.v1.Server
+	(*v11.Logger)(nil),              // 6: runtime.logger.v1.Logger
+	(*v1.Client)(nil),               // 7: runtime.transport.v1.Client
+	(*v12.Discovery)(nil),           // 8: runtime.discovery.v1.Discovery
 }
 var file_examples_protos_load_with_runtime_bootstrap_proto_depIdxs = []int32{
-	6, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> runtime.config.v1.Server
-	3, // 1: examples.load_with_runtime.Bootstrap.endpoints:type_name -> examples.load_with_runtime.Bootstrap.EndpointsEntry
-	7, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> runtime.logger.v1.Logger
-	2, // 3: examples.load_with_runtime.Bootstrap.registries:type_name -> examples.load_with_runtime.RegistriesConfig
+	5, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> runtime.transport.v1.Server
+	2, // 1: examples.load_with_runtime.Bootstrap.endpoints:type_name -> examples.load_with_runtime.Bootstrap.EndpointsEntry
+	6, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> runtime.logger.v1.Logger
+	3, // 3: examples.load_with_runtime.Bootstrap.discoveries:type_name -> examples.load_with_runtime.Bootstrap.DiscoveriesEntry
 	4, // 4: examples.load_with_runtime.EndpointConfig.selector:type_name -> examples.load_with_runtime.EndpointConfig.Selector
-	8, // 5: examples.load_with_runtime.EndpointConfig.transport:type_name -> runtime.config.v1.Client
-	5, // 6: examples.load_with_runtime.RegistriesConfig.discoveries:type_name -> examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry
-	1, // 7: examples.load_with_runtime.Bootstrap.EndpointsEntry.value:type_name -> examples.load_with_runtime.EndpointConfig
-	9, // 8: examples.load_with_runtime.RegistriesConfig.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	7, // 5: examples.load_with_runtime.EndpointConfig.client:type_name -> runtime.transport.v1.Client
+	1, // 6: examples.load_with_runtime.Bootstrap.EndpointsEntry.value:type_name -> examples.load_with_runtime.EndpointConfig
+	8, // 7: examples.load_with_runtime.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_examples_protos_load_with_runtime_bootstrap_proto_init() }
@@ -353,7 +302,7 @@ func file_examples_protos_load_with_runtime_bootstrap_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc), len(file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

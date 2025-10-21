@@ -11,6 +11,7 @@ import (
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
@@ -32,6 +33,26 @@ type CustomSettings struct {
 	APIKey         string     `json:"api_key"`
 	RateLimit      int        `json:"rate_limit"`
 	Endpoints      []Endpoint `json:"endpoints"`
+}
+
+func (c *CustomSettings) DecodeDefaultDiscovery() (string, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *CustomSettings) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *CustomSettings) DecodeServers() (*transportv1.Servers, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *CustomSettings) DecodeClients() (*transportv1.Clients, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c *CustomSettings) Load() error {
@@ -80,15 +101,11 @@ func (c *CustomSettings) DecodeLogger() (*loggerv1.Logger, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (c *CustomSettings) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	return nil, errors.New("not implemented")
-}
-
 func (c *CustomSettings) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 	return nil, errors.New("not implemented")
 }
 
-func TransformConfig(cfg interfaces.Config) (interfaces.StructuredConfig, error) {
+func TransformConfig(cfg interfaces.Config, source interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
 	log.Infof("Loaded config: %+v", cfg)
 	//var settingMap map[string]any
 	//if err := cfg.Decode("", &settingMap); err != nil {
@@ -121,7 +138,7 @@ func main() {
 	}
 
 	// 1. Create a new Runtime instance from the bootstrap config
-	rt, cleanup, err := runtime.NewFromBootstrap(
+	rtInstance, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_custom_parser/config/bootstrap.yaml",
 		bootstrap.WithAppInfo(&appInfo), // Pass the AppInfo struct
 		bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)),
@@ -136,16 +153,16 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
 	}
-	defer cleanup()
+	defer rtInstance.Cleanup()
 
 	// Get logger from runtime
-	logger := rt.Logger()
+	logger := rtInstance.Logger()
 	appLogger := log.NewHelper(logger)
 	log.SetLogger(logger)
 	appLogger.Info("Application started successfully!")
 
 	// 2. Get the custom settings component
-	comp, ok := rt.Component("my-custom-settings") // Updated to use the instance name
+	comp, ok := rtInstance.Component("my-custom-settings") // Updated to use the instance name
 	if !ok {
 		appLogger.Error("Custom settings component not found")
 		return
@@ -168,7 +185,7 @@ func main() {
 	}
 
 	// 3. Get the config interface to decode other configurations
-	config := rt.Config()
+	config := rtInstance.Config()
 
 	// Decode servers and clients directly using config.Decode
 	var bc conf.Bootstrap
@@ -191,7 +208,7 @@ func main() {
 	// Log client configurations
 	for name, client := range bc.Clients {
 		if client.GetClient() != nil {
-			appLogger.Infof("Client '%s' Endpoint: %s", name, client.GetClient().GetEndpoint())
+			appLogger.Infof("Client '%s' Endpoint: %s", name, client.GetClient())
 		}
 	}
 

@@ -1,11 +1,11 @@
 package storage
 
 import (
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
 
-	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	"github.com/origadmin/runtime/storage/cache"
 )
 
@@ -15,7 +15,7 @@ const (
 )
 
 // New creates a new cache instance based on the provided configuration.
-func New(cfg *configv1.Cache) (storageiface.Cache, error) {
+func New(cfg *storagev1.Cache) (storageiface.Cache, error) {
 	if cfg == nil {
 		return nil, ErrCacheConfigNil
 	}

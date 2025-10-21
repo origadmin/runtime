@@ -6,8 +6,7 @@ syntax = "proto3";
 package examples.http_server_grpc_client;
 
 // Import server and client building block containers provided by the framework
-import "runtime/config/v1/server.proto";
-import "runtime/config/v1/client.proto";
+import "runtime/transport/v1/transport.proto";
 // Import client configuration related to service discovery
 import "runtime/discovery/v1/endpoint.proto";
 
@@ -23,7 +22,7 @@ message Bootstrap {
   // - Port number
   // - Middleware configuration
   // - Timeout settings
-  repeated runtime.config.v1.Server servers = 1;
+  repeated runtime.transport.v1.Server servers = 1;
 
   // Downstream gRPC client configuration mapping
   // The key is the logical name of the client, used to reference specific clients in code
@@ -49,5 +48,5 @@ message ClientConfig {
   // - Timeout settings
   // - Retry policy
   // - TLS configuration
-  runtime.config.v1.Client transport = 2;
+  runtime.transport.v1.Client transport = 2;
 }

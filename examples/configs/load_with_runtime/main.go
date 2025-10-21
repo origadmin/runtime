@@ -1,21 +1,19 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
+	"github.com/goexts/generic/maps"
 
 	"github.com/origadmin/runtime"
 	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
-
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/interfaces"
 	// Import the generated Go code from the load_with_runtime proto definition.
 	conf "github.com/origadmin/runtime/examples/protos/load_with_runtime"
 	"github.com/origadmin/runtime/log" // Import the log package
@@ -25,10 +23,42 @@ import (
 type ProtoConfig struct {
 	ifconfig  interfaces.Config // Keep for Raw() and Close()
 	bootstrap *conf.Bootstrap   // The fully decoded protobuf config
+	source    interfaces.StructuredConfig
 }
 
-func (d *ProtoConfig) Load() error {
-	return d.ifconfig.Load()
+func (d *ProtoConfig) DecodeDefaultDiscovery() (string, error) {
+	return "default", nil
+}
+
+func (d *ProtoConfig) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
+	var dis discoveryv1.Discoveries
+	if d.bootstrap.GetDiscoveries() != nil {
+		dis.Discoveries = maps.ToSliceWith(d.bootstrap.GetDiscoveries(), func(k string,
+			v *discoveryv1.Discovery) (*discoveryv1.Discovery, bool) {
+			v.Name = k
+			return v, true
+		})
+	}
+	return &dis, nil
+}
+
+func (d *ProtoConfig) DecodeServers() (*transportv1.Servers, error) {
+	var serv transportv1.Servers
+	if d.bootstrap.GetServers() != nil {
+		serv.Servers = d.bootstrap.GetServers()
+	}
+	return &serv, nil
+}
+
+func (d *ProtoConfig) DecodeClients() (*transportv1.Clients, error) {
+	var cli transportv1.Clients
+	if d.bootstrap.GetEndpoints() != nil {
+		endpoints := d.bootstrap.GetEndpoints()
+		for _, end := range endpoints {
+			cli.Clients = append(cli.Clients, end.Client)
+		}
+	}
+	return &cli, nil
 }
 
 func (d *ProtoConfig) DecodeApp() (*appv1.App, error) {
@@ -40,74 +70,16 @@ func (d *ProtoConfig) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 }
 
 // NewProtoConfig creates a new ProtoConfig instance and decodes the entire Kratos config into the Bootstrap proto.
-func NewProtoConfig(c interfaces.Config) (*ProtoConfig, error) {
+func NewProtoConfig(c interfaces.Config, source interfaces.StructuredConfig) (*ProtoConfig, error) {
 	var bc conf.Bootstrap
 	if err := c.Decode("", &bc); err != nil {
 		return nil, err
 	}
 	return &ProtoConfig{
 		ifconfig:  c,
+		source:    source,
 		bootstrap: &bc,
 	}, nil
-}
-
-// Decode implements the interfaces.Config interface.
-func (d *ProtoConfig) Decode(key string, target interface{}) error {
-	var source interface{} // This will hold the Go representation of the config section
-
-	if key == "" || key == "/" {
-		source = d.bootstrap
-	} else {
-		// For specific top-level keys, extract the corresponding field from the bootstrap proto.
-		// Note: GetX() methods return nil if the field is not set.
-		switch key {
-		case "servers":
-			source = d.bootstrap.GetServers()
-		case "endpoints": // Changed from "clients" to "endpoints"
-			source = d.bootstrap.GetEndpoints()
-		default:
-			// If the key is not a direct top-level field of Bootstrap, and not empty/root,
-			// we can try to scan it from the original Kratos config as a fallback.
-			// This handles cases where some config might not be explicitly defined in the proto.
-			return d.ifconfig.Decode(key, target)
-		}
-	}
-
-	if source == nil {
-		return fmt.Errorf("config key '%s' not found or is nil in bootstrap proto", key)
-	}
-
-	// Now, marshal the extracted 'source' (which is a Go struct/slice/map, potentially a proto.Message)
-	// to JSON and then unmarshal into the target. This is the most flexible way
-	// to handle generic `interface{}` targets, especially when dealing with protobuf messages.
-	jsonBytes, err := json.Marshal(source)
-	if err != nil {
-		return fmt.Errorf("failed to marshal source data for key '%s' to JSON: %w", key, err)
-	}
-
-	if pm, ok := target.(proto.Message); ok {
-		// If target is a proto.Message, use protojson.Unmarshal
-		if err := protojson.Unmarshal(jsonBytes, pm); err != nil {
-			return fmt.Errorf("failed to protojson unmarshal JSON to %T for key '%s': %w", pm, key, err)
-		}
-	} else {
-		// If target is not a proto.Message (e.g., map[string]interface{}, struct), use standard json.Unmarshal
-		if err := json.Unmarshal(jsonBytes, target); err != nil {
-			return fmt.Errorf("failed to unmarshal JSON to %T for key '%s': %w", target, key, err)
-		}
-	}
-
-	return nil
-}
-
-// Raw implements the interfaces.Config interface.
-func (d *ProtoConfig) Raw() any {
-	return d.ifconfig
-}
-
-// Close implements the interfaces.Config interface.
-func (d *ProtoConfig) Close() error {
-	return d.ifconfig.Close()
 }
 
 // DecodeLogger implements the interfaces.LoggerConfigDecoder interface.
@@ -120,21 +92,12 @@ func (d *ProtoConfig) DecodeLogger() (*loggerv1.Logger, error) {
 	return d.bootstrap.GetLogger(), nil
 }
 
-// DecodeDiscoveries implements the interfaces.DiscoveriesConfigDecoder interface.
-// It now only decodes the centralized discovery providers from the registries configuration.
-func (d *ProtoConfig) DecodeDiscoveries() (map[string]*discoveryv1.Discovery, error) {
-	if d.bootstrap.GetRegistries() == nil {
-		return make(map[string]*discoveryv1.Discovery), nil
-	}
-	return d.bootstrap.GetRegistries().GetDiscoveries(), nil
-}
-
 // DecodeEndpoints decodes and links endpoint configurations with their corresponding discovery providers.
 // It returns a map where the key is the endpoint's name and the value contains all necessary
 // information (both behavior and provider) to initialize the client connection.
 func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error) {
 	// 1. Get all available discovery providers
-	providers := d.bootstrap.GetRegistries().GetDiscoveries()
+	providers := d.bootstrap.GetDiscoveries()
 	if providers == nil {
 		providers = make(map[string]*discoveryv1.Discovery)
 	}
@@ -179,8 +142,8 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 
 func main() {
 	// Define the ConfigTransformFunc to create our custom ProtoConfig.
-	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.Config) (interfaces.StructuredConfig, error) {
-		protoCfg, err := NewProtoConfig(kc)
+	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.Config, source interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
+		protoCfg, err := NewProtoConfig(kc, source)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ProtoConfig: %w", err)
 		}
@@ -189,7 +152,7 @@ func main() {
 
 	// 1. Create a new Runtime instance from the new bootstrap config.
 	//    Path is now relative to the CWD (runtime directory), pointing to the bootstrap.yaml.
-	rt, cleanup, err := runtime.NewFromBootstrap(
+	rtInstance, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "rich-config-runtime-example",
@@ -202,15 +165,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer cleanup()
+	defer rtInstance.Cleanup()
 
 	// Get the configured logger from the runtime instance
-	appLogger := log.NewHelper(rt.Logger()) // Use log.NewHelper for convenience
+	appLogger := log.NewHelper(rtInstance.Logger()) // Use log.NewHelper for convenience
 
 	appLogger.Info("Application started successfully!") // Log a message using the configured logger
 
 	// 2. Get the configuration decoder from the runtime instance and assert it to our ProtoConfig type
-	decoder := rt.Config()
+	decoder := rtInstance.StructuredConfig()
 
 	// Type assert the decoder to our ProtoConfig
 	protoCfg, ok := decoder.(*ProtoConfig)
@@ -299,7 +262,7 @@ func main() {
 	}
 
 	// Verify registries (discovery providers)
-	discoveries := bc.GetRegistries().GetDiscoveries()
+	discoveries := bc.GetDiscoveries()
 	if len(discoveries) > 0 {
 		appLogger.Infof("Found %d raw discovery configurations", len(discoveries))
 		for name, disc := range discoveries {

@@ -166,32 +166,49 @@ func (m *Bootstrap) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetRegistries()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, BootstrapValidationError{
-					field:  "Registries",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, BootstrapValidationError{
-					field:  "Registries",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
+	{
+		sorted_keys := make([]string, len(m.GetDiscoveries()))
+		i := 0
+		for key := range m.GetDiscoveries() {
+			sorted_keys[i] = key
+			i++
 		}
-	} else if v, ok := interface{}(m.GetRegistries()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return BootstrapValidationError{
-				field:  "Registries",
-				reason: "embedded message failed validation",
-				cause:  err,
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetDiscoveries()[key]
+			_ = val
+
+			// no validation rules for Discoveries[key]
+
+			if all {
+				switch v := interface{}(val).(type) {
+				case interface{ ValidateAll() error }:
+					if err := v.ValidateAll(); err != nil {
+						errors = append(errors, BootstrapValidationError{
+							field:  fmt.Sprintf("Discoveries[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				case interface{ Validate() error }:
+					if err := v.Validate(); err != nil {
+						errors = append(errors, BootstrapValidationError{
+							field:  fmt.Sprintf("Discoveries[%v]", key),
+							reason: "embedded message failed validation",
+							cause:  err,
+						})
+					}
+				}
+			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
+				if err := v.Validate(); err != nil {
+					return BootstrapValidationError{
+						field:  fmt.Sprintf("Discoveries[%v]", key),
+						reason: "embedded message failed validation",
+						cause:  err,
+					}
+				}
 			}
+
 		}
 	}
 
@@ -328,11 +345,11 @@ func (m *EndpointConfig) validate(all bool) error {
 	}
 
 	if all {
-		switch v := interface{}(m.GetTransport()).(type) {
+		switch v := interface{}(m.GetClient()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, EndpointConfigValidationError{
-					field:  "Transport",
+					field:  "Client",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -340,16 +357,16 @@ func (m *EndpointConfig) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, EndpointConfigValidationError{
-					field:  "Transport",
+					field:  "Client",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetTransport()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetClient()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return EndpointConfigValidationError{
-				field:  "Transport",
+				field:  "Client",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -433,152 +450,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = EndpointConfigValidationError{}
-
-// Validate checks the field values on RegistriesConfig with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *RegistriesConfig) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on RegistriesConfig with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// RegistriesConfigMultiError, or nil if none found.
-func (m *RegistriesConfig) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *RegistriesConfig) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	{
-		sorted_keys := make([]string, len(m.GetDiscoveries()))
-		i := 0
-		for key := range m.GetDiscoveries() {
-			sorted_keys[i] = key
-			i++
-		}
-		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
-		for _, key := range sorted_keys {
-			val := m.GetDiscoveries()[key]
-			_ = val
-
-			// no validation rules for Discoveries[key]
-
-			if all {
-				switch v := interface{}(val).(type) {
-				case interface{ ValidateAll() error }:
-					if err := v.ValidateAll(); err != nil {
-						errors = append(errors, RegistriesConfigValidationError{
-							field:  fmt.Sprintf("Discoveries[%v]", key),
-							reason: "embedded message failed validation",
-							cause:  err,
-						})
-					}
-				case interface{ Validate() error }:
-					if err := v.Validate(); err != nil {
-						errors = append(errors, RegistriesConfigValidationError{
-							field:  fmt.Sprintf("Discoveries[%v]", key),
-							reason: "embedded message failed validation",
-							cause:  err,
-						})
-					}
-				}
-			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
-				if err := v.Validate(); err != nil {
-					return RegistriesConfigValidationError{
-						field:  fmt.Sprintf("Discoveries[%v]", key),
-						reason: "embedded message failed validation",
-						cause:  err,
-					}
-				}
-			}
-
-		}
-	}
-
-	if len(errors) > 0 {
-		return RegistriesConfigMultiError(errors)
-	}
-
-	return nil
-}
-
-// RegistriesConfigMultiError is an error wrapping multiple validation errors
-// returned by RegistriesConfig.ValidateAll() if the designated constraints
-// aren't met.
-type RegistriesConfigMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m RegistriesConfigMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m RegistriesConfigMultiError) AllErrors() []error { return m }
-
-// RegistriesConfigValidationError is the validation error returned by
-// RegistriesConfig.Validate if the designated constraints aren't met.
-type RegistriesConfigValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e RegistriesConfigValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e RegistriesConfigValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e RegistriesConfigValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e RegistriesConfigValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e RegistriesConfigValidationError) ErrorName() string { return "RegistriesConfigValidationError" }
-
-// Error satisfies the builtin error interface
-func (e RegistriesConfigValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sRegistriesConfig.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = RegistriesConfigValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = RegistriesConfigValidationError{}
 
 // Validate checks the field values on EndpointConfig_Selector with the rules
 // defined in the proto definition for this message. If any rules are

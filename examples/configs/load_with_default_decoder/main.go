@@ -33,7 +33,7 @@ func main() {
 
 	// Verify client config
 	if userService, ok := bc.Clients["user-service"]; ok {
-		fmt.Printf("Client 'user-service' Endpoint: %s\n", userService.GetClient().GetEndpoint())
+		fmt.Printf("Client 'user-service' Endpoint: %s\n", userService.GetClient())
 	} else {
 		fmt.Println("No 'user-service' client configuration found.")
 	}

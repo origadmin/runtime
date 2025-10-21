@@ -12,8 +12,8 @@
 package conf
 
 import (
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -162,16 +162,16 @@ var File_examples_protos_http_server_grpc_client_bootstrap_proto protoreflect.Fi
 
 const file_examples_protos_http_server_grpc_client_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"7examples/protos/http_server_grpc_client/bootstrap.proto\x12 examples.http_server_grpc_client\x1a\x1eruntime/config/v1/server.proto\x1a\x1eruntime/config/v1/client.proto\x1a#runtime/discovery/v1/endpoint.proto\"\x80\x02\n" +
-	"\tBootstrap\x123\n" +
-	"\aservers\x18\x01 \x03(\v2\x19.runtime.config.v1.ServerR\aservers\x12R\n" +
+	"7examples/protos/http_server_grpc_client/bootstrap.proto\x12 examples.http_server_grpc_client\x1a$runtime/transport/v1/transport.proto\x1a#runtime/discovery/v1/endpoint.proto\"\x83\x02\n" +
+	"\tBootstrap\x126\n" +
+	"\aservers\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\x12R\n" +
 	"\aclients\x18\x02 \x03(\v28.examples.http_server_grpc_client.Bootstrap.ClientsEntryR\aclients\x1aj\n" +
 	"\fClientsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12D\n" +
-	"\x05value\x18\x02 \x01(\v2..examples.http_server_grpc_client.ClientConfigR\x05value:\x028\x01\"\x83\x01\n" +
+	"\x05value\x18\x02 \x01(\v2..examples.http_server_grpc_client.ClientConfigR\x05value:\x028\x01\"\x86\x01\n" +
 	"\fClientConfig\x12:\n" +
-	"\bendpoint\x18\x01 \x01(\v2\x1e.runtime.discovery.v1.EndpointR\bendpoint\x127\n" +
-	"\ttransport\x18\x02 \x01(\v2\x19.runtime.config.v1.ClientR\ttransportB%Z#./http_server_grpc_client/conf;confb\x06proto3"
+	"\bendpoint\x18\x01 \x01(\v2\x1e.runtime.discovery.v1.EndpointR\bendpoint\x12:\n" +
+	"\ttransport\x18\x02 \x01(\v2\x1c.runtime.transport.v1.ClientR\ttransportB%Z#./http_server_grpc_client/conf;confb\x06proto3"
 
 var (
 	file_examples_protos_http_server_grpc_client_bootstrap_proto_rawDescOnce sync.Once
@@ -190,15 +190,15 @@ var file_examples_protos_http_server_grpc_client_bootstrap_proto_goTypes = []any
 	(*Bootstrap)(nil),    // 0: examples.http_server_grpc_client.Bootstrap
 	(*ClientConfig)(nil), // 1: examples.http_server_grpc_client.ClientConfig
 	nil,                  // 2: examples.http_server_grpc_client.Bootstrap.ClientsEntry
-	(*v1.Server)(nil),    // 3: runtime.config.v1.Server
+	(*v1.Server)(nil),    // 3: runtime.transport.v1.Server
 	(*v11.Endpoint)(nil), // 4: runtime.discovery.v1.Endpoint
-	(*v1.Client)(nil),    // 5: runtime.config.v1.Client
+	(*v1.Client)(nil),    // 5: runtime.transport.v1.Client
 }
 var file_examples_protos_http_server_grpc_client_bootstrap_proto_depIdxs = []int32{
-	3, // 0: examples.http_server_grpc_client.Bootstrap.servers:type_name -> runtime.config.v1.Server
+	3, // 0: examples.http_server_grpc_client.Bootstrap.servers:type_name -> runtime.transport.v1.Server
 	2, // 1: examples.http_server_grpc_client.Bootstrap.clients:type_name -> examples.http_server_grpc_client.Bootstrap.ClientsEntry
 	4, // 2: examples.http_server_grpc_client.ClientConfig.endpoint:type_name -> runtime.discovery.v1.Endpoint
-	5, // 3: examples.http_server_grpc_client.ClientConfig.transport:type_name -> runtime.config.v1.Client
+	5, // 3: examples.http_server_grpc_client.ClientConfig.transport:type_name -> runtime.transport.v1.Client
 	1, // 4: examples.http_server_grpc_client.Bootstrap.ClientsEntry.value:type_name -> examples.http_server_grpc_client.ClientConfig
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
