@@ -12,16 +12,15 @@ require (
 	github.com/go-viper/encoding/dotenv v0.1.0
 	github.com/go-viper/encoding/ini v0.1.1
 	github.com/go-viper/encoding/javaproperties v0.1.0
-	github.com/goexts/generic v0.6.0
+	github.com/goexts/generic v0.8.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang/protobuf v1.5.4
 	github.com/google/gnostic v0.7.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/origadmin/slog-kratos v1.0.5
-	github.com/origadmin/toolkits v0.3.22
 	github.com/origadmin/toolkits/errors v0.3.22
-	github.com/origadmin/toolkits/slogx v0.3.22
+	github.com/origadmin/toolkits/slogx v1.0.0
 	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
