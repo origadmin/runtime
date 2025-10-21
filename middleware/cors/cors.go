@@ -28,57 +28,57 @@ func defaultCorsOptions() []handlers.CORSOption {
 
 // corsOptionsFromConfig converts a CORS config to CORS options
 func corsOptionsFromConfig(cfg *corsv1.Cors) []handlers.CORSOption {
-	var options []handlers.CORSOption
+	var corsOptions []handlers.CORSOption
 
 	// Handle origin configuration
 	if cfg.GetAllowAnyOrigin() {
-		options = append(options, handlers.AllowedOrigins([]string{"*"}))
+		corsOptions = append(corsOptions, handlers.AllowedOrigins([]string{"*"}))
 	} else if len(cfg.GetAllowedOrigins()) > 0 {
-		options = append(options, handlers.AllowedOrigins(cfg.GetAllowedOrigins()))
+		corsOptions = append(corsOptions, handlers.AllowedOrigins(cfg.GetAllowedOrigins()))
 	} else {
 		// Default to allow any origin if no specific origin configuration
-		options = append(options, handlers.AllowedOrigins([]string{"*"}))
+		corsOptions = append(corsOptions, handlers.AllowedOrigins([]string{"*"}))
 	}
 
 	// Handle method configuration
 	if cfg.GetAllowAnyMethod() {
-		options = append(options, handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}))
+		corsOptions = append(corsOptions, handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}))
 	} else if len(cfg.GetAllowedMethods()) > 0 {
-		options = append(options, handlers.AllowedMethods(cfg.GetAllowedMethods()))
+		corsOptions = append(corsOptions, handlers.AllowedMethods(cfg.GetAllowedMethods()))
 	} else {
 		// Default methods if none specified
-		options = append(options, handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}))
+		corsOptions = append(corsOptions, handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"}))
 	}
 
 	// Handle header configuration
 	if cfg.GetAllowAnyHeader() {
-		options = append(options, handlers.AllowedHeaders([]string{"*"}))
+		corsOptions = append(corsOptions, handlers.AllowedHeaders([]string{"*"}))
 	} else if len(cfg.GetAllowedHeaders()) > 0 {
-		options = append(options, handlers.AllowedHeaders(cfg.GetAllowedHeaders()))
+		corsOptions = append(corsOptions, handlers.AllowedHeaders(cfg.GetAllowedHeaders()))
 	} else {
 		// Default headers if none specified
-		options = append(options, handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"}))
+		corsOptions = append(corsOptions, handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"}))
 	}
 
 	// Add exposed headers if specified
 	if len(cfg.GetExposedHeaders()) > 0 {
-		options = append(options, handlers.ExposedHeaders(cfg.GetExposedHeaders()))
+		corsOptions = append(corsOptions, handlers.ExposedHeaders(cfg.GetExposedHeaders()))
 	}
 
 	// Add credentials option if specified
 	if cfg.GetAllowCredentials() {
-		options = append(options, handlers.AllowCredentials())
+		corsOptions = append(corsOptions, handlers.AllowCredentials())
 	}
 
 	// Handle max age configuration
 	if cfg.GetMaxAge() > 0 {
-		options = append(options, handlers.MaxAge(int(cfg.GetMaxAge())))
+		corsOptions = append(corsOptions, handlers.MaxAge(int(cfg.GetMaxAge())))
 	} else {
 		// Default max age if not specified
-		options = append(options, handlers.MaxAge(86400)) // 24 hours
+		corsOptions = append(corsOptions, handlers.MaxAge(86400)) // 24 hours
 	}
 
-	return options
+	return corsOptions
 }
 
 // NewGorillaCors creates a new CORS handler for Gorilla/Mux or standard HTTP servers
@@ -89,10 +89,10 @@ func NewGorillaCors(cfg *corsv1.Cors) func(http.Handler) http.Handler {
 		}
 	}
 
-	// Get CORS options from configuration
-	options := corsOptionsFromConfig(cfg)
+	// Get CORS opts from configuration
+	opts := corsOptionsFromConfig(cfg)
 
-	return handlers.CORS(options...)
+	return handlers.CORS(opts...)
 }
 
 // NewKratosCors creates a new CORS handler for Kratos HTTP servers
@@ -101,10 +101,10 @@ func NewKratosCors(cfg *corsv1.Cors) transhttp.FilterFunc {
 		return nil
 	}
 
-	// Get CORS options from configuration
-	options := corsOptionsFromConfig(cfg)
+	// Get CORS opts from configuration
+	opts := corsOptionsFromConfig(cfg)
 
-	return handlers.CORS(options...)
+	return handlers.CORS(opts...)
 }
 
 // corsFactory implements middleware.Factory interface for CORS middleware
@@ -123,7 +123,11 @@ func NewCorsFactory() middleware.Factory {
 // Since CORS is primarily for servers, this returns nil for clients
 func (f *corsFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...options.Option) (middleware.KMiddleware, bool) {
 	// CORS is not typically used for client-side middleware
-	return nil, false
+	return func(handler middleware.KHandler) middleware.KHandler {
+		// This is a no-op middleware for the standard middleware chain
+		// The actual CORS handling is done in the HTTP transport adapter
+		return handler
+	}, true
 }
 
 // NewMiddlewareServer implements middleware.Factory interface

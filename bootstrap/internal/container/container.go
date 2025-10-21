@@ -123,7 +123,7 @@ func (b *Builder) Build(opts ...options.Option) (interfaces.Container, error) {
 		// We log the error but do not stop the bootstrap process.
 		log.Errorf("failed to initialize logger component, error: %v", err) // This uses the temporary logger if c.logger is not yet set
 	}
-	helper := log.NewHelper(b.container.Logger()) // Now c.Logger() should be initialized or fallbacked
+	helper := log.NewHelper(b.logger) // Now c.Logger() should be initialized or fallbacked
 
 	// 2. Initialize Registries and Discoveries with graceful fallback.
 	if err := b.initRegistries(opts...); err != nil {
@@ -247,7 +247,7 @@ func (b *Builder) initRegistries(opts ...options.Option) error {
 }
 
 func (b *Builder) initMiddlewares(opts ...options.Option) error {
-	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
+	helper := log.NewHelper(b.Logger()) // Use log.Helper
 
 	middlewares, err := b.config.DecodeMiddlewares()
 
@@ -290,7 +290,7 @@ func (b *Builder) initMiddlewares(opts ...options.Option) error {
 
 // initGenericComponents handles the initialization of user-defined components.
 func (b *Builder) initGenericComponents(opts ...options.Option) error {
-	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
+	helper := log.NewHelper(b.Logger()) // Use log.Helper
 
 	for name, factory := range b.factories {
 		_, ok := b.container.components[name]
@@ -358,7 +358,7 @@ func (c *container) RegisterComponent(name string, comp interface{}) {
 
 // Logger implements the interfaces.Container interface.
 func (c *container) Logger() log.Logger {
-	panic("this should never be called")
+	panic("It should not be called here, panic tells you this error and needs to check your code for problems")
 	// Ensure a logger always exists, even if initialization failed.
 	//if c.logger == nil {
 	//	c.logger = log.DefaultLogger

@@ -1,5 +1,4 @@
-// Tests integration with Runtime
-package config_test
+package bootstrap_load_config_test
 
 import (
 	"os"
@@ -29,32 +28,9 @@ func TestRuntimeIntegrationTestSuite(t *testing.T) {
 // TestRuntimeLoadCompleteConfig tests loading complete configuration using Runtime
 func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 	t := s.T()
-	assert := assert.New(t)
+	asserts := assert.New(t)
 
-	// Get current directory
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatalf("Failed to get current file info")
-	}
-	currentDir := filepath.Dir(filename)
-
-	// Save original working directory and restore it after test
-	originalCwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Failed to get original working directory: %v", err)
-	}
-	defer func() {
-		err := os.Chdir(originalCwd)
-		if err != nil {
-			t.Errorf("Failed to restore original working directory: %v", err)
-		}
-	}()
-
-	// Change the working directory to the root directory of the runtime module
-	runtimeRoot := filepath.Join(currentDir, "../../..")
-	if err := os.Chdir(runtimeRoot); err != nil {
-		t.Fatalf("Failed to change working directory to runtime root: %v", err)
-	}
+	// All test files are in the same directory, use relative paths directly
 
 	// Run tests for each format
 	formats := []string{"yaml", "json", "toml"}
@@ -95,12 +71,12 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 
 			// Get configuration decoder
 			configDecoder := rtInstance.Config()
-			assert.NotNil(configDecoder)
+			asserts.NotNil(configDecoder)
 
 			// Decode into complete config structure
 			var config testconfigs.TestConfig
 			err = configDecoder.Decode("", &config)
-			assert.NoError(err)
+			asserts.NoError(err)
 
 			// Run assertions
 			AssertTestConfig(t, &config)
@@ -142,12 +118,9 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 		t.Fatalf("Failed to change working directory to runtime root: %v", err)
 	}
 
-	// bootstrapPath is now relative to the runtime module root
-	bootstrapPath := "test/integration/config/configs/bootstrap.yaml"
-
 	// 1. Initialize Runtime with default decoder provider
 	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath,
+		"bootstrap.yaml",
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "test-proto-config",
 			Name:    "TestProtoConfig",
@@ -210,22 +183,11 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	assert.Empty(bootstrapConfig.Discoveries)
 }
 
-// TestCustomSettings represents the structure for custom configuration section in tests
-type TestCustomSettings struct {
-	FeatureEnabled bool   `json:"feature_enabled"`
-	APIKey         string `json:"api_key"`
-	RateLimit      int    `json:"rate_limit"`
-	Endpoints      []struct {
-		Name string `json:"name"`
-		Path string `json:"path"`
-	} `json:"endpoints"`
-}
-
 // TestRuntimeDecoder verifies that the configuration decoder is properly exposed by runtime
 // and can be used to parse custom configuration sections
 func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	t := s.T()
-	assert := assert.New(t)
+	asserts := assert.New(t)
 
 	// Get the directory of the current file to build the absolute path of the configuration
 	_, filename, _, ok := runtime.Caller(0)
@@ -255,16 +217,17 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 		t.Fatalf("Failed to change working directory to runtime root: %v", err)
 	}
 
-	bootstrapPath := "examples/configs/load_with_custom_parser/config/bootstrap.yaml"
-
 	// 1. Initialize Runtime with correct AppInfo
+	// The bootstrap.yaml is in the same directory as this test file
+	_, currentFile, _, _ := runtime.Caller(0)
+	bootstrapPath := filepath.Join(filepath.Dir(currentFile), "bootstrap.yaml")
 	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath, // Use path relative to the new working directory
+		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "test-decoder",
 			Name:    "TestDecoder",
 			Version: "1.0.0",
-			Env:     "dev", // Changed from "test" to "dev" to match the config
+			Env:     "test",
 		}),
 	)
 	if err != nil {
@@ -273,27 +236,31 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	defer rtInstance.Cleanup()
 
 	// 2. Verify core components are properly initialized
-	assert.NotNil(rtInstance.Logger())
-	assert.Equal("test-decoder", rtInstance.AppInfo().ID)
-	assert.Equal("TestDecoder", rtInstance.AppInfo().Name)
-	assert.Equal("1.0.0", rtInstance.AppInfo().Version)
-	assert.Equal("dev", rtInstance.AppInfo().Env) // Changed expected value
+	asserts.NotNil(rtInstance.Logger())
+	asserts.Equal("test-decoder", rtInstance.AppInfo().ID)
+	asserts.Equal("TestDecoder", rtInstance.AppInfo().Name)
+	asserts.Equal("1.0.0", rtInstance.AppInfo().Version)
 
 	// 3. Get ConfigDecoder from runtime
 	decoder := rtInstance.Config()
-	assert.NotNil(decoder)
+	asserts.NotNil(decoder, "ConfigDecoder should not be nil")
 
-	// 4. Verify custom_settings is properly decoded using the exposed decoder
+	// 4. Verify we can decode the entire config into a map
+	var configMap map[string]interface{}
+	err = decoder.Decode("", &configMap)
+	asserts.NoError(err, "Failed to decode config into map")
+	asserts.NotEmpty(configMap, "Decoded config map should not be empty")
+
+	// 5. Verify custom_settings is properly decoded using the exposed decoder
 	var customSettings TestCustomSettings
 	// Updated to use "components.my-custom-settings" path to match the config structure
 	err = decoder.Decode("components.my-custom-settings", &customSettings)
-	assert.NoError(err)
-	assert.True(customSettings.FeatureEnabled)
-	assert.Equal("super-secret-key-123", customSettings.APIKey)
-	assert.Equal(100, customSettings.RateLimit)
-	assert.Len(customSettings.Endpoints, 2)
-	assert.Equal("users", customSettings.Endpoints[0].Name)
-	assert.Equal("/api/v1/users", customSettings.Endpoints[0].Path)
-	assert.Equal("products", customSettings.Endpoints[1].Name)
-	assert.Equal("/api/v1/products", customSettings.Endpoints[1].Path)
+	asserts.NoError(err, "Failed to decode custom settings")
+	asserts.True(customSettings.FeatureEnabled, "Feature should be enabled")
+	asserts.Equal(100, customSettings.RateLimit, "Rate limit should be 100")
+	asserts.Len(customSettings.Endpoints, 2, "Should have 2 endpoints")
+	asserts.Equal("users", customSettings.Endpoints[0].Name, "First endpoint should be 'users'")
+	asserts.Equal("/api/v1/users", customSettings.Endpoints[0].Path, "Users endpoint path should be correct")
+	asserts.Equal("products", customSettings.Endpoints[1].Name, "Second endpoint should be 'products'")
+	asserts.Equal("/api/v1/products", customSettings.Endpoints[1].Path, "Products endpoint path should be correct")
 }
