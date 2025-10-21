@@ -9,7 +9,7 @@ import (
 
 // mergeAppInfo handles the logic of merging application information from configuration
 // and options, and then validates the final result.
-func mergeAppInfo(sc interfaces.StructuredConfig, optionalAppInfo *interfaces.AppInfo) (*interfaces.AppInfo, error) {
+func mergeAppInfo(sc interfaces.StructuredConfig, providerOptions *ProviderOptions) (*interfaces.AppInfo, error) {
 	// 1. Decode AppInfo from the configuration.
 	configAppInfo, err := sc.DecodeApp()
 	// It's okay if this fails (e.g., 'app' key not in config), so we don't return the error immediately.
@@ -20,35 +20,35 @@ func mergeAppInfo(sc interfaces.StructuredConfig, optionalAppInfo *interfaces.Ap
 
 	// 2. Merge AppInfo from options (as base) and config (as override).
 	// Start with the AppInfo provided via the WithAppInfo option. It can be nil.
-	finalAppInfo := optionalAppInfo
-	if finalAppInfo == nil {
+	appInfo := providerOptions.appInfo
+	if appInfo == nil {
 		// If no AppInfo was provided via options, create a new one to populate from config.
-		finalAppInfo = &interfaces.AppInfo{}
+		appInfo = &interfaces.AppInfo{}
 	}
 
 	// Merge values from the config. Config values take precedence.
 	if configAppInfo != nil {
 		if configAppInfo.Id != "" {
-			finalAppInfo.ID = configAppInfo.Id
+			appInfo.ID = configAppInfo.Id
 		}
 		if configAppInfo.Name != "" {
-			finalAppInfo.Name = configAppInfo.Name
+			appInfo.Name = configAppInfo.Name
 		}
 		if configAppInfo.Version != "" {
-			finalAppInfo.Version = configAppInfo.Version
+			appInfo.Version = configAppInfo.Version
 		}
 		if configAppInfo.Env != "" {
-			finalAppInfo.Env = configAppInfo.Env
+			appInfo.Env = configAppInfo.Env
 		}
 		if len(configAppInfo.Metadata) > 0 {
-			finalAppInfo.Metadata = configAppInfo.Metadata
+			appInfo.Metadata = configAppInfo.Metadata
 		}
 	}
 
 	// 3. Validate the final merged AppInfo.
-	if finalAppInfo.ID == "" || finalAppInfo.Name == "" || finalAppInfo.Version == "" {
+	if appInfo.ID == "" || appInfo.Name == "" || appInfo.Version == "" {
 		return nil, runtimeerrors.NewStructured("bootstrap", "app info (ID, Name, Version) is required but was not found in config or WithAppInfo option").WithCaller()
 	}
 
-	return finalAppInfo, nil
+	return appInfo, nil
 }

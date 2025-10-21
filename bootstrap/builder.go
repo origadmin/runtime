@@ -10,12 +10,14 @@ import (
 )
 
 // buildContainer creates the component container and initializes all registered components.
-func buildContainer(sc interfaces.StructuredConfig, factories map[string]interfaces.ComponentFactory, opts ...Option) (interfaces.Container, log.Logger, error) {
+func buildContainer(sc interfaces.StructuredConfig, providerOptions *ProviderOptions) (interfaces.Container,
+	log.Logger, error) {
+	factories := providerOptions.componentFactories
 	// 1. Create the component provider implementation.
 	builder := container.NewBuilder(factories).WithConfig(sc)
 
 	// 2. Initialize core components by consuming the config.
-	c, err := builder.Build(opts...)
+	c, err := builder.Build(providerOptions.rawOptions...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to initialize components: %w", err)
 	}
