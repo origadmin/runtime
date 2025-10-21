@@ -74,17 +74,19 @@ func (r *Runtime) Container() interfaces.Container {
 // NewApp creates a new Kratos application instance.
 // It wires together the runtime's configured components (like the default registrar) with the provided transport servers.
 // It now accepts additional Kratos options for more flexible configuration.
-func (r *Runtime) NewApp(servers []transport.Server, appOptions ...kratos.Option) *kratos.App {
+func (r *Runtime) NewApp(servers []transport.Server, options ...kratos.Option) *kratos.App {
 	opts := []kratos.Option{
 		kratos.Logger(r.Logger()),
 		kratos.Server(servers...),
 	}
+	info := (*AppInfo)(r.AppInfo())
+	opts = append(opts, info.Options()...)
 
 	if registrar := r.DefaultRegistrar(); registrar != nil {
 		opts = append(opts, kratos.Registrar(registrar))
 	}
 
-	opts = append(opts, appOptions...)
+	opts = append(opts, options...)
 	return kratos.New(opts...)
 }
 
