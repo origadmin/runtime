@@ -1,0 +1,4 @@
+sources:
+  - type: file
+    file:
+      path: "config.yaml"

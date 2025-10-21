@@ -1,0 +1,9 @@
+components:
+  my-custom-settings:
+    feature_enabled: true
+    rate_limit: 100
+    endpoints:
+      - name: "users"
+        path: "/api/v1/users"
+      - name: "products"
+        path: "/api/v1/products"

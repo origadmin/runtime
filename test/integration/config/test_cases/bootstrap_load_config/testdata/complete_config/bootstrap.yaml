@@ -1,0 +1,5 @@
+sources:
+  - type: "file"
+    name: "complete-config"
+    file:
+      path: "config.yaml"

@@ -1,25 +1,17 @@
 package bootstrap_load_config_test
 
 import (
-	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	rt "github.com/origadmin/runtime"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
-)
-
-const (
-	testCaseDir = "test/integration/config/test_cases/bootstrap_load_config"
 )
 
 // AssertTestConfig contains the validation logic for the TestConfig struct
@@ -109,157 +101,152 @@ type TestCustomSettings struct {
 	} `json:"endpoints"`
 }
 
-// BootstrapLoadConfigTestSuite tests the loading of configuration via the bootstrap process.
-type BootstrapLoadConfigTestSuite struct {
+// RuntimeIntegrationTestSuite tests configuration integration with Runtime
+type RuntimeIntegrationTestSuite struct {
 	suite.Suite
 }
 
-func TestBootstrapLoadConfigTestSuite(t *testing.T) {
-	suite.Run(t, new(BootstrapLoadConfigTestSuite))
+func TestRuntimeIntegrationTestSuite(t *testing.T) {
+	suite.Run(t, new(RuntimeIntegrationTestSuite))
 }
 
-// TestBootstrapLoading verifies that the runtime can be initialized from the bootstrap file,
-// which then correctly loads and merges the main application configuration.
-func (s *BootstrapLoadConfigTestSuite) TestBootstrapLoading() {
+// TestRuntimeLoadCompleteConfig tests loading complete configuration using Runtime
+func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 	t := s.T()
 	asserts := assert.New(t)
 
-	// Get the path to the current test file
-	_, filename, _, _ := runtime.Caller(0)
-	testDir := filepath.Dir(filename)
+	// Use a robust relative path to the dedicated bootstrap config for this test.
+	bootstrapPath := filepath.Join("testdata", "complete_config", "bootstrap.yaml")
 
-	// Define test cases for different formats of the bootstrap config.
-	testCases := []struct {
-		name     string
-		filePath string
-	}{
-		{name: "YAML", filePath: filepath.Join(testDir, "bootstrap.yaml")},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Initialize Runtime from the bootstrap file.
-			// The AppInfo here is minimal as the main config is loaded via bootstrap.
-			rtInstance, err := rt.NewFromBootstrap(
-				tc.filePath,
-				bootstrap.WithAppInfo(&interfaces.AppInfo{
-					ID:      "bootstrap-test-app",
-					Name:    "BootstrapTestApp",
-					Version: "1.0.0",
-				}),
-				bootstrap.WithDefaultPaths(map[string]string{
-					constant.ComponentMiddlewares: "middlewares.middlewares",
-				}),
-			)
-			asserts.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
-			defer rtInstance.Cleanup()
-
-			// Get the configuration decoder from the runtime.
-			configDecoder := rtInstance.Config()
-			asserts.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
-
-			// Decode the entire configuration into our unified TestConfig struct.
-			var cfg testconfigs.TestConfig
-			err = configDecoder.Decode("", &cfg) // Decode the root of the config
-
-			asserts.NoError(err, "Failed to decode config from runtime: %v", err)
-			// Run assertions on the loaded configuration using the custom assertion.
-			AssertTestConfig(t, &cfg)
-			t.Logf("Runtime loaded and verified %s bootstrap config successfully!", tc.name)
-		})
-	}
-}
-
-// TestConfigProtoIntegration tests integration between configuration and Protocol Buffers
-func (s *BootstrapLoadConfigTestSuite) TestConfigProtoIntegration() {
-	t := s.T()
-	asserts := assert.New(t)
-
-	// All test files are in the same directory, use relative paths directly
-
-	// 1. Initialize Runtime with default decoder provider
+	// Initialize Runtime
 	rtInstance, err := rt.NewFromBootstrap(
-		"bootstrap.yaml",
+		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "test-app-id",
-			Name:    "TestApp",
+			ID:      "test-complete-config",
+			Name:    "TestCompleteConfig",
 			Version: "1.0.0",
 		}),
 	)
-	require.NoError(t, err, "Failed to initialize runtime")
+	if err != nil {
+		t.Fatalf("Failed to initialize runtime: %v", err)
+	}
+	defer rtInstance.Cleanup()
+
+	// Get configuration decoder
+	configDecoder := rtInstance.Config()
+	asserts.NotNil(configDecoder)
+
+	// Decode into complete config structure
+	var config testconfigs.TestConfig
+	err = configDecoder.Decode("", &config)
+	asserts.NoError(err)
+
+	// Run assertions
+	AssertTestConfig(t, &config)
+	t.Logf("Runtime loaded and verified complete config successfully!")
+}
+
+// TestConfigProtoIntegration tests integration between configuration and Protocol Buffers
+func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
+	t := s.T()
+	assertions := assert.New(t)
+
+	// Use a robust relative path to the dedicated bootstrap config for this test.
+	bootstrapPath := filepath.Join("testdata", "proto_integration", "bootstrap.yaml")
+
+	// 1. Initialize Runtime with default decoder provider
+	rtInstance, err := rt.NewFromBootstrap(
+		bootstrapPath,
+		bootstrap.WithAppInfo(&interfaces.AppInfo{
+			ID:      "test-proto-config",
+			Name:    "TestProtoConfig",
+			Version: "1.0.0",
+		}),
+	)
+	if err != nil {
+		t.Fatalf("Failed to initialize runtime: %v", err)
+	}
 	defer rtInstance.Cleanup()
 
 	// 2. Get ConfigDecoder from runtime
 	configDecoder := rtInstance.Config()
-	asserts.NotNil(configDecoder, "ConfigDecoder should not be nil")
+	assertions.NotNil(configDecoder)
 
 	// 3. Decode entire config into generated Bootstrap struct
 	var bootstrapConfig testconfigs.TestConfig
 	err = configDecoder.Decode("", &bootstrapConfig)
-	asserts.NoError(err, "Failed to decode config")
+	assertions.NoError(err)
 
 	// 4. Assert decoded values
-	// Verify app info
-	appInfo := rtInstance.AppInfo()
-	asserts.Equal("test-app-id", appInfo.ID)
-	asserts.Equal("TestApp", appInfo.Name)
-	asserts.Equal("1.0.0", appInfo.Version)
+	// Verify logger (from test_config.yaml)
+	logger := rtInstance.Logger()
+	assertions.NotNil(logger)
+
+	// Verify registration_discovery_name
+	assertions.Equal("test-discovery", bootstrapConfig.RegistrationDiscoveryName)
 
 	// Verify servers
-	servers := bootstrapConfig.GetServers()
-	asserts.Len(servers, 1, "Should have 1 Servers message")
-	serverConfigs := servers[0].GetServers()
-	asserts.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
+	assertions.Len(bootstrapConfig.GetServers(), 1, "Should have 1 Servers message")
+	serverConfigs := bootstrapConfig.GetServers()[0].GetServers()
+	assertions.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
 
-	var grpcServer, httpServer *transportv1.Server
+	var grpcServer *transportv1.Server
+	var httpServer *transportv1.Server
+
 	for _, s := range serverConfigs {
-		switch {
-		case s.GetGrpc() != nil:
+		if s.GetGrpc() != nil {
 			grpcServer = s
-		case s.GetHttp() != nil:
+		}
+		if s.GetHttp() != nil {
 			httpServer = s
 		}
 	}
 
-	// Verify gRPC server config
-	asserts.NotNil(grpcServer, "gRPC server configuration not found")
-	asserts.Equal("tcp", grpcServer.GetGrpc().GetNetwork())
-	asserts.Equal(":9000", grpcServer.GetGrpc().GetAddr())
+	assertions.NotNil(grpcServer, "gRPC server configuration not found")
+	assertions.Equal("tcp", grpcServer.GetGrpc().GetNetwork())
+	assertions.Equal(":9000", grpcServer.GetGrpc().GetAddr())
+	assertions.Equal("1s", grpcServer.GetGrpc().GetTimeout().AsDuration().String())
 
-	// Verify HTTP server config
-	asserts.NotNil(httpServer, "HTTP server configuration not found")
-	asserts.Equal("tcp", httpServer.GetHttp().GetNetwork())
-	asserts.Equal(":8000", httpServer.GetHttp().GetAddr())
+	assertions.NotNil(httpServer, "HTTP server configuration not found")
+	assertions.Equal("tcp", httpServer.GetHttp().GetNetwork())
+	assertions.Equal(":8000", httpServer.GetHttp().GetAddr())
+	assertions.Equal("2s", httpServer.GetHttp().GetTimeout().AsDuration().String())
+
+	// Verify clients (should be empty as not defined in test_config.yaml)
+	assertions.Empty(bootstrapConfig.Clients)
+
+	// Verify discoveries (should be empty as not defined in test_config.yaml)
+	assertions.Empty(bootstrapConfig.Discoveries)
 }
 
 // TestRuntimeDecoder verifies that the configuration decoder is properly exposed by runtime
 // and can be used to parse custom configuration sections
-func (s *BootstrapLoadConfigTestSuite) TestRuntimeDecoder() {
+func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	t := s.T()
 	asserts := assert.New(t)
 
-	// All test files are in the same directory, use relative paths directly
-	wd, err := os.Getwd()
-	require.NoError(t, err, "Failed to get current working directory")
-	t.Logf("Current working directory: %s", wd)
+	// Use a robust relative path to the dedicated bootstrap config for this test.
+	bootstrapPath := filepath.Join("testdata", "decoder_test", "bootstrap.yaml")
+
 	// 1. Initialize Runtime with correct AppInfo
-	bootstrapPath := filepath.Join(testCaseDir, "bootstrap.yaml")
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "test-app-id",
-			Name:    "TestApp",
+			ID:      "test-decoder",
+			Name:    "TestDecoder",
 			Version: "1.0.0",
 			Env:     "test",
 		}),
 	)
-	require.NoError(t, err, "Failed to initialize runtime")
+	if err != nil {
+		t.Fatalf("Failed to initialize runtime: %v", err)
+	}
 	defer rtInstance.Cleanup()
 
 	// 2. Verify core components are properly initialized
 	asserts.NotNil(rtInstance.Logger())
-	asserts.Equal("test-app-id", rtInstance.AppInfo().ID)
-	asserts.Equal("TestApp", rtInstance.AppInfo().Name)
+	asserts.Equal("test-decoder", rtInstance.AppInfo().ID)
+	asserts.Equal("TestDecoder", rtInstance.AppInfo().Name)
 	asserts.Equal("1.0.0", rtInstance.AppInfo().Version)
 
 	// 3. Get ConfigDecoder from runtime
@@ -271,4 +258,17 @@ func (s *BootstrapLoadConfigTestSuite) TestRuntimeDecoder() {
 	err = decoder.Decode("", &configMap)
 	asserts.NoError(err, "Failed to decode config into map")
 	asserts.NotEmpty(configMap, "Decoded config map should not be empty")
+
+	// 5. Verify custom_settings is properly decoded using the exposed decoder
+	var customSettings TestCustomSettings
+	// Updated to use "components.my-custom-settings" path to match the config structure
+	err = decoder.Decode("components.my-custom-settings", &customSettings)
+	asserts.NoError(err, "Failed to decode custom settings")
+	asserts.True(customSettings.FeatureEnabled, "Feature should be enabled")
+	asserts.Equal(100, customSettings.RateLimit, "Rate limit should be 100")
+	asserts.Len(customSettings.Endpoints, 2, "Should have 2 endpoints")
+	asserts.Equal("users", customSettings.Endpoints[0].Name, "First endpoint should be 'users'")
+	asserts.Equal("/api/v1/users", customSettings.Endpoints[0].Path, "Users endpoint path should be correct")
+	asserts.Equal("products", customSettings.Endpoints[1].Name, "Second endpoint should be 'products'")
+	asserts.Equal("/api/v1/products", customSettings.Endpoints[1].Path, "Products endpoint path should be correct")
 }
