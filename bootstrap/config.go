@@ -58,34 +58,27 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 	// 1. Apply Options to determine the configuration flow.
 
 	var baseConfig interfaces.Config
-
+	var err error
 	// Case 1: A fully custom interfaces.Config is provided.
 	if providerOpts.config != nil { // The user has provided a pre-configured config instance.
 		// Otherwise, we'll use it as the base for our default structured implementation.
 		baseConfig = providerOpts.config
-
 		// Case 2: Default flow - load from bootstrapPath.
 	} else {
-		// Determine the full path for the initial bootstrap file.
-		fullBootstrapPath := bootstrapPath
-		if providerOpts.directory != "" && !filepath.IsAbs(bootstrapPath) {
-			fullBootstrapPath = filepath.Join(providerOpts.directory, bootstrapPath)
-		}
 
 		var sources []*sourcev1.SourceConfig
 		// If not in 'directly' mode, try to load sources from the bootstrap file.
 		if !providerOpts.directly {
-			sources = loadSourcesFromBootstrapFile(fullBootstrapPath, providerOpts, logger)
+			sources = loadSourcesFromBootstrapFile(bootstrapPath, providerOpts, logger)
 		}
 
 		// Fallback or 'directly' mode: use the bootstrapPath as the single source.
 		if len(sources) == 0 {
-			logger.Infof("No sources found in bootstrap file, using it directly: %s", fullBootstrapPath)
-			sources = append(sources, WithFileSource(fullBootstrapPath))
+			logger.Infof("No sources found in bootstrap file, using it directly: %s", bootstrapPath)
+			sources = append(sources, WithFileSource(bootstrapPath))
 		}
 
 		// Create the base config from the collected and resolved sources.
-		var err error
 		baseConfig, err = runtimeconfig.NewConfig(&sourcev1.Sources{Sources: sources}, providerOpts.rawOptions...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create base config: %w", err)
@@ -94,7 +87,7 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 
 	// Step 2: Load the configuration. This is the responsibility of the bootstrap module.
 	if err := baseConfig.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
+		return nil, err
 	}
 
 	return baseConfig, nil
@@ -102,15 +95,18 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 
 // loadSourcesFromBootstrapFile attempts to load a bootstrap configuration and resolve the paths of its sources.
 // It returns a slice of source configurations or nil if loading fails or no sources are found.
-func loadSourcesFromBootstrapFile(fullBootstrapPath string, providerOpts *ProviderOptions, logger *log.Helper) []*sourcev1.SourceConfig {
-	bootstrapCfg, err := LoadBootstrapConfig(fullBootstrapPath, providerOpts.rawOptions...)
+func loadSourcesFromBootstrapFile(bootstrapPath string, providerOpts *ProviderOptions, logger *log.Helper) []*sourcev1.SourceConfig {
+	bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath, providerOpts.rawOptions...)
 	if err != nil || bootstrapCfg == nil || len(bootstrapCfg.GetSources()) == 0 {
+		if err != nil {
+			logger.Warnf("Failed to load or parse sources from bootstrap file: %v", err)
+		}
 		return nil
 	}
 
 	// Successfully loaded sources, now resolve their paths.
 	var sources []*sourcev1.SourceConfig
-	bootstrapDir := filepath.Dir(fullBootstrapPath) // Base for relative paths
+	bootstrapDir := filepath.Dir(bootstrapPath) // Base for relative paths
 	for _, source := range bootstrapCfg.GetSources() {
 		if fileSource, ok := source.Config.(*sourcev1.SourceConfig_File); ok {
 			path := fileSource.File.Path
@@ -151,12 +147,12 @@ func LoadBootstrapConfig(bootstrapPath string, opts ...Option) (*bootstrapv1.Boo
 
 	// Load the config to read the bootstrap file.
 	if err := bootConfig.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load temporary bootstrap config: %w", err)
+		return nil, err
 	}
 
 	var bc bootstrapv1.Bootstrap
 	if err := bootConfig.Scan(&bc); err != nil {
-		return nil, fmt.Errorf("failed to scan bootstrap config from %s: %w", bootstrapPath, err)
+		return nil, err
 	}
 
 	return &bc, nil

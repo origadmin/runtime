@@ -1,6 +1,7 @@
 package file
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -115,7 +116,8 @@ func (f *file) Load() (kvs []*kratosconfig.KeyValue, err error) {
 			// File doesn't exist, but it's optional, return empty config
 			return []*kratosconfig.KeyValue{}, nil
 		}
-		return nil, err
+		abs, _ := filepath.Abs(f.path)
+		return nil, fmt.Errorf("failed to stat config path %q", abs)
 	}
 	if fi.IsDir() {
 		return f.loadDir(f.path)

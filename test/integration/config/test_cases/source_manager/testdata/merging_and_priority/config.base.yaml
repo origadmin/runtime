@@ -1,0 +1,11 @@
+logger:
+  level: "info"
+  format: "json"
+
+components:
+  my-custom-settings:
+    feature_enabled: true
+    api_key: "super-secret-key-123"
+    rate_limit: 100
+    endpoints:
+      - path: "/api/v1"

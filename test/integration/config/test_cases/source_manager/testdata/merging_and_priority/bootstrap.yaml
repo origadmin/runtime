@@ -1,0 +1,11 @@
+sources:
+  - name: "base-config" # 基础配置，优先级低
+    priority: 1
+    type: "file"
+    file:
+      path: "config.base.yaml"
+  - name: "override-config" # 覆盖配置，优先级高
+    priority: 10
+    type: "file"
+    file:
+      path: "config.override.yaml"

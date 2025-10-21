@@ -106,7 +106,7 @@ func WithBootstrapPrefix(prefix string) Option {
 // FromOptions creates a ProviderOptions struct from a slice of Option functions.
 // This is the single entry point for processing all bootstrap options.
 func FromOptions(opts ...Option) *ProviderOptions {
-	po := optionutil.NewT[ProviderOptions]()
+	po := optionutil.NewT[ProviderOptions](opts...)
 	po.rawOptions = opts
 	return po
 }
