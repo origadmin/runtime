@@ -146,7 +146,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	bootstrapPath := "test/integration/config/configs/bootstrap.yaml"
 
 	// 1. Initialize Runtime with default decoder provider
-	rt, cleanup, err := rt.NewFromBootstrap(
+	boot, cleanup, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:      "test-proto-config",
@@ -160,7 +160,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	defer cleanup()
 
 	// 2. Get ConfigDecoder from runtime
-	configDecoder := rt.Config()
+	configDecoder := boot.Config()
 	assert.NotNil(configDecoder)
 
 	// 3. Decode entire config into generated Bootstrap struct
@@ -170,7 +170,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 
 	// 4. Assert decoded values
 	// Verify logger (from test_config.yaml)
-	logger := rt.Logger()
+	logger := boot.Logger()
 	assert.NotNil(logger)
 
 	// Verify registration_discovery_name

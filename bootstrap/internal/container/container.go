@@ -11,6 +11,7 @@ import (
 
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
+	"github.com/origadmin/runtime/interfaces/options"
 	runtimelog "github.com/origadmin/runtime/log"
 	runtimeMiddleware "github.com/origadmin/runtime/middleware" // Import runtime/middleware package, but only for internal use.
 	runtimeRegistry "github.com/origadmin/runtime/registry"
@@ -19,7 +20,6 @@ import (
 // container is the default implementation of the interfaces.Container interface.
 // It holds all the initialized components for the application runtime.
 type container struct {
-	logger               log.Logger
 	discoveries          map[string]registry.Discovery
 	registrars           map[string]registry.Registrar
 	defaultRegistrar     registry.Registrar
@@ -35,6 +35,7 @@ var _ interfaces.Container = (*container)(nil)
 // It provides a fluent API for configuring and building a container instance.
 type Builder struct {
 	container *container
+	logger    runtimelog.Logger
 	config    interfaces.StructuredConfig
 	err       error // Track errors during building
 	factories map[string]interfaces.ComponentFactory
@@ -92,7 +93,7 @@ func (b *Builder) WithLogger(logger log.Logger) *Builder {
 	if b.err != nil {
 		return b
 	}
-	b.container.logger = logger
+	b.logger = logger
 	return b
 }
 
@@ -107,7 +108,7 @@ func (b *Builder) WithComponent(name string, component interface{}) *Builder {
 
 // Build initializes and returns the Container using the provided config.
 // It returns the container and any error that occurred during initialization.
-func (b *Builder) Build() (interfaces.Container, error) {
+func (b *Builder) Build(opts ...options.Option) (interfaces.Container, error) {
 	if b.err != nil {
 		return nil, b.err
 	}
@@ -125,25 +126,25 @@ func (b *Builder) Build() (interfaces.Container, error) {
 	helper := log.NewHelper(b.container.Logger()) // Now c.Logger() should be initialized or fallbacked
 
 	// 2. Initialize Registries and Discoveries with graceful fallback.
-	if err := b.initRegistries(); err != nil {
+	if err := b.initRegistries(opts...); err != nil {
 		// Log the error but continue, as local mode is the fallback.
 		helper.Errorf("failed to initialize registries component, error: %v", err)
 	}
 
-	if err := b.initMiddlewares(); err != nil {
+	if err := b.initMiddlewares(opts...); err != nil {
 		// Log the error but continue.
 		helper.Errorf("failed to initialize middlewares component, error: %v", err)
 	}
 
 	// 3. Initialize generic components from the [components] config section.
-	if err := b.initGenericComponents(); err != nil {
+	if err := b.initGenericComponents(opts...); err != nil {
 		// Log the error but continue.
 		helper.Errorf("failed to initialize generic components, error: %v", err)
 	}
 
 	// Ensure logger is set
-	if b.container.logger == nil {
-		b.container.logger = log.DefaultLogger
+	if b.logger == nil {
+		b.logger = log.DefaultLogger
 	}
 
 	return b.container, nil
@@ -176,8 +177,7 @@ func (b *Builder) initLogger() error {
 	logger := runtimelog.NewLogger(loggerCfg)
 
 	// 5. Set the logger for the provider and globally for the Kratos framework.
-	b.container.logger = logger
-	runtimelog.SetLogger(logger)
+	b.logger = logger
 	return nil
 }
 
@@ -189,7 +189,7 @@ func firstRegistry(registrars map[string]registry.Registrar) registry.Registrar 
 }
 
 // initRegistries handles the initialization of the service discovery and registration components.
-func (b *Builder) initRegistries() error {
+func (b *Builder) initRegistries(opts ...options.Option) error {
 	helper := log.NewHelper(b.Logger()) // Use log.Helper
 
 	discoveriesCfg, err := b.config.DecodeDiscoveries()
@@ -211,22 +211,26 @@ func (b *Builder) initRegistries() error {
 	b.container.registrars = make(map[string]registry.Registrar, len(discoveries))
 
 	for _, discoveryCfg := range discoveries {
-		name := discoveryCfg.GetName()
+		key := discoveryCfg.GetType()
+		if discoveryCfg.GetName() != "" {
+			key = discoveryCfg.GetName()
+		}
 		// Create Discovery
-		d, err := runtimeRegistry.NewDiscovery(discoveryCfg)
+		d, err := runtimeRegistry.NewDiscovery(discoveryCfg, opts...)
 		if err != nil {
-			helper.Warnw("msg", "failed to create discovery", "name", name, "error", err)
+			helper.Warnw("msg", "failed to create discovery", "key", key, "error", err)
 			continue // Skip this one
 		}
-		b.container.discoveries[name] = d
 
 		// Create Registrar
-		r, err := runtimeRegistry.NewRegistrar(discoveryCfg)
+		r, err := runtimeRegistry.NewRegistrar(discoveryCfg, opts...)
 		if err != nil {
-			helper.Warnw("msg", "failed to create registrar", "name", name, "error", err)
+			helper.Warnw("msg", "failed to create registrar", "key", key, "error", err)
 			continue // Skip this one
 		}
-		b.container.registrars[name] = r
+
+		b.container.discoveries[key] = d
+		b.container.registrars[key] = r
 	}
 
 	if len(b.container.registrars) == 1 {
@@ -239,19 +243,10 @@ func (b *Builder) initRegistries() error {
 		helper.Warnw("msg", "no default registrar set")
 	}
 
-	// Set the default registrar
-	//if discoveryCfg.Default != "" {
-	//	if r, ok := b.container.registrars[discoveryCfg.Default]; ok {
-	//		helper.Infow("msg", "default registrar set", "name", discoveryCfg.Default)
-	//	} else {
-	//		helper.Warnw("msg", "default registrar not found", "name", discoveryCfg.Default)
-	//	}
-	//}
-
 	return nil
 }
 
-func (b *Builder) initMiddlewares() error {
+func (b *Builder) initMiddlewares(opts ...options.Option) error {
 	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
 
 	middlewares, err := b.config.DecodeMiddlewares()
@@ -266,30 +261,35 @@ func (b *Builder) initMiddlewares() error {
 		return nil
 	}
 	// Get the logger to pass to middleware options
-	logger := b.container.Logger()
-
+	logger := b.Logger()
+	opts = append(opts, runtimelog.WithLogger(logger))
 	for _, mc := range middlewares.GetMiddlewares() {
 		if mc.GetEnabled() {
+			key := mc.GetType()
+			if mc.GetName() != "" {
+				key = mc.GetName()
+			}
 			// Assuming NewClient and NewServer support WithLogger option
-			mclient, ok := runtimeMiddleware.NewClient(mc, runtimelog.WithLogger(logger)) // Use runtimeMiddleware
+			mclient, ok := runtimeMiddleware.NewClient(mc, opts...) // Use runtimeMiddleware
 			if !ok {
-				helper.Warnw("msg", "failed to create client middleware", "type", mc.GetType())
+				helper.Warnw("msg", "failed to create client middleware", "key", key)
 				continue
 			}
-			mserver, ok := runtimeMiddleware.NewServer(mc, runtimelog.WithLogger(logger)) // Use runtimeMiddleware
+			mserver, ok := runtimeMiddleware.NewServer(mc, opts...) // Use runtimeMiddleware
 			if !ok {
-				helper.Warnw("msg", "failed to create server middleware", "type", mc.GetType())
+				helper.Warnw("msg", "failed to create server middleware", "key", key)
 				continue
 			}
-			b.container.serverMiddlewaresMap[mc.GetType()] = mserver // Store kratos middleware.Middleware
-			b.container.clientMiddlewaresMap[mc.GetType()] = mclient // Store kratos middleware.Middleware
+
+			b.container.serverMiddlewaresMap[key] = mserver // Store kratos middleware.Middleware
+			b.container.clientMiddlewaresMap[key] = mclient // Store kratos middleware.Middleware
 		}
 	}
 	return nil
 }
 
 // initGenericComponents handles the initialization of user-defined components.
-func (b *Builder) initGenericComponents() error {
+func (b *Builder) initGenericComponents(opts ...options.Option) error {
 	helper := log.NewHelper(b.container.Logger()) // Use log.Helper
 
 	for name, factory := range b.factories {
@@ -310,7 +310,7 @@ func (b *Builder) initGenericComponents() error {
 }
 
 func (b *Builder) Logger() log.Logger {
-	return b.container.Logger()
+	return b.logger
 }
 
 // ServerMiddlewares implements the interfaces.Container interface.
@@ -358,11 +358,12 @@ func (c *container) RegisterComponent(name string, comp interface{}) {
 
 // Logger implements the interfaces.Container interface.
 func (c *container) Logger() log.Logger {
+	panic("this should never be called")
 	// Ensure a logger always exists, even if initialization failed.
-	if c.logger == nil {
-		c.logger = log.DefaultLogger
-	}
-	return c.logger
+	//if c.logger == nil {
+	//	c.logger = log.DefaultLogger
+	//}
+	//return c.logger
 }
 
 // Discoveries implements the interfaces.Container interface.

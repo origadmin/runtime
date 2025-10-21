@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 )
@@ -13,12 +12,6 @@ type ComponentFactory func(cfg StructuredConfig, container Container) (interface
 // Container defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
 type Container interface {
-
-	// --- Logger ---
-
-	// Logger returns the configured Kratos logger.
-	Logger() log.Logger
-
 	// --- Discovery and Registrar ---
 
 	// Discoveries returns a map of all configured service discovery components.
