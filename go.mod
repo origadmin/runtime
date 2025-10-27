@@ -2,11 +2,6 @@ module github.com/origadmin/runtime
 
 go 1.24.6
 
-replace (
-	github.com/origadmin/toolkits v1.0.0 => github.com/origadmin/toolkits v0.3.24
-	github.com/origadmin/toolkits/errors v1.0.0 => github.com/origadmin/toolkits/errors v0.3.23
-)
-
 require (
 	buf.build/go/protovalidate v1.0.0
 	github.com/bufbuild/buf v1.59.0
@@ -28,9 +23,9 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/origadmin/slog-kratos v1.0.5
-	github.com/origadmin/toolkits v0.3.24
-	github.com/origadmin/toolkits/errors v1.0.0
-	github.com/origadmin/toolkits/slogx v0.3.23
+	github.com/origadmin/toolkits v1.1.0
+	github.com/origadmin/toolkits/errors v1.1.0
+	github.com/origadmin/toolkits/slogx v1.1.0
 	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1

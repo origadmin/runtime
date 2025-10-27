@@ -345,7 +345,7 @@ func (m *DigestAuth) validate(all bool) error {
 
 	if utf8.RuneCountInString(m.GetAlgorithm()) < 1 {
 		err := DigestAuthValidationError{
-			field:  "Algorithm",
+			field:  "Spec",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {

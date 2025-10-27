@@ -6,7 +6,6 @@ package test.configs;
 import "runtime/app/v1/app.proto";
 import "runtime/config/v1/gateway.proto";
 import "runtime/config/v1/tracer.proto";
-import "runtime/config/v1/websocket.proto";
 import "runtime/discovery/v1/discovery.proto";
 import "runtime/extension/v1/extension.proto";
 import "runtime/logger/v1/logger.proto";
@@ -17,6 +16,7 @@ import "runtime/security/transport/v1/tls.proto";
 import "runtime/storage/v1/storage.proto";
 import "runtime/task/v1/task.proto";
 import "runtime/transport/v1/transport.proto";
+import "runtime/websocket/v1/websocket.proto";
 
 option go_package = "github.com/origadmin/runtime/test/integration/config/proto;configs";
 
@@ -28,22 +28,28 @@ message TestConfig {
   runtime.transport.v1.Servers servers = 2;
   runtime.transport.v1.Clients clients = 3;
 
+  runtime.transport.v1.Server server = 4;
+  runtime.transport.v1.Client client = 5;
+
   // Service discovery configurations
   runtime.discovery.v1.Discoveries discoveries = 6;
 
+  runtime.discovery.v1.Discovery discovery = 7;
+
   // Service registration configuration
-  string registration_discovery_name = 7;
+  string registration_discovery_name = 8;
 
   // Other component configurations
-  runtime.logger.v1.Logger logger = 8;
-  runtime.config.v1.Tracer tracer = 9;
-  runtime.middleware.v1.Middlewares middlewares = 10; // Corrected: changed type to Middlewares and field name to middlewares
-  runtime.config.v1.Gateway gateway = 11;
-  runtime.storage.v1.Storage storage = 12;
-  runtime.task.v1.Task task = 13;
-  runtime.config.v1.WebSocket websocket = 14;
-  runtime.extension.v1.Extension extension = 15;
-  runtime.security.authn.v1.AuthN authn = 16;
-  runtime.security.authz.v1.AuthZ authz = 17;
-  runtime.security.transport.v1.TLSConfig tls = 18;
+  runtime.logger.v1.Logger logger = 9;
+  runtime.config.v1.Tracer tracer = 10;
+  runtime.middleware.v1.Middlewares middlewares = 11;
+  runtime.middleware.v1.Middleware middleware = 12;
+  runtime.config.v1.Gateway gateway = 13;
+  runtime.storage.v1.Storage storage = 14;
+  runtime.task.v1.Task task = 15;
+  runtime.websocket.v1.WebSocket websocket = 16;
+  runtime.extension.v1.Extension extension = 17;
+  runtime.security.authn.v1.AuthN authn = 18;
+  runtime.security.authz.v1.AuthZ authz = 19;
+  runtime.security.transport.v1.TLSConfig tls = 20;
 }
