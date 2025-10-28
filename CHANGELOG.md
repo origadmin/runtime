@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7](https://github.com/origadmin/runtime/compare/v0.2.6...v0.2.7) (2025-10-28)
+
+
+### Features
+
+* **discovery:** Add Discoveries message type to support multiple discovery configurations ([073409d](https://github.com/origadmin/runtime/commit/073409d4983e7a1add5c0b85f4e4020a9003c68d))
+
 ## [0.2.6](https://github.com/origadmin/runtime/compare/v0.2.5...v0.2.6) (2025-10-13)
 
 
