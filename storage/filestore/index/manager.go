@@ -126,11 +126,13 @@ func (m *Manage) CreateNode(node *index.Node) error {
 
 	// Update path index (path -> nodeID)
 	if err := m.layout.Write(m.pathKey(fullPath), []byte(node.NodeID)); err != nil {
-		err := m.layout.Delete(m.nodeKey(node.NodeID))
-		if err != nil {
-			return err
+		// Clean up the node we just created
+		delErr := m.layout.Delete(m.nodeKey(node.NodeID))
+		if delErr != nil {
+			// If we can't clean up, return both errors
+			return fmt.Errorf("failed to update path index: %v, and failed to clean up node: %v", err, delErr)
 		}
-		return fmt.Errorf("failed to update path index: %w", err)
+		return fmt.Errorf("failed to update path index: %v", err)
 	}
 
 	// Update children index (parentID -> []childID)

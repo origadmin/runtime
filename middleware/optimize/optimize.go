@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/golang/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	optimizev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/optimize"
+	"github.com/origadmin/runtime/extension/customize"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )
@@ -40,18 +40,18 @@ func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	helper.Infof("enabling server optimize middleware")
 
 	// Get custom configuration
-	customize := cfg.GetCustomize()
+	config := cfg.GetCustomize()
 	// Check if custom configuration is enabled
-	if customize == nil || !customize.GetEnabled() || customize.GetName() == "" {
+	if config == nil || !config.GetEnabled() || config.GetName() == "" {
 		return nil, false
 	}
 
 	// Create Optimize configuration object
-	optimizeConfig := &optimizev1.Optimize{}
-
-	// Try to decode Optimize configuration from customize.Value
-	if customize.Value != nil {
-		if err := proto.Unmarshal(customize.Value.Value, optimizeConfig); err != nil {
+	var optimizeConfig *optimizev1.Optimize
+	var err error
+	// Try to decode Optimize configuration from config.Value
+	if config.GetConfig() != nil {
+		if optimizeConfig, err = customize.GetTypedConfig(config, &optimizev1.Optimize{}); err != nil {
 			helper.Errorf("failed to unmarshal optimize config: %v", err)
 			optimizeConfig = defaultOptimize
 		}

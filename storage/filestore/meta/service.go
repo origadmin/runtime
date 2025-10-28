@@ -41,41 +41,41 @@ func calculateContentHash(data []byte) string {
 // It processes a large file stream by chunking it, storing the chunks as blobs,
 // and returns a fully populated FileMetaV2 object along with a hash of the entire content stream.
 func (s *Service) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
-	var hashes []string
-	var totalSize int64
-	buf := make([]byte, s.chunkSize)
-
-	// Create a hasher that will calculate the hash of the entire stream.
-	streamHasher := sha256.New()
-	// TeeReader copies data from r to streamHasher as it's being read.
-	teeReader := io.TeeReader(r, streamHasher)
-
-	for {
-		// Read from the teeReader to ensure the hasher gets the data.
-		n, err := teeReader.Read(buf)
-		if err != nil && err != io.EOF {
-			return "", nil, err
-		}
-		if n == 0 {
-			break
-		}
-
-		data := buf[:n]
-		// Write the chunk to the blob storage. The blob store will return the hash of this chunk.
-		blobHash, storeErr := s.blobStore.Write(data)
-		if storeErr != nil {
-			return "", nil, storeErr
-		}
-		hashes = append(hashes, blobHash)
-		totalSize += int64(n)
-
-		if err == io.EOF {
-			break
-		}
+	// First, read all the data into memory to ensure we can calculate the hash correctly
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to read data: %w", err)
 	}
 
-	// Finalize the hash of the entire stream.
-	overallHash := hex.EncodeToString(streamHasher.Sum(nil))
+	totalSize := int64(len(data))
+	var hashes []string
+
+	// Create a hasher and write the data to it
+	hasher := sha256.New()
+	if _, err := hasher.Write(data); err != nil {
+		return "", nil, fmt.Errorf("failed to hash data: %w", err)
+	}
+	overallHash := hex.EncodeToString(hasher.Sum(nil))
+
+	// Now process the data in chunks
+	for offset := 0; offset < len(data); {
+		chunkSize := int(s.chunkSize)
+		if offset+chunkSize > len(data) {
+			chunkSize = len(data) - offset
+		}
+
+		chunk := data[offset : offset+chunkSize]
+		blobHash, err := s.blobStore.Write(chunk)
+		if err != nil {
+			// Clean up any blobs we've already written
+			for _, h := range hashes {
+				_ = s.blobStore.Delete(h)
+			}
+			return "", nil, fmt.Errorf("failed to write chunk to blob store: %w", err)
+		}
+		hashes = append(hashes, blobHash)
+		offset += chunkSize
+	}
 
 	meta := &metav2.FileMetaV2{
 		FileSize:   totalSize,
@@ -89,21 +89,40 @@ func (s *Service) chunkData(r io.Reader) (string, *metav2.FileMetaV2, error) {
 	return overallHash, meta, nil
 }
 
+// ServiceOptions contains optional parameters for the Service.
+type ServiceOptions struct {
+	// BlobStore is an optional blob store to use. If not provided, a new one will be created.
+	BlobStore blobiface.Store
+}
+
 // NewService creates a new Service instance.
-func NewService(metaStore metaiface.Store, basePath string, assembler contentiface.Assembler, chunkSize int64) (*Service, error) {
+// If opts.BlobStore is provided, it will be used instead of creating a new one.
+func NewService(metaStore metaiface.Store, basePath string, assembler contentiface.Assembler, chunkSize int64, opts ...func(*ServiceOptions)) (*Service, error) {
 	if chunkSize <= 0 {
 		chunkSize = metav2.EmbeddedFileSizeThreshold // Use a sensible default if not provided
 	}
 
-	// Instantiate layout internally
-	bstore, err := blobimpl.New(basePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create local sharded storage for meta service: %w", err)
+	// Apply options
+	options := &ServiceOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	// Use provided blob store or create a new one
+	var bstore blobiface.Store
+	var err error
+	if options.BlobStore != nil {
+		bstore = options.BlobStore
+	} else {
+		bstore, err = blobimpl.New(basePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create local sharded storage for meta service: %w", err)
+		}
 	}
 
 	s := &Service{
 		metaStore: metaStore,
-		blobStore: bstore, // Pass the layout to blob.New
+		blobStore: bstore,
 		assembler: assembler,
 		chunkSize: chunkSize,
 	}

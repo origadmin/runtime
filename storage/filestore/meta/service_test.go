@@ -56,14 +56,14 @@ func (m *mockMetaStore) Exists(id string) (bool, error) {
 	return ok, nil
 }
 
-func (m *mockMetaStore) Update(id string, fileMeta metaiface.FileMeta) error {
+func (m *mockMetaStore) Update(id string, fileMeta metaiface.FileMeta) (metaiface.FileMeta, error) {
 	m.Lock()
 	defer m.Unlock()
 	if _, ok := m.data[id]; !ok {
-		return os.ErrNotExist
+		return nil, os.ErrNotExist
 	}
 	m.data[id] = fileMeta
-	return nil
+	return fileMeta, nil
 }
 
 func (m *mockMetaStore) Delete(id string) error {
@@ -238,7 +238,9 @@ func TestService_CreateAndRead(t *testing.T) {
 	blobStore := newMockBlobStore()
 	assembler := newMockAssembler(blobStore, 1024) // Use a small chunk size for testing
 
-	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024, func(opts *ServiceOptions) {
+		opts.BlobStore = blobStore
+	})
 	if err != nil {
 		t.Fatalf("NewService failed: %v", err)
 	}
@@ -302,7 +304,9 @@ func TestService_Get(t *testing.T) {
 	blobStore := newMockBlobStore()
 	assembler := newMockAssembler(blobStore, 1024)
 
-	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024, func(opts *ServiceOptions) {
+		opts.BlobStore = blobStore
+	})
 	if err != nil {
 		t.Fatalf("NewService failed: %v", err)
 	}
@@ -334,7 +338,9 @@ func TestService_Delete(t *testing.T) {
 	blobStore := newMockBlobStore()
 	assembler := newMockAssembler(blobStore, 1024)
 
-	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024, func(opts *ServiceOptions) {
+		opts.BlobStore = blobStore
+	})
 	if err != nil {
 		t.Fatalf("NewService failed: %v", err)
 	}
@@ -416,11 +422,20 @@ func TestService_Delete(t *testing.T) {
 }
 
 func TestService_Create_UnknownSize(t *testing.T) {
+	// Setup test environment
+	tempDir, err := os.MkdirTemp("", "filestore-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
 	metaStore := newMockMetaStore()
 	blobStore := newMockBlobStore()
 	assembler := newMockAssembler(blobStore, 1024)
 
-	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024)
+	service, err := NewService(metaStore, "dummyBasePath", assembler, 1024, func(opts *ServiceOptions) {
+		opts.BlobStore = blobStore
+	})
 	if err != nil {
 		t.Fatalf("NewService failed: %v", err)
 	}
@@ -448,7 +463,8 @@ func TestService_Create_UnknownSize(t *testing.T) {
 	}
 
 	// Test large file with unknown size
-	largeContent := make([]byte, metav2.EmbeddedFileSizeThreshold+500)
+	largeSize := int64(metav2.EmbeddedFileSizeThreshold + 500)
+	largeContent := make([]byte, largeSize)
 	for i := range largeContent {
 		largeContent[i] = byte(i % 256)
 	}
@@ -458,6 +474,16 @@ func TestService_Create_UnknownSize(t *testing.T) {
 		t.Fatalf("Create unknown size large file failed: %v", err)
 	}
 
+	// Verify the metadata
+	meta, err := service.Get(largeID)
+	if err != nil {
+		t.Fatalf("Failed to get metadata for large file: %v", err)
+	}
+	if meta.Size() != largeSize {
+		t.Fatalf("Expected file size %d, got %d", largeSize, meta.Size())
+	}
+
+	// Read back the content
 	readCloser, err = service.Read(largeID)
 	if err != nil {
 		t.Fatalf("Read unknown size large file failed: %v", err)
@@ -468,7 +494,28 @@ func TestService_Create_UnknownSize(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadAll unknown size large file failed: %v", err)
 	}
+
+	// Compare the content
+	if len(readContent) != len(largeContent) {
+		t.Fatalf("Content length mismatch: expected %d, got %d", len(largeContent), len(readContent))
+	}
+
+	// Compare content in chunks to identify where it might differ
+	const chunkSize = 1024
+	for i := 0; i < len(largeContent); i += chunkSize {
+		end := i + chunkSize
+		if end > len(largeContent) {
+			end = len(largeContent)
+		}
+		expectedChunk := largeContent[i:end]
+		actualChunk := readContent[i:end]
+		if !bytes.Equal(expectedChunk, actualChunk) {
+			t.Fatalf("Content mismatch at offset %d-%d", i, end)
+		}
+	}
+
+	// If we get here, the content should match
 	if !bytes.Equal(readContent, largeContent) {
-		t.Fatalf("Unknown size large file content mismatch")
+		t.Fatalf("Unknown size large file content mismatch (but chunk comparison passed?)")
 	}
 }

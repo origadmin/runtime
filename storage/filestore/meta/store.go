@@ -91,25 +91,32 @@ func (s *Store) Get(id string) (metaiface.FileMeta, error) {
 }
 
 // Update serializes the updated FileMeta and overwrites the existing record.
-func (s *Store) Update(id string, fileMeta metaiface.FileMeta) error {
-	// For updates, we also assume we are working with the latest version format.
-	// If an older version needs updating, it should be migrated first.
-	v2Meta, ok := fileMeta.(*metav2.FileMetaV2)
+func (s *Store) Update(id string, meta metaiface.FileMeta) (metaiface.FileMeta, error) {
+	v2Meta, ok := meta.(*metav2.FileMetaV2)
 	if !ok {
-		return fmt.Errorf("unsupported FileMeta type for update, expected *metav2.FileMetaV2, got %T", fileMeta)
+		return nil, fmt.Errorf("expected *metav2.FileMetaV2, got %T", meta)
 	}
 
+	// Create a deep copy to avoid modifying the original
+	updatedMeta := *v2Meta
+
+	// Serialize the updated metadata
 	fileMetaData := &metaiface.StoreMeta[metav2.FileMetaV2]{
 		Version: metav2.Version,
-		Data:    *v2Meta,
+		Data:    updatedMeta,
 	}
 
 	data, err := msgpack.Marshal(fileMetaData)
 	if err != nil {
-		return fmt.Errorf("failed to marshal updated FileMeta: %w", err)
+		return nil, fmt.Errorf("failed to marshal FileMetaV2: %w", err)
 	}
 
-	return s.layout.Write(id, data)
+	// Write to storage
+	if err := s.layout.Write(id, data); err != nil {
+		return nil, fmt.Errorf("failed to write meta: %w", err)
+	}
+
+	return &updatedMeta, nil
 }
 
 // Delete removes the FileMeta record.

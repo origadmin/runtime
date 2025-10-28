@@ -10,7 +10,7 @@ type Store interface {
 	// Exists checks if a FileMeta object with the given ID exists.
 	Exists(id string) (bool, error)
 	// Update overwrites an existing FileMeta object.
-	Update(id string, fileMeta FileMeta) error
+	Update(id string, fileMeta FileMeta) (FileMeta, error)
 	// Delete removes a FileMeta object by its ID.
 	Delete(id string) error
 	// Migrate migrates a FileMeta object from a previous version to the current version.

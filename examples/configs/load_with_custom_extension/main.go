@@ -66,10 +66,10 @@ func getCustomConfig(customize *extensionv1.CustomizeConfig) (*conf.CustomConfig
 	}
 
 	// Debug: Print the raw data
-	fmt.Printf("Raw config data: %+v\n", customize.GetData())
+	fmt.Printf("Raw config data: %+v\n", customize.GetConfig())
 
 	// Convert the data to JSON bytes
-	jsonBytes, err := protojson.Marshal(customize.GetData())
+	jsonBytes, err := protojson.Marshal(customize.GetConfig())
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal config data: %w", err)
 	}
