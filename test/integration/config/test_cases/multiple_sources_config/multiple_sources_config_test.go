@@ -74,14 +74,15 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 
 	// client.timeout should be overridden by source2
 	assertions.NotNil(cfg.Client)
-	assertions.Equal("5s", cfg.Client.Timeout.AsDuration().String())
+	assertions.NotNil(cfg.Client.GetGrpc(), "gRPC client configuration not found")
+	assertions.Equal("5s", cfg.Client.GetGrpc().GetTimeout().AsDuration().String())
 
 	// client.endpoint should be from source1 (not overridden)
-	assertions.Equal("discovery:///source1-service", cfg.Client.Endpoint)
+	assertions.Equal("discovery:///source1-service", cfg.Client.GetGrpc().GetEndpoint())
 
 	// client.selector.version should be from source2 (new field)
-	assertions.NotNil(cfg.Client.Selector)
-	assertions.Equal("v2.0.0", cfg.Client.Selector.Version)
+	assertions.NotNil(cfg.Client.GetGrpc().GetSelector())
+	assertions.Equal("v2.0.0", cfg.Client.GetGrpc().GetSelector().GetVersion())
 
 	t.Log("Multiple sources config loaded and merged successfully!")
 }

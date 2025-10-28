@@ -55,11 +55,13 @@ func init() {
 				},
 			},
 		},
-		Client: &configv1.Client{
-			Endpoint: "discovery:///user-service",
-			Timeout:  durationpb.New(3000000000), // 3s
-			Selector: &configv1.Selector{
-				Version: "v1.0.0",
+		Client: &transportv1.Client{
+			Grpc: &transportv1.GrpcClientConfig{
+				Endpoint: "discovery:///user-service",
+				Timeout:  durationpb.New(3000000000), // 3s
+				Selector: &transportv1.SelectorConfig{
+					Version: "v1.0.0",
+				},
 			},
 		},
 		Logger: &loggerv1.Logger{
@@ -78,8 +80,7 @@ func init() {
 				},
 				{
 					Name: "legacy-etcd",
-					Type: "etcd",
-					Etcd: &discoveryv1.ETCD{
+					Type: "etcd",					Etcd: &discoveryv1.ETCD{
 						Endpoints: []string{"etcd.legacy:2379"},
 					},
 				},

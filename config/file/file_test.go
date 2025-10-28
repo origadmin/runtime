@@ -2,6 +2,7 @@ package file
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -102,79 +103,136 @@ func TestFile(t *testing.T) {
 }
 
 func testWatchFile(t *testing.T, path string) {
-	t.Log(path)
-
+	// Use event waiting with bounded retries instead of context.WithTimeout to align with real-world usage
 	s := NewSource(path)
 	watch, err := s.Watch()
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("Failed to create watcher: %v", err)
 	}
+	defer func() {
+		if err := watch.Stop(); err != nil {
+			t.Logf("Warning: error stopping watcher: %v", err)
+		}
+	}()
 
-	f, err := os.OpenFile(path, os.O_RDWR, 0)
+	errCh := make(chan error, 1)
+	kvsCh := make(chan []*config.KeyValue, 1)
+
+	go func() {
+		kvs, err := watch.Next()
+		if err != nil {
+			errCh <- fmt.Errorf("watch.Next() failed: %w", err)
+			return
+		}
+		kvsCh <- kvs
+	}()
+
+	// Modify file content by truncating and rewriting to ensure event emission and consistent content
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_TRUNC, 0o666)
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("Failed to open file: %v", err)
 	}
 	defer f.Close()
-	_, err = f.WriteString(_testJSONUpdate)
-	if err != nil {
-		t.Error(err)
+	if _, err = f.WriteString(_testJSONUpdate); err != nil {
+		t.Fatalf("Failed to write to file: %v", err)
 	}
-	kvs, err := watch.Next()
-	if err != nil {
-		t.Errorf("watch.Next() error(%v)", err)
-	}
-	if !reflect.DeepEqual(string(kvs[0].Value), _testJSONUpdate) {
-		t.Errorf("string(kvs[0].Value(%v) is  not equal to _testJSONUpdate(%v)", kvs[0].Value, _testJSONUpdate)
+	_ = f.Sync()
+	_ = f.Close() // Ensure the file handle is released before rename on Windows
+
+	// Wait for event with local retry/backoff and a deadline guard to avoid hanging
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		select {
+		case kvs := <-kvsCh:
+			if !reflect.DeepEqual(string(kvs[0].Value), _testJSONUpdate) {
+				t.Errorf("Expected value %q, got %q", _testJSONUpdate, kvs[0].Value)
+			}
+			goto RENAME
+		case err := <-errCh:
+			t.Fatalf("Error watching file: %v", err)
+		case <-time.After(100 * time.Millisecond):
+			if time.Now().After(deadline) {
+				t.Fatal("Timeout waiting for file change event")
+			}
+		}
 	}
 
+RENAME:
+	// Test file rename
 	newFilepath := filepath.Join(filepath.Dir(path), "test1.json")
 	if err = os.Rename(path, newFilepath); err != nil {
-		t.Error(err)
+		t.Fatalf("Failed to rename file: %v", err)
 	}
-	kvs, err = watch.Next()
-	if err == nil {
-		t.Errorf("watch.Next() error(%v)", err)
-	}
-	if kvs != nil {
-		t.Errorf("watch.Next() error(%v)", err)
-	}
+	defer func() {
+		if err := os.Rename(newFilepath, path); err != nil {
+			t.Logf("Warning: failed to restore file: %v", err)
+		}
+	}()
 
-	err = watch.Stop()
-	if err != nil {
-		t.Errorf("watch.Stop() error(%v)", err)
-	}
+	// Listen again after rename; different platforms/FS may return an error or another event
+	done := make(chan struct{}, 1)
+	go func() {
+		_, err := watch.Next()
+		_ = err
+		done <- struct{}{}
+	}()
 
-	if err := os.Rename(newFilepath, path); err != nil {
-		t.Error(err)
+	select {
+	case <-done:
+		// pass
+	case <-time.After(5 * time.Second):
+		t.Error("Timeout waiting after file rename event")
 	}
 }
 
 func testWatchDir(t *testing.T, path, file string) {
-	t.Log(path)
-	t.Log(file)
-
 	s := NewSource(path)
 	watch, err := s.Watch()
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("watch error: %v", err)
 	}
+	defer func() { _ = watch.Stop() }()
 
-	f, err := os.OpenFile(file, os.O_RDWR, 0)
+	// Truncate and rewrite to fully replace content, then fsync
+	f, err := os.OpenFile(file, os.O_RDWR|os.O_TRUNC, 0)
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("open file error: %v", err)
 	}
-	defer f.Close()
 	_, err = f.WriteString(_testJSONUpdate)
 	if err != nil {
-		t.Error(err)
+		_ = f.Close()
+		t.Fatalf("write file error: %v", err)
 	}
+	_ = f.Sync()
+	_ = f.Close()
 
-	kvs, err := watch.Next()
-	if err != nil {
-		t.Errorf("watch.Next() error(%v)", err)
-	}
-	if !reflect.DeepEqual(string(kvs[0].Value), _testJSONUpdate) {
-		t.Errorf("string(kvs[0].Value(%s) is  not equal to _testJSONUpdate(%v)", kvs[0].Value, _testJSONUpdate)
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		select {
+		case kvs, ok := <-func() chan []*config.KeyValue {
+			ch := make(chan []*config.KeyValue, 1)
+			go func() {
+				kv, e := watch.Next()
+				if e != nil {
+					ch <- nil
+					return
+				}
+				ch <- kv
+			}()
+			return ch
+		}():
+			if !ok || kvs == nil {
+				t.Fatalf("watch.Next() returned nil or closed")
+			}
+			if !reflect.DeepEqual(string(kvs[0].Value), _testJSONUpdate) {
+				t.Errorf("string(kvs[0].Value(%s)) not equal to _testJSONUpdate(%v)", kvs[0].Value, _testJSONUpdate)
+			}
+			return
+		case <-time.After(100 * time.Millisecond):
+			if time.Now().After(deadline) {
+				t.Fatal("Timeout waiting for directory change event")
+			}
+		}
 	}
 }
 

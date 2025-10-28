@@ -54,10 +54,11 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 
 	// Client configuration assertions
 	assertions.NotNil(cfg.Client)
-	assertions.Equal("discovery:///user-service", cfg.Client.GetEndpoint())
-	assertions.Equal("3s", cfg.Client.GetTimeout().AsDuration().String())
-	assertions.NotNil(cfg.Client.GetSelector())
-	assertions.Equal("v1.0.0", cfg.Client.GetSelector().GetVersion())
+	assertions.NotNil(cfg.Client.GetGrpc(), "gRPC client configuration not found")
+	assertions.Equal("discovery:///user-service", cfg.Client.GetGrpc().GetEndpoint())
+	assertions.Equal("3s", cfg.Client.GetGrpc().GetTimeout().AsDuration().String())
+	assertions.NotNil(cfg.Client.GetGrpc().GetSelector())
+	assertions.Equal("v1.0.0", cfg.Client.GetGrpc().GetSelector().GetVersion())
 
 	// Discovery configuration assertions
 	assertions.Len(cfg.GetDiscoveries().GetDiscoveries(), 2)
