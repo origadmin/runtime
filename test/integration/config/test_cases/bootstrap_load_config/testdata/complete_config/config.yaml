@@ -21,10 +21,11 @@ servers:
         timeout: "2s"
 
 client:
-  endpoint: "discovery:///user-service"
-  timeout: "3s"
-  selector:
-    version: "v1.0.0"
+  grpc:
+    endpoint: "discovery:///user-service"
+    timeout: "3s"
+    selector:
+      version: "v1.0.0"
 
 
 logger:

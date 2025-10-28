@@ -8,6 +8,7 @@ logger:
   level: "info"
 
 client:
-  timeout: "5s"
-  selector:
-    version: "v2.0.0"
+  grpc:
+    timeout: "5s"
+    selector:
+      version: "v2.0.0"

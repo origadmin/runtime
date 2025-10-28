@@ -9,5 +9,6 @@ logger:
   format: "text"
 
 client:
-  endpoint: "discovery:///source1-service"
-  timeout: "1s"
+  grpc:
+    endpoint: "discovery:///source1-service"
+    timeout: "1s"
