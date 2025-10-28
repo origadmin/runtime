@@ -51,7 +51,7 @@ message Middleware {
   optional Recovery recovery = 12 [json_name = "recovery"];
   optional Metadata metadata = 13 [json_name = "metadata"];
   // Using Extension.Config for custom middlewares, moved to last
-  optional extension.v1.Extension.Config customize = 100;
+  optional runtime.extension.v1.CustomizeConfig customize = 100;
   // Add other specific middleware types here as they are defined
 }
 

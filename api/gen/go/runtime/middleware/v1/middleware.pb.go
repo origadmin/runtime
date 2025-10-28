@@ -171,7 +171,7 @@ type Middleware struct {
 	Recovery       *Recovery                      `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
 	Metadata       *Metadata                      `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	// Using Extension.Config for custom middlewares, moved to last
-	Customize     *v1.Extension_Config `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
+	Customize     *v1.CustomizeConfig `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -297,7 +297,7 @@ func (x *Middleware) GetMetadata() *Metadata {
 	return nil
 }
 
-func (x *Middleware) GetCustomize() *v1.Extension_Config {
+func (x *Middleware) GetCustomize() *v1.CustomizeConfig {
 	if x != nil {
 		return x.Customize
 	}
@@ -363,7 +363,7 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
 	"\aLogging\"\n" +
 	"\n" +
-	"\bRecovery\"\xfc\a\n" +
+	"\bRecovery\"\xfb\a\n" +
 	"\n" +
 	"Middleware\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
@@ -379,8 +379,8 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	" \x01(\v24.runtime.middleware.v1.circuitbreaker.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x12=\n" +
 	"\alogging\x18\v \x01(\v2\x1e.runtime.middleware.v1.LoggingH\aR\alogging\x88\x01\x01\x12@\n" +
 	"\brecovery\x18\f \x01(\v2\x1f.runtime.middleware.v1.RecoveryH\bR\brecovery\x88\x01\x01\x12@\n" +
-	"\bmetadata\x18\r \x01(\v2\x1f.runtime.middleware.v1.MetadataH\tR\bmetadata\x88\x01\x01\x12I\n" +
-	"\tcustomize\x18d \x01(\v2&.runtime.extension.v1.Extension.ConfigH\n" +
+	"\bmetadata\x18\r \x01(\v2\x1f.runtime.middleware.v1.MetadataH\tR\bmetadata\x88\x01\x01\x12H\n" +
+	"\tcustomize\x18d \x01(\v2%.runtime.extension.v1.CustomizeConfigH\n" +
 	"R\tcustomize\x88\x01\x01B\x0f\n" +
 	"\r_rate_limiterB\n" +
 	"\n" +
@@ -428,7 +428,7 @@ var file_runtime_middleware_v1_middleware_proto_goTypes = []any{
 	(*selector.Selector)(nil),             // 10: runtime.middleware.v1.selector.Selector
 	(*cors.Cors)(nil),                     // 11: runtime.middleware.v1.cors.Cors
 	(*circuitbreaker.CircuitBreaker)(nil), // 12: runtime.middleware.v1.circuitbreaker.CircuitBreaker
-	(*v1.Extension_Config)(nil),           // 13: runtime.extension.v1.Extension.Config
+	(*v1.CustomizeConfig)(nil),            // 13: runtime.extension.v1.CustomizeConfig
 }
 var file_runtime_middleware_v1_middleware_proto_depIdxs = []int32{
 	5,  // 0: runtime.middleware.v1.Metadata.data:type_name -> runtime.middleware.v1.Metadata.DataEntry
@@ -442,7 +442,7 @@ var file_runtime_middleware_v1_middleware_proto_depIdxs = []int32{
 	1,  // 8: runtime.middleware.v1.Middleware.logging:type_name -> runtime.middleware.v1.Logging
 	2,  // 9: runtime.middleware.v1.Middleware.recovery:type_name -> runtime.middleware.v1.Recovery
 	0,  // 10: runtime.middleware.v1.Middleware.metadata:type_name -> runtime.middleware.v1.Metadata
-	13, // 11: runtime.middleware.v1.Middleware.customize:type_name -> runtime.extension.v1.Extension.Config
+	13, // 11: runtime.middleware.v1.Middleware.customize:type_name -> runtime.extension.v1.CustomizeConfig
 	3,  // 12: runtime.middleware.v1.Middlewares.middlewares:type_name -> runtime.middleware.v1.Middleware
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type

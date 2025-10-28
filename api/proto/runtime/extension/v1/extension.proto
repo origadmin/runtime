@@ -3,6 +3,7 @@ syntax = "proto3";
 package runtime.extension.v1;
 
 import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1;extensionv1";
@@ -13,19 +14,19 @@ option objc_class_prefix = "ORE";
 
 // Extension provides a generic mechanism to add custom configuration sections.
 message Extension {
-  message Config {
-    // enabled is used to enable or disable the custom config
-    bool enabled = 1 [json_name = "enabled"];
-    // name can be any named with registered names
-    string name = 2 [json_name = "name"];
-    // value can be any type
-    google.protobuf.Any value = 3 [json_name = "value"];
-  }
-
   // configs is a map of custom configs with type string
-  repeated Config configs = 1 [json_name = "configs"];
+  CustomizeConfig config = 1 [json_name = "config"];
 }
 
 message ExtensionMap {
   map<string, Extension> types = 1 [json_name = "types"];
+}
+
+message CustomizeConfig {
+  // enabled is used to enable or disable the custom config
+  bool enabled = 1 [json_name = "enabled"];
+  // name can be any named with registered names
+  string name = 2 [json_name = "name"];
+  // value can be any type
+  google.protobuf.Struct config = 3 [json_name = "config"];
 }

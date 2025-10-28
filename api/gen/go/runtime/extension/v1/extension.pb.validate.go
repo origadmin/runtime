@@ -57,38 +57,33 @@ func (m *Extension) validate(all bool) error {
 
 	var errors []error
 
-	for idx, item := range m.GetConfigs() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ExtensionValidationError{
-						field:  fmt.Sprintf("Configs[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, ExtensionValidationError{
-						field:  fmt.Sprintf("Configs[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return ExtensionValidationError{
-					field:  fmt.Sprintf("Configs[%v]", idx),
+	if all {
+		switch v := interface{}(m.GetConfig()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ExtensionValidationError{
+					field:  "Config",
 					reason: "embedded message failed validation",
 					cause:  err,
-				}
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ExtensionValidationError{
+					field:  "Config",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
 			}
 		}
-
+	} else if v, ok := interface{}(m.GetConfig()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ExtensionValidationError{
+				field:  "Config",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	if len(errors) > 0 {
@@ -313,22 +308,22 @@ var _ interface {
 	ErrorName() string
 } = ExtensionMapValidationError{}
 
-// Validate checks the field values on Extension_Config with the rules defined
+// Validate checks the field values on CustomizeConfig with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
-func (m *Extension_Config) Validate() error {
+func (m *CustomizeConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on Extension_Config with the rules
+// ValidateAll checks the field values on CustomizeConfig with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// Extension_ConfigMultiError, or nil if none found.
-func (m *Extension_Config) ValidateAll() error {
+// CustomizeConfigMultiError, or nil if none found.
+func (m *CustomizeConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *Extension_Config) validate(all bool) error {
+func (m *CustomizeConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -340,28 +335,28 @@ func (m *Extension_Config) validate(all bool) error {
 	// no validation rules for Name
 
 	if all {
-		switch v := interface{}(m.GetValue()).(type) {
+		switch v := interface{}(m.GetConfig()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, Extension_ConfigValidationError{
-					field:  "Value",
+				errors = append(errors, CustomizeConfigValidationError{
+					field:  "Config",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, Extension_ConfigValidationError{
-					field:  "Value",
+				errors = append(errors, CustomizeConfigValidationError{
+					field:  "Config",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetValue()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetConfig()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return Extension_ConfigValidationError{
-				field:  "Value",
+			return CustomizeConfigValidationError{
+				field:  "Config",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -369,19 +364,19 @@ func (m *Extension_Config) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return Extension_ConfigMultiError(errors)
+		return CustomizeConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// Extension_ConfigMultiError is an error wrapping multiple validation errors
-// returned by Extension_Config.ValidateAll() if the designated constraints
+// CustomizeConfigMultiError is an error wrapping multiple validation errors
+// returned by CustomizeConfig.ValidateAll() if the designated constraints
 // aren't met.
-type Extension_ConfigMultiError []error
+type CustomizeConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m Extension_ConfigMultiError) Error() string {
+func (m CustomizeConfigMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -390,11 +385,11 @@ func (m Extension_ConfigMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m Extension_ConfigMultiError) AllErrors() []error { return m }
+func (m CustomizeConfigMultiError) AllErrors() []error { return m }
 
-// Extension_ConfigValidationError is the validation error returned by
-// Extension_Config.Validate if the designated constraints aren't met.
-type Extension_ConfigValidationError struct {
+// CustomizeConfigValidationError is the validation error returned by
+// CustomizeConfig.Validate if the designated constraints aren't met.
+type CustomizeConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -402,22 +397,22 @@ type Extension_ConfigValidationError struct {
 }
 
 // Field function returns field value.
-func (e Extension_ConfigValidationError) Field() string { return e.field }
+func (e CustomizeConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e Extension_ConfigValidationError) Reason() string { return e.reason }
+func (e CustomizeConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e Extension_ConfigValidationError) Cause() error { return e.cause }
+func (e CustomizeConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e Extension_ConfigValidationError) Key() bool { return e.key }
+func (e CustomizeConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e Extension_ConfigValidationError) ErrorName() string { return "Extension_ConfigValidationError" }
+func (e CustomizeConfigValidationError) ErrorName() string { return "CustomizeConfigValidationError" }
 
 // Error satisfies the builtin error interface
-func (e Extension_ConfigValidationError) Error() string {
+func (e CustomizeConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -429,14 +424,14 @@ func (e Extension_ConfigValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sExtension_Config.%s: %s%s",
+		"invalid %sCustomizeConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = Extension_ConfigValidationError{}
+var _ error = CustomizeConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -444,4 +439,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = Extension_ConfigValidationError{}
+} = CustomizeConfigValidationError{}

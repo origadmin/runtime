@@ -1,0 +1,11 @@
+# Bootstrap configuration that loads our example config
+name: custom-extension-example
+version: v1.0.0
+
+# Configuration sources
+sources:
+  - type: "file"
+    name: "app-config"
+    file:
+      path: "example.yaml"
+    priority: 100

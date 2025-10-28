@@ -1,0 +1,14 @@
+# config/example.yaml
+customize:
+  enabled: true
+  name: "my-custom-config"
+  data:
+    custom_field: "This is a test value"
+    custom_number: 100
+    items:
+      - "First item"
+      - "Second item"
+      - "Third item"
+    nested:
+      enabled: true
+      name: "Test Configuration"

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package examples.custom_extension_example;
+
+import "runtime/extension/v1/extension.proto";
+
+option go_package = "./custom_extension_example/conf;conf";
+
+// Custom configuration message
+message CustomConfig {
+  string custom_field = 1;
+  int32 custom_number = 2;
+  repeated string items = 3;
+
+  message NestedConfig {
+    bool enabled = 1;
+    string name = 2;
+  }
+
+  NestedConfig nested = 4;
+}
+
+// Application configuration
+message ApplicationConfig {
+  // Use ExtensionMap to hold framework configurations
+  runtime.extension.v1.CustomizeConfig customize = 1;
+}

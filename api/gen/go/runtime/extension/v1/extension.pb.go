@@ -9,7 +9,8 @@ package extensionv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	anypb "google.golang.org/protobuf/types/known/anypb"
+	_ "google.golang.org/protobuf/types/known/anypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -26,7 +27,7 @@ const (
 type Extension struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// configs is a map of custom configs with type string
-	Configs       []*Extension_Config `protobuf:"bytes,1,rep,name=configs,proto3" json:"configs,omitempty"`
+	Config        *CustomizeConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,9 +62,9 @@ func (*Extension) Descriptor() ([]byte, []int) {
 	return file_runtime_extension_v1_extension_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Extension) GetConfigs() []*Extension_Config {
+func (x *Extension) GetConfig() *CustomizeConfig {
 	if x != nil {
-		return x.Configs
+		return x.Config
 	}
 	return nil
 }
@@ -112,32 +113,32 @@ func (x *ExtensionMap) GetTypes() map[string]*Extension {
 	return nil
 }
 
-type Extension_Config struct {
+type CustomizeConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// enabled is used to enable or disable the custom config
 	Enabled bool `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	// name can be any named with registered names
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// value can be any type
-	Value         *anypb.Any `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	Config        *structpb.Struct `protobuf:"bytes,3,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Extension_Config) Reset() {
-	*x = Extension_Config{}
+func (x *CustomizeConfig) Reset() {
+	*x = CustomizeConfig{}
 	mi := &file_runtime_extension_v1_extension_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Extension_Config) String() string {
+func (x *CustomizeConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Extension_Config) ProtoMessage() {}
+func (*CustomizeConfig) ProtoMessage() {}
 
-func (x *Extension_Config) ProtoReflect() protoreflect.Message {
+func (x *CustomizeConfig) ProtoReflect() protoreflect.Message {
 	mi := &file_runtime_extension_v1_extension_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -149,28 +150,28 @@ func (x *Extension_Config) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Extension_Config.ProtoReflect.Descriptor instead.
-func (*Extension_Config) Descriptor() ([]byte, []int) {
-	return file_runtime_extension_v1_extension_proto_rawDescGZIP(), []int{0, 0}
+// Deprecated: Use CustomizeConfig.ProtoReflect.Descriptor instead.
+func (*CustomizeConfig) Descriptor() ([]byte, []int) {
+	return file_runtime_extension_v1_extension_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Extension_Config) GetEnabled() bool {
+func (x *CustomizeConfig) GetEnabled() bool {
 	if x != nil {
 		return x.Enabled
 	}
 	return false
 }
 
-func (x *Extension_Config) GetName() string {
+func (x *CustomizeConfig) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *Extension_Config) GetValue() *anypb.Any {
+func (x *CustomizeConfig) GetConfig() *structpb.Struct {
 	if x != nil {
-		return x.Value
+		return x.Config
 	}
 	return nil
 }
@@ -179,19 +180,19 @@ var File_runtime_extension_v1_extension_proto protoreflect.FileDescriptor
 
 const file_runtime_extension_v1_extension_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/extension/v1/extension.proto\x12\x14runtime.extension.v1\x1a\x19google/protobuf/any.proto\"\xb1\x01\n" +
-	"\tExtension\x12@\n" +
-	"\aconfigs\x18\x01 \x03(\v2&.runtime.extension.v1.Extension.ConfigR\aconfigs\x1ab\n" +
-	"\x06Config\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12*\n" +
-	"\x05value\x18\x03 \x01(\v2\x14.google.protobuf.AnyR\x05value\"\xae\x01\n" +
+	"$runtime/extension/v1/extension.proto\x12\x14runtime.extension.v1\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\"J\n" +
+	"\tExtension\x12=\n" +
+	"\x06config\x18\x01 \x01(\v2%.runtime.extension.v1.CustomizeConfigR\x06config\"\xae\x01\n" +
 	"\fExtensionMap\x12C\n" +
 	"\x05types\x18\x01 \x03(\v2-.runtime.extension.v1.ExtensionMap.TypesEntryR\x05types\x1aY\n" +
 	"\n" +
 	"TypesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
-	"\x05value\x18\x02 \x01(\v2\x1f.runtime.extension.v1.ExtensionR\x05value:\x028\x01B\xe9\x01\n" +
+	"\x05value\x18\x02 \x01(\v2\x1f.runtime.extension.v1.ExtensionR\x05value:\x028\x01\"p\n" +
+	"\x0fCustomizeConfig\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12/\n" +
+	"\x06config\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06configB\xe9\x01\n" +
 	"\x18com.runtime.extension.v1B\x0eExtensionProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/extension/v1;extensionv1\xf8\x01\x01\xa2\x02\x03REX\xaa\x02\x14Runtime.Extension.V1\xca\x02\x14Runtime\\Extension\\V1\xe2\x02 Runtime\\Extension\\V1\\GPBMetadata\xea\x02\x16Runtime::Extension::V1b\x06proto3"
 
 var (
@@ -208,16 +209,16 @@ func file_runtime_extension_v1_extension_proto_rawDescGZIP() []byte {
 
 var file_runtime_extension_v1_extension_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_runtime_extension_v1_extension_proto_goTypes = []any{
-	(*Extension)(nil),        // 0: runtime.extension.v1.Extension
-	(*ExtensionMap)(nil),     // 1: runtime.extension.v1.ExtensionMap
-	(*Extension_Config)(nil), // 2: runtime.extension.v1.Extension.Config
-	nil,                      // 3: runtime.extension.v1.ExtensionMap.TypesEntry
-	(*anypb.Any)(nil),        // 4: google.protobuf.Any
+	(*Extension)(nil),       // 0: runtime.extension.v1.Extension
+	(*ExtensionMap)(nil),    // 1: runtime.extension.v1.ExtensionMap
+	(*CustomizeConfig)(nil), // 2: runtime.extension.v1.CustomizeConfig
+	nil,                     // 3: runtime.extension.v1.ExtensionMap.TypesEntry
+	(*structpb.Struct)(nil), // 4: google.protobuf.Struct
 }
 var file_runtime_extension_v1_extension_proto_depIdxs = []int32{
-	2, // 0: runtime.extension.v1.Extension.configs:type_name -> runtime.extension.v1.Extension.Config
+	2, // 0: runtime.extension.v1.Extension.config:type_name -> runtime.extension.v1.CustomizeConfig
 	3, // 1: runtime.extension.v1.ExtensionMap.types:type_name -> runtime.extension.v1.ExtensionMap.TypesEntry
-	4, // 2: runtime.extension.v1.Extension.Config.value:type_name -> google.protobuf.Any
+	4, // 2: runtime.extension.v1.CustomizeConfig.config:type_name -> google.protobuf.Struct
 	0, // 3: runtime.extension.v1.ExtensionMap.TypesEntry.value:type_name -> runtime.extension.v1.Extension
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
