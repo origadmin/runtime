@@ -2,12 +2,11 @@ syntax = "proto3";
 
 package test.configs;
 
-// Import all required configuration proto files
+import "google/protobuf/struct.proto";
 import "runtime/app/v1/app.proto";
 import "runtime/config/v1/gateway.proto";
 import "runtime/config/v1/tracer.proto";
 import "runtime/discovery/v1/discovery.proto";
-import "runtime/extension/v1/extension.proto";
 import "runtime/logger/v1/logger.proto";
 import "runtime/middleware/v1/middleware.proto";
 import "runtime/security/authn/v1/authn.proto";
@@ -48,8 +47,8 @@ message TestConfig {
   runtime.storage.v1.Storage storage = 14;
   runtime.task.v1.Task task = 15;
   runtime.websocket.v1.WebSocket websocket = 16;
-  runtime.extension.v1.Extension extension = 17;
-  runtime.security.authn.v1.AuthN authn = 18;
-  runtime.security.authz.v1.AuthZ authz = 19;
-  runtime.security.transport.v1.TLSConfig tls = 20;
+  runtime.security.authn.v1.AuthN authn = 17;
+  runtime.security.authz.v1.AuthZ authz = 18;
+  runtime.security.transport.v1.TLSConfig tls = 19;
+  google.protobuf.Struct customize = 20;
 }

@@ -328,7 +328,7 @@ func testConfig(t *testing.T, c config.Config) {
 
 	// not found
 	if _, err := c.Value("not_found_key").Bool(); errors.Is(err, config.ErrNotFound) {
-		t.Logf("not_found_key not match: %v", err)
+		t.Logf("not_found_key match: %v", err)
 	}
 }
 

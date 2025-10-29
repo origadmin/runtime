@@ -83,7 +83,7 @@ endif
 #                           LIFECYCLE TARGETS
 # ============================================================================ #
 
-.PHONY: all init deps update update-tools protos example-protos test-protos generate test clean clean-api-gen clean-examples-protos clean-test-protos buf-push
+.PHONY: all init deps update update-tools protos example-protos test-protos generate test clean clean-api-gen clean-example-protos clean-test-protos buf-push
 
 all: init deps protos example-protos test-protos generate ## ✅ Run the full build process
 
@@ -167,20 +167,20 @@ else
 endif
 
 test: test-protos ## 🧪 Run all Go tests
-	go test ./...
+	go test -v ./...
 
 generate: ## 🧬 Run go generate to generate code (e.g., wire)
 	@echo "Running go generate..."
 	go generate ./...
 
 
-clean: clean-api-gen clean-examples-protos clean-test-protos ## 🧹 Clean up all generated files
+clean: clean-api-gen clean-example-protos clean-test-protos ## 🧹 Clean up all generated files
 
 clean-api-gen: ## 🧹 Clean up API generated files
 	@echo "Cleaning up API generated files..."
 	@rm -rf ./api/gen
 
-clean-examples-protos: ## 🧹 Clean up example generated protos
+clean-example-protos: ## 🧹 Clean up example generated protos
 	@echo "Cleaning up example generated protos..."
 ifeq ($(GOHOSTOS), windows)
 	@Get-ChildItem -Recurse ./examples/protos -Filter *.pb.go | Remove-Item -Force

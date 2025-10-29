@@ -10,18 +10,18 @@ import (
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
 	v14 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
-	v19 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	v110 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
-	v111 "github.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1"
-	v112 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
+	v19 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
+	v110 "github.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1"
+	v111 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	v16 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	v17 "github.com/origadmin/runtime/api/gen/go/runtime/task/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	v18 "github.com/origadmin/runtime/api/gen/go/runtime/websocket/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -57,10 +57,10 @@ type TestConfig struct {
 	Storage       *v16.Storage     `protobuf:"bytes,14,opt,name=storage,proto3" json:"storage,omitempty"`
 	Task          *v17.Task        `protobuf:"bytes,15,opt,name=task,proto3" json:"task,omitempty"`
 	Websocket     *v18.WebSocket   `protobuf:"bytes,16,opt,name=websocket,proto3" json:"websocket,omitempty"`
-	Extension     *v19.Extension   `protobuf:"bytes,17,opt,name=extension,proto3" json:"extension,omitempty"`
-	Authn         *v110.AuthN      `protobuf:"bytes,18,opt,name=authn,proto3" json:"authn,omitempty"`
-	Authz         *v111.AuthZ      `protobuf:"bytes,19,opt,name=authz,proto3" json:"authz,omitempty"`
-	Tls           *v112.TLSConfig  `protobuf:"bytes,20,opt,name=tls,proto3" json:"tls,omitempty"`
+	Authn         *v19.AuthN       `protobuf:"bytes,17,opt,name=authn,proto3" json:"authn,omitempty"`
+	Authz         *v110.AuthZ      `protobuf:"bytes,18,opt,name=authz,proto3" json:"authz,omitempty"`
+	Tls           *v111.TLSConfig  `protobuf:"bytes,19,opt,name=tls,proto3" json:"tls,omitempty"`
+	Customize     *structpb.Struct `protobuf:"bytes,20,opt,name=customize,proto3" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -207,30 +207,30 @@ func (x *TestConfig) GetWebsocket() *v18.WebSocket {
 	return nil
 }
 
-func (x *TestConfig) GetExtension() *v19.Extension {
-	if x != nil {
-		return x.Extension
-	}
-	return nil
-}
-
-func (x *TestConfig) GetAuthn() *v110.AuthN {
+func (x *TestConfig) GetAuthn() *v19.AuthN {
 	if x != nil {
 		return x.Authn
 	}
 	return nil
 }
 
-func (x *TestConfig) GetAuthz() *v111.AuthZ {
+func (x *TestConfig) GetAuthz() *v110.AuthZ {
 	if x != nil {
 		return x.Authz
 	}
 	return nil
 }
 
-func (x *TestConfig) GetTls() *v112.TLSConfig {
+func (x *TestConfig) GetTls() *v111.TLSConfig {
 	if x != nil {
 		return x.Tls
+	}
+	return nil
+}
+
+func (x *TestConfig) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
 	}
 	return nil
 }
@@ -239,7 +239,7 @@ var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
 
 const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x18runtime/app/v1/app.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1eruntime/config/v1/tracer.proto\x1a$runtime/discovery/v1/discovery.proto\x1a$runtime/extension/v1/extension.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a runtime/storage/v1/storage.proto\x1a\x1aruntime/task/v1/task.proto\x1a$runtime/transport/v1/transport.proto\x1a$runtime/websocket/v1/websocket.proto\"\x86\t\n" +
+	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18runtime/app/v1/app.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1eruntime/config/v1/tracer.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a runtime/storage/v1/storage.proto\x1a\x1aruntime/task/v1/task.proto\x1a$runtime/transport/v1/transport.proto\x1a$runtime/websocket/v1/websocket.proto\"\xfe\b\n" +
 	"\n" +
 	"TestConfig\x12%\n" +
 	"\x03app\x18\x01 \x01(\v2\x13.runtime.app.v1.AppR\x03app\x127\n" +
@@ -260,11 +260,11 @@ const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\agateway\x18\r \x01(\v2\x1a.runtime.config.v1.GatewayR\agateway\x125\n" +
 	"\astorage\x18\x0e \x01(\v2\x1b.runtime.storage.v1.StorageR\astorage\x12)\n" +
 	"\x04task\x18\x0f \x01(\v2\x15.runtime.task.v1.TaskR\x04task\x12=\n" +
-	"\twebsocket\x18\x10 \x01(\v2\x1f.runtime.websocket.v1.WebSocketR\twebsocket\x12=\n" +
-	"\textension\x18\x11 \x01(\v2\x1f.runtime.extension.v1.ExtensionR\textension\x126\n" +
-	"\x05authn\x18\x12 \x01(\v2 .runtime.security.authn.v1.AuthNR\x05authn\x126\n" +
-	"\x05authz\x18\x13 \x01(\v2 .runtime.security.authz.v1.AuthZR\x05authz\x12:\n" +
-	"\x03tls\x18\x14 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x03tlsBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
+	"\twebsocket\x18\x10 \x01(\v2\x1f.runtime.websocket.v1.WebSocketR\twebsocket\x126\n" +
+	"\x05authn\x18\x11 \x01(\v2 .runtime.security.authn.v1.AuthNR\x05authn\x126\n" +
+	"\x05authz\x18\x12 \x01(\v2 .runtime.security.authz.v1.AuthZR\x05authz\x12:\n" +
+	"\x03tls\x18\x13 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x03tls\x125\n" +
+	"\tcustomize\x18\x14 \x01(\v2\x17.google.protobuf.StructR\tcustomizeBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
 	file_test_integration_config_proto_config_proto_rawDescOnce sync.Once
@@ -296,10 +296,10 @@ var file_test_integration_config_proto_config_proto_goTypes = []any{
 	(*v16.Storage)(nil),     // 13: runtime.storage.v1.Storage
 	(*v17.Task)(nil),        // 14: runtime.task.v1.Task
 	(*v18.WebSocket)(nil),   // 15: runtime.websocket.v1.WebSocket
-	(*v19.Extension)(nil),   // 16: runtime.extension.v1.Extension
-	(*v110.AuthN)(nil),      // 17: runtime.security.authn.v1.AuthN
-	(*v111.AuthZ)(nil),      // 18: runtime.security.authz.v1.AuthZ
-	(*v112.TLSConfig)(nil),  // 19: runtime.security.transport.v1.TLSConfig
+	(*v19.AuthN)(nil),       // 16: runtime.security.authn.v1.AuthN
+	(*v110.AuthZ)(nil),      // 17: runtime.security.authz.v1.AuthZ
+	(*v111.TLSConfig)(nil),  // 18: runtime.security.transport.v1.TLSConfig
+	(*structpb.Struct)(nil), // 19: google.protobuf.Struct
 }
 var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	1,  // 0: test.configs.TestConfig.app:type_name -> runtime.app.v1.App
@@ -317,10 +317,10 @@ var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	13, // 12: test.configs.TestConfig.storage:type_name -> runtime.storage.v1.Storage
 	14, // 13: test.configs.TestConfig.task:type_name -> runtime.task.v1.Task
 	15, // 14: test.configs.TestConfig.websocket:type_name -> runtime.websocket.v1.WebSocket
-	16, // 15: test.configs.TestConfig.extension:type_name -> runtime.extension.v1.Extension
-	17, // 16: test.configs.TestConfig.authn:type_name -> runtime.security.authn.v1.AuthN
-	18, // 17: test.configs.TestConfig.authz:type_name -> runtime.security.authz.v1.AuthZ
-	19, // 18: test.configs.TestConfig.tls:type_name -> runtime.security.transport.v1.TLSConfig
+	16, // 15: test.configs.TestConfig.authn:type_name -> runtime.security.authn.v1.AuthN
+	17, // 16: test.configs.TestConfig.authz:type_name -> runtime.security.authz.v1.AuthZ
+	18, // 17: test.configs.TestConfig.tls:type_name -> runtime.security.transport.v1.TLSConfig
+	19, // 18: test.configs.TestConfig.customize:type_name -> google.protobuf.Struct
 	19, // [19:19] is the sub-list for method output_type
 	19, // [19:19] is the sub-list for method input_type
 	19, // [19:19] is the sub-list for extension type_name
