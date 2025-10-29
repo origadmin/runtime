@@ -18,8 +18,8 @@ type AppInfo interfaces.AppInfo
 
 // NewAppInfo creates a new AppInfo instance with default values for ID, StartTime, and Metadata.
 // It requires the application's name, version, and environment.
-func NewAppInfo(name, version, env string) AppInfo {
-	return AppInfo{
+func NewAppInfo(name, version, env string) *AppInfo {
+	return &AppInfo{
 		Name:      name,
 		Version:   version,
 		ID:        uuid.New().String(),

@@ -1,0 +1,24 @@
+sources:
+  - type: file
+    priority: 10
+    file:
+      path: ./configs/config.yaml
+  - type: env
+    priority: 100
+    env:
+      prefixes:
+        - APP_
+
+# 定义日志组件
+logger:
+  level: info
+  format: json
+
+# 定义 HTTP 和 gRPC 服务器
+servers:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
