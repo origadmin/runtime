@@ -7,7 +7,7 @@
 package middlewarev1
 
 import (
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	circuitbreaker "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/circuitbreaker"
 	cors "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/cors"
 	jwt "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/jwt"
@@ -17,6 +17,7 @@ import (
 	validator "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/validator"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -157,9 +158,9 @@ func (*Recovery) Descriptor() ([]byte, []int) {
 // Middleware represents a single middleware configuration with an enable switch.
 type Middleware struct {
 	state          protoimpl.MessageState         `protogen:"open.v1"`
-	Enabled        bool                           `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Name           string                         `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Type           string                         `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	Name           string                         `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Type           string                         `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Enabled        bool                           `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	RateLimiter    *ratelimit.RateLimiter         `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"`
 	Metrics        *metrics.Metrics               `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
 	Validator      *validator.Validator           `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
@@ -170,10 +171,9 @@ type Middleware struct {
 	Logging        *Logging                       `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
 	Recovery       *Recovery                      `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
 	Metadata       *Metadata                      `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
-	// Using Extension.Config for custom middlewares, moved to last
-	Customize     *v1.CustomizeConfig `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Customize      *structpb.Struct               `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Middleware) Reset() {
@@ -206,13 +206,6 @@ func (*Middleware) Descriptor() ([]byte, []int) {
 	return file_runtime_middleware_v1_middleware_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Middleware) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
-}
-
 func (x *Middleware) GetName() string {
 	if x != nil {
 		return x.Name
@@ -225,6 +218,13 @@ func (x *Middleware) GetType() string {
 		return x.Type
 	}
 	return ""
+}
+
+func (x *Middleware) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
 }
 
 func (x *Middleware) GetRateLimiter() *ratelimit.RateLimiter {
@@ -297,7 +297,7 @@ func (x *Middleware) GetMetadata() *Metadata {
 	return nil
 }
 
-func (x *Middleware) GetCustomize() *v1.CustomizeConfig {
+func (x *Middleware) GetCustomize() *structpb.Struct {
 	if x != nil {
 		return x.Customize
 	}
@@ -354,7 +354,7 @@ var File_runtime_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"&runtime/middleware/v1/middleware.proto\x12\x15runtime.middleware.v1\x1a$runtime/extension/v1/extension.proto\x1a9runtime/middleware/v1/circuitbreaker/circuitbreaker.proto\x1a%runtime/middleware/v1/cors/cors.proto\x1a#runtime/middleware/v1/jwt/jwt.proto\x1a+runtime/middleware/v1/metrics/metrics.proto\x1a1runtime/middleware/v1/ratelimit/ratelimiter.proto\x1a-runtime/middleware/v1/selector/selector.proto\x1a/runtime/middleware/v1/validator/validator.proto\"\x9e\x01\n" +
+	"&runtime/middleware/v1/middleware.proto\x12\x15runtime.middleware.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a9runtime/middleware/v1/circuitbreaker/circuitbreaker.proto\x1a%runtime/middleware/v1/cors/cors.proto\x1a#runtime/middleware/v1/jwt/jwt.proto\x1a+runtime/middleware/v1/metrics/metrics.proto\x1a1runtime/middleware/v1/ratelimit/ratelimiter.proto\x1a-runtime/middleware/v1/selector/selector.proto\x1a/runtime/middleware/v1/validator/validator.proto\x1a\x17validate/validate.proto\"\x9e\x01\n" +
 	"\bMetadata\x12\x1a\n" +
 	"\bprefixes\x18\x01 \x03(\tR\bprefixes\x12=\n" +
 	"\x04data\x18\x02 \x03(\v2).runtime.middleware.v1.Metadata.DataEntryR\x04data\x1a7\n" +
@@ -363,12 +363,12 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
 	"\aLogging\"\n" +
 	"\n" +
-	"\bRecovery\"\xfb\a\n" +
+	"\bRecovery\"\xe1\b\n" +
 	"\n" +
-	"Middleware\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\tR\x04type\x12U\n" +
+	"Middleware\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x85\x01\n" +
+	"\x04type\x18\x02 \x01(\tBq\xfaBnrlR\x04noneR\aloggingR\brecoveryR\frate_limiterR\ametricsR\tvalidatorR\x03jwtR\bselectorR\x04corsR\x0fcircuit_breakerR\tcustomizeR\x04type\x12\x18\n" +
+	"\aenabled\x18\x03 \x01(\bR\aenabled\x12U\n" +
 	"\frate_limiter\x18\x04 \x01(\v2,.runtime.middleware.v1.ratelimit.RateLimiterH\x00R\frate_limiter\x88\x01\x01\x12E\n" +
 	"\ametrics\x18\x05 \x01(\v2&.runtime.middleware.v1.metrics.MetricsH\x01R\ametrics\x88\x01\x01\x12M\n" +
 	"\tvalidator\x18\x06 \x01(\v2*.runtime.middleware.v1.validator.ValidatorH\x02R\tvalidator\x88\x01\x01\x125\n" +
@@ -379,8 +379,8 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	" \x01(\v24.runtime.middleware.v1.circuitbreaker.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x12=\n" +
 	"\alogging\x18\v \x01(\v2\x1e.runtime.middleware.v1.LoggingH\aR\alogging\x88\x01\x01\x12@\n" +
 	"\brecovery\x18\f \x01(\v2\x1f.runtime.middleware.v1.RecoveryH\bR\brecovery\x88\x01\x01\x12@\n" +
-	"\bmetadata\x18\r \x01(\v2\x1f.runtime.middleware.v1.MetadataH\tR\bmetadata\x88\x01\x01\x12H\n" +
-	"\tcustomize\x18d \x01(\v2%.runtime.extension.v1.CustomizeConfigH\n" +
+	"\bmetadata\x18\r \x01(\v2\x1f.runtime.middleware.v1.MetadataH\tR\bmetadata\x88\x01\x01\x12:\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\n" +
 	"R\tcustomize\x88\x01\x01B\x0f\n" +
 	"\r_rate_limiterB\n" +
 	"\n" +
@@ -428,7 +428,7 @@ var file_runtime_middleware_v1_middleware_proto_goTypes = []any{
 	(*selector.Selector)(nil),             // 10: runtime.middleware.v1.selector.Selector
 	(*cors.Cors)(nil),                     // 11: runtime.middleware.v1.cors.Cors
 	(*circuitbreaker.CircuitBreaker)(nil), // 12: runtime.middleware.v1.circuitbreaker.CircuitBreaker
-	(*v1.CustomizeConfig)(nil),            // 13: runtime.extension.v1.CustomizeConfig
+	(*structpb.Struct)(nil),               // 13: google.protobuf.Struct
 }
 var file_runtime_middleware_v1_middleware_proto_depIdxs = []int32{
 	5,  // 0: runtime.middleware.v1.Metadata.data:type_name -> runtime.middleware.v1.Metadata.DataEntry
@@ -442,7 +442,7 @@ var file_runtime_middleware_v1_middleware_proto_depIdxs = []int32{
 	1,  // 8: runtime.middleware.v1.Middleware.logging:type_name -> runtime.middleware.v1.Logging
 	2,  // 9: runtime.middleware.v1.Middleware.recovery:type_name -> runtime.middleware.v1.Recovery
 	0,  // 10: runtime.middleware.v1.Middleware.metadata:type_name -> runtime.middleware.v1.Metadata
-	13, // 11: runtime.middleware.v1.Middleware.customize:type_name -> runtime.extension.v1.CustomizeConfig
+	13, // 11: runtime.middleware.v1.Middleware.customize:type_name -> google.protobuf.Struct
 	3,  // 12: runtime.middleware.v1.Middlewares.middlewares:type_name -> runtime.middleware.v1.Middleware
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type

@@ -8,10 +8,10 @@ package sourcev1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
 	_ "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -90,30 +90,26 @@ func (x *Sources) GetSources() []*SourceConfig {
 // SourceConfig is the source file for load configuration
 type SourceConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// type specifies the type of the configuration source
-	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"` // Type
 	// name specifies the configuration name
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// version specifies the configuration version
-	Version string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// type specifies the type of the configuration source
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"` // Type
 	// set the supported file format, if not set, all formats are supported
-	Formats []string `protobuf:"bytes,4,rep,name=formats,proto3" json:"formats,omitempty"`
+	Formats []string `protobuf:"bytes,3,rep,name=formats,proto3" json:"formats,omitempty"`
 	// priority for this configuration source.
 	// Sources will be loaded in ascending order of priority (e.g., 0, 1, 2, ...),
 	// with later sources (higher priority value) overriding earlier ones.
-	Priority int32 `protobuf:"varint,5,opt,name=priority,proto3" json:"priority,omitempty"`
-	// Types that are valid to be assigned to Config:
-	//
-	//	*SourceConfig_Env
-	//	*SourceConfig_File
-	//	*SourceConfig_Etcd
-	//	*SourceConfig_Consul
-	//	*SourceConfig_Nacos
-	//	*SourceConfig_Apollo
-	//	*SourceConfig_Kubernetes
-	//	*SourceConfig_Polaris
-	//	*SourceConfig_Customize
-	Config        isSourceConfig_Config `protobuf_oneof:"config"`
+	Priority int32 `protobuf:"varint,4,opt,name=priority,proto3" json:"priority,omitempty"`
+	// Configuration source specific settings. Only one of these should be set based on the 'type' field.
+	Env           *EnvSource        `protobuf:"bytes,10,opt,name=env,proto3,oneof" json:"env,omitempty"`
+	File          *FileSource       `protobuf:"bytes,11,opt,name=file,proto3,oneof" json:"file,omitempty"`
+	Etcd          *ETCDSource       `protobuf:"bytes,12,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`
+	Consul        *ConsulSource     `protobuf:"bytes,13,opt,name=consul,proto3,oneof" json:"consul,omitempty"`
+	Nacos         *NacosSource      `protobuf:"bytes,14,opt,name=nacos,proto3,oneof" json:"nacos,omitempty"`
+	Apollo        *ApolloSource     `protobuf:"bytes,15,opt,name=apollo,proto3,oneof" json:"apollo,omitempty"`
+	Kubernetes    *KubernetesSource `protobuf:"bytes,16,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
+	Polaris       *PolarisSource    `protobuf:"bytes,17,opt,name=polaris,proto3,oneof" json:"polaris,omitempty"`
+	Customize     *structpb.Struct  `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -148,13 +144,6 @@ func (*SourceConfig) Descriptor() ([]byte, []int) {
 	return file_runtime_source_v1_source_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *SourceConfig) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
 func (x *SourceConfig) GetName() string {
 	if x != nil {
 		return x.Name
@@ -162,9 +151,9 @@ func (x *SourceConfig) GetName() string {
 	return ""
 }
 
-func (x *SourceConfig) GetVersion() string {
+func (x *SourceConfig) GetType() string {
 	if x != nil {
-		return x.Version
+		return x.Type
 	}
 	return ""
 }
@@ -183,180 +172,107 @@ func (x *SourceConfig) GetPriority() int32 {
 	return 0
 }
 
-func (x *SourceConfig) GetConfig() isSourceConfig_Config {
-	if x != nil {
-		return x.Config
-	}
-	return nil
-}
-
 func (x *SourceConfig) GetEnv() *EnvSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Env); ok {
-			return x.Env
-		}
+		return x.Env
 	}
 	return nil
 }
 
 func (x *SourceConfig) GetFile() *FileSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_File); ok {
-			return x.File
-		}
+		return x.File
 	}
 	return nil
 }
 
 func (x *SourceConfig) GetEtcd() *ETCDSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Etcd); ok {
-			return x.Etcd
-		}
+		return x.Etcd
 	}
 	return nil
 }
 
 func (x *SourceConfig) GetConsul() *ConsulSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Consul); ok {
-			return x.Consul
-		}
+		return x.Consul
 	}
 	return nil
 }
 
 func (x *SourceConfig) GetNacos() *NacosSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Nacos); ok {
-			return x.Nacos
-		}
+		return x.Nacos
 	}
 	return nil
 }
 
 func (x *SourceConfig) GetApollo() *ApolloSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Apollo); ok {
-			return x.Apollo
-		}
+		return x.Apollo
 	}
 	return nil
 }
 
 func (x *SourceConfig) GetKubernetes() *KubernetesSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Kubernetes); ok {
-			return x.Kubernetes
-		}
+		return x.Kubernetes
 	}
 	return nil
 }
 
 func (x *SourceConfig) GetPolaris() *PolarisSource {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Polaris); ok {
-			return x.Polaris
-		}
+		return x.Polaris
 	}
 	return nil
 }
 
-func (x *SourceConfig) GetCustomize() *v1.Extension {
+func (x *SourceConfig) GetCustomize() *structpb.Struct {
 	if x != nil {
-		if x, ok := x.Config.(*SourceConfig_Customize); ok {
-			return x.Customize
-		}
+		return x.Customize
 	}
 	return nil
 }
-
-type isSourceConfig_Config interface {
-	isSourceConfig_Config()
-}
-
-type SourceConfig_Env struct {
-	Env *EnvSource `protobuf:"bytes,100,opt,name=env,proto3,oneof"`
-}
-
-type SourceConfig_File struct {
-	File *FileSource `protobuf:"bytes,200,opt,name=file,proto3,oneof"`
-}
-
-type SourceConfig_Etcd struct {
-	Etcd *ETCDSource `protobuf:"bytes,300,opt,name=etcd,proto3,oneof"`
-}
-
-type SourceConfig_Consul struct {
-	Consul *ConsulSource `protobuf:"bytes,400,opt,name=consul,proto3,oneof"`
-}
-
-type SourceConfig_Nacos struct {
-	Nacos *NacosSource `protobuf:"bytes,500,opt,name=nacos,proto3,oneof"`
-}
-
-type SourceConfig_Apollo struct {
-	Apollo *ApolloSource `protobuf:"bytes,600,opt,name=apollo,proto3,oneof"`
-}
-
-type SourceConfig_Kubernetes struct {
-	Kubernetes *KubernetesSource `protobuf:"bytes,700,opt,name=kubernetes,proto3,oneof"`
-}
-
-type SourceConfig_Polaris struct {
-	Polaris *PolarisSource `protobuf:"bytes,800,opt,name=polaris,proto3,oneof"`
-}
-
-type SourceConfig_Customize struct {
-	Customize *v1.Extension `protobuf:"bytes,900,opt,name=customize,proto3,oneof"`
-}
-
-func (*SourceConfig_Env) isSourceConfig_Config() {}
-
-func (*SourceConfig_File) isSourceConfig_Config() {}
-
-func (*SourceConfig_Etcd) isSourceConfig_Config() {}
-
-func (*SourceConfig_Consul) isSourceConfig_Config() {}
-
-func (*SourceConfig_Nacos) isSourceConfig_Config() {}
-
-func (*SourceConfig_Apollo) isSourceConfig_Config() {}
-
-func (*SourceConfig_Kubernetes) isSourceConfig_Config() {}
-
-func (*SourceConfig_Polaris) isSourceConfig_Config() {}
-
-func (*SourceConfig_Customize) isSourceConfig_Config() {}
 
 var File_runtime_source_v1_source_proto protoreflect.FileDescriptor
 
 const file_runtime_source_v1_source_proto_rawDesc = "" +
 	"\n" +
-	"\x1eruntime/source/v1/source.proto\x12\x11runtime.source.v1\x1a$runtime/extension/v1/extension.proto\x1a'runtime/security/transport/v1/tls.proto\x1a\x17validate/validate.proto\x1a#runtime/source/v1/file_source.proto\x1a\"runtime/source/v1/env_source.proto\x1a%runtime/source/v1/consul_source.proto\x1a#runtime/source/v1/etcd_source.proto\x1a$runtime/source/v1/nacos_source.proto\x1a%runtime/source/v1/apollo_source.proto\x1a)runtime/source/v1/kubernetes_source.proto\x1a&runtime/source/v1/polaris_source.proto\"r\n" +
+	"\x1eruntime/source/v1/source.proto\x12\x11runtime.source.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a'runtime/security/transport/v1/tls.proto\x1a%runtime/source/v1/apollo_source.proto\x1a%runtime/source/v1/consul_source.proto\x1a\"runtime/source/v1/env_source.proto\x1a#runtime/source/v1/etcd_source.proto\x1a#runtime/source/v1/file_source.proto\x1a)runtime/source/v1/kubernetes_source.proto\x1a$runtime/source/v1/nacos_source.proto\x1a&runtime/source/v1/polaris_source.proto\x1a\x17validate/validate.proto\"r\n" +
 	"\aSources\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x129\n" +
-	"\asources\x18\x03 \x03(\v2\x1f.runtime.source.v1.SourceConfigR\asources\"\xf7\x05\n" +
-	"\fSourceConfig\x12a\n" +
-	"\x04type\x18\x01 \x01(\tBM\xfaBJrHR\x03envR\x04fileR\x04etcdR\x06consulR\x06apolloR\x05nacosR\n" +
-	"kubernetesR\apolarisR\tcustomizeR\x04type\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\tR\aversion\x12\x18\n" +
-	"\aformats\x18\x04 \x03(\tR\aformats\x12\x1a\n" +
-	"\bpriority\x18\x05 \x01(\x05R\bpriority\x120\n" +
-	"\x03env\x18d \x01(\v2\x1c.runtime.source.v1.EnvSourceH\x00R\x03env\x124\n" +
-	"\x04file\x18\xc8\x01 \x01(\v2\x1d.runtime.source.v1.FileSourceH\x00R\x04file\x124\n" +
-	"\x04etcd\x18\xac\x02 \x01(\v2\x1d.runtime.source.v1.ETCDSourceH\x00R\x04etcd\x12:\n" +
-	"\x06consul\x18\x90\x03 \x01(\v2\x1f.runtime.source.v1.ConsulSourceH\x00R\x06consul\x127\n" +
-	"\x05nacos\x18\xf4\x03 \x01(\v2\x1e.runtime.source.v1.NacosSourceH\x00R\x05nacos\x12:\n" +
-	"\x06apollo\x18\xd8\x04 \x01(\v2\x1f.runtime.source.v1.ApolloSourceH\x00R\x06apollo\x12F\n" +
+	"\asources\x18\x03 \x03(\v2\x1f.runtime.source.v1.SourceConfigR\asources\"\xc1\x06\n" +
+	"\fSourceConfig\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12a\n" +
+	"\x04type\x18\x02 \x01(\tBM\xfaBJrHR\x03envR\x04fileR\x04etcdR\x06consulR\x06apolloR\x05nacosR\n" +
+	"kubernetesR\apolarisR\tcustomizeR\x04type\x12\x18\n" +
+	"\aformats\x18\x03 \x03(\tR\aformats\x12\x1a\n" +
+	"\bpriority\x18\x04 \x01(\x05R\bpriority\x123\n" +
+	"\x03env\x18\n" +
+	" \x01(\v2\x1c.runtime.source.v1.EnvSourceH\x00R\x03env\x88\x01\x01\x126\n" +
+	"\x04file\x18\v \x01(\v2\x1d.runtime.source.v1.FileSourceH\x01R\x04file\x88\x01\x01\x126\n" +
+	"\x04etcd\x18\f \x01(\v2\x1d.runtime.source.v1.ETCDSourceH\x02R\x04etcd\x88\x01\x01\x12<\n" +
+	"\x06consul\x18\r \x01(\v2\x1f.runtime.source.v1.ConsulSourceH\x03R\x06consul\x88\x01\x01\x129\n" +
+	"\x05nacos\x18\x0e \x01(\v2\x1e.runtime.source.v1.NacosSourceH\x04R\x05nacos\x88\x01\x01\x12<\n" +
+	"\x06apollo\x18\x0f \x01(\v2\x1f.runtime.source.v1.ApolloSourceH\x05R\x06apollo\x88\x01\x01\x12H\n" +
 	"\n" +
-	"kubernetes\x18\xbc\x05 \x01(\v2#.runtime.source.v1.KubernetesSourceH\x00R\n" +
-	"kubernetes\x12=\n" +
-	"\apolaris\x18\xa0\x06 \x01(\v2 .runtime.source.v1.PolarisSourceH\x00R\apolaris\x12@\n" +
-	"\tcustomize\x18\x84\a \x01(\v2\x1f.runtime.extension.v1.ExtensionH\x00R\tcustomizeB\b\n" +
-	"\x06configB\xd1\x01\n" +
+	"kubernetes\x18\x10 \x01(\v2#.runtime.source.v1.KubernetesSourceH\x06R\n" +
+	"kubernetes\x88\x01\x01\x12?\n" +
+	"\apolaris\x18\x11 \x01(\v2 .runtime.source.v1.PolarisSourceH\aR\apolaris\x88\x01\x01\x12:\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\bR\tcustomize\x88\x01\x01B\x06\n" +
+	"\x04_envB\a\n" +
+	"\x05_fileB\a\n" +
+	"\x05_etcdB\t\n" +
+	"\a_consulB\b\n" +
+	"\x06_nacosB\t\n" +
+	"\a_apolloB\r\n" +
+	"\v_kubernetesB\n" +
+	"\n" +
+	"\b_polarisB\f\n" +
+	"\n" +
+	"_customizeB\xd1\x01\n" +
 	"\x15com.runtime.source.v1B\vSourceProtoP\x01ZBgithub.com/origadmin/runtime/api/gen/go/runtime/source/v1;sourcev1\xf8\x01\x01\xa2\x02\x03RSX\xaa\x02\x11Runtime.Source.V1\xca\x02\x11Runtime\\Source\\V1\xe2\x02\x1dRuntime\\Source\\V1\\GPBMetadata\xea\x02\x13Runtime::Source::V1b\x06proto3"
 
 var (
@@ -383,7 +299,7 @@ var file_runtime_source_v1_source_proto_goTypes = []any{
 	(*ApolloSource)(nil),     // 7: runtime.source.v1.ApolloSource
 	(*KubernetesSource)(nil), // 8: runtime.source.v1.KubernetesSource
 	(*PolarisSource)(nil),    // 9: runtime.source.v1.PolarisSource
-	(*v1.Extension)(nil),     // 10: runtime.extension.v1.Extension
+	(*structpb.Struct)(nil),  // 10: google.protobuf.Struct
 }
 var file_runtime_source_v1_source_proto_depIdxs = []int32{
 	1,  // 0: runtime.source.v1.Sources.sources:type_name -> runtime.source.v1.SourceConfig
@@ -395,7 +311,7 @@ var file_runtime_source_v1_source_proto_depIdxs = []int32{
 	7,  // 6: runtime.source.v1.SourceConfig.apollo:type_name -> runtime.source.v1.ApolloSource
 	8,  // 7: runtime.source.v1.SourceConfig.kubernetes:type_name -> runtime.source.v1.KubernetesSource
 	9,  // 8: runtime.source.v1.SourceConfig.polaris:type_name -> runtime.source.v1.PolarisSource
-	10, // 9: runtime.source.v1.SourceConfig.customize:type_name -> runtime.extension.v1.Extension
+	10, // 9: runtime.source.v1.SourceConfig.customize:type_name -> google.protobuf.Struct
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
@@ -408,25 +324,15 @@ func file_runtime_source_v1_source_proto_init() {
 	if File_runtime_source_v1_source_proto != nil {
 		return
 	}
-	file_runtime_source_v1_file_source_proto_init()
-	file_runtime_source_v1_env_source_proto_init()
-	file_runtime_source_v1_consul_source_proto_init()
-	file_runtime_source_v1_etcd_source_proto_init()
-	file_runtime_source_v1_nacos_source_proto_init()
 	file_runtime_source_v1_apollo_source_proto_init()
+	file_runtime_source_v1_consul_source_proto_init()
+	file_runtime_source_v1_env_source_proto_init()
+	file_runtime_source_v1_etcd_source_proto_init()
+	file_runtime_source_v1_file_source_proto_init()
 	file_runtime_source_v1_kubernetes_source_proto_init()
+	file_runtime_source_v1_nacos_source_proto_init()
 	file_runtime_source_v1_polaris_source_proto_init()
-	file_runtime_source_v1_source_proto_msgTypes[1].OneofWrappers = []any{
-		(*SourceConfig_Env)(nil),
-		(*SourceConfig_File)(nil),
-		(*SourceConfig_Etcd)(nil),
-		(*SourceConfig_Consul)(nil),
-		(*SourceConfig_Nacos)(nil),
-		(*SourceConfig_Apollo)(nil),
-		(*SourceConfig_Kubernetes)(nil),
-		(*SourceConfig_Polaris)(nil),
-		(*SourceConfig_Customize)(nil),
-	}
+	file_runtime_source_v1_source_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

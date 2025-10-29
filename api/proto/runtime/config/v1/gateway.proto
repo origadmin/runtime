@@ -88,10 +88,8 @@ message Condition {
     string name = 1;
     string value = 2;
   }
-  oneof condition {
-    // "500-599", "429"
-    string by_status_code = 1;
-    // {"name": "grpc-status", "value": "14"}
-    Header by_header = 2;
-  }
+  // "500-599", "429"
+  optional string by_status_code = 1;
+  // {"name": "grpc-status", "value": "14"}
+  optional Header by_header = 2;
 }

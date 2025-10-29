@@ -5,11 +5,11 @@ import (
 	"log"
 
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	rt "github.com/origadmin/runtime"
-	extensionv1 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	conf "github.com/origadmin/runtime/examples/protos/custom_extension_example"
+	conf "github.com/origadmin/runtime/examples/protos/custom_extension"
 	"github.com/origadmin/runtime/interfaces"
 )
 
@@ -39,11 +39,11 @@ func main() {
 	}
 
 	// Process extensions
-	if appConfig.Customize != nil {
-		fmt.Printf("Processing extension: %s\n", appConfig.GetCustomize().GetName())
+	if appConfig.CustomizeConfig != nil {
+		fmt.Printf("Processing extension: %s\n", appConfig.GetCustomizeConfig())
 
 		// Example of how to unmarshal Any to a specific type
-		customCfg, err := getCustomConfig(appConfig.GetCustomize())
+		customCfg, err := getCustomConfig(appConfig.GetCustomizeConfig())
 		if err != nil {
 			log.Printf("Failed to get custom config: %v", err)
 			return
@@ -60,16 +60,16 @@ func main() {
 	//}
 }
 
-func getCustomConfig(customize *extensionv1.CustomizeConfig) (*conf.CustomConfig, error) {
+func getCustomConfig(customize *structpb.Struct) (*conf.CustomConfig, error) {
 	if customize == nil {
 		return nil, fmt.Errorf("customize config is nil")
 	}
 
 	// Debug: Print the raw data
-	fmt.Printf("Raw config data: %+v\n", customize.GetConfig())
+	fmt.Printf("Raw config data: %+v\n", customize)
 
 	// Convert the data to JSON bytes
-	jsonBytes, err := protojson.Marshal(customize.GetConfig())
+	jsonBytes, err := protojson.Marshal(customize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal config data: %w", err)
 	}

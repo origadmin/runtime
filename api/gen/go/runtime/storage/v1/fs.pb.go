@@ -623,11 +623,10 @@ func (x *ReadResponse) GetChunk() []byte {
 
 type WriteRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Data:
-	//
-	//	*WriteRequest_Metadata
-	//	*WriteRequest_Chunk
-	Data          isWriteRequest_Data `protobuf_oneof:"data"`
+	// The first message must contain the metadata.
+	Metadata *WriteRequestMetadata `protobuf:"bytes,1,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	// Subsequent messages contain the file's binary chunks.
+	Chunk         []byte `protobuf:"bytes,2,opt,name=chunk,proto3,oneof" json:"chunk,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -662,48 +661,19 @@ func (*WriteRequest) Descriptor() ([]byte, []int) {
 	return file_runtime_storage_v1_fs_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *WriteRequest) GetData() isWriteRequest_Data {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
 func (x *WriteRequest) GetMetadata() *WriteRequestMetadata {
 	if x != nil {
-		if x, ok := x.Data.(*WriteRequest_Metadata); ok {
-			return x.Metadata
-		}
+		return x.Metadata
 	}
 	return nil
 }
 
 func (x *WriteRequest) GetChunk() []byte {
 	if x != nil {
-		if x, ok := x.Data.(*WriteRequest_Chunk); ok {
-			return x.Chunk
-		}
+		return x.Chunk
 	}
 	return nil
 }
-
-type isWriteRequest_Data interface {
-	isWriteRequest_Data()
-}
-
-type WriteRequest_Metadata struct {
-	// The first message must contain the metadata.
-	Metadata *WriteRequestMetadata `protobuf:"bytes,1,opt,name=metadata,proto3,oneof"`
-}
-
-type WriteRequest_Chunk struct {
-	// Subsequent messages contain the file's binary chunks.
-	Chunk []byte `protobuf:"bytes,2,opt,name=chunk,proto3,oneof"`
-}
-
-func (*WriteRequest_Metadata) isWriteRequest_Data() {}
-
-func (*WriteRequest_Chunk) isWriteRequest_Data() {}
 
 type WriteRequestMetadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1209,11 +1179,12 @@ const file_runtime_storage_v1_fs_proto_rawDesc = "" +
 	"\vReadRequest\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\"$\n" +
 	"\fReadResponse\x12\x14\n" +
-	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"v\n" +
-	"\fWriteRequest\x12F\n" +
-	"\bmetadata\x18\x01 \x01(\v2(.runtime.storage.v1.WriteRequestMetadataH\x00R\bmetadata\x12\x16\n" +
-	"\x05chunk\x18\x02 \x01(\fH\x00R\x05chunkB\x06\n" +
-	"\x04data\"*\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"\x8b\x01\n" +
+	"\fWriteRequest\x12I\n" +
+	"\bmetadata\x18\x01 \x01(\v2(.runtime.storage.v1.WriteRequestMetadataH\x00R\bmetadata\x88\x01\x01\x12\x19\n" +
+	"\x05chunk\x18\x02 \x01(\fH\x01R\x05chunk\x88\x01\x01B\v\n" +
+	"\t_metadataB\b\n" +
+	"\x06_chunk\"*\n" +
 	"\x14WriteRequestMetadata\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\"7\n" +
 	"\rWriteResponse\x12\x12\n" +
@@ -1329,10 +1300,7 @@ func file_runtime_storage_v1_fs_proto_init() {
 	if File_runtime_storage_v1_fs_proto != nil {
 		return
 	}
-	file_runtime_storage_v1_fs_proto_msgTypes[13].OneofWrappers = []any{
-		(*WriteRequest_Metadata)(nil),
-		(*WriteRequest_Chunk)(nil),
-	}
+	file_runtime_storage_v1_fs_proto_msgTypes[13].OneofWrappers = []any{}
 	file_runtime_storage_v1_fs_proto_msgTypes[18].OneofWrappers = []any{
 		(*UploadChunkRequest_Metadata)(nil),
 		(*UploadChunkRequest_Chunk)(nil),

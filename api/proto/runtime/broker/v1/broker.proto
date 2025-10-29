@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package runtime.broker.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option java_multiple_files = true;
+option java_outer_classname = "BrokerProto";
+option java_package = "com.github.origadmin.api.runtime.broker.v1";
+option objc_class_prefix = "ORC";
+
+// Broker defines the generic configuration for a message queue service,
+// which can be used for both consumers and producers.
+message Broker {
+  // Generic configurations applicable to most message queue systems.
+  // For example:
+  // repeated string addresses = 1;
+  // string topic = 2;
+}

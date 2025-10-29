@@ -1104,30 +1104,11 @@ func (m *Condition) validate(all bool) error {
 
 	var errors []error
 
-	switch v := m.Condition.(type) {
-	case *Condition_ByStatusCode:
-		if v == nil {
-			err := ConditionValidationError{
-				field:  "Condition",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	if m.ByStatusCode != nil {
 		// no validation rules for ByStatusCode
-	case *Condition_ByHeader:
-		if v == nil {
-			err := ConditionValidationError{
-				field:  "Condition",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.ByHeader != nil {
 
 		if all {
 			switch v := interface{}(m.GetByHeader()).(type) {
@@ -1158,8 +1139,6 @@ func (m *Condition) validate(all bool) error {
 			}
 		}
 
-	default:
-		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {

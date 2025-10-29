@@ -193,6 +193,8 @@ func (m *SourceConfig) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
 	if _, ok := _SourceConfig_Type_InLookup[m.GetType()]; !ok {
 		err := SourceConfigValidationError{
 			field:  "Type",
@@ -204,24 +206,9 @@ func (m *SourceConfig) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Name
-
-	// no validation rules for Version
-
 	// no validation rules for Priority
 
-	switch v := m.Config.(type) {
-	case *SourceConfig_Env:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	if m.Env != nil {
 
 		if all {
 			switch v := interface{}(m.GetEnv()).(type) {
@@ -252,17 +239,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_File:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.File != nil {
 
 		if all {
 			switch v := interface{}(m.GetFile()).(type) {
@@ -293,17 +272,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_Etcd:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Etcd != nil {
 
 		if all {
 			switch v := interface{}(m.GetEtcd()).(type) {
@@ -334,17 +305,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_Consul:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Consul != nil {
 
 		if all {
 			switch v := interface{}(m.GetConsul()).(type) {
@@ -375,17 +338,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_Nacos:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Nacos != nil {
 
 		if all {
 			switch v := interface{}(m.GetNacos()).(type) {
@@ -416,17 +371,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_Apollo:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Apollo != nil {
 
 		if all {
 			switch v := interface{}(m.GetApollo()).(type) {
@@ -457,17 +404,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_Kubernetes:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Kubernetes != nil {
 
 		if all {
 			switch v := interface{}(m.GetKubernetes()).(type) {
@@ -498,17 +437,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_Polaris:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Polaris != nil {
 
 		if all {
 			switch v := interface{}(m.GetPolaris()).(type) {
@@ -539,17 +470,9 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	case *SourceConfig_Customize:
-		if v == nil {
-			err := SourceConfigValidationError{
-				field:  "Config",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Customize != nil {
 
 		if all {
 			switch v := interface{}(m.GetCustomize()).(type) {
@@ -580,8 +503,6 @@ func (m *SourceConfig) validate(all bool) error {
 			}
 		}
 
-	default:
-		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {

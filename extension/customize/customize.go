@@ -1,37 +1,17 @@
+// Copyright (c) 2024 OrigAdmin. All rights reserved.
+
+// Package customize provides helper functions for working with flexible configuration
+// structures in Protobuf, such as google.protobuf.Struct and google.protobuf.Any.
+// It simplifies the process of converting these generic types into strongly-typed
+// Go structs derived from Protobuf messages.
 package customize
 
-import (
-	"fmt"
+import "google.golang.org/protobuf/proto"
 
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
-
-	extensionv1 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
-)
-
-// GetTypedConfig is a helper function to convert the configuration to a typed protobuf message.
-// It's a generic function that works with any protobuf message type.
-func GetTypedConfig[T proto.Message](cfg *extensionv1.CustomizeConfig, msg T) (T, error) {
-	if cfg == nil {
-		return msg, fmt.Errorf("config is nil")
-	}
-
-	// Get the config field (previously data)
-	configStruct := cfg.GetConfig()
-	if configStruct == nil {
-		return msg, fmt.Errorf("config field is nil")
-	}
-
-	// Convert struct to JSON bytes
-	jsonBytes, err := protojson.Marshal(configStruct)
-	if err != nil {
-		return msg, fmt.Errorf("failed to marshal config: %w", err)
-	}
-
-	// Unmarshal JSON to the target message type
-	if err := protojson.Unmarshal(jsonBytes, msg); err != nil {
-		return msg, fmt.Errorf("failed to unmarshal config: %w", err)
-	}
-
-	return msg, nil
+// ProtoMessagePtr is a generic constraint for a type that is a pointer to a struct T
+// and also implements the proto.Message interface. This allows for creating generic
+// functions that can work with any pointer to a protobuf message struct.
+type ProtoMessagePtr[T any] interface {
+	*T
+	proto.Message
 }

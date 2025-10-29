@@ -2,18 +2,17 @@ syntax = "proto3";
 
 package runtime.source.v1;
 
-import "runtime/extension/v1/extension.proto";
+import "google/protobuf/struct.proto";
 import "runtime/security/transport/v1/tls.proto";
-import "validate/validate.proto";
-
-import "runtime/source/v1/file_source.proto";
-import "runtime/source/v1/env_source.proto";
-import "runtime/source/v1/consul_source.proto";
-import "runtime/source/v1/etcd_source.proto";
-import "runtime/source/v1/nacos_source.proto";
 import "runtime/source/v1/apollo_source.proto";
+import "runtime/source/v1/consul_source.proto";
+import "runtime/source/v1/env_source.proto";
+import "runtime/source/v1/etcd_source.proto";
+import "runtime/source/v1/file_source.proto";
 import "runtime/source/v1/kubernetes_source.proto";
+import "runtime/source/v1/nacos_source.proto";
 import "runtime/source/v1/polaris_source.proto";
+import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/source/v1;sourcev1";
@@ -33,8 +32,11 @@ message Sources {
 
 // SourceConfig is the source file for load configuration
 message SourceConfig {
+  // name specifies the configuration name
+  string name = 1 [json_name = "name"];
+
   // type specifies the type of the configuration source
-  string type = 1 [
+  string type = 2 [
     json_name = "type",
     (validate.rules).string = {
       in: [
@@ -51,27 +53,22 @@ message SourceConfig {
     }
   ]; // Type
 
-  // name specifies the configuration name
-  string name = 2 [json_name = "name"];
-  // version specifies the configuration version
-  string version = 3 [json_name = "version"];
   // set the supported file format, if not set, all formats are supported
-  repeated string formats = 4 [json_name = "formats"];
+  repeated string formats = 3 [json_name = "formats"];
 
   // priority for this configuration source.
   // Sources will be loaded in ascending order of priority (e.g., 0, 1, 2, ...),
   // with later sources (higher priority value) overriding earlier ones.
-  int32 priority = 5 [json_name = "priority"];
+  int32 priority = 4 [json_name = "priority"];
 
-  oneof config {
-    EnvSource env = 100 [json_name = "env"];
-    FileSource file = 200 [json_name = "file"];
-    ETCDSource etcd = 300 [json_name = "etcd"];
-    ConsulSource consul = 400 [json_name = "consul"];
-    NacosSource nacos = 500 [json_name = "nacos"];
-    ApolloSource apollo = 600 [json_name = "apollo"];
-    KubernetesSource kubernetes = 700 [json_name = "kubernetes"];
-    PolarisSource polaris = 800 [json_name = "polaris"];
-    extension.v1.Extension customize = 900 [json_name = "customize"];
-  }
+  // Configuration source specific settings. Only one of these should be set based on the 'type' field.
+  optional EnvSource env = 10 [json_name = "env"];
+  optional FileSource file = 11 [json_name = "file"];
+  optional ETCDSource etcd = 12 [json_name = "etcd"];
+  optional ConsulSource consul = 13 [json_name = "consul"];
+  optional NacosSource nacos = 14 [json_name = "nacos"];
+  optional ApolloSource apollo = 15 [json_name = "apollo"];
+  optional KubernetesSource kubernetes = 16 [json_name = "kubernetes"];
+  optional PolarisSource polaris = 17 [json_name = "polaris"];
+  optional google.protobuf.Struct customize = 100 [json_name = "customize"];
 }

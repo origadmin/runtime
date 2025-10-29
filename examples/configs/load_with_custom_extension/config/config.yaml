@@ -1,0 +1,7 @@
+# This configuration demonstrates the recommended approach using google.protobuf.Struct.
+# The 'customize' block is clean, intuitive, and free of Protobuf-specific fields like '@type'.
+name: "my-auth-middleware"
+type: "customize"
+customize:
+  policy: "p, sub, obj, act"
+  required_scope: "read:users"

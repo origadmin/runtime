@@ -62,7 +62,7 @@ func (m *Discovery) validate(all bool) error {
 	if _, ok := _Discovery_Type_InLookup[m.GetType()]; !ok {
 		err := DiscoveryValidationError{
 			field:  "Type",
-			reason: "value must be in list [none consul etcd nacos apollo kubernetes polaris]",
+			reason: "value must be in list [none consul etcd nacos apollo kubernetes polaris customize]",
 		}
 		if !all {
 			return err
@@ -71,35 +71,6 @@ func (m *Discovery) validate(all bool) error {
 	}
 
 	// no validation rules for Debug
-
-	if all {
-		switch v := interface{}(m.GetCustomize()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, DiscoveryValidationError{
-					field:  "Customize",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, DiscoveryValidationError{
-					field:  "Customize",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return DiscoveryValidationError{
-				field:  "Customize",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
 
 	if m.Consul != nil {
 
@@ -299,6 +270,39 @@ func (m *Discovery) validate(all bool) error {
 
 	}
 
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DiscoveryValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DiscoveryValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return DiscoveryMultiError(errors)
 	}
@@ -384,6 +388,7 @@ var _Discovery_Type_InLookup = map[string]struct{}{
 	"apollo":     {},
 	"kubernetes": {},
 	"polaris":    {},
+	"customize":  {},
 }
 
 // Validate checks the field values on Discoveries with the rules defined in
@@ -1050,6 +1055,12 @@ func (m *Polaris) validate(all bool) error {
 	}
 
 	var errors []error
+
+	// no validation rules for Address
+
+	// no validation rules for Scheme
+
+	// no validation rules for Token
 
 	if len(errors) > 0 {
 		return PolarisMultiError(errors)

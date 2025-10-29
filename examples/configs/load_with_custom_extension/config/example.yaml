@@ -1,5 +1,5 @@
 # config/example.yaml
-customize:
+customize_config:
   enabled: true
   name: "my-custom-config"
   data:

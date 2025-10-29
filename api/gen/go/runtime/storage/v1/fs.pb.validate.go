@@ -1467,18 +1467,7 @@ func (m *WriteRequest) validate(all bool) error {
 
 	var errors []error
 
-	switch v := m.Data.(type) {
-	case *WriteRequest_Metadata:
-		if v == nil {
-			err := WriteRequestValidationError{
-				field:  "Data",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	if m.Metadata != nil {
 
 		if all {
 			switch v := interface{}(m.GetMetadata()).(type) {
@@ -1509,20 +1498,10 @@ func (m *WriteRequest) validate(all bool) error {
 			}
 		}
 
-	case *WriteRequest_Chunk:
-		if v == nil {
-			err := WriteRequestValidationError{
-				field:  "Data",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	}
+
+	if m.Chunk != nil {
 		// no validation rules for Chunk
-	default:
-		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {

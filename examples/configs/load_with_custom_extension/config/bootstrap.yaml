@@ -9,3 +9,8 @@ sources:
     file:
       path: "example.yaml"
     priority: 100
+  - type: "file"
+    name: "middleware-config"
+    file:
+      path: "config.yaml"
+    priority: 90

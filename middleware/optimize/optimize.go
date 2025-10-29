@@ -39,22 +39,19 @@ func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	helper := log.NewHelper(logger)
 	helper.Infof("enabling server optimize middleware")
 
-	// Get custom configuration
-	config := cfg.GetCustomize()
 	// Check if custom configuration is enabled
-	if config == nil || !config.GetEnabled() || config.GetName() == "" {
+	if !cfg.GetEnabled() || cfg.GetType() != "customize" || cfg.GetCustomize() == nil {
 		return nil, false
 	}
+	// Get custom configuration
+	config := cfg.GetCustomize()
 
 	// Create Optimize configuration object
-	var optimizeConfig *optimizev1.Optimize
-	var err error
 	// Try to decode Optimize configuration from config.Value
-	if config != nil {
-		if optimizeConfig, err = customize.GetTypedConfig(config, &optimizev1.Optimize{}); err != nil {
-			helper.Errorf("failed to unmarshal optimize config: %v", err)
-			optimizeConfig = defaultOptimize
-		}
+	optimizeConfig, err := customize.NewFromStruct[optimizev1.Optimize](config)
+	if err != nil {
+		helper.Errorf("failed to unmarshal optimize config: %v", err)
+		optimizeConfig = defaultOptimize
 	}
 
 	return newOptimizer(optimizeConfig), true

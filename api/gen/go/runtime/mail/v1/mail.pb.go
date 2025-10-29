@@ -29,12 +29,8 @@ type Mail struct {
 	From          string `protobuf:"bytes,2,opt,name=from,proto3" json:"from,omitempty"`
 	MaxRetries    int32  `protobuf:"varint,3,opt,name=max_retries,proto3" json:"max_retries,omitempty"`
 	RetryInterval int64  `protobuf:"varint,4,opt,name=retry_interval,proto3" json:"retry_interval,omitempty"`
-	// Mailer-specific configuration. Only one of these can be set.
-	//
-	// Types that are valid to be assigned to MailerConfig:
-	//
-	//	*Mail_SmtpConfig
-	MailerConfig  isMail_MailerConfig `protobuf_oneof:"mailer_config"`
+	// Mailer-specific configuration. Only one of these should be set.
+	SmtpConfig    *SmtpConfig `protobuf:"bytes,10,opt,name=smtp_config,proto3,oneof" json:"smtp_config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -97,31 +93,12 @@ func (x *Mail) GetRetryInterval() int64 {
 	return 0
 }
 
-func (x *Mail) GetMailerConfig() isMail_MailerConfig {
-	if x != nil {
-		return x.MailerConfig
-	}
-	return nil
-}
-
 func (x *Mail) GetSmtpConfig() *SmtpConfig {
 	if x != nil {
-		if x, ok := x.MailerConfig.(*Mail_SmtpConfig); ok {
-			return x.SmtpConfig
-		}
+		return x.SmtpConfig
 	}
 	return nil
 }
-
-type isMail_MailerConfig interface {
-	isMail_MailerConfig()
-}
-
-type Mail_SmtpConfig struct {
-	SmtpConfig *SmtpConfig `protobuf:"bytes,10,opt,name=smtp_config,json=smtpConfig,proto3,oneof"`
-}
-
-func (*Mail_SmtpConfig) isMail_MailerConfig() {}
 
 // SmtpConfig represents the configuration for an SMTP mailer.
 type SmtpConfig struct {
@@ -212,16 +189,15 @@ var File_runtime_mail_v1_mail_proto protoreflect.FileDescriptor
 
 const file_runtime_mail_v1_mail_proto_rawDesc = "" +
 	"\n" +
-	"\x1aruntime/mail/v1/mail.proto\x12\x11runtime.config.v1\"\xd3\x01\n" +
+	"\x1aruntime/mail/v1/mail.proto\x12\x11runtime.config.v1\"\xd6\x01\n" +
 	"\x04Mail\x12\x1a\n" +
 	"\bnickname\x18\x01 \x01(\tR\bnickname\x12\x12\n" +
 	"\x04from\x18\x02 \x01(\tR\x04from\x12 \n" +
 	"\vmax_retries\x18\x03 \x01(\x05R\vmax_retries\x12&\n" +
-	"\x0eretry_interval\x18\x04 \x01(\x03R\x0eretry_interval\x12@\n" +
+	"\x0eretry_interval\x18\x04 \x01(\x03R\x0eretry_interval\x12D\n" +
 	"\vsmtp_config\x18\n" +
-	" \x01(\v2\x1d.runtime.config.v1.SmtpConfigH\x00R\n" +
-	"smtpConfigB\x0f\n" +
-	"\rmailer_config\"\xa2\x01\n" +
+	" \x01(\v2\x1d.runtime.config.v1.SmtpConfigH\x00R\vsmtp_config\x88\x01\x01B\x0e\n" +
+	"\f_smtp_config\"\xa2\x01\n" +
 	"\n" +
 	"SmtpConfig\x12\x12\n" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
@@ -263,9 +239,7 @@ func file_runtime_mail_v1_mail_proto_init() {
 	if File_runtime_mail_v1_mail_proto != nil {
 		return
 	}
-	file_runtime_mail_v1_mail_proto_msgTypes[0].OneofWrappers = []any{
-		(*Mail_SmtpConfig)(nil),
-	}
+	file_runtime_mail_v1_mail_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

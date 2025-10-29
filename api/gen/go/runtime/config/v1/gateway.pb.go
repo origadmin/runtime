@@ -656,11 +656,10 @@ func (x *Retry) GetPriorities() []string {
 
 type Condition struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Condition:
-	//
-	//	*Condition_ByStatusCode
-	//	*Condition_ByHeader
-	Condition     isCondition_Condition `protobuf_oneof:"condition"`
+	// "500-599", "429"
+	ByStatusCode *string `protobuf:"bytes,1,opt,name=by_status_code,json=byStatusCode,proto3,oneof" json:"by_status_code,omitempty"`
+	// {"name": "grpc-status", "value": "14"}
+	ByHeader      *Condition_Header `protobuf:"bytes,2,opt,name=by_header,json=byHeader,proto3,oneof" json:"by_header,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -695,48 +694,19 @@ func (*Condition) Descriptor() ([]byte, []int) {
 	return file_runtime_config_v1_gateway_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *Condition) GetCondition() isCondition_Condition {
-	if x != nil {
-		return x.Condition
-	}
-	return nil
-}
-
 func (x *Condition) GetByStatusCode() string {
-	if x != nil {
-		if x, ok := x.Condition.(*Condition_ByStatusCode); ok {
-			return x.ByStatusCode
-		}
+	if x != nil && x.ByStatusCode != nil {
+		return *x.ByStatusCode
 	}
 	return ""
 }
 
 func (x *Condition) GetByHeader() *Condition_Header {
 	if x != nil {
-		if x, ok := x.Condition.(*Condition_ByHeader); ok {
-			return x.ByHeader
-		}
+		return x.ByHeader
 	}
 	return nil
 }
-
-type isCondition_Condition interface {
-	isCondition_Condition()
-}
-
-type Condition_ByStatusCode struct {
-	// "500-599", "429"
-	ByStatusCode string `protobuf:"bytes,1,opt,name=by_status_code,json=byStatusCode,proto3,oneof"`
-}
-
-type Condition_ByHeader struct {
-	// {"name": "grpc-status", "value": "14"}
-	ByHeader *Condition_Header `protobuf:"bytes,2,opt,name=by_header,json=byHeader,proto3,oneof"`
-}
-
-func (*Condition_ByStatusCode) isCondition_Condition() {}
-
-func (*Condition_ByHeader) isCondition_Condition() {}
 
 type Condition_Header struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -855,14 +825,16 @@ const file_runtime_config_v1_gateway_proto_rawDesc = "" +
 	"conditions\x12\x1e\n" +
 	"\n" +
 	"priorities\x18\x04 \x03(\tR\n" +
-	"priorities\"\xb8\x01\n" +
-	"\tCondition\x12&\n" +
-	"\x0eby_status_code\x18\x01 \x01(\tH\x00R\fbyStatusCode\x12B\n" +
-	"\tby_header\x18\x02 \x01(\v2#.runtime.config.v1.Condition.HeaderH\x00R\bbyHeader\x1a2\n" +
+	"priorities\"\xd2\x01\n" +
+	"\tCondition\x12)\n" +
+	"\x0eby_status_code\x18\x01 \x01(\tH\x00R\fbyStatusCode\x88\x01\x01\x12E\n" +
+	"\tby_header\x18\x02 \x01(\v2#.runtime.config.v1.Condition.HeaderH\x01R\bbyHeader\x88\x01\x01\x1a2\n" +
 	"\x06Header\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05valueB\v\n" +
-	"\tcondition*_\n" +
+	"\x05value\x18\x02 \x01(\tR\x05valueB\x11\n" +
+	"\x0f_by_status_codeB\f\n" +
+	"\n" +
+	"_by_header*_\n" +
 	"\bProtocol\x12\x18\n" +
 	"\x14PROTOCOL_UNSPECIFIED\x10\x00\x12\x11\n" +
 	"\rPROTOCOL_HTTP\x10\x01\x12\x11\n" +
@@ -930,10 +902,7 @@ func file_runtime_config_v1_gateway_proto_init() {
 		return
 	}
 	file_runtime_config_v1_gateway_proto_msgTypes[4].OneofWrappers = []any{}
-	file_runtime_config_v1_gateway_proto_msgTypes[7].OneofWrappers = []any{
-		(*Condition_ByStatusCode)(nil),
-		(*Condition_ByHeader)(nil),
-	}
+	file_runtime_config_v1_gateway_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

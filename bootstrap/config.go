@@ -75,7 +75,7 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 		// Fallback or 'directly' mode: use the bootstrapPath as the single source.
 		if len(sources) == 0 {
 			logger.Infof("No sources found in bootstrap file, using it directly: %s", bootstrapPath)
-			sources = append(sources, WithFileSource(bootstrapPath))
+			sources = append(sources, SourceWithFile(bootstrapPath))
 		}
 
 		// Create the base config from the collected and resolved sources.
@@ -93,11 +93,15 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 	return baseConfig, nil
 }
 
+func isFileSource(source *sourcev1.SourceConfig) bool {
+	return source != nil && source.Type == "file" && source.File != nil
+}
+
 // loadSourcesFromBootstrapFile attempts to load a bootstrap configuration and resolve the paths of its sources.
 // It returns a slice of source configurations or nil if loading fails or no sources are found.
 func loadSourcesFromBootstrapFile(bootstrapPath string, providerOpts *ProviderOptions, logger *log.Helper) []*sourcev1.SourceConfig {
 	bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath, providerOpts.rawOptions...)
-	if err != nil || bootstrapCfg == nil || len(bootstrapCfg.GetSources()) == 0 {
+	if err != nil || len(bootstrapCfg.GetSources()) == 0 {
 		if err != nil {
 			logger.Warnf("Failed to load or parse sources from bootstrap file: %v", err)
 		}
@@ -105,27 +109,34 @@ func loadSourcesFromBootstrapFile(bootstrapPath string, providerOpts *ProviderOp
 	}
 
 	// Successfully loaded sources, now resolve their paths.
-	var sources []*sourcev1.SourceConfig
 	bootstrapDir := filepath.Dir(bootstrapPath) // Base for relative paths
-	for _, source := range bootstrapCfg.GetSources() {
-		if fileSource, ok := source.Config.(*sourcev1.SourceConfig_File); ok {
-			path := fileSource.File.Path
-			resolvedPath := path
-
-			// Use custom path resolver if provided, otherwise use default logic.
-			if providerOpts.pathResolver != nil {
-				resolvedPath = providerOpts.pathResolver(bootstrapDir, path)
-			} else if !filepath.IsAbs(path) {
-				// Default logic: It's a relative path, join it with the bootstrap file's directory.
-				resolvedPath = filepath.Join(bootstrapDir, path)
-			}
-
-			fileSource.File.Path = resolvedPath
-			logger.Infof("Load bootstrap file: %s", resolvedPath)
+	for i, source := range bootstrapCfg.Sources {
+		if !isFileSource(source) {
+			continue
 		}
-		sources = append(sources, source)
+		path := source.File.Path
+		resolvedPath := path
+
+		// Use custom path resolver if provided, otherwise use default logic.
+		if providerOpts.pathResolver != nil {
+			resolvedPath = providerOpts.pathResolver(bootstrapDir, path)
+		} else if !filepath.IsAbs(path) {
+			// Default logic: It's a relative path, join it with the bootstrap file's directory.
+			resolvedPath = filepath.Join(bootstrapDir, path)
+		}
+
+		source.File.Path = resolvedPath
+		bootstrapCfg.Sources[i] = source
+		logger.Infof("Load bootstrap file: %s", resolvedPath)
 	}
-	return sources
+	return bootstrapCfg.Sources
+}
+
+func bootstrapSources(path string, prefixes ...string) kratosconfig.Option {
+	return kratosconfig.WithSource(
+		file.NewSource(path),
+		envsource.NewSource(prefixes...),
+	)
 }
 
 // LoadBootstrapConfig loads the bootstrapv1.Bootstrap definition from a local bootstrap configuration file.
@@ -134,9 +145,7 @@ func loadSourcesFromBootstrapFile(bootstrapPath string, providerOpts *ProviderOp
 func LoadBootstrapConfig(bootstrapPath string, opts ...Option) (*bootstrapv1.Bootstrap, error) {
 	providerOpts := FromOptions(opts...)
 	// Create a temporary Kratos config instance to load the bootstrap.yaml file.
-	bootConfig := kratosconfig.New(
-		kratosconfig.WithSource(file.NewSource(bootstrapPath), envsource.NewSource(providerOpts.bootstrapPrefix)),
-	)
+	bootConfig := kratosconfig.New(bootstrapSources(bootstrapPath, providerOpts.prefixes...))
 
 	// Defer closing the config and handle its error
 	defer func() {
@@ -158,13 +167,11 @@ func LoadBootstrapConfig(bootstrapPath string, opts ...Option) (*bootstrapv1.Boo
 	return &bc, nil
 }
 
-func WithFileSource(path string) *sourcev1.SourceConfig {
+func SourceWithFile(path string) *sourcev1.SourceConfig {
 	return &sourcev1.SourceConfig{
 		Type: "file",
-		Config: &sourcev1.SourceConfig_File{
-			File: &sourcev1.FileSource{
-				Path: path,
-			},
+		File: &sourcev1.FileSource{
+			Path: path,
 		},
 	}
 }

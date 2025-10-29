@@ -17,13 +17,11 @@ message Mail {
   int32 max_retries = 3 [json_name = "max_retries"];
   int64 retry_interval = 4 [json_name = "retry_interval"];
 
-  // Mailer-specific configuration. Only one of these can be set.
-  oneof mailer_config {
-    SmtpConfig smtp_config = 10;
-    // Add other mailer types here as needed, e.g.:
-    // SendgridConfig sendgrid_config = 11;
-    // MailgunConfig mailgun_config = 12;
-  }
+  // Mailer-specific configuration. Only one of these should be set.
+  optional SmtpConfig smtp_config = 10 [json_name = "smtp_config"];
+  // Add other mailer types here as needed, e.g.:
+  // optional SendgridConfig sendgrid_config = 11 [json_name = "sendgrid_config"];
+  // optional MailgunConfig mailgun_config = 12 [json_name = "mailgun_config"];
 }
 
 // SmtpConfig represents the configuration for an SMTP mailer.

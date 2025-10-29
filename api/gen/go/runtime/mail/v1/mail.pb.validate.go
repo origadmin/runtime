@@ -64,18 +64,7 @@ func (m *Mail) validate(all bool) error {
 
 	// no validation rules for RetryInterval
 
-	switch v := m.MailerConfig.(type) {
-	case *Mail_SmtpConfig:
-		if v == nil {
-			err := MailValidationError{
-				field:  "MailerConfig",
-				reason: "oneof value cannot be a typed-nil",
-			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
-		}
+	if m.SmtpConfig != nil {
 
 		if all {
 			switch v := interface{}(m.GetSmtpConfig()).(type) {
@@ -106,8 +95,6 @@ func (m *Mail) validate(all bool) error {
 			}
 		}
 
-	default:
-		_ = v // ensures v is used
 	}
 
 	if len(errors) > 0 {

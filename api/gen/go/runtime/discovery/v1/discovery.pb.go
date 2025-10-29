@@ -8,9 +8,9 @@ package discoveryv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/extension/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -33,14 +33,13 @@ type Discovery struct {
 	// debug enables verbose logging for the discovery client.
 	Debug bool `protobuf:"varint,5,opt,name=debug,proto3" json:"debug,omitempty"`
 	// --- Standard Provider Configurations ---
-	Consul     *Consul     `protobuf:"bytes,300,opt,name=consul,proto3,oneof" json:"consul,omitempty"`
-	Etcd       *ETCD       `protobuf:"bytes,400,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`
-	Nacos      *Nacos      `protobuf:"bytes,500,opt,name=nacos,proto3,oneof" json:"nacos,omitempty"`
-	Apollo     *Apollo     `protobuf:"bytes,600,opt,name=apollo,proto3,oneof" json:"apollo,omitempty"`
-	Kubernetes *Kubernetes `protobuf:"bytes,700,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
-	Polaris    *Polaris    `protobuf:"bytes,800,opt,name=polaris,proto3,oneof" json:"polaris,omitempty"`
-	// customize is used for non-standard, user-defined discovery providers.
-	Customize     *v1.Extension `protobuf:"bytes,900,opt,name=customize,proto3" json:"customize,omitempty"`
+	Consul        *Consul          `protobuf:"bytes,10,opt,name=consul,proto3,oneof" json:"consul,omitempty"`
+	Etcd          *ETCD            `protobuf:"bytes,11,opt,name=etcd,proto3,oneof" json:"etcd,omitempty"`
+	Nacos         *Nacos           `protobuf:"bytes,12,opt,name=nacos,proto3,oneof" json:"nacos,omitempty"`
+	Apollo        *Apollo          `protobuf:"bytes,13,opt,name=apollo,proto3,oneof" json:"apollo,omitempty"`
+	Kubernetes    *Kubernetes      `protobuf:"bytes,14,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
+	Polaris       *Polaris         `protobuf:"bytes,15,opt,name=polaris,proto3,oneof" json:"polaris,omitempty"`
+	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -138,7 +137,7 @@ func (x *Discovery) GetPolaris() *Polaris {
 	return nil
 }
 
-func (x *Discovery) GetCustomize() *v1.Extension {
+func (x *Discovery) GetCustomize() *structpb.Struct {
 	if x != nil {
 		return x.Customize
 	}
@@ -465,6 +464,9 @@ func (*Kubernetes) Descriptor() ([]byte, []int) {
 // Polaris provider specific configuration (placeholder).
 type Polaris struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Scheme        string                 `protobuf:"bytes,2,opt,name=scheme,proto3" json:"scheme,omitempty"`
+	Token         string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -499,32 +501,56 @@ func (*Polaris) Descriptor() ([]byte, []int) {
 	return file_runtime_discovery_v1_discovery_proto_rawDescGZIP(), []int{7}
 }
 
+func (x *Polaris) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *Polaris) GetScheme() string {
+	if x != nil {
+		return x.Scheme
+	}
+	return ""
+}
+
+func (x *Polaris) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
 var File_runtime_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
 const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/discovery/v1/discovery.proto\x12\x14runtime.discovery.v1\x1a$runtime/extension/v1/extension.proto\x1a\x17validate/validate.proto\"\xfa\x04\n" +
+	"$runtime/discovery/v1/discovery.proto\x12\x14runtime.discovery.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x89\x05\n" +
 	"\tDiscovery\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12Q\n" +
-	"\x04type\x18\x02 \x01(\tB=\xfaB:r8R\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
-	"kubernetesR\apolarisR\x04type\x12\x14\n" +
-	"\x05debug\x18\x05 \x01(\bR\x05debug\x12:\n" +
-	"\x06consul\x18\xac\x02 \x01(\v2\x1c.runtime.discovery.v1.ConsulH\x00R\x06consul\x88\x01\x01\x124\n" +
-	"\x04etcd\x18\x90\x03 \x01(\v2\x1a.runtime.discovery.v1.ETCDH\x01R\x04etcd\x88\x01\x01\x127\n" +
-	"\x05nacos\x18\xf4\x03 \x01(\v2\x1b.runtime.discovery.v1.NacosH\x02R\x05nacos\x88\x01\x01\x12:\n" +
-	"\x06apollo\x18\xd8\x04 \x01(\v2\x1c.runtime.discovery.v1.ApolloH\x03R\x06apollo\x88\x01\x01\x12F\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\\\n" +
+	"\x04type\x18\x02 \x01(\tBH\xfaBErCR\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
+	"kubernetesR\apolarisR\tcustomizeR\x04type\x12\x14\n" +
+	"\x05debug\x18\x05 \x01(\bR\x05debug\x129\n" +
+	"\x06consul\x18\n" +
+	" \x01(\v2\x1c.runtime.discovery.v1.ConsulH\x00R\x06consul\x88\x01\x01\x123\n" +
+	"\x04etcd\x18\v \x01(\v2\x1a.runtime.discovery.v1.ETCDH\x01R\x04etcd\x88\x01\x01\x126\n" +
+	"\x05nacos\x18\f \x01(\v2\x1b.runtime.discovery.v1.NacosH\x02R\x05nacos\x88\x01\x01\x129\n" +
+	"\x06apollo\x18\r \x01(\v2\x1c.runtime.discovery.v1.ApolloH\x03R\x06apollo\x88\x01\x01\x12E\n" +
 	"\n" +
-	"kubernetes\x18\xbc\x05 \x01(\v2 .runtime.discovery.v1.KubernetesH\x04R\n" +
-	"kubernetes\x88\x01\x01\x12=\n" +
-	"\apolaris\x18\xa0\x06 \x01(\v2\x1d.runtime.discovery.v1.PolarisH\x05R\apolaris\x88\x01\x01\x12>\n" +
-	"\tcustomize\x18\x84\a \x01(\v2\x1f.runtime.extension.v1.ExtensionR\tcustomizeB\t\n" +
+	"kubernetes\x18\x0e \x01(\v2 .runtime.discovery.v1.KubernetesH\x04R\n" +
+	"kubernetes\x88\x01\x01\x12<\n" +
+	"\apolaris\x18\x0f \x01(\v2\x1d.runtime.discovery.v1.PolarisH\x05R\apolaris\x88\x01\x01\x12:\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x06R\tcustomize\x88\x01\x01B\t\n" +
 	"\a_consulB\a\n" +
 	"\x05_etcdB\b\n" +
 	"\x06_nacosB\t\n" +
 	"\a_apolloB\r\n" +
 	"\v_kubernetesB\n" +
 	"\n" +
-	"\b_polaris\"\x86\x01\n" +
+	"\b_polarisB\f\n" +
+	"\n" +
+	"_customize\"\x86\x01\n" +
 	"\vDiscoveries\x124\n" +
 	"\x15default_registry_name\x18\x01 \x01(\tR\x15default_registry_name\x12A\n" +
 	"\vdiscoveries\x18\x02 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\"\xcb\x02\n" +
@@ -547,8 +573,11 @@ const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\x05Nacos\"\b\n" +
 	"\x06Apollo\"\f\n" +
 	"\n" +
-	"Kubernetes\"\t\n" +
-	"\aPolarisB\xe9\x01\n" +
+	"Kubernetes\"Q\n" +
+	"\aPolaris\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
+	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
+	"\x05token\x18\x03 \x01(\tR\x05tokenB\xe9\x01\n" +
 	"\x18com.runtime.discovery.v1B\x0eDiscoveryProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/discovery/v1;discoveryv1\xf8\x01\x01\xa2\x02\x03RDX\xaa\x02\x14Runtime.Discovery.V1\xca\x02\x14Runtime\\Discovery\\V1\xe2\x02 Runtime\\Discovery\\V1\\GPBMetadata\xea\x02\x16Runtime::Discovery::V1b\x06proto3"
 
 var (
@@ -565,15 +594,15 @@ func file_runtime_discovery_v1_discovery_proto_rawDescGZIP() []byte {
 
 var file_runtime_discovery_v1_discovery_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_runtime_discovery_v1_discovery_proto_goTypes = []any{
-	(*Discovery)(nil),    // 0: runtime.discovery.v1.Discovery
-	(*Discoveries)(nil),  // 1: runtime.discovery.v1.Discoveries
-	(*Consul)(nil),       // 2: runtime.discovery.v1.Consul
-	(*ETCD)(nil),         // 3: runtime.discovery.v1.ETCD
-	(*Nacos)(nil),        // 4: runtime.discovery.v1.Nacos
-	(*Apollo)(nil),       // 5: runtime.discovery.v1.Apollo
-	(*Kubernetes)(nil),   // 6: runtime.discovery.v1.Kubernetes
-	(*Polaris)(nil),      // 7: runtime.discovery.v1.Polaris
-	(*v1.Extension)(nil), // 8: runtime.extension.v1.Extension
+	(*Discovery)(nil),       // 0: runtime.discovery.v1.Discovery
+	(*Discoveries)(nil),     // 1: runtime.discovery.v1.Discoveries
+	(*Consul)(nil),          // 2: runtime.discovery.v1.Consul
+	(*ETCD)(nil),            // 3: runtime.discovery.v1.ETCD
+	(*Nacos)(nil),           // 4: runtime.discovery.v1.Nacos
+	(*Apollo)(nil),          // 5: runtime.discovery.v1.Apollo
+	(*Kubernetes)(nil),      // 6: runtime.discovery.v1.Kubernetes
+	(*Polaris)(nil),         // 7: runtime.discovery.v1.Polaris
+	(*structpb.Struct)(nil), // 8: google.protobuf.Struct
 }
 var file_runtime_discovery_v1_discovery_proto_depIdxs = []int32{
 	2, // 0: runtime.discovery.v1.Discovery.consul:type_name -> runtime.discovery.v1.Consul
@@ -582,7 +611,7 @@ var file_runtime_discovery_v1_discovery_proto_depIdxs = []int32{
 	5, // 3: runtime.discovery.v1.Discovery.apollo:type_name -> runtime.discovery.v1.Apollo
 	6, // 4: runtime.discovery.v1.Discovery.kubernetes:type_name -> runtime.discovery.v1.Kubernetes
 	7, // 5: runtime.discovery.v1.Discovery.polaris:type_name -> runtime.discovery.v1.Polaris
-	8, // 6: runtime.discovery.v1.Discovery.customize:type_name -> runtime.extension.v1.Extension
+	8, // 6: runtime.discovery.v1.Discovery.customize:type_name -> google.protobuf.Struct
 	0, // 7: runtime.discovery.v1.Discoveries.discoveries:type_name -> runtime.discovery.v1.Discovery
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type

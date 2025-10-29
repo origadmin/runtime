@@ -21,7 +21,7 @@ type ProviderOptions struct {
 	directory          string
 	directly           bool
 	pathResolver       PathResolverFunc
-	bootstrapPrefix    string
+	prefixes           []string
 	rawOptions         []Option
 }
 
@@ -97,9 +97,9 @@ func WithPathResolver(resolver PathResolverFunc) Option {
 
 // WithBootstrapPrefix sets the prefix for environment variables that can override
 // settings in the initial bootstrap configuration file (e.g., `bootstrap.yaml`).
-func WithBootstrapPrefix(prefix string) Option {
+func WithBootstrapPrefix(prefixes ...string) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
-		o.bootstrapPrefix = prefix
+		o.prefixes = append(o.prefixes, prefixes...)
 	})
 }
 

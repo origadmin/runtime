@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package examples.custom_extension;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "./custom_extension/conf;conf";
+
+// Middleware message using google.protobuf.Struct for flexible custom configuration.
+// This is the recommended approach.
+message MiddlewareStruct {
+  string name = 1;
+  string type = 2;
+
+  // The 'customize' field can hold any JSON-like structure from the config file,
+  // which will be automatically parsed into a Struct.
+  optional google.protobuf.Struct customize = 100;
+}
+

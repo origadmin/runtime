@@ -22,16 +22,12 @@ service StorageService {
 
   // List files and directories at a given path.
   rpc List(ListRequest) returns (ListResponse) {
-    option (google.api.http) = {
-      get: "/v1/storage/list"
-    };
+    option (google.api.http) = {get: "/v1/storage/list"};
   }
 
   // Get information about a single file or directory.
   rpc Stat(StatRequest) returns (StatResponse) {
-    option (google.api.http) = {
-      get: "/v1/storage/stat"
-    };
+    option (google.api.http) = {get: "/v1/storage/stat"};
   }
 
   // Create a new directory.
@@ -62,9 +58,7 @@ service StorageService {
 
   // Read a file's content as a stream.
   rpc Read(ReadRequest) returns (stream ReadResponse) {
-    option (google.api.http) = {
-      get: "/v1/storage/read"
-    };
+    option (google.api.http) = {get: "/v1/storage/read"};
   }
 
   // Write a file's content via a stream.
@@ -146,12 +140,10 @@ message ReadResponse {
 }
 
 message WriteRequest {
-  oneof data {
-    // The first message must contain the metadata.
-    WriteRequestMetadata metadata = 1;
-    // Subsequent messages contain the file's binary chunks.
-    bytes chunk = 2;
-  }
+  // The first message must contain the metadata.
+  optional WriteRequestMetadata metadata = 1;
+  // Subsequent messages contain the file's binary chunks.
+  optional bytes chunk = 2;
 }
 
 message WriteRequestMetadata {
