@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package runtime.security.v1;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/security/v1;securityv1";
+
+// Security defines the configuration for all security-related components.
+message Security {
+  repeated AuthenticatorConfig authenticators = 1;
+  repeated AuthorizerConfig authorizers = 2;
+}
+
+// AuthenticatorConfig defines the configuration for a single authenticator.
+message AuthenticatorConfig {
+  string type = 1; // e.g., "jwt", "oauth2"
+  string name = 2; // Unique name for this authenticator instance
+  bool enabled = 3;
+  google.protobuf.Struct config = 4; // Type-specific configuration
+}
+
+// AuthorizerConfig defines the configuration for a single authorizer.
+message AuthorizerConfig {
+  string type = 1; // e.g., "casbin"
+  string name = 2; // Unique name for this authorizer instance
+  bool enabled = 3;
+  google.protobuf.Struct config = 4; // Type-specific configuration
+}

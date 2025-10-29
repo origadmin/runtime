@@ -9,7 +9,7 @@ import (
 	"database/sql"
 	"time"
 
-	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 

@@ -1,0 +1,61 @@
+# 这是一个全面的 config.yaml 示例，其结构与 bootstrap.proto 定义的 Bootstrap 消息相匹配。
+
+logger:
+  level: info
+  format: json
+
+servers:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+
+data:
+  database:
+    driver: "mysql"
+    source: "user:password@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
+  redis:
+    addr: "127.0.0.1:6379"
+    password: ""
+    db: 0
+
+security:
+  authenticators:
+    - type: jwt
+      name: default_jwt_authn
+      jwt:
+        secret: "your-jwt-secret"
+  authorizers:
+    - type: casbin
+      name: default_casbin_authz
+      casbin:
+        model_path: "./configs/rbac_model.conf"
+        policy_adapter: "gorm_adapter"
+
+discoveries:
+  - type: consul
+    name: default
+    consul:
+      address: "127.0.0.1:8500"
+      scheme: "http"
+
+middlewares:
+  - type: recovery
+    name: default_recovery
+    enabled: true
+  - type: tracing
+    name: default_tracing
+    enabled: true
+
+broker:
+  type: kafka
+  name: default_kafka
+  kafka:
+    brokers: ["127.0.0.1:9092"]
+
+websocket:
+  server:
+    addr: 0.0.0.0:8080
+    path: /ws

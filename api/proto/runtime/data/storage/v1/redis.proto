@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package runtime.data.storage.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1";
+
+// RedisConfig defines the configuration for a Redis client.
+// This message was extracted from storage.proto.
+message RedisConfig {
+  string network = 1 [
+    json_name = "network",
+    (gnostic.openapi.v3.property) = {description: "network type"}
+  ];
+  string addr = 2 [
+    json_name = "addr",
+    (gnostic.openapi.v3.property) = {description: "address"}
+  ];
+  string password = 3 [
+    json_name = "password",
+    (gnostic.openapi.v3.property) = {description: "cipher"}
+  ];
+  int32 db = 4 [
+    json_name = "db",
+    (gnostic.openapi.v3.property) = {description: "database index"}
+  ];
+  int64 dial_timeout = 5 [
+    json_name = "dial_timeout",
+    (validate.rules).int64.gte = 0,
+    (gnostic.openapi.v3.property) = {description: "dial timeout"}
+  ];
+  int64 read_timeout = 6 [
+    json_name = "read_timeout",
+    (validate.rules).int64.gte = 0,
+    (gnostic.openapi.v3.property) = {description: "read timeout"}
+  ];
+  int64 write_timeout = 7 [
+    json_name = "write_timeout",
+    (validate.rules).int64.gte = 0,
+    (gnostic.openapi.v3.property) = {description: "write timeout"}
+  ];
+}

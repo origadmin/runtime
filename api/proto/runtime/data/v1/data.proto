@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package runtime.data.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "validate/validate.proto";
+
+// Import all individual storage component configurations
+import "runtime/data/storage/v1/cache.proto";
+import "runtime/data/storage/v1/database.proto";
+import "runtime/data/storage/v1/file_local.proto";
+import "runtime/data/storage/v1/file_store.proto";
+import "runtime/data/storage/v1/memcached.proto";
+import "runtime/data/storage/v1/memory.proto";
+import "runtime/data/storage/v1/mongo.proto";
+import "runtime/data/storage/v1/oss.proto";
+import "runtime/data/storage/v1/redis.proto";
+
+option cc_enable_arenas = true;
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/v1;datav1";
+option java_multiple_files = true;
+option java_outer_classname = "DataProto";
+option java_package = "com.github.origadmin.api.runtime.data.v1";
+option objc_class_prefix = "ORD";
+
+
+// Data is the top-level configuration for all data-related components, including storage.
+message Data {
+//  // Map of named FileStore configurations.
+//  map<string, FileStoreConfig> filestores = 1 [
+//    json_name = "filestores",
+//    (gnostic.openapi.v3.property) = {description: "map of named FileStore configurations"}
+//  ];
+//
+//  // Map of named Cache configurations.
+//  map<string, CacheConfig> caches = 2 [
+//    json_name = "caches",
+//    (gnostic.openapi.v3.property) = {description: "map of named Cache configurations"}
+//  ];
+//
+//  // Map of named Database configurations.
+//  map<string, DatabaseConfig> databases = 3 [
+//    json_name = "databases",
+//    (gnostic.openapi.v3.property) = {description: "map of named Database configurations"}
+//  ];
+//
+//  // Map of named Mongo configurations.
+//  map<string, MongoConfig> mongo_configs = 7 [
+//    json_name = "mongo_configs",
+//    (gnostic.openapi.v3.property) = {description: "map of named Mongo configurations"}
+//  ];
+
+  // Optional: Default instance names for each type.
+  optional string default_filestore = 4 [
+    json_name = "default_filestore",
+    (gnostic.openapi.v3.property) = {description: "default filestore name"}
+  ];
+  optional string default_cache = 5 [
+    json_name = "default_cache",
+    (gnostic.openapi.v3.property) = {description: "default cache name"}
+  ];
+  optional string default_database = 6 [
+    json_name = "default_database",
+    (gnostic.openapi.v3.property) = {description: "default database name"}
+  ];
+  optional string default_mongo = 8 [
+    json_name = "default_mongo",
+    (gnostic.openapi.v3.property) = {description: "default mongo configuration name"}
+  ];
+}

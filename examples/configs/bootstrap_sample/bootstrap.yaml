@@ -1,0 +1,10 @@
+sources:
+  - type: file
+    priority: 10
+    file:
+      path: ./config.yaml
+  - type: env
+    priority: 100
+    env:
+      prefixes:
+        - APP_

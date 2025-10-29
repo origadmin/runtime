@@ -12,7 +12,7 @@ import (
 
 	"github.com/goexts/generic/configure"
 
-	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/runtime/storage"
 )

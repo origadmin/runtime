@@ -1,7 +1,7 @@
 package storage
 
 import (
-	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"

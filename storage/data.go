@@ -8,7 +8,7 @@ package storage
 import (
 	"github.com/origadmin/toolkits/errors"
 
-	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
+	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
 )
 
@@ -21,5 +21,6 @@ func FromFileMeta(meta metaiface.FileMeta) (*storagev1.FileMeta, error) {
 		Size:     meta.Size(),
 		MimeType: "", // MimeType is not directly available from FileMeta interface
 		ModTime:  meta.ModTime().Unix(),
-	}, nil
+	},
+	nil
 }

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package runtime.data.storage.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1";
+
+// OssConfig defines the configuration for cloud object storage.
+// This message was extracted from storage.proto and renamed for consistency.
+message OssConfig {
+  string endpoint = 1 [
+    json_name = "endpoint",
+    (gnostic.openapi.v3.property) = {description: "Storage service endpoint"}
+  ];
+  string access_key_id = 2 [json_name = "access_key_id"];
+  string access_key_secret = 3 [json_name = "access_key_secret"];
+  string bucket = 4 [json_name = "bucket"];
+  string region = 5 [json_name = "region"];
+  bool ssl = 6 [json_name = "ssl"];
+  int64 connect_timeout = 7 [
+    json_name = "connect_timeout",
+    (validate.rules).int64.gte = 0,
+    (gnostic.openapi.v3.property) = {description: "Connection timeout in milliseconds"}
+  ];
+  int64 read_timeout = 8 [
+    json_name = "read_timeout",
+    (validate.rules).int64.gte = 0,
+    (gnostic.openapi.v3.property) = {description: "Read timeout in milliseconds"}
+  ];
+}
