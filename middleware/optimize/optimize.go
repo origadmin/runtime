@@ -50,7 +50,7 @@ func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	var optimizeConfig *optimizev1.Optimize
 	var err error
 	// Try to decode Optimize configuration from config.Value
-	if config.GetConfig() != nil {
+	if config != nil {
 		if optimizeConfig, err = customize.GetTypedConfig(config, &optimizev1.Optimize{}); err != nil {
 			helper.Errorf("failed to unmarshal optimize config: %v", err)
 			optimizeConfig = defaultOptimize
