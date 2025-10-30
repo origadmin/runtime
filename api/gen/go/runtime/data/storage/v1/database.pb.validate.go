@@ -57,12 +57,14 @@ func (m *DatabaseConfig) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
 	// no validation rules for Debug
 
 	if _, ok := _DatabaseConfig_Dialect_InLookup[m.GetDialect()]; !ok {
 		err := DatabaseConfigValidationError{
 			field:  "Dialect",
-			reason: "value must be in list [mssql mysql postgresql mongodb sqlite oracle sqlserver sqlite3]",
+			reason: "value must be in list [mssql mysql postgresql sqlite oracle sqlserver sqlite3 customize]",
 		}
 		if !all {
 			return err
@@ -112,6 +114,39 @@ func (m *DatabaseConfig) validate(all bool) error {
 	// no validation rules for ConnectionMaxLifetime
 
 	// no validation rules for ConnectionMaxIdleTime
+
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DatabaseConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DatabaseConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DatabaseConfigValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
 
 	if len(errors) > 0 {
 		return DatabaseConfigMultiError(errors)
@@ -195,9 +230,9 @@ var _DatabaseConfig_Dialect_InLookup = map[string]struct{}{
 	"mssql":      {},
 	"mysql":      {},
 	"postgresql": {},
-	"mongodb":    {},
 	"sqlite":     {},
 	"oracle":     {},
 	"sqlserver":  {},
 	"sqlite3":    {},
+	"customize":  {},
 }

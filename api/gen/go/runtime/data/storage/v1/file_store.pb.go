@@ -11,6 +11,7 @@ import (
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -41,7 +42,9 @@ type FileStoreConfig struct {
 	// For OSS, this corresponds to the multipart upload part size.
 	// For local storage, it defines the size of individual blob files.
 	// If 0 or not set, a reasonable default (e.g., 4MB) will be used by the implementation.
-	ChunkSize     int64 `protobuf:"varint,5,opt,name=chunk_size,proto3" json:"chunk_size,omitempty"`
+	ChunkSize int64 `protobuf:"varint,5,opt,name=chunk_size,proto3" json:"chunk_size,omitempty"`
+	// Optional custom configuration for file store types not explicitly defined.
+	Customize     *structpb.Struct `protobuf:"bytes,6,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -111,21 +114,31 @@ func (x *FileStoreConfig) GetChunkSize() int64 {
 	return 0
 }
 
+func (x *FileStoreConfig) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
+	}
+	return nil
+}
+
 var File_runtime_data_storage_v1_file_store_proto protoreflect.FileDescriptor
 
 const file_runtime_data_storage_v1_file_store_proto_rawDesc = "" +
 	"\n" +
-	"(runtime/data/storage/v1/file_store.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a(runtime/data/storage/v1/file_local.proto\x1a!runtime/data/storage/v1/oss.proto\x1a\x17validate/validate.proto\"\xa1\x03\n" +
+	"(runtime/data/storage/v1/file_store.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a(runtime/data/storage/v1/file_local.proto\x1a!runtime/data/storage/v1/oss.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xc0\x04\n" +
 	"\x0fFileStoreConfig\x12)\n" +
-	"\x04name\x18\x01 \x01(\tB\x15\xbaG\x12\x92\x02\x0ffile store nameR\x04name\x12E\n" +
-	"\x06driver\x18\x02 \x01(\tB-\xfaB\x0er\fR\x05localR\x03oss\xbaG\x19\x92\x02\x16file store driver nameR\x06driver\x12j\n" +
+	"\x04name\x18\x01 \x01(\tB\x15\xbaG\x12\x92\x02\x0ffile store nameR\x04name\x12P\n" +
+	"\x06driver\x18\x02 \x01(\tB8\xfaB\x19r\x17R\x05localR\x03ossR\tcustomize\xbaG\x19\x92\x02\x16file store driver nameR\x06driver\x12j\n" +
 	"\x05local\x18\x03 \x01(\v2(.runtime.data.storage.v1.FileLocalConfigB%\xbaG\"\x92\x02\x1flocal file system configurationH\x00R\x05local\x88\x01\x01\x12c\n" +
 	"\x03oss\x18\x04 \x01(\v2\".runtime.data.storage.v1.OssConfigB(\xbaG%\x92\x02\"cloud object storage configurationH\x01R\x03oss\x88\x01\x01\x129\n" +
 	"\n" +
 	"chunk_size\x18\x05 \x01(\x03B\x19\xbaG\x16\x92\x02\x13chunk size in bytesR\n" +
-	"chunk_sizeB\b\n" +
+	"chunk_size\x12\x83\x01\n" +
+	"\tcustomize\x18\x06 \x01(\v2\x17.google.protobuf.StructBG\xbaGD\x92\x02ACustom configuration for file store types not explicitly defined.H\x02R\tcustomize\x88\x01\x01B\b\n" +
 	"\x06_localB\x06\n" +
-	"\x04_ossB\xf7\x01\n" +
+	"\x04_ossB\f\n" +
+	"\n" +
+	"_customizeB\xf7\x01\n" +
 	"\x1bcom.runtime.data.storage.v1B\x0eFileStoreProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1\xa2\x02\x03RDS\xaa\x02\x17Runtime.Data.Storage.V1\xca\x02\x17Runtime\\Data\\Storage\\V1\xe2\x02#Runtime\\Data\\Storage\\V1\\GPBMetadata\xea\x02\x1aRuntime::Data::Storage::V1b\x06proto3"
 
 var (
@@ -145,15 +158,17 @@ var file_runtime_data_storage_v1_file_store_proto_goTypes = []any{
 	(*FileStoreConfig)(nil), // 0: runtime.data.storage.v1.FileStoreConfig
 	(*FileLocalConfig)(nil), // 1: runtime.data.storage.v1.FileLocalConfig
 	(*OssConfig)(nil),       // 2: runtime.data.storage.v1.OssConfig
+	(*structpb.Struct)(nil), // 3: google.protobuf.Struct
 }
 var file_runtime_data_storage_v1_file_store_proto_depIdxs = []int32{
 	1, // 0: runtime.data.storage.v1.FileStoreConfig.local:type_name -> runtime.data.storage.v1.FileLocalConfig
 	2, // 1: runtime.data.storage.v1.FileStoreConfig.oss:type_name -> runtime.data.storage.v1.OssConfig
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 2: runtime.data.storage.v1.FileStoreConfig.customize:type_name -> google.protobuf.Struct
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_runtime_data_storage_v1_file_store_proto_init() }

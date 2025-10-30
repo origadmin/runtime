@@ -5,6 +5,7 @@ package runtime.security.authn.v1;
 import "gnostic/openapi/v3/annotations.proto";
 import "runtime/security/authn/v1/token.proto";
 import "validate/validate.proto";
+import "google/protobuf/struct.proto";
 
 option cc_enable_arenas = true;
 option csharp_namespace = "OrigAdmin.Runtime.Security.Authn.V1";
@@ -137,21 +138,23 @@ message JwtAuth {
 }
 
 message AuthN {
-  enum Type {
-    TYPE_UNSPECIFIED = 0; // default value not specified
-    TYPE_BASIC = 1; // Basic authentication
-    TYPE_BEARER = 2; // Bearer authentication
-    TYPE_DIGEST = 3; // Digest authentication
-    TYPE_OAUTH2 = 4; // OAuth2 authentication
-    TYPE_API_KEY = 5; // API Key authentication
-    TYPE_JWT = 6; // JWT authentication
-    // you can add more types as needed
-    TYPE_USER_ADDITIONAL = 7;
-  }
-  Type type = 1 [
+  // Unique name for this authentication configuration instance.
+  string name = 1;
+  // The type of authentication, e.g., "basic", "bearer", "digest", "oauth2", "api_key", "jwt", "customize".
+  string type = 2 [
     json_name = "type",
-    (validate.rules).enum.defined_only = true,
-    (gnostic.openapi.v3.property) = {description: "The type of authentication, e.g., 'basic', 'bearer', 'digest', 'oauth2', 'api_key', 'jwt'."}
+    (validate.rules).string = {
+      in: [
+        "basic",
+        "bearer",
+        "digest",
+        "oauth2",
+        "api_key",
+        "jwt",
+        "customize"
+      ]
+    },
+    (gnostic.openapi.v3.property) = {description: "The type of authentication, e.g., 'basic', 'bearer', 'digest', 'oauth2', 'api_key', 'jwt', 'customize'."}
   ];
 
   optional BasicAuth basic = 10 [
@@ -178,9 +181,10 @@ message AuthN {
     json_name = "jwt",
     (gnostic.openapi.v3.property) = {description: "The JWT authentication details."}
   ];
-  optional bytes additional = 16 [
-    json_name = "additional",
-    (gnostic.openapi.v3.property) = {description: "Additional properties for the authentication."}
+  // Optional custom configuration for authentication types not explicitly defined.
+  optional google.protobuf.Struct customize = 16 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom configuration for authentication types not explicitly defined."}
   ];
 }
 

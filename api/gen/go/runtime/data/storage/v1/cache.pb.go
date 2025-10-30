@@ -11,6 +11,7 @@ import (
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -39,8 +40,10 @@ type CacheConfig struct {
 	// Cleanup interval for memory cache in seconds.
 	// If 0 or not set, a default (e.g., 5 minutes) will be used by the implementation.
 	CleanupInterval int64 `protobuf:"varint,13,opt,name=cleanup_interval,proto3" json:"cleanup_interval,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Optional custom configuration for cache types not explicitly defined.
+	Customize     *structpb.Struct `protobuf:"bytes,14,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CacheConfig) Reset() {
@@ -115,20 +118,30 @@ func (x *CacheConfig) GetCleanupInterval() int64 {
 	return 0
 }
 
+func (x *CacheConfig) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
+	}
+	return nil
+}
+
 var File_runtime_data_storage_v1_cache_proto protoreflect.FileDescriptor
 
 const file_runtime_data_storage_v1_cache_proto_rawDesc = "" +
 	"\n" +
-	"#runtime/data/storage/v1/cache.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a'runtime/data/storage/v1/memcached.proto\x1a$runtime/data/storage/v1/memory.proto\x1a#runtime/data/storage/v1/redis.proto\"\x95\x04\n" +
-	"\vCacheConfig\x12T\n" +
-	"\x06driver\x18\x01 \x01(\tB<\xfaB\"r R\x04noneR\x05redisR\tmemcachedR\x06memory\xbaG\x14\x92\x02\x11cache driver nameR\x06driver\x12$\n" +
+	"#runtime/data/storage/v1/cache.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a'runtime/data/storage/v1/memcached.proto\x1a$runtime/data/storage/v1/memory.proto\x1a#runtime/data/storage/v1/redis.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xae\x05\n" +
+	"\vCacheConfig\x12_\n" +
+	"\x06driver\x18\x01 \x01(\tBG\xfaB-r+R\x04noneR\x05redisR\tmemcachedR\x06memoryR\tcustomize\xbaG\x14\x92\x02\x11cache driver nameR\x06driver\x12$\n" +
 	"\x04name\x18\x02 \x01(\tB\x10\xbaG\r\x92\x02\n" +
 	"cache nameR\x04name\x12k\n" +
 	"\tmemcached\x18\n" +
 	" \x01(\v2(.runtime.data.storage.v1.MemcachedConfigB#\xbaG \x92\x02\x1dmemcached cache configurationR\tmemcached\x12_\n" +
 	"\x06memory\x18\v \x01(\v2%.runtime.data.storage.v1.MemoryConfigB \xbaG\x1d\x92\x02\x1amemory cache configurationR\x06memory\x12[\n" +
 	"\x05redis\x18\f \x01(\v2$.runtime.data.storage.v1.RedisConfigB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\x12_\n" +
-	"\x10cleanup_interval\x18\r \x01(\x03B3\xbaG0\x92\x02-Cleanup interval for memory cache in seconds.R\x10cleanup_intervalB\xf3\x01\n" +
+	"\x10cleanup_interval\x18\r \x01(\x03B3\xbaG0\x92\x02-Cleanup interval for memory cache in seconds.R\x10cleanup_interval\x12~\n" +
+	"\tcustomize\x18\x0e \x01(\v2\x17.google.protobuf.StructBB\xbaG?\x92\x02<Custom configuration for cache types not explicitly defined.H\x00R\tcustomize\x88\x01\x01B\f\n" +
+	"\n" +
+	"_customizeB\xf3\x01\n" +
 	"\x1bcom.runtime.data.storage.v1B\n" +
 	"CacheProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1\xa2\x02\x03RDS\xaa\x02\x17Runtime.Data.Storage.V1\xca\x02\x17Runtime\\Data\\Storage\\V1\xe2\x02#Runtime\\Data\\Storage\\V1\\GPBMetadata\xea\x02\x1aRuntime::Data::Storage::V1b\x06proto3"
 
@@ -150,16 +163,18 @@ var file_runtime_data_storage_v1_cache_proto_goTypes = []any{
 	(*MemcachedConfig)(nil), // 1: runtime.data.storage.v1.MemcachedConfig
 	(*MemoryConfig)(nil),    // 2: runtime.data.storage.v1.MemoryConfig
 	(*RedisConfig)(nil),     // 3: runtime.data.storage.v1.RedisConfig
+	(*structpb.Struct)(nil), // 4: google.protobuf.Struct
 }
 var file_runtime_data_storage_v1_cache_proto_depIdxs = []int32{
 	1, // 0: runtime.data.storage.v1.CacheConfig.memcached:type_name -> runtime.data.storage.v1.MemcachedConfig
 	2, // 1: runtime.data.storage.v1.CacheConfig.memory:type_name -> runtime.data.storage.v1.MemoryConfig
 	3, // 2: runtime.data.storage.v1.CacheConfig.redis:type_name -> runtime.data.storage.v1.RedisConfig
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	4, // 3: runtime.data.storage.v1.CacheConfig.customize:type_name -> google.protobuf.Struct
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_runtime_data_storage_v1_cache_proto_init() }
@@ -170,6 +185,7 @@ func file_runtime_data_storage_v1_cache_proto_init() {
 	file_runtime_data_storage_v1_memcached_proto_init()
 	file_runtime_data_storage_v1_memory_proto_init()
 	file_runtime_data_storage_v1_redis_proto_init()
+	file_runtime_data_storage_v1_cache_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

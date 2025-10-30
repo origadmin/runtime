@@ -11,6 +11,7 @@ import (
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -22,71 +23,6 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
-
-type AuthN_Type int32
-
-const (
-	AuthN_TYPE_UNSPECIFIED AuthN_Type = 0 // default value not specified
-	AuthN_TYPE_BASIC       AuthN_Type = 1 // Basic authentication
-	AuthN_TYPE_BEARER      AuthN_Type = 2 // Bearer authentication
-	AuthN_TYPE_DIGEST      AuthN_Type = 3 // Digest authentication
-	AuthN_TYPE_OAUTH2      AuthN_Type = 4 // OAuth2 authentication
-	AuthN_TYPE_API_KEY     AuthN_Type = 5 // API Key authentication
-	AuthN_TYPE_JWT         AuthN_Type = 6 // JWT authentication
-	// you can add more types as needed
-	AuthN_TYPE_USER_ADDITIONAL AuthN_Type = 7
-)
-
-// Enum value maps for AuthN_Type.
-var (
-	AuthN_Type_name = map[int32]string{
-		0: "TYPE_UNSPECIFIED",
-		1: "TYPE_BASIC",
-		2: "TYPE_BEARER",
-		3: "TYPE_DIGEST",
-		4: "TYPE_OAUTH2",
-		5: "TYPE_API_KEY",
-		6: "TYPE_JWT",
-		7: "TYPE_USER_ADDITIONAL",
-	}
-	AuthN_Type_value = map[string]int32{
-		"TYPE_UNSPECIFIED":     0,
-		"TYPE_BASIC":           1,
-		"TYPE_BEARER":          2,
-		"TYPE_DIGEST":          3,
-		"TYPE_OAUTH2":          4,
-		"TYPE_API_KEY":         5,
-		"TYPE_JWT":             6,
-		"TYPE_USER_ADDITIONAL": 7,
-	}
-)
-
-func (x AuthN_Type) Enum() *AuthN_Type {
-	p := new(AuthN_Type)
-	*p = x
-	return p
-}
-
-func (x AuthN_Type) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (AuthN_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_runtime_security_authn_v1_authn_proto_enumTypes[0].Descriptor()
-}
-
-func (AuthN_Type) Type() protoreflect.EnumType {
-	return &file_runtime_security_authn_v1_authn_proto_enumTypes[0]
-}
-
-func (x AuthN_Type) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use AuthN_Type.Descriptor instead.
-func (AuthN_Type) EnumDescriptor() ([]byte, []int) {
-	return file_runtime_security_authn_v1_authn_proto_rawDescGZIP(), []int{6, 0}
-}
 
 type BasicAuth struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -473,15 +409,19 @@ func (x *JwtAuth) GetClaims() *Claims {
 }
 
 type AuthN struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          AuthN_Type             `protobuf:"varint,1,opt,name=type,proto3,enum=runtime.security.authn.v1.AuthN_Type" json:"type,omitempty"`
-	Basic         *BasicAuth             `protobuf:"bytes,10,opt,name=basic,proto3,oneof" json:"basic,omitempty"`
-	Bearer        *BearerAuth            `protobuf:"bytes,11,opt,name=bearer,proto3,oneof" json:"bearer,omitempty"`
-	Digest        *DigestAuth            `protobuf:"bytes,12,opt,name=digest,proto3,oneof" json:"digest,omitempty"`
-	Oauth2        *OAuth2Auth            `protobuf:"bytes,13,opt,name=oauth2,proto3,oneof" json:"oauth2,omitempty"`
-	ApiKey        *ApiKeyAuth            `protobuf:"bytes,14,opt,name=api_key,proto3,oneof" json:"api_key,omitempty"`
-	Jwt           *JwtAuth               `protobuf:"bytes,15,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
-	Additional    []byte                 `protobuf:"bytes,16,opt,name=additional,proto3,oneof" json:"additional,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique name for this authentication configuration instance.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The type of authentication, e.g., "basic", "bearer", "digest", "oauth2", "api_key", "jwt", "customize".
+	Type   string      `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Basic  *BasicAuth  `protobuf:"bytes,10,opt,name=basic,proto3,oneof" json:"basic,omitempty"`
+	Bearer *BearerAuth `protobuf:"bytes,11,opt,name=bearer,proto3,oneof" json:"bearer,omitempty"`
+	Digest *DigestAuth `protobuf:"bytes,12,opt,name=digest,proto3,oneof" json:"digest,omitempty"`
+	Oauth2 *OAuth2Auth `protobuf:"bytes,13,opt,name=oauth2,proto3,oneof" json:"oauth2,omitempty"`
+	ApiKey *ApiKeyAuth `protobuf:"bytes,14,opt,name=api_key,proto3,oneof" json:"api_key,omitempty"`
+	Jwt    *JwtAuth    `protobuf:"bytes,15,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
+	// Optional custom configuration for authentication types not explicitly defined.
+	Customize     *structpb.Struct `protobuf:"bytes,16,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -516,11 +456,18 @@ func (*AuthN) Descriptor() ([]byte, []int) {
 	return file_runtime_security_authn_v1_authn_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *AuthN) GetType() AuthN_Type {
+func (x *AuthN) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *AuthN) GetType() string {
 	if x != nil {
 		return x.Type
 	}
-	return AuthN_TYPE_UNSPECIFIED
+	return ""
 }
 
 func (x *AuthN) GetBasic() *BasicAuth {
@@ -565,9 +512,9 @@ func (x *AuthN) GetJwt() *JwtAuth {
 	return nil
 }
 
-func (x *AuthN) GetAdditional() []byte {
+func (x *AuthN) GetCustomize() *structpb.Struct {
 	if x != nil {
-		return x.Additional
+		return x.Customize
 	}
 	return nil
 }
@@ -676,7 +623,7 @@ var File_runtime_security_authn_v1_authn_proto protoreflect.FileDescriptor
 
 const file_runtime_security_authn_v1_authn_proto_rawDesc = "" +
 	"\n" +
-	"%runtime/security/authn/v1/authn.proto\x12\x19runtime.security.authn.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a%runtime/security/authn/v1/token.proto\x1a\x17validate/validate.proto\"\xad\x01\n" +
+	"%runtime/security/authn/v1/authn.proto\x12\x19runtime.security.authn.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a%runtime/security/authn/v1/token.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xad\x01\n" +
 	"\tBasicAuth\x12O\n" +
 	"\busername\x18\x01 \x01(\tB3\xfaB\x04r\x02\x10\x01\xbaG)\x92\x02&The username for basic authentication.R\busername\x12O\n" +
 	"\bpassword\x18\x02 \x01(\tB3\xfaB\x04r\x02\x10\x01\xbaG)\x92\x02&The password for basic authentication.R\bpassword\"U\n" +
@@ -711,37 +658,27 @@ const file_runtime_security_authn_v1_authn_proto_rawDesc = "" +
 	"\aJwtAuth\x12D\n" +
 	"\x05token\x18\x01 \x01(\tB.\xfaB\x04r\x02\x10\x01\xbaG$\x92\x02!The JWT token for authentication.R\x05token\x12l\n" +
 	"\tjwt_token\x18\x02 \x01(\v2 .runtime.security.authn.v1.TokenB,\xbaG)\x92\x02&The JWT token data for authentication.R\tjwt_token\x12b\n" +
-	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\xf8\b\n" +
-	"\x05AuthN\x12\xa3\x01\n" +
-	"\x04type\x18\x01 \x01(\x0e2%.runtime.security.authn.v1.AuthN.TypeBh\xfaB\x05\x82\x01\x02\x10\x01\xbaG]\x92\x02ZThe type of authentication, e.g., 'basic', 'bearer', 'digest', 'oauth2', 'api_key', 'jwt'.R\x04type\x12h\n" +
+	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\xbb\b\n" +
+	"\x05AuthN\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\xbf\x01\n" +
+	"\x04type\x18\x02 \x01(\tB\xaa\x01\xfaB:r8R\x05basicR\x06bearerR\x06digestR\x06oauth2R\aapi_keyR\x03jwtR\tcustomize\xbaGj\x92\x02gThe type of authentication, e.g., 'basic', 'bearer', 'digest', 'oauth2', 'api_key', 'jwt', 'customize'.R\x04type\x12h\n" +
 	"\x05basic\x18\n" +
 	" \x01(\v2$.runtime.security.authn.v1.BasicAuthB'\xbaG$\x92\x02!The basic authentication details.H\x00R\x05basic\x88\x01\x01\x12l\n" +
 	"\x06bearer\x18\v \x01(\v2%.runtime.security.authn.v1.BearerAuthB(\xbaG%\x92\x02\"The bearer authentication details.H\x01R\x06bearer\x88\x01\x01\x12l\n" +
 	"\x06digest\x18\f \x01(\v2%.runtime.security.authn.v1.DigestAuthB(\xbaG%\x92\x02\"The digest authentication details.H\x02R\x06digest\x88\x01\x01\x12l\n" +
 	"\x06oauth2\x18\r \x01(\v2%.runtime.security.authn.v1.OAuth2AuthB(\xbaG%\x92\x02\"The OAuth2 authentication details.H\x03R\x06oauth2\x88\x01\x01\x12o\n" +
 	"\aapi_key\x18\x0e \x01(\v2%.runtime.security.authn.v1.ApiKeyAuthB)\xbaG&\x92\x02#The API key authentication details.H\x04R\aapi_key\x88\x01\x01\x12`\n" +
-	"\x03jwt\x18\x0f \x01(\v2\".runtime.security.authn.v1.JwtAuthB%\xbaG\"\x92\x02\x1fThe JWT authentication details.H\x05R\x03jwt\x88\x01\x01\x12X\n" +
-	"\n" +
-	"additional\x18\x10 \x01(\fB3\xbaG0\x92\x02-Additional properties for the authentication.H\x06R\n" +
-	"additional\x88\x01\x01\"\x99\x01\n" +
-	"\x04Type\x12\x14\n" +
-	"\x10TYPE_UNSPECIFIED\x10\x00\x12\x0e\n" +
-	"\n" +
-	"TYPE_BASIC\x10\x01\x12\x0f\n" +
-	"\vTYPE_BEARER\x10\x02\x12\x0f\n" +
-	"\vTYPE_DIGEST\x10\x03\x12\x0f\n" +
-	"\vTYPE_OAUTH2\x10\x04\x12\x10\n" +
-	"\fTYPE_API_KEY\x10\x05\x12\f\n" +
-	"\bTYPE_JWT\x10\x06\x12\x18\n" +
-	"\x14TYPE_USER_ADDITIONAL\x10\aB\b\n" +
+	"\x03jwt\x18\x0f \x01(\v2\".runtime.security.authn.v1.JwtAuthB%\xbaG\"\x92\x02\x1fThe JWT authentication details.H\x05R\x03jwt\x88\x01\x01\x12\x87\x01\n" +
+	"\tcustomize\x18\x10 \x01(\v2\x17.google.protobuf.StructBK\xbaGH\x92\x02ECustom configuration for authentication types not explicitly defined.H\x06R\tcustomize\x88\x01\x01B\b\n" +
 	"\x06_basicB\t\n" +
 	"\a_bearerB\t\n" +
 	"\a_digestB\t\n" +
 	"\a_oauth2B\n" +
 	"\n" +
 	"\b_api_keyB\x06\n" +
-	"\x04_jwtB\r\n" +
-	"\v_additional\"\x89\x05\n" +
+	"\x04_jwtB\f\n" +
+	"\n" +
+	"_customize\"\x89\x05\n" +
 	"\x06Claims\x128\n" +
 	"\x03sub\x18\x01 \x01(\tB&\xfaB\x04r\x02\x10\x01\xbaG\x1c\x92\x02\x19The subject of the token.R\x03sub\x127\n" +
 	"\x03iss\x18\x02 \x01(\tB%\xfaB\x04r\x02\x10\x01\xbaG\x1b\x92\x02\x18The issuer of the token.R\x03iss\x12M\n" +
@@ -769,32 +706,31 @@ func file_runtime_security_authn_v1_authn_proto_rawDescGZIP() []byte {
 	return file_runtime_security_authn_v1_authn_proto_rawDescData
 }
 
-var file_runtime_security_authn_v1_authn_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_runtime_security_authn_v1_authn_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_runtime_security_authn_v1_authn_proto_goTypes = []any{
-	(AuthN_Type)(0),    // 0: runtime.security.authn.v1.AuthN.Type
-	(*BasicAuth)(nil),  // 1: runtime.security.authn.v1.BasicAuth
-	(*BearerAuth)(nil), // 2: runtime.security.authn.v1.BearerAuth
-	(*DigestAuth)(nil), // 3: runtime.security.authn.v1.DigestAuth
-	(*OAuth2Auth)(nil), // 4: runtime.security.authn.v1.OAuth2Auth
-	(*ApiKeyAuth)(nil), // 5: runtime.security.authn.v1.ApiKeyAuth
-	(*JwtAuth)(nil),    // 6: runtime.security.authn.v1.JwtAuth
-	(*AuthN)(nil),      // 7: runtime.security.authn.v1.AuthN
-	(*Claims)(nil),     // 8: runtime.security.authn.v1.Claims
-	nil,                // 9: runtime.security.authn.v1.Claims.ScopesEntry
-	(*Token)(nil),      // 10: runtime.security.authn.v1.Token
+	(*BasicAuth)(nil),       // 0: runtime.security.authn.v1.BasicAuth
+	(*BearerAuth)(nil),      // 1: runtime.security.authn.v1.BearerAuth
+	(*DigestAuth)(nil),      // 2: runtime.security.authn.v1.DigestAuth
+	(*OAuth2Auth)(nil),      // 3: runtime.security.authn.v1.OAuth2Auth
+	(*ApiKeyAuth)(nil),      // 4: runtime.security.authn.v1.ApiKeyAuth
+	(*JwtAuth)(nil),         // 5: runtime.security.authn.v1.JwtAuth
+	(*AuthN)(nil),           // 6: runtime.security.authn.v1.AuthN
+	(*Claims)(nil),          // 7: runtime.security.authn.v1.Claims
+	nil,                     // 8: runtime.security.authn.v1.Claims.ScopesEntry
+	(*Token)(nil),           // 9: runtime.security.authn.v1.Token
+	(*structpb.Struct)(nil), // 10: google.protobuf.Struct
 }
 var file_runtime_security_authn_v1_authn_proto_depIdxs = []int32{
-	10, // 0: runtime.security.authn.v1.JwtAuth.jwt_token:type_name -> runtime.security.authn.v1.Token
-	8,  // 1: runtime.security.authn.v1.JwtAuth.claims:type_name -> runtime.security.authn.v1.Claims
-	0,  // 2: runtime.security.authn.v1.AuthN.type:type_name -> runtime.security.authn.v1.AuthN.Type
-	1,  // 3: runtime.security.authn.v1.AuthN.basic:type_name -> runtime.security.authn.v1.BasicAuth
-	2,  // 4: runtime.security.authn.v1.AuthN.bearer:type_name -> runtime.security.authn.v1.BearerAuth
-	3,  // 5: runtime.security.authn.v1.AuthN.digest:type_name -> runtime.security.authn.v1.DigestAuth
-	4,  // 6: runtime.security.authn.v1.AuthN.oauth2:type_name -> runtime.security.authn.v1.OAuth2Auth
-	5,  // 7: runtime.security.authn.v1.AuthN.api_key:type_name -> runtime.security.authn.v1.ApiKeyAuth
-	6,  // 8: runtime.security.authn.v1.AuthN.jwt:type_name -> runtime.security.authn.v1.JwtAuth
-	9,  // 9: runtime.security.authn.v1.Claims.scopes:type_name -> runtime.security.authn.v1.Claims.ScopesEntry
+	9,  // 0: runtime.security.authn.v1.JwtAuth.jwt_token:type_name -> runtime.security.authn.v1.Token
+	7,  // 1: runtime.security.authn.v1.JwtAuth.claims:type_name -> runtime.security.authn.v1.Claims
+	0,  // 2: runtime.security.authn.v1.AuthN.basic:type_name -> runtime.security.authn.v1.BasicAuth
+	1,  // 3: runtime.security.authn.v1.AuthN.bearer:type_name -> runtime.security.authn.v1.BearerAuth
+	2,  // 4: runtime.security.authn.v1.AuthN.digest:type_name -> runtime.security.authn.v1.DigestAuth
+	3,  // 5: runtime.security.authn.v1.AuthN.oauth2:type_name -> runtime.security.authn.v1.OAuth2Auth
+	4,  // 6: runtime.security.authn.v1.AuthN.api_key:type_name -> runtime.security.authn.v1.ApiKeyAuth
+	5,  // 7: runtime.security.authn.v1.AuthN.jwt:type_name -> runtime.security.authn.v1.JwtAuth
+	10, // 8: runtime.security.authn.v1.AuthN.customize:type_name -> google.protobuf.Struct
+	8,  // 9: runtime.security.authn.v1.Claims.scopes:type_name -> runtime.security.authn.v1.Claims.ScopesEntry
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
@@ -814,14 +750,13 @@ func file_runtime_security_authn_v1_authn_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_security_authn_v1_authn_proto_rawDesc), len(file_runtime_security_authn_v1_authn_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      0,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_runtime_security_authn_v1_authn_proto_goTypes,
 		DependencyIndexes: file_runtime_security_authn_v1_authn_proto_depIdxs,
-		EnumInfos:         file_runtime_security_authn_v1_authn_proto_enumTypes,
 		MessageInfos:      file_runtime_security_authn_v1_authn_proto_msgTypes,
 	}.Build()
 	File_runtime_security_authn_v1_authn_proto = out.File

@@ -11,6 +11,7 @@ import (
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -27,12 +28,14 @@ const (
 // This message was extracted from mysql.proto and renamed for consistency.
 type DatabaseConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique name for this database configuration instance.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Debugging
-	Debug bool `protobuf:"varint,1,opt,name=debug,proto3" json:"debug,omitempty"`
-	// Dialect name: mysql, postgresql, mongodb, sqlite......
-	Dialect string `protobuf:"bytes,2,opt,name=dialect,proto3" json:"dialect,omitempty"`
+	Debug bool `protobuf:"varint,2,opt,name=debug,proto3" json:"debug,omitempty"`
+	// Dialect name: mysql, postgresql, sqlite......
+	Dialect string `protobuf:"bytes,3,opt,name=dialect,proto3" json:"dialect,omitempty"`
 	// Data source (DSN string)
-	Source string `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
+	Source string `protobuf:"bytes,4,opt,name=source,proto3" json:"source,omitempty"`
 	// Data migration
 	Migration *Migration `protobuf:"bytes,10,opt,name=migration,proto3" json:"migration,omitempty"`
 	// Link tracking switch
@@ -47,8 +50,10 @@ type DatabaseConfig struct {
 	ConnectionMaxLifetime int64 `protobuf:"varint,22,opt,name=connection_max_lifetime,proto3" json:"connection_max_lifetime,omitempty"`
 	// Maximum number of connections in the connection pool for reading
 	ConnectionMaxIdleTime int64 `protobuf:"varint,23,opt,name=connection_max_idle_time,proto3" json:"connection_max_idle_time,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	// Optional custom configuration for database types not explicitly defined.
+	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DatabaseConfig) Reset() {
@@ -79,6 +84,13 @@ func (x *DatabaseConfig) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DatabaseConfig.ProtoReflect.Descriptor instead.
 func (*DatabaseConfig) Descriptor() ([]byte, []int) {
 	return file_runtime_data_storage_v1_database_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *DatabaseConfig) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 func (x *DatabaseConfig) GetDebug() bool {
@@ -151,16 +163,24 @@ func (x *DatabaseConfig) GetConnectionMaxIdleTime() int64 {
 	return 0
 }
 
+func (x *DatabaseConfig) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
+	}
+	return nil
+}
+
 var File_runtime_data_storage_v1_database_proto protoreflect.FileDescriptor
 
 const file_runtime_data_storage_v1_database_proto_rawDesc = "" +
 	"\n" +
-	"&runtime/data/storage/v1/database.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a'runtime/data/storage/v1/migration.proto\"\xd9\a\n" +
-	"\x0eDatabaseConfig\x129\n" +
-	"\x05debug\x18\x01 \x01(\bB#\xbaG \x92\x02\x1dwhether to enable debug mode R\x05debug\x12\x80\x01\n" +
-	"\adialect\x18\x02 \x01(\tBf\xfaBIrGR\x05mssqlR\x05mysqlR\n" +
-	"postgresqlR\amongodbR\x06sqliteR\x06oracleR\tsqlserverR\asqlite3\xbaG\x17\x92\x02\x14database driver nameR\adialect\x124\n" +
-	"\x06source\x18\x03 \x01(\tB\x1c\xbaG\x19\x92\x02\x16data source dsn stringR\x06source\x12V\n" +
+	"&runtime/data/storage/v1/database.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a'runtime/data/storage/v1/migration.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x81\t\n" +
+	"\x0eDatabaseConfig\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x129\n" +
+	"\x05debug\x18\x02 \x01(\bB#\xbaG \x92\x02\x1dwhether to enable debug mode R\x05debug\x12\x82\x01\n" +
+	"\adialect\x18\x03 \x01(\tBh\xfaBKrIR\x05mssqlR\x05mysqlR\n" +
+	"postgresqlR\x06sqliteR\x06oracleR\tsqlserverR\asqlite3R\tcustomize\xbaG\x17\x92\x02\x14database driver nameR\adialect\x124\n" +
+	"\x06source\x18\x04 \x01(\tB\x1c\xbaG\x19\x92\x02\x16data source dsn stringR\x06source\x12V\n" +
 	"\tmigration\x18\n" +
 	" \x01(\v2\".runtime.data.storage.v1.MigrationB\x14\xbaG\x11\x92\x02\x0edata migrationR\tmigration\x12>\n" +
 	"\fenable_trace\x18\f \x01(\bB\x1a\xbaG\x17\x92\x02\x14link tracking switchR\fenable_trace\x12I\n" +
@@ -168,7 +188,10 @@ const file_runtime_data_storage_v1_database_proto_rawDesc = "" +
 	"\x14max_idle_connections\x18\x14 \x01(\x05BC\xbaG@\x92\x02=The maximum number of free connections in the connection poolR\x14max_idle_connections\x12w\n" +
 	"\x14max_open_connections\x18\x15 \x01(\x05BC\xbaG@\x92\x02=The maximum number of open connections in the connection poolR\x14max_open_connections\x12u\n" +
 	"\x17connection_max_lifetime\x18\x16 \x01(\x03B;\xbaG8\x92\x025The maximum length of time a connection can be reusedR\x17connection_max_lifetime\x12\x86\x01\n" +
-	"\x18connection_max_idle_time\x18\x17 \x01(\x03BJ\xbaGG\x92\x02DThe maximum number of connections in the connection pool for readingR\x18connection_max_idle_timeB\xf6\x01\n" +
+	"\x18connection_max_idle_time\x18\x17 \x01(\x03BJ\xbaGG\x92\x02DThe maximum number of connections in the connection pool for readingR\x18connection_max_idle_time\x12\x81\x01\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBE\xbaGB\x92\x02?Custom configuration for database types not explicitly defined.H\x00R\tcustomize\x88\x01\x01B\f\n" +
+	"\n" +
+	"_customizeB\xf6\x01\n" +
 	"\x1bcom.runtime.data.storage.v1B\rDatabaseProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1\xa2\x02\x03RDS\xaa\x02\x17Runtime.Data.Storage.V1\xca\x02\x17Runtime\\Data\\Storage\\V1\xe2\x02#Runtime\\Data\\Storage\\V1\\GPBMetadata\xea\x02\x1aRuntime::Data::Storage::V1b\x06proto3"
 
 var (
@@ -185,16 +208,18 @@ func file_runtime_data_storage_v1_database_proto_rawDescGZIP() []byte {
 
 var file_runtime_data_storage_v1_database_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_runtime_data_storage_v1_database_proto_goTypes = []any{
-	(*DatabaseConfig)(nil), // 0: runtime.data.storage.v1.DatabaseConfig
-	(*Migration)(nil),      // 1: runtime.data.storage.v1.Migration
+	(*DatabaseConfig)(nil),  // 0: runtime.data.storage.v1.DatabaseConfig
+	(*Migration)(nil),       // 1: runtime.data.storage.v1.Migration
+	(*structpb.Struct)(nil), // 2: google.protobuf.Struct
 }
 var file_runtime_data_storage_v1_database_proto_depIdxs = []int32{
 	1, // 0: runtime.data.storage.v1.DatabaseConfig.migration:type_name -> runtime.data.storage.v1.Migration
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 1: runtime.data.storage.v1.DatabaseConfig.customize:type_name -> google.protobuf.Struct
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_runtime_data_storage_v1_database_proto_init() }
@@ -203,6 +228,7 @@ func file_runtime_data_storage_v1_database_proto_init() {
 		return
 	}
 	file_runtime_data_storage_v1_migration_proto_init()
+	file_runtime_data_storage_v1_database_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

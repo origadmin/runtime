@@ -23,19 +23,36 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// RedisConfig defines the configuration for a Redis client.
-// This message was extracted from storage.proto.
+// RedisConfig defines the configuration for a Redis client used as a data store (e.g., cache, key-value store).
 type RedisConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Network       string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
-	Addr          string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
-	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
-	Db            int32                  `protobuf:"varint,4,opt,name=db,proto3" json:"db,omitempty"`
-	DialTimeout   int64                  `protobuf:"varint,5,opt,name=dial_timeout,proto3" json:"dial_timeout,omitempty"`
-	ReadTimeout   int64                  `protobuf:"varint,6,opt,name=read_timeout,proto3" json:"read_timeout,omitempty"`
-	WriteTimeout  int64                  `protobuf:"varint,7,opt,name=write_timeout,proto3" json:"write_timeout,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Network      string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
+	Addr         string                 `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	Password     string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	Db           int32                  `protobuf:"varint,4,opt,name=db,proto3" json:"db,omitempty"`
+	DialTimeout  int64                  `protobuf:"varint,5,opt,name=dial_timeout,proto3" json:"dial_timeout,omitempty"`
+	ReadTimeout  int64                  `protobuf:"varint,6,opt,name=read_timeout,proto3" json:"read_timeout,omitempty"`
+	WriteTimeout int64                  `protobuf:"varint,7,opt,name=write_timeout,proto3" json:"write_timeout,omitempty"`
+	// Maximum number of connections in the connection pool.
+	PoolSize *int32 `protobuf:"varint,8,opt,name=pool_size,proto3,oneof" json:"pool_size,omitempty"`
+	// Minimum number of idle connections in the connection pool.
+	MinIdleConns *int32 `protobuf:"varint,9,opt,name=min_idle_conns,proto3,oneof" json:"min_idle_conns,omitempty"`
+	// Maximum duration a connection can be idle before being closed.
+	IdleTimeout *int64 `protobuf:"varint,10,opt,name=idle_timeout,proto3,oneof" json:"idle_timeout,omitempty"`
+	// Maximum duration to wait for a connection from the pool.
+	PoolTimeout *int64 `protobuf:"varint,11,opt,name=pool_timeout,proto3,oneof" json:"pool_timeout,omitempty"`
+	// Whether to enable TLS.
+	TlsEnabled *bool `protobuf:"varint,12,opt,name=tls_enabled,proto3,oneof" json:"tls_enabled,omitempty"`
+	// Path to TLS client certificate file.
+	TlsClientCertFile *string `protobuf:"bytes,13,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	// Path to TLS client key file.
+	TlsClientKeyFile *string `protobuf:"bytes,14,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	// Path to TLS CA certificate file.
+	TlsCaCertFile *string `protobuf:"bytes,15,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	// Whether to enable TLS insecure skip verify.
+	TlsInsecureSkipVerify *bool `protobuf:"varint,16,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *RedisConfig) Reset() {
@@ -117,20 +134,102 @@ func (x *RedisConfig) GetWriteTimeout() int64 {
 	return 0
 }
 
+func (x *RedisConfig) GetPoolSize() int32 {
+	if x != nil && x.PoolSize != nil {
+		return *x.PoolSize
+	}
+	return 0
+}
+
+func (x *RedisConfig) GetMinIdleConns() int32 {
+	if x != nil && x.MinIdleConns != nil {
+		return *x.MinIdleConns
+	}
+	return 0
+}
+
+func (x *RedisConfig) GetIdleTimeout() int64 {
+	if x != nil && x.IdleTimeout != nil {
+		return *x.IdleTimeout
+	}
+	return 0
+}
+
+func (x *RedisConfig) GetPoolTimeout() int64 {
+	if x != nil && x.PoolTimeout != nil {
+		return *x.PoolTimeout
+	}
+	return 0
+}
+
+func (x *RedisConfig) GetTlsEnabled() bool {
+	if x != nil && x.TlsEnabled != nil {
+		return *x.TlsEnabled
+	}
+	return false
+}
+
+func (x *RedisConfig) GetTlsClientCertFile() string {
+	if x != nil && x.TlsClientCertFile != nil {
+		return *x.TlsClientCertFile
+	}
+	return ""
+}
+
+func (x *RedisConfig) GetTlsClientKeyFile() string {
+	if x != nil && x.TlsClientKeyFile != nil {
+		return *x.TlsClientKeyFile
+	}
+	return ""
+}
+
+func (x *RedisConfig) GetTlsCaCertFile() string {
+	if x != nil && x.TlsCaCertFile != nil {
+		return *x.TlsCaCertFile
+	}
+	return ""
+}
+
+func (x *RedisConfig) GetTlsInsecureSkipVerify() bool {
+	if x != nil && x.TlsInsecureSkipVerify != nil {
+		return *x.TlsInsecureSkipVerify
+	}
+	return false
+}
+
 var File_runtime_data_storage_v1_redis_proto protoreflect.FileDescriptor
 
 const file_runtime_data_storage_v1_redis_proto_rawDesc = "" +
 	"\n" +
-	"#runtime/data/storage/v1/redis.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\xee\x02\n" +
-	"\vRedisConfig\x12,\n" +
-	"\anetwork\x18\x01 \x01(\tB\x12\xbaG\x0f\x92\x02\fnetwork typeR\anetwork\x12!\n" +
-	"\x04addr\x18\x02 \x01(\tB\r\xbaG\n" +
-	"\x92\x02\aaddressR\x04addr\x12(\n" +
-	"\bpassword\x18\x03 \x01(\tB\f\xbaG\t\x92\x02\x06cipherR\bpassword\x12$\n" +
-	"\x02db\x18\x04 \x01(\x05B\x14\xbaG\x11\x92\x02\x0edatabase indexR\x02db\x12=\n" +
-	"\fdial_timeout\x18\x05 \x01(\x03B\x19\xfaB\x04\"\x02(\x00\xbaG\x0f\x92\x02\fdial timeoutR\fdial_timeout\x12=\n" +
-	"\fread_timeout\x18\x06 \x01(\x03B\x19\xfaB\x04\"\x02(\x00\xbaG\x0f\x92\x02\fread timeoutR\fread_timeout\x12@\n" +
-	"\rwrite_timeout\x18\a \x01(\x03B\x1a\xfaB\x04\"\x02(\x00\xbaG\x10\x92\x02\rwrite timeoutR\rwrite_timeoutB\xf3\x01\n" +
+	"#runtime/data/storage/v1/redis.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\xea\f\n" +
+	"\vRedisConfig\x128\n" +
+	"\anetwork\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18Network type (e.g., tcp)R\anetwork\x12E\n" +
+	"\x04addr\x18\x02 \x01(\tB1\xbaG.\x92\x02+Redis server address (e.g., localhost:6379)R\x04addr\x12C\n" +
+	"\bpassword\x18\x03 \x01(\tB'\xbaG$\x92\x02!Password for Redis authenticationR\bpassword\x12+\n" +
+	"\x02db\x18\x04 \x01(\x05B\x1b\xbaG\x18\x92\x02\x15Database index to useR\x02db\x12M\n" +
+	"\fdial_timeout\x18\x05 \x01(\x03B)\xfaB\x04\"\x02(\x00\xbaG\x1f\x92\x02\x1cDial timeout in millisecondsR\fdial_timeout\x12M\n" +
+	"\fread_timeout\x18\x06 \x01(\x03B)\xfaB\x04\"\x02(\x00\xbaG\x1f\x92\x02\x1cRead timeout in millisecondsR\fread_timeout\x12P\n" +
+	"\rwrite_timeout\x18\a \x01(\x03B*\xfaB\x04\"\x02(\x00\xbaG \x92\x02\x1dWrite timeout in millisecondsR\rwrite_timeout\x12d\n" +
+	"\tpool_size\x18\b \x01(\x05BA\xfaB\x04\x1a\x02(\x00\xbaG7\x92\x024Maximum number of connections in the connection poolH\x00R\tpool_size\x88\x01\x01\x12s\n" +
+	"\x0emin_idle_conns\x18\t \x01(\x05BF\xfaB\x04\x1a\x02(\x00\xbaG<\x92\x029Minimum number of idle connections in the connection poolH\x01R\x0emin_idle_conns\x88\x01\x01\x12\x85\x01\n" +
+	"\fidle_timeout\x18\n" +
+	" \x01(\x03B\\\xfaB\x04\"\x02(\x00\xbaGR\x92\x02OMaximum duration a connection can be idle before being closed (in milliseconds)H\x02R\fidle_timeout\x88\x01\x01\x12\x7f\n" +
+	"\fpool_timeout\x18\v \x01(\x03BV\xfaB\x04\"\x02(\x00\xbaGL\x92\x02IMaximum duration to wait for a connection from the pool (in milliseconds)H\x03R\fpool_timeout\x88\x01\x01\x12U\n" +
+	"\vtls_enabled\x18\f \x01(\bB.\xbaG+\x92\x02(Whether to enable TLS for the connectionH\x04R\vtls_enabled\x88\x01\x01\x12b\n" +
+	"\x14tls_client_cert_file\x18\r \x01(\tB)\xbaG&\x92\x02#Path to TLS client certificate fileH\x05R\x14tls_client_cert_file\x88\x01\x01\x12X\n" +
+	"\x13tls_client_key_file\x18\x0e \x01(\tB!\xbaG\x1e\x92\x02\x1bPath to TLS client key fileH\x06R\x13tls_client_key_file\x88\x01\x01\x12V\n" +
+	"\x10tls_ca_cert_file\x18\x0f \x01(\tB%\xbaG\"\x92\x02\x1fPath to TLS CA certificate fileH\aR\x10tls_ca_cert_file\x88\x01\x01\x12q\n" +
+	"\x18tls_insecure_skip_verify\x18\x10 \x01(\bB0\xbaG-\x92\x02*Whether to enable TLS insecure skip verifyH\bR\x18tls_insecure_skip_verify\x88\x01\x01B\f\n" +
+	"\n" +
+	"_pool_sizeB\x11\n" +
+	"\x0f_min_idle_connsB\x0f\n" +
+	"\r_idle_timeoutB\x0f\n" +
+	"\r_pool_timeoutB\x0e\n" +
+	"\f_tls_enabledB\x17\n" +
+	"\x15_tls_client_cert_fileB\x16\n" +
+	"\x14_tls_client_key_fileB\x13\n" +
+	"\x11_tls_ca_cert_fileB\x1b\n" +
+	"\x19_tls_insecure_skip_verifyB\xf3\x01\n" +
 	"\x1bcom.runtime.data.storage.v1B\n" +
 	"RedisProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1\xa2\x02\x03RDS\xaa\x02\x17Runtime.Data.Storage.V1\xca\x02\x17Runtime\\Data\\Storage\\V1\xe2\x02#Runtime\\Data\\Storage\\V1\\GPBMetadata\xea\x02\x1aRuntime::Data::Storage::V1b\x06proto3"
 
@@ -163,6 +262,7 @@ func file_runtime_data_storage_v1_redis_proto_init() {
 	if File_runtime_data_storage_v1_redis_proto != nil {
 		return
 	}
+	file_runtime_data_storage_v1_redis_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

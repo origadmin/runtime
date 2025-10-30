@@ -56,6 +56,382 @@ func (m *Broker) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
+	if _, ok := _Broker_Type_InLookup[m.GetType()]; !ok {
+		err := BrokerValidationError{
+			field:  "Type",
+			reason: "value must be in list [kafka rabbitmq mqtt nats nsq pulsar redis_mq rocketmq sqs stompcustomize]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.Kafka != nil {
+
+		if all {
+			switch v := interface{}(m.GetKafka()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Kafka",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Kafka",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetKafka()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Kafka",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Rabbitmq != nil {
+
+		if all {
+			switch v := interface{}(m.GetRabbitmq()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Rabbitmq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Rabbitmq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetRabbitmq()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Rabbitmq",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Mqtt != nil {
+
+		if all {
+			switch v := interface{}(m.GetMqtt()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Mqtt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Mqtt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetMqtt()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Mqtt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Nats != nil {
+
+		if all {
+			switch v := interface{}(m.GetNats()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Nats",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Nats",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetNats()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Nats",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Nsq != nil {
+
+		if all {
+			switch v := interface{}(m.GetNsq()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Nsq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Nsq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetNsq()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Nsq",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Pulsar != nil {
+
+		if all {
+			switch v := interface{}(m.GetPulsar()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Pulsar",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Pulsar",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetPulsar()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Pulsar",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.RedisMq != nil {
+
+		if all {
+			switch v := interface{}(m.GetRedisMq()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "RedisMq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "RedisMq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetRedisMq()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "RedisMq",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Rocketmq != nil {
+
+		if all {
+			switch v := interface{}(m.GetRocketmq()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Rocketmq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Rocketmq",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetRocketmq()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Rocketmq",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Sqs != nil {
+
+		if all {
+			switch v := interface{}(m.GetSqs()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Sqs",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Sqs",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetSqs()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Sqs",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Stomp != nil {
+
+		if all {
+			switch v := interface{}(m.GetStomp()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Stomp",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Stomp",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetStomp()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Stomp",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokerValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokerValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return BrokerMultiError(errors)
 	}
@@ -132,3 +508,154 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = BrokerValidationError{}
+
+var _Broker_Type_InLookup = map[string]struct{}{
+	"kafka":          {},
+	"rabbitmq":       {},
+	"mqtt":           {},
+	"nats":           {},
+	"nsq":            {},
+	"pulsar":         {},
+	"redis_mq":       {},
+	"rocketmq":       {},
+	"sqs":            {},
+	"stompcustomize": {},
+}
+
+// Validate checks the field values on Brokers with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Brokers) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Brokers with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in BrokersMultiError, or nil if none found.
+func (m *Brokers) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Brokers) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Default
+
+	for idx, item := range m.GetBrokers() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BrokersValidationError{
+						field:  fmt.Sprintf("Brokers[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BrokersValidationError{
+						field:  fmt.Sprintf("Brokers[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BrokersValidationError{
+					field:  fmt.Sprintf("Brokers[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return BrokersMultiError(errors)
+	}
+
+	return nil
+}
+
+// BrokersMultiError is an error wrapping multiple validation errors returned
+// by Brokers.ValidateAll() if the designated constraints aren't met.
+type BrokersMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m BrokersMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m BrokersMultiError) AllErrors() []error { return m }
+
+// BrokersValidationError is the validation error returned by Brokers.Validate
+// if the designated constraints aren't met.
+type BrokersValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e BrokersValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e BrokersValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e BrokersValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e BrokersValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e BrokersValidationError) ErrorName() string { return "BrokersValidationError" }
+
+// Error satisfies the builtin error interface
+func (e BrokersValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sBrokers.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = BrokersValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = BrokersValidationError{}

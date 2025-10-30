@@ -6,6 +6,7 @@ import "gnostic/openapi/v3/annotations.proto";
 import "runtime/data/storage/v1/file_local.proto"; // Import FileLocalConfig
 import "runtime/data/storage/v1/oss.proto"; // Import OssConfig
 import "validate/validate.proto";
+import "google/protobuf/struct.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1";
 
@@ -25,7 +26,8 @@ message FileStoreConfig {
     (validate.rules).string = {
       in: [
         "local",
-        "oss"
+        "oss",
+        "customize"
       ]
     },
     (gnostic.openapi.v3.property) = {description: "file store driver name"}
@@ -51,5 +53,11 @@ message FileStoreConfig {
   int64 chunk_size = 5 [
     json_name = "chunk_size",
     (gnostic.openapi.v3.property) = {description: "chunk size in bytes"}
+  ];
+
+  // Optional custom configuration for file store types not explicitly defined.
+  optional google.protobuf.Struct customize = 6 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom configuration for file store types not explicitly defined."}
   ];
 }

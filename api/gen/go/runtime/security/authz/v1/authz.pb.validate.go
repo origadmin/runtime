@@ -213,6 +213,19 @@ func (m *AuthZ) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
+	if _, ok := _AuthZ_Type_InLookup[m.GetType()]; !ok {
+		err := AuthZValidationError{
+			field:  "Type",
+			reason: "value must be in list [casbin opa customize]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for Root
 
 	// no validation rules for Id
@@ -232,33 +245,70 @@ func (m *AuthZ) validate(all bool) error {
 
 	// no validation rules for Timestamp
 
-	if all {
-		switch v := interface{}(m.GetCasbin()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AuthZValidationError{
-					field:  "Casbin",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	if m.Casbin != nil {
+
+		if all {
+			switch v := interface{}(m.GetCasbin()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthZValidationError{
+						field:  "Casbin",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthZValidationError{
+						field:  "Casbin",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(m.GetCasbin()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, AuthZValidationError{
+				return AuthZValidationError{
 					field:  "Casbin",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetCasbin()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AuthZValidationError{
-				field:  "Casbin",
-				reason: "embedded message failed validation",
-				cause:  err,
+
+	}
+
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthZValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthZValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthZValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
 			}
 		}
+
 	}
 
 	if len(errors) > 0 {
@@ -337,6 +387,12 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AuthZValidationError{}
+
+var _AuthZ_Type_InLookup = map[string]struct{}{
+	"casbin":    {},
+	"opa":       {},
+	"customize": {},
+}
 
 var _AuthZ_UserType_InLookup = map[string]struct{}{
 	"admin": {},

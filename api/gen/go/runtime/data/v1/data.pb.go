@@ -9,9 +9,10 @@ package datav1
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
-	_ "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -24,16 +25,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Data is the top-level configuration for all data-related components, including storage.
+// Data is the top-level configuration for all data-related components.
 type Data struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional: Default instance names for each type.
-	DefaultFilestore *string `protobuf:"bytes,4,opt,name=default_filestore,proto3,oneof" json:"default_filestore,omitempty"`
-	DefaultCache     *string `protobuf:"bytes,5,opt,name=default_cache,proto3,oneof" json:"default_cache,omitempty"`
-	DefaultDatabase  *string `protobuf:"bytes,6,opt,name=default_database,proto3,oneof" json:"default_database,omitempty"`
-	DefaultMongo     *string `protobuf:"bytes,8,opt,name=default_mongo,proto3,oneof" json:"default_mongo,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// FileStore configurations.
+	Filestores *FileStores `protobuf:"bytes,1,opt,name=filestores,proto3,oneof" json:"filestores,omitempty"`
+	// Cache configurations.
+	Caches *Caches `protobuf:"bytes,2,opt,name=caches,proto3,oneof" json:"caches,omitempty"`
+	// Relational Database configurations (SQL).
+	Databases *Databases `protobuf:"bytes,3,opt,name=databases,proto3,oneof" json:"databases,omitempty"`
+	// Document Database configurations (e.g., MongoDB).
+	Documents *Documents `protobuf:"bytes,4,opt,name=documents,proto3,oneof" json:"documents,omitempty"`
+	// Optional custom configuration for Data components not explicitly defined.
+	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Data) Reset() {
@@ -66,48 +72,339 @@ func (*Data) Descriptor() ([]byte, []int) {
 	return file_runtime_data_v1_data_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Data) GetDefaultFilestore() string {
-	if x != nil && x.DefaultFilestore != nil {
-		return *x.DefaultFilestore
+func (x *Data) GetFilestores() *FileStores {
+	if x != nil {
+		return x.Filestores
+	}
+	return nil
+}
+
+func (x *Data) GetCaches() *Caches {
+	if x != nil {
+		return x.Caches
+	}
+	return nil
+}
+
+func (x *Data) GetDatabases() *Databases {
+	if x != nil {
+		return x.Databases
+	}
+	return nil
+}
+
+func (x *Data) GetDocuments() *Documents {
+	if x != nil {
+		return x.Documents
+	}
+	return nil
+}
+
+func (x *Data) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
+	}
+	return nil
+}
+
+// FileStores is a collection of named FileStore configurations.
+type FileStores struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Default filestore name.
+	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	// Active filestore name, overrides default.
+	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// List of named FileStore configurations.
+	Configs       []*v1.FileStoreConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileStores) Reset() {
+	*x = FileStores{}
+	mi := &file_runtime_data_v1_data_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileStores) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileStores) ProtoMessage() {}
+
+func (x *FileStores) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_v1_data_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileStores.ProtoReflect.Descriptor instead.
+func (*FileStores) Descriptor() ([]byte, []int) {
+	return file_runtime_data_v1_data_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *FileStores) GetDefault() string {
+	if x != nil {
+		return x.Default
 	}
 	return ""
 }
 
-func (x *Data) GetDefaultCache() string {
-	if x != nil && x.DefaultCache != nil {
-		return *x.DefaultCache
+func (x *FileStores) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
 	}
 	return ""
 }
 
-func (x *Data) GetDefaultDatabase() string {
-	if x != nil && x.DefaultDatabase != nil {
-		return *x.DefaultDatabase
+func (x *FileStores) GetConfigs() []*v1.FileStoreConfig {
+	if x != nil {
+		return x.Configs
+	}
+	return nil
+}
+
+// Caches is a collection of named Cache configurations.
+type Caches struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Default cache name.
+	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	// Active cache name, overrides default.
+	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// List of named Cache configurations.
+	Configs       []*v1.CacheConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Caches) Reset() {
+	*x = Caches{}
+	mi := &file_runtime_data_v1_data_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Caches) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Caches) ProtoMessage() {}
+
+func (x *Caches) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_v1_data_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Caches.ProtoReflect.Descriptor instead.
+func (*Caches) Descriptor() ([]byte, []int) {
+	return file_runtime_data_v1_data_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Caches) GetDefault() string {
+	if x != nil {
+		return x.Default
 	}
 	return ""
 }
 
-func (x *Data) GetDefaultMongo() string {
-	if x != nil && x.DefaultMongo != nil {
-		return *x.DefaultMongo
+func (x *Caches) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
 	}
 	return ""
+}
+
+func (x *Caches) GetConfigs() []*v1.CacheConfig {
+	if x != nil {
+		return x.Configs
+	}
+	return nil
+}
+
+// Databases is a collection of named Relational Database configurations.
+type Databases struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Default database name.
+	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	// Active database name, overrides default.
+	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// List of named Relational Database configurations.
+	Configs       []*v1.DatabaseConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Databases) Reset() {
+	*x = Databases{}
+	mi := &file_runtime_data_v1_data_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Databases) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Databases) ProtoMessage() {}
+
+func (x *Databases) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_v1_data_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Databases.ProtoReflect.Descriptor instead.
+func (*Databases) Descriptor() ([]byte, []int) {
+	return file_runtime_data_v1_data_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Databases) GetDefault() string {
+	if x != nil {
+		return x.Default
+	}
+	return ""
+}
+
+func (x *Databases) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
+	}
+	return ""
+}
+
+func (x *Databases) GetConfigs() []*v1.DatabaseConfig {
+	if x != nil {
+		return x.Configs
+	}
+	return nil
+}
+
+// Documents is a collection of named Document Database configurations.
+type Documents struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Default document database name.
+	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	// Active document database name, overrides default.
+	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// List of named Document Database configurations.
+	Configs       []*v1.DocumentConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Documents) Reset() {
+	*x = Documents{}
+	mi := &file_runtime_data_v1_data_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Documents) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Documents) ProtoMessage() {}
+
+func (x *Documents) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_v1_data_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Documents.ProtoReflect.Descriptor instead.
+func (*Documents) Descriptor() ([]byte, []int) {
+	return file_runtime_data_v1_data_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Documents) GetDefault() string {
+	if x != nil {
+		return x.Default
+	}
+	return ""
+}
+
+func (x *Documents) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
+	}
+	return ""
+}
+
+func (x *Documents) GetConfigs() []*v1.DocumentConfig {
+	if x != nil {
+		return x.Configs
+	}
+	return nil
 }
 
 var File_runtime_data_v1_data_proto protoreflect.FileDescriptor
 
 const file_runtime_data_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"\x1aruntime/data/v1/data.proto\x12\x0fruntime.data.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a#runtime/data/storage/v1/cache.proto\x1a&runtime/data/storage/v1/database.proto\x1a(runtime/data/storage/v1/file_local.proto\x1a(runtime/data/storage/v1/file_store.proto\x1a'runtime/data/storage/v1/memcached.proto\x1a$runtime/data/storage/v1/memory.proto\x1a#runtime/data/storage/v1/mongo.proto\x1a!runtime/data/storage/v1/oss.proto\x1a#runtime/data/storage/v1/redis.proto\"\x8c\x03\n" +
-	"\x04Data\x12O\n" +
-	"\x11default_filestore\x18\x04 \x01(\tB\x1c\xbaG\x19\x92\x02\x16default filestore nameH\x00R\x11default_filestore\x88\x01\x01\x12C\n" +
-	"\rdefault_cache\x18\x05 \x01(\tB\x18\xbaG\x15\x92\x02\x12default cache nameH\x01R\rdefault_cache\x88\x01\x01\x12L\n" +
-	"\x10default_database\x18\x06 \x01(\tB\x1b\xbaG\x18\x92\x02\x15default database nameH\x02R\x10default_database\x88\x01\x01\x12Q\n" +
-	"\rdefault_mongo\x18\b \x01(\tB&\xbaG#\x92\x02 default mongo configuration nameH\x03R\rdefault_mongo\x88\x01\x01B\x14\n" +
-	"\x12_default_filestoreB\x10\n" +
-	"\x0e_default_cacheB\x13\n" +
-	"\x11_default_databaseB\x10\n" +
-	"\x0e_default_mongoB\xc1\x01\n" +
+	"\x1aruntime/data/v1/data.proto\x12\x0fruntime.data.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a#runtime/data/storage/v1/cache.proto\x1a&runtime/data/storage/v1/database.proto\x1a(runtime/data/storage/v1/file_local.proto\x1a(runtime/data/storage/v1/file_store.proto\x1a'runtime/data/storage/v1/memcached.proto\x1a$runtime/data/storage/v1/memory.proto\x1a!runtime/data/storage/v1/oss.proto\x1a#runtime/data/storage/v1/redis.proto\x1a&runtime/data/storage/v1/document.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xe9\x04\n" +
+	"\x04Data\x12`\n" +
+	"\n" +
+	"filestores\x18\x01 \x01(\v2\x1b.runtime.data.v1.FileStoresB\x1e\xbaG\x1b\x92\x02\x18FileStore configurationsH\x00R\n" +
+	"filestores\x88\x01\x01\x12P\n" +
+	"\x06caches\x18\x02 \x01(\v2\x17.runtime.data.v1.CachesB\x1a\xbaG\x17\x92\x02\x14Cache configurationsH\x01R\x06caches\x88\x01\x01\x12m\n" +
+	"\tdatabases\x18\x03 \x01(\v2\x1a.runtime.data.v1.DatabasesB.\xbaG+\x92\x02(Relational Database configurations (SQL)H\x02R\tdatabases\x88\x01\x01\x12u\n" +
+	"\tdocuments\x18\x04 \x01(\v2\x1a.runtime.data.v1.DocumentsB6\xbaG3\x92\x020Document Database configurations (e.g., MongoDB)H\x03R\tdocuments\x88\x01\x01\x12\x82\x01\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBF\xbaGC\x92\x02@Custom configuration for Data components not explicitly defined.H\x04R\tcustomize\x88\x01\x01B\r\n" +
+	"\v_filestoresB\t\n" +
+	"\a_cachesB\f\n" +
+	"\n" +
+	"_databasesB\f\n" +
+	"\n" +
+	"_documentsB\f\n" +
+	"\n" +
+	"_customize\"\x8e\x02\n" +
+	"\n" +
+	"FileStores\x126\n" +
+	"\adefault\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default filestore nameR\adefault\x12K\n" +
+	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x00R\x06active\x88\x01\x01\x12p\n" +
+	"\aconfigs\x18\x03 \x03(\v2(.runtime.data.storage.v1.FileStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\t\n" +
+	"\a_active\"\xfa\x01\n" +
+	"\x06Caches\x122\n" +
+	"\adefault\x18\x01 \x01(\tB\x18\xbaG\x15\x92\x02\x12Default cache nameR\adefault\x12G\n" +
+	"\x06active\x18\x02 \x01(\tB*\xbaG'\x92\x02$Active cache name, overrides defaultH\x00R\x06active\x88\x01\x01\x12h\n" +
+	"\aconfigs\x18\x03 \x03(\v2$.runtime.data.storage.v1.CacheConfigB(\xbaG%\x92\x02\"List of named Cache configurationsR\aconfigsB\t\n" +
+	"\a_active\"\x94\x02\n" +
+	"\tDatabases\x125\n" +
+	"\adefault\x18\x01 \x01(\tB\x1b\xbaG\x18\x92\x02\x15Default database nameR\adefault\x12J\n" +
+	"\x06active\x18\x02 \x01(\tB-\xbaG*\x92\x02'Active database name, overrides defaultH\x00R\x06active\x88\x01\x01\x12y\n" +
+	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DatabaseConfigB6\xbaG3\x92\x020List of named Relational Database configurationsR\aconfigsB\t\n" +
+	"\a_active\"\xa4\x02\n" +
+	"\tDocuments\x12>\n" +
+	"\adefault\x18\x01 \x01(\tB$\xbaG!\x92\x02\x1eDefault document database nameR\adefault\x12S\n" +
+	"\x06active\x18\x02 \x01(\tB6\xbaG3\x92\x020Active document database name, overrides defaultH\x00R\x06active\x88\x01\x01\x12w\n" +
+	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DocumentConfigB4\xbaG1\x92\x02.List of named Document Database configurationsR\aconfigsB\t\n" +
+	"\a_activeB\xc1\x01\n" +
 	"\x13com.runtime.data.v1B\tDataProtoP\x01Z>github.com/origadmin/runtime/api/gen/go/runtime/data/v1;datav1\xf8\x01\x01\xa2\x02\x03RDX\xaa\x02\x0fRuntime.Data.V1\xca\x02\x0fRuntime\\Data\\V1\xe2\x02\x1bRuntime\\Data\\V1\\GPBMetadata\xea\x02\x11Runtime::Data::V1b\x06proto3"
 
 var (
@@ -122,16 +419,34 @@ func file_runtime_data_v1_data_proto_rawDescGZIP() []byte {
 	return file_runtime_data_v1_data_proto_rawDescData
 }
 
-var file_runtime_data_v1_data_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_runtime_data_v1_data_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_runtime_data_v1_data_proto_goTypes = []any{
-	(*Data)(nil), // 0: runtime.data.v1.Data
+	(*Data)(nil),               // 0: runtime.data.v1.Data
+	(*FileStores)(nil),         // 1: runtime.data.v1.FileStores
+	(*Caches)(nil),             // 2: runtime.data.v1.Caches
+	(*Databases)(nil),          // 3: runtime.data.v1.Databases
+	(*Documents)(nil),          // 4: runtime.data.v1.Documents
+	(*structpb.Struct)(nil),    // 5: google.protobuf.Struct
+	(*v1.FileStoreConfig)(nil), // 6: runtime.data.storage.v1.FileStoreConfig
+	(*v1.CacheConfig)(nil),     // 7: runtime.data.storage.v1.CacheConfig
+	(*v1.DatabaseConfig)(nil),  // 8: runtime.data.storage.v1.DatabaseConfig
+	(*v1.DocumentConfig)(nil),  // 9: runtime.data.storage.v1.DocumentConfig
 }
 var file_runtime_data_v1_data_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: runtime.data.v1.Data.filestores:type_name -> runtime.data.v1.FileStores
+	2, // 1: runtime.data.v1.Data.caches:type_name -> runtime.data.v1.Caches
+	3, // 2: runtime.data.v1.Data.databases:type_name -> runtime.data.v1.Databases
+	4, // 3: runtime.data.v1.Data.documents:type_name -> runtime.data.v1.Documents
+	5, // 4: runtime.data.v1.Data.customize:type_name -> google.protobuf.Struct
+	6, // 5: runtime.data.v1.FileStores.configs:type_name -> runtime.data.storage.v1.FileStoreConfig
+	7, // 6: runtime.data.v1.Caches.configs:type_name -> runtime.data.storage.v1.CacheConfig
+	8, // 7: runtime.data.v1.Databases.configs:type_name -> runtime.data.storage.v1.DatabaseConfig
+	9, // 8: runtime.data.v1.Documents.configs:type_name -> runtime.data.storage.v1.DocumentConfig
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_runtime_data_v1_data_proto_init() }
@@ -140,13 +455,17 @@ func file_runtime_data_v1_data_proto_init() {
 		return
 	}
 	file_runtime_data_v1_data_proto_msgTypes[0].OneofWrappers = []any{}
+	file_runtime_data_v1_data_proto_msgTypes[1].OneofWrappers = []any{}
+	file_runtime_data_v1_data_proto_msgTypes[2].OneofWrappers = []any{}
+	file_runtime_data_v1_data_proto_msgTypes[3].OneofWrappers = []any{}
+	file_runtime_data_v1_data_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_data_v1_data_proto_rawDesc), len(file_runtime_data_v1_data_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

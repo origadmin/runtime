@@ -35,8 +35,14 @@ type OssConfig struct {
 	Ssl             bool                   `protobuf:"varint,6,opt,name=ssl,proto3" json:"ssl,omitempty"`
 	ConnectTimeout  int64                  `protobuf:"varint,7,opt,name=connect_timeout,proto3" json:"connect_timeout,omitempty"`
 	ReadTimeout     int64                  `protobuf:"varint,8,opt,name=read_timeout,proto3" json:"read_timeout,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Optional: Bucket policy configuration.
+	BucketPolicy *BucketPolicy `protobuf:"bytes,9,opt,name=bucket_policy,proto3,oneof" json:"bucket_policy,omitempty"`
+	// Optional: Lifecycle management rules.
+	LifecycleRules []*LifecycleRule `protobuf:"bytes,10,rep,name=lifecycle_rules,proto3" json:"lifecycle_rules,omitempty"`
+	// Optional: Versioning configuration.
+	VersioningEnabled *bool `protobuf:"varint,11,opt,name=versioning_enabled,proto3,oneof" json:"versioning_enabled,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *OssConfig) Reset() {
@@ -125,11 +131,323 @@ func (x *OssConfig) GetReadTimeout() int64 {
 	return 0
 }
 
+func (x *OssConfig) GetBucketPolicy() *BucketPolicy {
+	if x != nil {
+		return x.BucketPolicy
+	}
+	return nil
+}
+
+func (x *OssConfig) GetLifecycleRules() []*LifecycleRule {
+	if x != nil {
+		return x.LifecycleRules
+	}
+	return nil
+}
+
+func (x *OssConfig) GetVersioningEnabled() bool {
+	if x != nil && x.VersioningEnabled != nil {
+		return *x.VersioningEnabled
+	}
+	return false
+}
+
+// BucketPolicy defines the access control policy for an OSS bucket.
+type BucketPolicy struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Policy document in JSON format.
+	PolicyDocument string `protobuf:"bytes,1,opt,name=policy_document,proto3" json:"policy_document,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *BucketPolicy) Reset() {
+	*x = BucketPolicy{}
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BucketPolicy) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BucketPolicy) ProtoMessage() {}
+
+func (x *BucketPolicy) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BucketPolicy.ProtoReflect.Descriptor instead.
+func (*BucketPolicy) Descriptor() ([]byte, []int) {
+	return file_runtime_data_storage_v1_oss_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *BucketPolicy) GetPolicyDocument() string {
+	if x != nil {
+		return x.PolicyDocument
+	}
+	return ""
+}
+
+// LifecycleRule defines a single lifecycle management rule for objects in an OSS bucket.
+type LifecycleRule struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique ID for the rule.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Prefix for objects to which the rule applies.
+	Prefix *string `protobuf:"bytes,2,opt,name=prefix,proto3,oneof" json:"prefix,omitempty"`
+	// Status of the rule (e.g., "Enabled", "Disabled").
+	Status string `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	// Actions to take on objects.
+	Expiration                  *Expiration                  `protobuf:"bytes,4,opt,name=expiration,proto3,oneof" json:"expiration,omitempty"`
+	Transition                  *Transition                  `protobuf:"bytes,5,opt,name=transition,proto3,oneof" json:"transition,omitempty"`
+	NoncurrentVersionExpiration *NoncurrentVersionExpiration `protobuf:"bytes,6,opt,name=noncurrent_version_expiration,proto3,oneof" json:"noncurrent_version_expiration,omitempty"`
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
+}
+
+func (x *LifecycleRule) Reset() {
+	*x = LifecycleRule{}
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LifecycleRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LifecycleRule) ProtoMessage() {}
+
+func (x *LifecycleRule) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LifecycleRule.ProtoReflect.Descriptor instead.
+func (*LifecycleRule) Descriptor() ([]byte, []int) {
+	return file_runtime_data_storage_v1_oss_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *LifecycleRule) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *LifecycleRule) GetPrefix() string {
+	if x != nil && x.Prefix != nil {
+		return *x.Prefix
+	}
+	return ""
+}
+
+func (x *LifecycleRule) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *LifecycleRule) GetExpiration() *Expiration {
+	if x != nil {
+		return x.Expiration
+	}
+	return nil
+}
+
+func (x *LifecycleRule) GetTransition() *Transition {
+	if x != nil {
+		return x.Transition
+	}
+	return nil
+}
+
+func (x *LifecycleRule) GetNoncurrentVersionExpiration() *NoncurrentVersionExpiration {
+	if x != nil {
+		return x.NoncurrentVersionExpiration
+	}
+	return nil
+}
+
+// Expiration defines when objects expire.
+type Expiration struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Number of days after object creation when it expires.
+	Days *int32 `protobuf:"varint,1,opt,name=days,proto3,oneof" json:"days,omitempty"`
+	// Specific date when objects expire (YYYY-MM-DD format).
+	Date          *string `protobuf:"bytes,2,opt,name=date,proto3,oneof" json:"date,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Expiration) Reset() {
+	*x = Expiration{}
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Expiration) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Expiration) ProtoMessage() {}
+
+func (x *Expiration) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Expiration.ProtoReflect.Descriptor instead.
+func (*Expiration) Descriptor() ([]byte, []int) {
+	return file_runtime_data_storage_v1_oss_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Expiration) GetDays() int32 {
+	if x != nil && x.Days != nil {
+		return *x.Days
+	}
+	return 0
+}
+
+func (x *Expiration) GetDate() string {
+	if x != nil && x.Date != nil {
+		return *x.Date
+	}
+	return ""
+}
+
+// Transition defines when objects transition to another storage class.
+type Transition struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Number of days after object creation when it transitions.
+	Days *int32 `protobuf:"varint,1,opt,name=days,proto3,oneof" json:"days,omitempty"`
+	// Target storage class (e.g., "IA", "Archive").
+	StorageClass  string `protobuf:"bytes,2,opt,name=storage_class,proto3" json:"storage_class,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Transition) Reset() {
+	*x = Transition{}
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Transition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Transition) ProtoMessage() {}
+
+func (x *Transition) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Transition.ProtoReflect.Descriptor instead.
+func (*Transition) Descriptor() ([]byte, []int) {
+	return file_runtime_data_storage_v1_oss_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Transition) GetDays() int32 {
+	if x != nil && x.Days != nil {
+		return *x.Days
+	}
+	return 0
+}
+
+func (x *Transition) GetStorageClass() string {
+	if x != nil {
+		return x.StorageClass
+	}
+	return ""
+}
+
+// NoncurrentVersionExpiration defines when noncurrent object versions expire.
+type NoncurrentVersionExpiration struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Number of days after the object becomes noncurrent when it expires.
+	NoncurrentDays int32 `protobuf:"varint,1,opt,name=noncurrent_days,proto3" json:"noncurrent_days,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *NoncurrentVersionExpiration) Reset() {
+	*x = NoncurrentVersionExpiration{}
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NoncurrentVersionExpiration) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NoncurrentVersionExpiration) ProtoMessage() {}
+
+func (x *NoncurrentVersionExpiration) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_data_storage_v1_oss_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NoncurrentVersionExpiration.ProtoReflect.Descriptor instead.
+func (*NoncurrentVersionExpiration) Descriptor() ([]byte, []int) {
+	return file_runtime_data_storage_v1_oss_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *NoncurrentVersionExpiration) GetNoncurrentDays() int32 {
+	if x != nil {
+		return x.NoncurrentDays
+	}
+	return 0
+}
+
 var File_runtime_data_storage_v1_oss_proto protoreflect.FileDescriptor
 
 const file_runtime_data_storage_v1_oss_proto_rawDesc = "" +
 	"\n" +
-	"!runtime/data/storage/v1/oss.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\x87\x03\n" +
+	"!runtime/data/storage/v1/oss.proto\x12\x17runtime.data.storage.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\x97\x06\n" +
 	"\tOssConfig\x12:\n" +
 	"\bendpoint\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18Storage service endpointR\bendpoint\x12$\n" +
 	"\raccess_key_id\x18\x02 \x01(\tR\raccess_key_id\x12,\n" +
@@ -138,7 +456,43 @@ const file_runtime_data_storage_v1_oss_proto_rawDesc = "" +
 	"\x06region\x18\x05 \x01(\tR\x06region\x12\x10\n" +
 	"\x03ssl\x18\x06 \x01(\bR\x03ssl\x12Y\n" +
 	"\x0fconnect_timeout\x18\a \x01(\x03B/\xfaB\x04\"\x02(\x00\xbaG%\x92\x02\"Connection timeout in millisecondsR\x0fconnect_timeout\x12M\n" +
-	"\fread_timeout\x18\b \x01(\x03B)\xfaB\x04\"\x02(\x00\xbaG\x1f\x92\x02\x1cRead timeout in millisecondsR\fread_timeoutB\xf1\x01\n" +
+	"\fread_timeout\x18\b \x01(\x03B)\xfaB\x04\"\x02(\x00\xbaG\x1f\x92\x02\x1cRead timeout in millisecondsR\fread_timeout\x12z\n" +
+	"\rbucket_policy\x18\t \x01(\v2%.runtime.data.storage.v1.BucketPolicyB(\xbaG%\x92\x02\"Bucket access policy configurationH\x00R\rbucket_policy\x88\x01\x01\x12z\n" +
+	"\x0flifecycle_rules\x18\n" +
+	" \x03(\v2&.runtime.data.storage.v1.LifecycleRuleB(\xbaG%\x92\x02\"List of lifecycle management rulesR\x0flifecycle_rules\x12m\n" +
+	"\x12versioning_enabled\x18\v \x01(\bB8\xbaG5\x92\x022Whether to enable object versioning for the bucketH\x01R\x12versioning_enabled\x88\x01\x01B\x10\n" +
+	"\x0e_bucket_policyB\x15\n" +
+	"\x13_versioning_enabled\"e\n" +
+	"\fBucketPolicy\x12U\n" +
+	"\x0fpolicy_document\x18\x01 \x01(\tB+\xbaG(\x92\x02%Access policy document in JSON formatR\x0fpolicy_document\"\xf0\x05\n" +
+	"\rLifecycleRule\x126\n" +
+	"\x02id\x18\x01 \x01(\tB&\xbaG#\x92\x02 Unique ID for the lifecycle ruleR\x02id\x12N\n" +
+	"\x06prefix\x18\x02 \x01(\tB1\xbaG.\x92\x02+Object key prefix to which the rule appliesH\x00R\x06prefix\x88\x01\x01\x12T\n" +
+	"\x06status\x18\x03 \x01(\tB<\xbaG9\x92\x026Status of the lifecycle rule (e.g., Enabled, Disabled)R\x06status\x12o\n" +
+	"\n" +
+	"expiration\x18\x04 \x01(\v2#.runtime.data.storage.v1.ExpirationB%\xbaG\"\x92\x02\x1fObject expiration configurationH\x01R\n" +
+	"expiration\x88\x01\x01\x12\x88\x01\n" +
+	"\n" +
+	"transition\x18\x05 \x01(\v2#.runtime.data.storage.v1.TransitionB>\xbaG;\x92\x028Object transition to another storage class configurationH\x02R\n" +
+	"transition\x88\x01\x01\x12\xb9\x01\n" +
+	"\x1dnoncurrent_version_expiration\x18\x06 \x01(\v24.runtime.data.storage.v1.NoncurrentVersionExpirationB8\xbaG5\x92\x022Noncurrent object version expiration configurationH\x03R\x1dnoncurrent_version_expiration\x88\x01\x01B\t\n" +
+	"\a_prefixB\r\n" +
+	"\v_expirationB\r\n" +
+	"\v_transitionB \n" +
+	"\x1e_noncurrent_version_expiration\"\xc9\x01\n" +
+	"\n" +
+	"Expiration\x12S\n" +
+	"\x04days\x18\x01 \x01(\x05B:\xbaG7\x92\x024Number of days after object creation when it expiresH\x00R\x04days\x88\x01\x01\x12T\n" +
+	"\x04date\x18\x02 \x01(\tB;\xbaG8\x92\x025Specific date when objects expire (YYYY-MM-DD format)H\x01R\x04date\x88\x01\x01B\a\n" +
+	"\x05_daysB\a\n" +
+	"\x05_date\"\xc4\x01\n" +
+	"\n" +
+	"Transition\x12W\n" +
+	"\x04days\x18\x01 \x01(\x05B>\xbaG;\x92\x028Number of days after object creation when it transitionsH\x00R\x04days\x88\x01\x01\x12T\n" +
+	"\rstorage_class\x18\x02 \x01(\tB.\xbaG+\x92\x02(Target storage class (e.g., IA, Archive)R\rstorage_classB\a\n" +
+	"\x05_days\"\x91\x01\n" +
+	"\x1bNoncurrentVersionExpiration\x12r\n" +
+	"\x0fnoncurrent_days\x18\x01 \x01(\x05BH\xbaGE\x92\x02BNumber of days after the object becomes noncurrent when it expiresR\x0fnoncurrent_daysB\xf1\x01\n" +
 	"\x1bcom.runtime.data.storage.v1B\bOssProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1\xa2\x02\x03RDS\xaa\x02\x17Runtime.Data.Storage.V1\xca\x02\x17Runtime\\Data\\Storage\\V1\xe2\x02#Runtime\\Data\\Storage\\V1\\GPBMetadata\xea\x02\x1aRuntime::Data::Storage::V1b\x06proto3"
 
 var (
@@ -153,16 +507,26 @@ func file_runtime_data_storage_v1_oss_proto_rawDescGZIP() []byte {
 	return file_runtime_data_storage_v1_oss_proto_rawDescData
 }
 
-var file_runtime_data_storage_v1_oss_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_runtime_data_storage_v1_oss_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_runtime_data_storage_v1_oss_proto_goTypes = []any{
-	(*OssConfig)(nil), // 0: runtime.data.storage.v1.OssConfig
+	(*OssConfig)(nil),                   // 0: runtime.data.storage.v1.OssConfig
+	(*BucketPolicy)(nil),                // 1: runtime.data.storage.v1.BucketPolicy
+	(*LifecycleRule)(nil),               // 2: runtime.data.storage.v1.LifecycleRule
+	(*Expiration)(nil),                  // 3: runtime.data.storage.v1.Expiration
+	(*Transition)(nil),                  // 4: runtime.data.storage.v1.Transition
+	(*NoncurrentVersionExpiration)(nil), // 5: runtime.data.storage.v1.NoncurrentVersionExpiration
 }
 var file_runtime_data_storage_v1_oss_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: runtime.data.storage.v1.OssConfig.bucket_policy:type_name -> runtime.data.storage.v1.BucketPolicy
+	2, // 1: runtime.data.storage.v1.OssConfig.lifecycle_rules:type_name -> runtime.data.storage.v1.LifecycleRule
+	3, // 2: runtime.data.storage.v1.LifecycleRule.expiration:type_name -> runtime.data.storage.v1.Expiration
+	4, // 3: runtime.data.storage.v1.LifecycleRule.transition:type_name -> runtime.data.storage.v1.Transition
+	5, // 4: runtime.data.storage.v1.LifecycleRule.noncurrent_version_expiration:type_name -> runtime.data.storage.v1.NoncurrentVersionExpiration
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_runtime_data_storage_v1_oss_proto_init() }
@@ -170,13 +534,17 @@ func file_runtime_data_storage_v1_oss_proto_init() {
 	if File_runtime_data_storage_v1_oss_proto != nil {
 		return
 	}
+	file_runtime_data_storage_v1_oss_proto_msgTypes[0].OneofWrappers = []any{}
+	file_runtime_data_storage_v1_oss_proto_msgTypes[2].OneofWrappers = []any{}
+	file_runtime_data_storage_v1_oss_proto_msgTypes[3].OneofWrappers = []any{}
+	file_runtime_data_storage_v1_oss_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_data_storage_v1_oss_proto_rawDesc), len(file_runtime_data_storage_v1_oss_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

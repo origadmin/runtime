@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package runtime.security.transport.v1;
 
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
@@ -13,19 +15,21 @@ option objc_class_prefix = "ORST";
 
 // TLS configuration for secure connections
 message TLSConfig {
+  // Unique name for this TLS configuration instance.
+  string name = 1;
   // Whether TLS is enabled
-  bool enabled = 1 [json_name = "enabled"];
+  bool enabled = 2 [json_name = "enabled"];
 
   // Certificate configuration
   // File-based certificate configuration
-  optional FileConfig file = 2 [json_name = "file"];
+  optional FileConfig file = 3 [json_name = "file"];
   // Inline PEM certificate data
-  optional PEMConfig pem = 3 [json_name = "pem"];
+  optional PEMConfig pem = 4 [json_name = "pem"];
 
   // Minimum TLS version
   // Allowed values: "1.0", "1.1", "1.2", "1.3"
   // Default: "1.2"
-  string min_version = 4 [
+  string min_version = 5 [
     (validate.rules).string = {
       in: [
         "1.0",
@@ -39,22 +43,28 @@ message TLSConfig {
 
   // List of supported cipher suites
   // Example: ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"]
-  repeated string cipher_suites = 5 [json_name = "cipher_suites"];
+  repeated string cipher_suites = 6 [json_name = "cipher_suites"];
 
   // Require client certificate
   // Default: false
-  bool require_client_cert = 6 [json_name = "require_client_cert"];
+  bool require_client_cert = 7 [json_name = "require_client_cert"];
 
   // Client CA certificate file path (for client cert validation)
-  string client_ca_file = 7 [json_name = "client_ca_file"];
+  string client_ca_file = 8 [json_name = "client_ca_file"];
 
   // Whether to skip server certificate verification
   // Default: false
-  bool insecure_skip_verify = 8 [json_name = "insecure_skip_verify"];
+  bool insecure_skip_verify = 9 [json_name = "insecure_skip_verify"];
 
   // Server name for SNI (Server Name Indication), used by client
   // Default: ""
-  string server_name = 9 [json_name = "server_name"];
+  string server_name = 10 [json_name = "server_name"];
+
+  // Optional custom configuration for TLS settings not explicitly defined.
+  optional google.protobuf.Struct customize = 11 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom configuration for TLS settings not explicitly defined."}
+  ];
 }
 
 // File-based certificate configuration

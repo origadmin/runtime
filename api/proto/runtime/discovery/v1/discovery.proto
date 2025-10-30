@@ -48,8 +48,15 @@ message Discovery {
 }
 
 message Discoveries {
-  string default_registry_name = 1 [json_name = "default_registry_name"];
-  repeated Discovery discoveries = 2 [json_name = "discoveries"];
+  // default is the name of the discovery service to use by default.
+  string default = 1 [json_name = "default"];
+
+  // active specifies the name of the discovery service to use, overriding the default.
+  optional string active = 2 [json_name = "active"];
+
+  repeated Discovery discoveries = 3 [json_name = "discoveries"];
+
+
 }
 
 // --- Message Definitions for Each Provider ---

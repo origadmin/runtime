@@ -62,7 +62,7 @@ func (m *FileStoreConfig) validate(all bool) error {
 	if _, ok := _FileStoreConfig_Driver_InLookup[m.GetDriver()]; !ok {
 		err := FileStoreConfigValidationError{
 			field:  "Driver",
-			reason: "value must be in list [local oss]",
+			reason: "value must be in list [local oss customize]",
 		}
 		if !all {
 			return err
@@ -130,6 +130,39 @@ func (m *FileStoreConfig) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return FileStoreConfigValidationError{
 					field:  "Oss",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, FileStoreConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, FileStoreConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return FileStoreConfigValidationError{
+					field:  "Customize",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -217,6 +250,7 @@ var _ interface {
 } = FileStoreConfigValidationError{}
 
 var _FileStoreConfig_Driver_InLookup = map[string]struct{}{
-	"local": {},
-	"oss":   {},
+	"local":     {},
+	"oss":       {},
+	"customize": {},
 }

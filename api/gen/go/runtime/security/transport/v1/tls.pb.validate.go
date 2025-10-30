@@ -57,6 +57,8 @@ func (m *TLSConfig) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Name
+
 	// no validation rules for Enabled
 
 	if _, ok := _TLSConfig_MinVersion_InLookup[m.GetMinVersion()]; !ok {
@@ -136,6 +138,39 @@ func (m *TLSConfig) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return TLSConfigValidationError{
 					field:  "Pem",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, TLSConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, TLSConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return TLSConfigValidationError{
+					field:  "Customize",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

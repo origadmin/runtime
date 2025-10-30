@@ -8,8 +8,10 @@ package transportv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -25,31 +27,35 @@ const (
 // TLS configuration for secure connections
 type TLSConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique name for this TLS configuration instance.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Whether TLS is enabled
-	Enabled bool `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	Enabled bool `protobuf:"varint,2,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	// Certificate configuration
 	// File-based certificate configuration
-	File *FileConfig `protobuf:"bytes,2,opt,name=file,proto3,oneof" json:"file,omitempty"`
+	File *FileConfig `protobuf:"bytes,3,opt,name=file,proto3,oneof" json:"file,omitempty"`
 	// Inline PEM certificate data
-	Pem *PEMConfig `protobuf:"bytes,3,opt,name=pem,proto3,oneof" json:"pem,omitempty"`
+	Pem *PEMConfig `protobuf:"bytes,4,opt,name=pem,proto3,oneof" json:"pem,omitempty"`
 	// Minimum TLS version
 	// Allowed values: "1.0", "1.1", "1.2", "1.3"
 	// Default: "1.2"
-	MinVersion string `protobuf:"bytes,4,opt,name=min_version,proto3" json:"min_version,omitempty"`
+	MinVersion string `protobuf:"bytes,5,opt,name=min_version,proto3" json:"min_version,omitempty"`
 	// List of supported cipher suites
 	// Example: ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"]
-	CipherSuites []string `protobuf:"bytes,5,rep,name=cipher_suites,proto3" json:"cipher_suites,omitempty"`
+	CipherSuites []string `protobuf:"bytes,6,rep,name=cipher_suites,proto3" json:"cipher_suites,omitempty"`
 	// Require client certificate
 	// Default: false
-	RequireClientCert bool `protobuf:"varint,6,opt,name=require_client_cert,proto3" json:"require_client_cert,omitempty"`
+	RequireClientCert bool `protobuf:"varint,7,opt,name=require_client_cert,proto3" json:"require_client_cert,omitempty"`
 	// Client CA certificate file path (for client cert validation)
-	ClientCaFile string `protobuf:"bytes,7,opt,name=client_ca_file,proto3" json:"client_ca_file,omitempty"`
+	ClientCaFile string `protobuf:"bytes,8,opt,name=client_ca_file,proto3" json:"client_ca_file,omitempty"`
 	// Whether to skip server certificate verification
 	// Default: false
-	InsecureSkipVerify bool `protobuf:"varint,8,opt,name=insecure_skip_verify,proto3" json:"insecure_skip_verify,omitempty"`
+	InsecureSkipVerify bool `protobuf:"varint,9,opt,name=insecure_skip_verify,proto3" json:"insecure_skip_verify,omitempty"`
 	// Server name for SNI (Server Name Indication), used by client
 	// Default: ""
-	ServerName    string `protobuf:"bytes,9,opt,name=server_name,proto3" json:"server_name,omitempty"`
+	ServerName string `protobuf:"bytes,10,opt,name=server_name,proto3" json:"server_name,omitempty"`
+	// Optional custom configuration for TLS settings not explicitly defined.
+	Customize     *structpb.Struct `protobuf:"bytes,11,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -82,6 +88,13 @@ func (x *TLSConfig) ProtoReflect() protoreflect.Message {
 // Deprecated: Use TLSConfig.ProtoReflect.Descriptor instead.
 func (*TLSConfig) Descriptor() ([]byte, []int) {
 	return file_runtime_security_transport_v1_tls_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *TLSConfig) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 func (x *TLSConfig) GetEnabled() bool {
@@ -145,6 +158,13 @@ func (x *TLSConfig) GetServerName() string {
 		return x.ServerName
 	}
 	return ""
+}
+
+func (x *TLSConfig) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
+	}
+	return nil
 }
 
 // File-based certificate configuration
@@ -279,19 +299,24 @@ var File_runtime_security_transport_v1_tls_proto protoreflect.FileDescriptor
 
 const file_runtime_security_transport_v1_tls_proto_rawDesc = "" +
 	"\n" +
-	"'runtime/security/transport/v1/tls.proto\x12\x1druntime.security.transport.v1\x1a\x17validate/validate.proto\"\xce\x03\n" +
-	"\tTLSConfig\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12B\n" +
-	"\x04file\x18\x02 \x01(\v2).runtime.security.transport.v1.FileConfigH\x00R\x04file\x88\x01\x01\x12?\n" +
-	"\x03pem\x18\x03 \x01(\v2(.runtime.security.transport.v1.PEMConfigH\x01R\x03pem\x88\x01\x01\x12;\n" +
-	"\vmin_version\x18\x04 \x01(\tB\x19\xfaB\x16r\x14R\x031.0R\x031.1R\x031.2R\x031.3R\vmin_version\x12$\n" +
-	"\rcipher_suites\x18\x05 \x03(\tR\rcipher_suites\x120\n" +
-	"\x13require_client_cert\x18\x06 \x01(\bR\x13require_client_cert\x12&\n" +
-	"\x0eclient_ca_file\x18\a \x01(\tR\x0eclient_ca_file\x122\n" +
-	"\x14insecure_skip_verify\x18\b \x01(\bR\x14insecure_skip_verify\x12 \n" +
-	"\vserver_name\x18\t \x01(\tR\vserver_nameB\a\n" +
+	"'runtime/security/transport/v1/tls.proto\x12\x1druntime.security.transport.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xf1\x04\n" +
+	"\tTLSConfig\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
+	"\aenabled\x18\x02 \x01(\bR\aenabled\x12B\n" +
+	"\x04file\x18\x03 \x01(\v2).runtime.security.transport.v1.FileConfigH\x00R\x04file\x88\x01\x01\x12?\n" +
+	"\x03pem\x18\x04 \x01(\v2(.runtime.security.transport.v1.PEMConfigH\x01R\x03pem\x88\x01\x01\x12;\n" +
+	"\vmin_version\x18\x05 \x01(\tB\x19\xfaB\x16r\x14R\x031.0R\x031.1R\x031.2R\x031.3R\vmin_version\x12$\n" +
+	"\rcipher_suites\x18\x06 \x03(\tR\rcipher_suites\x120\n" +
+	"\x13require_client_cert\x18\a \x01(\bR\x13require_client_cert\x12&\n" +
+	"\x0eclient_ca_file\x18\b \x01(\tR\x0eclient_ca_file\x122\n" +
+	"\x14insecure_skip_verify\x18\t \x01(\bR\x14insecure_skip_verify\x12 \n" +
+	"\vserver_name\x18\n" +
+	" \x01(\tR\vserver_name\x12\x7f\n" +
+	"\tcustomize\x18\v \x01(\v2\x17.google.protobuf.StructBC\xbaG@\x92\x02=Custom configuration for TLS settings not explicitly defined.H\x02R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_fileB\x06\n" +
-	"\x04_pem\"T\n" +
+	"\x04_pemB\f\n" +
+	"\n" +
+	"_customize\"T\n" +
 	"\n" +
 	"FileConfig\x12\x1b\n" +
 	"\x04cert\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04cert\x12\x19\n" +
@@ -317,18 +342,20 @@ func file_runtime_security_transport_v1_tls_proto_rawDescGZIP() []byte {
 
 var file_runtime_security_transport_v1_tls_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_runtime_security_transport_v1_tls_proto_goTypes = []any{
-	(*TLSConfig)(nil),  // 0: runtime.security.transport.v1.TLSConfig
-	(*FileConfig)(nil), // 1: runtime.security.transport.v1.FileConfig
-	(*PEMConfig)(nil),  // 2: runtime.security.transport.v1.PEMConfig
+	(*TLSConfig)(nil),       // 0: runtime.security.transport.v1.TLSConfig
+	(*FileConfig)(nil),      // 1: runtime.security.transport.v1.FileConfig
+	(*PEMConfig)(nil),       // 2: runtime.security.transport.v1.PEMConfig
+	(*structpb.Struct)(nil), // 3: google.protobuf.Struct
 }
 var file_runtime_security_transport_v1_tls_proto_depIdxs = []int32{
 	1, // 0: runtime.security.transport.v1.TLSConfig.file:type_name -> runtime.security.transport.v1.FileConfig
 	2, // 1: runtime.security.transport.v1.TLSConfig.pem:type_name -> runtime.security.transport.v1.PEMConfig
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 2: runtime.security.transport.v1.TLSConfig.customize:type_name -> google.protobuf.Struct
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_runtime_security_transport_v1_tls_proto_init() }

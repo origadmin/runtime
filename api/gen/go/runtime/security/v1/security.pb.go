@@ -7,9 +7,11 @@
 package securityv1
 
 import (
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -22,13 +24,17 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Security defines the configuration for all security-related components.
+// Security defines the top-level configuration for all security-related components.
 type Security struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Authenticators []*AuthenticatorConfig `protobuf:"bytes,1,rep,name=authenticators,proto3" json:"authenticators,omitempty"`
-	Authorizers    []*AuthorizerConfig    `protobuf:"bytes,2,rep,name=authorizers,proto3" json:"authorizers,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// List of authentication configurations.
+	AuthnConfigs *AuthNConfigs `protobuf:"bytes,1,opt,name=authn_configs,json=authnConfigs,proto3" json:"authn_configs,omitempty"`
+	// List of authorization configurations.
+	AuthzConfigs *AuthZConfigs `protobuf:"bytes,2,opt,name=authz_configs,json=authzConfigs,proto3" json:"authz_configs,omitempty"`
+	// List of transport layer security (TLS) configurations.
+	TransportSecurityConfigs *TransportSecurityConfigs `protobuf:"bytes,3,opt,name=transport_security_configs,json=transportSecurityConfigs,proto3" json:"transport_security_configs,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *Security) Reset() {
@@ -61,45 +67,50 @@ func (*Security) Descriptor() ([]byte, []int) {
 	return file_runtime_security_v1_security_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Security) GetAuthenticators() []*AuthenticatorConfig {
+func (x *Security) GetAuthnConfigs() *AuthNConfigs {
 	if x != nil {
-		return x.Authenticators
+		return x.AuthnConfigs
 	}
 	return nil
 }
 
-func (x *Security) GetAuthorizers() []*AuthorizerConfig {
+func (x *Security) GetAuthzConfigs() *AuthZConfigs {
 	if x != nil {
-		return x.Authorizers
+		return x.AuthzConfigs
 	}
 	return nil
 }
 
-// AuthenticatorConfig defines the configuration for a single authenticator.
-type AuthenticatorConfig struct {
+func (x *Security) GetTransportSecurityConfigs() *TransportSecurityConfigs {
+	if x != nil {
+		return x.TransportSecurityConfigs
+	}
+	return nil
+}
+
+type AuthNConfigs struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"` // e.g., "jwt", "oauth2"
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // Unique name for this authenticator instance
-	Enabled       bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"` // Type-specific configuration
+	Default       string                 `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Configs       []*v1.AuthN            `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AuthenticatorConfig) Reset() {
-	*x = AuthenticatorConfig{}
+func (x *AuthNConfigs) Reset() {
+	*x = AuthNConfigs{}
 	mi := &file_runtime_security_v1_security_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AuthenticatorConfig) String() string {
+func (x *AuthNConfigs) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AuthenticatorConfig) ProtoMessage() {}
+func (*AuthNConfigs) ProtoMessage() {}
 
-func (x *AuthenticatorConfig) ProtoReflect() protoreflect.Message {
+func (x *AuthNConfigs) ProtoReflect() protoreflect.Message {
 	mi := &file_runtime_security_v1_security_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -111,64 +122,55 @@ func (x *AuthenticatorConfig) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AuthenticatorConfig.ProtoReflect.Descriptor instead.
-func (*AuthenticatorConfig) Descriptor() ([]byte, []int) {
+// Deprecated: Use AuthNConfigs.ProtoReflect.Descriptor instead.
+func (*AuthNConfigs) Descriptor() ([]byte, []int) {
 	return file_runtime_security_v1_security_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *AuthenticatorConfig) GetType() string {
+func (x *AuthNConfigs) GetDefault() string {
 	if x != nil {
-		return x.Type
+		return x.Default
 	}
 	return ""
 }
 
-func (x *AuthenticatorConfig) GetName() string {
-	if x != nil {
-		return x.Name
+func (x *AuthNConfigs) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
 	}
 	return ""
 }
 
-func (x *AuthenticatorConfig) GetEnabled() bool {
+func (x *AuthNConfigs) GetConfigs() []*v1.AuthN {
 	if x != nil {
-		return x.Enabled
-	}
-	return false
-}
-
-func (x *AuthenticatorConfig) GetConfig() *structpb.Struct {
-	if x != nil {
-		return x.Config
+		return x.Configs
 	}
 	return nil
 }
 
-// AuthorizerConfig defines the configuration for a single authorizer.
-type AuthorizerConfig struct {
+type AuthZConfigs struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"` // e.g., "casbin"
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // Unique name for this authorizer instance
-	Enabled       bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"` // Type-specific configuration
+	Default       string                 `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Configs       []*v11.AuthZ           `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AuthorizerConfig) Reset() {
-	*x = AuthorizerConfig{}
+func (x *AuthZConfigs) Reset() {
+	*x = AuthZConfigs{}
 	mi := &file_runtime_security_v1_security_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AuthorizerConfig) String() string {
+func (x *AuthZConfigs) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AuthorizerConfig) ProtoMessage() {}
+func (*AuthZConfigs) ProtoMessage() {}
 
-func (x *AuthorizerConfig) ProtoReflect() protoreflect.Message {
+func (x *AuthZConfigs) ProtoReflect() protoreflect.Message {
 	mi := &file_runtime_security_v1_security_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -180,35 +182,88 @@ func (x *AuthorizerConfig) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AuthorizerConfig.ProtoReflect.Descriptor instead.
-func (*AuthorizerConfig) Descriptor() ([]byte, []int) {
+// Deprecated: Use AuthZConfigs.ProtoReflect.Descriptor instead.
+func (*AuthZConfigs) Descriptor() ([]byte, []int) {
 	return file_runtime_security_v1_security_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *AuthorizerConfig) GetType() string {
+func (x *AuthZConfigs) GetDefault() string {
 	if x != nil {
-		return x.Type
+		return x.Default
 	}
 	return ""
 }
 
-func (x *AuthorizerConfig) GetName() string {
-	if x != nil {
-		return x.Name
+func (x *AuthZConfigs) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
 	}
 	return ""
 }
 
-func (x *AuthorizerConfig) GetEnabled() bool {
+func (x *AuthZConfigs) GetConfigs() []*v11.AuthZ {
 	if x != nil {
-		return x.Enabled
+		return x.Configs
 	}
-	return false
+	return nil
 }
 
-func (x *AuthorizerConfig) GetConfig() *structpb.Struct {
+type TransportSecurityConfigs struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Default       string                 `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Configs       []*v12.TLSConfig       `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransportSecurityConfigs) Reset() {
+	*x = TransportSecurityConfigs{}
+	mi := &file_runtime_security_v1_security_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransportSecurityConfigs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransportSecurityConfigs) ProtoMessage() {}
+
+func (x *TransportSecurityConfigs) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_security_v1_security_proto_msgTypes[3]
 	if x != nil {
-		return x.Config
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransportSecurityConfigs.ProtoReflect.Descriptor instead.
+func (*TransportSecurityConfigs) Descriptor() ([]byte, []int) {
+	return file_runtime_security_v1_security_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TransportSecurityConfigs) GetDefault() string {
+	if x != nil {
+		return x.Default
+	}
+	return ""
+}
+
+func (x *TransportSecurityConfigs) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
+	}
+	return ""
+}
+
+func (x *TransportSecurityConfigs) GetConfigs() []*v12.TLSConfig {
+	if x != nil {
+		return x.Configs
 	}
 	return nil
 }
@@ -217,20 +272,26 @@ var File_runtime_security_v1_security_proto protoreflect.FileDescriptor
 
 const file_runtime_security_v1_security_proto_rawDesc = "" +
 	"\n" +
-	"\"runtime/security/v1/security.proto\x12\x13runtime.security.v1\x1a\x1cgoogle/protobuf/struct.proto\"\xa5\x01\n" +
-	"\bSecurity\x12P\n" +
-	"\x0eauthenticators\x18\x01 \x03(\v2(.runtime.security.v1.AuthenticatorConfigR\x0eauthenticators\x12G\n" +
-	"\vauthorizers\x18\x02 \x03(\v2%.runtime.security.v1.AuthorizerConfigR\vauthorizers\"\x88\x01\n" +
-	"\x13AuthenticatorConfig\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
-	"\aenabled\x18\x03 \x01(\bR\aenabled\x12/\n" +
-	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\"\x85\x01\n" +
-	"\x10AuthorizerConfig\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
-	"\aenabled\x18\x03 \x01(\bR\aenabled\x12/\n" +
-	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06configB\xde\x01\n" +
+	"\"runtime/security/v1/security.proto\x12\x13runtime.security.v1\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\"\x87\x02\n" +
+	"\bSecurity\x12F\n" +
+	"\rauthn_configs\x18\x01 \x01(\v2!.runtime.security.v1.AuthNConfigsR\fauthnConfigs\x12F\n" +
+	"\rauthz_configs\x18\x02 \x01(\v2!.runtime.security.v1.AuthZConfigsR\fauthzConfigs\x12k\n" +
+	"\x1atransport_security_configs\x18\x03 \x01(\v2-.runtime.security.v1.TransportSecurityConfigsR\x18transportSecurityConfigs\"\x8c\x01\n" +
+	"\fAuthNConfigs\x12\x18\n" +
+	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x12:\n" +
+	"\aconfigs\x18\x03 \x03(\v2 .runtime.security.authn.v1.AuthNR\aconfigsB\t\n" +
+	"\a_active\"\x8c\x01\n" +
+	"\fAuthZConfigs\x12\x18\n" +
+	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x12:\n" +
+	"\aconfigs\x18\x03 \x03(\v2 .runtime.security.authz.v1.AuthZR\aconfigsB\t\n" +
+	"\a_active\"\xa0\x01\n" +
+	"\x18TransportSecurityConfigs\x12\x18\n" +
+	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x12B\n" +
+	"\aconfigs\x18\x03 \x03(\v2(.runtime.security.transport.v1.TLSConfigR\aconfigsB\t\n" +
+	"\a_activeB\xde\x01\n" +
 	"\x17com.runtime.security.v1B\rSecurityProtoP\x01ZFgithub.com/origadmin/runtime/api/gen/go/runtime/security/v1;securityv1\xa2\x02\x03RSX\xaa\x02\x13Runtime.Security.V1\xca\x02\x13Runtime\\Security\\V1\xe2\x02\x1fRuntime\\Security\\V1\\GPBMetadata\xea\x02\x15Runtime::Security::V1b\x06proto3"
 
 var (
@@ -245,23 +306,28 @@ func file_runtime_security_v1_security_proto_rawDescGZIP() []byte {
 	return file_runtime_security_v1_security_proto_rawDescData
 }
 
-var file_runtime_security_v1_security_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_runtime_security_v1_security_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_runtime_security_v1_security_proto_goTypes = []any{
-	(*Security)(nil),            // 0: runtime.security.v1.Security
-	(*AuthenticatorConfig)(nil), // 1: runtime.security.v1.AuthenticatorConfig
-	(*AuthorizerConfig)(nil),    // 2: runtime.security.v1.AuthorizerConfig
-	(*structpb.Struct)(nil),     // 3: google.protobuf.Struct
+	(*Security)(nil),                 // 0: runtime.security.v1.Security
+	(*AuthNConfigs)(nil),             // 1: runtime.security.v1.AuthNConfigs
+	(*AuthZConfigs)(nil),             // 2: runtime.security.v1.AuthZConfigs
+	(*TransportSecurityConfigs)(nil), // 3: runtime.security.v1.TransportSecurityConfigs
+	(*v1.AuthN)(nil),                 // 4: runtime.security.authn.v1.AuthN
+	(*v11.AuthZ)(nil),                // 5: runtime.security.authz.v1.AuthZ
+	(*v12.TLSConfig)(nil),            // 6: runtime.security.transport.v1.TLSConfig
 }
 var file_runtime_security_v1_security_proto_depIdxs = []int32{
-	1, // 0: runtime.security.v1.Security.authenticators:type_name -> runtime.security.v1.AuthenticatorConfig
-	2, // 1: runtime.security.v1.Security.authorizers:type_name -> runtime.security.v1.AuthorizerConfig
-	3, // 2: runtime.security.v1.AuthenticatorConfig.config:type_name -> google.protobuf.Struct
-	3, // 3: runtime.security.v1.AuthorizerConfig.config:type_name -> google.protobuf.Struct
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	1, // 0: runtime.security.v1.Security.authn_configs:type_name -> runtime.security.v1.AuthNConfigs
+	2, // 1: runtime.security.v1.Security.authz_configs:type_name -> runtime.security.v1.AuthZConfigs
+	3, // 2: runtime.security.v1.Security.transport_security_configs:type_name -> runtime.security.v1.TransportSecurityConfigs
+	4, // 3: runtime.security.v1.AuthNConfigs.configs:type_name -> runtime.security.authn.v1.AuthN
+	5, // 4: runtime.security.v1.AuthZConfigs.configs:type_name -> runtime.security.authz.v1.AuthZ
+	6, // 5: runtime.security.v1.TransportSecurityConfigs.configs:type_name -> runtime.security.transport.v1.TLSConfig
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_runtime_security_v1_security_proto_init() }
@@ -269,13 +335,16 @@ func file_runtime_security_v1_security_proto_init() {
 	if File_runtime_security_v1_security_proto != nil {
 		return
 	}
+	file_runtime_security_v1_security_proto_msgTypes[1].OneofWrappers = []any{}
+	file_runtime_security_v1_security_proto_msgTypes[2].OneofWrappers = []any{}
+	file_runtime_security_v1_security_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_security_v1_security_proto_rawDesc), len(file_runtime_security_v1_security_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

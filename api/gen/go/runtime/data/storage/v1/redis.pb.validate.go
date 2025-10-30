@@ -98,6 +98,86 @@ func (m *RedisConfig) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if m.PoolSize != nil {
+
+		if m.GetPoolSize() < 0 {
+			err := RedisConfigValidationError{
+				field:  "PoolSize",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.MinIdleConns != nil {
+
+		if m.GetMinIdleConns() < 0 {
+			err := RedisConfigValidationError{
+				field:  "MinIdleConns",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.IdleTimeout != nil {
+
+		if m.GetIdleTimeout() < 0 {
+			err := RedisConfigValidationError{
+				field:  "IdleTimeout",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.PoolTimeout != nil {
+
+		if m.GetPoolTimeout() < 0 {
+			err := RedisConfigValidationError{
+				field:  "PoolTimeout",
+				reason: "value must be greater than or equal to 0",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+	}
+
+	if m.TlsEnabled != nil {
+		// no validation rules for TlsEnabled
+	}
+
+	if m.TlsClientCertFile != nil {
+		// no validation rules for TlsClientCertFile
+	}
+
+	if m.TlsClientKeyFile != nil {
+		// no validation rules for TlsClientKeyFile
+	}
+
+	if m.TlsCaCertFile != nil {
+		// no validation rules for TlsCaCertFile
+	}
+
+	if m.TlsInsecureSkipVerify != nil {
+		// no validation rules for TlsInsecureSkipVerify
+	}
+
 	if len(errors) > 0 {
 		return RedisConfigMultiError(errors)
 	}

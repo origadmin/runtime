@@ -57,72 +57,91 @@ func (m *Security) validate(all bool) error {
 
 	var errors []error
 
-	for idx, item := range m.GetAuthenticators() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, SecurityValidationError{
-						field:  fmt.Sprintf("Authenticators[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, SecurityValidationError{
-						field:  fmt.Sprintf("Authenticators[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return SecurityValidationError{
-					field:  fmt.Sprintf("Authenticators[%v]", idx),
+	if all {
+		switch v := interface{}(m.GetAuthnConfigs()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SecurityValidationError{
+					field:  "AuthnConfigs",
 					reason: "embedded message failed validation",
 					cause:  err,
-				}
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SecurityValidationError{
+					field:  "AuthnConfigs",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
 			}
 		}
-
+	} else if v, ok := interface{}(m.GetAuthnConfigs()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SecurityValidationError{
+				field:  "AuthnConfigs",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
-	for idx, item := range m.GetAuthorizers() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, SecurityValidationError{
-						field:  fmt.Sprintf("Authorizers[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, SecurityValidationError{
-						field:  fmt.Sprintf("Authorizers[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return SecurityValidationError{
-					field:  fmt.Sprintf("Authorizers[%v]", idx),
+	if all {
+		switch v := interface{}(m.GetAuthzConfigs()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SecurityValidationError{
+					field:  "AuthzConfigs",
 					reason: "embedded message failed validation",
 					cause:  err,
-				}
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SecurityValidationError{
+					field:  "AuthzConfigs",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
 			}
 		}
+	} else if v, ok := interface{}(m.GetAuthzConfigs()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SecurityValidationError{
+				field:  "AuthzConfigs",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
+	if all {
+		switch v := interface{}(m.GetTransportSecurityConfigs()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, SecurityValidationError{
+					field:  "TransportSecurityConfigs",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, SecurityValidationError{
+					field:  "TransportSecurityConfigs",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTransportSecurityConfigs()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return SecurityValidationError{
+				field:  "TransportSecurityConfigs",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	if len(errors) > 0 {
@@ -202,77 +221,360 @@ var _ interface {
 	ErrorName() string
 } = SecurityValidationError{}
 
-// Validate checks the field values on AuthenticatorConfig with the rules
+// Validate checks the field values on AuthNConfigs with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AuthNConfigs) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AuthNConfigs with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AuthNConfigsMultiError, or
+// nil if none found.
+func (m *AuthNConfigs) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AuthNConfigs) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Default
+
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthNConfigsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthNConfigsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthNConfigsValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return AuthNConfigsMultiError(errors)
+	}
+
+	return nil
+}
+
+// AuthNConfigsMultiError is an error wrapping multiple validation errors
+// returned by AuthNConfigs.ValidateAll() if the designated constraints aren't met.
+type AuthNConfigsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AuthNConfigsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AuthNConfigsMultiError) AllErrors() []error { return m }
+
+// AuthNConfigsValidationError is the validation error returned by
+// AuthNConfigs.Validate if the designated constraints aren't met.
+type AuthNConfigsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AuthNConfigsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AuthNConfigsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AuthNConfigsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AuthNConfigsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AuthNConfigsValidationError) ErrorName() string { return "AuthNConfigsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AuthNConfigsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAuthNConfigs.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AuthNConfigsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AuthNConfigsValidationError{}
+
+// Validate checks the field values on AuthZConfigs with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AuthZConfigs) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AuthZConfigs with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AuthZConfigsMultiError, or
+// nil if none found.
+func (m *AuthZConfigs) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AuthZConfigs) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Default
+
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthZConfigsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthZConfigsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthZConfigsValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return AuthZConfigsMultiError(errors)
+	}
+
+	return nil
+}
+
+// AuthZConfigsMultiError is an error wrapping multiple validation errors
+// returned by AuthZConfigs.ValidateAll() if the designated constraints aren't met.
+type AuthZConfigsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AuthZConfigsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AuthZConfigsMultiError) AllErrors() []error { return m }
+
+// AuthZConfigsValidationError is the validation error returned by
+// AuthZConfigs.Validate if the designated constraints aren't met.
+type AuthZConfigsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AuthZConfigsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AuthZConfigsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AuthZConfigsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AuthZConfigsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AuthZConfigsValidationError) ErrorName() string { return "AuthZConfigsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AuthZConfigsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAuthZConfigs.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AuthZConfigsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AuthZConfigsValidationError{}
+
+// Validate checks the field values on TransportSecurityConfigs with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *AuthenticatorConfig) Validate() error {
+func (m *TransportSecurityConfigs) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on AuthenticatorConfig with the rules
-// defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on TransportSecurityConfigs with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// AuthenticatorConfigMultiError, or nil if none found.
-func (m *AuthenticatorConfig) ValidateAll() error {
+// TransportSecurityConfigsMultiError, or nil if none found.
+func (m *TransportSecurityConfigs) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *AuthenticatorConfig) validate(all bool) error {
+func (m *TransportSecurityConfigs) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	// no validation rules for Type
+	// no validation rules for Default
 
-	// no validation rules for Name
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
 
-	// no validation rules for Enabled
-
-	if all {
-		switch v := interface{}(m.GetConfig()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AuthenticatorConfigValidationError{
-					field:  "Config",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, TransportSecurityConfigsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, TransportSecurityConfigsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, AuthenticatorConfigValidationError{
-					field:  "Config",
+				return TransportSecurityConfigsValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetConfig()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AuthenticatorConfigValidationError{
-				field:  "Config",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
 	}
 
 	if len(errors) > 0 {
-		return AuthenticatorConfigMultiError(errors)
+		return TransportSecurityConfigsMultiError(errors)
 	}
 
 	return nil
 }
 
-// AuthenticatorConfigMultiError is an error wrapping multiple validation
-// errors returned by AuthenticatorConfig.ValidateAll() if the designated
+// TransportSecurityConfigsMultiError is an error wrapping multiple validation
+// errors returned by TransportSecurityConfigs.ValidateAll() if the designated
 // constraints aren't met.
-type AuthenticatorConfigMultiError []error
+type TransportSecurityConfigsMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m AuthenticatorConfigMultiError) Error() string {
+func (m TransportSecurityConfigsMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -281,11 +583,11 @@ func (m AuthenticatorConfigMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m AuthenticatorConfigMultiError) AllErrors() []error { return m }
+func (m TransportSecurityConfigsMultiError) AllErrors() []error { return m }
 
-// AuthenticatorConfigValidationError is the validation error returned by
-// AuthenticatorConfig.Validate if the designated constraints aren't met.
-type AuthenticatorConfigValidationError struct {
+// TransportSecurityConfigsValidationError is the validation error returned by
+// TransportSecurityConfigs.Validate if the designated constraints aren't met.
+type TransportSecurityConfigsValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -293,24 +595,24 @@ type AuthenticatorConfigValidationError struct {
 }
 
 // Field function returns field value.
-func (e AuthenticatorConfigValidationError) Field() string { return e.field }
+func (e TransportSecurityConfigsValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e AuthenticatorConfigValidationError) Reason() string { return e.reason }
+func (e TransportSecurityConfigsValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e AuthenticatorConfigValidationError) Cause() error { return e.cause }
+func (e TransportSecurityConfigsValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e AuthenticatorConfigValidationError) Key() bool { return e.key }
+func (e TransportSecurityConfigsValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e AuthenticatorConfigValidationError) ErrorName() string {
-	return "AuthenticatorConfigValidationError"
+func (e TransportSecurityConfigsValidationError) ErrorName() string {
+	return "TransportSecurityConfigsValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e AuthenticatorConfigValidationError) Error() string {
+func (e TransportSecurityConfigsValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -322,14 +624,14 @@ func (e AuthenticatorConfigValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sAuthenticatorConfig.%s: %s%s",
+		"invalid %sTransportSecurityConfigs.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = AuthenticatorConfigValidationError{}
+var _ error = TransportSecurityConfigsValidationError{}
 
 var _ interface {
 	Field() string
@@ -337,139 +639,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = AuthenticatorConfigValidationError{}
-
-// Validate checks the field values on AuthorizerConfig with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *AuthorizerConfig) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on AuthorizerConfig with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// AuthorizerConfigMultiError, or nil if none found.
-func (m *AuthorizerConfig) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *AuthorizerConfig) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Type
-
-	// no validation rules for Name
-
-	// no validation rules for Enabled
-
-	if all {
-		switch v := interface{}(m.GetConfig()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, AuthorizerConfigValidationError{
-					field:  "Config",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, AuthorizerConfigValidationError{
-					field:  "Config",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetConfig()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return AuthorizerConfigValidationError{
-				field:  "Config",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return AuthorizerConfigMultiError(errors)
-	}
-
-	return nil
-}
-
-// AuthorizerConfigMultiError is an error wrapping multiple validation errors
-// returned by AuthorizerConfig.ValidateAll() if the designated constraints
-// aren't met.
-type AuthorizerConfigMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m AuthorizerConfigMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m AuthorizerConfigMultiError) AllErrors() []error { return m }
-
-// AuthorizerConfigValidationError is the validation error returned by
-// AuthorizerConfig.Validate if the designated constraints aren't met.
-type AuthorizerConfigValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e AuthorizerConfigValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e AuthorizerConfigValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e AuthorizerConfigValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e AuthorizerConfigValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e AuthorizerConfigValidationError) ErrorName() string { return "AuthorizerConfigValidationError" }
-
-// Error satisfies the builtin error interface
-func (e AuthorizerConfigValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sAuthorizerConfig.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = AuthorizerConfigValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = AuthorizerConfigValidationError{}
+} = TransportSecurityConfigsValidationError{}

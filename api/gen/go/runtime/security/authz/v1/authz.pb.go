@@ -12,6 +12,7 @@ import (
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -76,15 +77,26 @@ func (x *CasbinAuth) GetClaims() *v1.Claims {
 	return nil
 }
 
+// AuthZ defines the configuration for an authorization mechanism instance.
+// It can also contain attributes of the authorized entity.
 type AuthZ struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Root          bool                   `protobuf:"varint,1,opt,name=root,proto3" json:"root,omitempty"`
-	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	UserType      string                 `protobuf:"bytes,3,opt,name=user_type,proto3" json:"user_type,omitempty"`
-	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
-	Roles         []string               `protobuf:"bytes,5,rep,name=roles,proto3" json:"roles,omitempty"`
-	Timestamp     int64                  `protobuf:"varint,6,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Casbin        *CasbinAuth            `protobuf:"bytes,7,opt,name=casbin,proto3" json:"casbin,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique name for this authorization configuration instance.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The type of authorization mechanism, e.g., "casbin", "opa", "customize".
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	// Optional Casbin authorization configuration.
+	Casbin *CasbinAuth `protobuf:"bytes,10,opt,name=casbin,proto3,oneof" json:"casbin,omitempty"`
+	// Optional custom configuration for authorization types not explicitly defined.
+	Customize *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	// The following fields describe attributes of the authorized entity or context.
+	// They are re-numbered to accommodate the new 'type' field and future mechanism configurations.
+	Root          bool     `protobuf:"varint,3,opt,name=root,proto3" json:"root,omitempty"`
+	Id            string   `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
+	UserType      string   `protobuf:"bytes,5,opt,name=user_type,proto3" json:"user_type,omitempty"`
+	Username      string   `protobuf:"bytes,6,opt,name=username,proto3" json:"username,omitempty"`
+	Roles         []string `protobuf:"bytes,7,rep,name=roles,proto3" json:"roles,omitempty"`
+	Timestamp     int64    `protobuf:"varint,8,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -117,6 +129,34 @@ func (x *AuthZ) ProtoReflect() protoreflect.Message {
 // Deprecated: Use AuthZ.ProtoReflect.Descriptor instead.
 func (*AuthZ) Descriptor() ([]byte, []int) {
 	return file_runtime_security_authz_v1_authz_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *AuthZ) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *AuthZ) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *AuthZ) GetCasbin() *CasbinAuth {
+	if x != nil {
+		return x.Casbin
+	}
+	return nil
+}
+
+func (x *AuthZ) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
+	}
+	return nil
 }
 
 func (x *AuthZ) GetRoot() bool {
@@ -161,30 +201,30 @@ func (x *AuthZ) GetTimestamp() int64 {
 	return 0
 }
 
-func (x *AuthZ) GetCasbin() *CasbinAuth {
-	if x != nil {
-		return x.Casbin
-	}
-	return nil
-}
-
 var File_runtime_security_authz_v1_authz_proto protoreflect.FileDescriptor
 
 const file_runtime_security_authz_v1_authz_proto_rawDesc = "" +
 	"\n" +
-	"%runtime/security/authz/v1/authz.proto\x12\x19runtime.security.authz.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a%runtime/security/authn/v1/authn.proto\x1a&runtime/security/authz/v1/casbin.proto\x1a\x17validate/validate.proto\"\xe7\x01\n" +
+	"%runtime/security/authz/v1/authz.proto\x12\x19runtime.security.authz.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a%runtime/security/authn/v1/authn.proto\x1a&runtime/security/authz/v1/casbin.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xe7\x01\n" +
 	"\n" +
 	"CasbinAuth\x12u\n" +
 	"\x06policy\x18\x01 \x01(\v2!.runtime.security.authz.v1.PolicyB:\xbaG7\x92\x024The Casbin policy associated with the authorization.R\x06policy\x12b\n" +
-	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\xa6\x04\n" +
-	"\x05AuthZ\x12D\n" +
-	"\x04root\x18\x01 \x01(\bB0\xbaG-\x92\x02*Indicates if the user has root privileges.R\x04root\x128\n" +
-	"\x02id\x18\x02 \x01(\tB(\xbaG%\x92\x02\"The unique identifier of the user.R\x02id\x12r\n" +
-	"\tuser_type\x18\x03 \x01(\tBT\xfaB\x16r\x14R\x05adminR\x04userR\x05guest\xbaG8\x92\x025The type of user, either 'admin', 'user', or 'guest'.R\tuser_type\x12;\n" +
-	"\busername\x18\x04 \x01(\tB\x1f\xbaG\x1c\x92\x02\x19The username of the user.R\busername\x12;\n" +
-	"\x05roles\x18\x05 \x03(\tB%\xbaG\"\x92\x02\x1fThe roles assigned to the user.R\x05roles\x12G\n" +
-	"\ttimestamp\x18\x06 \x01(\x03B)\xbaG&\x92\x02#The timestamp of the authorization.R\ttimestamp\x12f\n" +
-	"\x06casbin\x18\a \x01(\v2%.runtime.security.authz.v1.CasbinAuthB'\xbaG$\x92\x02!The Casbin authorization details.R\x06casbinB\x80\x02\n" +
+	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\xe2\x06\n" +
+	"\x05AuthZ\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x7f\n" +
+	"\x04type\x18\x02 \x01(\tBk\xfaB\x1ar\x18R\x06casbinR\x03opaR\tcustomize\xbaGK\x92\x02HThe type of authorization mechanism, e.g., 'casbin', 'opa', 'customize'.R\x04type\x12k\n" +
+	"\x06casbin\x18\n" +
+	" \x01(\v2%.runtime.security.authz.v1.CasbinAuthB'\xbaG$\x92\x02!The Casbin authorization details.H\x00R\x06casbin\x88\x01\x01\x12\x86\x01\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBJ\xbaGG\x92\x02DCustom configuration for authorization types not explicitly defined.H\x01R\tcustomize\x88\x01\x01\x12D\n" +
+	"\x04root\x18\x03 \x01(\bB0\xbaG-\x92\x02*Indicates if the user has root privileges.R\x04root\x128\n" +
+	"\x02id\x18\x04 \x01(\tB(\xbaG%\x92\x02\"The unique identifier of the user.R\x02id\x12r\n" +
+	"\tuser_type\x18\x05 \x01(\tBT\xfaB\x16r\x14R\x05adminR\x04userR\x05guest\xbaG8\x92\x025The type of user, either 'admin', 'user', or 'guest'.R\tuser_type\x12;\n" +
+	"\busername\x18\x06 \x01(\tB\x1f\xbaG\x1c\x92\x02\x19The username of the user.R\busername\x12;\n" +
+	"\x05roles\x18\a \x03(\tB%\xbaG\"\x92\x02\x1fThe roles assigned to the user.R\x05roles\x12G\n" +
+	"\ttimestamp\x18\b \x01(\x03B)\xbaG&\x92\x02#The timestamp of the authorization.R\ttimestampB\t\n" +
+	"\a_casbinB\f\n" +
+	"\n" +
+	"_customizeB\x80\x02\n" +
 	"\x1dcom.runtime.security.authz.v1B\n" +
 	"AuthzProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1;authzv1\xf8\x01\x01\xa2\x02\x03RSA\xaa\x02\x19Runtime.Security.Authz.V1\xca\x02\x19Runtime\\Security\\Authz\\V1\xe2\x02%Runtime\\Security\\Authz\\V1\\GPBMetadata\xea\x02\x1cRuntime::Security::Authz::V1b\x06proto3"
 
@@ -202,20 +242,22 @@ func file_runtime_security_authz_v1_authz_proto_rawDescGZIP() []byte {
 
 var file_runtime_security_authz_v1_authz_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_runtime_security_authz_v1_authz_proto_goTypes = []any{
-	(*CasbinAuth)(nil), // 0: runtime.security.authz.v1.CasbinAuth
-	(*AuthZ)(nil),      // 1: runtime.security.authz.v1.AuthZ
-	(*Policy)(nil),     // 2: runtime.security.authz.v1.Policy
-	(*v1.Claims)(nil),  // 3: runtime.security.authn.v1.Claims
+	(*CasbinAuth)(nil),      // 0: runtime.security.authz.v1.CasbinAuth
+	(*AuthZ)(nil),           // 1: runtime.security.authz.v1.AuthZ
+	(*Policy)(nil),          // 2: runtime.security.authz.v1.Policy
+	(*v1.Claims)(nil),       // 3: runtime.security.authn.v1.Claims
+	(*structpb.Struct)(nil), // 4: google.protobuf.Struct
 }
 var file_runtime_security_authz_v1_authz_proto_depIdxs = []int32{
 	2, // 0: runtime.security.authz.v1.CasbinAuth.policy:type_name -> runtime.security.authz.v1.Policy
 	3, // 1: runtime.security.authz.v1.CasbinAuth.claims:type_name -> runtime.security.authn.v1.Claims
 	0, // 2: runtime.security.authz.v1.AuthZ.casbin:type_name -> runtime.security.authz.v1.CasbinAuth
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	4, // 3: runtime.security.authz.v1.AuthZ.customize:type_name -> google.protobuf.Struct
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_runtime_security_authz_v1_authz_proto_init() }
@@ -224,6 +266,7 @@ func file_runtime_security_authz_v1_authz_proto_init() {
 		return
 	}
 	file_runtime_security_authz_v1_casbin_proto_init()
+	file_runtime_security_authz_v1_authz_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

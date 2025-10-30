@@ -7,6 +7,7 @@ import "validate/validate.proto";
 import "runtime/data/storage/v1/memcached.proto"; // Import MemcachedConfig
 import "runtime/data/storage/v1/memory.proto";    // Import MemoryConfig
 import "runtime/data/storage/v1/redis.proto";     // Import RedisConfig
+import "google/protobuf/struct.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1;storagev1";
 
@@ -21,7 +22,8 @@ message CacheConfig {
         "none",
         "redis",
         "memcached",
-        "memory"
+        "memory",
+        "customize"
       ]
     },
     (gnostic.openapi.v3.property) = {description: "cache driver name"}
@@ -50,5 +52,11 @@ message CacheConfig {
   int64 cleanup_interval = 13 [
     json_name = "cleanup_interval",
     (gnostic.openapi.v3.property) = {description: "Cleanup interval for memory cache in seconds."}
+  ];
+
+  // Optional custom configuration for cache types not explicitly defined.
+  optional google.protobuf.Struct customize = 14 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom configuration for cache types not explicitly defined."}
   ];
 }

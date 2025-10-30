@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package runtime.broker.v1;
 
+import "google/protobuf/struct.proto";
 import "runtime/broker/v1/kafka.proto";
 import "runtime/broker/v1/mqtt.proto";
 import "runtime/broker/v1/nats.proto";
@@ -12,6 +13,7 @@ import "runtime/broker/v1/redis_mq.proto";
 import "runtime/broker/v1/rocketmq.proto";
 import "runtime/broker/v1/sqs.proto";
 import "runtime/broker/v1/stomp.proto";
+import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
 option java_multiple_files = true;
@@ -72,5 +74,8 @@ message Broker {
 }
 
 message Brokers {
-  repeated Broker brokers = 1 [json_name = "brokers"];
+  string default = 1 [json_name = "default"];
+  optional string active = 2 [json_name = "active"];
+
+  repeated Broker brokers = 3 [json_name = "brokers"];
 }

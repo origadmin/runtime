@@ -60,7 +60,7 @@ func (m *CacheConfig) validate(all bool) error {
 	if _, ok := _CacheConfig_Driver_InLookup[m.GetDriver()]; !ok {
 		err := CacheConfigValidationError{
 			field:  "Driver",
-			reason: "value must be in list [none redis memcached memory]",
+			reason: "value must be in list [none redis memcached memory customize]",
 		}
 		if !all {
 			return err
@@ -159,6 +159,39 @@ func (m *CacheConfig) validate(all bool) error {
 
 	// no validation rules for CleanupInterval
 
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CacheConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CacheConfigValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CacheConfigValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if len(errors) > 0 {
 		return CacheConfigMultiError(errors)
 	}
@@ -241,4 +274,5 @@ var _CacheConfig_Driver_InLookup = map[string]struct{}{
 	"redis":     {},
 	"memcached": {},
 	"memory":    {},
+	"customize": {},
 }

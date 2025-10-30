@@ -56,20 +56,169 @@ func (m *Data) validate(all bool) error {
 
 	var errors []error
 
-	if m.DefaultFilestore != nil {
-		// no validation rules for DefaultFilestore
+	if m.Filestores != nil {
+
+		if all {
+			switch v := interface{}(m.GetFilestores()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Filestores",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Filestores",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetFilestores()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataValidationError{
+					field:  "Filestores",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
-	if m.DefaultCache != nil {
-		// no validation rules for DefaultCache
+	if m.Caches != nil {
+
+		if all {
+			switch v := interface{}(m.GetCaches()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Caches",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Caches",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCaches()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataValidationError{
+					field:  "Caches",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
-	if m.DefaultDatabase != nil {
-		// no validation rules for DefaultDatabase
+	if m.Databases != nil {
+
+		if all {
+			switch v := interface{}(m.GetDatabases()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Databases",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Databases",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDatabases()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataValidationError{
+					field:  "Databases",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
-	if m.DefaultMongo != nil {
-		// no validation rules for DefaultMongo
+	if m.Documents != nil {
+
+		if all {
+			switch v := interface{}(m.GetDocuments()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Documents",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Documents",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDocuments()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataValidationError{
+					field:  "Documents",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DataValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DataValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -148,3 +297,558 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DataValidationError{}
+
+// Validate checks the field values on FileStores with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *FileStores) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FileStores with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FileStoresMultiError, or
+// nil if none found.
+func (m *FileStores) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FileStores) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Default
+
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, FileStoresValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, FileStoresValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return FileStoresValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return FileStoresMultiError(errors)
+	}
+
+	return nil
+}
+
+// FileStoresMultiError is an error wrapping multiple validation errors
+// returned by FileStores.ValidateAll() if the designated constraints aren't met.
+type FileStoresMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FileStoresMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FileStoresMultiError) AllErrors() []error { return m }
+
+// FileStoresValidationError is the validation error returned by
+// FileStores.Validate if the designated constraints aren't met.
+type FileStoresValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FileStoresValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FileStoresValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FileStoresValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FileStoresValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FileStoresValidationError) ErrorName() string { return "FileStoresValidationError" }
+
+// Error satisfies the builtin error interface
+func (e FileStoresValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFileStores.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FileStoresValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FileStoresValidationError{}
+
+// Validate checks the field values on Caches with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Caches) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Caches with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in CachesMultiError, or nil if none found.
+func (m *Caches) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Caches) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Default
+
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CachesValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CachesValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CachesValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return CachesMultiError(errors)
+	}
+
+	return nil
+}
+
+// CachesMultiError is an error wrapping multiple validation errors returned by
+// Caches.ValidateAll() if the designated constraints aren't met.
+type CachesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CachesMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CachesMultiError) AllErrors() []error { return m }
+
+// CachesValidationError is the validation error returned by Caches.Validate if
+// the designated constraints aren't met.
+type CachesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CachesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CachesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CachesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CachesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CachesValidationError) ErrorName() string { return "CachesValidationError" }
+
+// Error satisfies the builtin error interface
+func (e CachesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCaches.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CachesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CachesValidationError{}
+
+// Validate checks the field values on Databases with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Databases) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Databases with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in DatabasesMultiError, or nil
+// if none found.
+func (m *Databases) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Databases) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Default
+
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DatabasesValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DatabasesValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DatabasesValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return DatabasesMultiError(errors)
+	}
+
+	return nil
+}
+
+// DatabasesMultiError is an error wrapping multiple validation errors returned
+// by Databases.ValidateAll() if the designated constraints aren't met.
+type DatabasesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DatabasesMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DatabasesMultiError) AllErrors() []error { return m }
+
+// DatabasesValidationError is the validation error returned by
+// Databases.Validate if the designated constraints aren't met.
+type DatabasesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DatabasesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DatabasesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DatabasesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DatabasesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DatabasesValidationError) ErrorName() string { return "DatabasesValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DatabasesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDatabases.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DatabasesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DatabasesValidationError{}
+
+// Validate checks the field values on Documents with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Documents) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Documents with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in DocumentsMultiError, or nil
+// if none found.
+func (m *Documents) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Documents) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Default
+
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DocumentsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DocumentsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DocumentsValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return DocumentsMultiError(errors)
+	}
+
+	return nil
+}
+
+// DocumentsMultiError is an error wrapping multiple validation errors returned
+// by Documents.ValidateAll() if the designated constraints aren't met.
+type DocumentsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DocumentsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DocumentsMultiError) AllErrors() []error { return m }
+
+// DocumentsValidationError is the validation error returned by
+// Documents.Validate if the designated constraints aren't met.
+type DocumentsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DocumentsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DocumentsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DocumentsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DocumentsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DocumentsValidationError) ErrorName() string { return "DocumentsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DocumentsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDocuments.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DocumentsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DocumentsValidationError{}

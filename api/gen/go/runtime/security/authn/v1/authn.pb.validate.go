@@ -916,10 +916,12 @@ func (m *AuthN) validate(all bool) error {
 
 	var errors []error
 
-	if _, ok := AuthN_Type_name[int32(m.GetType())]; !ok {
+	// no validation rules for Name
+
+	if _, ok := _AuthN_Type_InLookup[m.GetType()]; !ok {
 		err := AuthNValidationError{
 			field:  "Type",
-			reason: "value must be one of the defined enum values",
+			reason: "value must be in list [basic bearer digest oauth2 api_key jwt customize]",
 		}
 		if !all {
 			return err
@@ -1125,8 +1127,37 @@ func (m *AuthN) validate(all bool) error {
 
 	}
 
-	if m.Additional != nil {
-		// no validation rules for Additional
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AuthNValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AuthNValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AuthNValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -1205,6 +1236,16 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AuthNValidationError{}
+
+var _AuthN_Type_InLookup = map[string]struct{}{
+	"basic":     {},
+	"bearer":    {},
+	"digest":    {},
+	"oauth2":    {},
+	"api_key":   {},
+	"jwt":       {},
+	"customize": {},
+}
 
 // Validate checks the field values on Claims with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
