@@ -2,26 +2,25 @@ syntax = "proto3";
 
 package bootstrap_sample;
 
-// 导入 runtime 框架提供的所有核心组件配置定义
-import "runtime/logger/v1/logger.proto";
-import "runtime/transport/v1/transport.proto";
-import "runtime/data/v1/data.proto";
-import "runtime/security/v1/security.proto"; // Security 组件的 proto 文件存在
-import "runtime/discovery/v1/discovery.proto";
-import "runtime/middleware/v1/middleware.proto";
 import "runtime/broker/v1/broker.proto";
+import "runtime/data/v1/data.proto";
+import "runtime/discovery/v1/discovery.proto";
+import "runtime/logger/v1/logger.proto";
+import "runtime/middleware/v1/middleware.proto";
+import "runtime/security/v1/security.proto";
+import "runtime/transport/v1/transport.proto";
 import "runtime/websocket/v1/websocket.proto";
 
 option go_package = "github.com/origadmin/runtime/examples/configs/bootstrap_sample;conf";
 
-// Bootstrap 是一个全面的应用顶层配置结构，聚合了所有核心组件的配置
 message Bootstrap {
   runtime.logger.v1.Logger logger = 1;
   runtime.transport.v1.Servers servers = 2;
-  runtime.data.v1.Data data = 3;
-  runtime.security.v1.Security security = 4; // 现在可以取消注释了
-  runtime.discovery.v1.Discoveries discoveries = 5;
-  runtime.middleware.v1.Middlewares middlewares = 6;
-  runtime.broker.v1.Broker broker = 7;
-  runtime.websocket.v1.Websocket websocket = 8;
+  runtime.transport.v1.Clients clients = 3;
+  runtime.data.v1.Data data = 4;
+  runtime.security.v1.Security security = 5;
+  runtime.discovery.v1.Discoveries discoveries = 6;
+  runtime.middleware.v1.Middlewares middlewares = 7;
+  runtime.broker.v1.Brokers brokers = 8;
+  runtime.websocket.v1.WebSocket websocket = 9;
 }
