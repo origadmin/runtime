@@ -2,17 +2,71 @@ syntax = "proto3";
 
 package runtime.broker.v1;
 
+import "runtime/broker/v1/kafka.proto";
+import "runtime/broker/v1/mqtt.proto";
+import "runtime/broker/v1/nats.proto";
+import "runtime/broker/v1/nsq.proto";
+import "runtime/broker/v1/pulsar.proto";
+import "runtime/broker/v1/rabbitmq.proto";
+import "runtime/broker/v1/redis_mq.proto";
+import "runtime/broker/v1/rocketmq.proto";
+import "runtime/broker/v1/sqs.proto";
+import "runtime/broker/v1/stomp.proto";
+
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
 option java_multiple_files = true;
 option java_outer_classname = "BrokerProto";
 option java_package = "com.github.origadmin.api.runtime.broker.v1";
 option objc_class_prefix = "ORC";
 
-// Broker defines the generic configuration for a message queue service,
-// which can be used for both consumers and producers.
+// Broker defines the configuration for a message queue service.
+// It can contain configurations for different message queue implementations.
 message Broker {
-  // Generic configurations applicable to most message queue systems.
+  string name = 1 [json_name = "name"];
+  string type = 2 [
+    json_name = "type",
+    (validate.rules).string = {
+      in: [
+        "kafka",
+        "rabbitmq",
+        "mqtt",
+        "nats",
+        "nsq",
+        "pulsar",
+        "redis_mq",
+        "rocketmq",
+        "sqs",
+        "stomp"
+        "customize"
+      ]
+    }
+  ];
+
+  // Optional Kafka configuration.
+  optional KafkaConfig kafka = 3 [json_name = "kafka"];
+  // Optional RabbitMQ configuration.
+  optional RabbitMQConfig rabbitmq = 4 [json_name = "rabbitmq"];
+  // Optional MQTT configuration.
+  optional MqttConfig mqtt = 5 [json_name = "mqtt"];
+  // Optional NATS configuration.
+  optional NatsConfig nats = 6 [json_name = "nats"];
+  // Optional NSQ configuration.
+  optional NsqConfig nsq = 7 [json_name = "nsq"];
+  // Optional Pulsar configuration.
+  optional PulsarConfig pulsar = 8 [json_name = "pulsar"];
+  // Optional Redis (as MQ) configuration.
+  optional RedisMqConfig redis_mq = 9 [json_name = "redis_mq"];
+  // Optional RocketMQ configuration.
+  optional RocketMQConfig rocketmq = 10 [json_name = "rocketmq"];
+  // Optional SQS configuration.
+  optional SqsConfig sqs = 11 [json_name = "sqs"];
+  // Optional STOMP configuration.
+  optional StompConfig stomp = 12 [json_name = "stomp"];
+  // Optional customize configuration.
+  optional google.protobuf.Struct customize = 100 [json_name = "customize"];
+
+  // Add other common configurations here if applicable to all implementations,
+  // or if they are used to select the implementation type in Go code.
   // For example:
-  // repeated string addresses = 1;
-  // string topic = 2;
+  // optional string type = 11; // e.g., "kafka", "rabbitmq"
 }

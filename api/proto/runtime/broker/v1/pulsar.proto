@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package runtime.broker.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option java_multiple_files = true;
+option java_outer_classname = "PulsarProto";
+option java_package = "com.github.origadmin.api.runtime.broker.v1";
+option objc_class_prefix = "ORC";
+
+// PulsarConfig defines the configuration for a Pulsar message queue.
+message PulsarConfig {
+  // Pulsar broker service URL (e.g., "pulsar://localhost:6650").
+  string service_url = 1;
+  // Default topic for producers or consumers.
+  string topic = 2;
+  // Subscription name for consumers.
+  optional string subscription_name = 3;
+  // Authentication token.
+  optional string auth_token = 4;
+  // Path to TLS client certificate file.
+  optional string tls_client_cert_file = 5;
+  // Path to TLS client key file.
+  optional string tls_client_key_file = 6;
+  // Path to TLS CA certificate file.
+  optional string tls_ca_cert_file = 7;
+  // Whether to enable TLS insecure skip verify.
+  optional bool tls_insecure_skip_verify = 8;
+  // Operation timeout in milliseconds.
+  optional int32 operation_timeout_ms = 9;
+  // Number of message listeners.
+  optional int32 num_message_listeners = 10;
+  // Max pending messages.
+  optional int32 max_pending_messages = 11;
+}

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package runtime.broker.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option java_multiple_files = true;
+option java_outer_classname = "RocketMQProto";
+option java_package = "com.github.origadmin.api.runtime.broker.v1";
+option objc_class_prefix = "ORC";
+
+// RocketMQConfig defines the configuration for a RocketMQ message queue.
+message RocketMQConfig {
+  // List of NameServer addresses (e.g., "localhost:9876").
+  repeated string name_server_addresses = 1;
+  // Default topic for publishing or subscribing.
+  string topic = 2;
+  // Consumer group ID for consumers.
+  optional string consumer_group_id = 3;
+  // Producer group ID for producers.
+  optional string producer_group_id = 4;
+  // Access key for authentication.
+  optional string access_key = 5;
+  // Secret key for authentication.
+  optional string secret_key = 6;
+  // Namespace for message isolation.
+  optional string namespace = 7;
+  // Send message timeout in milliseconds.
+  optional int32 send_timeout_ms = 8;
+  // Consume message timeout in milliseconds.
+  optional int32 consume_timeout_ms = 9;
+  // Whether to enable TLS.
+  optional bool tls_enabled = 10;
+}

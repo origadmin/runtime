@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package runtime.broker.v1;
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option java_multiple_files = true;
+option java_outer_classname = "NsqProto";
+option java_package = "com.github.origadmin.api.runtime.broker.v1";
+option objc_class_prefix = "ORC";
+
+// NsqConfig defines the configuration for an NSQ message queue.
+message NsqConfig {
+  // List of NSQD addresses (e.g., "localhost:4150").
+  repeated string nsqd_addresses = 1;
+  // List of NSQLookupD addresses (e.g., "localhost:4161").
+  repeated string nsqlookupd_addresses = 2;
+  // Default topic for publishing or subscribing.
+  string topic = 3;
+  // Channel name for consumers.
+  optional string channel = 4;
+  // Max in flight messages for consumers.
+  optional int32 max_in_flight = 5;
+  // Lookupd poll interval in seconds.
+  optional int32 lookupd_poll_interval_seconds = 6;
+  // Whether to enable TLS.
+  optional bool tls_enabled = 7;
+  // Path to TLS client certificate file.
+  optional string tls_client_cert_file = 8;
+  // Path to TLS client key file.
+  optional string tls_client_key_file = 9;
+  // Path to TLS CA certificate file.
+  optional string tls_ca_cert_file = 10;
+  // Whether to enable TLS insecure skip verify.
+  optional bool tls_insecure_skip_verify = 11;
+}

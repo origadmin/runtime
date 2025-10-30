@@ -3,8 +3,6 @@ syntax = "proto3";
 package runtime.data.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
-import "validate/validate.proto";
-
 // Import all individual storage component configurations
 import "runtime/data/storage/v1/cache.proto";
 import "runtime/data/storage/v1/database.proto";
@@ -15,6 +13,7 @@ import "runtime/data/storage/v1/memory.proto";
 import "runtime/data/storage/v1/mongo.proto";
 import "runtime/data/storage/v1/oss.proto";
 import "runtime/data/storage/v1/redis.proto";
+import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/v1;datav1";
@@ -23,32 +22,31 @@ option java_outer_classname = "DataProto";
 option java_package = "com.github.origadmin.api.runtime.data.v1";
 option objc_class_prefix = "ORD";
 
-
 // Data is the top-level configuration for all data-related components, including storage.
 message Data {
-//  // Map of named FileStore configurations.
-//  map<string, FileStoreConfig> filestores = 1 [
-//    json_name = "filestores",
-//    (gnostic.openapi.v3.property) = {description: "map of named FileStore configurations"}
-//  ];
-//
-//  // Map of named Cache configurations.
-//  map<string, CacheConfig> caches = 2 [
-//    json_name = "caches",
-//    (gnostic.openapi.v3.property) = {description: "map of named Cache configurations"}
-//  ];
-//
-//  // Map of named Database configurations.
-//  map<string, DatabaseConfig> databases = 3 [
-//    json_name = "databases",
-//    (gnostic.openapi.v3.property) = {description: "map of named Database configurations"}
-//  ];
-//
-//  // Map of named Mongo configurations.
-//  map<string, MongoConfig> mongo_configs = 7 [
-//    json_name = "mongo_configs",
-//    (gnostic.openapi.v3.property) = {description: "map of named Mongo configurations"}
-//  ];
+  // Map of named FileStore configurations.
+  map<string, runtime.data.storage.v1.FileStoreConfig> filestores = 1 [
+    json_name = "filestores",
+    (gnostic.openapi.v3.property) = {description: "map of named FileStore configurations"}
+  ];
+
+  // Map of named Cache configurations.
+  map<string, runtime.data.storage.v1.CacheConfig> caches = 2 [
+    json_name = "caches",
+    (gnostic.openapi.v3.property) = {description: "map of named Cache configurations"}
+  ];
+
+  // Map of named Database configurations.
+  map<string, runtime.data.storage.v1.DatabaseConfig> databases = 3 [
+    json_name = "databases",
+    (gnostic.openapi.v3.property) = {description: "map of named Database configurations"}
+  ];
+
+  // Map of named Mongo configurations.
+  map<string, runtime.data.storage.v1.MongoConfig> mongo_configs = 7 [
+    json_name = "mongo_configs",
+    (gnostic.openapi.v3.property) = {description: "map of named Mongo configurations"}
+  ];
 
   // Optional: Default instance names for each type.
   optional string default_filestore = 4 [
