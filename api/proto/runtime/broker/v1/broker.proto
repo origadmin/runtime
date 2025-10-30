@@ -70,3 +70,7 @@ message Broker {
   // For example:
   // optional string type = 11; // e.g., "kafka", "rabbitmq"
 }
+
+message Brokers {
+  repeated Broker brokers = 1 [json_name = "brokers"];
+}
