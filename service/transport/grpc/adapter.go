@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	grpcv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	serviceselector "github.com/origadmin/runtime/service/selector"
@@ -35,7 +35,7 @@ func DefaultClientMiddlewares() []middleware.Middleware {
 }
 
 // initGrpcServerOptions initialize the grpc server option
-func initGrpcServerOptions(grpcConfig *transportv1.GrpcServerConfig, serverOpts *ServerOptions) ([]transgrpc.ServerOption, error) {
+func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions) ([]transgrpc.ServerOption, error) {
 	// Prepare the Kratos gRPC server options.
 	var kratosOpts []transgrpc.ServerOption
 
@@ -101,7 +101,7 @@ func initGrpcServerOptions(grpcConfig *transportv1.GrpcServerConfig, serverOpts 
 }
 
 // initGrpcClientOptions initialize grpc client options
-func initGrpcClientOptions(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig, clientOpts *ClientOptions) ([]transgrpc.ClientOption, error) {
+func initGrpcClientOptions(ctx context.Context, grpcConfig *grpcv1.Client, clientOpts *ClientOptions) ([]transgrpc.ClientOption, error) {
 	// Prepare the Kratos gRPC client options.
 	var kratosOpts []transgrpc.ClientOption
 

@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/selector"
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/selector/v1"
 	"github.com/origadmin/runtime/log"
 )
 

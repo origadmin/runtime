@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/selector/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/selector"
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/middleware"
 )

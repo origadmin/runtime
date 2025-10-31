@@ -3,9 +3,9 @@ syntax = "proto3";
 package runtime.transport.http.v1;
 
 import "google/protobuf/duration.proto";
-import "runtime/middleware/v1/cors/cors.proto";
+import "runtime/middleware/cors/v1/cors.proto";
 import "runtime/security/transport/v1/tls.proto";
-import "runtime/selector/v1/selector.proto"; // Updated import path
+import "runtime/selector/v1/selector.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1;httpv1";
 
@@ -29,7 +29,7 @@ message Server {
   string network = 5;
 
   // cors configuration for the HTTP server
-  optional runtime.middleware.v1.cors.Cors cors = 6;
+  optional runtime.middleware.cors.v1.Cors cors = 6;
 
   // enable_pprof indicates whether to enable pprof debugging endpoints.
   bool enable_pprof = 7;

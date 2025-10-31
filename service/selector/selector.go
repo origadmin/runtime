@@ -4,13 +4,13 @@ import (
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/selector/filter"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/selector/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 
 // NewFilter creates a node filter based on the provided selector configuration.
 // It accepts the new SelectorConfig type but retains the original, simple logic.
-func NewFilter(cfg *transportv1.SelectorConfig) (selector.NodeFilter, error) {
+func NewFilter(cfg *selectorv1.SelectorConfig) (selector.NodeFilter, error) {
 	if cfg == nil {
 		// No config, no filter, no error.
 		return nil, nil

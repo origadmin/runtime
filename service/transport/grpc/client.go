@@ -6,13 +6,13 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	grpcv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
 // NewClient creates a new concrete gRPC client connection based on the provided configuration.
 // It returns *transgrpc.ClientConn.
-func NewClient(ctx context.Context, grpcConfig *transportv1.GrpcClientConfig, clientOpts *ClientOptions) (*grpc.ClientConn, error) {
+func NewClient(ctx context.Context, grpcConfig *grpcv1.Client, clientOpts *ClientOptions) (*grpc.ClientConn, error) {
 	// Initialize the Kratos gRPC client options using the adapter function.
 	kratosOpts, err := initGrpcClientOptions(ctx, grpcConfig, clientOpts)
 	if err != nil {
