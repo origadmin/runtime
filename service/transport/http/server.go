@@ -5,12 +5,12 @@ import (
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	httpv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1"
 )
 
 // NewServer creates a new concrete HTTP server instance based on the provided configuration.
 // It returns *transhttp.Server, not the generic interfaces.Server.
-func NewServer(httpConfig *transportv1.HttpServerConfig, serverOpts *ServerOptions) (*transhttp.Server, error) {
+func NewServer(httpConfig *httpv1.Server, serverOpts *ServerOptions) (*transhttp.Server, error) {
 	// Initialize the Kratos HTTP server options using the adapter function.
 	kratosOpts, err := initHttpServerOptions(httpConfig, serverOpts)
 	if err != nil {

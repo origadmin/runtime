@@ -8,11 +8,14 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	configv1 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	corsv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/cors/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	corsv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/cors"
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/selector/v1"
+	tracev1 "github.com/origadmin/runtime/api/gen/go/runtime/trace/v1"
+	grpcv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
+	httpv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/test/helper"
 	parentconfig "github.com/origadmin/runtime/test/integration/config" // Import the parent package for AssertTestConfig
@@ -38,7 +41,7 @@ func init() {
 				{
 					Name:     "grpc_server",
 					Protocol: "grpc",
-					Grpc: &transportv1.GrpcServerConfig{
+					Grpc: &grpcv1.Server{
 						Network: "tcp",
 						Addr:    ":9000",
 						Timeout: durationpb.New(1000000000), // 1s
@@ -47,7 +50,7 @@ func init() {
 				{
 					Name:     "http_server",
 					Protocol: "http",
-					Http: &transportv1.HttpServerConfig{
+					Http: &httpv1.Server{
 						Network: "tcp",
 						Addr:    ":8000",
 						Timeout: durationpb.New(2000000000), // 2s
@@ -56,10 +59,10 @@ func init() {
 			},
 		},
 		Client: &transportv1.Client{
-			Grpc: &transportv1.GrpcClientConfig{
+			Grpc: &grpcv1.Client{
 				Endpoint: "discovery:///user-service",
 				Timeout:  durationpb.New(3000000000), // 3s
-				Selector: &transportv1.SelectorConfig{
+				Selector: &selectorv1.SelectorConfig{
 					Version: "v1.0.0",
 				},
 			},
@@ -80,14 +83,14 @@ func init() {
 				},
 				{
 					Name: "legacy-etcd",
-					Type: "etcd",					Etcd: &discoveryv1.ETCD{
-						Endpoints: []string{"etcd.legacy:2379"},
-					},
+					Type: "etcd", Etcd: &discoveryv1.ETCD{
+					Endpoints: []string{"etcd.legacy:2379"},
+				},
 				},
 			},
 		},
 		RegistrationDiscoveryName: "internal-consul",
-		Tracer: &configv1.Tracer{
+		Trace: &tracev1.Trace{
 			Name:     "jaeger",
 			Endpoint: "http://jaeger:14268/api/traces",
 		},

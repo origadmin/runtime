@@ -39,10 +39,10 @@ message Bootstrap {
   runtime.trace.v1.Trace trace = 5;
 
   // Discovery configures the service discovery client.
-  runtime.discovery.v1.Discovery discovery = 6;
+  runtime.discovery.v1.Discoveries discoveries = 6;
 
   // Broker configures the message brokers.
-  runtime.broker.v1.Brokers broker = 7;
+  runtime.broker.v1.Brokers brokers = 7;
 
   // Middlewares defines the middleware chain.
   runtime.middleware.v1.Middlewares middlewares = 8;

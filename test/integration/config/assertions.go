@@ -85,9 +85,9 @@ func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
 	assertions.True(cfg.Logger.GetStdout())
 
 	// Tracer configuration assertions
-	assertions.NotNil(cfg.Tracer)
-	assertions.Equal("jaeger", cfg.Tracer.GetName())
-	assertions.Equal("http://jaeger:14268/api/traces", cfg.Tracer.GetEndpoint())
+	assertions.NotNil(cfg.Trace)
+	assertions.Equal("jaeger", cfg.Trace.GetName())
+	assertions.Equal("http://jaeger:14268/api/traces", cfg.Trace.GetEndpoint())
 
 	// Middleware configuration assertions
 	assertions.NotNil(cfg.Middlewares)

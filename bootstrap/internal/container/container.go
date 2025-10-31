@@ -256,7 +256,7 @@ func (b *Builder) initRegistries(opts ...options.Option) error {
 		b.container.registrars[key] = r
 	}
 
-	b.container.defaultRegistrar = defaultInstance(b.container.registrars, discoveriesCfg.Default, discoveriesCfg.GetActive())
+	b.container.defaultRegistrar = defaultInstance(b.container.registrars, discoveriesCfg.GetDefault(), discoveriesCfg.GetActive())
 	if b.container.defaultRegistrar == nil {
 		helper.Warnw("msg", "no default registrar set")
 	}

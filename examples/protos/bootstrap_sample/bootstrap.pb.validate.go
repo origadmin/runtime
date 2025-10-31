@@ -203,11 +203,11 @@ func (m *Bootstrap) validate(all bool) error {
 	}
 
 	if all {
-		switch v := interface{}(m.GetDiscovery()).(type) {
+		switch v := interface{}(m.GetDiscoveries()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, BootstrapValidationError{
-					field:  "Discovery",
+					field:  "Discoveries",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -215,16 +215,16 @@ func (m *Bootstrap) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, BootstrapValidationError{
-					field:  "Discovery",
+					field:  "Discoveries",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetDiscovery()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetDiscoveries()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return BootstrapValidationError{
-				field:  "Discovery",
+				field:  "Discoveries",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -232,11 +232,11 @@ func (m *Bootstrap) validate(all bool) error {
 	}
 
 	if all {
-		switch v := interface{}(m.GetBroker()).(type) {
+		switch v := interface{}(m.GetBrokers()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
 				errors = append(errors, BootstrapValidationError{
-					field:  "Broker",
+					field:  "Brokers",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
@@ -244,16 +244,16 @@ func (m *Bootstrap) validate(all bool) error {
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
 				errors = append(errors, BootstrapValidationError{
-					field:  "Broker",
+					field:  "Brokers",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetBroker()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetBrokers()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return BootstrapValidationError{
-				field:  "Broker",
+				field:  "Brokers",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

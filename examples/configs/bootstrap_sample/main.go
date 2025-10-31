@@ -62,14 +62,28 @@ func main() {
 	// Print some information from the configuration to demonstrate successful loading
 
 	logger.Infof("Logger Level: %s, Format: %s", bc.GetLogger().GetLevel(), bc.GetLogger().GetFormat())
-	logger.Infof("HTTP Server Addr: %s, Timeout: %s", bc.GetServers().GetHttp().GetAddr(), bc.GetServers().GetHttp().GetTimeout().AsDuration())
-	logger.Infof("gRPC Server Addr: %s, Timeout: %s", bc.GetServers().GetGrpc().GetAddr(), bc.GetServers().GetGrpc().GetTimeout().AsDuration())
-
-	if bc.GetData() != nil && bc.GetData().GetDatabase() != nil {
-		logger.Infof("Database Driver: %s, Source: %s", bc.GetData().GetDatabase().GetDriver(), bc.GetData().GetDatabase().GetSource())
+	for _, srv := range bc.GetServers().GetServers() {
+		switch srv.GetProtocol() {
+		case "http":
+			logger.Infof("HTTP Server Addr: %s, Timeout: %s", srv.GetHttp().GetAddr(), srv.GetHttp().GetTimeout().AsDuration())
+		case "grpc":
+			logger.Infof("gRPC Server Addr: %s, Timeout: %s", srv.GetGrpc().GetAddr(), srv.GetGrpc().GetTimeout().AsDuration())
+		default:
+			logger.Warnf("Unknown server protocol type %s", srv.GetProtocol())
+			continue
+		}
 	}
-	if bc.GetData() != nil && bc.GetData().GetRedis() != nil {
-		logger.Infof("Redis Addr: %s, DB: %d", bc.GetData().GetRedis().GetAddr(), bc.GetData().GetRedis().GetDb())
+
+	if bc.GetData() != nil && bc.GetData().GetDatabases() != nil {
+		for _, db := range bc.GetData().GetDatabases().GetConfigs() {
+			logger.Infof("Database Driver: %s, Source: %s", db.GetDialect(), db.GetSource())
+		}
+
+	}
+	if bc.GetData() != nil && bc.GetData().GetCaches() != nil {
+		for _, cache := range bc.GetData().GetCaches().GetConfigs() {
+			logger.Infof("Cache Type: %s, Address: %s", cache.GetDriver(), cache.GetRedis().GetAddr())
+		}
 	}
 
 	// The proto file for the Security component doesn't exist, so GetSecurity() will return nil
@@ -85,16 +99,15 @@ func main() {
 		logger.Infof("Middlewares configured: %d", len(bc.GetMiddlewares().GetMiddlewares()))
 	}
 
-	if bc.GetBroker() != nil && bc.GetBroker().GetKafka() != nil {
-		logger.Infof("Broker Type: Kafka, Brokers: %v", bc.GetBroker().GetKafka().GetBrokers())
-	}
+	if bc.GetBrokers() != nil && bc.GetBrokers().GetBrokers() != nil {
+		for _, broker := range bc.GetBrokers().GetBrokers() {
+			logger.Infof("Broker Type: Kafka, Brokers: %v", broker.GetKafka())
+		}
 
-	if bc.GetWebsocket() != nil && bc.GetWebsocket().GetServer() != nil {
-		logger.Infof("Websocket Server Addr: %s, Path: %s", bc.GetWebsocket().GetServer().GetAddr(), bc.GetWebsocket().GetServer().GetPath())
 	}
 
 	// 4. Here you can create and run the Kratos App based on the configuration in bc
 	// But to keep the example minimal and focused on config loading, we only demonstrate config loading
-	log.Println("Bootstrap config loaded and runtime initialized successfully.")
-	log.Println("Application will exit after cleanup.")
+	logger.Info("Bootstrap config loaded and runtime initialized successfully.")
+	logger.Info("Application will exit after cleanup.")
 }

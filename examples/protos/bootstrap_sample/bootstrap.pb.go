@@ -48,9 +48,9 @@ type Bootstrap struct {
 	// Trace configures the distributed tracing system.
 	Trace *v14.Trace `protobuf:"bytes,5,opt,name=trace,proto3" json:"trace,omitempty"`
 	// Discovery configures the service discovery client.
-	Discovery *v15.Discovery `protobuf:"bytes,6,opt,name=discovery,proto3" json:"discovery,omitempty"`
+	Discoveries *v15.Discoveries `protobuf:"bytes,6,opt,name=discoveries,proto3" json:"discoveries,omitempty"`
 	// Broker configures the message brokers.
-	Broker *v16.Brokers `protobuf:"bytes,7,opt,name=broker,proto3" json:"broker,omitempty"`
+	Brokers *v16.Brokers `protobuf:"bytes,7,opt,name=brokers,proto3" json:"brokers,omitempty"`
 	// Middlewares defines the middleware chain.
 	Middlewares *v17.Middlewares `protobuf:"bytes,8,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
 	// Security defines authentication and authorization policies.
@@ -127,16 +127,16 @@ func (x *Bootstrap) GetTrace() *v14.Trace {
 	return nil
 }
 
-func (x *Bootstrap) GetDiscovery() *v15.Discovery {
+func (x *Bootstrap) GetDiscoveries() *v15.Discoveries {
 	if x != nil {
-		return x.Discovery
+		return x.Discoveries
 	}
 	return nil
 }
 
-func (x *Bootstrap) GetBroker() *v16.Brokers {
+func (x *Bootstrap) GetBrokers() *v16.Brokers {
 	if x != nil {
-		return x.Broker
+		return x.Brokers
 	}
 	return nil
 }
@@ -166,15 +166,15 @@ var File_examples_protos_bootstrap_sample_bootstrap_proto protoreflect.FileDescr
 
 const file_examples_protos_bootstrap_sample_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"0examples/protos/bootstrap_sample/bootstrap.proto\x12\x10bootstrap_sample\x1a\x18runtime/app/v1/app.proto\x1a\x1eruntime/broker/v1/broker.proto\x1a\x1aruntime/data/v1/data.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a\"runtime/security/v1/security.proto\x1a\x1cruntime/trace/v1/trace.proto\x1a$runtime/transport/v1/transport.proto\"\xa5\x04\n" +
+	"0examples/protos/bootstrap_sample/bootstrap.proto\x12\x10bootstrap_sample\x1a\x18runtime/app/v1/app.proto\x1a\x1eruntime/broker/v1/broker.proto\x1a\x1aruntime/data/v1/data.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a\"runtime/security/v1/security.proto\x1a\x1cruntime/trace/v1/trace.proto\x1a$runtime/transport/v1/transport.proto\"\xad\x04\n" +
 	"\tBootstrap\x12%\n" +
 	"\x03app\x18\x01 \x01(\v2\x13.runtime.app.v1.AppR\x03app\x127\n" +
 	"\aservers\x18\x02 \x01(\v2\x1d.runtime.transport.v1.ServersR\aservers\x12)\n" +
 	"\x04data\x18\x03 \x01(\v2\x15.runtime.data.v1.DataR\x04data\x121\n" +
 	"\x06logger\x18\x04 \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x12-\n" +
-	"\x05trace\x18\x05 \x01(\v2\x17.runtime.trace.v1.TraceR\x05trace\x12=\n" +
-	"\tdiscovery\x18\x06 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\tdiscovery\x122\n" +
-	"\x06broker\x18\a \x01(\v2\x1a.runtime.broker.v1.BrokersR\x06broker\x12D\n" +
+	"\x05trace\x18\x05 \x01(\v2\x17.runtime.trace.v1.TraceR\x05trace\x12C\n" +
+	"\vdiscoveries\x18\x06 \x01(\v2!.runtime.discovery.v1.DiscoveriesR\vdiscoveries\x124\n" +
+	"\abrokers\x18\a \x01(\v2\x1a.runtime.broker.v1.BrokersR\abrokers\x12D\n" +
 	"\vmiddlewares\x18\b \x01(\v2\".runtime.middleware.v1.MiddlewaresR\vmiddlewares\x129\n" +
 	"\bsecurity\x18\t \x01(\v2\x1d.runtime.security.v1.SecurityR\bsecurity\x127\n" +
 	"\aclients\x18\n" +
@@ -200,7 +200,7 @@ var file_examples_protos_bootstrap_sample_bootstrap_proto_goTypes = []any{
 	(*v12.Data)(nil),        // 3: runtime.data.v1.Data
 	(*v13.Logger)(nil),      // 4: runtime.logger.v1.Logger
 	(*v14.Trace)(nil),       // 5: runtime.trace.v1.Trace
-	(*v15.Discovery)(nil),   // 6: runtime.discovery.v1.Discovery
+	(*v15.Discoveries)(nil), // 6: runtime.discovery.v1.Discoveries
 	(*v16.Brokers)(nil),     // 7: runtime.broker.v1.Brokers
 	(*v17.Middlewares)(nil), // 8: runtime.middleware.v1.Middlewares
 	(*v18.Security)(nil),    // 9: runtime.security.v1.Security
@@ -212,8 +212,8 @@ var file_examples_protos_bootstrap_sample_bootstrap_proto_depIdxs = []int32{
 	3,  // 2: bootstrap_sample.Bootstrap.data:type_name -> runtime.data.v1.Data
 	4,  // 3: bootstrap_sample.Bootstrap.logger:type_name -> runtime.logger.v1.Logger
 	5,  // 4: bootstrap_sample.Bootstrap.trace:type_name -> runtime.trace.v1.Trace
-	6,  // 5: bootstrap_sample.Bootstrap.discovery:type_name -> runtime.discovery.v1.Discovery
-	7,  // 6: bootstrap_sample.Bootstrap.broker:type_name -> runtime.broker.v1.Brokers
+	6,  // 5: bootstrap_sample.Bootstrap.discoveries:type_name -> runtime.discovery.v1.Discoveries
+	7,  // 6: bootstrap_sample.Bootstrap.brokers:type_name -> runtime.broker.v1.Brokers
 	8,  // 7: bootstrap_sample.Bootstrap.middlewares:type_name -> runtime.middleware.v1.Middlewares
 	9,  // 8: bootstrap_sample.Bootstrap.security:type_name -> runtime.security.v1.Security
 	10, // 9: bootstrap_sample.Bootstrap.clients:type_name -> runtime.transport.v1.Clients
