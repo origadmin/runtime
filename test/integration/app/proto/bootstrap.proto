@@ -4,7 +4,7 @@ package test.app.configs;
 
 // 1. Import all basic "building blocks" provided by the framework
 import "runtime/discovery/v1/discovery.proto";
-// Removed unused import: import "runtime/middleware/v1/middleware.proto";
+import "runtime/middleware/v1/middleware.proto"; // Added middleware import
 // Removed unused import: import "runtime/transport/grpc/v1/grpc.proto";
 // Removed unused import: import "runtime/transport/http/v1/http.proto";
 import "runtime/transport/v1/transport.proto";
@@ -25,4 +25,7 @@ message Bootstrap {
 
   // Use our assembled `Client` components to construct a client list, where each client has its exclusive configuration.
   optional runtime.transport.v1.Clients clients = 4;
+
+  // Middlewares defines the global middleware chain.
+  runtime.middleware.v1.Middlewares middlewares = 5; // Added middlewares field
 }

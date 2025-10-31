@@ -23,33 +23,48 @@ registration_discovery_name: "consul-prod"
 # This structure is defined inside bootstrap.proto.
 servers:
   - name: "public-http"
+    protocol: "http"
     http:
-      network: "tcp"
       addr: ":8000"
       timeout: "1s"
-  - name: "internal-grpc"
-    grpc:
       network: "tcp"
+  - name: "internal-grpc"
+    protocol: "grpc"
+    grpc:
       addr: ":9000"
       timeout: "1s"
+      network: "tcp"
 
-# A list of downstream clients, each with its own specific middleware.
-# This structure is also defined inside bootstrap.proto.
+# Clients configuration, following the Broker Pattern.
 clients:
-  - client_name: "user-service-client"
-    discoveries:
-      - name: "user-service"
+  default: "user-service-client"
+  active: "user-service-client"
+  clients:
+    - name: "user-service-client"
+      protocol: "grpc"
+      grpc:
+        endpoint: "discovery:///user-service"
+        timeout: "1s"
+        middlewares:
+          - "tracing"
+          - "retry"
         discovery_name: "consul-prod"
-    middlewares:
-      - name: "tracing"
-      - name: "retry"
-        options:
-          attempts: 3
-          backoff: "0.1s"
-  - client_name: "order-service-client"
-    discoveries:
-      - name: "order-service"
+    - name: "order-service-client"
+      protocol: "http"
+      http:
+        endpoint: "discovery:///order-service"
+        timeout: "1s"
+        middlewares:
+          - "circuit_breaker"
+          - "logging"
         discovery_name: "etcd-legacy"
-    middlewares:
-      - name: "circuit_breaker"
-      - name: "logging"
+
+# Global middleware chain configuration.
+middlewares:
+  middlewares:
+    - name: "global-logging"
+      type: "logging"
+      enabled: true
+    - name: "global-recovery"
+      type: "recovery"
+      enabled: true

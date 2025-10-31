@@ -8,6 +8,7 @@ package configs
 
 import (
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -34,7 +35,9 @@ type Bootstrap struct {
 	// Use our assembled `Server` components to construct a unified server list.
 	Servers []*v11.Server `protobuf:"bytes,3,rep,name=servers,proto3" json:"servers,omitempty"`
 	// Use our assembled `Client` components to construct a client list, where each client has its exclusive configuration.
-	Clients       *v11.Clients `protobuf:"bytes,4,opt,name=clients,proto3,oneof" json:"clients,omitempty"`
+	Clients *v11.Clients `protobuf:"bytes,4,opt,name=clients,proto3,oneof" json:"clients,omitempty"`
+	// Middlewares defines the global middleware chain.
+	Middlewares   *v12.Middlewares `protobuf:"bytes,5,opt,name=middlewares,proto3" json:"middlewares,omitempty"` // Added middlewares field
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -97,16 +100,24 @@ func (x *Bootstrap) GetClients() *v11.Clients {
 	return nil
 }
 
+func (x *Bootstrap) GetMiddlewares() *v12.Middlewares {
+	if x != nil {
+		return x.Middlewares
+	}
+	return nil
+}
+
 var File_test_integration_app_proto_bootstrap_proto protoreflect.FileDescriptor
 
 const file_test_integration_app_proto_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/app/proto/bootstrap.proto\x12\x10test.app.configs\x1a$runtime/discovery/v1/discovery.proto\x1a$runtime/transport/v1/transport.proto\"\xfe\x02\n" +
+	"*test/integration/app/proto/bootstrap.proto\x12\x10test.app.configs\x1a$runtime/discovery/v1/discovery.proto\x1a&runtime/middleware/v1/middleware.proto\x1a$runtime/transport/v1/transport.proto\"\xc4\x03\n" +
 	"\tBootstrap\x12N\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2,.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
 	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x126\n" +
 	"\aservers\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\x12<\n" +
-	"\aclients\x18\x04 \x01(\v2\x1d.runtime.transport.v1.ClientsH\x00R\aclients\x88\x01\x01\x1a_\n" +
+	"\aclients\x18\x04 \x01(\v2\x1d.runtime.transport.v1.ClientsH\x00R\aclients\x88\x01\x01\x12D\n" +
+	"\vmiddlewares\x18\x05 \x01(\v2\".runtime.middleware.v1.MiddlewaresR\vmiddlewares\x1a_\n" +
 	"\x10DiscoveriesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
 	"\x05value\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x05value:\x028\x01B\n" +
@@ -127,22 +138,24 @@ func file_test_integration_app_proto_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_test_integration_app_proto_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_test_integration_app_proto_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),    // 0: test.app.configs.Bootstrap
-	nil,                  // 1: test.app.configs.Bootstrap.DiscoveriesEntry
-	(*v11.Server)(nil),   // 2: runtime.transport.v1.Server
-	(*v11.Clients)(nil),  // 3: runtime.transport.v1.Clients
-	(*v1.Discovery)(nil), // 4: runtime.discovery.v1.Discovery
+	(*Bootstrap)(nil),       // 0: test.app.configs.Bootstrap
+	nil,                     // 1: test.app.configs.Bootstrap.DiscoveriesEntry
+	(*v11.Server)(nil),      // 2: runtime.transport.v1.Server
+	(*v11.Clients)(nil),     // 3: runtime.transport.v1.Clients
+	(*v12.Middlewares)(nil), // 4: runtime.middleware.v1.Middlewares
+	(*v1.Discovery)(nil),    // 5: runtime.discovery.v1.Discovery
 }
 var file_test_integration_app_proto_bootstrap_proto_depIdxs = []int32{
 	1, // 0: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry
 	2, // 1: test.app.configs.Bootstrap.servers:type_name -> runtime.transport.v1.Server
 	3, // 2: test.app.configs.Bootstrap.clients:type_name -> runtime.transport.v1.Clients
-	4, // 3: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	4, // 3: test.app.configs.Bootstrap.middlewares:type_name -> runtime.middleware.v1.Middlewares
+	5, // 4: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_test_integration_app_proto_bootstrap_proto_init() }

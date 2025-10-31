@@ -49,7 +49,7 @@ func TestAppBootstrap(t *testing.T) {
 				t.Errorf("Unexpected HTTP addr: %s", c.Addr)
 			}
 		default:
-			t.Errorf("Unknown server type in unified list: %T", c)
+			t.Errorf("Unknown server type in unified list: %T", srv.GetProtocol())
 		}
 	}
 	fmt.Println("--- Server Processing Complete ---")
@@ -59,24 +59,53 @@ func TestAppBootstrap(t *testing.T) {
 	// 3. Proof: "different clients need different Middleware" issue has been resolved
 	// We can iterate through the client list, where each client has its own dedicated middleware chain
 	fmt.Println("--- Processing Clients with Specific Middlewares ---")
-	if len(bootstrap.Clients) != 2 {
-		t.Errorf("Expected 2 clients, got %d", len(bootstrap.Clients))
+	if len(bootstrap.GetClients().GetClients()) != 2 {
+		t.Errorf("Expected 2 clients, got %d", len(bootstrap.GetClients().GetClients()))
 	}
-	for _, cli := range bootstrap.Clients {
-		// Note: Changed how target is obtained because Discoveries is an array
-		target := ""
-		if len(cli.Discoveries) > 0 {
-			target = cli.Discoveries[0].Name
+	for _, cli := range bootstrap.GetClients().GetClients() {
+		// Note: Client configuration is now nested under specific protocols (grpc, http)
+		// We need to check the protocol and then access the specific client config.
+		target := cli.GetProtocol()
+		var middlewares []string
+
+		switch cli.GetProtocol() {
+		case "grpc":
+			c := cli.GetGrpc()
+			if c != nil {
+				middlewares = c.GetMiddlewares()
+				target = c.GetEndpoint()
+			}
+		case "http":
+			c := cli.GetHttp()
+			if c != nil {
+				middlewares = c.GetMiddlewares()
+				target = c.GetEndpoint()
+			}
+		default:
+			t.Errorf("Unknown client protocol: %s", cli.GetProtocol())
 		}
-		fmt.Printf("Client for target '%s' has %d specific middlewares:\n", target, len(cli.Middlewares))
+
+		fmt.Printf("Client for target '%s' (%s) has %d specific middlewares:\n", target, cli.GetName(), len(middlewares))
 
 		// Assertions to prove we loaded the correct, dedicated data
-		if target == "user-service" && len(cli.Middlewares) != 2 {
-			t.Errorf("Expected 2 middlewares for user-service, got %d", len(cli.Middlewares))
+		if cli.GetName() == "user-service" && len(middlewares) != 2 {
+			t.Errorf("Expected 2 middlewares for user-service, got %d", len(middlewares))
 		}
-		if target == "order-service" && len(cli.Middlewares) != 2 {
-			t.Errorf("Expected 2 middlewares for order-service, got %d", len(cli.Middlewares))
+		if cli.GetName() == "order-service" && len(middlewares) != 2 {
+			t.Errorf("Expected 2 middlewares for order-service, got %d", len(middlewares))
 		}
 	}
 	fmt.Println("--- Client Processing Complete ---")
+
+	fmt.Println("") // Spacing
+
+	// 4. Proof: Top-level middlewares are loaded correctly
+	fmt.Println("--- Processing Top-level Middlewares ---")
+	if bootstrap.Middlewares == nil || len(bootstrap.Middlewares.GetMiddlewares()) != 2 {
+		t.Errorf("Expected 2 top-level middlewares, got %d", len(bootstrap.Middlewares.GetMiddlewares()))
+	}
+	for i, mw := range bootstrap.Middlewares.GetMiddlewares() {
+		fmt.Printf("Top-level Middleware %d: Name='%s', Type='%s', Enabled=%t\n", i+1, mw.GetName(), mw.GetType(), mw.GetEnabled())
+	}
+	fmt.Println("--- Top-level Middleware Processing Complete ---")
 }
