@@ -157,22 +157,21 @@ func (*Recovery) Descriptor() ([]byte, []int) {
 
 // Middleware represents a single middleware configuration with an enable switch.
 type Middleware struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Name    string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type    string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Enabled bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	// 更新字段类型以使用新的包名
-	RateLimiter    *v1.RateLimiter     `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"` // <-- 确保这里是正确的
-	Metrics        *v11.Metrics        `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
-	Validator      *v12.Validator      `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
-	Jwt            *v13.JWT            `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
-	Selector       *v14.Selector       `protobuf:"bytes,8,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
-	Cors           *v15.Cors           `protobuf:"bytes,9,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
-	CircuitBreaker *v16.CircuitBreaker `protobuf:"bytes,10,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
-	Logging        *Logging            `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
-	Recovery       *Recovery           `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
-	Metadata       *Metadata           `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
-	Customize      *structpb.Struct    `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Type           string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Enabled        bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	RateLimiter    *v1.RateLimiter        `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"` // <-- 确保这里是正确的
+	Metrics        *v11.Metrics           `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
+	Validator      *v12.Validator         `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
+	Jwt            *v13.JWT               `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
+	Selector       *v14.Selector          `protobuf:"bytes,8,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
+	Cors           *v15.Cors              `protobuf:"bytes,9,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
+	CircuitBreaker *v16.CircuitBreaker    `protobuf:"bytes,10,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
+	Logging        *Logging               `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
+	Recovery       *Recovery              `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
+	Metadata       *Metadata              `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Customize      *structpb.Struct       `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }

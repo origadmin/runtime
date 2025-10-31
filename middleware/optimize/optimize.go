@@ -8,8 +8,8 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"google.golang.org/protobuf/types/known/durationpb"
 
+	optimizev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/optimize/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	optimizev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/optimize"
 	"github.com/origadmin/runtime/extension/customize"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
