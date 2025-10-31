@@ -413,8 +413,6 @@ func (m *Discoveries) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetDiscoveries() {
 		_, _ = idx, item
 
@@ -447,6 +445,10 @@ func (m *Discoveries) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {

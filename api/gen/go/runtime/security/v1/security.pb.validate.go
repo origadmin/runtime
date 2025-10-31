@@ -243,8 +243,6 @@ func (m *AuthNConfigs) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
@@ -277,6 +275,10 @@ func (m *AuthNConfigs) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {
@@ -382,8 +384,6 @@ func (m *AuthZConfigs) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
@@ -416,6 +416,10 @@ func (m *AuthZConfigs) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {
@@ -521,8 +525,6 @@ func (m *TransportSecurityConfigs) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
@@ -555,6 +557,10 @@ func (m *TransportSecurityConfigs) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {

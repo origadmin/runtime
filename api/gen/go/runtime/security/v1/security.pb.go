@@ -90,7 +90,7 @@ func (x *Security) GetTransportSecurityConfigs() *TransportSecurityConfigs {
 
 type AuthNConfigs struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Default       string                 `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default       *string                `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	Configs       []*v1.AuthN            `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -128,8 +128,8 @@ func (*AuthNConfigs) Descriptor() ([]byte, []int) {
 }
 
 func (x *AuthNConfigs) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -150,7 +150,7 @@ func (x *AuthNConfigs) GetConfigs() []*v1.AuthN {
 
 type AuthZConfigs struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Default       string                 `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default       *string                `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	Configs       []*v11.AuthZ           `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -188,8 +188,8 @@ func (*AuthZConfigs) Descriptor() ([]byte, []int) {
 }
 
 func (x *AuthZConfigs) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -210,7 +210,7 @@ func (x *AuthZConfigs) GetConfigs() []*v11.AuthZ {
 
 type TransportSecurityConfigs struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Default       string                 `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default       *string                `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	Configs       []*v12.TLSConfig       `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -248,8 +248,8 @@ func (*TransportSecurityConfigs) Descriptor() ([]byte, []int) {
 }
 
 func (x *TransportSecurityConfigs) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -276,21 +276,27 @@ const file_runtime_security_v1_security_proto_rawDesc = "" +
 	"\bSecurity\x12F\n" +
 	"\rauthn_configs\x18\x01 \x01(\v2!.runtime.security.v1.AuthNConfigsR\fauthnConfigs\x12F\n" +
 	"\rauthz_configs\x18\x02 \x01(\v2!.runtime.security.v1.AuthZConfigsR\fauthzConfigs\x12k\n" +
-	"\x1atransport_security_configs\x18\x03 \x01(\v2-.runtime.security.v1.TransportSecurityConfigsR\x18transportSecurityConfigs\"\x8c\x01\n" +
-	"\fAuthNConfigs\x12\x18\n" +
-	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x12:\n" +
-	"\aconfigs\x18\x03 \x03(\v2 .runtime.security.authn.v1.AuthNR\aconfigsB\t\n" +
-	"\a_active\"\x8c\x01\n" +
-	"\fAuthZConfigs\x12\x18\n" +
-	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x12:\n" +
-	"\aconfigs\x18\x03 \x03(\v2 .runtime.security.authz.v1.AuthZR\aconfigsB\t\n" +
-	"\a_active\"\xa0\x01\n" +
-	"\x18TransportSecurityConfigs\x12\x18\n" +
-	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x12B\n" +
-	"\aconfigs\x18\x03 \x03(\v2(.runtime.security.transport.v1.TLSConfigR\aconfigsB\t\n" +
+	"\x1atransport_security_configs\x18\x03 \x01(\v2-.runtime.security.v1.TransportSecurityConfigsR\x18transportSecurityConfigs\"\x9d\x01\n" +
+	"\fAuthNConfigs\x12\x1d\n" +
+	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x12:\n" +
+	"\aconfigs\x18\x03 \x03(\v2 .runtime.security.authn.v1.AuthNR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
+	"\a_active\"\x9d\x01\n" +
+	"\fAuthZConfigs\x12\x1d\n" +
+	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x12:\n" +
+	"\aconfigs\x18\x03 \x03(\v2 .runtime.security.authz.v1.AuthZR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
+	"\a_active\"\xb1\x01\n" +
+	"\x18TransportSecurityConfigs\x12\x1d\n" +
+	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x12B\n" +
+	"\aconfigs\x18\x03 \x03(\v2(.runtime.security.transport.v1.TLSConfigR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
 	"\a_activeB\xde\x01\n" +
 	"\x17com.runtime.security.v1B\rSecurityProtoP\x01ZFgithub.com/origadmin/runtime/api/gen/go/runtime/security/v1;securityv1\xa2\x02\x03RSX\xaa\x02\x13Runtime.Security.V1\xca\x02\x13Runtime\\Security\\V1\xe2\x02\x1fRuntime\\Security\\V1\\GPBMetadata\xea\x02\x15Runtime::Security::V1b\x06proto3"
 

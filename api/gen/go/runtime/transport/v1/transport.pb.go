@@ -7,6 +7,9 @@
 package transportv1
 
 import (
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/transport/websocket/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -22,21 +25,23 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Server is a generic container for various server-side transport configurations.
+// Server is a generic container for a single server-side transport configuration.
+// It uses optional fields to represent different protocol types, avoiding the use of `oneof`.
 type Server struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// name is the logical name for this server configuration.
 	// It is used to identify this server in the application's configuration.
-	// If empty, the protocol name may be used as a default identifier.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// protocol is the name of the transport protocol to use.
-	// e.g., "grpc", "http". This name is used to look up a registered ProtocolFactory.
+	// e.g., "grpc", "http", "websocket". This name is used to look up a registered ProtocolFactory.
 	Protocol string `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	// gRPC server configuration.
-	Grpc *GrpcServerConfig `protobuf:"bytes,3,opt,name=grpc,proto3,oneof" json:"grpc,omitempty"`
+	Grpc *v1.Server `protobuf:"bytes,3,opt,name=grpc,proto3,oneof" json:"grpc,omitempty"`
 	// HTTP server configuration.
-	Http *HttpServerConfig `protobuf:"bytes,4,opt,name=http,proto3,oneof" json:"http,omitempty"`
-	// custom_config is used for non-standard or user-defined transport protocols.
+	Http *v11.Server `protobuf:"bytes,4,opt,name=http,proto3,oneof" json:"http,omitempty"`
+	// WebSocket server configuration.
+	Websocket *v12.Server `protobuf:"bytes,5,opt,name=websocket,proto3,oneof" json:"websocket,omitempty"`
+	// customize is used for non-standard or user-defined transport protocols.
 	// It allows for flexible configuration without modifying this core proto file.
 	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -87,16 +92,23 @@ func (x *Server) GetProtocol() string {
 	return ""
 }
 
-func (x *Server) GetGrpc() *GrpcServerConfig {
+func (x *Server) GetGrpc() *v1.Server {
 	if x != nil {
 		return x.Grpc
 	}
 	return nil
 }
 
-func (x *Server) GetHttp() *HttpServerConfig {
+func (x *Server) GetHttp() *v11.Server {
 	if x != nil {
 		return x.Http
+	}
+	return nil
+}
+
+func (x *Server) GetWebsocket() *v12.Server {
+	if x != nil {
+		return x.Websocket
 	}
 	return nil
 }
@@ -108,18 +120,14 @@ func (x *Server) GetCustomize() *structpb.Struct {
 	return nil
 }
 
-// Servers defines a complete microservice unit.
-// It encapsulates the service's identity, its server endpoints, its client dependencies,
-// and its middleware configurations.
+// Servers defines a collection of server configurations.
+// This message aggregates all server instances that an application needs to run.
+// It does not include `default` or `active` fields, as all configured servers are typically started.
 type Servers struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// default is the default server name to use when no other server is specified.
-	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
-	// active is the active server name to use when multiple servers are specified.
-	Active string `protobuf:"bytes,2,opt,name=active,proto3" json:"active,omitempty"`
-	// servers is a list of server endpoints that this service will expose.
-	// A service can listen on multiple protocols simultaneously, e.g., both gRPC and HTTP.
-	Servers       []*Server `protobuf:"bytes,3,rep,name=servers,proto3" json:"servers,omitempty"`
+	// servers is a list of all available server configurations.
+	// Each server in this list will typically be started by the application.
+	Servers       []*Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -154,20 +162,6 @@ func (*Servers) Descriptor() ([]byte, []int) {
 	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Servers) GetDefault() string {
-	if x != nil {
-		return x.Default
-	}
-	return ""
-}
-
-func (x *Servers) GetActive() string {
-	if x != nil {
-		return x.Active
-	}
-	return ""
-}
-
 func (x *Servers) GetServers() []*Server {
 	if x != nil {
 		return x.Servers
@@ -175,21 +169,88 @@ func (x *Servers) GetServers() []*Server {
 	return nil
 }
 
-// Client is a generic container for various client-side transport configurations.
+// Clients defines a collection of client configurations for services that this service depends on.
+// This structure follows the "Broker Pattern" to avoid using maps, providing a clear
+// and explicit way to manage multiple named client instances.
+type Clients struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// default is the name of the default client configuration to use from the `clients` list.
+	// If not set, the application can use a predefined default or infer one.
+	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
+	// active is the name of the active client configuration to use from the `clients` list.
+	// If set, it overrides the `default` selection.
+	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// clients is a list of all available client configurations.
+	Clients       []*Client `protobuf:"bytes,3,rep,name=clients,proto3" json:"clients,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Clients) Reset() {
+	*x = Clients{}
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Clients) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Clients) ProtoMessage() {}
+
+func (x *Clients) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Clients.ProtoReflect.Descriptor instead.
+func (*Clients) Descriptor() ([]byte, []int) {
+	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Clients) GetDefault() string {
+	if x != nil && x.Default != nil {
+		return *x.Default
+	}
+	return ""
+}
+
+func (x *Clients) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
+	}
+	return ""
+}
+
+func (x *Clients) GetClients() []*Client {
+	if x != nil {
+		return x.Clients
+	}
+	return nil
+}
+
+// Client is a generic container for a single client-side transport configuration.
 type Client struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// name is the logical name for this client configuration.
 	// It is used to uniquely identify this client dependency in the application.
-	// If empty, the protocol name may be used as a default identifier.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// protocol is the name of the transport protocol to use.
-	// e.g., "grpc", "http". This name is used to look up a registered ProtocolFactory.
+	// e.g., "grpc", "http", "websocket". This name is used to look up a registered ProtocolFactory.
 	Protocol string `protobuf:"bytes,2,opt,name=protocol,proto3" json:"protocol,omitempty"`
 	// gRPC client configuration.
-	Grpc *GrpcClientConfig `protobuf:"bytes,3,opt,name=grpc,proto3,oneof" json:"grpc,omitempty"`
+	Grpc *v1.Client `protobuf:"bytes,3,opt,name=grpc,proto3,oneof" json:"grpc,omitempty"`
 	// HTTP client configuration.
-	Http *HttpClientConfig `protobuf:"bytes,4,opt,name=http,proto3,oneof" json:"http,omitempty"`
-	// custom_config is used for non-standard or user-defined transport protocols.
+	Http *v11.Client `protobuf:"bytes,4,opt,name=http,proto3,oneof" json:"http,omitempty"`
+	// customize is used for non-standard or user-defined transport protocols.
 	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -197,7 +258,7 @@ type Client struct {
 
 func (x *Client) Reset() {
 	*x = Client{}
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -209,7 +270,7 @@ func (x *Client) String() string {
 func (*Client) ProtoMessage() {}
 
 func (x *Client) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -222,7 +283,7 @@ func (x *Client) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Client.ProtoReflect.Descriptor instead.
 func (*Client) Descriptor() ([]byte, []int) {
-	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{2}
+	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Client) GetName() string {
@@ -239,14 +300,14 @@ func (x *Client) GetProtocol() string {
 	return ""
 }
 
-func (x *Client) GetGrpc() *GrpcClientConfig {
+func (x *Client) GetGrpc() *v1.Client {
 	if x != nil {
 		return x.Grpc
 	}
 	return nil
 }
 
-func (x *Client) GetHttp() *HttpClientConfig {
+func (x *Client) GetHttp() *v11.Client {
 	if x != nil {
 		return x.Http
 	}
@@ -260,107 +321,43 @@ func (x *Client) GetCustomize() *structpb.Struct {
 	return nil
 }
 
-// Clients defines a list of client configurations for services that this service depends on.
-// This list will be converted into a map in the application's bootstrap logic,
-// using the 'name' field from each Client message as the key.
-type Clients struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// default is the default client name to use when no other client is specified.
-	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
-	// active is the active client name to use when multiple clients are specified.
-	Active string `protobuf:"bytes,2,opt,name=active,proto3" json:"active,omitempty"`
-	// clients is a list of client configurations for services that this service depends on.
-	// This list will be converted into a map in the application's bootstrap logic,
-	// using the 'name' field from each Client message as the key.
-	Clients       []*Client `protobuf:"bytes,3,rep,name=clients,proto3" json:"clients,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Clients) Reset() {
-	*x = Clients{}
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Clients) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Clients) ProtoMessage() {}
-
-func (x *Clients) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Clients.ProtoReflect.Descriptor instead.
-func (*Clients) Descriptor() ([]byte, []int) {
-	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *Clients) GetDefault() string {
-	if x != nil {
-		return x.Default
-	}
-	return ""
-}
-
-func (x *Clients) GetActive() string {
-	if x != nil {
-		return x.Active
-	}
-	return ""
-}
-
-func (x *Clients) GetClients() []*Client {
-	if x != nil {
-		return x.Clients
-	}
-	return nil
-}
-
 var File_runtime_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_runtime_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/transport/v1/transport.proto\x12\x14runtime.transport.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\"\x96\x02\n" +
+	"$runtime/transport/v1/transport.proto\x12\x14runtime.transport.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a$runtime/transport/grpc/v1/grpc.proto\x1a$runtime/transport/http/v1/http.proto\x1a.runtime/transport/websocket/v1/websocket.proto\"\xe5\x02\n" +
 	"\x06Server\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
-	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12?\n" +
-	"\x04grpc\x18\x03 \x01(\v2&.runtime.transport.v1.GrpcServerConfigH\x00R\x04grpc\x88\x01\x01\x12?\n" +
-	"\x04http\x18\x04 \x01(\v2&.runtime.transport.v1.HttpServerConfigH\x01R\x04http\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x02R\tcustomize\x88\x01\x01B\a\n" +
+	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12:\n" +
+	"\x04grpc\x18\x03 \x01(\v2!.runtime.transport.grpc.v1.ServerH\x00R\x04grpc\x88\x01\x01\x12:\n" +
+	"\x04http\x18\x04 \x01(\v2!.runtime.transport.http.v1.ServerH\x01R\x04http\x88\x01\x01\x12I\n" +
+	"\twebsocket\x18\x05 \x01(\v2&.runtime.transport.websocket.v1.ServerH\x02R\twebsocket\x88\x01\x01\x12:\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x03R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
 	"\x05_httpB\f\n" +
 	"\n" +
-	"_customize\"s\n" +
-	"\aServers\x12\x18\n" +
-	"\adefault\x18\x01 \x01(\tR\adefault\x12\x16\n" +
-	"\x06active\x18\x02 \x01(\tR\x06active\x126\n" +
-	"\aservers\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\"\x96\x02\n" +
+	"_websocketB\f\n" +
+	"\n" +
+	"_customize\"A\n" +
+	"\aServers\x126\n" +
+	"\aservers\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\"\x94\x01\n" +
+	"\aClients\x12\x1d\n" +
+	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x126\n" +
+	"\aclients\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclientsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
+	"\a_active\"\x8c\x02\n" +
 	"\x06Client\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
-	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12?\n" +
-	"\x04grpc\x18\x03 \x01(\v2&.runtime.transport.v1.GrpcClientConfigH\x00R\x04grpc\x88\x01\x01\x12?\n" +
-	"\x04http\x18\x04 \x01(\v2&.runtime.transport.v1.HttpClientConfigH\x01R\x04http\x88\x01\x01\x12:\n" +
+	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12:\n" +
+	"\x04grpc\x18\x03 \x01(\v2!.runtime.transport.grpc.v1.ClientH\x00R\x04grpc\x88\x01\x01\x12:\n" +
+	"\x04http\x18\x04 \x01(\v2!.runtime.transport.http.v1.ClientH\x01R\x04http\x88\x01\x01\x12:\n" +
 	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x02R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
 	"\x05_httpB\f\n" +
 	"\n" +
-	"_customize\"s\n" +
-	"\aClients\x12\x18\n" +
-	"\adefault\x18\x01 \x01(\tR\adefault\x12\x16\n" +
-	"\x06active\x18\x02 \x01(\tR\x06active\x126\n" +
-	"\aclients\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclientsB\xe6\x01\n" +
+	"_customizeB\xe6\x01\n" +
 	"\x18com.runtime.transport.v1B\x0eTransportProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1\xa2\x02\x03RTX\xaa\x02\x14Runtime.Transport.V1\xca\x02\x14Runtime\\Transport\\V1\xe2\x02 Runtime\\Transport\\V1\\GPBMetadata\xea\x02\x16Runtime::Transport::V1b\x06proto3"
 
 var (
@@ -377,30 +374,32 @@ func file_runtime_transport_v1_transport_proto_rawDescGZIP() []byte {
 
 var file_runtime_transport_v1_transport_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_runtime_transport_v1_transport_proto_goTypes = []any{
-	(*Server)(nil),           // 0: runtime.transport.v1.Server
-	(*Servers)(nil),          // 1: runtime.transport.v1.Servers
-	(*Client)(nil),           // 2: runtime.transport.v1.Client
-	(*Clients)(nil),          // 3: runtime.transport.v1.Clients
-	(*GrpcServerConfig)(nil), // 4: runtime.transport.v1.GrpcServerConfig
-	(*HttpServerConfig)(nil), // 5: runtime.transport.v1.HttpServerConfig
-	(*structpb.Struct)(nil),  // 6: google.protobuf.Struct
-	(*GrpcClientConfig)(nil), // 7: runtime.transport.v1.GrpcClientConfig
-	(*HttpClientConfig)(nil), // 8: runtime.transport.v1.HttpClientConfig
+	(*Server)(nil),          // 0: runtime.transport.v1.Server
+	(*Servers)(nil),         // 1: runtime.transport.v1.Servers
+	(*Clients)(nil),         // 2: runtime.transport.v1.Clients
+	(*Client)(nil),          // 3: runtime.transport.v1.Client
+	(*v1.Server)(nil),       // 4: runtime.transport.grpc.v1.Server
+	(*v11.Server)(nil),      // 5: runtime.transport.http.v1.Server
+	(*v12.Server)(nil),      // 6: runtime.transport.websocket.v1.Server
+	(*structpb.Struct)(nil), // 7: google.protobuf.Struct
+	(*v1.Client)(nil),       // 8: runtime.transport.grpc.v1.Client
+	(*v11.Client)(nil),      // 9: runtime.transport.http.v1.Client
 }
 var file_runtime_transport_v1_transport_proto_depIdxs = []int32{
-	4, // 0: runtime.transport.v1.Server.grpc:type_name -> runtime.transport.v1.GrpcServerConfig
-	5, // 1: runtime.transport.v1.Server.http:type_name -> runtime.transport.v1.HttpServerConfig
-	6, // 2: runtime.transport.v1.Server.customize:type_name -> google.protobuf.Struct
-	0, // 3: runtime.transport.v1.Servers.servers:type_name -> runtime.transport.v1.Server
-	7, // 4: runtime.transport.v1.Client.grpc:type_name -> runtime.transport.v1.GrpcClientConfig
-	8, // 5: runtime.transport.v1.Client.http:type_name -> runtime.transport.v1.HttpClientConfig
-	6, // 6: runtime.transport.v1.Client.customize:type_name -> google.protobuf.Struct
-	2, // 7: runtime.transport.v1.Clients.clients:type_name -> runtime.transport.v1.Client
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	4, // 0: runtime.transport.v1.Server.grpc:type_name -> runtime.transport.grpc.v1.Server
+	5, // 1: runtime.transport.v1.Server.http:type_name -> runtime.transport.http.v1.Server
+	6, // 2: runtime.transport.v1.Server.websocket:type_name -> runtime.transport.websocket.v1.Server
+	7, // 3: runtime.transport.v1.Server.customize:type_name -> google.protobuf.Struct
+	0, // 4: runtime.transport.v1.Servers.servers:type_name -> runtime.transport.v1.Server
+	3, // 5: runtime.transport.v1.Clients.clients:type_name -> runtime.transport.v1.Client
+	8, // 6: runtime.transport.v1.Client.grpc:type_name -> runtime.transport.grpc.v1.Client
+	9, // 7: runtime.transport.v1.Client.http:type_name -> runtime.transport.http.v1.Client
+	7, // 8: runtime.transport.v1.Client.customize:type_name -> google.protobuf.Struct
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_runtime_transport_v1_transport_proto_init() }
@@ -408,10 +407,9 @@ func file_runtime_transport_v1_transport_proto_init() {
 	if File_runtime_transport_v1_transport_proto != nil {
 		return
 	}
-	file_runtime_transport_v1_grpc_proto_init()
-	file_runtime_transport_v1_http_proto_init()
 	file_runtime_transport_v1_transport_proto_msgTypes[0].OneofWrappers = []any{}
 	file_runtime_transport_v1_transport_proto_msgTypes[2].OneofWrappers = []any{}
+	file_runtime_transport_v1_transport_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

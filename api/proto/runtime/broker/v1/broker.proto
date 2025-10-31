@@ -74,7 +74,7 @@ message Broker {
 }
 
 message Brokers {
-  string default = 1 [json_name = "default"];
+  optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
 
   repeated Broker brokers = 3 [json_name = "brokers"];

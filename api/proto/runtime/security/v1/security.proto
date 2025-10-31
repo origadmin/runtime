@@ -19,19 +19,19 @@ message Security {
 }
 
 message AuthNConfigs {
-  string default = 1 [json_name = "default"];
+  optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
   repeated runtime.security.authn.v1.AuthN configs = 3 [json_name = "configs"];
 }
 
 message AuthZConfigs {
-  string default = 1 [json_name = "default"];
+  optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
   repeated runtime.security.authz.v1.AuthZ configs = 3 [json_name = "configs"];
 }
 
 message TransportSecurityConfigs {
-  string default = 1 [json_name = "default"];
+  optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
   repeated runtime.security.transport.v1.TLSConfig configs = 3 [json_name = "configs"];
 }

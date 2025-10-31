@@ -4,10 +4,19 @@
 // 	protoc        v5.28.3
 // source: examples/protos/bootstrap_sample/bootstrap.proto
 
+// Package name remains unchanged
+
 package conf
 
 import (
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	v16 "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
+	v15 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	v13 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	v17 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	v18 "github.com/origadmin/runtime/api/gen/go/runtime/security/v1"
+	v14 "github.com/origadmin/runtime/api/gen/go/runtime/trace/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -23,11 +32,32 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Bootstrap 是一个最小化的应用顶层配置结构，聚合了核心组件的配置
+// Bootstrap is the root configuration example for the entire application.
+// The new structure aggregates all configuration items into logical groups, making it clearer and easier to understand.
 type Bootstrap struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Logger        *v1.Logger             `protobuf:"bytes,1,opt,name=logger,proto3" json:"logger,omitempty"`
-	Servers       *v11.Servers           `protobuf:"bytes,2,opt,name=servers,proto3" json:"servers,omitempty"` // 其他组件配置可根据需要在此处添加
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// App contains application-level metadata (e.g., name, version, environment).
+	App *v1.App `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
+	// Servers holds configurations for all network servers (HTTP, gRPC, WebSocket).
+	// This now uses the Servers collection from the transport module.
+	Servers *v11.Servers `protobuf:"bytes,2,opt,name=servers,proto3" json:"servers,omitempty"`
+	// Data holds configurations for all data sources (databases, caches).
+	Data *v12.Data `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	// Logger configures the application's logging behavior.
+	Logger *v13.Logger `protobuf:"bytes,4,opt,name=logger,proto3" json:"logger,omitempty"`
+	// Trace configures the distributed tracing system.
+	Trace *v14.Trace `protobuf:"bytes,5,opt,name=trace,proto3" json:"trace,omitempty"`
+	// Discovery configures the service discovery client.
+	Discovery *v15.Discovery `protobuf:"bytes,6,opt,name=discovery,proto3" json:"discovery,omitempty"`
+	// Broker configures the message brokers.
+	Broker *v16.Brokers `protobuf:"bytes,7,opt,name=broker,proto3" json:"broker,omitempty"`
+	// Middlewares defines the middleware chain.
+	Middlewares *v17.Middlewares `protobuf:"bytes,8,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
+	// Security defines authentication and authorization policies.
+	Security *v18.Security `protobuf:"bytes,9,opt,name=security,proto3" json:"security,omitempty"`
+	// Clients holds configurations for all network clients (HTTP, gRPC).
+	// This now uses the Clients collection from the transport module.
+	Clients       *v11.Clients `protobuf:"bytes,10,opt,name=clients,proto3" json:"clients,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -62,9 +92,9 @@ func (*Bootstrap) Descriptor() ([]byte, []int) {
 	return file_examples_protos_bootstrap_sample_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Bootstrap) GetLogger() *v1.Logger {
+func (x *Bootstrap) GetApp() *v1.App {
 	if x != nil {
-		return x.Logger
+		return x.App
 	}
 	return nil
 }
@@ -76,14 +106,79 @@ func (x *Bootstrap) GetServers() *v11.Servers {
 	return nil
 }
 
+func (x *Bootstrap) GetData() *v12.Data {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetLogger() *v13.Logger {
+	if x != nil {
+		return x.Logger
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetTrace() *v14.Trace {
+	if x != nil {
+		return x.Trace
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetDiscovery() *v15.Discovery {
+	if x != nil {
+		return x.Discovery
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetBroker() *v16.Brokers {
+	if x != nil {
+		return x.Broker
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetMiddlewares() *v17.Middlewares {
+	if x != nil {
+		return x.Middlewares
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetSecurity() *v18.Security {
+	if x != nil {
+		return x.Security
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetClients() *v11.Clients {
+	if x != nil {
+		return x.Clients
+	}
+	return nil
+}
+
 var File_examples_protos_bootstrap_sample_bootstrap_proto protoreflect.FileDescriptor
 
 const file_examples_protos_bootstrap_sample_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"0examples/protos/bootstrap_sample/bootstrap.proto\x12\x10bootstrap_sample\x1a\x1eruntime/logger/v1/logger.proto\x1a$runtime/transport/v1/transport.proto\"w\n" +
-	"\tBootstrap\x121\n" +
-	"\x06logger\x18\x01 \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x127\n" +
-	"\aservers\x18\x02 \x01(\v2\x1d.runtime.transport.v1.ServersR\aserversBEZCgithub.com/origadmin/runtime/examples/configs/bootstrap_sample;confb\x06proto3"
+	"0examples/protos/bootstrap_sample/bootstrap.proto\x12\x10bootstrap_sample\x1a\x18runtime/app/v1/app.proto\x1a\x1eruntime/broker/v1/broker.proto\x1a\x1aruntime/data/v1/data.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a\"runtime/security/v1/security.proto\x1a\x1cruntime/trace/v1/trace.proto\x1a$runtime/transport/v1/transport.proto\"\xa5\x04\n" +
+	"\tBootstrap\x12%\n" +
+	"\x03app\x18\x01 \x01(\v2\x13.runtime.app.v1.AppR\x03app\x127\n" +
+	"\aservers\x18\x02 \x01(\v2\x1d.runtime.transport.v1.ServersR\aservers\x12)\n" +
+	"\x04data\x18\x03 \x01(\v2\x15.runtime.data.v1.DataR\x04data\x121\n" +
+	"\x06logger\x18\x04 \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x12-\n" +
+	"\x05trace\x18\x05 \x01(\v2\x17.runtime.trace.v1.TraceR\x05trace\x12=\n" +
+	"\tdiscovery\x18\x06 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\tdiscovery\x122\n" +
+	"\x06broker\x18\a \x01(\v2\x1a.runtime.broker.v1.BrokersR\x06broker\x12D\n" +
+	"\vmiddlewares\x18\b \x01(\v2\".runtime.middleware.v1.MiddlewaresR\vmiddlewares\x129\n" +
+	"\bsecurity\x18\t \x01(\v2\x1d.runtime.security.v1.SecurityR\bsecurity\x127\n" +
+	"\aclients\x18\n" +
+	" \x01(\v2\x1d.runtime.transport.v1.ClientsR\aclientsBEZCgithub.com/origadmin/runtime/examples/configs/bootstrap_sample;confb\x06proto3"
 
 var (
 	file_examples_protos_bootstrap_sample_bootstrap_proto_rawDescOnce sync.Once
@@ -99,18 +194,34 @@ func file_examples_protos_bootstrap_sample_bootstrap_proto_rawDescGZIP() []byte 
 
 var file_examples_protos_bootstrap_sample_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_examples_protos_bootstrap_sample_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),   // 0: bootstrap_sample.Bootstrap
-	(*v1.Logger)(nil),   // 1: runtime.logger.v1.Logger
-	(*v11.Servers)(nil), // 2: runtime.transport.v1.Servers
+	(*Bootstrap)(nil),       // 0: bootstrap_sample.Bootstrap
+	(*v1.App)(nil),          // 1: runtime.app.v1.App
+	(*v11.Servers)(nil),     // 2: runtime.transport.v1.Servers
+	(*v12.Data)(nil),        // 3: runtime.data.v1.Data
+	(*v13.Logger)(nil),      // 4: runtime.logger.v1.Logger
+	(*v14.Trace)(nil),       // 5: runtime.trace.v1.Trace
+	(*v15.Discovery)(nil),   // 6: runtime.discovery.v1.Discovery
+	(*v16.Brokers)(nil),     // 7: runtime.broker.v1.Brokers
+	(*v17.Middlewares)(nil), // 8: runtime.middleware.v1.Middlewares
+	(*v18.Security)(nil),    // 9: runtime.security.v1.Security
+	(*v11.Clients)(nil),     // 10: runtime.transport.v1.Clients
 }
 var file_examples_protos_bootstrap_sample_bootstrap_proto_depIdxs = []int32{
-	1, // 0: bootstrap_sample.Bootstrap.logger:type_name -> runtime.logger.v1.Logger
-	2, // 1: bootstrap_sample.Bootstrap.servers:type_name -> runtime.transport.v1.Servers
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1,  // 0: bootstrap_sample.Bootstrap.app:type_name -> runtime.app.v1.App
+	2,  // 1: bootstrap_sample.Bootstrap.servers:type_name -> runtime.transport.v1.Servers
+	3,  // 2: bootstrap_sample.Bootstrap.data:type_name -> runtime.data.v1.Data
+	4,  // 3: bootstrap_sample.Bootstrap.logger:type_name -> runtime.logger.v1.Logger
+	5,  // 4: bootstrap_sample.Bootstrap.trace:type_name -> runtime.trace.v1.Trace
+	6,  // 5: bootstrap_sample.Bootstrap.discovery:type_name -> runtime.discovery.v1.Discovery
+	7,  // 6: bootstrap_sample.Bootstrap.broker:type_name -> runtime.broker.v1.Brokers
+	8,  // 7: bootstrap_sample.Bootstrap.middlewares:type_name -> runtime.middleware.v1.Middlewares
+	9,  // 8: bootstrap_sample.Bootstrap.security:type_name -> runtime.security.v1.Security
+	10, // 9: bootstrap_sample.Bootstrap.clients:type_name -> runtime.transport.v1.Clients
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_examples_protos_bootstrap_sample_bootstrap_proto_init() }

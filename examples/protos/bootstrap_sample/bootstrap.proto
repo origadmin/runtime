@@ -1,13 +1,10 @@
 syntax = "proto3";
 
-// 包名保持不变
+// Package name remains unchanged
 package bootstrap_sample;
 
-// go_package 保持不变
-option go_package = "github.com/origadmin/runtime/examples/configs/bootstrap_sample;conf";
-
 // ----------------------------------------------------------------
-// 导入框架提供的标准配置模块 (Building Blocks)
+// Import standard configuration modules (Building Blocks) provided by the framework
 // ----------------------------------------------------------------
 import "runtime/app/v1/app.proto";
 import "runtime/broker/v1/broker.proto";
@@ -16,50 +13,50 @@ import "runtime/discovery/v1/discovery.proto";
 import "runtime/logger/v1/logger.proto";
 import "runtime/middleware/v1/middleware.proto";
 import "runtime/security/v1/security.proto";
-import "runtime/server/v1/server.proto"; // 注意：这里从 transport/v1/transport.proto 变更为 server/v1/server.proto
 import "runtime/trace/v1/trace.proto";
+import "runtime/transport/v1/transport.proto";
 
-// Bootstrap 是整个应用的根配置示例。
-// 新的结构将所有配置项聚合到了逻辑分组中，使其更清晰、更易于理解。
+// Go package option remains unchanged
+option go_package = "github.com/origadmin/runtime/examples/configs/bootstrap_sample;conf";
+
+// Bootstrap is the root configuration example for the entire application.
+// The new structure aggregates all configuration items into logical groups, making it clearer and easier to understand.
 message Bootstrap {
-  // App 包含应用级别的元数据 (如：名称, 版本, 环境等)。
+  // App contains application-level metadata (e.g., name, version, environment).
   runtime.app.v1.App app = 1;
 
-  // Servers 持有所有网络服务器的配置 (HTTP, gRPC)。
-  // 这是文档中推荐的最佳实践，替代了原先的 runtime.transport.v1.Servers。
-  Servers servers = 2;
+  // Servers holds configurations for all network servers (HTTP, gRPC, WebSocket).
+  // This now uses the Servers collection from the transport module.
+  runtime.transport.v1.Servers servers = 2;
 
-  // Data 持有所有数据源的配置 (数据库, 缓存)。
+  // Data holds configurations for all data sources (databases, caches).
   runtime.data.v1.Data data = 3;
 
-  // Logger 配置应用的日志记录行为。
+  // Logger configures the application's logging behavior.
   runtime.logger.v1.Logger logger = 4;
 
-  // Trace 配置分布式追踪系统。
+  // Trace configures the distributed tracing system.
   runtime.trace.v1.Trace trace = 5;
 
-  // Discovery 配置服务发现客户端。
-  // 注意：字段名从 discoveries 改为 discovery，类型从 Discoveries 改为 Discovery，以保持一致性。
+  // Discovery configures the service discovery client.
   runtime.discovery.v1.Discovery discovery = 6;
 
-  // Broker 配置消息代理。
-  // 注意：字段名从 brokers 改为 broker，类型从 Brokers 改为 Brokers，以保持一致性。
+  // Broker configures the message brokers.
   runtime.broker.v1.Brokers broker = 7;
 
-  // Middlewares 定义了中间件链。
-  // 注意：字段名从 middlewares 改为 middlewares，以保持一致性。
+  // Middlewares defines the middleware chain.
   runtime.middleware.v1.Middlewares middlewares = 8;
 
-  // Security 定义认证和授权策略。
+  // Security defines authentication and authorization policies.
   runtime.security.v1.Security security = 9;
+
+  // Clients holds configurations for all network clients (HTTP, gRPC).
+  // This now uses the Clients collection from the transport module.
+  runtime.transport.v1.Clients clients = 10;
 }
 
-// Servers 是一个用于存放不同类型网络服务器的容器。
-// 这个结构使得添加新的服务类型（如 FTP, WebSocket 等）变得非常简单。
-message Servers {
-  // HTTP 服务器配置。
-  runtime.server.v1.Server http = 1;
-
-  // gRPC 服务器配置。
-  runtime.server.v1.Server grpc = 2;
-}
+// The nested Servers message is no longer needed as we use repeated runtime.transport.v1.Server directly.
+// message Servers {
+//   runtime.server.v1.Server http = 1;
+//   runtime.server.v1.Server grpc = 2;
+// }

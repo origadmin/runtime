@@ -147,7 +147,7 @@ func (x *Discovery) GetCustomize() *structpb.Struct {
 type Discoveries struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// default is the name of the discovery service to use by default.
-	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// active specifies the name of the discovery service to use, overriding the default.
 	Active        *string      `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	Discoveries   []*Discovery `protobuf:"bytes,3,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
@@ -186,8 +186,8 @@ func (*Discoveries) Descriptor() ([]byte, []int) {
 }
 
 func (x *Discoveries) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -560,11 +560,13 @@ const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
 	"\b_polarisB\f\n" +
 	"\n" +
-	"_customize\"\x92\x01\n" +
-	"\vDiscoveries\x12\x18\n" +
-	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x12A\n" +
-	"\vdiscoveries\x18\x03 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveriesB\t\n" +
+	"_customize\"\xa3\x01\n" +
+	"\vDiscoveries\x12\x1d\n" +
+	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x12A\n" +
+	"\vdiscoveries\x18\x03 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveriesB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
 	"\a_active\"\xcb\x02\n" +
 	"\x06Consul\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +

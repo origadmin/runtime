@@ -543,8 +543,6 @@ func (m *Brokers) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetBrokers() {
 		_, _ = idx, item
 
@@ -577,6 +575,10 @@ func (m *Brokers) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {

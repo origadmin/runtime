@@ -3,13 +3,14 @@ syntax = "proto3";
 package runtime.middleware.v1;
 
 import "google/protobuf/struct.proto";
-import "runtime/middleware/v1/circuitbreaker/circuitbreaker.proto";
-import "runtime/middleware/v1/cors/cors.proto";
-import "runtime/middleware/v1/jwt/jwt.proto";
-import "runtime/middleware/v1/metrics/metrics.proto";
-import "runtime/middleware/v1/ratelimit/ratelimiter.proto";
-import "runtime/middleware/v1/selector/selector.proto";
-import "runtime/middleware/v1/validator/validator.proto";
+// 更新导入路径以指向新的、带 v1 子目录的模块
+import "runtime/middleware/circuitbreaker/v1/circuitbreaker.proto";
+import "runtime/middleware/cors/v1/cors.proto";
+import "runtime/middleware/jwt/v1/jwt.proto";
+import "runtime/middleware/metrics/v1/metrics.proto";
+import "runtime/middleware/ratelimit/v1/ratelimiter.proto"; // <-- 确保这里是正确的
+import "runtime/middleware/selector/v1/selector.proto";
+import "runtime/middleware/validator/v1/validator.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
@@ -60,13 +61,14 @@ message Middleware {
 
   bool enabled = 3 [json_name = "enabled"];
 
-  optional middleware.v1.ratelimit.RateLimiter rate_limiter = 4 [json_name = "rate_limiter"];
-  optional middleware.v1.metrics.Metrics metrics = 5 [json_name = "metrics"];
-  optional middleware.v1.validator.Validator validator = 6 [json_name = "validator"];
-  optional middleware.v1.jwt.JWT jwt = 7 [json_name = "jwt"];
-  optional middleware.v1.selector.Selector selector = 8 [json_name = "selector"];
-  optional middleware.v1.cors.Cors cors = 9 [json_name = "cors"];
-  optional middleware.v1.circuitbreaker.CircuitBreaker circuit_breaker = 10 [json_name = "circuit_breaker"];
+  // 更新字段类型以使用新的包名
+  optional runtime.middleware.ratelimit.v1.RateLimiter rate_limiter = 4 [json_name = "rate_limiter"]; // <-- 确保这里是正确的
+  optional runtime.middleware.metrics.v1.Metrics metrics = 5 [json_name = "metrics"];
+  optional runtime.middleware.validator.v1.Validator validator = 6 [json_name = "validator"];
+  optional runtime.middleware.jwt.v1.JWT jwt = 7 [json_name = "jwt"];
+  optional runtime.middleware.selector.v1.Selector selector = 8 [json_name = "selector"];
+  optional runtime.middleware.cors.v1.Cors cors = 9 [json_name = "cors"];
+  optional runtime.middleware.circuitbreaker.v1.CircuitBreaker circuit_breaker = 10 [json_name = "circuit_breaker"];
   optional Logging logging = 11 [json_name = "logging"];
   optional Recovery recovery = 12 [json_name = "recovery"];
   optional Metadata metadata = 13 [json_name = "metadata"];

@@ -1,14 +1,16 @@
 syntax = "proto3";
 
-package runtime.middleware.v1.ratelimit;
+// 修正 package 声明以匹配新的目录结构
+package runtime.middleware.ratelimit.v1;
 
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/ratelimit;ratelimitv1";
+// 修正 go_package 声明以匹配新的目录结构
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/middleware/ratelimit/v1;ratelimitv1";
 option java_multiple_files = true;
 option java_outer_classname = "RateLimitProto";
-option java_package = "com.github.origadmin.api.runtime.middleware.v1.ratelimit";
+option java_package = "com.github.origadmin.api.runtime.middleware.ratelimit.v1";
 option objc_class_prefix = "OMM";
 option php_namespace = "OrigAdmin\\Runtime\\Middleware\\RateLimit\\V1";
 

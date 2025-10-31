@@ -8,13 +8,13 @@ package middlewarev1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
-	circuitbreaker "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/circuitbreaker"
-	cors "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/cors"
-	jwt "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/jwt"
-	metrics "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/metrics"
-	ratelimit "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/ratelimit"
-	selector "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/selector"
-	validator "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1/validator"
+	v16 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/circuitbreaker/v1"
+	v15 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/cors/v1"
+	v13 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/jwt/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/metrics/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/ratelimit/v1"
+	v14 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/selector/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/validator/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -157,21 +157,22 @@ func (*Recovery) Descriptor() ([]byte, []int) {
 
 // Middleware represents a single middleware configuration with an enable switch.
 type Middleware struct {
-	state          protoimpl.MessageState         `protogen:"open.v1"`
-	Name           string                         `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type           string                         `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Enabled        bool                           `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	RateLimiter    *ratelimit.RateLimiter         `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"`
-	Metrics        *metrics.Metrics               `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
-	Validator      *validator.Validator           `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
-	Jwt            *jwt.JWT                       `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
-	Selector       *selector.Selector             `protobuf:"bytes,8,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
-	Cors           *cors.Cors                     `protobuf:"bytes,9,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
-	CircuitBreaker *circuitbreaker.CircuitBreaker `protobuf:"bytes,10,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
-	Logging        *Logging                       `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
-	Recovery       *Recovery                      `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
-	Metadata       *Metadata                      `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
-	Customize      *structpb.Struct               `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Name    string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Type    string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Enabled bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	// 更新字段类型以使用新的包名
+	RateLimiter    *v1.RateLimiter     `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"` // <-- 确保这里是正确的
+	Metrics        *v11.Metrics        `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
+	Validator      *v12.Validator      `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
+	Jwt            *v13.JWT            `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
+	Selector       *v14.Selector       `protobuf:"bytes,8,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
+	Cors           *v15.Cors           `protobuf:"bytes,9,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
+	CircuitBreaker *v16.CircuitBreaker `protobuf:"bytes,10,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
+	Logging        *Logging            `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
+	Recovery       *Recovery           `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
+	Metadata       *Metadata           `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Customize      *structpb.Struct    `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -227,49 +228,49 @@ func (x *Middleware) GetEnabled() bool {
 	return false
 }
 
-func (x *Middleware) GetRateLimiter() *ratelimit.RateLimiter {
+func (x *Middleware) GetRateLimiter() *v1.RateLimiter {
 	if x != nil {
 		return x.RateLimiter
 	}
 	return nil
 }
 
-func (x *Middleware) GetMetrics() *metrics.Metrics {
+func (x *Middleware) GetMetrics() *v11.Metrics {
 	if x != nil {
 		return x.Metrics
 	}
 	return nil
 }
 
-func (x *Middleware) GetValidator() *validator.Validator {
+func (x *Middleware) GetValidator() *v12.Validator {
 	if x != nil {
 		return x.Validator
 	}
 	return nil
 }
 
-func (x *Middleware) GetJwt() *jwt.JWT {
+func (x *Middleware) GetJwt() *v13.JWT {
 	if x != nil {
 		return x.Jwt
 	}
 	return nil
 }
 
-func (x *Middleware) GetSelector() *selector.Selector {
+func (x *Middleware) GetSelector() *v14.Selector {
 	if x != nil {
 		return x.Selector
 	}
 	return nil
 }
 
-func (x *Middleware) GetCors() *cors.Cors {
+func (x *Middleware) GetCors() *v15.Cors {
 	if x != nil {
 		return x.Cors
 	}
 	return nil
 }
 
-func (x *Middleware) GetCircuitBreaker() *circuitbreaker.CircuitBreaker {
+func (x *Middleware) GetCircuitBreaker() *v16.CircuitBreaker {
 	if x != nil {
 		return x.CircuitBreaker
 	}
@@ -354,7 +355,7 @@ var File_runtime_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"&runtime/middleware/v1/middleware.proto\x12\x15runtime.middleware.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a9runtime/middleware/v1/circuitbreaker/circuitbreaker.proto\x1a%runtime/middleware/v1/cors/cors.proto\x1a#runtime/middleware/v1/jwt/jwt.proto\x1a+runtime/middleware/v1/metrics/metrics.proto\x1a1runtime/middleware/v1/ratelimit/ratelimiter.proto\x1a-runtime/middleware/v1/selector/selector.proto\x1a/runtime/middleware/v1/validator/validator.proto\x1a\x17validate/validate.proto\"\x9e\x01\n" +
+	"&runtime/middleware/v1/middleware.proto\x12\x15runtime.middleware.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a9runtime/middleware/circuitbreaker/v1/circuitbreaker.proto\x1a%runtime/middleware/cors/v1/cors.proto\x1a#runtime/middleware/jwt/v1/jwt.proto\x1a+runtime/middleware/metrics/v1/metrics.proto\x1a1runtime/middleware/ratelimit/v1/ratelimiter.proto\x1a-runtime/middleware/selector/v1/selector.proto\x1a/runtime/middleware/validator/v1/validator.proto\x1a\x17validate/validate.proto\"\x9e\x01\n" +
 	"\bMetadata\x12\x1a\n" +
 	"\bprefixes\x18\x01 \x03(\tR\bprefixes\x12=\n" +
 	"\x04data\x18\x02 \x03(\v2).runtime.middleware.v1.Metadata.DataEntryR\x04data\x1a7\n" +
@@ -369,14 +370,14 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x85\x01\n" +
 	"\x04type\x18\x02 \x01(\tBq\xfaBnrlR\x04noneR\aloggingR\brecoveryR\frate_limiterR\ametricsR\tvalidatorR\x03jwtR\bselectorR\x04corsR\x0fcircuit_breakerR\tcustomizeR\x04type\x12\x18\n" +
 	"\aenabled\x18\x03 \x01(\bR\aenabled\x12U\n" +
-	"\frate_limiter\x18\x04 \x01(\v2,.runtime.middleware.v1.ratelimit.RateLimiterH\x00R\frate_limiter\x88\x01\x01\x12E\n" +
-	"\ametrics\x18\x05 \x01(\v2&.runtime.middleware.v1.metrics.MetricsH\x01R\ametrics\x88\x01\x01\x12M\n" +
-	"\tvalidator\x18\x06 \x01(\v2*.runtime.middleware.v1.validator.ValidatorH\x02R\tvalidator\x88\x01\x01\x125\n" +
-	"\x03jwt\x18\a \x01(\v2\x1e.runtime.middleware.v1.jwt.JWTH\x03R\x03jwt\x88\x01\x01\x12I\n" +
-	"\bselector\x18\b \x01(\v2(.runtime.middleware.v1.selector.SelectorH\x04R\bselector\x88\x01\x01\x129\n" +
-	"\x04cors\x18\t \x01(\v2 .runtime.middleware.v1.cors.CorsH\x05R\x04cors\x88\x01\x01\x12c\n" +
+	"\frate_limiter\x18\x04 \x01(\v2,.runtime.middleware.ratelimit.v1.RateLimiterH\x00R\frate_limiter\x88\x01\x01\x12E\n" +
+	"\ametrics\x18\x05 \x01(\v2&.runtime.middleware.metrics.v1.MetricsH\x01R\ametrics\x88\x01\x01\x12M\n" +
+	"\tvalidator\x18\x06 \x01(\v2*.runtime.middleware.validator.v1.ValidatorH\x02R\tvalidator\x88\x01\x01\x125\n" +
+	"\x03jwt\x18\a \x01(\v2\x1e.runtime.middleware.jwt.v1.JWTH\x03R\x03jwt\x88\x01\x01\x12I\n" +
+	"\bselector\x18\b \x01(\v2(.runtime.middleware.selector.v1.SelectorH\x04R\bselector\x88\x01\x01\x129\n" +
+	"\x04cors\x18\t \x01(\v2 .runtime.middleware.cors.v1.CorsH\x05R\x04cors\x88\x01\x01\x12c\n" +
 	"\x0fcircuit_breaker\x18\n" +
-	" \x01(\v24.runtime.middleware.v1.circuitbreaker.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x12=\n" +
+	" \x01(\v24.runtime.middleware.circuitbreaker.v1.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x12=\n" +
 	"\alogging\x18\v \x01(\v2\x1e.runtime.middleware.v1.LoggingH\aR\alogging\x88\x01\x01\x12@\n" +
 	"\brecovery\x18\f \x01(\v2\x1f.runtime.middleware.v1.RecoveryH\bR\brecovery\x88\x01\x01\x12@\n" +
 	"\bmetadata\x18\r \x01(\v2\x1f.runtime.middleware.v1.MetadataH\tR\bmetadata\x88\x01\x01\x12:\n" +
@@ -415,30 +416,30 @@ func file_runtime_middleware_v1_middleware_proto_rawDescGZIP() []byte {
 
 var file_runtime_middleware_v1_middleware_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_runtime_middleware_v1_middleware_proto_goTypes = []any{
-	(*Metadata)(nil),                      // 0: runtime.middleware.v1.Metadata
-	(*Logging)(nil),                       // 1: runtime.middleware.v1.Logging
-	(*Recovery)(nil),                      // 2: runtime.middleware.v1.Recovery
-	(*Middleware)(nil),                    // 3: runtime.middleware.v1.Middleware
-	(*Middlewares)(nil),                   // 4: runtime.middleware.v1.Middlewares
-	nil,                                   // 5: runtime.middleware.v1.Metadata.DataEntry
-	(*ratelimit.RateLimiter)(nil),         // 6: runtime.middleware.v1.ratelimit.RateLimiter
-	(*metrics.Metrics)(nil),               // 7: runtime.middleware.v1.metrics.Metrics
-	(*validator.Validator)(nil),           // 8: runtime.middleware.v1.validator.Validator
-	(*jwt.JWT)(nil),                       // 9: runtime.middleware.v1.jwt.JWT
-	(*selector.Selector)(nil),             // 10: runtime.middleware.v1.selector.Selector
-	(*cors.Cors)(nil),                     // 11: runtime.middleware.v1.cors.Cors
-	(*circuitbreaker.CircuitBreaker)(nil), // 12: runtime.middleware.v1.circuitbreaker.CircuitBreaker
-	(*structpb.Struct)(nil),               // 13: google.protobuf.Struct
+	(*Metadata)(nil),           // 0: runtime.middleware.v1.Metadata
+	(*Logging)(nil),            // 1: runtime.middleware.v1.Logging
+	(*Recovery)(nil),           // 2: runtime.middleware.v1.Recovery
+	(*Middleware)(nil),         // 3: runtime.middleware.v1.Middleware
+	(*Middlewares)(nil),        // 4: runtime.middleware.v1.Middlewares
+	nil,                        // 5: runtime.middleware.v1.Metadata.DataEntry
+	(*v1.RateLimiter)(nil),     // 6: runtime.middleware.ratelimit.v1.RateLimiter
+	(*v11.Metrics)(nil),        // 7: runtime.middleware.metrics.v1.Metrics
+	(*v12.Validator)(nil),      // 8: runtime.middleware.validator.v1.Validator
+	(*v13.JWT)(nil),            // 9: runtime.middleware.jwt.v1.JWT
+	(*v14.Selector)(nil),       // 10: runtime.middleware.selector.v1.Selector
+	(*v15.Cors)(nil),           // 11: runtime.middleware.cors.v1.Cors
+	(*v16.CircuitBreaker)(nil), // 12: runtime.middleware.circuitbreaker.v1.CircuitBreaker
+	(*structpb.Struct)(nil),    // 13: google.protobuf.Struct
 }
 var file_runtime_middleware_v1_middleware_proto_depIdxs = []int32{
 	5,  // 0: runtime.middleware.v1.Metadata.data:type_name -> runtime.middleware.v1.Metadata.DataEntry
-	6,  // 1: runtime.middleware.v1.Middleware.rate_limiter:type_name -> runtime.middleware.v1.ratelimit.RateLimiter
-	7,  // 2: runtime.middleware.v1.Middleware.metrics:type_name -> runtime.middleware.v1.metrics.Metrics
-	8,  // 3: runtime.middleware.v1.Middleware.validator:type_name -> runtime.middleware.v1.validator.Validator
-	9,  // 4: runtime.middleware.v1.Middleware.jwt:type_name -> runtime.middleware.v1.jwt.JWT
-	10, // 5: runtime.middleware.v1.Middleware.selector:type_name -> runtime.middleware.v1.selector.Selector
-	11, // 6: runtime.middleware.v1.Middleware.cors:type_name -> runtime.middleware.v1.cors.Cors
-	12, // 7: runtime.middleware.v1.Middleware.circuit_breaker:type_name -> runtime.middleware.v1.circuitbreaker.CircuitBreaker
+	6,  // 1: runtime.middleware.v1.Middleware.rate_limiter:type_name -> runtime.middleware.ratelimit.v1.RateLimiter
+	7,  // 2: runtime.middleware.v1.Middleware.metrics:type_name -> runtime.middleware.metrics.v1.Metrics
+	8,  // 3: runtime.middleware.v1.Middleware.validator:type_name -> runtime.middleware.validator.v1.Validator
+	9,  // 4: runtime.middleware.v1.Middleware.jwt:type_name -> runtime.middleware.jwt.v1.JWT
+	10, // 5: runtime.middleware.v1.Middleware.selector:type_name -> runtime.middleware.selector.v1.Selector
+	11, // 6: runtime.middleware.v1.Middleware.cors:type_name -> runtime.middleware.cors.v1.Cors
+	12, // 7: runtime.middleware.v1.Middleware.circuit_breaker:type_name -> runtime.middleware.circuitbreaker.v1.CircuitBreaker
 	1,  // 8: runtime.middleware.v1.Middleware.logging:type_name -> runtime.middleware.v1.Logging
 	2,  // 9: runtime.middleware.v1.Middleware.recovery:type_name -> runtime.middleware.v1.Recovery
 	0,  // 10: runtime.middleware.v1.Middleware.metadata:type_name -> runtime.middleware.v1.Metadata

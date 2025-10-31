@@ -49,7 +49,7 @@ message Discovery {
 
 message Discoveries {
   // default is the name of the discovery service to use by default.
-  string default = 1 [json_name = "default"];
+  optional string default = 1 [json_name = "default"];
 
   // active specifies the name of the discovery service to use, overriding the default.
   optional string active = 2 [json_name = "active"];

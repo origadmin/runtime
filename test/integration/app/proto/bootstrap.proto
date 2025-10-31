@@ -5,8 +5,9 @@ package test.app.configs;
 // 1. 导入框架提供的所有基础 "砖头"
 import "runtime/discovery/v1/discovery.proto";
 import "runtime/middleware/v1/middleware.proto";
-import "runtime/transport/v1/grpc.proto";
-import "runtime/transport/v1/http.proto";
+import "runtime/transport/grpc/v1/grpc.proto";
+import "runtime/transport/http/v1/http.proto";
+import "runtime/transport/v1/transport.proto";
 
 option go_package = "github.com/origadmin/framework/test/integration/app/proto;configs";
 
@@ -17,10 +18,7 @@ message Server {
   string name = 1;
 
   // 使用 oneof 将框架的 GRPC 和 HTTP "砖头" 组合在一起。
-  oneof config {
-    runtime.transport.v1.GrpcServerConfig grpc = 2;
-    runtime.transport.v1.HttpServerConfig http = 3;
-  }
+  optional runtime.transport.v1.Server server = 2;
 }
 
 // 3. 在图纸内部，定义如何组合 "客户端" 砖头
@@ -30,7 +28,7 @@ message Client {
   string client_name = 1;
 
   // 使用框架的 "客户端发现" 砖头。
-  repeated  runtime.discovery.v1.Discovery discoveries = 2;
+  repeated runtime.discovery.v1.Discovery discoveries = 2;
 
   // 将 "中间件" 砖头与上面的 "客户端发现" 砖头绑定在一起。
   repeated runtime.middleware.v1.Middleware middlewares = 3;
@@ -46,8 +44,8 @@ message Bootstrap {
   string registration_discovery_name = 2;
 
   // 使用我们组合好的 `Server` 部件，构造一个统一的服务器列表。
-  repeated Server servers = 3;
+  repeated runtime.transport.v1.Server server = 3;
 
   // 使用我们组合好的 `Client` 部件，构造一个客户端列表，每个客户端都有其专属配置。
-  repeated Client clients = 4;
+  optional runtime.transport.v1.Clients clients = 4;
 }

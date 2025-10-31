@@ -320,8 +320,6 @@ func (m *FileStores) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
@@ -354,6 +352,10 @@ func (m *FileStores) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {
@@ -458,8 +460,6 @@ func (m *Caches) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
@@ -492,6 +492,10 @@ func (m *Caches) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {
@@ -597,8 +601,6 @@ func (m *Databases) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
@@ -631,6 +633,10 @@ func (m *Databases) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {
@@ -736,8 +742,6 @@ func (m *Documents) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Default
-
 	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
@@ -770,6 +774,10 @@ func (m *Documents) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
 	}
 
 	if m.Active != nil {

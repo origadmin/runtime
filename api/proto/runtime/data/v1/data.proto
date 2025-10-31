@@ -59,7 +59,7 @@ message Data {
 // FileStores is a collection of named FileStore configurations.
 message FileStores {
   // Default filestore name.
-  string default = 1 [
+  optional string default = 1 [
     json_name = "default",
     (gnostic.openapi.v3.property) = {description: "Default filestore name"}
   ];
@@ -78,7 +78,7 @@ message FileStores {
 // Caches is a collection of named Cache configurations.
 message Caches {
   // Default cache name.
-  string default = 1 [
+  optional string default = 1 [
     json_name = "default",
     (gnostic.openapi.v3.property) = {description: "Default cache name"}
   ];
@@ -97,7 +97,7 @@ message Caches {
 // Databases is a collection of named Relational Database configurations.
 message Databases {
   // Default database name.
-  string default = 1 [
+  optional string default = 1 [
     json_name = "default",
     (gnostic.openapi.v3.property) = {description: "Default database name"}
   ];
@@ -116,7 +116,7 @@ message Databases {
 // Documents is a collection of named Document Database configurations.
 message Documents {
   // Default document database name.
-  string default = 1 [
+  optional string default = 1 [
     json_name = "default",
     (gnostic.openapi.v3.property) = {description: "Default document database name"}
   ];

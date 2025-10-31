@@ -178,7 +178,7 @@ func (x *Broker) GetCustomize() *structpb.Struct {
 
 type Brokers struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Default       string                 `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default       *string                `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	Brokers       []*Broker              `protobuf:"bytes,3,rep,name=brokers,proto3" json:"brokers,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -216,8 +216,8 @@ func (*Brokers) Descriptor() ([]byte, []int) {
 }
 
 func (x *Brokers) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -268,11 +268,13 @@ const file_runtime_broker_v1_broker_proto_rawDesc = "" +
 	"\x04_sqsB\b\n" +
 	"\x06_stompB\f\n" +
 	"\n" +
-	"_customize\"\x80\x01\n" +
-	"\aBrokers\x12\x18\n" +
-	"\adefault\x18\x01 \x01(\tR\adefault\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x00R\x06active\x88\x01\x01\x123\n" +
-	"\abrokers\x18\x03 \x03(\v2\x19.runtime.broker.v1.BrokerR\abrokersB\t\n" +
+	"_customize\"\x91\x01\n" +
+	"\aBrokers\x12\x1d\n" +
+	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x123\n" +
+	"\abrokers\x18\x03 \x03(\v2\x19.runtime.broker.v1.BrokerR\abrokersB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
 	"\a_activeB\xce\x01\n" +
 	"\x15com.runtime.broker.v1B\vBrokerProtoP\x01ZBgithub.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1\xa2\x02\x03RBX\xaa\x02\x11Runtime.Broker.V1\xca\x02\x11Runtime\\Broker\\V1\xe2\x02\x1dRuntime\\Broker\\V1\\GPBMetadata\xea\x02\x13Runtime::Broker::V1b\x06proto3"
 

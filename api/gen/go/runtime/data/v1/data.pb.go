@@ -111,7 +111,7 @@ func (x *Data) GetCustomize() *structpb.Struct {
 type FileStores struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Default filestore name.
-	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active filestore name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named FileStore configurations.
@@ -151,8 +151,8 @@ func (*FileStores) Descriptor() ([]byte, []int) {
 }
 
 func (x *FileStores) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -175,7 +175,7 @@ func (x *FileStores) GetConfigs() []*v1.FileStoreConfig {
 type Caches struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Default cache name.
-	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active cache name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named Cache configurations.
@@ -215,8 +215,8 @@ func (*Caches) Descriptor() ([]byte, []int) {
 }
 
 func (x *Caches) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -239,7 +239,7 @@ func (x *Caches) GetConfigs() []*v1.CacheConfig {
 type Databases struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Default database name.
-	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active database name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named Relational Database configurations.
@@ -279,8 +279,8 @@ func (*Databases) Descriptor() ([]byte, []int) {
 }
 
 func (x *Databases) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -303,7 +303,7 @@ func (x *Databases) GetConfigs() []*v1.DatabaseConfig {
 type Documents struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Default document database name.
-	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active document database name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named Document Database configurations.
@@ -343,8 +343,8 @@ func (*Documents) Descriptor() ([]byte, []int) {
 }
 
 func (x *Documents) GetDefault() string {
-	if x != nil {
-		return x.Default
+	if x != nil && x.Default != nil {
+		return *x.Default
 	}
 	return ""
 }
@@ -383,27 +383,35 @@ const file_runtime_data_v1_data_proto_rawDesc = "" +
 	"\n" +
 	"_documentsB\f\n" +
 	"\n" +
-	"_customize\"\x8e\x02\n" +
+	"_customize\"\x9f\x02\n" +
 	"\n" +
-	"FileStores\x126\n" +
-	"\adefault\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default filestore nameR\adefault\x12K\n" +
-	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x00R\x06active\x88\x01\x01\x12p\n" +
-	"\aconfigs\x18\x03 \x03(\v2(.runtime.data.storage.v1.FileStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\t\n" +
-	"\a_active\"\xfa\x01\n" +
-	"\x06Caches\x122\n" +
-	"\adefault\x18\x01 \x01(\tB\x18\xbaG\x15\x92\x02\x12Default cache nameR\adefault\x12G\n" +
-	"\x06active\x18\x02 \x01(\tB*\xbaG'\x92\x02$Active cache name, overrides defaultH\x00R\x06active\x88\x01\x01\x12h\n" +
-	"\aconfigs\x18\x03 \x03(\v2$.runtime.data.storage.v1.CacheConfigB(\xbaG%\x92\x02\"List of named Cache configurationsR\aconfigsB\t\n" +
-	"\a_active\"\x94\x02\n" +
-	"\tDatabases\x125\n" +
-	"\adefault\x18\x01 \x01(\tB\x1b\xbaG\x18\x92\x02\x15Default database nameR\adefault\x12J\n" +
-	"\x06active\x18\x02 \x01(\tB-\xbaG*\x92\x02'Active database name, overrides defaultH\x00R\x06active\x88\x01\x01\x12y\n" +
-	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DatabaseConfigB6\xbaG3\x92\x020List of named Relational Database configurationsR\aconfigsB\t\n" +
-	"\a_active\"\xa4\x02\n" +
-	"\tDocuments\x12>\n" +
-	"\adefault\x18\x01 \x01(\tB$\xbaG!\x92\x02\x1eDefault document database nameR\adefault\x12S\n" +
-	"\x06active\x18\x02 \x01(\tB6\xbaG3\x92\x020Active document database name, overrides defaultH\x00R\x06active\x88\x01\x01\x12w\n" +
-	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DocumentConfigB4\xbaG1\x92\x02.List of named Document Database configurationsR\aconfigsB\t\n" +
+	"FileStores\x12;\n" +
+	"\adefault\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default filestore nameH\x00R\adefault\x88\x01\x01\x12K\n" +
+	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x01R\x06active\x88\x01\x01\x12p\n" +
+	"\aconfigs\x18\x03 \x03(\v2(.runtime.data.storage.v1.FileStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
+	"\a_active\"\x8b\x02\n" +
+	"\x06Caches\x127\n" +
+	"\adefault\x18\x01 \x01(\tB\x18\xbaG\x15\x92\x02\x12Default cache nameH\x00R\adefault\x88\x01\x01\x12G\n" +
+	"\x06active\x18\x02 \x01(\tB*\xbaG'\x92\x02$Active cache name, overrides defaultH\x01R\x06active\x88\x01\x01\x12h\n" +
+	"\aconfigs\x18\x03 \x03(\v2$.runtime.data.storage.v1.CacheConfigB(\xbaG%\x92\x02\"List of named Cache configurationsR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
+	"\a_active\"\xa5\x02\n" +
+	"\tDatabases\x12:\n" +
+	"\adefault\x18\x01 \x01(\tB\x1b\xbaG\x18\x92\x02\x15Default database nameH\x00R\adefault\x88\x01\x01\x12J\n" +
+	"\x06active\x18\x02 \x01(\tB-\xbaG*\x92\x02'Active database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12y\n" +
+	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DatabaseConfigB6\xbaG3\x92\x020List of named Relational Database configurationsR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
+	"\a_active\"\xb5\x02\n" +
+	"\tDocuments\x12C\n" +
+	"\adefault\x18\x01 \x01(\tB$\xbaG!\x92\x02\x1eDefault document database nameH\x00R\adefault\x88\x01\x01\x12S\n" +
+	"\x06active\x18\x02 \x01(\tB6\xbaG3\x92\x020Active document database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12w\n" +
+	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DocumentConfigB4\xbaG1\x92\x02.List of named Document Database configurationsR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
 	"\a_activeB\xc1\x01\n" +
 	"\x13com.runtime.data.v1B\tDataProtoP\x01Z>github.com/origadmin/runtime/api/gen/go/runtime/data/v1;datav1\xf8\x01\x01\xa2\x02\x03RDX\xaa\x02\x0fRuntime.Data.V1\xca\x02\x0fRuntime\\Data\\V1\xe2\x02\x1bRuntime\\Data\\V1\\GPBMetadata\xea\x02\x11Runtime::Data::V1b\x06proto3"
 
