@@ -1,22 +1,24 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/origadmin/runtime"
 
-	// 导入所有需要自注册的 contrib 包
-	_ "github.com/origadmin/contrib/config/env"   // 注册 env 配置源
-	_ "github.com/origadmin/contrib/config/file"  // 注册 file 配置源
-	_ "github.com/origadmin/contrib/registry/consul" // 注册 consul 注册中心 (如果配置中使用了)
+	"github.com/origadmin/runtime"
+	"github.com/origadmin/runtime/log"
+
+	// Import all contrib packages that need self-registration
+	//_ "github.com/origadmin/contrib/config/env"   // Register env config source
+	//_ "github.com/origadmin/contrib/config/file"  // Register file config source
+	//_ "github.com/origadmin/contrib/registry/consul" // Register consul registry (if used in config)
 
 	// 导入生成的配置
-	"github.com/origadmin/runtime/examples/configs/bootstrap_sample/conf"
+	conf "github.com/origadmin/runtime/examples/protos/bootstrap_sample"
 )
 
-// 编译时注入版本信息
+// Version information injected at build time
 var (
 	Version = "v0.1.0"
 	Name    = "bootstrap-sample"
@@ -24,13 +26,13 @@ var (
 )
 
 func main() {
-	// 1. 加载 .env 文件 (可选，用于本地开发和环境变量预设)
+	// 1. Load .env file (optional, used for local development and environment variable presets)
 	if err := godotenv.Load(); err != nil {
-		log.Println("Warning: .env file not found or could not be loaded:", err)
+		fmt.Printf("Warning: .env file not found or could not be loaded: %v\n", err)
 	}
 
-	// 2. 创建并启动 Runtime 实例
-	// NewFromBootstrap 封装了所有引导流程
+	// 2. Create and start Runtime instance
+	// NewFromBootstrap encapsulates all bootstrap processes
 	rt, err := runtime.NewFromBootstrap(
 		"./configs/bootstrap.yaml",
 		runtime.WithAppInfo(&runtime.AppInfo{
@@ -40,23 +42,25 @@ func main() {
 		}),
 	)
 	if err != nil {
-		log.Fatalf("Failed to create runtime: %v", err)
+		fmt.Println("Failed to create Runtime:", err)
+		os.Exit(1)
 	}
 	defer rt.Cleanup()
 
-	// 3. 从 Runtime 获取组件并使用
-	logger := rt.Logger()
+	// 3. Get components from Runtime and use them
+	logger := log.NewHelper(rt.Logger())
 	appInfo := rt.AppInfo()
 
 	logger.Infof("App %s (%s) is starting...", appInfo.Name, appInfo.Version)
 
-	// 获取生成的 Bootstrap 配置
+	// Get the generated Bootstrap configuration
 	var bc conf.Bootstrap
 	if err := rt.Config().Decode("", &bc); err != nil {
 		log.Fatalf("Failed to decode bootstrap config: %v", err)
 	}
 
-	// 打印一些从配置中获取的信息，以演示配置加载成功
+	// Print some information from the configuration to demonstrate successful loading
+
 	logger.Infof("Logger Level: %s, Format: %s", bc.GetLogger().GetLevel(), bc.GetLogger().GetFormat())
 	logger.Infof("HTTP Server Addr: %s, Timeout: %s", bc.GetServers().GetHttp().GetAddr(), bc.GetServers().GetHttp().GetTimeout().AsDuration())
 	logger.Infof("gRPC Server Addr: %s, Timeout: %s", bc.GetServers().GetGrpc().GetAddr(), bc.GetServers().GetGrpc().GetTimeout().AsDuration())
@@ -68,7 +72,7 @@ func main() {
 		logger.Infof("Redis Addr: %s, DB: %d", bc.GetData().GetRedis().GetAddr(), bc.GetData().GetRedis().GetDb())
 	}
 
-	// Security 组件的 proto 文件不存在，所以 GetSecurity() 会返回 nil
+	// The proto file for the Security component doesn't exist, so GetSecurity() will return nil
 	// if bc.GetSecurity() != nil && len(bc.GetSecurity().GetAuthenticators()) > 0 {
 	// 	logger.Infof("Security Authenticator Type: %s", bc.GetSecurity().GetAuthenticators()[0].GetType())
 	// }
@@ -89,8 +93,8 @@ func main() {
 		logger.Infof("Websocket Server Addr: %s, Path: %s", bc.GetWebsocket().GetServer().GetAddr(), bc.GetWebsocket().GetServer().GetPath())
 	}
 
-	// 4. 在这里可以根据 bc 中的配置来创建和运行 Kratos App
-	// 但为了保持示例的最小化和聚焦于配置加载，我们只演示配置加载
+	// 4. Here you can create and run the Kratos App based on the configuration in bc
+	// But to keep the example minimal and focused on config loading, we only demonstrate config loading
 	log.Println("Bootstrap config loaded and runtime initialized successfully.")
 	log.Println("Application will exit after cleanup.")
 }

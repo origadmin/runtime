@@ -38,7 +38,7 @@ type Server struct {
 	Http *HttpServerConfig `protobuf:"bytes,4,opt,name=http,proto3,oneof" json:"http,omitempty"`
 	// custom_config is used for non-standard or user-defined transport protocols.
 	// It allows for flexible configuration without modifying this core proto file.
-	CustomConfig  *structpb.Struct `protobuf:"bytes,5,opt,name=custom_config,json=customConfig,proto3,oneof" json:"custom_config,omitempty"`
+	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -101,9 +101,9 @@ func (x *Server) GetHttp() *HttpServerConfig {
 	return nil
 }
 
-func (x *Server) GetCustomConfig() *structpb.Struct {
+func (x *Server) GetCustomize() *structpb.Struct {
 	if x != nil {
-		return x.CustomConfig
+		return x.Customize
 	}
 	return nil
 }
@@ -113,9 +113,13 @@ func (x *Server) GetCustomConfig() *structpb.Struct {
 // and its middleware configurations.
 type Servers struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// default is the default server name to use when no other server is specified.
+	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	// active is the active server name to use when multiple servers are specified.
+	Active string `protobuf:"bytes,2,opt,name=active,proto3" json:"active,omitempty"`
 	// servers is a list of server endpoints that this service will expose.
 	// A service can listen on multiple protocols simultaneously, e.g., both gRPC and HTTP.
-	Servers       []*Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
+	Servers       []*Server `protobuf:"bytes,3,rep,name=servers,proto3" json:"servers,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -150,6 +154,20 @@ func (*Servers) Descriptor() ([]byte, []int) {
 	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *Servers) GetDefault() string {
+	if x != nil {
+		return x.Default
+	}
+	return ""
+}
+
+func (x *Servers) GetActive() string {
+	if x != nil {
+		return x.Active
+	}
+	return ""
+}
+
 func (x *Servers) GetServers() []*Server {
 	if x != nil {
 		return x.Servers
@@ -172,7 +190,7 @@ type Client struct {
 	// HTTP client configuration.
 	Http *HttpClientConfig `protobuf:"bytes,4,opt,name=http,proto3,oneof" json:"http,omitempty"`
 	// custom_config is used for non-standard or user-defined transport protocols.
-	CustomConfig  *structpb.Struct `protobuf:"bytes,5,opt,name=custom_config,json=customConfig,proto3,oneof" json:"custom_config,omitempty"`
+	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -235,9 +253,9 @@ func (x *Client) GetHttp() *HttpClientConfig {
 	return nil
 }
 
-func (x *Client) GetCustomConfig() *structpb.Struct {
+func (x *Client) GetCustomize() *structpb.Struct {
 	if x != nil {
-		return x.CustomConfig
+		return x.Customize
 	}
 	return nil
 }
@@ -247,10 +265,14 @@ func (x *Client) GetCustomConfig() *structpb.Struct {
 // using the 'name' field from each Client message as the key.
 type Clients struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// default is the default client name to use when no other client is specified.
+	Default string `protobuf:"bytes,1,opt,name=default,proto3" json:"default,omitempty"`
+	// active is the active client name to use when multiple clients are specified.
+	Active string `protobuf:"bytes,2,opt,name=active,proto3" json:"active,omitempty"`
 	// clients is a list of client configurations for services that this service depends on.
 	// This list will be converted into a map in the application's bootstrap logic,
 	// using the 'name' field from each Client message as the key.
-	Clients       []*Client `protobuf:"bytes,1,rep,name=clients,proto3" json:"clients,omitempty"`
+	Clients       []*Client `protobuf:"bytes,3,rep,name=clients,proto3" json:"clients,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -285,6 +307,20 @@ func (*Clients) Descriptor() ([]byte, []int) {
 	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{3}
 }
 
+func (x *Clients) GetDefault() string {
+	if x != nil {
+		return x.Default
+	}
+	return ""
+}
+
+func (x *Clients) GetActive() string {
+	if x != nil {
+		return x.Active
+	}
+	return ""
+}
+
 func (x *Clients) GetClients() []*Client {
 	if x != nil {
 		return x.Clients
@@ -296,29 +332,35 @@ var File_runtime_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_runtime_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/transport/v1/transport.proto\x12\x14runtime.transport.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\"\xa1\x02\n" +
+	"$runtime/transport/v1/transport.proto\x12\x14runtime.transport.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\"\x96\x02\n" +
 	"\x06Server\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12?\n" +
 	"\x04grpc\x18\x03 \x01(\v2&.runtime.transport.v1.GrpcServerConfigH\x00R\x04grpc\x88\x01\x01\x12?\n" +
-	"\x04http\x18\x04 \x01(\v2&.runtime.transport.v1.HttpServerConfigH\x01R\x04http\x88\x01\x01\x12A\n" +
-	"\rcustom_config\x18\x05 \x01(\v2\x17.google.protobuf.StructH\x02R\fcustomConfig\x88\x01\x01B\a\n" +
+	"\x04http\x18\x04 \x01(\v2&.runtime.transport.v1.HttpServerConfigH\x01R\x04http\x88\x01\x01\x12:\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x02R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
-	"\x05_httpB\x10\n" +
-	"\x0e_custom_config\"A\n" +
-	"\aServers\x126\n" +
-	"\aservers\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\"\xa1\x02\n" +
+	"\x05_httpB\f\n" +
+	"\n" +
+	"_customize\"s\n" +
+	"\aServers\x12\x18\n" +
+	"\adefault\x18\x01 \x01(\tR\adefault\x12\x16\n" +
+	"\x06active\x18\x02 \x01(\tR\x06active\x126\n" +
+	"\aservers\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\"\x96\x02\n" +
 	"\x06Client\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12?\n" +
 	"\x04grpc\x18\x03 \x01(\v2&.runtime.transport.v1.GrpcClientConfigH\x00R\x04grpc\x88\x01\x01\x12?\n" +
-	"\x04http\x18\x04 \x01(\v2&.runtime.transport.v1.HttpClientConfigH\x01R\x04http\x88\x01\x01\x12A\n" +
-	"\rcustom_config\x18\x05 \x01(\v2\x17.google.protobuf.StructH\x02R\fcustomConfig\x88\x01\x01B\a\n" +
+	"\x04http\x18\x04 \x01(\v2&.runtime.transport.v1.HttpClientConfigH\x01R\x04http\x88\x01\x01\x12:\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x02R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
-	"\x05_httpB\x10\n" +
-	"\x0e_custom_config\"A\n" +
-	"\aClients\x126\n" +
-	"\aclients\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclientsB\xe6\x01\n" +
+	"\x05_httpB\f\n" +
+	"\n" +
+	"_customize\"s\n" +
+	"\aClients\x12\x18\n" +
+	"\adefault\x18\x01 \x01(\tR\adefault\x12\x16\n" +
+	"\x06active\x18\x02 \x01(\tR\x06active\x126\n" +
+	"\aclients\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclientsB\xe6\x01\n" +
 	"\x18com.runtime.transport.v1B\x0eTransportProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1\xa2\x02\x03RTX\xaa\x02\x14Runtime.Transport.V1\xca\x02\x14Runtime\\Transport\\V1\xe2\x02 Runtime\\Transport\\V1\\GPBMetadata\xea\x02\x16Runtime::Transport::V1b\x06proto3"
 
 var (
@@ -348,11 +390,11 @@ var file_runtime_transport_v1_transport_proto_goTypes = []any{
 var file_runtime_transport_v1_transport_proto_depIdxs = []int32{
 	4, // 0: runtime.transport.v1.Server.grpc:type_name -> runtime.transport.v1.GrpcServerConfig
 	5, // 1: runtime.transport.v1.Server.http:type_name -> runtime.transport.v1.HttpServerConfig
-	6, // 2: runtime.transport.v1.Server.custom_config:type_name -> google.protobuf.Struct
+	6, // 2: runtime.transport.v1.Server.customize:type_name -> google.protobuf.Struct
 	0, // 3: runtime.transport.v1.Servers.servers:type_name -> runtime.transport.v1.Server
 	7, // 4: runtime.transport.v1.Client.grpc:type_name -> runtime.transport.v1.GrpcClientConfig
 	8, // 5: runtime.transport.v1.Client.http:type_name -> runtime.transport.v1.HttpClientConfig
-	6, // 6: runtime.transport.v1.Client.custom_config:type_name -> google.protobuf.Struct
+	6, // 6: runtime.transport.v1.Client.customize:type_name -> google.protobuf.Struct
 	2, // 7: runtime.transport.v1.Clients.clients:type_name -> runtime.transport.v1.Client
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type

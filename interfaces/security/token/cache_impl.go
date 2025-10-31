@@ -61,9 +61,9 @@ func (obj *tokenCacheStorage) Close(ctx context.Context) error {
 func New(ss ...StorageOption) CacheStorage {
 	service := configure.New[tokenCacheStorage](ss)
 	if service.c == nil {
-		defaultCacheConfig := &storagev1.Cache{
+		defaultCacheConfig := &storagev1.CacheConfig{
 			Driver: "memory",
-			Memory: &storagev1.Memory{},
+			Memory: &storagev1.MemoryConfig{},
 		}
 		c, err := storage.New(defaultCacheConfig)
 		if err != nil {

@@ -123,7 +123,7 @@ func (s *mapCache) putElement(elem *element) {
 	s.elems.Put(elem)
 }
 
-func NewMemoryCache(cfg *storagev1.Memory) storageiface.Cache {
+func NewMemoryCache(cfg *storagev1.MemoryConfig) storageiface.Cache {
 	interval := DefaultCleanupInterval // Default cleanup interval
 	if cfg != nil && cfg.CleanupInterval > 0 {
 		interval = time.Duration(cfg.CleanupInterval) * time.Second

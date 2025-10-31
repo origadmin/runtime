@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-package runtime.transport.v1;
+package runtime.transport.http.v1;
 
 import "google/protobuf/duration.proto";
 import "runtime/middleware/v1/cors/cors.proto";
 import "runtime/security/transport/v1/tls.proto";
 import "runtime/transport/v1/selector.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1;httpv1";
 
-// HttpServerConfig defines the core configuration for a Kratos HTTP server.
-message HttpServerConfig {
+// Server defines the core configuration for a Kratos HTTP server.
+message Server {
   // addr is the address for the server to listen on.
   // e.g., "0.0.0.0:8000"
   string addr = 1;
@@ -23,20 +23,20 @@ message HttpServerConfig {
   repeated string middlewares = 3;
 
   // tls_config defines the TLS settings for the HTTP server.
-  optional security.transport.v1.TLSConfig tls_config = 4;
+  optional runtime.security.transport.v1.TLSConfig tls_config = 4;
 
   // network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
   string network = 5;
 
   // cors configuration for the HTTP server
-  optional middleware.v1.cors.Cors cors = 6;
+  optional runtime.middleware.v1.cors.Cors cors = 6;
 
   // enable_pprof indicates whether to enable pprof debugging endpoints.
   bool enable_pprof = 7;
 }
 
-// HttpClientConfig defines the core configuration for creating a Kratos HTTP client.
-message HttpClientConfig {
+// Client defines the core configuration for creating a Kratos HTTP client.
+message Client {
   // endpoint is the target to connect to.
   // It can be a direct address or a discovery service URI.
   // e.g., "http://127.0.0.1:8000" or "discovery:///your-service-name"
@@ -49,14 +49,14 @@ message HttpClientConfig {
   repeated string middlewares = 3;
 
   // selector defines the node selection strategy for the client.
-  SelectorConfig selector = 4;
+  runtime.transport.v1.SelectorConfig selector = 4;
 
   // discovery_name is the name of the discovery client to use for service discovery.
   // This is used when the endpoint is a discovery service URI.
   string discovery_name = 5;
 
   // tls_config defines the TLS settings for the HTTP client.
-  optional security.transport.v1.TLSConfig tls_config = 6;
+  optional runtime.security.transport.v1.TLSConfig tls_config = 6;
 
   // dial_timeout is the timeout for establishing a connection.
   optional google.protobuf.Duration dial_timeout = 7;

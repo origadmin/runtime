@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"cmp"
 	"sync"
 
 	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
+	datav1 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
+	"github.com/origadmin/runtime/interfaces"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/runtime/storage/filestore"
 )
@@ -13,11 +16,11 @@ const ProviderModule = "storage.provider"
 
 // provider implements the storage.Provider interface.
 type provider struct {
-	cfg *storagev1.Storage
+	cfg *datav1.Data
 	// 存储配置，而不是实例
-	fileStoreConfigs map[string]*storagev1.FileStore
-	cacheConfigs     map[string]*storagev1.Cache
-	databaseConfigs  map[string]*storagev1.Database
+	fileStoreConfigs map[string]*storagev1.FileStoreConfig
+	cacheConfigs     map[string]*storagev1.CacheConfig
+	databaseConfigs  map[string]*storagev1.DatabaseConfig
 
 	// 缓存已初始化的实例
 	initializedFileStores map[string]storageiface.FileStore
@@ -32,25 +35,65 @@ type provider struct {
 }
 
 // NewProvider creates a new storage provider based on the given configuration.
-func NewProvider(cfg *storagev1.Storage) (storageiface.Provider, error) {
+func NewProvider(cfg *datav1.Data) (storageiface.Provider, error) {
 	if cfg == nil {
 		return nil, runtimeerrors.NewStructured(ProviderModule, "storage config cannot be nil").WithCaller()
 	}
 
 	p := &provider{
 		cfg:                   cfg,
-		fileStoreConfigs:      cfg.GetFilestores(),
-		cacheConfigs:          cfg.GetCaches(),
-		databaseConfigs:       cfg.GetDatabases(),
+		fileStoreConfigs:      FileStoreToMap(cfg.GetFilestores().GetConfigs()),
+		cacheConfigs:          CacheToMap(cfg.GetCaches().GetConfigs()),
+		databaseConfigs:       DatabaseToMap(cfg.GetDatabases().GetConfigs()),
 		initializedFileStores: make(map[string]storageiface.FileStore),
 		initializedCaches:     make(map[string]storageiface.Cache),
 		initializedDatabases:  make(map[string]storageiface.Database),
-		defaultFileStore:      cfg.GetDefaultFilestore(),
-		defaultCache:          cfg.GetDefaultCache(),
-		defaultDatabase:       cfg.GetDefaultDatabase(),
+		defaultFileStore:      cmp.Or(cfg.GetFilestores().GetActive(), cfg.GetFilestores().GetDefault(), interfaces.GlobalDefaultKey),
+		defaultCache:          cmp.Or(cfg.GetCaches().GetActive(), cfg.GetCaches().GetDefault(), interfaces.GlobalDefaultKey),
+		defaultDatabase:       cmp.Or(cfg.GetDatabases().GetActive(), cfg.GetDatabases().GetDefault(), interfaces.GlobalDefaultKey),
 	}
 
 	return p, nil
+}
+
+func FromSlice[T any, K comparable, V any](ts []T, f func(T) (K, V)) map[K]V {
+	m := make(map[K]V, len(ts))
+	for _, t := range ts {
+		k, v := f(t)
+		m[k] = v
+	}
+	return m
+}
+
+func DatabaseToMap(databases []*storagev1.DatabaseConfig) map[string]*storagev1.DatabaseConfig {
+	return FromSlice(databases, func(db *storagev1.DatabaseConfig) (string, *storagev1.DatabaseConfig) {
+		key := db.GetDialect()
+		if db.GetName() != "" {
+			key = db.GetName()
+		}
+		return key, db
+	})
+}
+
+func CacheToMap(caches []*storagev1.CacheConfig) map[string]*storagev1.CacheConfig {
+	return FromSlice(caches, func(c *storagev1.CacheConfig) (string, *storagev1.CacheConfig) {
+		key := c.GetDriver()
+		if c.GetName() != "" {
+			key = c.GetName()
+		}
+		return key, c
+	})
+}
+
+func FileStoreToMap(fileStores []*storagev1.FileStoreConfig) map[string]*storagev1.FileStoreConfig {
+	return FromSlice(fileStores, func(fs *storagev1.FileStoreConfig) (string,
+		*storagev1.FileStoreConfig) {
+		key := fs.GetDriver()
+		if fs.GetName() != "" {
+			key = fs.GetName()
+		}
+		return key, fs
+	})
 }
 
 // FileStore returns the configured file storage service by name.
@@ -66,13 +109,13 @@ func (p *provider) FileStore(name string) (storageiface.FileStore, error) {
 	// Get configuration
 	fsCfg, ok := p.fileStoreConfigs[name]
 	if !ok {
-		return nil, runtimeerrors.NewStructured(ProviderModule, "filestore \'%s\' not found in configuration", name).WithCaller()
+		return nil, runtimeerrors.NewStructured(ProviderModule, "filestore %s not found in configuration", name).WithCaller()
 	}
 
 	// Initialize and cache
 	fs, err := filestore.New(fsCfg)
 	if err != nil {
-		return nil, runtimeerrors.WrapStructured(err, ProviderModule, "failed to create filestore \'%s\'", name).WithCaller()
+		return nil, runtimeerrors.WrapStructured(err, ProviderModule, "failed to create filestore %s", name).WithCaller()
 	}
 	p.initializedFileStores[name] = fs
 
@@ -107,7 +150,7 @@ func (p *provider) Cache(name string) (storageiface.Cache, error) {
 	// Get configuration
 	cacheCfg, ok := p.cacheConfigs[name]
 	if !ok {
-		return nil, runtimeerrors.NewStructured(ProviderModule, "cache \'%s\' not found in configuration", name).WithCaller()
+		return nil, runtimeerrors.NewStructured(ProviderModule, "cache %s not found in configuration", name).WithCaller()
 	}
 
 	// Initialize and cache (TODO: Implement actual cache initialization)
@@ -149,7 +192,7 @@ func (p *provider) Database(name string) (storageiface.Database, error) {
 	// Get configuration
 	dbCfg, ok := p.databaseConfigs[name]
 	if !ok {
-		return nil, runtimeerrors.NewStructured(ProviderModule, "database \'%s\' not found in configuration", name).WithCaller()
+		return nil, runtimeerrors.NewStructured(ProviderModule, "database %s not found in configuration", name).WithCaller()
 	}
 
 	// Initialize and cache (TODO: Implement actual database initialization)

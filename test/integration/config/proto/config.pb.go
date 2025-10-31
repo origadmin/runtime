@@ -9,13 +9,13 @@ package configs
 import (
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
 	v14 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
+	v16 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	v19 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
 	v110 "github.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1"
 	v111 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
-	v16 "github.com/origadmin/runtime/api/gen/go/runtime/storage/v1"
 	v17 "github.com/origadmin/runtime/api/gen/go/runtime/task/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	v18 "github.com/origadmin/runtime/api/gen/go/runtime/websocket/v1"
@@ -54,7 +54,7 @@ type TestConfig struct {
 	Middlewares   *v15.Middlewares `protobuf:"bytes,11,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
 	Middleware    *v15.Middleware  `protobuf:"bytes,12,opt,name=middleware,proto3" json:"middleware,omitempty"`
 	Gateway       *v14.Gateway     `protobuf:"bytes,13,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Storage       *v16.Storage     `protobuf:"bytes,14,opt,name=storage,proto3" json:"storage,omitempty"`
+	Data          *v16.Data        `protobuf:"bytes,14,opt,name=data,proto3" json:"data,omitempty"`
 	Task          *v17.Task        `protobuf:"bytes,15,opt,name=task,proto3" json:"task,omitempty"`
 	Websocket     *v18.WebSocket   `protobuf:"bytes,16,opt,name=websocket,proto3" json:"websocket,omitempty"`
 	Authn         *v19.AuthN       `protobuf:"bytes,17,opt,name=authn,proto3" json:"authn,omitempty"`
@@ -186,9 +186,9 @@ func (x *TestConfig) GetGateway() *v14.Gateway {
 	return nil
 }
 
-func (x *TestConfig) GetStorage() *v16.Storage {
+func (x *TestConfig) GetData() *v16.Data {
 	if x != nil {
-		return x.Storage
+		return x.Data
 	}
 	return nil
 }
@@ -239,7 +239,7 @@ var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
 
 const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18runtime/app/v1/app.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1eruntime/config/v1/tracer.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a runtime/storage/v1/storage.proto\x1a\x1aruntime/task/v1/task.proto\x1a$runtime/transport/v1/transport.proto\x1a$runtime/websocket/v1/websocket.proto\"\xfe\b\n" +
+	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18runtime/app/v1/app.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1eruntime/config/v1/tracer.proto\x1a\x1aruntime/data/v1/data.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a\x1aruntime/task/v1/task.proto\x1a$runtime/transport/v1/transport.proto\x1a$runtime/websocket/v1/websocket.proto\"\xf2\b\n" +
 	"\n" +
 	"TestConfig\x12%\n" +
 	"\x03app\x18\x01 \x01(\v2\x13.runtime.app.v1.AppR\x03app\x127\n" +
@@ -257,8 +257,8 @@ const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
 	"middleware\x18\f \x01(\v2!.runtime.middleware.v1.MiddlewareR\n" +
 	"middleware\x124\n" +
-	"\agateway\x18\r \x01(\v2\x1a.runtime.config.v1.GatewayR\agateway\x125\n" +
-	"\astorage\x18\x0e \x01(\v2\x1b.runtime.storage.v1.StorageR\astorage\x12)\n" +
+	"\agateway\x18\r \x01(\v2\x1a.runtime.config.v1.GatewayR\agateway\x12)\n" +
+	"\x04data\x18\x0e \x01(\v2\x15.runtime.data.v1.DataR\x04data\x12)\n" +
 	"\x04task\x18\x0f \x01(\v2\x15.runtime.task.v1.TaskR\x04task\x12=\n" +
 	"\twebsocket\x18\x10 \x01(\v2\x1f.runtime.websocket.v1.WebSocketR\twebsocket\x126\n" +
 	"\x05authn\x18\x11 \x01(\v2 .runtime.security.authn.v1.AuthNR\x05authn\x126\n" +
@@ -293,7 +293,7 @@ var file_test_integration_config_proto_config_proto_goTypes = []any{
 	(*v15.Middlewares)(nil), // 10: runtime.middleware.v1.Middlewares
 	(*v15.Middleware)(nil),  // 11: runtime.middleware.v1.Middleware
 	(*v14.Gateway)(nil),     // 12: runtime.config.v1.Gateway
-	(*v16.Storage)(nil),     // 13: runtime.storage.v1.Storage
+	(*v16.Data)(nil),        // 13: runtime.data.v1.Data
 	(*v17.Task)(nil),        // 14: runtime.task.v1.Task
 	(*v18.WebSocket)(nil),   // 15: runtime.websocket.v1.WebSocket
 	(*v19.AuthN)(nil),       // 16: runtime.security.authn.v1.AuthN
@@ -314,7 +314,7 @@ var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	10, // 9: test.configs.TestConfig.middlewares:type_name -> runtime.middleware.v1.Middlewares
 	11, // 10: test.configs.TestConfig.middleware:type_name -> runtime.middleware.v1.Middleware
 	12, // 11: test.configs.TestConfig.gateway:type_name -> runtime.config.v1.Gateway
-	13, // 12: test.configs.TestConfig.storage:type_name -> runtime.storage.v1.Storage
+	13, // 12: test.configs.TestConfig.data:type_name -> runtime.data.v1.Data
 	14, // 13: test.configs.TestConfig.task:type_name -> runtime.task.v1.Task
 	15, // 14: test.configs.TestConfig.websocket:type_name -> runtime.websocket.v1.WebSocket
 	16, // 15: test.configs.TestConfig.authn:type_name -> runtime.security.authn.v1.AuthN

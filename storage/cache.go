@@ -15,7 +15,7 @@ const (
 )
 
 // New creates a new cache instance based on the provided configuration.
-func New(cfg *storagev1.Cache) (storageiface.Cache, error) {
+func New(cfg *storagev1.CacheConfig) (storageiface.Cache, error) {
 	if cfg == nil {
 		return nil, ErrCacheConfigNil
 	}

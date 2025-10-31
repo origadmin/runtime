@@ -235,7 +235,7 @@ func (s *storage) Write(filepath string, data io.Reader, size int64) error {
 
 // New creates a new Storage service instance based on the provided protobuf configuration.
 // This function acts as the entry point for creating the storage system.
-func New(cfg *storagev1.FileStore) (storageiface.FileStore, error) {
+func New(cfg *storagev1.FileStoreConfig) (storageiface.FileStore, error) {
 
 	if cfg.GetDriver() != "local" {
 		return nil, fmt.Errorf("this New function only supports 'local' filestore driver, got '%s'", cfg.GetDriver())

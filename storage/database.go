@@ -17,7 +17,7 @@ const (
 	ErrDatabaseConfigNil = errors.String("database: config is nil")
 )
 
-func OpenDatabase(database *storagev1.Database) (*sql.DB, error) {
+func OpenDatabase(database *storagev1.DatabaseConfig) (*sql.DB, error) {
 	if database == nil {
 		return nil, ErrDatabaseConfigNil
 	}

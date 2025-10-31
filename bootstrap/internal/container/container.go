@@ -41,6 +41,36 @@ type Builder struct {
 	factories map[string]interfaces.ComponentFactory
 }
 
+func defaultInstance[T any](
+	registrars map[string]T,
+	defaultKey string,
+	activeKey string) T {
+	if defaultKey == "" {
+		defaultKey = interfaces.GlobalDefaultKey
+	}
+	if activeKey == "" {
+		activeKey = defaultKey
+	}
+
+	if len(registrars) == 1 {
+		for _, registrar := range registrars {
+			return registrar
+		}
+	} else if len(registrars) > 1 {
+		if d, ok := registrars[activeKey]; ok {
+			return d
+		}
+		if d, ok := registrars[defaultKey]; ok {
+			return d
+		}
+		for _, registrar := range registrars {
+			return registrar
+		}
+	}
+	var zero T
+	return zero
+}
+
 // NewContainer creates a new, uninitialized container.
 // Deprecated: Use NewBuilder for more flexible container initialization.
 func NewContainer() interfaces.Container {
@@ -181,13 +211,6 @@ func (b *Builder) initLogger() error {
 	return nil
 }
 
-func firstRegistry(registrars map[string]registry.Registrar) registry.Registrar {
-	for _, registrar := range registrars {
-		return registrar
-	}
-	return nil
-}
-
 // initRegistries handles the initialization of the service discovery and registration components.
 func (b *Builder) initRegistries(opts ...options.Option) error {
 	helper := log.NewHelper(b.Logger()) // Use log.Helper
@@ -233,13 +256,8 @@ func (b *Builder) initRegistries(opts ...options.Option) error {
 		b.container.registrars[key] = r
 	}
 
-	if len(b.container.registrars) == 1 {
-		b.container.defaultRegistrar = firstRegistry(b.container.registrars)
-	} else if len(b.container.discoveries) > 1 && discoveriesCfg.DefaultRegistryName != "" {
-		if d, ok := b.container.registrars[discoveriesCfg.DefaultRegistryName]; ok {
-			b.container.defaultRegistrar = d
-		}
-	} else {
+	b.container.defaultRegistrar = defaultInstance(b.container.registrars, discoveriesCfg.Default, discoveriesCfg.GetActive())
+	if b.container.defaultRegistrar == nil {
 		helper.Warnw("msg", "no default registrar set")
 	}
 
