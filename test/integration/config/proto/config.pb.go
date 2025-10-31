@@ -8,17 +8,17 @@ package configs
 
 import (
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	v14 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
-	v16 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
+	v16 "github.com/origadmin/runtime/api/gen/go/runtime/config/v1"
+	v17 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	v19 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
 	v110 "github.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1"
 	v111 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
-	v17 "github.com/origadmin/runtime/api/gen/go/runtime/task/v1"
+	v18 "github.com/origadmin/runtime/api/gen/go/runtime/task/v1"
+	v14 "github.com/origadmin/runtime/api/gen/go/runtime/trace/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
-	v18 "github.com/origadmin/runtime/api/gen/go/runtime/websocket/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -49,14 +49,14 @@ type TestConfig struct {
 	// Service registration configuration
 	RegistrationDiscoveryName string `protobuf:"bytes,8,opt,name=registration_discovery_name,json=registrationDiscoveryName,proto3" json:"registration_discovery_name,omitempty"`
 	// Other component configurations
-	Logger        *v13.Logger      `protobuf:"bytes,9,opt,name=logger,proto3" json:"logger,omitempty"`
-	Tracer        *v14.Tracer      `protobuf:"bytes,10,opt,name=tracer,proto3" json:"tracer,omitempty"`
-	Middlewares   *v15.Middlewares `protobuf:"bytes,11,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
-	Middleware    *v15.Middleware  `protobuf:"bytes,12,opt,name=middleware,proto3" json:"middleware,omitempty"`
-	Gateway       *v14.Gateway     `protobuf:"bytes,13,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Data          *v16.Data        `protobuf:"bytes,14,opt,name=data,proto3" json:"data,omitempty"`
-	Task          *v17.Task        `protobuf:"bytes,15,opt,name=task,proto3" json:"task,omitempty"`
-	Websocket     *v18.WebSocket   `protobuf:"bytes,16,opt,name=websocket,proto3" json:"websocket,omitempty"`
+	Logger      *v13.Logger      `protobuf:"bytes,9,opt,name=logger,proto3" json:"logger,omitempty"`
+	Trace       *v14.Trace       `protobuf:"bytes,10,opt,name=trace,proto3" json:"trace,omitempty"` // Updated type for tracer
+	Middlewares *v15.Middlewares `protobuf:"bytes,11,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Middleware  *v15.Middleware  `protobuf:"bytes,12,opt,name=middleware,proto3" json:"middleware,omitempty"`
+	Gateway     *v16.Gateway     `protobuf:"bytes,13,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Data        *v17.Data        `protobuf:"bytes,14,opt,name=data,proto3" json:"data,omitempty"`
+	Task        *v18.Task        `protobuf:"bytes,15,opt,name=task,proto3" json:"task,omitempty"`
+	// Removed runtime.websocket.v1.WebSocket websocket = 16;
 	Authn         *v19.AuthN       `protobuf:"bytes,17,opt,name=authn,proto3" json:"authn,omitempty"`
 	Authz         *v110.AuthZ      `protobuf:"bytes,18,opt,name=authz,proto3" json:"authz,omitempty"`
 	Tls           *v111.TLSConfig  `protobuf:"bytes,19,opt,name=tls,proto3" json:"tls,omitempty"`
@@ -158,9 +158,9 @@ func (x *TestConfig) GetLogger() *v13.Logger {
 	return nil
 }
 
-func (x *TestConfig) GetTracer() *v14.Tracer {
+func (x *TestConfig) GetTrace() *v14.Trace {
 	if x != nil {
-		return x.Tracer
+		return x.Trace
 	}
 	return nil
 }
@@ -179,30 +179,23 @@ func (x *TestConfig) GetMiddleware() *v15.Middleware {
 	return nil
 }
 
-func (x *TestConfig) GetGateway() *v14.Gateway {
+func (x *TestConfig) GetGateway() *v16.Gateway {
 	if x != nil {
 		return x.Gateway
 	}
 	return nil
 }
 
-func (x *TestConfig) GetData() *v16.Data {
+func (x *TestConfig) GetData() *v17.Data {
 	if x != nil {
 		return x.Data
 	}
 	return nil
 }
 
-func (x *TestConfig) GetTask() *v17.Task {
+func (x *TestConfig) GetTask() *v18.Task {
 	if x != nil {
 		return x.Task
-	}
-	return nil
-}
-
-func (x *TestConfig) GetWebsocket() *v18.WebSocket {
-	if x != nil {
-		return x.Websocket
 	}
 	return nil
 }
@@ -239,7 +232,7 @@ var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
 
 const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18runtime/app/v1/app.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1eruntime/config/v1/tracer.proto\x1a\x1aruntime/data/v1/data.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a\x1aruntime/task/v1/task.proto\x1a$runtime/transport/v1/transport.proto\x1a$runtime/websocket/v1/websocket.proto\"\xf2\b\n" +
+	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18runtime/app/v1/app.proto\x1a\x1fruntime/config/v1/gateway.proto\x1a\x1cruntime/trace/v1/trace.proto\x1a\x1aruntime/data/v1/data.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1eruntime/logger/v1/logger.proto\x1a&runtime/middleware/v1/middleware.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\x1a\x1aruntime/task/v1/task.proto\x1a$runtime/transport/v1/transport.proto\"\xaf\b\n" +
 	"\n" +
 	"TestConfig\x12%\n" +
 	"\x03app\x18\x01 \x01(\v2\x13.runtime.app.v1.AppR\x03app\x127\n" +
@@ -250,17 +243,16 @@ const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\vdiscoveries\x18\x06 \x01(\v2!.runtime.discovery.v1.DiscoveriesR\vdiscoveries\x12=\n" +
 	"\tdiscovery\x18\a \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\tdiscovery\x12>\n" +
 	"\x1bregistration_discovery_name\x18\b \x01(\tR\x19registrationDiscoveryName\x121\n" +
-	"\x06logger\x18\t \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x121\n" +
-	"\x06tracer\x18\n" +
-	" \x01(\v2\x19.runtime.config.v1.TracerR\x06tracer\x12D\n" +
+	"\x06logger\x18\t \x01(\v2\x19.runtime.logger.v1.LoggerR\x06logger\x12-\n" +
+	"\x05trace\x18\n" +
+	" \x01(\v2\x17.runtime.trace.v1.TraceR\x05trace\x12D\n" +
 	"\vmiddlewares\x18\v \x01(\v2\".runtime.middleware.v1.MiddlewaresR\vmiddlewares\x12A\n" +
 	"\n" +
 	"middleware\x18\f \x01(\v2!.runtime.middleware.v1.MiddlewareR\n" +
 	"middleware\x124\n" +
 	"\agateway\x18\r \x01(\v2\x1a.runtime.config.v1.GatewayR\agateway\x12)\n" +
 	"\x04data\x18\x0e \x01(\v2\x15.runtime.data.v1.DataR\x04data\x12)\n" +
-	"\x04task\x18\x0f \x01(\v2\x15.runtime.task.v1.TaskR\x04task\x12=\n" +
-	"\twebsocket\x18\x10 \x01(\v2\x1f.runtime.websocket.v1.WebSocketR\twebsocket\x126\n" +
+	"\x04task\x18\x0f \x01(\v2\x15.runtime.task.v1.TaskR\x04task\x126\n" +
 	"\x05authn\x18\x11 \x01(\v2 .runtime.security.authn.v1.AuthNR\x05authn\x126\n" +
 	"\x05authz\x18\x12 \x01(\v2 .runtime.security.authz.v1.AuthZR\x05authz\x12:\n" +
 	"\x03tls\x18\x13 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x03tls\x125\n" +
@@ -289,17 +281,16 @@ var file_test_integration_config_proto_config_proto_goTypes = []any{
 	(*v12.Discoveries)(nil), // 6: runtime.discovery.v1.Discoveries
 	(*v12.Discovery)(nil),   // 7: runtime.discovery.v1.Discovery
 	(*v13.Logger)(nil),      // 8: runtime.logger.v1.Logger
-	(*v14.Tracer)(nil),      // 9: runtime.config.v1.Tracer
+	(*v14.Trace)(nil),       // 9: runtime.trace.v1.Trace
 	(*v15.Middlewares)(nil), // 10: runtime.middleware.v1.Middlewares
 	(*v15.Middleware)(nil),  // 11: runtime.middleware.v1.Middleware
-	(*v14.Gateway)(nil),     // 12: runtime.config.v1.Gateway
-	(*v16.Data)(nil),        // 13: runtime.data.v1.Data
-	(*v17.Task)(nil),        // 14: runtime.task.v1.Task
-	(*v18.WebSocket)(nil),   // 15: runtime.websocket.v1.WebSocket
-	(*v19.AuthN)(nil),       // 16: runtime.security.authn.v1.AuthN
-	(*v110.AuthZ)(nil),      // 17: runtime.security.authz.v1.AuthZ
-	(*v111.TLSConfig)(nil),  // 18: runtime.security.transport.v1.TLSConfig
-	(*structpb.Struct)(nil), // 19: google.protobuf.Struct
+	(*v16.Gateway)(nil),     // 12: runtime.config.v1.Gateway
+	(*v17.Data)(nil),        // 13: runtime.data.v1.Data
+	(*v18.Task)(nil),        // 14: runtime.task.v1.Task
+	(*v19.AuthN)(nil),       // 15: runtime.security.authn.v1.AuthN
+	(*v110.AuthZ)(nil),      // 16: runtime.security.authz.v1.AuthZ
+	(*v111.TLSConfig)(nil),  // 17: runtime.security.transport.v1.TLSConfig
+	(*structpb.Struct)(nil), // 18: google.protobuf.Struct
 }
 var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	1,  // 0: test.configs.TestConfig.app:type_name -> runtime.app.v1.App
@@ -310,22 +301,21 @@ var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	6,  // 5: test.configs.TestConfig.discoveries:type_name -> runtime.discovery.v1.Discoveries
 	7,  // 6: test.configs.TestConfig.discovery:type_name -> runtime.discovery.v1.Discovery
 	8,  // 7: test.configs.TestConfig.logger:type_name -> runtime.logger.v1.Logger
-	9,  // 8: test.configs.TestConfig.tracer:type_name -> runtime.config.v1.Tracer
+	9,  // 8: test.configs.TestConfig.trace:type_name -> runtime.trace.v1.Trace
 	10, // 9: test.configs.TestConfig.middlewares:type_name -> runtime.middleware.v1.Middlewares
 	11, // 10: test.configs.TestConfig.middleware:type_name -> runtime.middleware.v1.Middleware
 	12, // 11: test.configs.TestConfig.gateway:type_name -> runtime.config.v1.Gateway
 	13, // 12: test.configs.TestConfig.data:type_name -> runtime.data.v1.Data
 	14, // 13: test.configs.TestConfig.task:type_name -> runtime.task.v1.Task
-	15, // 14: test.configs.TestConfig.websocket:type_name -> runtime.websocket.v1.WebSocket
-	16, // 15: test.configs.TestConfig.authn:type_name -> runtime.security.authn.v1.AuthN
-	17, // 16: test.configs.TestConfig.authz:type_name -> runtime.security.authz.v1.AuthZ
-	18, // 17: test.configs.TestConfig.tls:type_name -> runtime.security.transport.v1.TLSConfig
-	19, // 18: test.configs.TestConfig.customize:type_name -> google.protobuf.Struct
-	19, // [19:19] is the sub-list for method output_type
-	19, // [19:19] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	15, // 14: test.configs.TestConfig.authn:type_name -> runtime.security.authn.v1.AuthN
+	16, // 15: test.configs.TestConfig.authz:type_name -> runtime.security.authz.v1.AuthZ
+	17, // 16: test.configs.TestConfig.tls:type_name -> runtime.security.transport.v1.TLSConfig
+	18, // 17: test.configs.TestConfig.customize:type_name -> google.protobuf.Struct
+	18, // [18:18] is the sub-list for method output_type
+	18, // [18:18] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_test_integration_config_proto_config_proto_init() }

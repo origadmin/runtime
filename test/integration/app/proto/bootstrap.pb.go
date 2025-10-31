@@ -7,9 +7,8 @@
 package configs
 
 import (
-	v11 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
-	v12 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -24,185 +23,25 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//  2. 在图纸内部，定义如何组合 "服务器" 砖头
-//     这个 Server 消息是此应用专属的，它解决了 "transport不分" 的问题。
-type Server struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 为这个服务器端点起一个名字, e.g., "private-grpc", "public-http".
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// 使用 oneof 将框架的 GRPC 和 HTTP "砖头" 组合在一起。
-	//
-	// Types that are valid to be assigned to Config:
-	//
-	//	*Server_Grpc
-	//	*Server_Http
-	Config        isServer_Config `protobuf_oneof:"config"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Server) Reset() {
-	*x = Server{}
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Server) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Server) ProtoMessage() {}
-
-func (x *Server) ProtoReflect() protoreflect.Message {
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Server.ProtoReflect.Descriptor instead.
-func (*Server) Descriptor() ([]byte, []int) {
-	return file_test_integration_app_proto_bootstrap_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Server) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Server) GetConfig() isServer_Config {
-	if x != nil {
-		return x.Config
-	}
-	return nil
-}
-
-func (x *Server) GetGrpc() *v1.GrpcServerConfig {
-	if x != nil {
-		if x, ok := x.Config.(*Server_Grpc); ok {
-			return x.Grpc
-		}
-	}
-	return nil
-}
-
-func (x *Server) GetHttp() *v1.HttpServerConfig {
-	if x != nil {
-		if x, ok := x.Config.(*Server_Http); ok {
-			return x.Http
-		}
-	}
-	return nil
-}
-
-type isServer_Config interface {
-	isServer_Config()
-}
-
-type Server_Grpc struct {
-	Grpc *v1.GrpcServerConfig `protobuf:"bytes,2,opt,name=grpc,proto3,oneof"`
-}
-
-type Server_Http struct {
-	Http *v1.HttpServerConfig `protobuf:"bytes,3,opt,name=http,proto3,oneof"`
-}
-
-func (*Server_Grpc) isServer_Config() {}
-
-func (*Server_Http) isServer_Config() {}
-
-//  3. 在图纸内部，定义如何组合 "客户端" 砖头
-//     这个 Client 消息也是此应用专属的，它解决了 "不同client需要不同Middleware" 的问题。
-type Client struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 客户端名称，用于在应用中唯一标识这个客户端。
-	ClientName string `protobuf:"bytes,1,opt,name=client_name,json=clientName,proto3" json:"client_name,omitempty"`
-	// 使用框架的 "客户端发现" 砖头。
-	Discoveries []*v11.Discovery `protobuf:"bytes,2,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
-	// 将 "中间件" 砖头与上面的 "客户端发现" 砖头绑定在一起。
-	Middlewares   []*v12.Middleware `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Client) Reset() {
-	*x = Client{}
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Client) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Client) ProtoMessage() {}
-
-func (x *Client) ProtoReflect() protoreflect.Message {
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Client.ProtoReflect.Descriptor instead.
-func (*Client) Descriptor() ([]byte, []int) {
-	return file_test_integration_app_proto_bootstrap_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Client) GetClientName() string {
-	if x != nil {
-		return x.ClientName
-	}
-	return ""
-}
-
-func (x *Client) GetDiscoveries() []*v11.Discovery {
-	if x != nil {
-		return x.Discoveries
-	}
-	return nil
-}
-
-func (x *Client) GetMiddlewares() []*v12.Middleware {
-	if x != nil {
-		return x.Middlewares
-	}
-	return nil
-}
-
-//  4. 构造顶层的 Bootstrap "蓝图"
-//     这是最终的房子，它完全由上面组合好的部件构成。
+//  1. Construct the top-level Bootstrap "blueprint"
+//     This is the final application, composed entirely of the assembled components above.
 type Bootstrap struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 服务发现配置池。
-	Discoveries map[string]*v11.Discovery `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	// 用于服务注册的发现配置名称。
+	// Discovery configuration pool.
+	Discoveries map[string]*v1.Discovery `protobuf:"bytes,1,rep,name=discoveries,proto3" json:"discoveries,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Name of the discovery configuration used for service registration.
 	RegistrationDiscoveryName string `protobuf:"bytes,2,opt,name=registration_discovery_name,json=registrationDiscoveryName,proto3" json:"registration_discovery_name,omitempty"`
-	// 使用我们组合好的 `Server` 部件，构造一个统一的服务器列表。
-	Servers []*Server `protobuf:"bytes,3,rep,name=servers,proto3" json:"servers,omitempty"`
-	// 使用我们组合好的 `Client` 部件，构造一个客户端列表，每个客户端都有其专属配置。
-	Clients       []*Client `protobuf:"bytes,4,rep,name=clients,proto3" json:"clients,omitempty"`
+	// Use our assembled `Server` components to construct a unified server list.
+	Servers []*v11.Server `protobuf:"bytes,3,rep,name=servers,proto3" json:"servers,omitempty"`
+	// Use our assembled `Client` components to construct a client list, where each client has its exclusive configuration.
+	Clients       *v11.Clients `protobuf:"bytes,4,opt,name=clients,proto3,oneof" json:"clients,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Bootstrap) Reset() {
 	*x = Bootstrap{}
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[2]
+	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -214,7 +53,7 @@ func (x *Bootstrap) String() string {
 func (*Bootstrap) ProtoMessage() {}
 
 func (x *Bootstrap) ProtoReflect() protoreflect.Message {
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[2]
+	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -227,10 +66,10 @@ func (x *Bootstrap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bootstrap.ProtoReflect.Descriptor instead.
 func (*Bootstrap) Descriptor() ([]byte, []int) {
-	return file_test_integration_app_proto_bootstrap_proto_rawDescGZIP(), []int{2}
+	return file_test_integration_app_proto_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Bootstrap) GetDiscoveries() map[string]*v11.Discovery {
+func (x *Bootstrap) GetDiscoveries() map[string]*v1.Discovery {
 	if x != nil {
 		return x.Discoveries
 	}
@@ -244,14 +83,14 @@ func (x *Bootstrap) GetRegistrationDiscoveryName() string {
 	return ""
 }
 
-func (x *Bootstrap) GetServers() []*Server {
+func (x *Bootstrap) GetServers() []*v11.Server {
 	if x != nil {
 		return x.Servers
 	}
 	return nil
 }
 
-func (x *Bootstrap) GetClients() []*Client {
+func (x *Bootstrap) GetClients() *v11.Clients {
 	if x != nil {
 		return x.Clients
 	}
@@ -262,25 +101,17 @@ var File_test_integration_app_proto_bootstrap_proto protoreflect.FileDescriptor
 
 const file_test_integration_app_proto_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/app/proto/bootstrap.proto\x12\x10test.app.configs\x1a$runtime/discovery/v1/discovery.proto\x1a&runtime/middleware/v1/middleware.proto\x1a\x1fruntime/transport/v1/grpc.proto\x1a\x1fruntime/transport/v1/http.proto\"\xa2\x01\n" +
-	"\x06Server\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12<\n" +
-	"\x04grpc\x18\x02 \x01(\v2&.runtime.transport.v1.GrpcServerConfigH\x00R\x04grpc\x12<\n" +
-	"\x04http\x18\x03 \x01(\v2&.runtime.transport.v1.HttpServerConfigH\x00R\x04httpB\b\n" +
-	"\x06config\"\xb1\x01\n" +
-	"\x06Client\x12\x1f\n" +
-	"\vclient_name\x18\x01 \x01(\tR\n" +
-	"clientName\x12A\n" +
-	"\vdiscoveries\x18\x02 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveries\x12C\n" +
-	"\vmiddlewares\x18\x03 \x03(\v2!.runtime.middleware.v1.MiddlewareR\vmiddlewares\"\xe4\x02\n" +
+	"*test/integration/app/proto/bootstrap.proto\x12\x10test.app.configs\x1a$runtime/discovery/v1/discovery.proto\x1a$runtime/transport/v1/transport.proto\"\xfe\x02\n" +
 	"\tBootstrap\x12N\n" +
 	"\vdiscoveries\x18\x01 \x03(\v2,.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
-	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x122\n" +
-	"\aservers\x18\x03 \x03(\v2\x18.test.app.configs.ServerR\aservers\x122\n" +
-	"\aclients\x18\x04 \x03(\v2\x18.test.app.configs.ClientR\aclients\x1a_\n" +
+	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x126\n" +
+	"\aservers\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\x12<\n" +
+	"\aclients\x18\x04 \x01(\v2\x1d.runtime.transport.v1.ClientsH\x00R\aclients\x88\x01\x01\x1a_\n" +
 	"\x10DiscoveriesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x125\n" +
-	"\x05value\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x05value:\x028\x01BCZAgithub.com/origadmin/framework/test/integration/app/proto;configsb\x06proto3"
+	"\x05value\x18\x02 \x01(\v2\x1f.runtime.discovery.v1.DiscoveryR\x05value:\x028\x01B\n" +
+	"\n" +
+	"\b_clientsBCZAgithub.com/origadmin/framework/test/integration/app/proto;configsb\x06proto3"
 
 var (
 	file_test_integration_app_proto_bootstrap_proto_rawDescOnce sync.Once
@@ -294,31 +125,24 @@ func file_test_integration_app_proto_bootstrap_proto_rawDescGZIP() []byte {
 	return file_test_integration_app_proto_bootstrap_proto_rawDescData
 }
 
-var file_test_integration_app_proto_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_test_integration_app_proto_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_test_integration_app_proto_bootstrap_proto_goTypes = []any{
-	(*Server)(nil),              // 0: test.app.configs.Server
-	(*Client)(nil),              // 1: test.app.configs.Client
-	(*Bootstrap)(nil),           // 2: test.app.configs.Bootstrap
-	nil,                         // 3: test.app.configs.Bootstrap.DiscoveriesEntry
-	(*v1.GrpcServerConfig)(nil), // 4: runtime.transport.v1.GrpcServerConfig
-	(*v1.HttpServerConfig)(nil), // 5: runtime.transport.v1.HttpServerConfig
-	(*v11.Discovery)(nil),       // 6: runtime.discovery.v1.Discovery
-	(*v12.Middleware)(nil),      // 7: runtime.middleware.v1.Middleware
+	(*Bootstrap)(nil),    // 0: test.app.configs.Bootstrap
+	nil,                  // 1: test.app.configs.Bootstrap.DiscoveriesEntry
+	(*v11.Server)(nil),   // 2: runtime.transport.v1.Server
+	(*v11.Clients)(nil),  // 3: runtime.transport.v1.Clients
+	(*v1.Discovery)(nil), // 4: runtime.discovery.v1.Discovery
 }
 var file_test_integration_app_proto_bootstrap_proto_depIdxs = []int32{
-	4, // 0: test.app.configs.Server.grpc:type_name -> runtime.transport.v1.GrpcServerConfig
-	5, // 1: test.app.configs.Server.http:type_name -> runtime.transport.v1.HttpServerConfig
-	6, // 2: test.app.configs.Client.discoveries:type_name -> runtime.discovery.v1.Discovery
-	7, // 3: test.app.configs.Client.middlewares:type_name -> runtime.middleware.v1.Middleware
-	3, // 4: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry
-	0, // 5: test.app.configs.Bootstrap.servers:type_name -> test.app.configs.Server
-	1, // 6: test.app.configs.Bootstrap.clients:type_name -> test.app.configs.Client
-	6, // 7: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	1, // 0: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry
+	2, // 1: test.app.configs.Bootstrap.servers:type_name -> runtime.transport.v1.Server
+	3, // 2: test.app.configs.Bootstrap.clients:type_name -> runtime.transport.v1.Clients
+	4, // 3: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.discovery.v1.Discovery
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_test_integration_app_proto_bootstrap_proto_init() }
@@ -326,17 +150,14 @@ func file_test_integration_app_proto_bootstrap_proto_init() {
 	if File_test_integration_app_proto_bootstrap_proto != nil {
 		return
 	}
-	file_test_integration_app_proto_bootstrap_proto_msgTypes[0].OneofWrappers = []any{
-		(*Server_Grpc)(nil),
-		(*Server_Http)(nil),
-	}
+	file_test_integration_app_proto_bootstrap_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_test_integration_app_proto_bootstrap_proto_rawDesc), len(file_test_integration_app_proto_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

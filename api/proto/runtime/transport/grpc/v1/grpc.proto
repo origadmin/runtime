@@ -3,7 +3,7 @@ syntax = "proto3";
 package runtime.transport.grpc.v1;
 
 import "google/protobuf/duration.proto";
-import "runtime/transport/v1/selector.proto";
+import "runtime/selector/v1/selector.proto"; // Updated import path
 import "runtime/security/transport/v1/tls.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1;grpcv1";
@@ -43,7 +43,7 @@ message Client {
   repeated string middlewares = 3;
 
   // selector defines the node selection strategy for the client.
-  runtime.transport.v1.SelectorConfig selector = 4;
+  runtime.selector.v1.SelectorConfig selector = 4; // Updated type reference
 
   // discovery_name specifies the name of the discovery client to use from the application container.
   // If empty, and multiple discovery clients are available, an error will be returned.
