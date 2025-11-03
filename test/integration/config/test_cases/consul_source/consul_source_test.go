@@ -11,9 +11,12 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rt "github.com/origadmin/runtime"
+	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/test/helper"
+	parentconfig "github.com/origadmin/runtime/test/integration/config"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 
 	_ "github.com/origadmin/runtime/test/helper" // Import helper to ensure init() registers MockConsulSource
@@ -56,14 +59,12 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 
 	// Initialize Runtime. The framework should automatically use the registered MockConsulSource
 	// based on the 'type: consul' in bootstrap_consul.yaml.
-	// We now explicitly pass the mock data using bootstrap.WithSourceOption and helper.WithMockDataJSON.
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
 			ID:   "consul-test-app",
 			Name: "ConsulApp", Version: "1.0.0",
 		}),
-		// Inject mock data for the "consul-config" source, specifying JSON format.
 		helper.WithMockDataJSON(mockData),
 	)
 	assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
@@ -79,16 +80,21 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 	err = configDecoder.Decode("logger", &cfg.Logger)
 	assert.NoError(err, "Failed to decode logger config from runtime: %v", err)
 
-	// Assertions based on config-in-consul.yaml content, which is now provided via mock_config.json
-	assert.NotNil(cfg.App)
-	assert.Equal("consul-app-id", cfg.App.GetId())
-	assert.Equal("ConsulApp", cfg.App.GetName())
-	assert.Equal("1.0.0", cfg.App.GetVersion())
-	assert.Equal("consul-test", cfg.App.GetEnv())
+	// Define the expected configurations based on the mock data.
+	expectedApp := &appv1.App{
+		Id:      "consul-app-id",
+		Name:    "ConsulApp",
+		Version: "1.0.0",
+		Env:     "consul-test",
+	}
+	expectedLogger := &loggerv1.Logger{
+		Level:  "warn",
+		Format: "json",
+	}
 
-	assert.NotNil(cfg.Logger)
-	assert.Equal("warn", cfg.Logger.GetLevel())
-	assert.Equal("json", cfg.Logger.GetFormat())
+	// Perform assertions using the modular assertion toolkit.
+	parentconfig.AssertAppConfig(t, expectedApp, cfg.App)
+	parentconfig.AssertLoggerConfig(t, expectedLogger, cfg.Logger)
 
 	t.Logf("Consul source config loaded and verified successfully!")
 }

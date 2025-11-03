@@ -53,6 +53,6 @@ servers:
             timeout: 2s
           name: http_server
           protocol: http
-tracer:
+trace:
     endpoint: http://jaeger:14268/api/traces
     name: jaeger

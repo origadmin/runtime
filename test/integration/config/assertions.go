@@ -1,105 +1,117 @@
-package config_test
+package config
 
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/testing/protocmp"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	tracev1 "github.com/origadmin/runtime/api/gen/go/runtime/trace/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
-	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	configproto "github.com/origadmin/runtime/test/integration/config/proto"
 )
 
-// AssertTestConfig contains all the validation logic for the unified TestConfig struct.
-// It is reused across all configuration loading tests to ensure consistency.
-func AssertTestConfig(t *testing.T, cfg *testconfigs.TestConfig) {
-	assertions := assert.New(t)
+// AssertTestConfig performs a detailed, field-by-field assertion on the TestConfig struct.
+func AssertTestConfig(t *testing.T, expected, actual *configproto.TestConfig) {
+	require.NotNil(t, expected, "Expected config should not be nil")
+	require.NotNil(t, actual, "Actual config should not be nil")
 
-	// App configuration assertions
-	assertions.NotNil(cfg.App)
-	assertions.Equal("test-app-id", cfg.App.GetId())
-	assertions.Equal("TestApp", cfg.App.GetName())
-	assertions.Equal("1.0.0", cfg.App.GetVersion())
-	assertions.Equal("test", cfg.App.GetEnv())
-	assertions.Contains(cfg.App.GetMetadata(), "key1")
-	assertions.Contains(cfg.App.GetMetadata(), "key2")
-	assertions.Equal("value1", cfg.App.GetMetadata()["key1"])
-	assertions.Equal("value2", cfg.App.GetMetadata()["key2"])
+	AssertAppConfig(t, expected.App, actual.App)
+	AssertServersConfig(t, expected.Servers, actual.Servers)
+	AssertClientConfig(t, expected.Client, actual.Client)
+	AssertLoggerConfig(t, expected.Logger, actual.Logger)
+	AssertDiscoveriesConfig(t, expected.Discoveries, actual.Discoveries)
+	AssertTraceConfig(t, expected.Trace, actual.Trace)
+	AssertMiddlewaresConfig(t, expected.Middlewares, actual.Middlewares)
 
-	// Server configuration assertions
-	assertions.Len(cfg.GetServers().GetServers(), 2, "Should have 1 Servers message")
-	serverConfigs := cfg.GetServers().GetServers()
-	assertions.Len(serverConfigs, 2, "Should have 2 Server configurations (gRPC and HTTP)")
+	require.Equal(t, expected.RegistrationDiscoveryName, actual.RegistrationDiscoveryName, "RegistrationDiscoveryName does not match")
+}
 
-	var grpcServer *transportv1.Server
-	var httpServer *transportv1.Server
-
-	for _, s := range serverConfigs {
-		if s.GetGrpc() != nil {
-			grpcServer = s
-		}
-		if s.GetHttp() != nil {
-			httpServer = s
-		}
+// AssertAppConfig asserts that two App configurations are semantically equal.
+func AssertAppConfig(t *testing.T, expected, actual *appv1.App) {
+	if expected == nil {
+		require.Nil(t, actual, "Actual App config should be nil, but was not")
+		return
 	}
+	require.NotNil(t, actual, "Expected App config to be non-nil, but it was nil")
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
+		require.Fail(t, "App configuration does not match", "Diff (-expected +actual):\n%s", diff)
+	}
+}
 
-	assertions.NotNil(grpcServer, "gRPC server configuration not found")
-	assertions.Equal("tcp", grpcServer.GetGrpc().GetNetwork())
-	assertions.Equal(":9000", grpcServer.GetGrpc().GetAddr())
-	assertions.Equal("1s", grpcServer.GetGrpc().GetTimeout().AsDuration().String())
+// AssertServersConfig asserts that two Servers configurations are semantically equal.
+func AssertServersConfig(t *testing.T, expected, actual *transportv1.Servers) {
+	if expected == nil {
+		require.Nil(t, actual, "Actual Servers config should be nil, but was not")
+		return
+	}
+	require.NotNil(t, actual, "Expected Servers config to be non-nil, but it was nil")
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
+		require.Fail(t, "Servers configuration does not match", "Diff (-expected +actual):\n%s", diff)
+	}
+}
 
-	assertions.NotNil(httpServer, "HTTP server configuration not found")
-	assertions.Equal("tcp", httpServer.GetHttp().GetNetwork())
-	assertions.Equal(":8000", httpServer.GetHttp().GetAddr())
-	assertions.Equal("2s", httpServer.GetHttp().GetTimeout().AsDuration().String())
+// AssertClientConfig asserts that two Client configurations are semantically equal.
+func AssertClientConfig(t *testing.T, expected, actual *transportv1.Client) {
+	if expected == nil {
+		require.Nil(t, actual, "Actual Client config should be nil, but was not")
+		return
+	}
+	require.NotNil(t, actual, "Expected Client config to be non-nil, but it was nil")
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
+		require.Fail(t, "Client configuration does not match", "Diff (-expected +actual):\n%s", diff)
+	}
+}
 
-	// Client configuration assertions
-	assertions.NotNil(cfg.Client)
-	assertions.NotNil(cfg.Client.GetGrpc(), "gRPC client configuration not found")
-	assertions.Equal("discovery:///user-service", cfg.Client.GetGrpc().GetEndpoint())
-	assertions.Equal("3s", cfg.Client.GetGrpc().GetTimeout().AsDuration().String())
-	assertions.NotNil(cfg.Client.GetGrpc().GetSelector())
-	assertions.Equal("v1.0.0", cfg.Client.GetGrpc().GetSelector().GetVersion())
+// AssertLoggerConfig asserts that two Logger configurations are semantically equal.
+func AssertLoggerConfig(t *testing.T, expected, actual *loggerv1.Logger) {
+	if expected == nil {
+		require.Nil(t, actual, "Actual Logger config should be nil, but was not")
+		return
+	}
+	require.NotNil(t, actual, "Expected Logger config to be non-nil, but it was nil")
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
+		require.Fail(t, "Logger configuration does not match", "Diff (-expected +actual):\n%s", diff)
+	}
+}
 
-	// Discovery configuration assertions
-	assertions.Len(cfg.GetDiscoveries().GetDiscoveries(), 2)
-	assertions.Equal("internal-consul", cfg.GetDiscoveries().GetDiscoveries()[0].GetName())
-	assertions.NotNil(cfg.GetDiscoveries().GetDiscoveries()[0])
-	assertions.Equal("consul", cfg.GetDiscoveries().GetDiscoveries()[0].GetType())
-	assertions.NotNil(cfg.GetDiscoveries().GetDiscoveries()[0].GetConsul())
-	assertions.Equal("consul.internal:8500", cfg.GetDiscoveries().GetDiscoveries()[0].GetConsul().GetAddress())
+// AssertDiscoveriesConfig asserts that two Discoveries configurations are semantically equal.
+func AssertDiscoveriesConfig(t *testing.T, expected, actual *discoveryv1.Discoveries) {
+	if expected == nil {
+		require.Nil(t, actual, "Actual Discoveries config should be nil, but was not")
+		return
+	}
+	require.NotNil(t, actual, "Expected Discoveries config to be non-nil, but it was nil")
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
+		require.Fail(t, "Discoveries configuration does not match", "Diff (-expected +actual):\n%s", diff)
+	}
+}
 
-	assertions.Equal("legacy-etcd", cfg.GetDiscoveries().GetDiscoveries()[1].GetName())
-	assertions.NotNil(cfg.GetDiscoveries().GetDiscoveries()[1])
-	assertions.Equal("etcd", cfg.GetDiscoveries().GetDiscoveries()[1].GetType())
-	assertions.NotNil(cfg.GetDiscoveries().GetDiscoveries()[1].GetEtcd())
-	assertions.Len(cfg.GetDiscoveries().GetDiscoveries()[1].GetEtcd().GetEndpoints(), 1)
-	assertions.Equal("etcd.legacy:2379", cfg.GetDiscoveries().GetDiscoveries()[1].GetEtcd().GetEndpoints()[0])
+// AssertTraceConfig asserts that two Trace configurations are semantically equal.
+func AssertTraceConfig(t *testing.T, expected, actual *tracev1.Trace) {
+	if expected == nil {
+		require.Nil(t, actual, "Actual Trace config should be nil, but was not")
+		return
+	}
+	require.NotNil(t, actual, "Expected Trace config to be non-nil, but it was nil")
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
+		require.Fail(t, "Trace configuration does not match", "Diff (-expected +actual):\n%s", diff)
+	}
+}
 
-	// Registration discovery name assertion
-	assertions.Equal("internal-consul", cfg.GetRegistrationDiscoveryName())
-
-	// Logger configuration assertions
-	assertions.NotNil(cfg.Logger)
-	assertions.Equal("info", cfg.Logger.GetLevel())
-	assertions.Equal("json", cfg.Logger.GetFormat())
-	assertions.True(cfg.Logger.GetStdout())
-
-	// Tracer configuration assertions
-	assertions.NotNil(cfg.Trace)
-	assertions.Equal("jaeger", cfg.Trace.GetName())
-	assertions.Equal("http://jaeger:14268/api/traces", cfg.Trace.GetEndpoint())
-
-	// Middleware configuration assertions
-	assertions.NotNil(cfg.Middlewares)
-	assertions.Len(cfg.Middlewares.GetMiddlewares(), 1, "Should have 1 middleware configured")
-
-	corsMiddleware := cfg.Middlewares.GetMiddlewares()[0]
-	assertions.Equal("cors", corsMiddleware.GetType())
-	assertions.True(corsMiddleware.GetEnabled())
-	assertions.NotNil(corsMiddleware.GetCors(), "CORS config should not be nil for middleware of type cors")
-	assertions.Len(corsMiddleware.GetCors().GetAllowedOrigins(), 1)
-	assertions.Equal("*", corsMiddleware.GetCors().GetAllowedOrigins()[0])
-	assertions.Len(corsMiddleware.GetCors().GetAllowedMethods(), 2)
-	assertions.Equal("GET", corsMiddleware.GetCors().GetAllowedMethods()[0])
-	assertions.Equal("POST", corsMiddleware.GetCors().GetAllowedMethods()[1])
+// AssertMiddlewaresConfig asserts that two Middlewares configurations are semantically equal.
+func AssertMiddlewaresConfig(t *testing.T, expected, actual *middlewarev1.Middlewares) {
+	if expected == nil {
+		require.Nil(t, actual, "Actual Middlewares config should be nil, but was not")
+		return
+	}
+	require.NotNil(t, actual, "Expected Middlewares config to be non-nil, but it was nil")
+	if diff := cmp.Diff(expected, actual, protocmp.Transform()); diff != "" {
+		require.Fail(t, "Middlewares configuration does not match", "Diff (-expected +actual):\n%s", diff)
+	}
 }

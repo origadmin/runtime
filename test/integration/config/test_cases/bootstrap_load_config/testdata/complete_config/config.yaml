@@ -33,8 +33,7 @@ logger:
   format: "json"
   stdout: true
 
-# 确保 tracer 字段结构正确
-tracer:
+trace:
   name: "jaeger"
   endpoint: "http://jaeger:14268/api/traces"
 

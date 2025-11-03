@@ -4,12 +4,19 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	rt "github.com/origadmin/runtime"
+	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/selector/v1"
+	grpcv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
+	parentconfig "github.com/origadmin/runtime/test/integration/config"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 )
 
@@ -26,12 +33,9 @@ func TestMultipleSourcesConfigTestSuite(t *testing.T) {
 // loaded, merged, and prioritized by the runtime.
 func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 	t := s.T()
-	assertions := assert.New(t)
 
-	// Use a robust relative path from the test file to the dedicated test data.
 	bootstrapPath := filepath.Join("testdata", "bootstrap_multiple_sources.yaml")
 
-	// Initialize Runtime from the bootstrap file that defines multiple sources.
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{
@@ -40,49 +44,41 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 			Version: "1.0.0",
 		}),
 	)
-	// Use NoError to halt the test immediately on failure, preventing a panic
-	// from the deferred Cleanup call on a nil rtInstance.
-	if !assertions.NoError(err, "Failed to initialize runtime from bootstrap: %v", err) {
-		return
+	require.NoError(t, err, "Failed to initialize runtime from bootstrap")
+	defer rtInstance.Cleanup()
+
+	var actualConfig testconfigs.TestConfig
+	err = rtInstance.Config().Decode("", &actualConfig)
+	require.NoError(t, err, "Failed to decode config from runtime")
+
+	// Define the expected configuration after merging sources with priority.
+	expectedApp := &appv1.App{
+		Id:       "source1-app-id",
+		Name:     "Source2App",
+		Version:  "1.0.0",
+		Env:      "prod",
+		Metadata: map[string]string{"key3": "value3"},
 	}
 
-	configDecoder := rtInstance.Config()
-	assertions.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
+	expectedLogger := &loggerv1.Logger{
+		Level:  "info",
+		Format: "text",
+	}
 
-	var cfg testconfigs.TestConfig
-	err = configDecoder.Decode("", &cfg)
-	assertions.NoError(err, "Failed to decode config from runtime: %v", err)
+	expectedClient := &transportv1.Client{
+		Grpc: &grpcv1.Client{
+			Endpoint: "discovery:///source1-service",
+			Timeout:  durationpb.New(5 * 1000 * 1000 * 1000), // 5s
+			Selector: &selectorv1.SelectorConfig{
+				Version: "v2.0.0",
+			},
+		},
+	}
 
-	// Assertions for merged configuration:
-	// app.id should be from source1 (not overridden)
-	assertions.NotNil(cfg.App)
-	assertions.Equal("source1-app-id", cfg.App.Id)
-
-	// app.name should be overridden by source2
-	assertions.Equal("Source2App", cfg.App.Name)
-
-	// app.env should be overridden by source2
-	assertions.Equal("prod", cfg.App.Env)
-
-	// app.metadata should contain key3 from source2
-	assertions.Contains(cfg.App.Metadata, "key3")
-	assertions.Equal("value3", cfg.App.Metadata["key3"])
-
-	// logger.level should be overridden by source2
-	assertions.NotNil(cfg.Logger)
-	assertions.Equal("info", cfg.Logger.Level)
-
-	// client.timeout should be overridden by source2
-	assertions.NotNil(cfg.Client)
-	assertions.NotNil(cfg.Client.GetGrpc(), "gRPC client configuration not found")
-	assertions.Equal("5s", cfg.Client.GetGrpc().GetTimeout().AsDuration().String())
-
-	// client.endpoint should be from source1 (not overridden)
-	assertions.Equal("discovery:///source1-service", cfg.Client.GetGrpc().GetEndpoint())
-
-	// client.selector.version should be from source2 (new field)
-	assertions.NotNil(cfg.Client.GetGrpc().GetSelector())
-	assertions.Equal("v2.0.0", cfg.Client.GetGrpc().GetSelector().GetVersion())
+	// Perform assertions using the modular assertion toolkit.
+	parentconfig.AssertAppConfig(t, expectedApp, actualConfig.App)
+	parentconfig.AssertLoggerConfig(t, expectedLogger, actualConfig.Logger)
+	parentconfig.AssertClientConfig(t, expectedClient, actualConfig.Client)
 
 	t.Log("Multiple sources config loaded and merged successfully!")
 }
