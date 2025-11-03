@@ -98,7 +98,7 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .github/.release-please-manifest.json
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Tools and Protoc Plugins via Makefile
         if: ${{ steps.release.outputs.release_created }}
