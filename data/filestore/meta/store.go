@@ -11,9 +11,9 @@ import (
 
 	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
-	"github.com/origadmin/runtime/storage/filestore/layout"
-	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
-	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
+	"github.com/origadmin/runtime/data/filestore/layout"
+	metav1 "github.com/origadmin/runtime/data/filestore/meta/v1"
+	metav2 "github.com/origadmin/runtime/data/filestore/meta/v2"
 )
 
 // Store implements the metaiface.Store interface using the local filesystem.

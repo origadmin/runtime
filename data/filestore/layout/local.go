@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
-	"github.com/origadmin/runtime/storage/filestore/internal/fileutil"
+	"github.com/origadmin/runtime/data/filestore/internal/fileutil"
 )
 
 // localShardedStorage implements ShardedStorage for the local filesystem.

@@ -14,7 +14,7 @@ import (
 
 	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
-	"github.com/origadmin/runtime/storage"
+	"github.com/origadmin/runtime/data"
 )
 
 const (

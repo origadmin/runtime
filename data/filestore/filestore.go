@@ -15,10 +15,10 @@ import (
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	indexiface "github.com/origadmin/runtime/interfaces/storage/components/index"
 	"github.com/origadmin/runtime/log"
-	blobimpl "github.com/origadmin/runtime/storage/filestore/blob"
-	contentimpl "github.com/origadmin/runtime/storage/filestore/content"
-	indeximpl "github.com/origadmin/runtime/storage/filestore/index"
-	metaimpl "github.com/origadmin/runtime/storage/filestore/meta"
+	blobimpl "github.com/origadmin/runtime/data/filestore/blob"
+	contentimpl "github.com/origadmin/runtime/data/filestore/content"
+	indeximpl "github.com/origadmin/runtime/data/filestore/index"
+	metaimpl "github.com/origadmin/runtime/data/filestore/meta"
 )
 
 const (

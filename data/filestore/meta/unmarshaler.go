@@ -11,8 +11,8 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 
 	"github.com/origadmin/runtime/interfaces/storage/components/meta"
-	metav1 "github.com/origadmin/runtime/storage/filestore/meta/v1"
-	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
+	metav1 "github.com/origadmin/runtime/data/filestore/meta/v1"
+	metav2 "github.com/origadmin/runtime/data/filestore/meta/v2"
 )
 
 func Unmarshal(data []byte) (meta.FileMeta, error) {

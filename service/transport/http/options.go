@@ -35,8 +35,6 @@ func WithAllowOriginVaryRequestFunc(f func(r *http.Request, origin string) (bool
 
 // ServerOptions is a container for HTTP server-specific options.
 type ServerOptions struct {
-	options.Context
-
 	// ServiceOptions holds common service-level configurations.
 	ServiceOptions *service.Options
 
@@ -46,17 +44,17 @@ type ServerOptions struct {
 	// CorsOptions allows applying advanced, code-based configurations to the CORS handler.
 	// These options will be applied *after* the base configuration from the proto file.
 	CorsOptions []CorsOption
+
+	// Options holds common service-level configurations.
+	Options []options.Option
 }
 
 // FromServerOptions creates a new HTTP ServerOptions struct by applying a slice of functional options.
 // It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromServerOptions(opts []options.Option) *ServerOptions {
-	o := &ServerOptions{}
 	// Apply HTTP server-specific options first
-	ctx := optionutil.Apply(o, opts...)
-	if o.Context == nil {
-		o.Context = ctx
-	}
+	o := optionutil.NewT[ServerOptions](opts...)
+	o.Options = opts
 	// Initialize and include common service-level options if not already set.
 	// This prevents redundant application of common options.
 	if o.ServiceOptions == nil {
@@ -87,14 +85,17 @@ type ClientOptions struct {
 
 	// HttpClientOptions allows passing native Kratos HTTP client options.
 	HttpClientOptions []transhttp.ClientOption
+
+	// Options holds common service-level configurations.
+	Options []options.Option
 }
 
 // FromClientOptions creates a new HTTP ClientOptions struct by applying a slice of functional options.
 // It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromClientOptions(opts []options.Option) *ClientOptions {
-	o := &ClientOptions{}
 	// Apply HTTP client-specific options first
-	optionutil.Apply(o, opts...)
+	o := optionutil.NewT[ClientOptions](opts...)
+	o.Options = opts
 
 	// Initialize and include common service-level options if not already set.
 	// This prevents redundant application of common options.

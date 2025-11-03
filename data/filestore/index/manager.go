@@ -17,7 +17,7 @@ import (
 	"github.com/origadmin/runtime/interfaces/storage/components/index"
 	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
-	"github.com/origadmin/runtime/storage/filestore/layout"
+	"github.com/origadmin/runtime/data/filestore/layout"
 )
 
 const (

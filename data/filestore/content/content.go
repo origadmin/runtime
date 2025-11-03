@@ -11,7 +11,7 @@ import (
 	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
 	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
-	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
+	metav2 "github.com/origadmin/runtime/data/filestore/meta/v2"
 )
 
 // assembler implements the Assembler interface.
