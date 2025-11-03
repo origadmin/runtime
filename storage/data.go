@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package data implements the functions, types, and interfaces for the module.
-package data
+// Package storage implements the functions, types, and interfaces for the module.
+package storage
 
 import (
 	"github.com/origadmin/toolkits/errors"

@@ -17,8 +17,8 @@ import (
 	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
 	contentiface "github.com/origadmin/runtime/interfaces/storage/components/content"
 	metaiface "github.com/origadmin/runtime/interfaces/storage/components/meta"
-	blobimpl "github.com/origadmin/runtime/data/filestore/blob"
-	metav2 "github.com/origadmin/runtime/data/filestore/meta/v2"
+	blobimpl "github.com/origadmin/runtime/storage/filestore/blob"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 // Service is a high-level service for managing file content and its metadata.

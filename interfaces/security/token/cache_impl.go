@@ -14,7 +14,7 @@ import (
 
 	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
-	"github.com/origadmin/runtime/data"
+	"github.com/origadmin/runtime/storage"
 )
 
 const (
@@ -65,7 +65,7 @@ func New(ss ...StorageOption) CacheStorage {
 			Driver: "memory",
 			Memory: &storagev1.MemoryConfig{},
 		}
-		c, err := data.New(defaultCacheConfig)
+		c, err := storage.New(defaultCacheConfig)
 		if err != nil {
 			// Handle error, perhaps log it or panic if cache is critical
 			panic(fmt.Sprintf("failed to create default memory cache: %v", err))

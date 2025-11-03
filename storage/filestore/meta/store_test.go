@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	metav2 "github.com/origadmin/runtime/data/filestore/meta/v2"
+	metav2 "github.com/origadmin/runtime/storage/filestore/meta/v2"
 )
 
 func TestFileMetaStore(t *testing.T) {

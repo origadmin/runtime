@@ -7,7 +7,7 @@ import (
 
 	blobiface "github.com/origadmin/runtime/interfaces/storage/components/blob"
 	layoutiface "github.com/origadmin/runtime/interfaces/storage/components/layout"
-	"github.com/origadmin/runtime/data/filestore/layout"
+	"github.com/origadmin/runtime/storage/filestore/layout"
 )
 
 type blobStore struct {
