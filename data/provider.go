@@ -1,4 +1,9 @@
-package storage
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
+// Package data implements the functions, types, and interfaces for the module.
+package data
 
 import (
 	"cmp"
@@ -6,10 +11,10 @@ import (
 
 	storagev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
+	"github.com/origadmin/runtime/data/filestore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
-	"github.com/origadmin/runtime/storage/filestore"
 )
 
 const ProviderModule = "storage.provider"

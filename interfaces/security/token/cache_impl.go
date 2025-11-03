@@ -65,7 +65,7 @@ func New(ss ...StorageOption) CacheStorage {
 			Driver: "memory",
 			Memory: &storagev1.MemoryConfig{},
 		}
-		c, err := storage.New(defaultCacheConfig)
+		c, err := data.New(defaultCacheConfig)
 		if err != nil {
 			// Handle error, perhaps log it or panic if cache is critical
 			panic(fmt.Sprintf("failed to create default memory cache: %v", err))
