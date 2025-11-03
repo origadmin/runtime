@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.8](https://github.com/origadmin/runtime/compare/v0.2.7...v0.2.8) (2025-11-03)
+
+
+### Features
+
+* **api:** Added protobuf definition and validation code for middleware and transport layer configurations ([a96619f](https://github.com/origadmin/runtime/commit/a96619f3ad28aa312d1404f703421b25f8af5b81))
+* **broker:** Add detailed broker configurations for multiple message queue systems ([6b4c05f](https://github.com/origadmin/runtime/commit/6b4c05fea8bbf2a522ae0dde6d0060c875e77bbd))
+* **broker:** Extend broker configuration with multiple message queue implementations and validation ([5184786](https://github.com/origadmin/runtime/commit/5184786c8ce1158854c3beead16a2fed908dfa61))
+* **runtime:** Add broker list and enhance storage proto definitions with OSS lifecycle rules and Redis config options ([46e3545](https://github.com/origadmin/runtime/commit/46e35450d0fe4f5d586c586b6d904e57d0528378))
+* **runtime:** Add quick start app example with bootstrap configuration ([954e0c0](https://github.com/origadmin/runtime/commit/954e0c0fa67001faa24b46c45d808f9f216a5dcf))
+* **selector:** Added SelectorConfig protocol buffer definition ([aefd179](https://github.com/origadmin/runtime/commit/aefd17990eca613dbce8d208ba98df6f4674e059))
+
 ## [0.2.7](https://github.com/origadmin/runtime/compare/v0.2.6...v0.2.7) (2025-10-28)
 
 
