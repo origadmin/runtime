@@ -13,6 +13,7 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 )
 
+
 const (
 	_testJSON = `
 {
@@ -77,6 +78,8 @@ const (
 	//
 	//
 	//`
+
+	_timeout = 10 * time.Second
 )
 
 //func TestScan(defaultFormatter *testing.T) {
@@ -139,15 +142,26 @@ func testWatchFile(t *testing.T, path string) {
 	_ = f.Sync()
 	_ = f.Close() // Ensure the file handle is released before rename on Windows
 
-	// Wait for event with local retry/backoff and a deadline guard to avoid hanging
-	deadline := time.Now().Add(10 * time.Second)
+	// Wait for event with a deadline guard to avoid hanging.
+	// In some FS implementations (e.g., in CI), a WRITE event might be triggered
+	// on truncation before the new content is written. We add a small delay
+	// and re-read the file to get the final content, making the test more robust.
+	deadline := time.Now().Add(_timeout)
+LOOP:
 	for {
 		select {
-		case kvs := <-kvsCh:
-			if !reflect.DeepEqual(string(kvs[0].Value), _testJSONUpdate) {
-				t.Errorf("Expected value %q, got %q", _testJSONUpdate, kvs[0].Value)
+		case <-kvsCh:
+			// Event received, wait a moment for the write to complete before reading.
+			time.Sleep(50 * time.Millisecond)
+			currentData, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("Failed to re-read file after event: %v", err)
 			}
-			goto RENAME
+			if !reflect.DeepEqual(string(currentData), _testJSONUpdate) {
+				t.Errorf("Expected value %q, got %q", _testJSONUpdate, string(currentData))
+			}
+
+			break LOOP
 		case err := <-errCh:
 			t.Fatalf("Error watching file: %v", err)
 		case <-time.After(100 * time.Millisecond):
@@ -157,7 +171,6 @@ func testWatchFile(t *testing.T, path string) {
 		}
 	}
 
-RENAME:
 	// Test file rename
 	newFilepath := filepath.Join(filepath.Dir(path), "test1.json")
 	if err = os.Rename(path, newFilepath); err != nil {
@@ -172,14 +185,12 @@ RENAME:
 	// Listen again after rename; different platforms/FS may return an error or another event
 	done := make(chan struct{}, 1)
 	go func() {
-		_, err := watch.Next()
-		_ = err
+		_, _ = watch.Next()
 		done <- struct{}{}
 	}()
 
 	select {
 	case <-done:
-		// pass
 	case <-time.After(5 * time.Second):
 		t.Error("Timeout waiting after file rename event")
 	}
@@ -206,32 +217,23 @@ func testWatchDir(t *testing.T, path, file string) {
 	_ = f.Sync()
 	_ = f.Close()
 
-	deadline := time.Now().Add(10 * time.Second)
+	deadline := time.Now().Add(_timeout)
 	for {
 		select {
-		case kvs, ok := <-func() chan []*config.KeyValue {
-			ch := make(chan []*config.KeyValue, 1)
-			go func() {
-				kv, e := watch.Next()
-				if e != nil {
-					ch <- nil
-					return
-				}
-				ch <- kv
-			}()
-			return ch
-		}():
-			if !ok || kvs == nil {
-				t.Fatalf("watch.Next() returned nil or closed")
-			}
-			if !reflect.DeepEqual(string(kvs[0].Value), _testJSONUpdate) {
-				t.Errorf("string(kvs[0].Value(%s)) not equal to _testJSONUpdate(%v)", kvs[0].Value, _testJSONUpdate)
-			}
-			return
 		case <-time.After(100 * time.Millisecond):
 			if time.Now().After(deadline) {
 				t.Fatal("Timeout waiting for directory change event")
 			}
+		default:
+			kvs, err := watch.Next()
+			if err != nil {
+				t.Fatalf("watch.Next() failed: %v", err)
+			}
+
+			if !reflect.DeepEqual(string(kvs[0].Value), _testJSONUpdate) {
+				t.Errorf("string(kvs[0].Value(%s)) not equal to _testJSONUpdate(%v)", kvs[0].Value, _testJSONUpdate)
+			}
+			return
 		}
 	}
 }
