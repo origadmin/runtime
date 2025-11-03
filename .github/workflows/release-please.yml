@@ -82,7 +82,6 @@ jobs:
         run: make test
 
   release:
-    needs: [ lint, test ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -99,7 +98,7 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .github/.release-please-manifest.json
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
       - name: Install Tools and Protoc Plugins via Makefile
         if: ${{ steps.release.outputs.release_created }}
