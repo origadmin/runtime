@@ -39,7 +39,7 @@ servers:
 clients:
   default: "user-service-client"
   active: "user-service-client"
-  clients:
+  configs:
     - name: "user-service-client"
       protocol: "grpc"
       grpc:
@@ -61,7 +61,7 @@ clients:
 
 # Global middleware chain configuration.
 middlewares:
-  middlewares:
+  configs:
     - name: "global-logging"
       type: "logging"
       enabled: true

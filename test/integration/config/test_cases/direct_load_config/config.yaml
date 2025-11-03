@@ -13,7 +13,7 @@ client:
             version: v1.0.0
         timeout: 3s
 discoveries:
-    discoveries:
+    configs:
         - consul:
             address: consul.internal:8500
           name: internal-consul
@@ -28,7 +28,7 @@ logger:
     level: info
     stdout: true
 middlewares:
-    middlewares:
+    configs:
         - cors:
             allowed_methods:
                 - GET
@@ -40,7 +40,7 @@ middlewares:
           type: cors
 registration_discovery_name: internal-consul
 servers:
-    servers:
+    configs:
         - grpc:
             addr: :9000
             network: tcp

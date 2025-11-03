@@ -58,10 +58,10 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 
 	// Build the expected config to EXACTLY match the content of complete_config/config.yaml
 	expectedServers := builders.NewDefaultServers()
-	expectedServers.Servers[0].Name = "grpc_servers"
-	expectedServers.Servers[0].Protocol = "" // Not present in YAML, so it should be the zero value
-	expectedServers.Servers[1].Name = "http_servers"
-	expectedServers.Servers[1].Protocol = "" // Not present in YAML, so it should be the zero value
+	expectedServers.Configs[0].Name = "grpc_servers"
+	expectedServers.Configs[0].Protocol = "" // Not present in YAML, so it should be the zero value
+	expectedServers.Configs[1].Name = "http_servers"
+	expectedServers.Configs[1].Protocol = "" // Not present in YAML, so it should be the zero value
 
 	expectedConfig := &testconfigs.TestConfig{
 		App:         builders.NewDefaultApp(),
@@ -112,10 +112,10 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	}
 
 	expectedServers := builders.NewDefaultServers()
-	expectedServers.Servers[0].Name = "grpc_servers"
-	expectedServers.Servers[0].Protocol = "" // Not present in YAML
-	expectedServers.Servers[1].Name = "http_servers"
-	expectedServers.Servers[1].Protocol = "" // Not present in YAML
+	expectedServers.Configs[0].Name = "grpc_servers"
+	expectedServers.Configs[0].Protocol = "" // Not present in YAML
+	expectedServers.Configs[1].Name = "http_servers"
+	expectedServers.Configs[1].Protocol = "" // Not present in YAML
 
 	// Assertions for the loaded sections
 	parentconfig.AssertAppConfig(t, expectedApp, actualConfig.App)

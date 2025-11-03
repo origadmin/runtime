@@ -8,7 +8,7 @@ app:
     key2: "value2"
 
 servers:
-  servers:
+  configs:
     - name: "grpc_servers"
       protocol: "grpc"
       grpc:

@@ -846,7 +846,7 @@ func (m *Middlewares) validate(all bool) error {
 
 	var errors []error
 
-	for idx, item := range m.GetMiddlewares() {
+	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
 		if all {
@@ -854,7 +854,7 @@ func (m *Middlewares) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, MiddlewaresValidationError{
-						field:  fmt.Sprintf("Middlewares[%v]", idx),
+						field:  fmt.Sprintf("Configs[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -862,7 +862,7 @@ func (m *Middlewares) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, MiddlewaresValidationError{
-						field:  fmt.Sprintf("Middlewares[%v]", idx),
+						field:  fmt.Sprintf("Configs[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -871,7 +871,7 @@ func (m *Middlewares) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return MiddlewaresValidationError{
-					field:  fmt.Sprintf("Middlewares[%v]", idx),
+					field:  fmt.Sprintf("Configs[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

@@ -39,7 +39,7 @@ var (
 			if items == nil {
 				return nil
 			}
-			return &transportv1.Servers{Servers: items}
+			return &transportv1.Servers{Configs: items}
 		},
 	)
 
@@ -54,7 +54,7 @@ var (
 			if items == nil {
 				return nil
 			}
-			return &transportv1.Clients{Clients: items}
+			return &transportv1.Clients{Configs: items}
 		},
 	)
 
@@ -69,7 +69,7 @@ var (
 			if items == nil {
 				return nil
 			}
-			return &discoveryv1.Discoveries{Discoveries: items}
+			return &discoveryv1.Discoveries{Configs: items}
 		},
 	)
 
@@ -84,7 +84,7 @@ var (
 			if items == nil {
 				return nil
 			}
-			return &middlewarev1.Middlewares{Middlewares: items}
+			return &middlewarev1.Middlewares{Configs: items}
 		},
 	)
 )

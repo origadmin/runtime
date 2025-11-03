@@ -308,7 +308,7 @@ func (x *Middleware) GetCustomize() *structpb.Struct {
 type Middlewares struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// A list of middleware configurations to be applied in order.
-	Middlewares   []*Middleware `protobuf:"bytes,1,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Configs       []*Middleware `protobuf:"bytes,1,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -343,9 +343,9 @@ func (*Middlewares) Descriptor() ([]byte, []int) {
 	return file_runtime_middleware_v1_middleware_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *Middlewares) GetMiddlewares() []*Middleware {
+func (x *Middlewares) GetConfigs() []*Middleware {
 	if x != nil {
-		return x.Middlewares
+		return x.Configs
 	}
 	return nil
 }
@@ -396,9 +396,9 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\t_recoveryB\v\n" +
 	"\t_metadataB\f\n" +
 	"\n" +
-	"_customize\"R\n" +
-	"\vMiddlewares\x12C\n" +
-	"\vmiddlewares\x18\x01 \x03(\v2!.runtime.middleware.v1.MiddlewareR\vmiddlewaresB\xf1\x01\n" +
+	"_customize\"J\n" +
+	"\vMiddlewares\x12;\n" +
+	"\aconfigs\x18\x01 \x03(\v2!.runtime.middleware.v1.MiddlewareR\aconfigsB\xf1\x01\n" +
 	"\x19com.runtime.middleware.v1B\x0fMiddlewareProtoP\x01ZJgithub.com/origadmin/runtime/api/gen/go/runtime/middleware/v1;middlewarev1\xf8\x01\x01\xa2\x02\x03RMX\xaa\x02\x15Runtime.Middleware.V1\xca\x02\x15Runtime\\Middleware\\V1\xe2\x02!Runtime\\Middleware\\V1\\GPBMetadata\xea\x02\x17Runtime::Middleware::V1b\x06proto3"
 
 var (
@@ -443,7 +443,7 @@ var file_runtime_middleware_v1_middleware_proto_depIdxs = []int32{
 	2,  // 9: runtime.middleware.v1.Middleware.recovery:type_name -> runtime.middleware.v1.Recovery
 	0,  // 10: runtime.middleware.v1.Middleware.metadata:type_name -> runtime.middleware.v1.Metadata
 	13, // 11: runtime.middleware.v1.Middleware.customize:type_name -> google.protobuf.Struct
-	3,  // 12: runtime.middleware.v1.Middlewares.middlewares:type_name -> runtime.middleware.v1.Middleware
+	3,  // 12: runtime.middleware.v1.Middlewares.configs:type_name -> runtime.middleware.v1.Middleware
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name

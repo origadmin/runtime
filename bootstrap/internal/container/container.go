@@ -222,14 +222,14 @@ func (b *Builder) initRegistries(opts ...options.Option) error {
 		return nil // Not a fatal error
 	}
 
-	if discoveriesCfg == nil || len(discoveriesCfg.GetDiscoveries()) == 0 {
+	if discoveriesCfg == nil || len(discoveriesCfg.GetConfigs()) == 0 {
 		helper.Infow("msg", "no registries configured, running in local mode")
 		b.container.discoveries = make(map[string]registry.Discovery)
 		b.container.registrars = make(map[string]registry.Registrar)
 		return nil // Not a fatal error
 	}
 
-	discoveries := discoveriesCfg.GetDiscoveries()
+	discoveries := discoveriesCfg.GetConfigs()
 	b.container.discoveries = make(map[string]registry.Discovery, len(discoveries))
 	b.container.registrars = make(map[string]registry.Registrar, len(discoveries))
 
@@ -274,14 +274,14 @@ func (b *Builder) initMiddlewares(opts ...options.Option) error {
 	}
 	b.container.serverMiddlewaresMap = make(map[string]middleware.Middleware)
 	b.container.clientMiddlewaresMap = make(map[string]middleware.Middleware)
-	if middlewares == nil || len(middlewares.GetMiddlewares()) == 0 {
+	if middlewares == nil || len(middlewares.GetConfigs()) == 0 {
 		helper.Infow("msg", "no middlewares configured, skipping")
 		return nil
 	}
 	// Get the logger to pass to middleware options
 	logger := b.Logger()
 	opts = append(opts, runtimelog.WithLogger(logger))
-	for _, mc := range middlewares.GetMiddlewares() {
+	for _, mc := range middlewares.GetConfigs() {
 		if mc.GetEnabled() {
 			key := mc.GetType()
 			if mc.GetName() != "" {

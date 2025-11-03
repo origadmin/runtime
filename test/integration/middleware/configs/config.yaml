@@ -1,4 +1,4 @@
-middlewares:
+configs:
   - name: metadata
     type: metadata
     enabled: true

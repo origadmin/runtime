@@ -290,7 +290,7 @@ func (m *Servers) validate(all bool) error {
 
 	var errors []error
 
-	for idx, item := range m.GetServers() {
+	for idx, item := range m.GetConfigs() {
 		_, _ = idx, item
 
 		if all {
@@ -298,7 +298,7 @@ func (m *Servers) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, ServersValidationError{
-						field:  fmt.Sprintf("Servers[%v]", idx),
+						field:  fmt.Sprintf("Configs[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -306,7 +306,7 @@ func (m *Servers) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, ServersValidationError{
-						field:  fmt.Sprintf("Servers[%v]", idx),
+						field:  fmt.Sprintf("Configs[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -315,7 +315,7 @@ func (m *Servers) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return ServersValidationError{
-					field:  fmt.Sprintf("Servers[%v]", idx),
+					field:  fmt.Sprintf("Configs[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -400,146 +400,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ServersValidationError{}
-
-// Validate checks the field values on Clients with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Clients) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Clients with the rules defined in the
-// proto definition for this message. If any rules are violated, the result is
-// a list of violation errors wrapped in ClientsMultiError, or nil if none found.
-func (m *Clients) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Clients) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	for idx, item := range m.GetClients() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ClientsValidationError{
-						field:  fmt.Sprintf("Clients[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, ClientsValidationError{
-						field:  fmt.Sprintf("Clients[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return ClientsValidationError{
-					field:  fmt.Sprintf("Clients[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if m.Default != nil {
-		// no validation rules for Default
-	}
-
-	if m.Active != nil {
-		// no validation rules for Active
-	}
-
-	if len(errors) > 0 {
-		return ClientsMultiError(errors)
-	}
-
-	return nil
-}
-
-// ClientsMultiError is an error wrapping multiple validation errors returned
-// by Clients.ValidateAll() if the designated constraints aren't met.
-type ClientsMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ClientsMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ClientsMultiError) AllErrors() []error { return m }
-
-// ClientsValidationError is the validation error returned by Clients.Validate
-// if the designated constraints aren't met.
-type ClientsValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ClientsValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ClientsValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ClientsValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ClientsValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ClientsValidationError) ErrorName() string { return "ClientsValidationError" }
-
-// Error satisfies the builtin error interface
-func (e ClientsValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sClients.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ClientsValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ClientsValidationError{}
 
 // Validate checks the field values on Client with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
@@ -741,3 +601,143 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ClientValidationError{}
+
+// Validate checks the field values on Clients with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Clients) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Clients with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in ClientsMultiError, or nil if none found.
+func (m *Clients) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Clients) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetConfigs() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ClientsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ClientsValidationError{
+						field:  fmt.Sprintf("Configs[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ClientsValidationError{
+					field:  fmt.Sprintf("Configs[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Default != nil {
+		// no validation rules for Default
+	}
+
+	if m.Active != nil {
+		// no validation rules for Active
+	}
+
+	if len(errors) > 0 {
+		return ClientsMultiError(errors)
+	}
+
+	return nil
+}
+
+// ClientsMultiError is an error wrapping multiple validation errors returned
+// by Clients.ValidateAll() if the designated constraints aren't met.
+type ClientsMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ClientsMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ClientsMultiError) AllErrors() []error { return m }
+
+// ClientsValidationError is the validation error returned by Clients.Validate
+// if the designated constraints aren't met.
+type ClientsValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ClientsValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ClientsValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ClientsValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ClientsValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ClientsValidationError) ErrorName() string { return "ClientsValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ClientsValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sClients.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ClientsValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ClientsValidationError{}

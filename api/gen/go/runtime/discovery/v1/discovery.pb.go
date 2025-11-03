@@ -150,7 +150,7 @@ type Discoveries struct {
 	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// active specifies the name of the discovery service to use, overriding the default.
 	Active        *string      `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
-	Discoveries   []*Discovery `protobuf:"bytes,3,rep,name=discoveries,proto3" json:"discoveries,omitempty"`
+	Configs       []*Discovery `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -199,9 +199,9 @@ func (x *Discoveries) GetActive() string {
 	return ""
 }
 
-func (x *Discoveries) GetDiscoveries() []*Discovery {
+func (x *Discoveries) GetConfigs() []*Discovery {
 	if x != nil {
-		return x.Discoveries
+		return x.Configs
 	}
 	return nil
 }
@@ -560,11 +560,11 @@ const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
 	"\b_polarisB\f\n" +
 	"\n" +
-	"_customize\"\xa3\x01\n" +
+	"_customize\"\x9b\x01\n" +
 	"\vDiscoveries\x12\x1d\n" +
 	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x12A\n" +
-	"\vdiscoveries\x18\x03 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\vdiscoveriesB\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x129\n" +
+	"\aconfigs\x18\x03 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
 	"\a_active\"\xcb\x02\n" +
@@ -626,7 +626,7 @@ var file_runtime_discovery_v1_discovery_proto_depIdxs = []int32{
 	6, // 4: runtime.discovery.v1.Discovery.kubernetes:type_name -> runtime.discovery.v1.Kubernetes
 	7, // 5: runtime.discovery.v1.Discovery.polaris:type_name -> runtime.discovery.v1.Polaris
 	8, // 6: runtime.discovery.v1.Discovery.customize:type_name -> google.protobuf.Struct
-	0, // 7: runtime.discovery.v1.Discoveries.discoveries:type_name -> runtime.discovery.v1.Discovery
+	0, // 7: runtime.discovery.v1.Discoveries.configs:type_name -> runtime.discovery.v1.Discovery
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name

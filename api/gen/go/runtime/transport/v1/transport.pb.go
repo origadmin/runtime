@@ -127,7 +127,7 @@ type Servers struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// servers is a list of all available server configurations.
 	// Each server in this list will typically be started by the application.
-	Servers       []*Server `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
+	Configs       []*Server `protobuf:"bytes,1,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -162,77 +162,9 @@ func (*Servers) Descriptor() ([]byte, []int) {
 	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Servers) GetServers() []*Server {
+func (x *Servers) GetConfigs() []*Server {
 	if x != nil {
-		return x.Servers
-	}
-	return nil
-}
-
-// Clients defines a collection of client configurations for services that this service depends on.
-// This structure follows the "Broker Pattern" to avoid using maps, providing a clear
-// and explicit way to manage multiple named client instances.
-type Clients struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// default is the name of the default client configuration to use from the `clients` list.
-	// If not set, the application can use a predefined default or infer one.
-	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
-	// active is the name of the active client configuration to use from the `clients` list.
-	// If set, it overrides the `default` selection.
-	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
-	// clients is a list of all available client configurations.
-	Clients       []*Client `protobuf:"bytes,3,rep,name=clients,proto3" json:"clients,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Clients) Reset() {
-	*x = Clients{}
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Clients) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Clients) ProtoMessage() {}
-
-func (x *Clients) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Clients.ProtoReflect.Descriptor instead.
-func (*Clients) Descriptor() ([]byte, []int) {
-	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *Clients) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
-func (x *Clients) GetActive() string {
-	if x != nil && x.Active != nil {
-		return *x.Active
-	}
-	return ""
-}
-
-func (x *Clients) GetClients() []*Client {
-	if x != nil {
-		return x.Clients
+		return x.Configs
 	}
 	return nil
 }
@@ -258,7 +190,7 @@ type Client struct {
 
 func (x *Client) Reset() {
 	*x = Client{}
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -270,7 +202,7 @@ func (x *Client) String() string {
 func (*Client) ProtoMessage() {}
 
 func (x *Client) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -283,7 +215,7 @@ func (x *Client) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Client.ProtoReflect.Descriptor instead.
 func (*Client) Descriptor() ([]byte, []int) {
-	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{3}
+	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Client) GetName() string {
@@ -321,6 +253,74 @@ func (x *Client) GetCustomize() *structpb.Struct {
 	return nil
 }
 
+// Clients defines a collection of client configurations for services that this service depends on.
+// This structure follows the "Broker Pattern" to avoid using maps, providing a clear
+// and explicit way to manage multiple named client instances.
+type Clients struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// default is the name of the default client configuration to use from the `clients` list.
+	// If not set, the application can use a predefined default or infer one.
+	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
+	// active is the name of the active client configuration to use from the `clients` list.
+	// If set, it overrides the `default` selection.
+	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// clients is a list of all available client configurations.
+	Configs       []*Client `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Clients) Reset() {
+	*x = Clients{}
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Clients) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Clients) ProtoMessage() {}
+
+func (x *Clients) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_transport_v1_transport_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Clients.ProtoReflect.Descriptor instead.
+func (*Clients) Descriptor() ([]byte, []int) {
+	return file_runtime_transport_v1_transport_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Clients) GetDefault() string {
+	if x != nil && x.Default != nil {
+		return *x.Default
+	}
+	return ""
+}
+
+func (x *Clients) GetActive() string {
+	if x != nil && x.Active != nil {
+		return *x.Active
+	}
+	return ""
+}
+
+func (x *Clients) GetConfigs() []*Client {
+	if x != nil {
+		return x.Configs
+	}
+	return nil
+}
+
 var File_runtime_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_runtime_transport_v1_transport_proto_rawDesc = "" +
@@ -340,14 +340,7 @@ const file_runtime_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
 	"_customize\"A\n" +
 	"\aServers\x126\n" +
-	"\aservers\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aservers\"\x94\x01\n" +
-	"\aClients\x12\x1d\n" +
-	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x126\n" +
-	"\aclients\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aclientsB\n" +
-	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_active\"\x8c\x02\n" +
+	"\aconfigs\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aconfigs\"\x8c\x02\n" +
 	"\x06Client\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12:\n" +
@@ -357,7 +350,14 @@ const file_runtime_transport_v1_transport_proto_rawDesc = "" +
 	"\x05_grpcB\a\n" +
 	"\x05_httpB\f\n" +
 	"\n" +
-	"_customizeB\xe6\x01\n" +
+	"_customize\"\x94\x01\n" +
+	"\aClients\x12\x1d\n" +
+	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
+	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x126\n" +
+	"\aconfigs\x18\x03 \x03(\v2\x1c.runtime.transport.v1.ClientR\aconfigsB\n" +
+	"\n" +
+	"\b_defaultB\t\n" +
+	"\a_activeB\xe6\x01\n" +
 	"\x18com.runtime.transport.v1B\x0eTransportProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/transport/v1;transportv1\xa2\x02\x03RTX\xaa\x02\x14Runtime.Transport.V1\xca\x02\x14Runtime\\Transport\\V1\xe2\x02 Runtime\\Transport\\V1\\GPBMetadata\xea\x02\x16Runtime::Transport::V1b\x06proto3"
 
 var (
@@ -376,8 +376,8 @@ var file_runtime_transport_v1_transport_proto_msgTypes = make([]protoimpl.Messag
 var file_runtime_transport_v1_transport_proto_goTypes = []any{
 	(*Server)(nil),          // 0: runtime.transport.v1.Server
 	(*Servers)(nil),         // 1: runtime.transport.v1.Servers
-	(*Clients)(nil),         // 2: runtime.transport.v1.Clients
-	(*Client)(nil),          // 3: runtime.transport.v1.Client
+	(*Client)(nil),          // 2: runtime.transport.v1.Client
+	(*Clients)(nil),         // 3: runtime.transport.v1.Clients
 	(*v1.Server)(nil),       // 4: runtime.transport.grpc.v1.Server
 	(*v11.Server)(nil),      // 5: runtime.transport.http.v1.Server
 	(*v12.Server)(nil),      // 6: runtime.transport.websocket.v1.Server
@@ -390,11 +390,11 @@ var file_runtime_transport_v1_transport_proto_depIdxs = []int32{
 	5, // 1: runtime.transport.v1.Server.http:type_name -> runtime.transport.http.v1.Server
 	6, // 2: runtime.transport.v1.Server.websocket:type_name -> runtime.transport.websocket.v1.Server
 	7, // 3: runtime.transport.v1.Server.customize:type_name -> google.protobuf.Struct
-	0, // 4: runtime.transport.v1.Servers.servers:type_name -> runtime.transport.v1.Server
-	3, // 5: runtime.transport.v1.Clients.clients:type_name -> runtime.transport.v1.Client
-	8, // 6: runtime.transport.v1.Client.grpc:type_name -> runtime.transport.grpc.v1.Client
-	9, // 7: runtime.transport.v1.Client.http:type_name -> runtime.transport.http.v1.Client
-	7, // 8: runtime.transport.v1.Client.customize:type_name -> google.protobuf.Struct
+	0, // 4: runtime.transport.v1.Servers.configs:type_name -> runtime.transport.v1.Server
+	8, // 5: runtime.transport.v1.Client.grpc:type_name -> runtime.transport.grpc.v1.Client
+	9, // 6: runtime.transport.v1.Client.http:type_name -> runtime.transport.http.v1.Client
+	7, // 7: runtime.transport.v1.Client.customize:type_name -> google.protobuf.Struct
+	2, // 8: runtime.transport.v1.Clients.configs:type_name -> runtime.transport.v1.Client
 	9, // [9:9] is the sub-list for method output_type
 	9, // [9:9] is the sub-list for method input_type
 	9, // [9:9] is the sub-list for extension type_name

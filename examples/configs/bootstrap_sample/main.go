@@ -62,7 +62,7 @@ func main() {
 	// Print some information from the configuration to demonstrate successful loading
 
 	logger.Infof("Logger Level: %s, Format: %s", bc.GetLogger().GetLevel(), bc.GetLogger().GetFormat())
-	for _, srv := range bc.GetServers().GetServers() {
+	for _, srv := range bc.GetServers().GetConfigs() {
 		switch srv.GetProtocol() {
 		case "http":
 			logger.Infof("HTTP Server Addr: %s, Timeout: %s", srv.GetHttp().GetAddr(), srv.GetHttp().GetTimeout().AsDuration())
@@ -91,12 +91,13 @@ func main() {
 	// 	logger.Infof("Security Authenticator Type: %s", bc.GetSecurity().GetAuthenticators()[0].GetType())
 	// }
 
-	if bc.GetDiscoveries() != nil && len(bc.GetDiscoveries().GetDiscoveries()) > 0 {
-		logger.Infof("Discovery Type: %s, Address: %s", bc.GetDiscoveries().GetDiscoveries()[0].GetType(), bc.GetDiscoveries().GetDiscoveries()[0].GetConsul().GetAddress())
+	if bc.GetDiscoveries() != nil && len(bc.GetDiscoveries().GetConfigs()) > 0 {
+		logger.Infof("Discovery Type: %s, Address: %s", bc.GetDiscoveries().GetConfigs()[0].GetType(),
+			bc.GetDiscoveries().GetConfigs()[0].GetConsul().GetAddress())
 	}
 
-	if bc.GetMiddlewares() != nil && len(bc.GetMiddlewares().GetMiddlewares()) > 0 {
-		logger.Infof("Middlewares configured: %d", len(bc.GetMiddlewares().GetMiddlewares()))
+	if bc.GetMiddlewares() != nil && len(bc.GetMiddlewares().GetConfigs()) > 0 {
+		logger.Infof("Middlewares configured: %d", len(bc.GetMiddlewares().GetConfigs()))
 	}
 
 	if bc.GetBrokers() != nil && bc.GetBrokers().GetBrokers() != nil {

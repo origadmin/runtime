@@ -61,7 +61,7 @@ func (b *middlewareBuilder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares
 	helper.Info("building client middlewares")
 
 	// First pass: separate regular middlewares and selector configs
-	for _, ms := range cfg.GetMiddlewares() {
+	for _, ms := range cfg.GetConfigs() {
 		if !ms.GetEnabled() {
 			continue
 		}
@@ -153,7 +153,7 @@ func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares
 	helper.Info("building server middlewares")
 
 	// First pass: separate regular middlewares and selector configs
-	for _, ms := range cfg.GetMiddlewares() {
+	for _, ms := range cfg.GetConfigs() {
 		if !ms.GetEnabled() {
 			continue
 		}

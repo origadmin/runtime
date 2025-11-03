@@ -67,7 +67,7 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 	var sources []kratosconfig.Source
 
 	// Get the list of sources from the protobuf config.
-	sourceConfigs := srcs.GetSources()
+	sourceConfigs := srcs.GetConfigs()
 
 	// --- START: Assign Default Priorities if not set ---
 	for _, src := range sourceConfigs {

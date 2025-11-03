@@ -86,10 +86,10 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 	t.Run("VerifyConfig", func(t *testing.T) {
 		// Check the number of middlewares in the configuration
-		assert.GreaterOrEqual(t, len(configs.Middlewares), 2, "Should have at least 2 middlewares in config")
+		assert.GreaterOrEqual(t, len(configs.Configs), 2, "Should have at least 2 middlewares in config")
 
 		// Check configuration of each middleware
-		for _, mw := range configs.Middlewares {
+		for _, mw := range configs.Configs {
 			t.Run(mw.Name, func(t *testing.T) {
 				// Verify required fields
 				assert.NotEmpty(t, mw.Name, "Middleware name should not be empty")
@@ -112,7 +112,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 		// Calculate the actual number of supported client middlewares (excluding unsupported middleware types)
 		expectedCount := 0
-		for _, mw := range configs.Middlewares {
+		for _, mw := range configs.Configs {
 			if mw.Enabled && mw.Type != "rate_limiter" { // rate_limiter 在客户端不受支持
 				expectedCount++
 			}
@@ -128,7 +128,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 		// Calculate the actual number of supported server middlewares (excluding unsupported middleware types)
 		expectedCount := 0
-		for _, mw := range configs.Middlewares {
+		for _, mw := range configs.Configs {
 			if mw.Enabled && mw.Type != "circuit_breaker" { // circuit_breaker 在服务端不受支持
 				expectedCount++
 			}
@@ -141,7 +141,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 	t.Run("MiddlewareNaming", func(t *testing.T) {
 		// Create a custom middleware configuration
 		customConfig := &middlewarev1.Middlewares{
-			Middlewares: []*middlewarev1.Middleware{
+			Configs: []*middlewarev1.Middleware{
 				{
 					Name:    "custom-name",
 					Type:    "logging",
@@ -169,10 +169,10 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 	// Verify middlewares in the configuration
 	t.Run("VerifyConfig", func(t *testing.T) {
 		// Check the number of middlewares in the configuration
-		assert.GreaterOrEqual(t, len(configs.Middlewares), 2, "Should have at least 2 middlewares in config")
+		assert.GreaterOrEqual(t, len(configs.Configs), 2, "Should have at least 2 middlewares in config")
 
 		// Check configuration of each middleware
-		for _, mw := range configs.Middlewares {
+		for _, mw := range configs.Configs {
 			t.Run(mw.Name, func(t *testing.T) {
 				// Verify required fields
 				assert.NotEmpty(t, mw.Name, "Middleware name should not be empty")
@@ -197,7 +197,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		// Calculate the actual number of supported client middlewares (excluding unsupported middleware types)
 		expectedCount := 0
 		var expectedOrder []string
-		for _, mw := range configs.Middlewares {
+		for _, mw := range configs.Configs {
 			if mw.Enabled && mw.Type != "rate_limiter" { // rate_limiter 在客户端不受支持
 				expectedOrder = append(expectedOrder, mw.Name)
 				expectedCount++
@@ -231,7 +231,7 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		// Calculate the actual number of supported server middlewares (excluding unsupported middleware types)
 		expectedCount := 0
 		var expectedOrder []string
-		for _, mw := range configs.Middlewares {
+		for _, mw := range configs.Configs {
 			if mw.Enabled && mw.Type != "circuit_breaker" { // circuit_breaker 在服务端不受支持
 				expectedOrder = append(expectedOrder, mw.Name)
 				expectedCount++
@@ -270,7 +270,7 @@ func TestSelectorMiddleware(t *testing.T) {
 		{
 			name: "selector_with_includes",
 			config: &middlewarev1.Middlewares{
-				Middlewares: []*middlewarev1.Middleware{
+				Configs: []*middlewarev1.Middleware{
 					{
 						Name:    "metadata",
 						Type:    "metadata",
@@ -297,7 +297,7 @@ func TestSelectorMiddleware(t *testing.T) {
 		{
 			name: "selector_with_excludes",
 			config: &middlewarev1.Middlewares{
-				Middlewares: []*middlewarev1.Middleware{
+				Configs: []*middlewarev1.Middleware{
 					{
 						Name:    "metadata",
 						Type:    "metadata",
@@ -442,7 +442,7 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 
 	t.Run("DisabledMiddleware", func(t *testing.T) {
 		disabledConfig := &middlewarev1.Middlewares{
-			Middlewares: []*middlewarev1.Middleware{
+			Configs: []*middlewarev1.Middleware{
 				{
 					Name:    "disabled-mw",
 					Type:    "logging",
@@ -462,7 +462,7 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 
 	t.Run("UnknownMiddlewareType", func(t *testing.T) {
 		unknownConfig := &middlewarev1.Middlewares{
-			Middlewares: []*middlewarev1.Middleware{
+			Configs: []*middlewarev1.Middleware{
 				{
 					Name:    "unknown-mw",
 					Type:    "nonexistent",

@@ -27,7 +27,7 @@ message Sources {
   // version specifies the configuration set version
   string version = 2 [json_name = "version"];
   // sources is a list of configuration sources
-  repeated SourceConfig sources = 3 [json_name = "sources"];
+  repeated SourceConfig configs = 3 [json_name = "configs"];
 }
 
 // SourceConfig is the source file for load configuration

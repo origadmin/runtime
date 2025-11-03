@@ -31,7 +31,7 @@ type Sources struct {
 	// version specifies the configuration set version
 	Version string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
 	// sources is a list of configuration sources
-	Sources       []*SourceConfig `protobuf:"bytes,3,rep,name=sources,proto3" json:"sources,omitempty"`
+	Configs       []*SourceConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -80,9 +80,9 @@ func (x *Sources) GetVersion() string {
 	return ""
 }
 
-func (x *Sources) GetSources() []*SourceConfig {
+func (x *Sources) GetConfigs() []*SourceConfig {
 	if x != nil {
-		return x.Sources
+		return x.Configs
 	}
 	return nil
 }
@@ -243,7 +243,7 @@ const file_runtime_source_v1_source_proto_rawDesc = "" +
 	"\aSources\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x129\n" +
-	"\asources\x18\x03 \x03(\v2\x1f.runtime.source.v1.SourceConfigR\asources\"\xc1\x06\n" +
+	"\aconfigs\x18\x03 \x03(\v2\x1f.runtime.source.v1.SourceConfigR\aconfigs\"\xc1\x06\n" +
 	"\fSourceConfig\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12a\n" +
 	"\x04type\x18\x02 \x01(\tBM\xfaBJrHR\x03envR\x04fileR\x04etcdR\x06consulR\x06apolloR\x05nacosR\n" +
@@ -302,7 +302,7 @@ var file_runtime_source_v1_source_proto_goTypes = []any{
 	(*structpb.Struct)(nil),  // 10: google.protobuf.Struct
 }
 var file_runtime_source_v1_source_proto_depIdxs = []int32{
-	1,  // 0: runtime.source.v1.Sources.sources:type_name -> runtime.source.v1.SourceConfig
+	1,  // 0: runtime.source.v1.Sources.configs:type_name -> runtime.source.v1.SourceConfig
 	2,  // 1: runtime.source.v1.SourceConfig.env:type_name -> runtime.source.v1.EnvSource
 	3,  // 2: runtime.source.v1.SourceConfig.file:type_name -> runtime.source.v1.FileSource
 	4,  // 3: runtime.source.v1.SourceConfig.etcd:type_name -> runtime.source.v1.ETCDSource

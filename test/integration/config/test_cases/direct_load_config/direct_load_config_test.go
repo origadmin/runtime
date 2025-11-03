@@ -44,14 +44,11 @@ func (s *DirectLoadConfigTestSuite) TestDirectConfigLoading() {
 		name     string
 		filePath string
 	}{
-		{name: "YAML", filePath: "config/test_cases/direct_load_config/config.yaml"},
+		{name: "YAML", filePath: "config.yaml"},
 	}
 
 	for _, tc := range testCases {
 		s.T().Run(tc.name, func(t *testing.T) {
-			cleanup := helper.SetupIntegrationTest(t)
-			defer cleanup()
-
 			// If the config file does not exist, create it from a default TestConfig struct.
 			// This ensures the test has a valid config and provides a "live" template for developers.
 			if _, err := os.Stat(tc.filePath); os.IsNotExist(err) {

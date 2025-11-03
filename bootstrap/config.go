@@ -79,7 +79,7 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 		}
 
 		// Create the base config from the collected and resolved sources.
-		baseConfig, err = runtimeconfig.NewConfig(&sourcev1.Sources{Sources: sources}, providerOpts.rawOptions...)
+		baseConfig, err = runtimeconfig.NewConfig(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create base config: %w", err)
 		}

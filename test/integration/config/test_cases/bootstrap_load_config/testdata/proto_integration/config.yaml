@@ -6,7 +6,7 @@ app:
 registration_discovery_name: "test-discovery"
 
 servers:
-  servers:
+  configs:
     - name: "grpc_servers"
       grpc:
         addr: ":9000"

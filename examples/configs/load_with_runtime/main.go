@@ -33,7 +33,7 @@ func (d *ProtoConfig) DecodeDefaultDiscovery() (string, error) {
 func (d *ProtoConfig) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
 	var dis discoveryv1.Discoveries
 	if d.bootstrap.GetDiscoveries() != nil {
-		dis.Discoveries = maps.ToSliceWith(d.bootstrap.GetDiscoveries(), func(k string,
+		dis.Configs = maps.ToSliceWith(d.bootstrap.GetDiscoveries(), func(k string,
 			v *discoveryv1.Discovery) (*discoveryv1.Discovery, bool) {
 			v.Name = k
 			return v, true
@@ -45,7 +45,7 @@ func (d *ProtoConfig) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
 func (d *ProtoConfig) DecodeServers() (*transportv1.Servers, error) {
 	var serv transportv1.Servers
 	if d.bootstrap.GetServers() != nil {
-		serv.Servers = d.bootstrap.GetServers()
+		serv.Configs = d.bootstrap.GetServers()
 	}
 	return &serv, nil
 }
@@ -55,7 +55,7 @@ func (d *ProtoConfig) DecodeClients() (*transportv1.Clients, error) {
 	if d.bootstrap.GetEndpoints() != nil {
 		endpoints := d.bootstrap.GetEndpoints()
 		for _, end := range endpoints {
-			cli.Clients = append(cli.Clients, end.Client)
+			cli.Configs = append(cli.Configs, end.Client)
 		}
 	}
 	return &cli, nil

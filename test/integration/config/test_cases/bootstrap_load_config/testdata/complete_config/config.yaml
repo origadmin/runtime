@@ -8,7 +8,7 @@ app:
     key2: "value2"
 
 servers:
-  servers:
+  configs:
     - name: "grpc_servers"
       grpc:
         addr: ":9000"
@@ -38,7 +38,7 @@ trace:
   endpoint: "http://jaeger:14268/api/traces"
 
 middlewares:
-  middlewares:
+  configs:
     - cors:
         allowed_methods: [ "GET", "POST" ]
         allowed_origins: [ "*" ]

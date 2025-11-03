@@ -48,27 +48,12 @@ message Server {
 message Servers {
   // servers is a list of all available server configurations.
   // Each server in this list will typically be started by the application.
-  repeated Server servers = 1 [json_name = "servers"];
+  repeated Server configs = 1 [json_name = "configs"];
 }
 
 // =================================================================
 //  Client Definitions
 // =================================================================
-
-// Clients defines a collection of client configurations for services that this service depends on.
-// This structure follows the "Broker Pattern" to avoid using maps, providing a clear
-// and explicit way to manage multiple named client instances.
-message Clients {
-  // default is the name of the default client configuration to use from the `clients` list.
-  // If not set, the application can use a predefined default or infer one.
-  optional string default = 1 [json_name = "default"];
-  // active is the name of the active client configuration to use from the `clients` list.
-  // If set, it overrides the `default` selection.
-  optional string active = 2 [json_name = "active"];
-
-  // clients is a list of all available client configurations.
-  repeated Client clients = 3 [json_name = "clients"];
-}
 
 // Client is a generic container for a single client-side transport configuration.
 message Client {
@@ -91,4 +76,19 @@ message Client {
 
   // customize is used for non-standard or user-defined transport protocols.
   optional google.protobuf.Struct customize = 100 [json_name = "customize"];
+}
+
+// Clients defines a collection of client configurations for services that this service depends on.
+// This structure follows the "Broker Pattern" to avoid using maps, providing a clear
+// and explicit way to manage multiple named client instances.
+message Clients {
+  // default is the name of the default client configuration to use from the `clients` list.
+  // If not set, the application can use a predefined default or infer one.
+  optional string default = 1 [json_name = "default"];
+  // active is the name of the active client configuration to use from the `clients` list.
+  // If set, it overrides the `default` selection.
+  optional string active = 2 [json_name = "active"];
+
+  // clients is a list of all available client configurations.
+  repeated Client configs = 3 [json_name = "configs"];
 }

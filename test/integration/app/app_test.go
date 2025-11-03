@@ -59,10 +59,10 @@ func TestAppBootstrap(t *testing.T) {
 	// 3. Proof: "different clients need different Middleware" issue has been resolved
 	// We can iterate through the client list, where each client has its own dedicated middleware chain
 	fmt.Println("--- Processing Clients with Specific Middlewares ---")
-	if len(bootstrap.GetClients().GetClients()) != 2 {
-		t.Errorf("Expected 2 clients, got %d", len(bootstrap.GetClients().GetClients()))
+	if len(bootstrap.GetClients().GetConfigs()) != 2 {
+		t.Errorf("Expected 2 clients, got %d", len(bootstrap.GetClients().GetConfigs()))
 	}
-	for _, cli := range bootstrap.GetClients().GetClients() {
+	for _, cli := range bootstrap.GetClients().GetConfigs() {
 		// Note: Client configuration is now nested under specific protocols (grpc, http)
 		// We need to check the protocol and then access the specific client config.
 		target := cli.GetProtocol()
@@ -101,10 +101,10 @@ func TestAppBootstrap(t *testing.T) {
 
 	// 4. Proof: Top-level middlewares are loaded correctly
 	fmt.Println("--- Processing Top-level Middlewares ---")
-	if bootstrap.Middlewares == nil || len(bootstrap.Middlewares.GetMiddlewares()) != 2 {
-		t.Errorf("Expected 2 top-level middlewares, got %d", len(bootstrap.Middlewares.GetMiddlewares()))
+	if bootstrap.Middlewares == nil || len(bootstrap.Middlewares.GetConfigs()) != 2 {
+		t.Errorf("Expected 2 top-level middlewares, got %d", len(bootstrap.Middlewares.GetConfigs()))
 	}
-	for i, mw := range bootstrap.Middlewares.GetMiddlewares() {
+	for i, mw := range bootstrap.Middlewares.GetConfigs() {
 		fmt.Printf("Top-level Middleware %d: Name='%s', Type='%s', Enabled=%t\n", i+1, mw.GetName(), mw.GetType(), mw.GetEnabled())
 	}
 	fmt.Println("--- Top-level Middleware Processing Complete ---")

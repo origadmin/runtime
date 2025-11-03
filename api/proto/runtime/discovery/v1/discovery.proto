@@ -54,9 +54,7 @@ message Discoveries {
   // active specifies the name of the discovery service to use, overriding the default.
   optional string active = 2 [json_name = "active"];
 
-  repeated Discovery discoveries = 3 [json_name = "discoveries"];
-
-
+  repeated Discovery configs = 3 [json_name = "configs"];
 }
 
 // --- Message Definitions for Each Provider ---

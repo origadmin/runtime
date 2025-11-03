@@ -77,5 +77,5 @@ message Middleware {
 // Middlewares is used to configure a chain of middlewares for an entry point.
 message Middlewares {
   // A list of middleware configurations to be applied in order.
-  repeated Middleware middlewares = 1 [json_name = "middlewares"];
+  repeated Middleware configs = 1 [json_name = "configs"];
 }

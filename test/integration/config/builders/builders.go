@@ -30,7 +30,7 @@ func NewDefaultApp() *appv1.App {
 
 func NewDefaultServers() *transportv1.Servers {
 	return &transportv1.Servers{
-		Servers: []*transportv1.Server{
+		Configs: []*transportv1.Server{
 			{
 				Name:     "grpc_server",
 				Protocol: "grpc",
@@ -75,7 +75,7 @@ func NewDefaultLogger() *loggerv1.Logger {
 
 func NewDefaultDiscoveries() *discoveryv1.Discoveries {
 	return &discoveryv1.Discoveries{
-		Discoveries: []*discoveryv1.Discovery{
+		Configs: []*discoveryv1.Discovery{
 			{
 				Name: "internal-consul",
 				Type: "consul",
@@ -102,7 +102,7 @@ func NewDefaultTrace() *tracev1.Trace {
 
 func NewDefaultMiddlewares() *middlewarev1.Middlewares {
 	return &middlewarev1.Middlewares{
-		Middlewares: []*middlewarev1.Middleware{
+		Configs: []*middlewarev1.Middleware{
 			{
 				Name:    "cors-middleware",
 				Type:    "cors",
