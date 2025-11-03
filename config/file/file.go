@@ -159,9 +159,8 @@ func defaultFormatter(key string, value []byte) (*kratosconfig.KeyValue, error) 
 func NewFileSource(cfg *sourcev1.SourceConfig, opts ...options.Option) (kratosconfig.Source, error) {
 	fileSrc := cfg.GetFile()
 	if fileSrc == nil {
-		// This can happen if the source type is "file" but the `file` oneof is not set.
-		// Returning nil, nil is a safe default, allowing other sources to proceed.
-		return nil, nil
+		// If the source type is "file", the `file` field must be set in the configuration.
+		return nil, fmt.Errorf("invalid file source config: the 'file' field is missing for a source of type 'file'")
 	}
 	optional := fileSrc.GetOptional()
 	if optional {

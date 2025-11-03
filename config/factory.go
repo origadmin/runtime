@@ -93,6 +93,10 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 		if err != nil {
 			return nil, err
 		}
+		// Defensively check if the factory returned a nil source, which would cause a panic later.
+		if source == nil {
+			return nil, fmt.Errorf("config source factory for type '%s' returned a nil source", src.Type)
+		}
 		logger.Infof("Created source: %s with priority: %d", src.Type, src.Priority)
 		sources = append(sources, source)
 	}
