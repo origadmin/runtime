@@ -1,8 +1,5 @@
 name: Test and Release
 
-# This workflow runs on every push to the main branch.
-# It always runs tests. A release is only triggered if the commit message
-# contains the string "[release]".
 on:
   push:
     branches:
@@ -19,6 +16,7 @@ env:
 
 jobs:
   lint:
+    if: "!contains(github.event.head_commit.message, 'chore(main)')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -30,6 +28,7 @@ jobs:
           go-version: '^1.23.0'
 
   test:
+    if: "!contains(github.event.head_commit.message, 'chore(main)')"
     runs-on: ubuntu-latest
     permissions:
       contents: read # 明确赋予读取权限
@@ -83,8 +82,7 @@ jobs:
         run: make test
 
   release:
-    # The release job depends on the test job succeeding.
-    needs: [ test ]
+    needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -103,7 +101,9 @@ jobs:
           manifest-file: .github/.release-please-manifest.json # 已更新路径
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # 仅在 release-please 创建了 release 后才运行
       - name: Install Tools and Protoc Plugins via Makefile
+        if: ${{ steps.release.outputs.release_created }}
         run: make init
 
       - name: Push to Buf Schema Registry
