@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.9](https://github.com/origadmin/runtime/compare/v0.2.8...v0.2.9) (2025-11-03)
+
+
+### Features
+
+* **runtime:** Remove storage system design document as it's outdated ([80d8721](https://github.com/origadmin/runtime/commit/80d8721fe58da4b67f0bccd6e0be3418ab1beeb9))
+
 ## [0.2.8](https://github.com/origadmin/runtime/compare/v0.2.7...v0.2.8) (2025-11-03)
 
 
