@@ -75,7 +75,7 @@ To incorporate the Toolkit into your project, follow these steps:
 
 ```bash
 
-go get github.com/origadmin/toolkit/runtime@vX.Y.Z
+go get github.com/origadmin/runtime@vX.Y.Z
 
 ```
 
@@ -85,9 +85,9 @@ Replace `vX.Y.Z` with the desired version or `latest` to fetch the most recent r
 
 ```go
 import (
-"github.com/origadmin/toolkit/runtime"
-"github.com/origadmin/toolkit/runtime/config"
-"github.com/origadmin/toolkit/runtime/registry"
+"github.com/origadmin/runtime"
+"github.com/origadmin/runtime/config"
+"github.com/origadmin/runtime/registry"
 )
 
 // NewDiscovery creates a new discovery.
