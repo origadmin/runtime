@@ -19,7 +19,7 @@ func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debug("[Middleware] Rate limit server middleware enabled")
+	helper.Debug("[Middleware] Recovery client middleware enabled")
 
 	//recoveryConfig := cfg.GetRecovery()
 	//if recoveryConfig == nil {
