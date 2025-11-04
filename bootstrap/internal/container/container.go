@@ -9,9 +9,11 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 
+	"github.com/origadmin/runtime/data/storage"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces" // Ensure this is imported for interfaces.AppInfo and ComponentFactoryRegistry
 	"github.com/origadmin/runtime/interfaces/options"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	runtimelog "github.com/origadmin/runtime/log"
 	runtimeMiddleware "github.com/origadmin/runtime/middleware" // Import runtime/middleware package, but only for internal use.
 	runtimeRegistry "github.com/origadmin/runtime/registry"
@@ -24,8 +26,13 @@ type container struct {
 	registrars           map[string]registry.Registrar
 	defaultRegistrar     registry.Registrar
 	components           map[string]interface{}
-	serverMiddlewaresMap map[string]middleware.Middleware // Corrected type
-	clientMiddlewaresMap map[string]middleware.Middleware // Corrected type
+	serverMiddlewaresMap map[string]middleware.Middleware
+	clientMiddlewaresMap map[string]middleware.Middleware
+	storageProvider      storageiface.Provider
+}
+
+func (c *container) StorageProvider() storageiface.Provider {
+	return c.storageProvider
 }
 
 // Statically assert that componentProviderImpl implements the interface.
@@ -211,6 +218,17 @@ func (b *Builder) initLogger() error {
 	return nil
 }
 
+func (b *Builder) buildStorageProvider() error {
+	// 6. Create the storage provider instance. NewStorageProvider handles the nil config gracefully.
+	storageProvider, err := storage.New(b.config)
+	if err != nil {
+		return fmt.Errorf("failed to create storage provider: %w", err)
+	}
+	// 7. Set the storage provider for the container.
+	b.container.storageProvider = storageProvider
+	return nil
+}
+
 // initRegistries handles the initialization of the service discovery and registration components.
 func (b *Builder) initRegistries(opts ...options.Option) error {
 	helper := log.NewHelper(b.Logger()) // Use log.Helper
@@ -268,7 +286,6 @@ func (b *Builder) initMiddlewares(opts ...options.Option) error {
 	helper := log.NewHelper(b.Logger()) // Use log.Helper
 
 	middlewares, err := b.config.DecodeMiddlewares()
-
 	if err != nil {
 		return fmt.Errorf("failed to decode middlewares: %w", err)
 	}

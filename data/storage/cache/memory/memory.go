@@ -29,9 +29,9 @@ type Cache struct {
 func NewCache(config *cachev1.MemoryConfig) *Cache {
 	cache := &Cache{
 		items:           make(map[string]CacheItem),
-		size:            int(config.Size),
-		defaultExpiry:   time.Duration(config.Expiration) * time.Millisecond,
-		cleanupInterval: time.Duration(config.CleanupInterval) * time.Millisecond,
+		size:            int(config.GetSize()),
+		defaultExpiry:   time.Duration(config.GetExpiration()) * time.Millisecond,
+		cleanupInterval: time.Duration(config.GetCleanupInterval()) * time.Millisecond,
 		stopCleanup:     make(chan struct{}),
 	}
 

@@ -11,6 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 
+	"github.com/origadmin/runtime/bootstrap/internal/container"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/storage"
 
@@ -101,45 +102,19 @@ func (c *containerImpl) Component(name string) (component interface{}, ok bool) 
 }
 
 // buildContainer builds and returns the component container.
-func buildContainer(sc interfaces.StructuredConfig, providerOptions *ProviderOptions) (interfaces.Container, log.Logger, error) {
-	// Initialize logger first, as it's used throughout.
-	logger, err := buildLogger(sc)
+func buildContainer(sc interfaces.StructuredConfig, providerOptions *ProviderOptions) (interfaces.Container,
+	log.Logger, error) {
+	factories := providerOptions.componentFactories
+	// 1. Create the component provider implementation.
+	builder := container.NewBuilder(factories).WithConfig(sc)
+
+	// 2. Initialize core components by consuming the config.
+	c, err := builder.Build(providerOptions.rawOptions...)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to build logger: %w", err)
+		return nil, nil, fmt.Errorf("failed to initialize components: %w", err)
 	}
 
-	// Build Discoveries
-	discoveries, err := buildDiscoveries(sc, logger)
-	if err != nil {
-		return nil, logger, fmt.Errorf("failed to build discoveries: %w", err)
-	}
-
-	// Build Registrars
-	registrars, defaultRegistrar, err := buildRegistrars(sc, logger)
-	if err != nil {
-		return nil, logger, fmt.Errorf("failed to build registrars: %w", err)
-	}
-
-	// Build Middlewares
-	serverMiddlewares, clientMiddlewares, err := buildMiddlewares(sc)
-	if err != nil {
-		return nil, logger, fmt.Errorf("failed to build middlewares: %w", err)
-	}
-
-	// Build Storage Provider
-	storageProvider, err := buildStorageProvider(sc)
-	if err != nil {
-		return nil, logger, fmt.Errorf("failed to build storage provider: %w", err)
-	}
-
-	return &containerImpl{
-		discoveries:       discoveries,
-		registrars:        registrars,
-		defaultRegistrar:  defaultRegistrar,
-		serverMiddlewares: serverMiddlewares,
-		clientMiddlewares: clientMiddlewares,
-		storageProvider:   storageProvider, // Assign storage provider
-	}, logger, nil
+	return c, builder.Logger(), err
 }
 
 // buildStorageProvider builds the storage provider.

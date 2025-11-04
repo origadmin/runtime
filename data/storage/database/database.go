@@ -6,16 +6,15 @@
 package database
 
 import (
+	"cmp"
 	"database/sql"
 	"time"
 
 	databasev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/database/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
+	"github.com/origadmin/runtime/interfaces"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
-
-	_ "github.com/go-sql-driver/mysql" // Import for MySQL driver registration
-	_ "github.com/lib/pq"              // Import for PostgreSQL driver registration
 )
 
 const (
@@ -25,7 +24,17 @@ const (
 
 // databaseImpl implements the storageiface.Database interface.
 type databaseImpl struct {
-	db *sql.DB
+	db      *sql.DB
+	dialect string
+	name    string
+}
+
+func (d *databaseImpl) Name() string {
+	return d.name
+}
+
+func (d *databaseImpl) Dialect() string {
+	return d.dialect
 }
 
 // DB returns the underlying *sql.DB instance.
@@ -82,5 +91,9 @@ func New(cfg *databasev1.DatabaseConfig) (storageiface.Database, error) {
 		db.SetConnMaxIdleTime(time.Duration(cfg.ConnectionMaxIdleTime) * time.Second)
 	}
 
-	return &databaseImpl{db: db}, nil
+	return &databaseImpl{
+		name:    cmp.Or(cfg.GetName(), cfg.GetDialect(), interfaces.GlobalDefaultKey),
+		dialect: cfg.GetDialect(),
+		db:      db,
+	}, nil
 }
