@@ -5,6 +5,8 @@ import (
 	"errors"
 	"sync"
 	"time"
+
+	cachev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/v1"
 )
 
 // CacheItem represents an item stored in the cache.
@@ -24,17 +26,17 @@ type Cache struct {
 }
 
 // NewCache creates a new instance of Cache with the given configuration.
-func NewCache(size int, defaultExpiry, cleanupInterval time.Duration) *Cache {
+func NewCache(config *cachev1.MemoryConfig) *Cache {
 	cache := &Cache{
 		items:           make(map[string]CacheItem),
-		size:            size,
-		defaultExpiry:   defaultExpiry,
-		cleanupInterval: cleanupInterval,
+		size:            int(config.Size),
+		defaultExpiry:   time.Duration(config.Expiration) * time.Millisecond,
+		cleanupInterval: time.Duration(config.CleanupInterval) * time.Millisecond,
 		stopCleanup:     make(chan struct{}),
 	}
 
 	// Start background cleanup goroutine if cleanupInterval is set
-	if cleanupInterval > 0 {
+	if cache.cleanupInterval > 0 {
 		go cache.startCleanup()
 	}
 
