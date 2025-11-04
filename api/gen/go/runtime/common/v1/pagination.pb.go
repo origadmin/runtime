@@ -220,35 +220,35 @@ var File_runtime_common_v1_pagination_proto protoreflect.FileDescriptor
 
 const file_runtime_common_v1_pagination_proto_rawDesc = "" +
 	"\n" +
-	"\"runtime/common/v1/pagination.proto\x12\x11runtime.common.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x19google/protobuf/any.proto\x1a google/protobuf/field_mask.proto\"\x93\x06\n" +
+	"\"runtime/common/v1/pagination.proto\x12\x11runtime.common.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x19google/protobuf/any.proto\x1a google/protobuf/field_mask.proto\"\xfb\a\n" +
 	"\x11PaginationRequest\x12S\n" +
-	"\x04page\x18\x01 \x01(\x05B:\xbaG7\x8a\x02\t\t\x00\x00\x00\x00\x00\x00\xf0?\x92\x02(The page number to retrieve (1-indexed).H\x00R\x04page\x88\x01\x01\x12d\n" +
-	"\tpage_size\x18\x02 \x01(\x05BA\xbaG>\x8a\x02\t\t\x00\x00\x00\x00\x00\x00.@\x92\x02/The maximum number of items to return per page.H\x01R\tpage_size\x88\x01\x01\x122\n" +
+	"\x04page\x18\x01 \x01(\x05B:\xbaG7\x8a\x02\t\t\x00\x00\x00\x00\x00\x00\xf0?\x92\x02(The page number to retrieve (1-indexed).H\x00R\x04page\x88\x01\x01\x12\x9a\x01\n" +
+	"\tpage_size\x18\x02 \x01(\x05Bw\xbaGt\x8a\x02\t\t\x00\x00\x00\x00\x00\x00.@\x92\x02eThe maximum number of items to return per page. The server may enforce a maximum limit to this value.H\x01R\tpage_size\x88\x01\x01\x12\x9d\x01\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tB\x12\xbaG\x0f\x92\x02\fpaging tokenR\n" +
-	"page_token\x126\n" +
+	"page_token\x18\x03 \x01(\tB}\xbaGz\x92\x02wA token identifying a page of results the server should return. This is the `next_page_token` from a previous response.R\n" +
+	"page_token\x12\x80\x01\n" +
 	"\n" +
-	"only_count\x18\x04 \x01(\bB\x16\xbaG\x13\x92\x02\x10query total onlyR\n" +
-	"only_count\x12;\n" +
-	"\tno_paging\x18\x05 \x01(\bB\x18\xbaG\x15\x92\x02\x12whether not pagingH\x02R\tno_paging\x88\x01\x01\x12{\n" +
-	"\border_by\x18\x06 \x01(\tB_\xbaG\\:\b\x12\x06id:asc\x92\x02Osort condition, field name followed by 'asc' (ascending) or 'desc' (descending)R\border_by\x12\xf7\x01\n" +
+	"only_count\x18\x04 \x01(\bB`\xbaG]\x92\x02ZIf true, only the total count of items will be returned, and the items list will be empty.R\n" +
+	"only_count\x12j\n" +
+	"\tno_paging\x18\x05 \x01(\bBG\xbaGD\x92\x02ASet to true to disable pagination and return all available items.H\x02R\tno_paging\x88\x01\x01\x12|\n" +
+	"\border_by\x18\x06 \x01(\tB`\xbaG]:\b\x12\x06id:asc\x92\x02PSort condition, field name followed by 'asc' (ascending) or 'desc' (descending).R\border_by\x12\xc1\x01\n" +
 	"\n" +
-	"field_mask\x18\a \x01(\v2\x1a.google.protobuf.FieldMaskB\xba\x01\xbaG\xb6\x01:\r\x12\vid,name,age\x92\x02\xa3\x01It is used to Update the request message, which is used to perform a partial update to the resource. This mask is related to the resource, not the request message.R\n" +
+	"field_mask\x18\a \x01(\v2\x1a.google.protobuf.FieldMaskB\x84\x01\xbaG\x80\x01:\r\x12\vid,name,age\x92\x02nUsed to specify which fields to return in the response, or which fields to update in a partial update request.R\n" +
 	"field_maskB\a\n" +
 	"\x05_pageB\f\n" +
 	"\n" +
 	"_page_sizeB\f\n" +
 	"\n" +
-	"_no_paging\"\xc8\x04\n" +
+	"_no_paging\"\xae\x05\n" +
 	"\n" +
 	"Pagination\x12>\n" +
 	"\x04page\x18\x01 \x01(\x05B*\xbaG'\x92\x02$The current page number (1-indexed).R\x04page\x12V\n" +
-	"\tpage_size\x18\x02 \x01(\x05B8\xbaG5\x92\x022The number of items retrieved on the current page.R\tpage_size\x12[\n" +
+	"\tpage_size\x18\x02 \x01(\x05B8\xbaG5\x92\x022The number of items retrieved on the current page.R\tpage_size\x12\xa3\x01\n" +
 	"\n" +
-	"total_size\x18\x03 \x01(\x03B;\xbaG8\x92\x025The total number of items available across all pages.R\n" +
+	"total_size\x18\x03 \x01(\x03B\x82\x01\xbaG\x7f\x92\x02|The total number of items available across all pages. This is optional and may be expensive to calculate for large datasets.R\n" +
 	"total_size\x12\x82\x01\n" +
-	"\x0fnext_page_token\x18\x04 \x01(\tBX\xbaGU\x92\x02RToken to retrieve the next page of results, or empty if there are no more results.R\x0fnext_page_token\x12p\n" +
-	"\x05extra\x18\x05 \x03(\v2(.runtime.common.v1.Pagination.ExtraEntryB0\xbaG-\x92\x02*additional information about this responseR\x05extra\x1aN\n" +
+	"\x0fnext_page_token\x18\x04 \x01(\tBX\xbaGU\x92\x02RA token to retrieve the next page of results. If empty, there are no more results.R\x0fnext_page_token\x12\x8c\x01\n" +
+	"\x05extra\x18\x05 \x03(\v2(.runtime.common.v1.Pagination.ExtraEntryBL\xbaGI\x92\x02FAdditional information about this response, stored as key-value pairs.R\x05extra\x1aN\n" +
 	"\n" +
 	"ExtraEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +

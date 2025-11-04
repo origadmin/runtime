@@ -8,6 +8,7 @@ package middlewarev1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "github.com/google/gnostic/openapiv3"
 	v16 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/circuitbreaker/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/cors/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/jwt/v1"
@@ -161,7 +162,7 @@ type Middleware struct {
 	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Type           string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	Enabled        bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	RateLimiter    *v1.RateLimiter        `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"` // <-- 确保这里是正确的
+	RateLimiter    *v1.RateLimiter        `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"`
 	Metrics        *v11.Metrics           `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
 	Validator      *v12.Validator         `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
 	Jwt            *v13.JWT               `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
@@ -354,33 +355,33 @@ var File_runtime_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"&runtime/middleware/v1/middleware.proto\x12\x15runtime.middleware.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a9runtime/middleware/circuitbreaker/v1/circuitbreaker.proto\x1a%runtime/middleware/cors/v1/cors.proto\x1a#runtime/middleware/jwt/v1/jwt.proto\x1a+runtime/middleware/metrics/v1/metrics.proto\x1a1runtime/middleware/ratelimit/v1/ratelimiter.proto\x1a-runtime/middleware/selector/v1/selector.proto\x1a/runtime/middleware/validator/v1/validator.proto\x1a\x17validate/validate.proto\"\x9e\x01\n" +
-	"\bMetadata\x12\x1a\n" +
-	"\bprefixes\x18\x01 \x03(\tR\bprefixes\x12=\n" +
-	"\x04data\x18\x02 \x03(\v2).runtime.middleware.v1.Metadata.DataEntryR\x04data\x1a7\n" +
+	"&runtime/middleware/v1/middleware.proto\x12\x15runtime.middleware.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a9runtime/middleware/circuitbreaker/v1/circuitbreaker.proto\x1a%runtime/middleware/cors/v1/cors.proto\x1a#runtime/middleware/jwt/v1/jwt.proto\x1a+runtime/middleware/metrics/v1/metrics.proto\x1a1runtime/middleware/ratelimit/v1/ratelimiter.proto\x1a-runtime/middleware/selector/v1/selector.proto\x1a/runtime/middleware/validator/v1/validator.proto\x1a\x17validate/validate.proto\"\xec\x01\n" +
+	"\bMetadata\x12D\n" +
+	"\bprefixes\x18\x01 \x03(\tB(\xbaG%\x92\x02\"List of prefixes for the metadata.R\bprefixes\x12a\n" +
+	"\x04data\x18\x02 \x03(\v2).runtime.middleware.v1.Metadata.DataEntryB\"\xbaG\x1f\x92\x02\x1cKey-value pairs of metadata.R\x04data\x1a7\n" +
 	"\tDataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
 	"\aLogging\"\n" +
 	"\n" +
-	"\bRecovery\"\xe1\b\n" +
+	"\bRecovery\"\x83\r\n" +
 	"\n" +
-	"Middleware\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x85\x01\n" +
-	"\x04type\x18\x02 \x01(\tBq\xfaBnrlR\x04noneR\aloggingR\brecoveryR\frate_limiterR\ametricsR\tvalidatorR\x03jwtR\bselectorR\x04corsR\x0fcircuit_breakerR\tcustomizeR\x04type\x12\x18\n" +
-	"\aenabled\x18\x03 \x01(\bR\aenabled\x12U\n" +
-	"\frate_limiter\x18\x04 \x01(\v2,.runtime.middleware.ratelimit.v1.RateLimiterH\x00R\frate_limiter\x88\x01\x01\x12E\n" +
-	"\ametrics\x18\x05 \x01(\v2&.runtime.middleware.metrics.v1.MetricsH\x01R\ametrics\x88\x01\x01\x12M\n" +
-	"\tvalidator\x18\x06 \x01(\v2*.runtime.middleware.validator.v1.ValidatorH\x02R\tvalidator\x88\x01\x01\x125\n" +
-	"\x03jwt\x18\a \x01(\v2\x1e.runtime.middleware.jwt.v1.JWTH\x03R\x03jwt\x88\x01\x01\x12I\n" +
-	"\bselector\x18\b \x01(\v2(.runtime.middleware.selector.v1.SelectorH\x04R\bselector\x88\x01\x01\x129\n" +
-	"\x04cors\x18\t \x01(\v2 .runtime.middleware.cors.v1.CorsH\x05R\x04cors\x88\x01\x01\x12c\n" +
+	"Middleware\x12>\n" +
+	"\x04name\x18\x01 \x01(\tB*\xbaG'\x92\x02$The name of the middleware instance.R\x04name\x12\xa7\x01\n" +
+	"\x04type\x18\x02 \x01(\tB\x92\x01\xfaBnrlR\x04noneR\aloggingR\brecoveryR\frate_limiterR\ametricsR\tvalidatorR\x03jwtR\bselectorR\x04corsR\x0fcircuit_breakerR\tcustomize\xbaG\x1e\x92\x02\x1bThe type of the middleware.R\x04type\x12B\n" +
+	"\aenabled\x18\x03 \x01(\bB(\xbaG%\x92\x02\"Whether the middleware is enabled.R\aenabled\x12x\n" +
+	"\frate_limiter\x18\x04 \x01(\v2,.runtime.middleware.ratelimit.v1.RateLimiterB!\xbaG\x1e\x92\x02\x1bRate limiter configuration.H\x00R\frate_limiter\x88\x01\x01\x12c\n" +
+	"\ametrics\x18\x05 \x01(\v2&.runtime.middleware.metrics.v1.MetricsB\x1c\xbaG\x19\x92\x02\x16Metrics configuration.H\x01R\ametrics\x88\x01\x01\x12m\n" +
+	"\tvalidator\x18\x06 \x01(\v2*.runtime.middleware.validator.v1.ValidatorB\x1e\xbaG\x1b\x92\x02\x18Validator configuration.H\x02R\tvalidator\x88\x01\x01\x12Z\n" +
+	"\x03jwt\x18\a \x01(\v2\x1e.runtime.middleware.jwt.v1.JWTB#\xbaG \x92\x02\x1dJWT middleware configuration.H\x03R\x03jwt\x88\x01\x01\x12s\n" +
+	"\bselector\x18\b \x01(\v2(.runtime.middleware.selector.v1.SelectorB(\xbaG%\x92\x02\"Selector middleware configuration.H\x04R\bselector\x88\x01\x01\x12_\n" +
+	"\x04cors\x18\t \x01(\v2 .runtime.middleware.cors.v1.CorsB$\xbaG!\x92\x02\x1eCORS middleware configuration.H\x05R\x04cors\x88\x01\x01\x12\x89\x01\n" +
 	"\x0fcircuit_breaker\x18\n" +
-	" \x01(\v24.runtime.middleware.circuitbreaker.v1.CircuitBreakerH\x06R\x0fcircuit_breaker\x88\x01\x01\x12=\n" +
-	"\alogging\x18\v \x01(\v2\x1e.runtime.middleware.v1.LoggingH\aR\alogging\x88\x01\x01\x12@\n" +
-	"\brecovery\x18\f \x01(\v2\x1f.runtime.middleware.v1.RecoveryH\bR\brecovery\x88\x01\x01\x12@\n" +
-	"\bmetadata\x18\r \x01(\v2\x1f.runtime.middleware.v1.MetadataH\tR\bmetadata\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\n" +
+	" \x01(\v24.runtime.middleware.circuitbreaker.v1.CircuitBreakerB$\xbaG!\x92\x02\x1eCircuit breaker configuration.H\x06R\x0fcircuit_breaker\x88\x01\x01\x12f\n" +
+	"\alogging\x18\v \x01(\v2\x1e.runtime.middleware.v1.LoggingB'\xbaG$\x92\x02!Logging middleware configuration.H\aR\alogging\x88\x01\x01\x12j\n" +
+	"\brecovery\x18\f \x01(\v2\x1f.runtime.middleware.v1.RecoveryB(\xbaG%\x92\x02\"Recovery middleware configuration.H\bR\brecovery\x88\x01\x01\x12r\n" +
+	"\bmetadata\x18\r \x01(\v2\x1f.runtime.middleware.v1.MetadataB0\xbaG-\x92\x02*Metadata configuration for the middleware.H\tR\bmetadata\x88\x01\x01\x12b\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB&\xbaG#\x92\x02 Custom middleware configuration.H\n" +
 	"R\tcustomize\x88\x01\x01B\x0f\n" +
 	"\r_rate_limiterB\n" +
 	"\n" +
@@ -396,9 +397,9 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\t_recoveryB\v\n" +
 	"\t_metadataB\f\n" +
 	"\n" +
-	"_customize\"J\n" +
-	"\vMiddlewares\x12;\n" +
-	"\aconfigs\x18\x01 \x03(\v2!.runtime.middleware.v1.MiddlewareR\aconfigsB\xf1\x01\n" +
+	"_customize\"\x8d\x01\n" +
+	"\vMiddlewares\x12~\n" +
+	"\aconfigs\x18\x01 \x03(\v2!.runtime.middleware.v1.MiddlewareBA\xbaG>\x92\x02;A list of middleware configurations to be applied in order.R\aconfigsB\xf1\x01\n" +
 	"\x19com.runtime.middleware.v1B\x0fMiddlewareProtoP\x01ZJgithub.com/origadmin/runtime/api/gen/go/runtime/middleware/v1;middlewarev1\xf8\x01\x01\xa2\x02\x03RMX\xaa\x02\x15Runtime.Middleware.V1\xca\x02\x15Runtime\\Middleware\\V1\xe2\x02!Runtime\\Middleware\\V1\\GPBMetadata\xea\x02\x17Runtime::Middleware::V1b\x06proto3"
 
 var (

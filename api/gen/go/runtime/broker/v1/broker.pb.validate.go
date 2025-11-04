@@ -61,7 +61,7 @@ func (m *Broker) validate(all bool) error {
 	if _, ok := _Broker_Type_InLookup[m.GetType()]; !ok {
 		err := BrokerValidationError{
 			field:  "Type",
-			reason: "value must be in list [kafka rabbitmq mqtt nats nsq pulsar redis_mq rocketmq sqs stompcustomize]",
+			reason: "value must be in list [none kafka rabbitmq mqtt nats nsq pulsar redis_mq rocketmq sqs stomp customize]",
 		}
 		if !all {
 			return err
@@ -510,16 +510,18 @@ var _ interface {
 } = BrokerValidationError{}
 
 var _Broker_Type_InLookup = map[string]struct{}{
-	"kafka":          {},
-	"rabbitmq":       {},
-	"mqtt":           {},
-	"nats":           {},
-	"nsq":            {},
-	"pulsar":         {},
-	"redis_mq":       {},
-	"rocketmq":       {},
-	"sqs":            {},
-	"stompcustomize": {},
+	"none":      {},
+	"kafka":     {},
+	"rabbitmq":  {},
+	"mqtt":      {},
+	"nats":      {},
+	"nsq":       {},
+	"pulsar":    {},
+	"redis_mq":  {},
+	"rocketmq":  {},
+	"sqs":       {},
+	"stomp":     {},
+	"customize": {},
 }
 
 // Validate checks the field values on Brokers with the rules defined in the

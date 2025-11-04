@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_outer_classname = "KafkaV1Proto";
 option java_package = "com.github.origadmin.api.runtime.broker.kafka.v1";
 option objc_class_prefix = "ORKV1";
-option php_namespace = "OrigAdmin\Runtime\Broker\Kafka\V1";
+option php_namespace = "OrigAdmin\\Runtime\\Broker\\Kafka\\V1";
 
 // KafkaConfig defines the configuration for a Kafka message queue.
 message KafkaConfig {

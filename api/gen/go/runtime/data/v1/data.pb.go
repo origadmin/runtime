@@ -9,7 +9,9 @@ package datav1
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
-	v1 "github.com/origadmin/runtime/api/gen/go/runtime/data/storage/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/data/database/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -179,7 +181,7 @@ type Caches struct {
 	// Active cache name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named Cache configurations.
-	Configs       []*v1.CacheConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	Configs       []*v11.CacheConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -228,7 +230,7 @@ func (x *Caches) GetActive() string {
 	return ""
 }
 
-func (x *Caches) GetConfigs() []*v1.CacheConfig {
+func (x *Caches) GetConfigs() []*v11.CacheConfig {
 	if x != nil {
 		return x.Configs
 	}
@@ -243,7 +245,7 @@ type Databases struct {
 	// Active database name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named Relational Database configurations.
-	Configs       []*v1.DatabaseConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	Configs       []*v12.DatabaseConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -292,7 +294,7 @@ func (x *Databases) GetActive() string {
 	return ""
 }
 
-func (x *Databases) GetConfigs() []*v1.DatabaseConfig {
+func (x *Databases) GetConfigs() []*v12.DatabaseConfig {
 	if x != nil {
 		return x.Configs
 	}
@@ -307,7 +309,7 @@ type Documents struct {
 	// Active document database name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named Document Database configurations.
-	Configs       []*v1.DocumentConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	Configs       []*v12.DocumentConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -356,7 +358,7 @@ func (x *Documents) GetActive() string {
 	return ""
 }
 
-func (x *Documents) GetConfigs() []*v1.DocumentConfig {
+func (x *Documents) GetConfigs() []*v12.DocumentConfig {
 	if x != nil {
 		return x.Configs
 	}
@@ -367,7 +369,7 @@ var File_runtime_data_v1_data_proto protoreflect.FileDescriptor
 
 const file_runtime_data_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"\x1aruntime/data/v1/data.proto\x12\x0fruntime.data.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a#runtime/data/storage/v1/cache.proto\x1a&runtime/data/storage/v1/database.proto\x1a(runtime/data/storage/v1/file_local.proto\x1a(runtime/data/storage/v1/file_store.proto\x1a'runtime/data/storage/v1/memcached.proto\x1a$runtime/data/storage/v1/memory.proto\x1a!runtime/data/storage/v1/oss.proto\x1a#runtime/data/storage/v1/redis.proto\x1a&runtime/data/storage/v1/document.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xe9\x04\n" +
+	"\x1aruntime/data/v1/data.proto\x12\x0fruntime.data.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a!runtime/data/cache/v1/cache.proto\x1a'runtime/data/database/v1/database.proto\x1a'runtime/data/database/v1/document.proto\x1a%runtime/data/file/v1/file_store.proto\x1a\x17validate/validate.proto\"\xe9\x04\n" +
 	"\x04Data\x12`\n" +
 	"\n" +
 	"filestores\x18\x01 \x01(\v2\x1b.runtime.data.v1.FileStoresB\x1e\xbaG\x1b\x92\x02\x18FileStore configurationsH\x00R\n" +
@@ -383,33 +385,33 @@ const file_runtime_data_v1_data_proto_rawDesc = "" +
 	"\n" +
 	"_documentsB\f\n" +
 	"\n" +
-	"_customize\"\x9f\x02\n" +
+	"_customize\"\x9c\x02\n" +
 	"\n" +
 	"FileStores\x12;\n" +
 	"\adefault\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default filestore nameH\x00R\adefault\x88\x01\x01\x12K\n" +
-	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x01R\x06active\x88\x01\x01\x12p\n" +
-	"\aconfigs\x18\x03 \x03(\v2(.runtime.data.storage.v1.FileStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\n" +
+	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x01R\x06active\x88\x01\x01\x12m\n" +
+	"\aconfigs\x18\x03 \x03(\v2%.runtime.data.file.v1.FileStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
-	"\a_active\"\x8b\x02\n" +
+	"\a_active\"\x89\x02\n" +
 	"\x06Caches\x127\n" +
 	"\adefault\x18\x01 \x01(\tB\x18\xbaG\x15\x92\x02\x12Default cache nameH\x00R\adefault\x88\x01\x01\x12G\n" +
-	"\x06active\x18\x02 \x01(\tB*\xbaG'\x92\x02$Active cache name, overrides defaultH\x01R\x06active\x88\x01\x01\x12h\n" +
-	"\aconfigs\x18\x03 \x03(\v2$.runtime.data.storage.v1.CacheConfigB(\xbaG%\x92\x02\"List of named Cache configurationsR\aconfigsB\n" +
+	"\x06active\x18\x02 \x01(\tB*\xbaG'\x92\x02$Active cache name, overrides defaultH\x01R\x06active\x88\x01\x01\x12f\n" +
+	"\aconfigs\x18\x03 \x03(\v2\".runtime.data.cache.v1.CacheConfigB(\xbaG%\x92\x02\"List of named Cache configurationsR\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
-	"\a_active\"\xa5\x02\n" +
+	"\a_active\"\xa6\x02\n" +
 	"\tDatabases\x12:\n" +
 	"\adefault\x18\x01 \x01(\tB\x1b\xbaG\x18\x92\x02\x15Default database nameH\x00R\adefault\x88\x01\x01\x12J\n" +
-	"\x06active\x18\x02 \x01(\tB-\xbaG*\x92\x02'Active database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12y\n" +
-	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DatabaseConfigB6\xbaG3\x92\x020List of named Relational Database configurationsR\aconfigsB\n" +
+	"\x06active\x18\x02 \x01(\tB-\xbaG*\x92\x02'Active database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12z\n" +
+	"\aconfigs\x18\x03 \x03(\v2(.runtime.data.database.v1.DatabaseConfigB6\xbaG3\x92\x020List of named Relational Database configurationsR\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
-	"\a_active\"\xb5\x02\n" +
+	"\a_active\"\xb6\x02\n" +
 	"\tDocuments\x12C\n" +
 	"\adefault\x18\x01 \x01(\tB$\xbaG!\x92\x02\x1eDefault document database nameH\x00R\adefault\x88\x01\x01\x12S\n" +
-	"\x06active\x18\x02 \x01(\tB6\xbaG3\x92\x020Active document database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12w\n" +
-	"\aconfigs\x18\x03 \x03(\v2'.runtime.data.storage.v1.DocumentConfigB4\xbaG1\x92\x02.List of named Document Database configurationsR\aconfigsB\n" +
+	"\x06active\x18\x02 \x01(\tB6\xbaG3\x92\x020Active document database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12x\n" +
+	"\aconfigs\x18\x03 \x03(\v2(.runtime.data.database.v1.DocumentConfigB4\xbaG1\x92\x02.List of named Document Database configurationsR\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
 	"\a_activeB\xc1\x01\n" +
@@ -435,10 +437,10 @@ var file_runtime_data_v1_data_proto_goTypes = []any{
 	(*Databases)(nil),          // 3: runtime.data.v1.Databases
 	(*Documents)(nil),          // 4: runtime.data.v1.Documents
 	(*structpb.Struct)(nil),    // 5: google.protobuf.Struct
-	(*v1.FileStoreConfig)(nil), // 6: runtime.data.storage.v1.FileStoreConfig
-	(*v1.CacheConfig)(nil),     // 7: runtime.data.storage.v1.CacheConfig
-	(*v1.DatabaseConfig)(nil),  // 8: runtime.data.storage.v1.DatabaseConfig
-	(*v1.DocumentConfig)(nil),  // 9: runtime.data.storage.v1.DocumentConfig
+	(*v1.FileStoreConfig)(nil), // 6: runtime.data.file.v1.FileStoreConfig
+	(*v11.CacheConfig)(nil),    // 7: runtime.data.cache.v1.CacheConfig
+	(*v12.DatabaseConfig)(nil), // 8: runtime.data.database.v1.DatabaseConfig
+	(*v12.DocumentConfig)(nil), // 9: runtime.data.database.v1.DocumentConfig
 }
 var file_runtime_data_v1_data_proto_depIdxs = []int32{
 	1, // 0: runtime.data.v1.Data.filestores:type_name -> runtime.data.v1.FileStores
@@ -446,10 +448,10 @@ var file_runtime_data_v1_data_proto_depIdxs = []int32{
 	3, // 2: runtime.data.v1.Data.databases:type_name -> runtime.data.v1.Databases
 	4, // 3: runtime.data.v1.Data.documents:type_name -> runtime.data.v1.Documents
 	5, // 4: runtime.data.v1.Data.customize:type_name -> google.protobuf.Struct
-	6, // 5: runtime.data.v1.FileStores.configs:type_name -> runtime.data.storage.v1.FileStoreConfig
-	7, // 6: runtime.data.v1.Caches.configs:type_name -> runtime.data.storage.v1.CacheConfig
-	8, // 7: runtime.data.v1.Databases.configs:type_name -> runtime.data.storage.v1.DatabaseConfig
-	9, // 8: runtime.data.v1.Documents.configs:type_name -> runtime.data.storage.v1.DocumentConfig
+	6, // 5: runtime.data.v1.FileStores.configs:type_name -> runtime.data.file.v1.FileStoreConfig
+	7, // 6: runtime.data.v1.Caches.configs:type_name -> runtime.data.cache.v1.CacheConfig
+	8, // 7: runtime.data.v1.Databases.configs:type_name -> runtime.data.database.v1.DatabaseConfig
+	9, // 8: runtime.data.v1.Documents.configs:type_name -> runtime.data.database.v1.DocumentConfig
 	9, // [9:9] is the sub-list for method output_type
 	9, // [9:9] is the sub-list for method input_type
 	9, // [9:9] is the sub-list for extension type_name

@@ -8,6 +8,17 @@ package brokerv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "github.com/google/gnostic/openapiv3"
+	v1 "github.com/origadmin/runtime/api/gen/go/runtime/broker/kafka/v1"
+	v12 "github.com/origadmin/runtime/api/gen/go/runtime/broker/mqtt/v1"
+	v13 "github.com/origadmin/runtime/api/gen/go/runtime/broker/nats/v1"
+	v14 "github.com/origadmin/runtime/api/gen/go/runtime/broker/nsq/v1"
+	v15 "github.com/origadmin/runtime/api/gen/go/runtime/broker/pulsar/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/runtime/broker/rabbitmq/v1"
+	v16 "github.com/origadmin/runtime/api/gen/go/runtime/broker/redis_mq/v1"
+	v17 "github.com/origadmin/runtime/api/gen/go/runtime/broker/rocketmq/v1"
+	v18 "github.com/origadmin/runtime/api/gen/go/runtime/broker/sqs/v1"
+	v19 "github.com/origadmin/runtime/api/gen/go/runtime/broker/stomp/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -30,25 +41,25 @@ type Broker struct {
 	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Type  string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// Optional Kafka configuration.
-	Kafka *KafkaConfig `protobuf:"bytes,3,opt,name=kafka,proto3,oneof" json:"kafka,omitempty"`
+	Kafka *v1.KafkaConfig `protobuf:"bytes,3,opt,name=kafka,proto3,oneof" json:"kafka,omitempty"`
 	// Optional RabbitMQ configuration.
-	Rabbitmq *RabbitMQConfig `protobuf:"bytes,4,opt,name=rabbitmq,proto3,oneof" json:"rabbitmq,omitempty"`
+	Rabbitmq *v11.RabbitMQConfig `protobuf:"bytes,4,opt,name=rabbitmq,proto3,oneof" json:"rabbitmq,omitempty"`
 	// Optional MQTT configuration.
-	Mqtt *MqttConfig `protobuf:"bytes,5,opt,name=mqtt,proto3,oneof" json:"mqtt,omitempty"`
+	Mqtt *v12.MqttConfig `protobuf:"bytes,5,opt,name=mqtt,proto3,oneof" json:"mqtt,omitempty"`
 	// Optional NATS configuration.
-	Nats *NatsConfig `protobuf:"bytes,6,opt,name=nats,proto3,oneof" json:"nats,omitempty"`
+	Nats *v13.NatsConfig `protobuf:"bytes,6,opt,name=nats,proto3,oneof" json:"nats,omitempty"`
 	// Optional NSQ configuration.
-	Nsq *NsqConfig `protobuf:"bytes,7,opt,name=nsq,proto3,oneof" json:"nsq,omitempty"`
+	Nsq *v14.NsqConfig `protobuf:"bytes,7,opt,name=nsq,proto3,oneof" json:"nsq,omitempty"`
 	// Optional Pulsar configuration.
-	Pulsar *PulsarConfig `protobuf:"bytes,8,opt,name=pulsar,proto3,oneof" json:"pulsar,omitempty"`
+	Pulsar *v15.PulsarConfig `protobuf:"bytes,8,opt,name=pulsar,proto3,oneof" json:"pulsar,omitempty"`
 	// Optional Redis (as MQ) configuration.
-	RedisMq *RedisMqConfig `protobuf:"bytes,9,opt,name=redis_mq,proto3,oneof" json:"redis_mq,omitempty"`
+	RedisMq *v16.RedisMqConfig `protobuf:"bytes,9,opt,name=redis_mq,proto3,oneof" json:"redis_mq,omitempty"`
 	// Optional RocketMQ configuration.
-	Rocketmq *RocketMQConfig `protobuf:"bytes,10,opt,name=rocketmq,proto3,oneof" json:"rocketmq,omitempty"`
+	Rocketmq *v17.RocketMQConfig `protobuf:"bytes,10,opt,name=rocketmq,proto3,oneof" json:"rocketmq,omitempty"`
 	// Optional SQS configuration.
-	Sqs *SqsConfig `protobuf:"bytes,11,opt,name=sqs,proto3,oneof" json:"sqs,omitempty"`
+	Sqs *v18.SqsConfig `protobuf:"bytes,11,opt,name=sqs,proto3,oneof" json:"sqs,omitempty"`
 	// Optional STOMP configuration.
-	Stomp *StompConfig `protobuf:"bytes,12,opt,name=stomp,proto3,oneof" json:"stomp,omitempty"`
+	Stomp *v19.StompConfig `protobuf:"bytes,12,opt,name=stomp,proto3,oneof" json:"stomp,omitempty"`
 	// Optional customize configuration.
 	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -99,70 +110,70 @@ func (x *Broker) GetType() string {
 	return ""
 }
 
-func (x *Broker) GetKafka() *KafkaConfig {
+func (x *Broker) GetKafka() *v1.KafkaConfig {
 	if x != nil {
 		return x.Kafka
 	}
 	return nil
 }
 
-func (x *Broker) GetRabbitmq() *RabbitMQConfig {
+func (x *Broker) GetRabbitmq() *v11.RabbitMQConfig {
 	if x != nil {
 		return x.Rabbitmq
 	}
 	return nil
 }
 
-func (x *Broker) GetMqtt() *MqttConfig {
+func (x *Broker) GetMqtt() *v12.MqttConfig {
 	if x != nil {
 		return x.Mqtt
 	}
 	return nil
 }
 
-func (x *Broker) GetNats() *NatsConfig {
+func (x *Broker) GetNats() *v13.NatsConfig {
 	if x != nil {
 		return x.Nats
 	}
 	return nil
 }
 
-func (x *Broker) GetNsq() *NsqConfig {
+func (x *Broker) GetNsq() *v14.NsqConfig {
 	if x != nil {
 		return x.Nsq
 	}
 	return nil
 }
 
-func (x *Broker) GetPulsar() *PulsarConfig {
+func (x *Broker) GetPulsar() *v15.PulsarConfig {
 	if x != nil {
 		return x.Pulsar
 	}
 	return nil
 }
 
-func (x *Broker) GetRedisMq() *RedisMqConfig {
+func (x *Broker) GetRedisMq() *v16.RedisMqConfig {
 	if x != nil {
 		return x.RedisMq
 	}
 	return nil
 }
 
-func (x *Broker) GetRocketmq() *RocketMQConfig {
+func (x *Broker) GetRocketmq() *v17.RocketMQConfig {
 	if x != nil {
 		return x.Rocketmq
 	}
 	return nil
 }
 
-func (x *Broker) GetSqs() *SqsConfig {
+func (x *Broker) GetSqs() *v18.SqsConfig {
 	if x != nil {
 		return x.Sqs
 	}
 	return nil
 }
 
-func (x *Broker) GetStomp() *StompConfig {
+func (x *Broker) GetStomp() *v19.StompConfig {
 	if x != nil {
 		return x.Stomp
 	}
@@ -240,22 +251,22 @@ var File_runtime_broker_v1_broker_proto protoreflect.FileDescriptor
 
 const file_runtime_broker_v1_broker_proto_rawDesc = "" +
 	"\n" +
-	"\x1eruntime/broker/v1/broker.proto\x12\x11runtime.broker.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1druntime/broker/v1/kafka.proto\x1a\x1cruntime/broker/v1/mqtt.proto\x1a\x1cruntime/broker/v1/nats.proto\x1a\x1bruntime/broker/v1/nsq.proto\x1a\x1eruntime/broker/v1/pulsar.proto\x1a runtime/broker/v1/rabbitmq.proto\x1a runtime/broker/v1/redis_mq.proto\x1a runtime/broker/v1/rocketmq.proto\x1a\x1bruntime/broker/v1/sqs.proto\x1a\x1druntime/broker/v1/stomp.proto\x1a\x17validate/validate.proto\"\x95\a\n" +
-	"\x06Broker\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12l\n" +
-	"\x04type\x18\x02 \x01(\tBX\xfaBUrSR\x05kafkaR\brabbitmqR\x04mqttR\x04natsR\x03nsqR\x06pulsarR\bredis_mqR\brocketmqR\x03sqsR\x0estompcustomizeR\x04type\x129\n" +
-	"\x05kafka\x18\x03 \x01(\v2\x1e.runtime.broker.v1.KafkaConfigH\x00R\x05kafka\x88\x01\x01\x12B\n" +
-	"\brabbitmq\x18\x04 \x01(\v2!.runtime.broker.v1.RabbitMQConfigH\x01R\brabbitmq\x88\x01\x01\x126\n" +
-	"\x04mqtt\x18\x05 \x01(\v2\x1d.runtime.broker.v1.MqttConfigH\x02R\x04mqtt\x88\x01\x01\x126\n" +
-	"\x04nats\x18\x06 \x01(\v2\x1d.runtime.broker.v1.NatsConfigH\x03R\x04nats\x88\x01\x01\x123\n" +
-	"\x03nsq\x18\a \x01(\v2\x1c.runtime.broker.v1.NsqConfigH\x04R\x03nsq\x88\x01\x01\x12<\n" +
-	"\x06pulsar\x18\b \x01(\v2\x1f.runtime.broker.v1.PulsarConfigH\x05R\x06pulsar\x88\x01\x01\x12A\n" +
-	"\bredis_mq\x18\t \x01(\v2 .runtime.broker.v1.RedisMqConfigH\x06R\bredis_mq\x88\x01\x01\x12B\n" +
+	"\x1eruntime/broker/v1/broker.proto\x12\x11runtime.broker.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a#runtime/broker/kafka/v1/kafka.proto\x1a!runtime/broker/mqtt/v1/mqtt.proto\x1a!runtime/broker/nats/v1/nats.proto\x1a\x1fruntime/broker/nsq/v1/nsq.proto\x1a%runtime/broker/pulsar/v1/pulsar.proto\x1a)runtime/broker/rabbitmq/v1/rabbitmq.proto\x1a)runtime/broker/redis_mq/v1/redis_mq.proto\x1a)runtime/broker/rocketmq/v1/rocketmq.proto\x1a\x1fruntime/broker/sqs/v1/sqs.proto\x1a#runtime/broker/stomp/v1/stomp.proto\x1a\x17validate/validate.proto\"\xd0\v\n" +
+	"\x06Broker\x12?\n" +
+	"\x04name\x18\x01 \x01(\tB+\xbaG(\x92\x02%The name of the broker configuration.R\x04name\x12\x9a\x01\n" +
+	"\x04type\x18\x02 \x01(\tB\x85\x01\xfaB]r[R\x04noneR\x05kafkaR\brabbitmqR\x04mqttR\x04natsR\x03nsqR\x06pulsarR\bredis_mqR\brocketmqR\x03sqsR\x05stompR\tcustomize\xbaG\"\x92\x02\x1fThe type of the message broker.R\x04type\x12d\n" +
+	"\x05kafka\x18\x03 \x01(\v2$.runtime.broker.kafka.v1.KafkaConfigB#\xbaG \x92\x02\x1dKafka specific configuration.H\x00R\x05kafka\x88\x01\x01\x12s\n" +
+	"\brabbitmq\x18\x04 \x01(\v2*.runtime.broker.rabbitmq.v1.RabbitMQConfigB&\xbaG#\x92\x02 RabbitMQ specific configuration.H\x01R\brabbitmq\x88\x01\x01\x12_\n" +
+	"\x04mqtt\x18\x05 \x01(\v2\".runtime.broker.mqtt.v1.MqttConfigB\"\xbaG\x1f\x92\x02\x1cMQTT specific configuration.H\x02R\x04mqtt\x88\x01\x01\x12_\n" +
+	"\x04nats\x18\x06 \x01(\v2\".runtime.broker.nats.v1.NatsConfigB\"\xbaG\x1f\x92\x02\x1cNATS specific configuration.H\x03R\x04nats\x88\x01\x01\x12Z\n" +
+	"\x03nsq\x18\a \x01(\v2 .runtime.broker.nsq.v1.NsqConfigB!\xbaG\x1e\x92\x02\x1bNSQ specific configuration.H\x04R\x03nsq\x88\x01\x01\x12i\n" +
+	"\x06pulsar\x18\b \x01(\v2&.runtime.broker.pulsar.v1.PulsarConfigB$\xbaG!\x92\x02\x1ePulsar specific configuration.H\x05R\x06pulsar\x88\x01\x01\x12w\n" +
+	"\bredis_mq\x18\t \x01(\v2).runtime.broker.redis_mq.v1.RedisMqConfigB+\xbaG(\x92\x02%Redis (as MQ) specific configuration.H\x06R\bredis_mq\x88\x01\x01\x12s\n" +
 	"\brocketmq\x18\n" +
-	" \x01(\v2!.runtime.broker.v1.RocketMQConfigH\aR\brocketmq\x88\x01\x01\x123\n" +
-	"\x03sqs\x18\v \x01(\v2\x1c.runtime.broker.v1.SqsConfigH\bR\x03sqs\x88\x01\x01\x129\n" +
-	"\x05stomp\x18\f \x01(\v2\x1e.runtime.broker.v1.StompConfigH\tR\x05stomp\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\n" +
+	" \x01(\v2*.runtime.broker.rocketmq.v1.RocketMQConfigB&\xbaG#\x92\x02 RocketMQ specific configuration.H\aR\brocketmq\x88\x01\x01\x12Z\n" +
+	"\x03sqs\x18\v \x01(\v2 .runtime.broker.sqs.v1.SqsConfigB!\xbaG\x1e\x92\x02\x1bSQS specific configuration.H\bR\x03sqs\x88\x01\x01\x12d\n" +
+	"\x05stomp\x18\f \x01(\v2$.runtime.broker.stomp.v1.StompConfigB#\xbaG \x92\x02\x1dSTOMP specific configuration.H\tR\x05stomp\x88\x01\x01\x12^\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB\"\xbaG\x1f\x92\x02\x1cCustom broker configuration.H\n" +
 	"R\tcustomize\x88\x01\x01B\b\n" +
 	"\x06_kafkaB\v\n" +
 	"\t_rabbitmqB\a\n" +
@@ -268,11 +279,11 @@ const file_runtime_broker_v1_broker_proto_rawDesc = "" +
 	"\x04_sqsB\b\n" +
 	"\x06_stompB\f\n" +
 	"\n" +
-	"_customize\"\x91\x01\n" +
-	"\aBrokers\x12\x1d\n" +
-	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x123\n" +
-	"\abrokers\x18\x03 \x03(\v2\x19.runtime.broker.v1.BrokerR\abrokersB\n" +
+	"_customize\"\x8f\x02\n" +
+	"\aBrokers\x12?\n" +
+	"\adefault\x18\x01 \x01(\tB \xbaG\x1d\x92\x02\x1aThe default broker to use.H\x00R\adefault\x88\x01\x01\x12O\n" +
+	"\x06active\x18\x02 \x01(\tB2\xbaG/\x92\x02,The active broker to use, overrides default.H\x01R\x06active\x88\x01\x01\x12[\n" +
+	"\abrokers\x18\x03 \x03(\v2\x19.runtime.broker.v1.BrokerB&\xbaG#\x92\x02 A list of broker configurations.R\abrokersB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
 	"\a_activeB\xce\x01\n" +
@@ -292,31 +303,31 @@ func file_runtime_broker_v1_broker_proto_rawDescGZIP() []byte {
 
 var file_runtime_broker_v1_broker_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_runtime_broker_v1_broker_proto_goTypes = []any{
-	(*Broker)(nil),          // 0: runtime.broker.v1.Broker
-	(*Brokers)(nil),         // 1: runtime.broker.v1.Brokers
-	(*KafkaConfig)(nil),     // 2: runtime.broker.v1.KafkaConfig
-	(*RabbitMQConfig)(nil),  // 3: runtime.broker.v1.RabbitMQConfig
-	(*MqttConfig)(nil),      // 4: runtime.broker.v1.MqttConfig
-	(*NatsConfig)(nil),      // 5: runtime.broker.v1.NatsConfig
-	(*NsqConfig)(nil),       // 6: runtime.broker.v1.NsqConfig
-	(*PulsarConfig)(nil),    // 7: runtime.broker.v1.PulsarConfig
-	(*RedisMqConfig)(nil),   // 8: runtime.broker.v1.RedisMqConfig
-	(*RocketMQConfig)(nil),  // 9: runtime.broker.v1.RocketMQConfig
-	(*SqsConfig)(nil),       // 10: runtime.broker.v1.SqsConfig
-	(*StompConfig)(nil),     // 11: runtime.broker.v1.StompConfig
-	(*structpb.Struct)(nil), // 12: google.protobuf.Struct
+	(*Broker)(nil),             // 0: runtime.broker.v1.Broker
+	(*Brokers)(nil),            // 1: runtime.broker.v1.Brokers
+	(*v1.KafkaConfig)(nil),     // 2: runtime.broker.kafka.v1.KafkaConfig
+	(*v11.RabbitMQConfig)(nil), // 3: runtime.broker.rabbitmq.v1.RabbitMQConfig
+	(*v12.MqttConfig)(nil),     // 4: runtime.broker.mqtt.v1.MqttConfig
+	(*v13.NatsConfig)(nil),     // 5: runtime.broker.nats.v1.NatsConfig
+	(*v14.NsqConfig)(nil),      // 6: runtime.broker.nsq.v1.NsqConfig
+	(*v15.PulsarConfig)(nil),   // 7: runtime.broker.pulsar.v1.PulsarConfig
+	(*v16.RedisMqConfig)(nil),  // 8: runtime.broker.redis_mq.v1.RedisMqConfig
+	(*v17.RocketMQConfig)(nil), // 9: runtime.broker.rocketmq.v1.RocketMQConfig
+	(*v18.SqsConfig)(nil),      // 10: runtime.broker.sqs.v1.SqsConfig
+	(*v19.StompConfig)(nil),    // 11: runtime.broker.stomp.v1.StompConfig
+	(*structpb.Struct)(nil),    // 12: google.protobuf.Struct
 }
 var file_runtime_broker_v1_broker_proto_depIdxs = []int32{
-	2,  // 0: runtime.broker.v1.Broker.kafka:type_name -> runtime.broker.v1.KafkaConfig
-	3,  // 1: runtime.broker.v1.Broker.rabbitmq:type_name -> runtime.broker.v1.RabbitMQConfig
-	4,  // 2: runtime.broker.v1.Broker.mqtt:type_name -> runtime.broker.v1.MqttConfig
-	5,  // 3: runtime.broker.v1.Broker.nats:type_name -> runtime.broker.v1.NatsConfig
-	6,  // 4: runtime.broker.v1.Broker.nsq:type_name -> runtime.broker.v1.NsqConfig
-	7,  // 5: runtime.broker.v1.Broker.pulsar:type_name -> runtime.broker.v1.PulsarConfig
-	8,  // 6: runtime.broker.v1.Broker.redis_mq:type_name -> runtime.broker.v1.RedisMqConfig
-	9,  // 7: runtime.broker.v1.Broker.rocketmq:type_name -> runtime.broker.v1.RocketMQConfig
-	10, // 8: runtime.broker.v1.Broker.sqs:type_name -> runtime.broker.v1.SqsConfig
-	11, // 9: runtime.broker.v1.Broker.stomp:type_name -> runtime.broker.v1.StompConfig
+	2,  // 0: runtime.broker.v1.Broker.kafka:type_name -> runtime.broker.kafka.v1.KafkaConfig
+	3,  // 1: runtime.broker.v1.Broker.rabbitmq:type_name -> runtime.broker.rabbitmq.v1.RabbitMQConfig
+	4,  // 2: runtime.broker.v1.Broker.mqtt:type_name -> runtime.broker.mqtt.v1.MqttConfig
+	5,  // 3: runtime.broker.v1.Broker.nats:type_name -> runtime.broker.nats.v1.NatsConfig
+	6,  // 4: runtime.broker.v1.Broker.nsq:type_name -> runtime.broker.nsq.v1.NsqConfig
+	7,  // 5: runtime.broker.v1.Broker.pulsar:type_name -> runtime.broker.pulsar.v1.PulsarConfig
+	8,  // 6: runtime.broker.v1.Broker.redis_mq:type_name -> runtime.broker.redis_mq.v1.RedisMqConfig
+	9,  // 7: runtime.broker.v1.Broker.rocketmq:type_name -> runtime.broker.rocketmq.v1.RocketMQConfig
+	10, // 8: runtime.broker.v1.Broker.sqs:type_name -> runtime.broker.sqs.v1.SqsConfig
+	11, // 9: runtime.broker.v1.Broker.stomp:type_name -> runtime.broker.stomp.v1.StompConfig
 	12, // 10: runtime.broker.v1.Broker.customize:type_name -> google.protobuf.Struct
 	0,  // 11: runtime.broker.v1.Brokers.brokers:type_name -> runtime.broker.v1.Broker
 	12, // [12:12] is the sub-list for method output_type
@@ -331,16 +342,6 @@ func file_runtime_broker_v1_broker_proto_init() {
 	if File_runtime_broker_v1_broker_proto != nil {
 		return
 	}
-	file_runtime_broker_v1_kafka_proto_init()
-	file_runtime_broker_v1_mqtt_proto_init()
-	file_runtime_broker_v1_nats_proto_init()
-	file_runtime_broker_v1_nsq_proto_init()
-	file_runtime_broker_v1_pulsar_proto_init()
-	file_runtime_broker_v1_rabbitmq_proto_init()
-	file_runtime_broker_v1_redis_mq_proto_init()
-	file_runtime_broker_v1_rocketmq_proto_init()
-	file_runtime_broker_v1_sqs_proto_init()
-	file_runtime_broker_v1_stomp_proto_init()
 	file_runtime_broker_v1_broker_proto_msgTypes[0].OneofWrappers = []any{}
 	file_runtime_broker_v1_broker_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}

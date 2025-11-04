@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_outer_classname = "RocketMQV1Proto";
 option java_package = "com.github.origadmin.api.runtime.broker.rocketmq.v1";
 option objc_class_prefix = "OROV1";
-option php_namespace = "OrigAdmin\Runtime\Broker\RocketMQ\V1";
+option php_namespace = "OrigAdmin\\Runtime\\Broker\\RocketMQ\\V1";
 
 // RocketMQConfig defines the configuration for a RocketMQ message queue.
 message RocketMQConfig {

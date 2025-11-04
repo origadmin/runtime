@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package runtime.data.file.v1;
 
+import "gnostic/openapi/v3/annotations.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -22,22 +23,18 @@ service FileService {
 
   // List files and directories at a given path.
   rpc List(ListRequest) returns (ListResponse) {
-    option (google.api.http) = {
-      get: "/v1/file/list"
-    };
+    option (google.api.http) = {get: "/v1/file/list"};
   }
 
   // Get information about a single file or directory.
   rpc Stat(StatRequest) returns (StatResponse) {
-    option (google.api.http) = {
-      get: "/v1/file/stat"
-    };
+    option (google.api.http) = {get: "/v1/file/stat"};
   }
 
   // Create a new directory.
   rpc Mkdir(MkdirRequest) returns (MkdirResponse) {
     option (google.api.http) = {
-      post: "/v1/file/mkdir",
+      post: "/v1/file/mkdir"
       body: "*"
     };
   }
@@ -45,7 +42,7 @@ service FileService {
   // Delete a file or directory.
   rpc Delete(DeleteRequest) returns (DeleteResponse) {
     option (google.api.http) = {
-      post: "/v1/file/delete",
+      post: "/v1/file/delete"
       body: "*"
     };
   }
@@ -53,7 +50,7 @@ service FileService {
   // Rename or move a file or directory.
   rpc Rename(RenameRequest) returns (RenameResponse) {
     option (google.api.http) = {
-      post: "/v1/file/rename",
+      post: "/v1/file/rename"
       body: "*"
     };
   }
@@ -62,9 +59,7 @@ service FileService {
 
   // Read a file's content as a stream.
   rpc Read(ReadRequest) returns (stream ReadResponse) {
-    option (google.api.http) = {
-      get: "/v1/file/read"
-    };
+    option (google.api.http) = {get: "/v1/file/read"};
   }
 
   // Write a file's content via a stream.
@@ -77,7 +72,7 @@ service FileService {
   // Initiates a new chunked upload and returns an upload_id.
   rpc InitiateUpload(InitiateUploadRequest) returns (InitiateUploadResponse) {
     option (google.api.http) = {
-      post: "/v1/file/uploads:initiate",
+      post: "/v1/file/uploads:initiate"
       body: "*"
     };
   }
@@ -90,7 +85,7 @@ service FileService {
   // Finalizes a chunked upload, assembling the chunks into the final file.
   rpc FinalizeUpload(FinalizeUploadRequest) returns (FinalizeUploadResponse) {
     option (google.api.http) = {
-      post: "/v1/file/uploads:finalize",
+      post: "/v1/file/uploads:finalize"
       body: "*"
     };
   }

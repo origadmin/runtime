@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_outer_classname = "MqttV1Proto";
 option java_package = "com.github.origadmin.api.runtime.broker.mqtt.v1";
 option objc_class_prefix = "ORMV1";
-option php_namespace = "OrigAdmin\Runtime\Broker\Mqtt\V1";
+option php_namespace = "OrigAdmin\\Runtime\\Broker\\Mqtt\\V1";
 
 // MqttConfig defines the configuration for an MQTT message queue.
 message MqttConfig {

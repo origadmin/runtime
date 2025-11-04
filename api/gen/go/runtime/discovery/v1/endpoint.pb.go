@@ -7,6 +7,7 @@
 package discoveryv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	_ "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -159,15 +160,15 @@ var File_runtime_discovery_v1_endpoint_proto protoreflect.FileDescriptor
 
 const file_runtime_discovery_v1_endpoint_proto_rawDesc = "" +
 	"\n" +
-	"#runtime/discovery/v1/endpoint.proto\x12\x14runtime.discovery.v1\x1a$runtime/discovery/v1/discovery.proto\x1a\x1egoogle/protobuf/duration.proto\x1a&runtime/middleware/v1/middleware.proto\"\x98\x01\n" +
-	"\bEndpoint\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12&\n" +
-	"\x0ediscovery_name\x18\x02 \x01(\tR\x0ediscovery_name\x12\x10\n" +
-	"\x03uri\x18\x03 \x01(\tR\x03uri\x12:\n" +
-	"\bselector\x18\x04 \x01(\v2\x1e.runtime.discovery.v1.SelectorR\bselector:\x02\x18\x01\"<\n" +
-	"\bSelector\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion:\x02\x18\x01B\xe5\x01\n" +
+	"#runtime/discovery/v1/endpoint.proto\x12\x14runtime.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a$runtime/discovery/v1/discovery.proto\x1a\x1egoogle/protobuf/duration.proto\x1a&runtime/middleware/v1/middleware.proto\"\x93\x03\n" +
+	"\bEndpoint\x12F\n" +
+	"\x04name\x18\x01 \x01(\tB2\xbaG/\x92\x02,The name of the service key in the endpoint.R\x04name\x12c\n" +
+	"\x0ediscovery_name\x18\x02 \x01(\tB;\xbaG8\x92\x025The name of the service key in the discovery service.R\x0ediscovery_name\x12W\n" +
+	"\x03uri\x18\x03 \x01(\tBE\xbaGB\x92\x02?The endpoint URI to resolve, e.g., \"discovery:///user-service\".R\x03uri\x12}\n" +
+	"\bselector\x18\x04 \x01(\v2\x1e.runtime.discovery.v1.SelectorBA\xbaG>\x92\x02;Selector for client-side load balancing and node filtering.R\bselector:\x02\x18\x01\"\xb0\x01\n" +
+	"\bSelector\x12T\n" +
+	"\x04type\x18\x01 \x01(\tB@\xbaG=\x92\x02:The type of selector to use, e.g., \"random\", \"wrr\", \"p2c\".R\x04type\x12J\n" +
+	"\aversion\x18\x02 \x01(\tB0\xbaG-\x92\x02*Version is used for version-based routing.R\aversion:\x02\x18\x01B\xe5\x01\n" +
 	"\x18com.runtime.discovery.v1B\rEndpointProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/discovery/v1;discoveryv1\xa2\x02\x03RDX\xaa\x02\x14Runtime.Discovery.V1\xca\x02\x14Runtime\\Discovery\\V1\xe2\x02 Runtime\\Discovery\\V1\\GPBMetadata\xea\x02\x16Runtime::Discovery::V1b\x06proto3"
 
 var (

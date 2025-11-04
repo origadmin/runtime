@@ -8,6 +8,7 @@ package discoveryv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -536,22 +537,22 @@ var File_runtime_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
 const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/discovery/v1/discovery.proto\x12\x14runtime.discovery.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x89\x05\n" +
-	"\tDiscovery\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\\\n" +
-	"\x04type\x18\x02 \x01(\tBH\xfaBErCR\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
-	"kubernetesR\apolarisR\tcustomizeR\x04type\x12\x14\n" +
-	"\x05debug\x18\x05 \x01(\bR\x05debug\x129\n" +
+	"$runtime/discovery/v1/discovery.proto\x12\x14runtime.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xf3\b\n" +
+	"\tDiscovery\x12J\n" +
+	"\x04name\x18\x01 \x01(\tB6\xbaG3\x92\x020The name of the discovery service configuration.R\x04name\x12\x88\x01\n" +
+	"\x04type\x18\x02 \x01(\tBt\xfaBErCR\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
+	"kubernetesR\apolarisR\tcustomize\xbaG)\x92\x02&The type of discovery provider to use.R\x04type\x12M\n" +
+	"\x05debug\x18\x05 \x01(\bB7\xbaG4\x92\x021Enables verbose logging for the discovery client.R\x05debug\x12h\n" +
 	"\x06consul\x18\n" +
-	" \x01(\v2\x1c.runtime.discovery.v1.ConsulH\x00R\x06consul\x88\x01\x01\x123\n" +
-	"\x04etcd\x18\v \x01(\v2\x1a.runtime.discovery.v1.ETCDH\x01R\x04etcd\x88\x01\x01\x126\n" +
-	"\x05nacos\x18\f \x01(\v2\x1b.runtime.discovery.v1.NacosH\x02R\x05nacos\x88\x01\x01\x129\n" +
-	"\x06apollo\x18\r \x01(\v2\x1c.runtime.discovery.v1.ApolloH\x03R\x06apollo\x88\x01\x01\x12E\n" +
+	" \x01(\v2\x1c.runtime.discovery.v1.ConsulB-\xbaG*\x92\x02'Consul provider specific configuration.H\x00R\x06consul\x88\x01\x01\x12`\n" +
+	"\x04etcd\x18\v \x01(\v2\x1a.runtime.discovery.v1.ETCDB+\xbaG(\x92\x02%ETCD provider specific configuration.H\x01R\x04etcd\x88\x01\x01\x12d\n" +
+	"\x05nacos\x18\f \x01(\v2\x1b.runtime.discovery.v1.NacosB,\xbaG)\x92\x02&Nacos provider specific configuration.H\x02R\x05nacos\x88\x01\x01\x12h\n" +
+	"\x06apollo\x18\r \x01(\v2\x1c.runtime.discovery.v1.ApolloB-\xbaG*\x92\x02'Apollo provider specific configuration.H\x03R\x06apollo\x88\x01\x01\x12x\n" +
 	"\n" +
-	"kubernetes\x18\x0e \x01(\v2 .runtime.discovery.v1.KubernetesH\x04R\n" +
-	"kubernetes\x88\x01\x01\x12<\n" +
-	"\apolaris\x18\x0f \x01(\v2\x1d.runtime.discovery.v1.PolarisH\x05R\apolaris\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x06R\tcustomize\x88\x01\x01B\t\n" +
+	"kubernetes\x18\x0e \x01(\v2 .runtime.discovery.v1.KubernetesB1\xbaG.\x92\x02+Kubernetes provider specific configuration.H\x04R\n" +
+	"kubernetes\x88\x01\x01\x12l\n" +
+	"\apolaris\x18\x0f \x01(\v2\x1d.runtime.discovery.v1.PolarisB.\xbaG+\x92\x02(Polaris provider specific configuration.H\x05R\apolaris\x88\x01\x01\x12j\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB.\xbaG+\x92\x02(Custom discovery provider configuration.H\x06R\tcustomize\x88\x01\x01B\t\n" +
 	"\a_consulB\a\n" +
 	"\x05_etcdB\b\n" +
 	"\x06_nacosB\t\n" +
@@ -560,38 +561,38 @@ const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
 	"\b_polarisB\f\n" +
 	"\n" +
-	"_customize\"\x9b\x01\n" +
-	"\vDiscoveries\x12\x1d\n" +
-	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x129\n" +
-	"\aconfigs\x18\x03 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryR\aconfigsB\n" +
+	"_customize\"\xd3\x02\n" +
+	"\vDiscoveries\x12Y\n" +
+	"\adefault\x18\x01 \x01(\tB:\xbaG7\x92\x024The name of the discovery service to use by default.H\x00R\adefault\x88\x01\x01\x12d\n" +
+	"\x06active\x18\x02 \x01(\tBG\xbaGD\x92\x02AThe name of the discovery service to use, overriding the default.H\x01R\x06active\x88\x01\x01\x12l\n" +
+	"\aconfigs\x18\x03 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryB1\xbaG.\x92\x02+A list of discovery service configurations.R\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
-	"\a_active\"\xcb\x02\n" +
-	"\x06Consul\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
-	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
-	"\x05token\x18\x03 \x01(\tR\x05token\x12\x1d\n" +
+	"\a_active\"\xe2\x06\n" +
+	"\x06Consul\x12@\n" +
+	"\aaddress\x18\x01 \x01(\tB&\xbaG#\x92\x02 The address of the Consul agent.R\aaddress\x12]\n" +
+	"\x06scheme\x18\x02 \x01(\tBE\xbaGB\x92\x02?The scheme to use for connecting to Consul (e.g., http, https).R\x06scheme\x12D\n" +
+	"\x05token\x18\x03 \x01(\tB.\xbaG+\x92\x02(The ACL token for Consul authentication.R\x05token\x12^\n" +
 	"\n" +
-	"heart_beat\x18\x04 \x01(\bR\theartBeat\x12!\n" +
-	"\fhealth_check\x18\x05 \x01(\bR\vhealthCheck\x12\x1e\n" +
+	"heart_beat\x18\x04 \x01(\bB?\xbaG<\x92\x029Whether to enable heartbeating for service health checks.R\theartBeat\x12a\n" +
+	"\fhealth_check\x18\x05 \x01(\bB>\xbaG;\x92\x028Whether to enable health checks for registered services.R\vhealthCheck\x12R\n" +
 	"\n" +
-	"datacenter\x18\x06 \x01(\tR\n" +
-	"datacenter\x122\n" +
-	"\x15health_check_interval\x18\b \x01(\rR\x13healthCheckInterval\x12\x18\n" +
+	"datacenter\x18\x06 \x01(\tB2\xbaG/\x92\x02,The datacenter to use for Consul operations.R\n" +
+	"datacenter\x12f\n" +
+	"\x15health_check_interval\x18\b \x01(\rB2\xbaG/\x92\x02,The interval (in seconds) for health checks.R\x13healthCheckInterval\x12T\n" +
 	"\atimeout\x18\n" +
-	" \x01(\x03R\atimeout\x12I\n" +
-	"!deregister_critical_service_after\x18\v \x01(\rR\x1ederegisterCriticalServiceAfter\"$\n" +
-	"\x04ETCD\x12\x1c\n" +
-	"\tendpoints\x18\x01 \x03(\tR\tendpoints\"\a\n" +
+	" \x01(\x03B:\xbaG7\x92\x024The timeout (in milliseconds) for Consul operations.R\atimeout\x12\x9b\x01\n" +
+	"!deregister_critical_service_after\x18\v \x01(\rBP\xbaGM\x92\x02JThe time (in seconds) after which a critical service will be deregistered.R\x1ederegisterCriticalServiceAfter\"J\n" +
+	"\x04ETCD\x12B\n" +
+	"\tendpoints\x18\x01 \x03(\tB$\xbaG!\x92\x02\x1eList of ETCD server endpoints.R\tendpoints\"\a\n" +
 	"\x05Nacos\"\b\n" +
 	"\x06Apollo\"\f\n" +
 	"\n" +
-	"Kubernetes\"Q\n" +
-	"\aPolaris\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
-	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
-	"\x05token\x18\x03 \x01(\tR\x05tokenB\xe9\x01\n" +
+	"Kubernetes\"\xf0\x01\n" +
+	"\aPolaris\x12B\n" +
+	"\aaddress\x18\x01 \x01(\tB(\xbaG%\x92\x02\"The address of the Polaris server.R\aaddress\x12^\n" +
+	"\x06scheme\x18\x02 \x01(\tBF\xbaGC\x92\x02@The scheme to use for connecting to Polaris (e.g., http, https).R\x06scheme\x12A\n" +
+	"\x05token\x18\x03 \x01(\tB+\xbaG(\x92\x02%The token for Polaris authentication.R\x05tokenB\xe9\x01\n" +
 	"\x18com.runtime.discovery.v1B\x0eDiscoveryProtoP\x01ZHgithub.com/origadmin/runtime/api/gen/go/runtime/discovery/v1;discoveryv1\xf8\x01\x01\xa2\x02\x03RDX\xaa\x02\x14Runtime.Discovery.V1\xca\x02\x14Runtime\\Discovery\\V1\xe2\x02 Runtime\\Discovery\\V1\\GPBMetadata\xea\x02\x16Runtime::Discovery::V1b\x06proto3"
 
 var (

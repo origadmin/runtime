@@ -7,6 +7,7 @@
 package configv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -764,74 +765,74 @@ var File_runtime_config_v1_gateway_proto protoreflect.FileDescriptor
 
 const file_runtime_config_v1_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x1fruntime/config/v1/gateway.proto\x12\x11runtime.config.v1\x1a'runtime/security/transport/v1/tls.proto\"\xfb\x02\n" +
-	"\aGateway\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x12\x18\n" +
-	"\x05hosts\x18\x03 \x03(\tB\x02\x18\x01R\x05hosts\x129\n" +
-	"\tendpoints\x18\x04 \x03(\v2\x1b.runtime.config.v1.EndpointR\tendpoints\x12?\n" +
-	"\vmiddlewares\x18\x05 \x03(\v2\x1d.runtime.config.v1.MiddlewareR\vmiddlewares\x12E\n" +
-	"\ttls_store\x18\x06 \x03(\v2(.runtime.config.v1.Gateway.TlsStoreEntryR\btlsStore\x1ae\n" +
+	"\x1fruntime/config/v1/gateway.proto\x12\x11runtime.config.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a'runtime/security/transport/v1/tls.proto\"\xac\x05\n" +
+	"\aGateway\x122\n" +
+	"\x04name\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18The name of the gateway.R\x04name\x12;\n" +
+	"\aversion\x18\x02 \x01(\tB!\xbaG\x1e\x92\x02\x1bThe version of the gateway.R\aversion\x12i\n" +
+	"\x05hosts\x18\x03 \x03(\tBS\xbaGN\x92\x02KDeprecated: Use host in Endpoint instead. List of hosts the gateway serves.\x18\x01R\x05hosts\x12r\n" +
+	"\tendpoints\x18\x04 \x03(\v2\x1b.runtime.config.v1.EndpointB7\xbaG4\x92\x021List of API endpoints configured for the gateway.R\tendpoints\x12y\n" +
+	"\vmiddlewares\x18\x05 \x03(\v2\x1d.runtime.config.v1.MiddlewareB8\xbaG5\x92\x022List of global middlewares applied to the gateway.R\vmiddlewares\x12o\n" +
+	"\ttls_store\x18\x06 \x03(\v2(.runtime.config.v1.Gateway.TlsStoreEntryB(\xbaG%\x92\x02\"TLS configurations stored by name.R\btlsStore\x1ae\n" +
 	"\rTlsStoreEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12>\n" +
-	"\x05value\x18\x02 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x05value:\x028\x01\"y\n" +
-	"\x0ePriorityConfig\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x129\n" +
-	"\tendpoints\x18\x03 \x03(\v2\x1b.runtime.config.v1.EndpointR\tendpoints\"\xec\x03\n" +
-	"\bEndpoint\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\x12\x16\n" +
-	"\x06method\x18\x02 \x01(\tR\x06method\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x127\n" +
-	"\bprotocol\x18\x04 \x01(\x0e2\x1b.runtime.config.v1.ProtocolR\bprotocol\x12\x18\n" +
-	"\atimeout\x18\x05 \x01(\x03R\atimeout\x12?\n" +
-	"\vmiddlewares\x18\x06 \x03(\v2\x1d.runtime.config.v1.MiddlewareR\vmiddlewares\x126\n" +
-	"\bbackends\x18\a \x03(\v2\x1a.runtime.config.v1.BackendR\bbackends\x12.\n" +
-	"\x05retry\x18\b \x01(\v2\x18.runtime.config.v1.RetryR\x05retry\x12E\n" +
-	"\bmetadata\x18\t \x03(\v2).runtime.config.v1.Endpoint.MetadataEntryR\bmetadata\x12\x12\n" +
+	"\x05value\x18\x02 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x05value:\x028\x01\"\x94\x02\n" +
+	"\x0ePriorityConfig\x12A\n" +
+	"\x04name\x18\x01 \x01(\tB-\xbaG*\x92\x02'The name of the priority configuration.R\x04name\x12J\n" +
+	"\aversion\x18\x02 \x01(\tB0\xbaG-\x92\x02*The version of the priority configuration.R\aversion\x12s\n" +
+	"\tendpoints\x18\x03 \x03(\v2\x1b.runtime.config.v1.EndpointB8\xbaG5\x92\x022List of endpoints for this priority configuration.R\tendpoints\"\xc6\a\n" +
+	"\bEndpoint\x128\n" +
+	"\x04path\x18\x01 \x01(\tB$\xbaG!\x92\x02\x1eThe URL path for the endpoint.R\x04path\x12Q\n" +
+	"\x06method\x18\x02 \x01(\tB9\xbaG6\x92\x023The HTTP method for the endpoint (e.g., GET, POST).R\x06method\x12F\n" +
+	"\vdescription\x18\x03 \x01(\tB$\xbaG!\x92\x02\x1eA description of the endpoint.R\vdescription\x12o\n" +
+	"\bprotocol\x18\x04 \x01(\x0e2\x1b.runtime.config.v1.ProtocolB6\xbaG3\x92\x020The communication protocol used by the endpoint.R\bprotocol\x12M\n" +
+	"\atimeout\x18\x05 \x01(\x03B3\xbaG0\x92\x02-The timeout for the endpoint in milliseconds.R\atimeout\x12}\n" +
+	"\vmiddlewares\x18\x06 \x03(\v2\x1d.runtime.config.v1.MiddlewareB<\xbaG9\x92\x026List of middlewares applied to this specific endpoint.R\vmiddlewares\x12i\n" +
+	"\bbackends\x18\a \x03(\v2\x1a.runtime.config.v1.BackendB1\xbaG.\x92\x02+List of backend services for this endpoint.R\bbackends\x12T\n" +
+	"\x05retry\x18\b \x01(\v2\x18.runtime.config.v1.RetryB$\xbaG!\x92\x02\x1eRetry policy for the endpoint.R\x05retry\x12r\n" +
+	"\bmetadata\x18\t \x03(\v2).runtime.config.v1.Endpoint.MetadataEntryB+\xbaG(\x92\x02%Additional metadata for the endpoint.R\bmetadata\x124\n" +
 	"\x04host\x18\n" +
-	" \x01(\tR\x04host\x1a;\n" +
+	" \x01(\tB \xbaG\x1d\x92\x02\x1aThe host for the endpoint.R\x04host\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"V\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xe6\x01\n" +
 	"\n" +
-	"Middleware\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aoptions\x18\x02 \x01(\fR\aoptions\x12\x1a\n" +
-	"\brequired\x18\x03 \x01(\bR\brequired\"\xc9\x02\n" +
-	"\aBackend\x12\x16\n" +
-	"\x06target\x18\x01 \x01(\tR\x06target\x12\x1b\n" +
-	"\x06weight\x18\x02 \x01(\x03H\x00R\x06weight\x88\x01\x01\x12A\n" +
-	"\fhealth_check\x18\x03 \x01(\v2\x1e.runtime.config.v1.HealthCheckR\vhealthCheck\x12\x10\n" +
-	"\x03tls\x18\x04 \x01(\bR\x03tls\x12&\n" +
-	"\x0ftls_config_name\x18\x05 \x01(\tR\rtlsConfigName\x12D\n" +
-	"\bmetadata\x18\x06 \x03(\v2(.runtime.config.v1.Backend.MetadataEntryR\bmetadata\x1a;\n" +
+	"Middleware\x125\n" +
+	"\x04name\x18\x01 \x01(\tB!\xbaG\x1e\x92\x02\x1bThe name of the middleware.R\x04name\x12Z\n" +
+	"\aoptions\x18\x02 \x01(\fB@\xbaG=\x92\x02:Configuration options for the middleware, as a byte array.R\aoptions\x12E\n" +
+	"\brequired\x18\x03 \x01(\bB)\xbaG&\x92\x02#Whether the middleware is required.R\brequired\"\xb5\x05\n" +
+	"\aBackend\x12g\n" +
+	"\x06target\x18\x01 \x01(\tBO\xbaGL\x92\x02IThe target address of the backend service (e.g., IP:Port, discovery URL).R\x06target\x12Y\n" +
+	"\x06weight\x18\x02 \x01(\x03B<\xbaG9\x92\x026The weight for load balancing among multiple backends.H\x00R\x06weight\x88\x01\x01\x12t\n" +
+	"\fhealth_check\x18\x03 \x01(\v2\x1e.runtime.config.v1.HealthCheckB1\xbaG.\x92\x02+Health check configuration for the backend.R\vhealthCheck\x12J\n" +
+	"\x03tls\x18\x04 \x01(\bB8\xbaG5\x92\x022Whether TLS is enabled for the backend connection.R\x03tls\x12j\n" +
+	"\x0ftls_config_name\x18\x05 \x01(\tBB\xbaG?\x92\x02<The name of the TLS configuration to use from the tls_store.R\rtlsConfigName\x12p\n" +
+	"\bmetadata\x18\x06 \x03(\v2(.runtime.config.v1.Backend.MetadataEntryB*\xbaG'\x92\x02$Additional metadata for the backend.R\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\t\n" +
-	"\a_weight\"\xb9\x01\n" +
-	"\vHealthCheck\x12<\n" +
-	"\x04type\x18\x01 \x01(\x0e2(.runtime.config.v1.HealthCheck.CheckTypeR\x04type\x12\x1a\n" +
-	"\bendpoint\x18\x02 \x01(\tR\bendpoint\"P\n" +
+	"\a_weight\"\x8e\x02\n" +
+	"\vHealthCheck\x12h\n" +
+	"\x04type\x18\x01 \x01(\x0e2(.runtime.config.v1.HealthCheck.CheckTypeB*\xbaG'\x92\x02$The type of health check to perform.R\x04type\x12C\n" +
+	"\bendpoint\x18\x02 \x01(\tB'\xbaG$\x92\x02!The endpoint to check for health.R\bendpoint\"P\n" +
 	"\tCheckType\x12\x1a\n" +
 	"\x16CHECK_TYPE_UNSPECIFIED\x10\x00\x12\x13\n" +
 	"\x0fCHECK_TYPE_HTTP\x10\x01\x12\x12\n" +
-	"\x0eCHECK_TYPE_TCP\x10\x02\"\xa9\x01\n" +
-	"\x05Retry\x12\x1a\n" +
-	"\battempts\x18\x01 \x01(\rR\battempts\x12&\n" +
-	"\x0fper_try_timeout\x18\x02 \x01(\x03R\rperTryTimeout\x12<\n" +
+	"\x0eCHECK_TYPE_TCP\x10\x02\"\xa1\x03\n" +
+	"\x05Retry\x12N\n" +
+	"\battempts\x18\x01 \x01(\rB2\xbaG/\x92\x02,The number of retry attempts (default is 1).R\battempts\x12l\n" +
+	"\x0fper_try_timeout\x18\x02 \x01(\x03BD\xbaGA\x92\x02>The timeout for each individual retry attempt in milliseconds.R\rperTryTimeout\x12w\n" +
 	"\n" +
-	"conditions\x18\x03 \x03(\v2\x1c.runtime.config.v1.ConditionR\n" +
-	"conditions\x12\x1e\n" +
+	"conditions\x18\x03 \x03(\v2\x1c.runtime.config.v1.ConditionB9\xbaG6\x92\x023Conditions under which a retry should be performed.R\n" +
+	"conditions\x12a\n" +
 	"\n" +
-	"priorities\x18\x04 \x03(\tR\n" +
-	"priorities\"\xd2\x01\n" +
-	"\tCondition\x12)\n" +
-	"\x0eby_status_code\x18\x01 \x01(\tH\x00R\fbyStatusCode\x88\x01\x01\x12E\n" +
-	"\tby_header\x18\x02 \x01(\v2#.runtime.config.v1.Condition.HeaderH\x01R\bbyHeader\x88\x01\x01\x1a2\n" +
-	"\x06Header\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05valueB\x11\n" +
+	"priorities\x18\x04 \x03(\tBA\xbaG>\x92\x02;List of priorities for retrying (e.g., primary, secondary).R\n" +
+	"priorities\"\xbf\x03\n" +
+	"\tCondition\x12\x81\x01\n" +
+	"\x0eby_status_code\x18\x01 \x01(\tBV\xbaGS\x92\x02PRetry if the response status code matches this pattern (e.g., \"500-599\", \"429\").H\x00R\fbyStatusCode\x88\x01\x01\x12\x85\x01\n" +
+	"\tby_header\x18\x02 \x01(\v2#.runtime.config.v1.Condition.HeaderB>\xbaG;\x92\x028Retry if a specific HTTP header matches the given value.H\x01R\bbyHeader\x88\x01\x01\x1a\x84\x01\n" +
+	"\x06Header\x126\n" +
+	"\x04name\x18\x01 \x01(\tB\"\xbaG\x1f\x92\x02\x1cThe name of the HTTP header.R\x04name\x12B\n" +
+	"\x05value\x18\x02 \x01(\tB,\xbaG)\x92\x02&The expected value of the HTTP header.R\x05valueB\x11\n" +
 	"\x0f_by_status_codeB\f\n" +
 	"\n" +
 	"_by_header*_\n" +

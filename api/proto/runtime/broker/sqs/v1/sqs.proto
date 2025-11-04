@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_outer_classname = "SqsV1Proto";
 option java_package = "com.github.origadmin.api.runtime.broker.sqs.v1";
 option objc_class_prefix = "ORSV1";
-option php_namespace = "OrigAdmin\Runtime\Broker\Sqs\V1";
+option php_namespace = "OrigAdmin\\Runtime\\Broker\\Sqs\\V1";
 
 // SqsConfig defines the configuration for an AWS SQS message queue.
 message SqsConfig {

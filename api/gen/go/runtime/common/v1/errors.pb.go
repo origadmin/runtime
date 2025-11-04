@@ -8,6 +8,7 @@ package commonv1
 
 import (
 	_ "github.com/go-kratos/kratos/v2/errors"
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -285,10 +286,10 @@ var File_runtime_common_v1_errors_proto protoreflect.FileDescriptor
 
 const file_runtime_common_v1_errors_proto_rawDesc = "" +
 	"\n" +
-	"\x1eruntime/common/v1/errors.proto\x12\x11runtime.common.v1\x1a\x13errors/errors.proto\"\xd6\x01\n" +
-	"\rErrorMetadata\x12<\n" +
-	"\bcategory\x18\x01 \x01(\x0e2 .runtime.common.v1.ErrorCategoryR\bcategory\x12J\n" +
-	"\bmetadata\x18\x02 \x03(\v2..runtime.common.v1.ErrorMetadata.MetadataEntryR\bmetadata\x1a;\n" +
+	"\x1eruntime/common/v1/errors.proto\x12\x11runtime.common.v1\x1a\x13errors/errors.proto\x1a$gnostic/openapi/v3/annotations.proto\"\xbe\x02\n" +
+	"\rErrorMetadata\x12^\n" +
+	"\bcategory\x18\x01 \x01(\x0e2 .runtime.common.v1.ErrorCategoryB \xbaG\x1d\x92\x02\x1aThe category of the error.R\bcategory\x12\x8f\x01\n" +
+	"\bmetadata\x18\x02 \x03(\v2..runtime.common.v1.ErrorMetadata.MetadataEntryBC\xbaG@\x92\x02=Additional key-value pairs providing context about the error.R\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*b\n" +

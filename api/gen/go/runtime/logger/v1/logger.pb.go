@@ -7,6 +7,7 @@
 package loggerv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -516,62 +517,62 @@ var File_runtime_logger_v1_logger_proto protoreflect.FileDescriptor
 
 const file_runtime_logger_v1_logger_proto_rawDesc = "" +
 	"\n" +
-	"\x1eruntime/logger/v1/logger.proto\x12\x11runtime.logger.v1\"\xfe\x01\n" +
-	"\x11LoggerHookMessage\x12\x14\n" +
-	"\x05level\x18\x01 \x01(\tR\x05level\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1e\n" +
+	"\x1eruntime/logger/v1/logger.proto\x12\x11runtime.logger.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xca\x03\n" +
+	"\x11LoggerHookMessage\x129\n" +
+	"\x05level\x18\x01 \x01(\tB#\xbaG \x92\x02\x1dThe log level of the message.R\x05level\x128\n" +
+	"\amessage\x18\x02 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18The log message content.R\amessage\x12C\n" +
 	"\n" +
-	"stacktrace\x18\x03 \x01(\tR\n" +
-	"stacktrace\x12\x14\n" +
-	"\x05error\x18\x04 \x01(\tR\x05error\x12H\n" +
-	"\x06fields\x18\x05 \x03(\v20.runtime.logger.v1.LoggerHookMessage.FieldsEntryR\x06fields\x1a9\n" +
+	"stacktrace\x18\x03 \x01(\tB#\xbaG \x92\x02\x1dThe stack trace if available.R\n" +
+	"stacktrace\x12;\n" +
+	"\x05error\x18\x04 \x01(\tB%\xbaG\"\x92\x02\x1fThe error message if available.R\x05error\x12\x82\x01\n" +
+	"\x06fields\x18\x05 \x03(\v20.runtime.logger.v1.LoggerHookMessage.FieldsEntryB8\xbaG5\x92\x022Additional fields associated with the log message.R\x06fields\x1a9\n" +
 	"\vFieldsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa4\a\n" +
-	"\x06Logger\x12\x1a\n" +
-	"\bdisabled\x18\x01 \x01(\bR\bdisabled\x12\x18\n" +
-	"\adevelop\x18\x02 \x01(\bR\adevelop\x12\x18\n" +
-	"\adefault\x18\x03 \x01(\bR\adefault\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12\x16\n" +
-	"\x06format\x18\x05 \x01(\tR\x06format\x12\x14\n" +
-	"\x05level\x18\x06 \x01(\tR\x05level\x12\x16\n" +
-	"\x06stdout\x18\a \x01(\bR\x06stdout\x12&\n" +
-	"\x0edisable_caller\x18\b \x01(\bR\x0edisable_caller\x12 \n" +
-	"\vcaller_skip\x18\t \x01(\rR\vcaller_skip\x12 \n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xe3\x13\n" +
+	"\x06Logger\x12@\n" +
+	"\bdisabled\x18\x01 \x01(\bB$\xbaG!\x92\x02\x1eWhether to disable the logger.R\bdisabled\x12L\n" +
+	"\adevelop\x18\x02 \x01(\bB2\xbaG/\x92\x02,Whether to enable development logger output.R\adevelop\x12Q\n" +
+	"\adefault\x18\x03 \x01(\bB7\xbaG4\x92\x021Whether this is the default logger configuration.R\adefault\x12:\n" +
+	"\x04name\x18\x04 \x01(\tB&\xbaG#\x92\x02 The name of the logger instance.R\x04name\x12W\n" +
+	"\x06format\x18\x05 \x01(\tB?\xbaG<\x92\x029The output format of the logger (e.g., json, text, tint).R\x06format\x12^\n" +
+	"\x05level\x18\x06 \x01(\tBH\xbaGE\x92\x02BThe minimum logging level (e.g., debug, info, warn, error, fatal).R\x05level\x12H\n" +
+	"\x06stdout\x18\a \x01(\bB0\xbaG-\x92\x02*Whether to output logs to standard output.R\x06stdout\x12k\n" +
+	"\x0edisable_caller\x18\b \x01(\bBC\xbaG@\x92\x02=Whether to disable logging the caller's file and line number.R\x0edisable_caller\x12g\n" +
+	"\vcaller_skip\x18\t \x01(\rBE\xbaGB\x92\x02?The number of stack frames to skip when determining the caller.R\vcaller_skip\x12V\n" +
 	"\vtime_format\x18\n" +
-	" \x01(\tR\vtime_format\x122\n" +
-	"\x04file\x18d \x01(\v2\x1e.runtime.logger.v1.Logger.FileR\x04file\x12C\n" +
+	" \x01(\tB4\xbaG1\x92\x02.The format for log timestamps (e.g., RFC3339).R\vtime_format\x12c\n" +
+	"\x04file\x18d \x01(\v2\x1e.runtime.logger.v1.Logger.FileB/\xbaG,\x92\x02)File output configuration for the logger.R\x04file\x12l\n" +
 	"\n" +
-	"dev_logger\x18e \x01(\v2#.runtime.logger.v1.Logger.DevLoggerR\n" +
-	"dev_logger\x1a\xce\x01\n" +
-	"\x04File\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\x12\x1e\n" +
+	"dev_logger\x18e \x01(\v2#.runtime.logger.v1.Logger.DevLoggerB'\xbaG$\x92\x02!Development logger configuration.R\n" +
+	"dev_logger\x1a\xb8\x04\n" +
+	"\x04File\x123\n" +
+	"\x04path\x18\x01 \x01(\tB\x1f\xbaG\x1c\x92\x02\x19The path to the log file.R\x04path\x12Q\n" +
 	"\n" +
-	"lumberjack\x18\x02 \x01(\bR\n" +
-	"lumberjack\x12\x1a\n" +
-	"\bcompress\x18\x03 \x01(\bR\bcompress\x12\x1e\n" +
+	"lumberjack\x18\x02 \x01(\bB1\xbaG.\x92\x02+Whether to use lumberjack for log rotation.R\n" +
+	"lumberjack\x12D\n" +
+	"\bcompress\x18\x03 \x01(\bB(\xbaG%\x92\x02\"Whether to compress old log files.R\bcompress\x12S\n" +
 	"\n" +
-	"local_time\x18\x04 \x01(\bR\n" +
-	"local_time\x12\x1a\n" +
-	"\bmax_size\x18\x05 \x01(\x05R\bmax_size\x12\x18\n" +
-	"\amax_age\x18\x06 \x01(\x05R\amax_age\x12 \n" +
-	"\vmax_backups\x18\a \x01(\x05R\vmax_backups\x1a\xb9\x02\n" +
-	"\tDevLogger\x12\x1c\n" +
-	"\tmax_slice\x18\x01 \x01(\rR\tmax_slice\x12\x1c\n" +
-	"\tsort_keys\x18\x02 \x01(\bR\tsort_keys\x12\x18\n" +
-	"\anewline\x18\x03 \x01(\bR\anewline\x12\x16\n" +
-	"\x06indent\x18\x04 \x01(\bR\x06indent\x12 \n" +
-	"\vdebug_color\x18\x05 \x01(\rR\vdebug_color\x12\x1e\n" +
+	"local_time\x18\x04 \x01(\bB3\xbaG0\x92\x02-Whether to use local time for log timestamps.R\n" +
+	"local_time\x12`\n" +
+	"\bmax_size\x18\x05 \x01(\x05BD\xbaGA\x92\x02>The maximum size in megabytes of the log file before rotation.R\bmax_size\x12S\n" +
+	"\amax_age\x18\x06 \x01(\x05B9\xbaG6\x92\x023The maximum number of days to retain old log files.R\amax_age\x12V\n" +
+	"\vmax_backups\x18\a \x01(\x05B4\xbaG1\x92\x02.The maximum number of old log files to retain.R\vmax_backups\x1a\xfa\x06\n" +
+	"\tDevLogger\x12P\n" +
+	"\tmax_slice\x18\x01 \x01(\rB2\xbaG/\x92\x02,Maximum slice length for development logger.R\tmax_slice\x12V\n" +
+	"\tsort_keys\x18\x02 \x01(\bB8\xbaG5\x92\x022Whether to sort keys in development logger output.R\tsort_keys\x12a\n" +
+	"\anewline\x18\x03 \x01(\bBG\xbaGD\x92\x02AWhether to add a newline at the end of development logger output.R\anewline\x12J\n" +
+	"\x06indent\x18\x04 \x01(\bB2\xbaG/\x92\x02,Whether to indent development logger output.R\x06indent\x12Y\n" +
+	"\vdebug_color\x18\x05 \x01(\rB7\xbaG4\x92\x021Color code for debug level in development logger.R\vdebug_color\x12V\n" +
 	"\n" +
-	"info_color\x18\x06 \x01(\rR\n" +
-	"info_color\x12\x1e\n" +
+	"info_color\x18\x06 \x01(\rB6\xbaG3\x92\x020Color code for info level in development logger.R\n" +
+	"info_color\x12V\n" +
 	"\n" +
-	"warn_color\x18\a \x01(\rR\n" +
-	"warn_color\x12 \n" +
-	"\verror_color\x18\b \x01(\rR\verror_color\x12\x1c\n" +
-	"\tmax_trace\x18\t \x01(\rR\tmax_trace\x12\x1c\n" +
+	"warn_color\x18\a \x01(\rB6\xbaG3\x92\x020Color code for warn level in development logger.R\n" +
+	"warn_color\x12Y\n" +
+	"\verror_color\x18\b \x01(\rB7\xbaG4\x92\x021Color code for error level in development logger.R\verror_color\x12O\n" +
+	"\tmax_trace\x18\t \x01(\rB1\xbaG.\x92\x02+Maximum trace depth for development logger.R\tmax_trace\x12]\n" +
 	"\tformatter\x18\n" +
-	" \x01(\bR\tformatter*\xa1\x01\n" +
+	" \x01(\bB?\xbaG<\x92\x029Whether to use a custom formatter for development logger.R\tformatter*\xa1\x01\n" +
 	"\vLoggerLevel\x12\x1c\n" +
 	"\x18LOGGER_LEVEL_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12LOGGER_LEVEL_DEBUG\x10\x01\x12\x15\n" +

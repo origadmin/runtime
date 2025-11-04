@@ -7,6 +7,7 @@
 package appv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -108,13 +109,13 @@ var File_runtime_app_v1_app_proto protoreflect.FileDescriptor
 
 const file_runtime_app_v1_app_proto_rawDesc = "" +
 	"\n" +
-	"\x18runtime/app/v1/app.proto\x12\x0eruntime.app.v1\"\xd1\x01\n" +
-	"\x03App\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\tR\aversion\x12\x10\n" +
-	"\x03env\x18\x04 \x01(\tR\x03env\x12=\n" +
-	"\bmetadata\x18\x05 \x03(\v2!.runtime.app.v1.App.MetadataEntryR\bmetadata\x1a;\n" +
+	"\x18runtime/app/v1/app.proto\x12\x0eruntime.app.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xa5\x03\n" +
+	"\x03App\x12:\n" +
+	"\x02id\x18\x01 \x01(\tB*\xbaG'\x92\x02$Unique identifier of the applicationR\x02id\x12*\n" +
+	"\x04name\x18\x02 \x01(\tB\x16\xbaG\x13\x92\x02\x10Application nameR\x04name\x123\n" +
+	"\aversion\x18\x03 \x01(\tB\x19\xbaG\x16\x92\x02\x13Application versionR\aversion\x12O\n" +
+	"\x03env\x18\x04 \x01(\tB=\xbaG:\x92\x027Application running environment (e.g.: dev, test, prod)R\x03env\x12s\n" +
+	"\bmetadata\x18\x05 \x03(\v2!.runtime.app.v1.App.MetadataEntryB4\xbaG1\x92\x02.Application metadata stored as key-value pairsR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\xb6\x01\n" +

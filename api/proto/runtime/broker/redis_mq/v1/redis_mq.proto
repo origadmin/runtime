@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_outer_classname = "RedisMqV1Proto";
 option java_package = "com.github.origadmin.api.runtime.broker.redis_mq.v1";
 option objc_class_prefix = "ORRV1";
-option php_namespace = "OrigAdmin\Runtime\Broker\RedisMq\V1";
+option php_namespace = "OrigAdmin\\Runtime\\Broker\\RedisMq\\V1";
 
 // RedisMqConfig defines the configuration for Redis used as a message queue (Pub/Sub or List).
 message RedisMqConfig {

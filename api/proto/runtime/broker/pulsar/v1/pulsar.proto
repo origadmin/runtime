@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_outer_classname = "PulsarV1Proto";
 option java_package = "com.github.origadmin.api.runtime.broker.pulsar.v1";
 option objc_class_prefix = "ORPV1";
-option php_namespace = "OrigAdmin\Runtime\Broker\Pulsar\V1";
+option php_namespace = "OrigAdmin\\Runtime\\Broker\\Pulsar\\V1";
 
 // PulsarConfig defines the configuration for a Pulsar message queue.
 message PulsarConfig {

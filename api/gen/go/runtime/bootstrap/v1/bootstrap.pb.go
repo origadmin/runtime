@@ -7,6 +7,7 @@
 package v1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -83,10 +84,10 @@ var File_runtime_bootstrap_v1_bootstrap_proto protoreflect.FileDescriptor
 
 const file_runtime_bootstrap_v1_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/bootstrap/v1/bootstrap.proto\x12\x14runtime.bootstrap.v1\x1a\x1eruntime/source/v1/source.proto\"\xc2\x01\n" +
-	"\tBootstrap\x129\n" +
-	"\asources\x18\x01 \x03(\v2\x1f.runtime.source.v1.SourceConfigR\asources\x12@\n" +
-	"\x05paths\x18\x02 \x03(\v2*.runtime.bootstrap.v1.Bootstrap.PathsEntryR\x05paths\x1a8\n" +
+	"$runtime/bootstrap/v1/bootstrap.proto\x12\x14runtime.bootstrap.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1eruntime/source/v1/source.proto\"\xbf\x02\n" +
+	"\tBootstrap\x12l\n" +
+	"\asources\x18\x01 \x03(\v2\x1f.runtime.source.v1.SourceConfigB1\xbaG.\x92\x02+List of configuration sources to be loaded.R\asources\x12\x89\x01\n" +
+	"\x05paths\x18\x02 \x03(\v2*.runtime.bootstrap.v1.Bootstrap.PathsEntryBG\xbaGD\x92\x02AOptional mapping from a component name to its configuration path.R\x05paths\x1a8\n" +
 	"\n" +
 	"PathsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +

@@ -7,6 +7,7 @@
 package mailv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -107,7 +108,7 @@ type SmtpConfig struct {
 	Port          int32                  `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
 	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
 	Password      string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
-	TokenSecret   string                 `protobuf:"bytes,5,opt,name=token_secret,proto3" json:"token_secret,omitempty"` // Specific to some SMTP setups or OAuth
+	TokenSecret   string                 `protobuf:"bytes,5,opt,name=token_secret,proto3" json:"token_secret,omitempty"`
 	Ssl           bool                   `protobuf:"varint,6,opt,name=ssl,proto3" json:"ssl,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -189,24 +190,24 @@ var File_runtime_mail_v1_mail_proto protoreflect.FileDescriptor
 
 const file_runtime_mail_v1_mail_proto_rawDesc = "" +
 	"\n" +
-	"\x1aruntime/mail/v1/mail.proto\x12\x11runtime.config.v1\"\xd6\x01\n" +
-	"\x04Mail\x12\x1a\n" +
-	"\bnickname\x18\x01 \x01(\tR\bnickname\x12\x12\n" +
-	"\x04from\x18\x02 \x01(\tR\x04from\x12 \n" +
-	"\vmax_retries\x18\x03 \x01(\x05R\vmax_retries\x12&\n" +
-	"\x0eretry_interval\x18\x04 \x01(\x03R\x0eretry_interval\x12D\n" +
+	"\x1aruntime/mail/v1/mail.proto\x12\x0fruntime.mail.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xb0\x03\n" +
+	"\x04Mail\x12M\n" +
+	"\bnickname\x18\x01 \x01(\tB1\xbaG.\x92\x02+The nickname or sender name for the mailer.R\bnickname\x123\n" +
+	"\x04from\x18\x02 \x01(\tB\x1f\xbaG\x1c\x92\x02\x19The sender email address.R\x04from\x12U\n" +
+	"\vmax_retries\x18\x03 \x01(\x05B3\xbaG0\x92\x02-Maximum number of retries for sending emails.R\vmax_retries\x12W\n" +
+	"\x0eretry_interval\x18\x04 \x01(\x03B/\xbaG,\x92\x02)Interval in milliseconds between retries.R\x0eretry_interval\x12d\n" +
 	"\vsmtp_config\x18\n" +
-	" \x01(\v2\x1d.runtime.config.v1.SmtpConfigH\x00R\vsmtp_config\x88\x01\x01B\x0e\n" +
-	"\f_smtp_config\"\xa2\x01\n" +
+	" \x01(\v2\x1b.runtime.mail.v1.SmtpConfigB \xbaG\x1d\x92\x02\x1aSMTP mailer configuration.H\x00R\vsmtp_config\x88\x01\x01B\x0e\n" +
+	"\f_smtp_config\"\x98\x03\n" +
 	"\n" +
-	"SmtpConfig\x12\x12\n" +
-	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
-	"\x04port\x18\x02 \x01(\x05R\x04port\x12\x1a\n" +
-	"\busername\x18\x03 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x04 \x01(\tR\bpassword\x12\"\n" +
-	"\ftoken_secret\x18\x05 \x01(\tR\ftoken_secret\x12\x10\n" +
-	"\x03ssl\x18\x06 \x01(\bR\x03sslB\xcb\x01\n" +
-	"\x15com.runtime.config.v1B\tMailProtoP\x01Z>github.com/origadmin/runtime/api/gen/go/runtime/mail/v1;mailv1\xf8\x01\x01\xa2\x02\x03RCX\xaa\x02\x11Runtime.Config.V1\xca\x02\x11Runtime\\Config\\V1\xe2\x02\x1dRuntime\\Config\\V1\\GPBMetadata\xea\x02\x13Runtime::Config::V1b\x06proto3"
+	"SmtpConfig\x12/\n" +
+	"\x04host\x18\x01 \x01(\tB\x1b\xbaG\x18\x92\x02\x15The SMTP server host.R\x04host\x12/\n" +
+	"\x04port\x18\x02 \x01(\x05B\x1b\xbaG\x18\x92\x02\x15The SMTP server port.R\x04port\x12C\n" +
+	"\busername\x18\x03 \x01(\tB'\xbaG$\x92\x02!Username for SMTP authentication.R\busername\x12C\n" +
+	"\bpassword\x18\x04 \x01(\tB'\xbaG$\x92\x02!Password for SMTP authentication.R\bpassword\x12U\n" +
+	"\ftoken_secret\x18\x05 \x01(\tB1\xbaG.\x92\x02+Token secret for some SMTP setups or OAuth.R\ftoken_secret\x12G\n" +
+	"\x03ssl\x18\x06 \x01(\bB5\xbaG2\x92\x02/Whether to use SSL/TLS for the SMTP connection.R\x03sslB\xc1\x01\n" +
+	"\x13com.runtime.mail.v1B\tMailProtoP\x01Z>github.com/origadmin/runtime/api/gen/go/runtime/mail/v1;mailv1\xf8\x01\x01\xa2\x02\x03RMX\xaa\x02\x0fRuntime.Mail.V1\xca\x02\x0fRuntime\\Mail\\V1\xe2\x02\x1bRuntime\\Mail\\V1\\GPBMetadata\xea\x02\x11Runtime::Mail::V1b\x06proto3"
 
 var (
 	file_runtime_mail_v1_mail_proto_rawDescOnce sync.Once
@@ -222,11 +223,11 @@ func file_runtime_mail_v1_mail_proto_rawDescGZIP() []byte {
 
 var file_runtime_mail_v1_mail_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_runtime_mail_v1_mail_proto_goTypes = []any{
-	(*Mail)(nil),       // 0: runtime.config.v1.Mail
-	(*SmtpConfig)(nil), // 1: runtime.config.v1.SmtpConfig
+	(*Mail)(nil),       // 0: runtime.mail.v1.Mail
+	(*SmtpConfig)(nil), // 1: runtime.mail.v1.SmtpConfig
 }
 var file_runtime_mail_v1_mail_proto_depIdxs = []int32{
-	1, // 0: runtime.config.v1.Mail.smtp_config:type_name -> runtime.config.v1.SmtpConfig
+	1, // 0: runtime.mail.v1.Mail.smtp_config:type_name -> runtime.mail.v1.SmtpConfig
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

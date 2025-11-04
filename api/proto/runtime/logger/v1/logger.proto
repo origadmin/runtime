@@ -13,12 +13,12 @@ option objc_class_prefix = "ORC";
 
 // Logger level
 enum LoggerLevel {
-  LOGGER_LEVEL_UNSPECIFIED = 0 [(gnostic.openapi.v3.enum_value) = {description: "Unspecified logger level."}];
-  LOGGER_LEVEL_DEBUG = 1 [(gnostic.openapi.v3.enum_value) = {description: "Debug level logging."}];
-  LOGGER_LEVEL_INFO = 2 [(gnostic.openapi.v3.enum_value) = {description: "Info level logging."}];
-  LOGGER_LEVEL_WARN = 3 [(gnostic.openapi.v3.enum_value) = {description: "Warn level logging."}];
-  LOGGER_LEVEL_ERROR = 4 [(gnostic.openapi.v3.enum_value) = {description: "Error level logging."}];
-  LOGGER_LEVEL_FATAL = 5 [(gnostic.openapi.v3.enum_value) = {description: "Fatal level logging."}];
+  LOGGER_LEVEL_UNSPECIFIED = 0;
+  LOGGER_LEVEL_DEBUG = 1;
+  LOGGER_LEVEL_INFO = 2;
+  LOGGER_LEVEL_WARN = 3;
+  LOGGER_LEVEL_ERROR = 4;
+  LOGGER_LEVEL_FATAL = 5;
 }
 
 // Logger hook message
