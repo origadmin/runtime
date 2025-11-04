@@ -101,6 +101,11 @@ func (e *Structured) Error() string {
 	return sb.String()
 }
 
+func (e *Structured) Wrap(err error) *Structured {
+	e.Err = err
+	return e
+}
+
 // Unwrap returns the underlying error
 func (e *Structured) Unwrap() error {
 	return e.Err

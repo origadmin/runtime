@@ -68,13 +68,13 @@ func New(cfg *databasev1.DatabaseConfig) (storageiface.Database, error) {
 
 	db, err := sql.Open(driver, source)
 	if err != nil {
-		return nil, runtimeerrors.NewStructured(Module, "failed to open database connection: %w", err).WithCaller()
+		return nil, runtimeerrors.NewStructured(Module, "failed to open database").Wrap(err).WithCaller()
 	}
 
 	// Optional: Ping the database to verify the connection is alive
 	if err = db.Ping(); err != nil {
-		_ = db.Close() // Close the connection if ping fails
-		return nil, runtimeerrors.NewStructured(Module, "failed to ping database: %w", err).WithCaller()
+		_ = db.Close()
+		return nil, runtimeerrors.NewStructured(Module, "failed to ping database").Wrap(err).WithCaller()
 	}
 
 	// Set connection pool settings if provided in config
