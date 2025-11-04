@@ -23,6 +23,7 @@ const (
 	Tracing        Name = "tracing"
 	Validator      Name = "validator"
 	Optimize       Name = "optimize"
+	Recovery       Name = "recovery"
 	Selector       Name = "selector"
 )
 

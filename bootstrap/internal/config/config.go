@@ -6,6 +6,7 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	datav1 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
@@ -122,6 +123,14 @@ func (c *structuredConfigImpl) decodeComponent(componentKey string, value any) e
 		return err
 	}
 	return nil
+}
+
+func (c *structuredConfigImpl) DecodeData() (*datav1.Data, error) {
+	dataConfig := new(datav1.Data)
+	if err := c.decodeComponent(constant.ComponentData, dataConfig); err != nil {
+		return nil, err
+	}
+	return dataConfig, nil
 }
 
 // DecodeApp implements the AppConfigDecoder interface.

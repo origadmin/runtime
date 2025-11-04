@@ -23,6 +23,7 @@ import (
 var defaultComponentPaths = map[string]string{
 	constant.ConfigApp:                "app",
 	constant.ComponentLogger:          "logger",
+	constant.ComponentData:            "data",
 	constant.ComponentRegistries:      "discoveries",
 	constant.ComponentDefaultRegistry: "default_registry_name",
 	constant.ComponentMiddlewares:     "middlewares",

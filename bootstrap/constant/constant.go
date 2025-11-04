@@ -8,6 +8,9 @@ const (
 	// ComponentLogger is the key for the logger component.
 	ComponentLogger = "logger"
 
+	// ComponentData is the key for the data component.
+	ComponentData = "data"
+
 	// ComponentRegistries is the key for the service registries component.
 	ComponentRegistries = "registries"
 

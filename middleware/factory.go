@@ -18,6 +18,7 @@ func init() {
 	// The factories will be registered here once they are updated to the new interface.
 	// optimizeFactory is removed from here as it's not a formal feature and should be registered by the user.
 	// All other factories will be uncommented as they are updated.
+	Register(Recovery, &recoveryFactory{})
 	Register(Jwt, &jwtFactory{})
 	Register(CircuitBreaker, &circuitBreakerFactory{})
 	Register(Logging, &loggingFactory{})
