@@ -7,6 +7,7 @@ package middleware
 
 import (
 	"github.com/go-kratos/kratos/v2/middleware/selector"
+	"github.com/goexts/generic/maps"
 
 	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/selector/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
@@ -29,12 +30,18 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 	helper.Debug("enabling client selector middleware")
 
 	var mws []KMiddleware
-	// Determine target middleware names by includes/excludes before fetching instances
+
+	// Apply includes if specified, otherwise use all middlewares
 	var names []string
 	includes := selectorConfig.GetIncludes()
+	if len(includes) > 0 {
+		names = append(names, includes...)
+	} else {
+		names = maps.Keys(mwOpts.Carrier.Clients)
+	}
+
+	// Apply excludes filter
 	excludes := selectorConfig.GetExcludes()
-	names = append(names, includes...)
-	// apply excludes filter
 	if len(excludes) > 0 {
 		ex := make(map[string]struct{}, len(excludes))
 		for _, n := range excludes {
@@ -61,6 +68,7 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 	}
 
 	if len(mws) == 0 {
+		helper.Warn("no client selector middleware enabled")
 		return nil, false
 	}
 
@@ -83,12 +91,18 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 	helper.Debug("enabling server selector middleware")
 
 	var mws []KMiddleware
-	// Determine target middleware names by includes/excludes before fetching instances
+
+	// Apply includes if specified, otherwise use all middlewares
 	var names []string
 	includes := selectorConfig.GetIncludes()
+	if len(includes) > 0 {
+		names = append(names, includes...)
+	} else {
+		names = maps.Keys(mwOpts.Carrier.Servers)
+	}
+
+	// Apply excludes filter
 	excludes := selectorConfig.GetExcludes()
-	names = append(names, includes...)
-	// apply excludes filter
 	if len(excludes) > 0 {
 		ex := make(map[string]struct{}, len(excludes))
 		for _, n := range excludes {
@@ -115,6 +129,7 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 	}
 
 	if len(mws) == 0 {
+		helper.Warn("no server selector middleware enabled")
 		return nil, false
 	}
 

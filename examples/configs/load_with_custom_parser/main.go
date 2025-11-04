@@ -8,6 +8,7 @@ import (
 
 	"github.com/origadmin/runtime"
 	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	datav1 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
@@ -33,6 +34,11 @@ type CustomSettings struct {
 	APIKey         string     `json:"api_key"`
 	RateLimit      int        `json:"rate_limit"`
 	Endpoints      []Endpoint `json:"endpoints"`
+}
+
+func (c *CustomSettings) DecodeData() (*datav1.Data, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c *CustomSettings) DecodeDefaultDiscovery() (string, error) {

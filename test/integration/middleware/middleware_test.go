@@ -17,6 +17,7 @@ import (
 
 // Define all supported middleware types
 var supportedMiddlewareTypes = map[string]struct{}{
+	"recovery":        {},
 	"metadata":        {},
 	"logging":         {},
 	"selector":        {},
@@ -114,7 +115,10 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		expectedCount := 0
 		for _, mw := range configs.Configs {
 			if mw.Enabled && mw.Type != "rate_limiter" { // rate_limiter 在客户端不受支持
+				t.Logf("Including %s middleware for client", mw.Type)
 				expectedCount++
+			} else {
+				t.Logf("Skipping rate_limiter middleware for client")
 			}
 		}
 
@@ -130,7 +134,10 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		expectedCount := 0
 		for _, mw := range configs.Configs {
 			if mw.Enabled && mw.Type != "circuit_breaker" { // circuit_breaker 在服务端不受支持
+				t.Logf("Including %s middleware for server", mw.Type)
 				expectedCount++
+			} else {
+				t.Logf("Skipping circuit_breaker middleware for server")
 			}
 		}
 

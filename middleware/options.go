@@ -11,9 +11,10 @@ import (
 // Options holds common options that have been resolved once at the top level.
 // These options are then passed down to individual middleware factories.
 type Options struct {
-	Logger    log.Logger         // The resolved logger instance.
+	Logger    log.Logger
 	MatchFunc selector.MatchFunc // MatchFunc for selector middleware
 	Carrier   *Carrier
+	Options   []Option
 }
 
 type Option = options.Option
@@ -21,12 +22,6 @@ type Option = options.Option
 func WithMatchFunc(matchFunc selector.MatchFunc) Option {
 	return optionutil.Update(func(o *Options) {
 		o.MatchFunc = matchFunc
-	})
-}
-
-func WithLogger(logger log.Logger) Option {
-	return optionutil.Update(func(o *Options) {
-		o.Logger = logger
 	})
 }
 
@@ -41,10 +36,15 @@ func WithCarrier(carrier *Carrier) Option {
 func FromOptions(opts ...Option) *Options {
 	// Use optionutil to resolve the context and matchFunc
 	// We need a temporary struct to hold these, as optionutil.New works on a zero-value struct.
-	ctx, mwOpts := optionutil.New[Options](opts...)
-	if mwOpts.Logger == nil {
-		// WithCond the logger is not set, use the default logger
-		mwOpts.Logger = log.FromContext(ctx)
+	mwOpts := optionutil.NewT[Options](opts...)
+	mwOpts.Logger = log.FromOptions(opts)
+	if mwOpts.Carrier == nil {
+		// WithCond the carrier is not set, use a new Carrier instance
+		mwOpts.Carrier = &Carrier{
+			Clients: make(map[string]KMiddleware),
+			Servers: make(map[string]KMiddleware),
+		}
 	}
+	mwOpts.Options = opts
 	return mwOpts
 }
