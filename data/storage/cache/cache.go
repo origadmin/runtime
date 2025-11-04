@@ -10,6 +10,8 @@ import (
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
+
+	"github.com/origadmin/runtime/data/storage/cache/memory" // Import the memory cache implementation
 )
 
 const (
@@ -25,7 +27,7 @@ func New(cfg *cachev1.CacheConfig) (storageiface.Cache, error) {
 
 	switch cfg.GetDriver() {
 	case "memory":
-		return NewMemoryCache(cfg.GetMemory()), nil // Pass the Memory config
+		return memory.NewCache(cfg.GetMemory()), nil // Call the NewMemoryCache from the memory subpackage
 	// case "redis":
 	//     return redis.New(cfg.GetRedis()), nil
 	// case "memcached":

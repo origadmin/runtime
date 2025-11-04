@@ -3,6 +3,8 @@ package interfaces
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
+
+	"github.com/origadmin/runtime/interfaces/storage"
 )
 
 // ComponentFactory defines the signature for a function that can create a generic component.
@@ -43,6 +45,11 @@ type Container interface {
 
 	// ClientMiddleware returns a client middleware by name.
 	ClientMiddleware(name string) (middleware.Middleware, bool)
+
+	// --- Storage ---
+
+	// StorageProvider returns the configured storage provider.
+	StorageProvider() storage.Provider
 
 	// --- Generic Service Locator for Extensibility ---
 

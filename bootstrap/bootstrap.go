@@ -79,6 +79,7 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		appInfo:          finalAppInfo,
 		container:        c,
 		logger:           logger,
+		storageProvider:  c.StorageProvider(), // Initialize storageProvider
 		cleanup:          cleanupFunc,
 	}
 	return res, nil

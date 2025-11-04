@@ -8,6 +8,7 @@ import (
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/storage"
 )
 
 // Runtime defines the application's runtime environment, providing convenient access to core components.
@@ -109,6 +110,11 @@ func (r *Runtime) Discovery(name string) (registry.Discovery, bool) {
 // Registrar returns a service registrar component by its configured name.
 func (r *Runtime) Registrar(name string) (registry.Registrar, bool) {
 	return r.result.Container().Registrar(name)
+}
+
+// Storage returns the configured storage provider.
+func (r *Runtime) Storage() storage.Provider {
+	return r.result.Container().StorageProvider()
 }
 
 // Cleanup executes the cleanup function for all resources acquired during bootstrap.
