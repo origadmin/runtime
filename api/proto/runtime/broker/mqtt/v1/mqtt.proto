@@ -1,14 +1,15 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.mqtt.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/mqtt/v1;mqttv1";
 option java_multiple_files = true;
-option java_outer_classname = "MqttProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "MqttV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.mqtt.v1";
+option objc_class_prefix = "ORMV1";
+option php_namespace = "OrigAdmin\Runtime\Broker\Mqtt\V1";
 
 // MqttConfig defines the configuration for an MQTT message queue.
 message MqttConfig {

@@ -1,14 +1,15 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.nats.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/nats/v1;natsv1";
 option java_multiple_files = true;
-option java_outer_classname = "NatsProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "NatsV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.nats.v1";
+option objc_class_prefix = "ORNV1";
+option php_namespace = "OrigAdmin\Runtime\Broker\Nats\V1";
 
 // NatsConfig defines the configuration for a NATS message queue.
 message NatsConfig {

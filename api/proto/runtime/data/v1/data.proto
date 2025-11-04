@@ -3,25 +3,19 @@ syntax = "proto3";
 package runtime.data.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
-// Import all individual storage component configurations
-import "runtime/data/storage/v1/cache.proto";
-import "runtime/data/storage/v1/database.proto";
-import "runtime/data/storage/v1/file_local.proto";
-import "runtime/data/storage/v1/file_store.proto";
-import "runtime/data/storage/v1/memcached.proto";
-import "runtime/data/storage/v1/memory.proto";
-import "runtime/data/storage/v1/oss.proto";
-import "runtime/data/storage/v1/redis.proto";
-import "runtime/data/storage/v1/document.proto"; // Updated import for document databases
-import "validate/validate.proto";
 import "google/protobuf/struct.proto";
+import "runtime/data/cache/v1/cache.proto";
+import "runtime/data/database/v1/database.proto";
+import "runtime/data/database/v1/document.proto";
+import "runtime/data/file/v1/file_store.proto";
+import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/v1;datav1";
 option java_multiple_files = true;
-option java_outer_classname = "DataProto";
+option java_outer_classname = "DataV1Proto";
 option java_package = "com.github.origadmin.api.runtime.data.v1";
-option objc_class_prefix = "ORD";
+option objc_class_prefix = "ORDV1";
 
 // Data is the top-level configuration for all data-related components.
 message Data {
@@ -69,7 +63,7 @@ message FileStores {
     (gnostic.openapi.v3.property) = {description: "Active filestore name, overrides default"}
   ];
   // List of named FileStore configurations.
-  repeated runtime.data.storage.v1.FileStoreConfig configs = 3 [
+  repeated runtime.data.file.v1.FileStoreConfig configs = 3 [
     json_name = "configs",
     (gnostic.openapi.v3.property) = {description: "List of named FileStore configurations"}
   ];
@@ -88,7 +82,7 @@ message Caches {
     (gnostic.openapi.v3.property) = {description: "Active cache name, overrides default"}
   ];
   // List of named Cache configurations.
-  repeated runtime.data.storage.v1.CacheConfig configs = 3 [
+  repeated runtime.data.cache.v1.CacheConfig configs = 3 [
     json_name = "configs",
     (gnostic.openapi.v3.property) = {description: "List of named Cache configurations"}
   ];
@@ -107,7 +101,7 @@ message Databases {
     (gnostic.openapi.v3.property) = {description: "Active database name, overrides default"}
   ];
   // List of named Relational Database configurations.
-  repeated runtime.data.storage.v1.DatabaseConfig configs = 3 [
+  repeated runtime.data.database.v1.DatabaseConfig configs = 3 [
     json_name = "configs",
     (gnostic.openapi.v3.property) = {description: "List of named Relational Database configurations"}
   ];
@@ -126,7 +120,7 @@ message Documents {
     (gnostic.openapi.v3.property) = {description: "Active document database name, overrides default"}
   ];
   // List of named Document Database configurations.
-  repeated runtime.data.storage.v1.DocumentConfig configs = 3 [
+  repeated runtime.data.database.v1.DocumentConfig configs = 3 [
     json_name = "configs",
     (gnostic.openapi.v3.property) = {description: "List of named Document Database configurations"}
   ];
