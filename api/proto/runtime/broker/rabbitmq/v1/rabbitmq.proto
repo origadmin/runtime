@@ -1,34 +1,30 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.rabbitmq.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/rabbitmq/v1;rabbitmqv1";
 option java_multiple_files = true;
-option java_outer_classname = "RabbitMQProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "RabbitMQV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.rabbitmq.v1";
+option objc_class_prefix = "ORQV1";
+option php_namespace = "OrigAdmin\Runtime\Broker\RabbitMQ\V1";
 
 // RabbitMQConfig defines the configuration for a RabbitMQ message queue.
 message RabbitMQConfig {
   // RabbitMQ connection URI (e.g., "amqp://guest:guest@localhost:5672/").
   string uri = 1 [(gnostic.openapi.v3.property) = {description: "RabbitMQ connection URI (e.g., \"amqp://guest:guest@localhost:5672/\")."}];
   // Default exchange name.
-  optional string exchange = 2 [(gnostic.openapi.v3.property) = {description: "Default exchange name."}
-  ];
+  optional string exchange = 2 [(gnostic.openapi.v3.property) = {description: "Default exchange name."}];
   // Default queue name.
-  optional string queue = 3 [(gnostic.openapi.v3.property) = {description: "Default queue name."}
-  ];
+  optional string queue = 3 [(gnostic.openapi.v3.property) = {description: "Default queue name."}];
   // Virtual host to connect to.
-  optional string vhost = 4 [(gnostic.openapi.v3.property) = {description: "Virtual host to connect to."}
-  ];
+  optional string vhost = 4 [(gnostic.openapi.v3.property) = {description: "Virtual host to connect to."}];
   // Username for authentication.
-  optional string username = 5 [(gnostic.openapi.v3.property) = {description: "Username for authentication."}
-  ];
+  optional string username = 5 [(gnostic.openapi.v3.property) = {description: "Username for authentication."}];
   // Password for authentication.
-  optional string password = 6 [(gnostic.openapi.v3.property) = {description: "Password for authentication."}
-  ];
+  optional string password = 6 [(gnostic.openapi.v3.property) = {description: "Password for authentication."}];
   // Whether to enable TLS.
   optional bool tls_enabled = 7 [(gnostic.openapi.v3.property) = {description: "Whether to enable TLS."}
   ];

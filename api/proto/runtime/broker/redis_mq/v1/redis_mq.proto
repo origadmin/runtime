@@ -1,14 +1,15 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.redis_mq.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/redis_mq/v1;redismqv1";
 option java_multiple_files = true;
-option java_outer_classname = "RedisMqProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "RedisMqV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.redis_mq.v1";
+option objc_class_prefix = "ORRV1";
+option php_namespace = "OrigAdmin\Runtime\Broker\RedisMq\V1";
 
 // RedisMqConfig defines the configuration for Redis used as a message queue (Pub/Sub or List).
 message RedisMqConfig {

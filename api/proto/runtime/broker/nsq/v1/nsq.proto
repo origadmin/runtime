@@ -1,14 +1,15 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.nsq.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/nsq/v1;nsqv1";
 option java_multiple_files = true;
-option java_outer_classname = "NsqProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "NsqV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.nsq.v1";
+option objc_class_prefix = "ORQv1";
+option php_namespace = "OrigAdmin\Runtime\Broker\Nsq\V1";
 
 // NsqConfig defines the configuration for an NSQ message queue.
 message NsqConfig {

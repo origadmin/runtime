@@ -1,14 +1,15 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.pulsar.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/pulsar/v1;pulsarv1";
 option java_multiple_files = true;
-option java_outer_classname = "PulsarProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "PulsarV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.pulsar.v1";
+option objc_class_prefix = "ORPV1";
+option php_namespace = "OrigAdmin\Runtime\Broker\Pulsar\V1";
 
 // PulsarConfig defines the configuration for a Pulsar message queue.
 message PulsarConfig {

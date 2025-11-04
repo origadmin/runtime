@@ -1,14 +1,15 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.sqs.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/sqs/v1;sqsv1";
 option java_multiple_files = true;
-option java_outer_classname = "SqsProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "SqsV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.sqs.v1";
+option objc_class_prefix = "ORSV1";
+option php_namespace = "OrigAdmin\Runtime\Broker\Sqs\V1";
 
 // SqsConfig defines the configuration for an AWS SQS message queue.
 message SqsConfig {

@@ -1,14 +1,15 @@
 syntax = "proto3";
 
-package runtime.broker.v1;
+package runtime.broker.rocketmq.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/rocketmq/v1;rocketmqv1";
 option java_multiple_files = true;
-option java_outer_classname = "RocketMQProto";
-option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option java_outer_classname = "RocketMQV1Proto";
+option java_package = "com.github.origadmin.api.runtime.broker.rocketmq.v1";
+option objc_class_prefix = "OROV1";
+option php_namespace = "OrigAdmin\Runtime\Broker\RocketMQ\V1";
 
 // RocketMQConfig defines the configuration for a RocketMQ message queue.
 message RocketMQConfig {
@@ -25,15 +26,11 @@ message RocketMQConfig {
   // Secret key for authentication.
   optional string secret_key = 6 [(gnostic.openapi.v3.property) = {description: "Secret key for authentication."}];
   // Namespace for message isolation.
-  optional string namespace = 7 [(gnostic.openapi.v3.property) = {description: "Namespace for message isolation."}
-  ];
+  optional string namespace = 7 [(gnostic.openapi.v3.property) = {description: "Namespace for message isolation."}];
   // Send message timeout in milliseconds.
-  optional int32 send_timeout_ms = 8 [(gnostic.openapi.v3.property) = {description: "Send message timeout in milliseconds."}
-  ];
+  optional int32 send_timeout_ms = 8 [(gnostic.openapi.v3.property) = {description: "Send message timeout in milliseconds."}];
   // Consume message timeout in milliseconds.
-  optional int32 consume_timeout_ms = 9 [(gnostic.openapi.v3.property) = {description: "Consume message timeout in milliseconds."}
-  ];
+  optional int32 consume_timeout_ms = 9 [(gnostic.openapi.v3.property) = {description: "Consume message timeout in milliseconds."}];
   // Whether to enable TLS.
-  optional bool tls_enabled = 10 [(gnostic.openapi.v3.property) = {description: "Whether to enable TLS."}
-  ];
+  optional bool tls_enabled = 10 [(gnostic.openapi.v3.property) = {description: "Whether to enable TLS."}];
 }
