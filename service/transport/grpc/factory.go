@@ -40,9 +40,13 @@ func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	ctx := context.Background()
 	if serverOpts.ServiceOptions != nil && serverOpts.ServiceOptions.Registrar != nil {
 		if grpcRegistrar, ok := serverOpts.ServiceOptions.Registrar.(service.GRPCRegistrar); ok {
-			grpcRegistrar.RegisterGRPC(ctx, srv)
+			if err := grpcRegistrar.RegisterGRPC(ctx, srv); err != nil {
+				return nil, err
+			}
 		} else {
-			serverOpts.ServiceOptions.Registrar.Register(ctx, srv)
+			if err := serverOpts.ServiceOptions.Registrar.Register(ctx, srv); err != nil {
+				return nil, err
+			}
 		}
 	}
 

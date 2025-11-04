@@ -58,42 +58,44 @@ type (
 
 // GRPCRegistrar is a capability interface for services that can register gRPC endpoints.
 type GRPCRegistrar interface {
-	RegisterGRPC(ctx context.Context, srv *GRPCServer)
+	RegisterGRPC(ctx context.Context, srv *GRPCServer) error
 }
 
 // GRPCRegisterFunc is a function that implements GRPCRegistrar.
-type GRPCRegisterFunc func(ctx context.Context, srv *GRPCServer)
+type GRPCRegisterFunc func(ctx context.Context, srv *GRPCServer) error
 
 // RegisterGRPC implements the GRPCRegistrar interface for GRPCRegisterFunc.
-func (f GRPCRegisterFunc) RegisterGRPC(ctx context.Context, srv *GRPCServer) {
-	f(ctx, srv)
+func (f GRPCRegisterFunc) RegisterGRPC(ctx context.Context, srv *GRPCServer) error {
+	return f(ctx, srv)
 }
 
 // Register implements the ServerRegistrar interface for GRPCRegisterFunc.
-func (f GRPCRegisterFunc) Register(ctx context.Context, srv any) {
+func (f GRPCRegisterFunc) Register(ctx context.Context, srv any) error {
 	if srv, ok := srv.(*GRPCServer); ok {
-		f(ctx, srv)
+		return f(ctx, srv)
 	}
+	return nil
 }
 
 // HTTPRegistrar is a capability interface for services that can register HTTP endpoints.
 type HTTPRegistrar interface {
-	RegisterHTTP(ctx context.Context, srv *HTTPServer)
+	RegisterHTTP(ctx context.Context, srv *HTTPServer) error
 }
 
 // HTTPRegisterFunc is a function that implements HTTPRegistrar.
-type HTTPRegisterFunc func(ctx context.Context, srv *HTTPServer)
+type HTTPRegisterFunc func(ctx context.Context, srv *HTTPServer) error
 
 // RegisterHTTP implements the HTTPRegistrar interface for HTTPRegisterFunc.
-func (f HTTPRegisterFunc) RegisterHTTP(ctx context.Context, srv *HTTPServer) {
-	f(ctx, srv)
+func (f HTTPRegisterFunc) RegisterHTTP(ctx context.Context, srv *HTTPServer) error {
+	return f(ctx, srv)
 }
 
 // Register implements the ServerRegistrar interface for HTTPRegisterFunc.
-func (f HTTPRegisterFunc) Register(ctx context.Context, srv any) {
+func (f HTTPRegisterFunc) Register(ctx context.Context, srv any) error {
 	if srv, ok := srv.(*HTTPServer); ok {
-		f(ctx, srv)
+		return f(ctx, srv)
 	}
+	return nil
 }
 
 // ServerRegistrar defines the single, universal entry point for service registration.
@@ -102,13 +104,13 @@ func (f HTTPRegisterFunc) Register(ctx context.Context, srv any) {
 // The implementation of this interface, typically within the user's project, is expected
 // to perform a type switch to handle the specific server type.
 type ServerRegistrar interface {
-	Register(ctx context.Context, srv any)
+	Register(ctx context.Context, srv any) error
 }
 
 // ServerRegisterFunc is a function that implements ServerRegistrar.
-type ServerRegisterFunc func(ctx context.Context, srv any)
+type ServerRegisterFunc func(ctx context.Context, srv any) error
 
 // Register implements the ServerRegistrar interface for ServerRegisterFunc.
-func (f ServerRegisterFunc) Register(ctx context.Context, srv any) {
-	f(ctx, srv)
+func (f ServerRegisterFunc) Register(ctx context.Context, srv any) error {
+	return f(ctx, srv)
 }

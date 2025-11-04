@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	datav1 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
@@ -36,8 +37,9 @@ type Config interface {
 // It embeds the generic Config interface to allow for decoding arbitrary values.
 type StructuredConfig interface {
 	AppConfigDecoder
-	LoggerConfigDecoder
+	DataConfigDecoder
 	DiscoveriesConfigDecoder
+	LoggerConfigDecoder
 	MiddlewareConfigDecoder
 	ServiceConfigDecoder
 }
@@ -74,4 +76,8 @@ type MiddlewareConfigDecoder interface {
 type ServiceConfigDecoder interface {
 	DecodeServers() (*transportv1.Servers, error)
 	DecodeClients() (*transportv1.Clients, error)
+}
+
+type DataConfigDecoder interface {
+	DecodeData() (*datav1.Data, error)
 }

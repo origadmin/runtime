@@ -44,9 +44,13 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	// Register the user's business logic services if a registrar is provided.
 	if serverOpts.ServiceOptions != nil && serverOpts.ServiceOptions.Registrar != nil {
 		if httpRegistrar, ok := serverOpts.ServiceOptions.Registrar.(service.HTTPRegistrar); ok {
-			httpRegistrar.RegisterHTTP(ctx, srv)
+			if err := httpRegistrar.RegisterHTTP(ctx, srv); err != nil {
+				return nil, err
+			}
 		} else {
-			serverOpts.ServiceOptions.Registrar.Register(ctx, srv)
+			if err := serverOpts.ServiceOptions.Registrar.Register(ctx, srv); err != nil {
+				return nil, err
+			}
 		}
 	}
 
