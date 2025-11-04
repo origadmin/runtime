@@ -2,28 +2,35 @@ syntax = "proto3";
 
 package runtime.middleware.v1;
 
+import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
-import "runtime/middleware/circuitbreaker/v1/circuitbreaker.proto";
-import "runtime/middleware/cors/v1/cors.proto";
-import "runtime/middleware/jwt/v1/jwt.proto";
-import "runtime/middleware/metrics/v1/metrics.proto";
-import "runtime/middleware/ratelimit/v1/ratelimiter.proto";
-import "runtime/middleware/selector/v1/selector.proto";
-import "runtime/middleware/validator/v1/validator.proto";
+import "runtime/middleware/v1/circuitbreaker.proto";
+import "runtime/middleware/v1/cors.proto";
+import "runtime/middleware/v1/jwt.proto";
+import "runtime/middleware/v1/metrics.proto";
+import "runtime/middleware/v1/ratelimiter.proto";
+import "runtime/middleware/v1/selector.proto";
+import "runtime/middleware/v1/validator.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1;middlewarev1";
 option java_multiple_files = true;
-option java_outer_classname = "MiddlewareProto";
+option java_outer_classname = "MiddlewareV1Proto";
 option java_package = "com.github.origadmin.api.runtime.middleware.v1";
-option objc_class_prefix = "OMX";
+option objc_class_prefix = "OMWV1"; // Changed from OMXV1 to OMWV1 for Middleware V1
 option php_namespace = "OrigAdmin\\Runtime\\Middleware\\V1";
 
 // Metadata configuration for the middleware.
 message Metadata {
-  repeated string prefixes = 1 [json_name = "prefixes"];
-  map<string, string> data = 2 [json_name = "data"];
+  repeated string prefixes = 1 [
+    json_name = "prefixes",
+    (gnostic.openapi.v3.property) = {description: "List of prefixes for the metadata."}
+  ];
+  map<string, string> data = 2 [
+    json_name = "data",
+    (gnostic.openapi.v3.property) = {description: "Key-value pairs of metadata."}
+  ];
 }
 
 message Logging {
@@ -38,7 +45,10 @@ message Recovery {
 
 // Middleware represents a single middleware configuration with an enable switch.
 message Middleware {
-  string name = 1 [json_name = "name"];
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "The name of the middleware instance."}
+  ];
   string type = 2 [
     json_name = "type",
     (validate.rules).string = {
@@ -55,27 +65,67 @@ message Middleware {
         "circuit_breaker",
         "customize"
       ]
-    }
+    },
+    (gnostic.openapi.v3.property) = {description: "The type of the middleware."}
   ];
 
-  bool enabled = 3 [json_name = "enabled"];
+  bool enabled = 3 [
+    json_name = "enabled",
+    (gnostic.openapi.v3.property) = {description: "Whether the middleware is enabled."}
+  ];
 
-  optional runtime.middleware.ratelimit.v1.RateLimiter rate_limiter = 4 [json_name = "rate_limiter"]; // <-- 确保这里是正确的
-  optional runtime.middleware.metrics.v1.Metrics metrics = 5 [json_name = "metrics"];
-  optional runtime.middleware.validator.v1.Validator validator = 6 [json_name = "validator"];
-  optional runtime.middleware.jwt.v1.JWT jwt = 7 [json_name = "jwt"];
-  optional runtime.middleware.selector.v1.Selector selector = 8 [json_name = "selector"];
-  optional runtime.middleware.cors.v1.Cors cors = 9 [json_name = "cors"];
-  optional runtime.middleware.circuitbreaker.v1.CircuitBreaker circuit_breaker = 10 [json_name = "circuit_breaker"];
-  optional Logging logging = 11 [json_name = "logging"];
-  optional Recovery recovery = 12 [json_name = "recovery"];
-  optional Metadata metadata = 13 [json_name = "metadata"];
-  optional google.protobuf.Struct customize = 100 [json_name = "customize"];
+  optional runtime.middleware.v1.RateLimiter rate_limiter = 4 [
+    json_name = "rate_limiter",
+    (gnostic.openapi.v3.property) = {description: "Rate limiter configuration."}
+  ];
+  optional runtime.middleware.v1.Metrics metrics = 5 [
+    json_name = "metrics",
+    (gnostic.openapi.v3.property) = {description: "Metrics configuration."}
+  ];
+  optional runtime.middleware.v1.Validator validator = 6 [
+    json_name = "validator",
+    (gnostic.openapi.v3.property) = {description: "Validator configuration."}
+  ];
+  optional runtime.middleware.v1.JWT jwt = 7 [
+    json_name = "jwt",
+    (gnostic.openapi.v3.property) = {description: "JWT middleware configuration."}
+  ];
+  optional runtime.middleware.v1.Selector selector = 8 [
+    json_name = "selector",
+    (gnostic.openapi.v3.property) = {description: "Selector middleware configuration."}
+  ];
+  optional runtime.middleware.v1.Cors cors = 9 [
+    json_name = "cors",
+    (gnostic.openapi.v3.property) = {description: "CORS middleware configuration."}
+  ];
+  optional runtime.middleware.v1.CircuitBreaker circuit_breaker = 10 [
+    json_name = "circuit_breaker",
+    (gnostic.openapi.v3.property) = {description: "Circuit breaker configuration."}
+  ];
+  optional Logging logging = 11 [
+    json_name = "logging",
+    (gnostic.openapi.v3.property) = {description: "Logging middleware configuration."}
+  ];
+  optional Recovery recovery = 12 [
+    json_name = "recovery",
+    (gnostic.openapi.v3.property) = {description: "Recovery middleware configuration."}
+  ];
+  optional Metadata metadata = 13 [
+    json_name = "metadata",
+    (gnostic.openapi.v3.property) = {description: "Metadata configuration for the middleware."}
+  ];
+  optional google.protobuf.Struct customize = 100 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom middleware configuration."}
+  ];
   // Add other specific middleware types here as they are defined
 }
 
 // Middlewares is used to configure a chain of middlewares for an entry point.
 message Middlewares {
   // A list of middleware configurations to be applied in order.
-  repeated Middleware configs = 1 [json_name = "configs"];
+  repeated Middleware configs = 1 [
+    json_name = "configs",
+    (gnostic.openapi.v3.property) = {description: "A list of middleware configurations to be applied in order."}
+  ];
 }

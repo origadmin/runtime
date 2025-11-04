@@ -32,7 +32,7 @@ message PaginationRequest {
   optional int32 page_size = 2 [
     json_name = "page_size",
     (gnostic.openapi.v3.property) = {
-      description: "The maximum number of items to return per page."
+      description: "The maximum number of items to return per page. The server may enforce a maximum limit to this value."
       default: {number: 15}
     }
   ];
@@ -41,7 +41,7 @@ message PaginationRequest {
   // should return. This is the `next_page_token` from a previous response.
   string page_token = 3 [
     json_name = "page_token",
-    (gnostic.openapi.v3.property) = {description: "paging token"}
+    (gnostic.openapi.v3.property) = {description: "A token identifying a page of results the server should return. This is the `next_page_token` from a previous response."}
   ];
 
   // If true, the server will only return the `total_size` in the response Pagination
@@ -49,20 +49,20 @@ message PaginationRequest {
   // only the total count of items.
   bool only_count = 4 [
     json_name = "only_count",
-    (gnostic.openapi.v3.property) = {description: "query total only"}
+    (gnostic.openapi.v3.property) = {description: "If true, only the total count of items will be returned, and the items list will be empty."}
   ];
 
   // The no_paging is used to disable pagination.
   optional bool no_paging = 5 [
     json_name = "no_paging",
-    (gnostic.openapi.v3.property) = {description: "whether not paging"}
+    (gnostic.openapi.v3.property) = {description: "Set to true to disable pagination and return all available items."}
   ];
 
   // sort condition
   string order_by = 6 [
     json_name = "order_by",
     (gnostic.openapi.v3.property) = {
-      description: "sort condition, field name followed by 'asc' (ascending) or 'desc' (descending)"
+      description: "Sort condition, field name followed by 'asc' (ascending) or 'desc' (descending)."
       example: {yaml: "id:asc"}
     }
   ];
@@ -71,7 +71,7 @@ message PaginationRequest {
   google.protobuf.FieldMask field_mask = 7 [
     json_name = "field_mask",
     (gnostic.openapi.v3.property) = {
-      description: "It is used to Update the request message, which is used to perform a partial update to the resource. This mask is related to the resource, not the request message."
+      description: "Used to specify which fields to return in the response, or which fields to update in a partial update request."
       example: {yaml: "id,name,age"}
     }
   ];
@@ -96,20 +96,20 @@ message Pagination {
   // This is optional and may be expensive to calculate for large datasets.
   int64 total_size = 3 [
     json_name = "total_size",
-    (gnostic.openapi.v3.property) = {description: "The total number of items available across all pages."}
+    (gnostic.openapi.v3.property) = {description: "The total number of items available across all pages. This is optional and may be expensive to calculate for large datasets."}
   ];
 
   // For cursor-based pagination: a token to retrieve the next page of results.
   // If empty, there are no more results.
   string next_page_token = 4 [
     json_name = "next_page_token",
-    (gnostic.openapi.v3.property) = {description: "Token to retrieve the next page of results, or empty if there are no more results."}
+    (gnostic.openapi.v3.property) = {description: "A token to retrieve the next page of results. If empty, there are no more results."}
   ];
 
   // Additional information about this response.
   // content to be added without destroying the current data format
   map<string, google.protobuf.Any> extra = 5 [
     json_name = "extra",
-    (gnostic.openapi.v3.property) = {description: "additional information about this response"}
+    (gnostic.openapi.v3.property) = {description: "Additional information about this response, stored as key-value pairs."}
   ];
 }

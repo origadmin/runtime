@@ -3,6 +3,7 @@ syntax = "proto3";
 package runtime.common.v1;
 
 import "errors/errors.proto";
+import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/common/v1;commonv1";
 
@@ -10,24 +11,24 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/common/v1;c
 // This helps in grouping related errors together for monitoring and client handling.
 enum ErrorCategory {
   // General errors not specific to any category.
-  GENERAL = 0;
+  GENERAL = 0 [(gnostic.openapi.v3.enum_value) = {description: "General errors not specific to any category."}];
   // Authentication and authorization related errors.
-  AUTHENTICATION = 1;
+  AUTHENTICATION = 1 [(gnostic.openapi.v3.enum_value) = {description: "Authentication and authorization related errors."}];
   // Database related errors.
-  DATABASE = 2;
+  DATABASE = 2 [(gnostic.openapi.v3.enum_value) = {description: "Database related errors."}];
   // Business logic related errors.
-  BUSINESS = 3;
+  BUSINESS = 3 [(gnostic.openapi.v3.enum_value) = {description: "Business logic related errors."}];
   // External service related errors.
-  EXTERNAL_SERVICE = 4;
+  EXTERNAL_SERVICE = 4 [(gnostic.openapi.v3.enum_value) = {description: "External service related errors."}];
 }
 
 // ErrorMetadata contains additional, structured context about an error.
 // It can be used for logging and debugging purposes.
 message ErrorMetadata {
   // The category of the error.
-  ErrorCategory category = 1;
+  ErrorCategory category = 1 [(gnostic.openapi.v3.property) = {description: "The category of the error."}];
   // Additional key-value pairs providing context about the error.
-  map<string, string> metadata = 2;
+  map<string, string> metadata = 2 [(gnostic.openapi.v3.property) = {description: "Additional key-value pairs providing context about the error."}];
 }
 
 
@@ -46,42 +47,70 @@ enum ErrorReason {
   option (errors.default_code) = 500;
 
   // --- General Framework Errors (0-999) ---
-  UNKNOWN_ERROR = 0 [(errors.code) = 500];
-  VALIDATION_ERROR = 1 [(errors.code) = 400];
-  NOT_FOUND = 2 [(errors.code) = 404];
-  INTERNAL_SERVER_ERROR = 3 [(errors.code) = 500];
-  METHOD_NOT_ALLOWED = 4 [(errors.code) = 405];
-  REQUEST_TIMEOUT = 5 [(errors.code) = 408];
-  CONFLICT = 6 [(errors.code) = 409];
-  TOO_MANY_REQUESTS = 7 [(errors.code) = 429];
-  SERVICE_UNAVAILABLE = 8 [(errors.code) = 503];
-  GATEWAY_TIMEOUT = 9 [(errors.code) = 504];
+  UNKNOWN_ERROR = 0 [(errors.code) = 500, (gnostic.openapi.v3.enum_value) = {description: "An unknown error occurred."}
+  ];
+  VALIDATION_ERROR = 1 [(errors.code) = 400, (gnostic.openapi.v3.enum_value) = {description: "Input validation failed."}
+  ];
+  NOT_FOUND = 2 [(errors.code) = 404, (gnostic.openapi.v3.enum_value) = {description: "The requested resource was not found."}
+  ];
+  INTERNAL_SERVER_ERROR = 3 [(errors.code) = 500, (gnostic.openapi.v3.enum_value) = {description: "An unexpected internal server error occurred."}
+  ];
+  METHOD_NOT_ALLOWED = 4 [(errors.code) = 405, (gnostic.openapi.v3.enum_value) = {description: "The requested HTTP method is not allowed."}
+  ];
+  REQUEST_TIMEOUT = 5 [(errors.code) = 408, (gnostic.openapi.v3.enum_value) = {description: "The request timed out."}
+  ];
+  CONFLICT = 6 [(errors.code) = 409, (gnostic.openapi.v3.enum_value) = {description: "A conflict occurred with the current state of the resource."}
+  ];
+  TOO_MANY_REQUESTS = 7 [(errors.code) = 429, (gnostic.openapi.v3.enum_value) = {description: "Too many requests were sent in a given amount of time."}
+  ];
+  SERVICE_UNAVAILABLE = 8 [(errors.code) = 503, (gnostic.openapi.v3.enum_value) = {description: "The service is currently unavailable."}
+  ];
+  GATEWAY_TIMEOUT = 9 [(errors.code) = 504, (gnostic.openapi.v3.enum_value) = {description: "The gateway timed out waiting for a response."}
+  ];
 
   // --- Common Authentication & Authorization Errors (1000-1999) ---
-  UNAUTHENTICATED = 1000 [(errors.code) = 401];
-  FORBIDDEN = 1001 [(errors.code) = 403];
+  UNAUTHENTICATED = 1000 [(errors.code) = 401, (gnostic.openapi.v3.enum_value) = {description: "Authentication is required or has failed."}
+  ];
+  FORBIDDEN = 1001 [(errors.code) = 403, (gnostic.openapi.v3.enum_value) = {description: "The client does not have permission to access the resource."}
+  ];
 
   // --- Common Database Errors (2000-2999) ---
-  DATABASE_ERROR = 2000 [(errors.code) = 500];
-  RECORD_NOT_FOUND = 2001 [(errors.code) = 404];
-  CONSTRAINT_VIOLATION = 2002 [(errors.code) = 409];
-  DUPLICATE_KEY = 2003 [(errors.code) = 409];
-  DATABASE_CONNECTION_FAILED = 2004 [(errors.code) = 503];
+  DATABASE_ERROR = 2000 [(errors.code) = 500, (gnostic.openapi.v3.enum_value) = {description: "A generic database error occurred."}
+  ];
+  RECORD_NOT_FOUND = 2001 [(errors.code) = 404, (gnostic.openapi.v3.enum_value) = {description: "The database record was not found."}
+  ];
+  CONSTRAINT_VIOLATION = 2002 [(errors.code) = 409, (gnostic.openapi.v3.enum_value) = {description: "A database constraint was violated."}
+  ];
+  DUPLICATE_KEY = 2003 [(errors.code) = 409, (gnostic.openapi.v3.enum_value) = {description: "A record with the same unique key already exists."}
+  ];
+  DATABASE_CONNECTION_FAILED = 2004 [(errors.code) = 503, (gnostic.openapi.v3.enum_value) = {description: "Failed to connect to the database."}
+  ];
 
   // --- Common Business Logic Errors (3000-3999) ---
-  INVALID_STATE = 3000 [(errors.code) = 400];
-  RESOURCE_EXISTS = 3001 [(errors.code) = 409];
-  RESOURCE_IN_USE = 3002 [(errors.code) = 409];
-  CANCELLED = 3003 [(errors.code) = 499];
-  ABORTED = 3004 [(errors.code) = 409];
-  MISSING_PARAMETER = 3005 [(errors.code) = 400];
-  INVALID_PARAMETER = 3006 [(errors.code) = 400];
-  OPERATION_NOT_ALLOWED = 3007 [(errors.code) = 403];
+  INVALID_STATE = 3000 [(errors.code) = 400, (gnostic.openapi.v3.enum_value) = {description: "The operation is not allowed in the current state."}
+  ];
+  RESOURCE_EXISTS = 3001 [(errors.code) = 409, (gnostic.openapi.v3.enum_value) = {description: "The resource already exists."}
+  ];
+  RESOURCE_IN_USE = 3002 [(errors.code) = 409, (gnostic.openapi.v3.enum_value) = {description: "The resource is currently in use."}
+  ];
+  CANCELLED = 3003 [(errors.code) = 499, (gnostic.openapi.v3.enum_value) = {description: "The operation was cancelled by the client."}
+  ];
+  ABORTED = 3004 [(errors.code) = 409, (gnostic.openapi.v3.enum_value) = {description: "The operation was aborted."}
+  ];
+  MISSING_PARAMETER = 3005 [(errors.code) = 400, (gnostic.openapi.v3.enum_value) = {description: "A required parameter is missing."}
+  ];
+  INVALID_PARAMETER = 3006 [(errors.code) = 400, (gnostic.openapi.v3.enum_value) = {description: "An invalid parameter was provided."}
+  ];
+  OPERATION_NOT_ALLOWED = 3007 [(errors.code) = 403, (gnostic.openapi.v3.enum_value) = {description: "The requested operation is not allowed."}
+  ];
 
   // --- Common External Service Errors (4000-4999) ---
-  EXTERNAL_SERVICE_UNAVAILABLE = 4000 [(errors.code) = 503];
-  EXTERNAL_SERVICE_ERROR = 4001 [(errors.code) = 502];
+  EXTERNAL_SERVICE_UNAVAILABLE = 4000 [(errors.code) = 503, (gnostic.openapi.v3.enum_value) = {description: "An external service is unavailable."}
+  ];
+  EXTERNAL_SERVICE_ERROR = 4001 [(errors.code) = 502, (gnostic.openapi.v3.enum_value) = {description: "An error occurred in an external service."}
+  ];
 
   // --- Common Registry Errors (6000-6999) ---
-  REGISTRY_NOT_FOUND = 6000 [(errors.code) = 404];
+  REGISTRY_NOT_FOUND = 6000 [(errors.code) = 404, (gnostic.openapi.v3.enum_value) = {description: "The registry entry was not found."}
+  ];
 }

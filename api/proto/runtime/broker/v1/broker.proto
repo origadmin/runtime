@@ -2,33 +2,39 @@ syntax = "proto3";
 
 package runtime.broker.v1;
 
+import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
-import "runtime/broker/v1/kafka.proto";
-import "runtime/broker/v1/mqtt.proto";
-import "runtime/broker/v1/nats.proto";
-import "runtime/broker/v1/nsq.proto";
-import "runtime/broker/v1/pulsar.proto";
-import "runtime/broker/v1/rabbitmq.proto";
-import "runtime/broker/v1/redis_mq.proto";
-import "runtime/broker/v1/rocketmq.proto";
-import "runtime/broker/v1/sqs.proto";
-import "runtime/broker/v1/stomp.proto";
+import "runtime/broker/kafka/v1/kafka.proto";
+import "runtime/broker/mqtt/v1/mqtt.proto";
+import "runtime/broker/nats/v1/nats.proto";
+import "runtime/broker/nsq/v1/nsq.proto";
+import "runtime/broker/pulsar/v1/pulsar.proto";
+import "runtime/broker/rabbitmq/v1/rabbitmq.proto";
+import "runtime/broker/redis_mq/v1/redis_mq.proto";
+import "runtime/broker/rocketmq/v1/rocketmq.proto";
+import "runtime/broker/sqs/v1/sqs.proto";
+import "runtime/broker/stomp/v1/stomp.proto";
 import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/broker/v1;brokerv1";
 option java_multiple_files = true;
-option java_outer_classname = "BrokerProto";
+option java_outer_classname = "BrokerV1Proto";
 option java_package = "com.github.origadmin.api.runtime.broker.v1";
-option objc_class_prefix = "ORC";
+option objc_class_prefix = "ORBV1"; // Changed from ORC to ORBV1 for Broker V1
+option php_namespace = "OrigAdmin\\Runtime\\Broker\\V1";
 
 // Broker defines the configuration for a message queue service.
 // It can contain configurations for different message queue implementations.
 message Broker {
-  string name = 1 [json_name = "name"];
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "The name of the broker configuration."}
+  ];
   string type = 2 [
     json_name = "type",
     (validate.rules).string = {
       in: [
+        "none",
         "kafka",
         "rabbitmq",
         "mqtt",
@@ -38,34 +44,68 @@ message Broker {
         "redis_mq",
         "rocketmq",
         "sqs",
-        "stomp"
+        "stomp",
         "customize"
       ]
-    }
+    },
+    (gnostic.openapi.v3.property) = {description: "The type of the message broker."}
   ];
 
   // Optional Kafka configuration.
-  optional KafkaConfig kafka = 3 [json_name = "kafka"];
+  optional kafka.v1.KafkaConfig kafka = 3 [
+    json_name = "kafka",
+    (gnostic.openapi.v3.property) = {description: "Kafka specific configuration."}
+  ];
   // Optional RabbitMQ configuration.
-  optional RabbitMQConfig rabbitmq = 4 [json_name = "rabbitmq"];
+  optional rabbitmq.v1.RabbitMQConfig rabbitmq = 4 [
+    json_name = "rabbitmq",
+    (gnostic.openapi.v3.property) = {description: "RabbitMQ specific configuration."}
+  ];
   // Optional MQTT configuration.
-  optional MqttConfig mqtt = 5 [json_name = "mqtt"];
+  optional mqtt.v1.MqttConfig mqtt = 5 [
+    json_name = "mqtt",
+    (gnostic.openapi.v3.property) = {description: "MQTT specific configuration."}
+  ];
   // Optional NATS configuration.
-  optional NatsConfig nats = 6 [json_name = "nats"];
+  optional nats.v1.NatsConfig nats = 6 [
+    json_name = "nats",
+    (gnostic.openapi.v3.property) = {description: "NATS specific configuration."}
+  ];
   // Optional NSQ configuration.
-  optional NsqConfig nsq = 7 [json_name = "nsq"];
+  optional nsq.v1.NsqConfig nsq = 7 [
+    json_name = "nsq",
+    (gnostic.openapi.v3.property) = {description: "NSQ specific configuration."}
+  ];
   // Optional Pulsar configuration.
-  optional PulsarConfig pulsar = 8 [json_name = "pulsar"];
+  optional pulsar.v1.PulsarConfig pulsar = 8 [
+    json_name = "pulsar",
+    (gnostic.openapi.v3.property) = {description: "Pulsar specific configuration."}
+  ];
   // Optional Redis (as MQ) configuration.
-  optional RedisMqConfig redis_mq = 9 [json_name = "redis_mq"];
+  optional redis_mq.v1.RedisMqConfig redis_mq = 9 [
+    json_name = "redis_mq",
+    (gnostic.openapi.v3.property) = {description: "Redis (as MQ) specific configuration."}
+  ];
   // Optional RocketMQ configuration.
-  optional RocketMQConfig rocketmq = 10 [json_name = "rocketmq"];
+  optional rocketmq.v1.RocketMQConfig rocketmq = 10 [
+    json_name = "rocketmq",
+    (gnostic.openapi.v3.property) = {description: "RocketMQ specific configuration."}
+  ];
   // Optional SQS configuration.
-  optional SqsConfig sqs = 11 [json_name = "sqs"];
+  optional sqs.v1.SqsConfig sqs = 11 [
+    json_name = "sqs",
+    (gnostic.openapi.v3.property) = {description: "SQS specific configuration."}
+  ];
   // Optional STOMP configuration.
-  optional StompConfig stomp = 12 [json_name = "stomp"];
+  optional stomp.v1.StompConfig stomp = 12 [
+    json_name = "stomp",
+    (gnostic.openapi.v3.property) = {description: "STOMP specific configuration."}
+  ];
   // Optional customize configuration.
-  optional google.protobuf.Struct customize = 100 [json_name = "customize"];
+  optional google.protobuf.Struct customize = 100 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom broker configuration."}
+  ];
 
   // Add other common configurations here if applicable to all implementations,
   // or if they are used to select the implementation type in Go code.
@@ -74,8 +114,17 @@ message Broker {
 }
 
 message Brokers {
-  optional string default = 1 [json_name = "default"];
-  optional string active = 2 [json_name = "active"];
+  optional string default = 1 [
+    json_name = "default",
+    (gnostic.openapi.v3.property) = {description: "The default broker to use."}
+  ];
+  optional string active = 2 [
+    json_name = "active",
+    (gnostic.openapi.v3.property) = {description: "The active broker to use, overrides default."}
+  ];
 
-  repeated Broker brokers = 3 [json_name = "brokers"];
+  repeated Broker brokers = 3 [
+    json_name = "brokers",
+    (gnostic.openapi.v3.property) = {description: "A list of broker configurations."}
+  ];
 }

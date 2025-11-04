@@ -14,11 +14,26 @@ message OssConfig {
     json_name = "endpoint",
     (gnostic.openapi.v3.property) = {description: "Storage service endpoint"}
   ];
-  string access_key_id = 2 [json_name = "access_key_id"];
-  string access_key_secret = 3 [json_name = "access_key_secret"];
-  string bucket = 4 [json_name = "bucket"];
-  string region = 5 [json_name = "region"];
-  bool ssl = 6 [json_name = "ssl"];
+  string access_key_id = 2 [
+    json_name = "access_key_id",
+    (gnostic.openapi.v3.property) = {description: "The access key ID for authentication."}
+  ];
+  string access_key_secret = 3 [
+    json_name = "access_key_secret",
+    (gnostic.openapi.v3.property) = {description: "The access key secret for authentication."}
+  ];
+  string bucket = 4 [
+    json_name = "bucket",
+    (gnostic.openapi.v3.property) = {description: "The name of the bucket to use."}
+  ];
+  string region = 5 [
+    json_name = "region",
+    (gnostic.openapi.v3.property) = {description: "The geographic region of the bucket."}
+  ];
+  bool ssl = 6 [
+    json_name = "ssl",
+    (gnostic.openapi.v3.property) = {description: "Whether to use SSL for the connection."}
+  ];
   int64 connect_timeout = 7 [
     json_name = "connect_timeout",
     (validate.rules).int64.gte = 0,

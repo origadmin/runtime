@@ -13,7 +13,10 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/databa
 // This message was extracted from mysql.proto and renamed for consistency.
 message DatabaseConfig {
   // Unique name for this database configuration instance.
-  string name = 1;
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "Unique name for this database configuration instance."}
+  ];
   // Debugging
   bool debug = 2 [
     json_name = "debug",

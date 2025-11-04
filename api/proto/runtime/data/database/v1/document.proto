@@ -12,7 +12,10 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/databa
 // DocumentConfig defines the configuration for a document database instance.
 message DocumentConfig {
   // Unique name for this document database configuration instance.
-  string name = 1;
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "Unique name for this document database configuration instance."}
+  ];
   // The type of document database, e.g., "mongo", "customize".
   string type = 2 [
     json_name = "type",
