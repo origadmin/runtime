@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.11](https://github.com/origadmin/runtime/compare/v0.2.10...v0.2.11) (2025-11-04)
+
+
+### Features
+
+* **api:** Add OpenAPI annotations and improve proto documentation for broker, app and bootstrap configs ([ac40a76](https://github.com/origadmin/runtime/commit/ac40a76ebd256f3d410ec77fab981cdc441431d3))
+* **broker:** Add Kafka and MQTT broker configuration protobuf definitions ([e6d9826](https://github.com/origadmin/runtime/commit/e6d9826b1a262eb61172f29283b518f25350b1cf))
+* **cache:** Implement in-memory cache storage with sync.Map and sync.Pool for efficient memory usage ([abca45c](https://github.com/origadmin/runtime/commit/abca45c158ecf07457dfbd867902a48df38071bc))
+* **runtime:** Add data component support and recovery middleware ([03f08c0](https://github.com/origadmin/runtime/commit/03f08c04edb55c8b2452ce5dc523140417ff68bc))
+* **runtime:** Add data config support and improve error handling in service registration ([cc195ec](https://github.com/origadmin/runtime/commit/cc195ec312031f5b7f83c2a23964b06b5a4bd555))
+* **storage:** Refactor storage provider integration and database interface with name and dialect support ([175580c](https://github.com/origadmin/runtime/commit/175580c5fa4ffe210f319177cd4a3ad1d0a5596f))
+
+
+### Bug Fixes
+
+* **runtime:** Fix debug log message for recovery middleware ([938173d](https://github.com/origadmin/runtime/commit/938173d3a0a3172e39e8eae7b235ce90eba5949e))
+
 ## [0.2.10](https://github.com/origadmin/runtime/compare/v0.2.9...v0.2.10) (2025-11-03)
 
 
