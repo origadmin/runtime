@@ -25,7 +25,7 @@ func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware,
 	// Parse options using FromOptions
 	logger := log.FromOptions(opts) // FIX: Changed opts... to opts
 	helper := log.NewHelper(logger)
-	helper.Infof("enabling client optimize middleware")
+	helper.Debugf("enabling client optimize middleware")
 
 	// Get optimize configuration
 	return nil, false
@@ -37,7 +37,7 @@ func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	// Parse options using FromOptions
 	logger := log.FromOptions(opts) // FIX: Changed opts... to opts
 	helper := log.NewHelper(logger)
-	helper.Infof("enabling server optimize middleware")
+	helper.Debugf("enabling server optimize middleware")
 
 	// Check if custom configuration is enabled
 	if !cfg.GetEnabled() || cfg.GetType() != "customize" || cfg.GetCustomize() == nil {

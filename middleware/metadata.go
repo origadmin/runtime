@@ -37,7 +37,7 @@ func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 		}
 		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
 	}
-	helper.Infof("metadata client enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
+	helper.Debugf("metadata client enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
 	return middlewareMetadata.Client(metadataOpts...), true
 }
 
@@ -62,6 +62,6 @@ func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 		}
 		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
 	}
-	helper.Infof("metadata server enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
+	helper.Debugf("metadata server enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
 	return middlewareMetadata.Server(metadataOpts...), true
 }

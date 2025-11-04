@@ -24,7 +24,7 @@ func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Op
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debug("[Middleware] Jwt client middleware enabled")
+	helper.Debugf("enabling jwt client middleware")
 
 	jwtConfig := cfg.GetJwt()
 	if jwtConfig == nil {
@@ -38,7 +38,7 @@ func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Op
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debug("[Middleware] Jwt server middleware enabled")
+	helper.Debugf("enabling jwt server middleware")
 
 	jwtConfig := cfg.GetJwt()
 	if jwtConfig == nil {

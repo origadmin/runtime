@@ -49,7 +49,7 @@ func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	// rlOpts = append(rlOpts, middlewareRateLimit.WithLimiter(bbr.NewLimiter()))
 	default:
 		// Default to BBR if no specific name is provided or recognized
-		helper.Infof("Using default BBR rate limiter")
+		helper.Debugf("Using default BBR rate limiter")
 	}
 
 	return ratelimit.Server(rlOpts...), true

@@ -59,7 +59,7 @@ func (b *middlewareBuilder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares
 	}
 
 	helper := log.NewHelper(logger)
-	helper.Info("building client middlewares")
+	helper.Debug("building client middlewares")
 
 	// First pass: separate regular middlewares and selector configs
 	for _, ms := range cfg.GetConfigs() {
@@ -144,20 +144,21 @@ func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares
 		logger = log.DefaultLogger
 	}
 
+	helper := log.NewHelper(logger)
+	helper.Debug("building server middlewares")
+
 	// Create a middleware carrier for context propagation
 	carrier := &Carrier{
 		Clients: make(map[string]KMiddleware),
 		Servers: make(map[string]KMiddleware),
 	}
 
-	helper := log.NewHelper(logger)
-	helper.Info("building server middlewares")
-
 	// First pass: separate regular middlewares and selector configs
 	for _, ms := range cfg.GetConfigs() {
 		if !ms.GetEnabled() {
 			continue
 		}
+
 		// Use Name if provided, otherwise fall back to Type
 		middlewareType := ms.GetType()
 		middlewareName := ms.GetName()
@@ -180,7 +181,7 @@ func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares
 			}
 		}
 
-		helper.Infof("enabling server middleware: %s (type: %s)", middlewareName, middlewareType)
+		helper.Debugf("enabling server middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create middleware
 		m, ok := f.NewMiddlewareServer(ms, opts...)
@@ -190,9 +191,6 @@ func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares
 			carrier.Servers[middlewareName] = m
 		}
 	}
-
-	// Attach the carrier into options context
-	opts = append(opts, WithCarrier(carrier))
 
 	// Second pass: process selector middleware configs
 	for _, ms := range selectorConfigs {
@@ -208,7 +206,7 @@ func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares
 			continue
 		}
 
-		helper.Infof("enabling server middleware: %s (type: %s)", middlewareName, middlewareType)
+		helper.Debugf("enabling server selector middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create selector middleware (can access previously created middlewares now)
 		m, ok := f.NewMiddlewareServer(ms, opts...)

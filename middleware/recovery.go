@@ -19,7 +19,7 @@ func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debug("[Middleware] Recovery client middleware enabled")
+	helper.Debugf("enabling recovery client middleware")
 
 	//recoveryConfig := cfg.GetRecovery()
 	//if recoveryConfig == nil {
@@ -32,7 +32,7 @@ func (r recoveryFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debug("[Middleware] Recovery server middleware enabled")
+	helper.Debugf("enabling recovery server middleware")
 
 	//recoveryConfig := cfg.GetRecovery()
 	//if recoveryConfig == nil {
