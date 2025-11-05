@@ -103,6 +103,7 @@ else
 		echo "Installing protoc for Linux/macOS..."; \
 		UNAME_S := $(shell uname -s); \
 		ifeq ($(UNAME_S), Linux)\
+			sudo apt-get update && sudo apt-get install -y unzip; \
 			PROTOC_ZIP=protoc-$(PROTOC_VERSION)-linux-x86_64.zip; \
 		else ifeq ($(UNAME_S), Darwin)\
 			PROTOC_ZIP=protoc-$(PROTOC_VERSION)-osx-x86_64.zip; \
