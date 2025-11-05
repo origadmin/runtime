@@ -45,6 +45,7 @@ endif
 # ------------------------ Protobuf Configuration ------------------------ #
 # Common protoc include paths, used for both buf and protoc fallback
 PROTOC_INCLUDES := -I. -I./api/proto -I$(THIRD_PARTY_PATH)
+PROTOC_VERSION := 33.0
 
 # Protoc plugin definitions, used for protoc fallback
 PROTOC_GO_OUT       := --go_out=paths=source_relative
@@ -83,11 +84,38 @@ endif
 #                           LIFECYCLE TARGETS
 # ============================================================================ #
 
-.PHONY: all init deps update update-tools protos example-protos test-protos generate test clean clean-api-gen clean-example-protos clean-test-protos buf-push
+.PHONY: all init deps update update-tools protos example-protos test-protos generate test clean clean-api-gen clean-example-protos clean-test-protos buf-push install-protoc
+
+install-protoc: ## ⬇️ Install protoc compiler
+ifeq ($(GOHOSTOS), windows)
+	@if (Get-Command protoc -ErrorAction SilentlyContinue) { Write-Host "protoc already installed." } else { \
+		Write-Host "Installing protoc for Windows..."; \
+		$$ver = "$(PROTOC_VERSION)"; \
+		$$zip = "protoc-$$ver-win64.zip"; \
+		Invoke-WebRequest -Uri "https://github.com/protocolbuffers/protobuf/releases/download/v$$ver/$$zip" -OutFile "$env:TEMP\$$zip"; \
+		Expand-Archive -Path "$env:TEMP\$$zip" -DestinationPath "$env:ProgramFiles"; \
+		$env:PATH += ";" + "$env:ProgramFiles\bin"; \
+	}
+else
+	@if command -v protoc >/dev/null 2>&1; then \
+		echo "protoc already installed."; \
+	else \
+		echo "Installing protoc for Linux/macOS..."; \
+		UNAME_S := $(shell uname -s); \
+		ifeq ($(UNAME_S), Linux)\
+			PROTOC_ZIP=protoc-$(PROTOC_VERSION)-linux-x86_64.zip; \
+		else ifeq ($(UNAME_S), Darwin)\
+			PROTOC_ZIP=protoc-$(PROTOC_VERSION)-osx-x86_64.zip; \
+		endif \
+		curl -sSL -o /tmp/$$PROTOC_ZIP https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/$$PROTOC_ZIP; \
+		sudo unzip -o /tmp/$$PROTOC_ZIP -d /usr/local; \
+		sudo chmod +x /usr/local/bin/protoc; \
+	fi
+endif
 
 all: init deps protos example-protos test-protos generate ## ✅ Run the full build process
 
-init: ## 🔧 Install tools from tools.go, ensuring reproducible builds
+init: install-protoc ## 🔧 Install tools from tools.go, ensuring reproducible builds
 	@echo "Ensuring tool dependencies are in go.mod..."
 	@go mod tidy
 	@echo "Installing tools listed in tools.go..."
@@ -136,8 +164,8 @@ ifeq ($(GOHOSTOS), windows)
 else
 	@if command -v buf >/dev/null 2>&1; then \
 		echo "--> 'buf' command found. Using buf to build and generate protos (recommended)."; \
-		buf build;
-		buf generate
+		buf build;\
+		buf generate;\
 	else \
 		echo "--> WARNING: 'buf' command not found. Falling back to protoc."; \
 		echo "--> Please run 'make init' to install buf for reproducible builds."; \

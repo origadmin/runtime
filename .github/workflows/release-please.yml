@@ -11,9 +11,6 @@ permissions:
   actions: read
   checks: write
 
-env:
-  PROTOC_VERSION: "33.0"
-
 jobs:
   lint:
     if: "!contains(github.event.head_commit.message, 'chore(main)')"
@@ -41,39 +38,6 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: '^1.23.0' # The Go version to download (if necessary) and use.
-
-      - name: Install unzip (Linux)
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y unzip
-
-      - name: Download protoc (Linux example)
-        if: runner.os == 'Linux'
-        run: |
-          PROTOC_ZIP=protoc-${{ env.PROTOC_VERSION }}-linux-x86_64.zip
-          curl -sSL -o /tmp/$PROTOC_ZIP https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOC_VERSION }}/$PROTOC_ZIP
-          sudo unzip -o /tmp/$PROTOC_ZIP -d /usr/local
-          sudo chmod +x /usr/local/bin/protoc
-
-      - name: Download protoc (macOS example)
-        if: runner.os == 'macOS'
-        run: |
-          PROTOC_ZIP=protoc-${{ env.PROTOC_VERSION }}-osx-x86_64.zip
-          curl -sSL -o /tmp/$PROTOC_ZIP https://github.com/protocolbuffers/protobuf/releases/download/v${{ env.PROTOC_VERSION }}/$PROTOC_ZIP
-          sudo unzip -o /tmp/$PROTOC_ZIP -d /usr/local
-          sudo chmod +x /usr/local/bin/protoc
-
-      - name: Download protoc (Windows example)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $ver = "${{ env.PROTOC_VERSION }}"
-          $zip = "protoc-$ver-win64.zip"
-          Invoke-WebRequest -Uri "https://github.com/protocolbuffers/protobuf/releases/download/v$ver/$zip" -OutFile "$env:TEMP\$zip"
-          Expand-Archive -Path "$env:TEMP\$zip" -DestinationPath "$env:ProgramFiles"
-          $env:PATH += ";" + "$env:ProgramFiles\bin"
-
-      - name: Verify protoc version
-        run: protoc --version
 
       - name: Install Tools and Protoc Plugins via Makefile
         run: make init
