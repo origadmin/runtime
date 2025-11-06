@@ -57,16 +57,7 @@ func (m *RateLimiter) validate(all bool) error {
 
 	var errors []error
 
-	if _, ok := _RateLimiter_Name_InLookup[m.GetName()]; !ok {
-		err := RateLimiterValidationError{
-			field:  "Name",
-			reason: "value must be in list [bbr memory redis]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Name
 
 	// no validation rules for Period
 
@@ -134,6 +125,39 @@ func (m *RateLimiter) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if m.Customize != nil {
+
+		if all {
+			switch v := interface{}(m.GetCustomize()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, RateLimiterValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, RateLimiterValidationError{
+						field:  "Customize",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return RateLimiterValidationError{
+					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -212,12 +236,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RateLimiterValidationError{}
-
-var _RateLimiter_Name_InLookup = map[string]struct{}{
-	"bbr":    {},
-	"memory": {},
-	"redis":  {},
-}
 
 // Validate checks the field values on RateLimiter_Redis with the rules defined
 // in the proto definition for this message. If any rules are violated, the

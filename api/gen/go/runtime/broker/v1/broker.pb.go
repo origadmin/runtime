@@ -39,7 +39,11 @@ const (
 type Broker struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type  string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	// The 'type' field determines which message broker to use.
+	// For built-in types, specify "kafka", "rabbitmq", "mqtt", etc.
+	// For custom types, specify the registered name of the custom broker.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// Optional Kafka configuration.
 	Kafka *v1.KafkaConfig `protobuf:"bytes,3,opt,name=kafka,proto3,oneof" json:"kafka,omitempty"`
 	// Optional RabbitMQ configuration.
@@ -251,10 +255,10 @@ var File_runtime_broker_v1_broker_proto protoreflect.FileDescriptor
 
 const file_runtime_broker_v1_broker_proto_rawDesc = "" +
 	"\n" +
-	"\x1eruntime/broker/v1/broker.proto\x12\x11runtime.broker.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a#runtime/broker/kafka/v1/kafka.proto\x1a!runtime/broker/mqtt/v1/mqtt.proto\x1a!runtime/broker/nats/v1/nats.proto\x1a\x1fruntime/broker/nsq/v1/nsq.proto\x1a%runtime/broker/pulsar/v1/pulsar.proto\x1a)runtime/broker/rabbitmq/v1/rabbitmq.proto\x1a)runtime/broker/redis_mq/v1/redis_mq.proto\x1a)runtime/broker/rocketmq/v1/rocketmq.proto\x1a\x1fruntime/broker/sqs/v1/sqs.proto\x1a#runtime/broker/stomp/v1/stomp.proto\x1a\x17validate/validate.proto\"\xd0\v\n" +
+	"\x1eruntime/broker/v1/broker.proto\x12\x11runtime.broker.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a#runtime/broker/kafka/v1/kafka.proto\x1a!runtime/broker/mqtt/v1/mqtt.proto\x1a!runtime/broker/nats/v1/nats.proto\x1a\x1fruntime/broker/nsq/v1/nsq.proto\x1a%runtime/broker/pulsar/v1/pulsar.proto\x1a)runtime/broker/rabbitmq/v1/rabbitmq.proto\x1a)runtime/broker/redis_mq/v1/redis_mq.proto\x1a)runtime/broker/rocketmq/v1/rocketmq.proto\x1a\x1fruntime/broker/sqs/v1/sqs.proto\x1a#runtime/broker/stomp/v1/stomp.proto\x1a\x17validate/validate.proto\"\xc3\v\n" +
 	"\x06Broker\x12?\n" +
-	"\x04name\x18\x01 \x01(\tB+\xbaG(\x92\x02%The name of the broker configuration.R\x04name\x12\x9a\x01\n" +
-	"\x04type\x18\x02 \x01(\tB\x85\x01\xfaB]r[R\x04noneR\x05kafkaR\brabbitmqR\x04mqttR\x04natsR\x03nsqR\x06pulsarR\bredis_mqR\brocketmqR\x03sqsR\x05stompR\tcustomize\xbaG\"\x92\x02\x1fThe type of the message broker.R\x04type\x12d\n" +
+	"\x04name\x18\x01 \x01(\tB+\xbaG(\x92\x02%The name of the broker configuration.R\x04name\x12\x8d\x01\n" +
+	"\x04type\x18\x02 \x01(\tBy\xbaGv\x92\x02sThe type of the message broker. Built-in: 'kafka', 'rabbitmq', 'mqtt', etc. Custom types use their registered name.R\x04type\x12d\n" +
 	"\x05kafka\x18\x03 \x01(\v2$.runtime.broker.kafka.v1.KafkaConfigB#\xbaG \x92\x02\x1dKafka specific configuration.H\x00R\x05kafka\x88\x01\x01\x12s\n" +
 	"\brabbitmq\x18\x04 \x01(\v2*.runtime.broker.rabbitmq.v1.RabbitMQConfigB&\xbaG#\x92\x02 RabbitMQ specific configuration.H\x01R\brabbitmq\x88\x01\x01\x12_\n" +
 	"\x04mqtt\x18\x05 \x01(\v2\".runtime.broker.mqtt.v1.MqttConfigB\"\xbaG\x1f\x92\x02\x1cMQTT specific configuration.H\x02R\x04mqtt\x88\x01\x01\x12_\n" +

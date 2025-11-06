@@ -7,6 +7,7 @@
 package websocketv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
@@ -96,12 +97,12 @@ var File_runtime_transport_websocket_v1_websocket_proto protoreflect.FileDescrip
 
 const file_runtime_transport_websocket_v1_websocket_proto_rawDesc = "" +
 	"\n" +
-	".runtime/transport/websocket/v1/websocket.proto\x12\x1eruntime.transport.websocket.v1\x1a\x1egoogle/protobuf/duration.proto\"\x87\x01\n" +
-	"\x06Server\x12\x18\n" +
-	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
-	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x1a\n" +
-	"\bendpoint\x18\x04 \x01(\tR\bendpointB\xa3\x02\n" +
+	".runtime/transport/websocket/v1/websocket.proto\x12\x1eruntime.transport.websocket.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\"\x87\x03\n" +
+	"\x06Server\x12W\n" +
+	"\anetwork\x18\x01 \x01(\tB=\xbaG:\x92\x027The network type for the WebSocket server to listen on.R\anetwork\x12L\n" +
+	"\x04addr\x18\x02 \x01(\tB8\xbaG5\x92\x022The address for the WebSocket server to listen on.R\x04addr\x12q\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationB<\xbaG9\x92\x026The request handling timeout for the WebSocket server.R\atimeout\x12c\n" +
+	"\bendpoint\x18\x04 \x01(\tBG\xbaGD\x92\x02AThe endpoint that this server advertises to the service registry.R\bendpointB\xa3\x02\n" +
 	"\"com.runtime.transport.websocket.v1B\x0eWebsocketProtoP\x01ZRgithub.com/origadmin/runtime/api/gen/go/runtime/transport/websocket/v1;websocketv1\xa2\x02\x03RTW\xaa\x02\x1eRuntime.Transport.Websocket.V1\xca\x02\x1eRuntime\\Transport\\Websocket\\V1\xe2\x02*Runtime\\Transport\\Websocket\\V1\\GPBMetadata\xea\x02!Runtime::Transport::Websocket::V1b\x06proto3"
 
 var (

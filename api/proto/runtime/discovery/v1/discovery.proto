@@ -21,22 +21,13 @@ message Discovery {
     (gnostic.openapi.v3.property) = {description: "The name of the discovery service configuration."}
   ];
 
-  // type specifies which discovery provider to use.
+  // The 'type' field determines which discovery provider to use.
+  // For built-in types, specify "consul", "etcd", "nacos", etc.
+  // For custom types, specify the registered name of the custom discovery provider.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
   string type = 2 [
     json_name = "type",
-    (validate.rules).string = {
-      in: [
-        "none",
-        "consul",
-        "etcd",
-        "nacos",
-        "apollo",
-        "kubernetes",
-        "polaris",
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "The type of discovery provider to use."}
+    (gnostic.openapi.v3.property) = {description: "The type of discovery provider to use. Built-in: 'consul', 'etcd', 'nacos', etc. Custom types use their registered name."}
   ];
 
   // debug enables verbose logging for the discovery client.
@@ -100,30 +91,39 @@ message Discoveries {
 // Consul provider specific configuration.
 message Consul {
   string address = 1 [
+    json_name = "address",
     (gnostic.openapi.v3.property) = {description: "The address of the Consul agent."}
   ];
   string scheme = 2 [
+    json_name = "scheme",
     (gnostic.openapi.v3.property) = {description: "The scheme to use for connecting to Consul (e.g., http, https)."}
   ];
   string token = 3 [
+    json_name = "token",
     (gnostic.openapi.v3.property) = {description: "The ACL token for Consul authentication."}
   ];
   bool heart_beat = 4 [
+    json_name = "heart_beat",
     (gnostic.openapi.v3.property) = {description: "Whether to enable heartbeating for service health checks."}
   ];
   bool health_check = 5 [
+    json_name = "health_check",
     (gnostic.openapi.v3.property) = {description: "Whether to enable health checks for registered services."}
   ];
   string datacenter = 6 [
+    json_name = "datacenter",
     (gnostic.openapi.v3.property) = {description: "The datacenter to use for Consul operations."}
   ];
   uint32 health_check_interval = 8 [
+    json_name = "health_check_interval",
     (gnostic.openapi.v3.property) = {description: "The interval (in seconds) for health checks."}
   ];
   int64 timeout = 10 [
+    json_name = "timeout",
     (gnostic.openapi.v3.property) = {description: "The timeout (in milliseconds) for Consul operations."}
   ];
   uint32 deregister_critical_service_after = 11 [
+    json_name = "deregister_critical_service_after",
     (gnostic.openapi.v3.property) = {description: "The time (in seconds) after which a critical service will be deregistered."}
   ];
 }

@@ -109,9 +109,9 @@ var File_runtime_security_v1_error_proto protoreflect.FileDescriptor
 
 const file_runtime_security_v1_error_proto_rawDesc = "" +
 	"\n" +
-	"\x1fruntime/security/v1/error.proto\x12\x13runtime.security.v1\x1a\x13errors/errors.proto*\xd3\x02\n" +
-	"\x13SecurityErrorReason\x12%\n" +
-	"!SECURITY_ERROR_REASON_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1fruntime/security/v1/error.proto\x12\x13runtime.security.v1\x1a\x13errors/errors.proto*\xd9\x02\n" +
+	"\x13SecurityErrorReason\x12+\n" +
+	"!SECURITY_ERROR_REASON_UNSPECIFIED\x10\x00\x1a\x04\xa8E\xf4\x03\x12\x1e\n" +
 	"\x13INVALID_CREDENTIALS\x10\xea\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
 	"\rTOKEN_EXPIRED\x10\xeb\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
 	"\rTOKEN_INVALID\x10\xec\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +

@@ -412,7 +412,10 @@ type AuthN struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Unique name for this authentication configuration instance.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The type of authentication, e.g., "basic", "bearer", "digest", "oauth2", "api_key", "jwt", "customize".
+	// The 'type' field determines which authentication mechanism to use.
+	// For built-in types, specify "basic", "bearer", "jwt", etc.
+	// For custom types, specify the registered name of the custom authentication mechanism.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
 	Type   string      `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	Basic  *BasicAuth  `protobuf:"bytes,10,opt,name=basic,proto3,oneof" json:"basic,omitempty"`
 	Bearer *BearerAuth `protobuf:"bytes,11,opt,name=bearer,proto3,oneof" json:"bearer,omitempty"`
@@ -658,10 +661,10 @@ const file_runtime_security_authn_v1_authn_proto_rawDesc = "" +
 	"\aJwtAuth\x12D\n" +
 	"\x05token\x18\x01 \x01(\tB.\xfaB\x04r\x02\x10\x01\xbaG$\x92\x02!The JWT token for authentication.R\x05token\x12l\n" +
 	"\tjwt_token\x18\x02 \x01(\v2 .runtime.security.authn.v1.TokenB,\xbaG)\x92\x02&The JWT token data for authentication.R\tjwt_token\x12b\n" +
-	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\xbb\b\n" +
+	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\x82\b\n" +
 	"\x05AuthN\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\xbf\x01\n" +
-	"\x04type\x18\x02 \x01(\tB\xaa\x01\xfaB:r8R\x05basicR\x06bearerR\x06digestR\x06oauth2R\aapi_keyR\x03jwtR\tcustomize\xbaGj\x92\x02gThe type of authentication, e.g., 'basic', 'bearer', 'digest', 'oauth2', 'api_key', 'jwt', 'customize'.R\x04type\x12h\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x86\x01\n" +
+	"\x04type\x18\x02 \x01(\tBr\xbaGo\x92\x02lThe type of authentication. Built-in: 'basic', 'bearer', 'jwt', etc. Custom types use their registered name.R\x04type\x12h\n" +
 	"\x05basic\x18\n" +
 	" \x01(\v2$.runtime.security.authn.v1.BasicAuthB'\xbaG$\x92\x02!The basic authentication details.H\x00R\x05basic\x88\x01\x01\x12l\n" +
 	"\x06bearer\x18\v \x01(\v2%.runtime.security.authn.v1.BearerAuthB(\xbaG%\x92\x02\"The bearer authentication details.H\x01R\x06bearer\x88\x01\x01\x12l\n" +

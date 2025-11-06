@@ -28,7 +28,10 @@ const (
 // This message was extracted from storage.proto and renamed for consistency.
 type CacheConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Driver name: redis, memcached, etc.
+	// The 'driver' field determines which configuration block to use.
+	// For built-in drivers, specify "redis", "memcached", or "memory".
+	// For custom drivers, specify the registered name of the custom driver.
+	// When a custom driver is used, its configuration should be placed in the 'customize' field.
 	Driver string `protobuf:"bytes,1,opt,name=driver,proto3" json:"driver,omitempty"`
 	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Memcached
@@ -129,9 +132,9 @@ var File_runtime_data_cache_v1_cache_proto protoreflect.FileDescriptor
 
 const file_runtime_data_cache_v1_cache_proto_rawDesc = "" +
 	"\n" +
-	"!runtime/data/cache/v1/cache.proto\x12\x15runtime.data.cache.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a%runtime/data/cache/v1/memcached.proto\x1a\"runtime/data/cache/v1/memory.proto\x1a!runtime/data/cache/v1/redis.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xa8\x05\n" +
-	"\vCacheConfig\x12_\n" +
-	"\x06driver\x18\x01 \x01(\tBG\xfaB-r+R\x04noneR\x05redisR\tmemcachedR\x06memoryR\tcustomize\xbaG\x14\x92\x02\x11cache driver nameR\x06driver\x12$\n" +
+	"!runtime/data/cache/v1/cache.proto\x12\x15runtime.data.cache.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a%runtime/data/cache/v1/memcached.proto\x1a\"runtime/data/cache/v1/memory.proto\x1a!runtime/data/cache/v1/redis.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xce\x05\n" +
+	"\vCacheConfig\x12\x84\x01\n" +
+	"\x06driver\x18\x01 \x01(\tBl\xbaGi\x92\x02fCache driver name. Built-in: 'redis', 'memcached', 'memory'. Custom drivers use their registered name.R\x06driver\x12$\n" +
 	"\x04name\x18\x02 \x01(\tB\x10\xbaG\r\x92\x02\n" +
 	"cache nameR\x04name\x12i\n" +
 	"\tmemcached\x18\n" +

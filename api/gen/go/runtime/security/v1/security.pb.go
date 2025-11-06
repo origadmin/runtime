@@ -7,6 +7,7 @@
 package securityv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/security/authz/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
@@ -28,11 +29,11 @@ const (
 type Security struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// List of authentication configurations.
-	AuthnConfigs *AuthNConfigs `protobuf:"bytes,1,opt,name=authn_configs,json=authnConfigs,proto3" json:"authn_configs,omitempty"`
+	AuthnConfigs *AuthNConfigs `protobuf:"bytes,1,opt,name=authn_configs,proto3" json:"authn_configs,omitempty"`
 	// List of authorization configurations.
-	AuthzConfigs *AuthZConfigs `protobuf:"bytes,2,opt,name=authz_configs,json=authzConfigs,proto3" json:"authz_configs,omitempty"`
+	AuthzConfigs *AuthZConfigs `protobuf:"bytes,2,opt,name=authz_configs,proto3" json:"authz_configs,omitempty"`
 	// List of transport layer security (TLS) configurations.
-	TransportSecurityConfigs *TransportSecurityConfigs `protobuf:"bytes,3,opt,name=transport_security_configs,json=transportSecurityConfigs,proto3" json:"transport_security_configs,omitempty"`
+	TransportSecurityConfigs *TransportSecurityConfigs `protobuf:"bytes,3,opt,name=transport_security_configs,proto3" json:"transport_security_configs,omitempty"`
 	unknownFields            protoimpl.UnknownFields
 	sizeCache                protoimpl.SizeCache
 }
@@ -272,11 +273,11 @@ var File_runtime_security_v1_security_proto protoreflect.FileDescriptor
 
 const file_runtime_security_v1_security_proto_rawDesc = "" +
 	"\n" +
-	"\"runtime/security/v1/security.proto\x12\x13runtime.security.v1\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\"\x87\x02\n" +
-	"\bSecurity\x12F\n" +
-	"\rauthn_configs\x18\x01 \x01(\v2!.runtime.security.v1.AuthNConfigsR\fauthnConfigs\x12F\n" +
-	"\rauthz_configs\x18\x02 \x01(\v2!.runtime.security.v1.AuthZConfigsR\fauthzConfigs\x12k\n" +
-	"\x1atransport_security_configs\x18\x03 \x01(\v2-.runtime.security.v1.TransportSecurityConfigsR\x18transportSecurityConfigs\"\x9d\x01\n" +
+	"\"runtime/security/v1/security.proto\x12\x13runtime.security.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a%runtime/security/authn/v1/authn.proto\x1a%runtime/security/authz/v1/authz.proto\x1a'runtime/security/transport/v1/tls.proto\"\xa5\x03\n" +
+	"\bSecurity\x12u\n" +
+	"\rauthn_configs\x18\x01 \x01(\v2!.runtime.security.v1.AuthNConfigsB,\xbaG)\x92\x02&List of authentication configurations.R\rauthn_configs\x12t\n" +
+	"\rauthz_configs\x18\x02 \x01(\v2!.runtime.security.v1.AuthZConfigsB+\xbaG(\x92\x02%List of authorization configurations.R\rauthz_configs\x12\xab\x01\n" +
+	"\x1atransport_security_configs\x18\x03 \x01(\v2-.runtime.security.v1.TransportSecurityConfigsB<\xbaG9\x92\x026List of transport layer security (TLS) configurations.R\x1atransport_security_configs\"\x9d\x01\n" +
 	"\fAuthNConfigs\x12\x1d\n" +
 	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
 	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x12:\n" +

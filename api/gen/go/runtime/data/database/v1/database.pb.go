@@ -32,7 +32,10 @@ type DatabaseConfig struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Debugging
 	Debug bool `protobuf:"varint,2,opt,name=debug,proto3" json:"debug,omitempty"`
-	// Dialect name: mysql, postgresql, sqlite......
+	// The 'dialect' field determines the database type.
+	// For built-in dialects, specify "mysql", "postgresql", "sqlite", etc.
+	// For custom dialects, specify the registered name of the custom dialect.
+	// When a custom dialect is used, its configuration should be placed in the 'customize' field.
 	Dialect string `protobuf:"bytes,3,opt,name=dialect,proto3" json:"dialect,omitempty"`
 	// Data source (DSN string)
 	Source string `protobuf:"bytes,4,opt,name=source,proto3" json:"source,omitempty"`
@@ -174,12 +177,11 @@ var File_runtime_data_database_v1_database_proto protoreflect.FileDescriptor
 
 const file_runtime_data_database_v1_database_proto_rawDesc = "" +
 	"\n" +
-	"'runtime/data/database/v1/database.proto\x12\x18runtime.data.database.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a(runtime/data/database/v1/migration.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xbf\t\n" +
+	"'runtime/data/database/v1/database.proto\x12\x18runtime.data.database.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a(runtime/data/database/v1/migration.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xce\t\n" +
 	"\x0eDatabaseConfig\x12O\n" +
 	"\x04name\x18\x01 \x01(\tB;\xbaG8\x92\x025Unique name for this database configuration instance.R\x04name\x129\n" +
-	"\x05debug\x18\x02 \x01(\bB#\xbaG \x92\x02\x1dwhether to enable debug mode R\x05debug\x12\x82\x01\n" +
-	"\adialect\x18\x03 \x01(\tBh\xfaBKrIR\x05mssqlR\x05mysqlR\n" +
-	"postgresqlR\x06sqliteR\x06oracleR\tsqlserverR\asqlite3R\tcustomize\xbaG\x17\x92\x02\x14database driver nameR\adialect\x124\n" +
+	"\x05debug\x18\x02 \x01(\bB#\xbaG \x92\x02\x1dwhether to enable debug mode R\x05debug\x12\x91\x01\n" +
+	"\adialect\x18\x03 \x01(\tBw\xbaGt\x92\x02qDatabase dialect name. Built-in: 'mysql', 'postgresql', 'sqlite', etc. Custom dialects use their registered name.R\adialect\x124\n" +
 	"\x06source\x18\x04 \x01(\tB\x1c\xbaG\x19\x92\x02\x16data source dsn stringR\x06source\x12W\n" +
 	"\tmigration\x18\n" +
 	" \x01(\v2#.runtime.data.database.v1.MigrationB\x14\xbaG\x11\x92\x02\x0edata migrationR\tmigration\x12>\n" +

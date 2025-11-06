@@ -4,14 +4,14 @@
 // 	protoc        (unknown)
 // source: runtime/middleware/ratelimit/v1/ratelimiter.proto
 
-// 修正 package 声明以匹配新的目录结构
-
 package ratelimitv1
 
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -27,7 +27,10 @@ const (
 // Rate limiter
 type RateLimiter struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// rate limiter name, supported: bbr, memory, redis.
+	// The 'name' field determines which rate limiter to use.
+	// For built-in types, specify "bbr", "memory", or "redis".
+	// For custom types, specify the registered name of the custom rate limiter.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// The number of seconds in a rate limit window
 	Period int32 `protobuf:"varint,2,opt,name=period,proto3" json:"period,omitempty"`
@@ -38,9 +41,11 @@ type RateLimiter struct {
 	// The number of seconds until the current rate limit window completely resets
 	XRatelimitReset int32 `protobuf:"varint,6,opt,name=x_ratelimit_reset,proto3" json:"x_ratelimit_reset,omitempty"`
 	// When rate limited, the number of seconds to wait before another request will be accepted
-	RetryAfter    int32               `protobuf:"varint,7,opt,name=retry_after,proto3" json:"retry_after,omitempty"`
-	Memory        *RateLimiter_Memory `protobuf:"bytes,101,opt,name=memory,proto3" json:"memory,omitempty"`
-	Redis         *RateLimiter_Redis  `protobuf:"bytes,102,opt,name=redis,proto3" json:"redis,omitempty"`
+	RetryAfter int32               `protobuf:"varint,7,opt,name=retry_after,proto3" json:"retry_after,omitempty"`
+	Memory     *RateLimiter_Memory `protobuf:"bytes,101,opt,name=memory,proto3" json:"memory,omitempty"`
+	Redis      *RateLimiter_Redis  `protobuf:"bytes,102,opt,name=redis,proto3" json:"redis,omitempty"`
+	// Optional custom configuration for rate limiter types not explicitly defined.
+	Customize     *structpb.Struct `protobuf:"bytes,103,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -127,6 +132,13 @@ func (x *RateLimiter) GetMemory() *RateLimiter_Memory {
 func (x *RateLimiter) GetRedis() *RateLimiter_Redis {
 	if x != nil {
 		return x.Redis
+	}
+	return nil
+}
+
+func (x *RateLimiter) GetCustomize() *structpb.Struct {
+	if x != nil {
+		return x.Customize
 	}
 	return nil
 }
@@ -255,16 +267,17 @@ var File_runtime_middleware_ratelimit_v1_ratelimiter_proto protoreflect.FileDesc
 
 const file_runtime_middleware_ratelimit_v1_ratelimiter_proto_rawDesc = "" +
 	"\n" +
-	"1runtime/middleware/ratelimit/v1/ratelimiter.proto\x12\x1fruntime.middleware.ratelimit.v1\x1a\x17validate/validate.proto\"\xda\x04\n" +
-	"\vRateLimiter\x12-\n" +
-	"\x04name\x18\x01 \x01(\tB\x19\xfaB\x16r\x14R\x03bbrR\x06memoryR\x05redisR\x04name\x12\x16\n" +
+	"1runtime/middleware/ratelimit/v1/ratelimiter.proto\x12\x1fruntime.middleware.ratelimit.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xbb\x06\n" +
+	"\vRateLimiter\x12x\n" +
+	"\x04name\x18\x01 \x01(\tBd\xbaGa\x92\x02^Rate limiter name. Built-in: 'bbr', 'memory', 'redis'. Custom types use their registered name.R\x04name\x12\x16\n" +
 	"\x06period\x18\x02 \x01(\x05R\x06period\x12,\n" +
 	"\x11x_ratelimit_limit\x18\x04 \x01(\x05R\x11x_ratelimit_limit\x124\n" +
 	"\x15x_ratelimit_remaining\x18\x05 \x01(\x05R\x15x_ratelimit_remaining\x12,\n" +
 	"\x11x_ratelimit_reset\x18\x06 \x01(\x05R\x11x_ratelimit_reset\x12 \n" +
 	"\vretry_after\x18\a \x01(\x05R\vretry_after\x12K\n" +
 	"\x06memory\x18e \x01(\v23.runtime.middleware.ratelimit.v1.RateLimiter.MemoryR\x06memory\x12H\n" +
-	"\x05redis\x18f \x01(\v22.runtime.middleware.ratelimit.v1.RateLimiter.RedisR\x05redis\x1ac\n" +
+	"\x05redis\x18f \x01(\v22.runtime.middleware.ratelimit.v1.RateLimiter.RedisR\x05redis\x12\x85\x01\n" +
+	"\tcustomize\x18g \x01(\v2\x17.google.protobuf.StructBI\xbaGF\x92\x02CCustom configuration for rate limiter types not explicitly defined.H\x00R\tcustomize\x88\x01\x01\x1ac\n" +
 	"\x05Redis\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
@@ -274,7 +287,9 @@ const file_runtime_middleware_ratelimit_v1_ratelimiter_proto_rawDesc = "" +
 	"\n" +
 	"expiration\x18\x01 \x01(\x03R\n" +
 	"expiration\x12*\n" +
-	"\x10cleanup_interval\x18\x02 \x01(\x03R\x10cleanup_intervalB\xae\x02\n" +
+	"\x10cleanup_interval\x18\x02 \x01(\x03R\x10cleanup_intervalB\f\n" +
+	"\n" +
+	"_customizeB\xae\x02\n" +
 	"#com.runtime.middleware.ratelimit.v1B\x10RatelimiterProtoP\x01ZSgithub.com/origadmin/runtime/api/gen/go/runtime/middleware/ratelimit/v1;ratelimitv1\xf8\x01\x01\xa2\x02\x03RMR\xaa\x02\x1fRuntime.Middleware.Ratelimit.V1\xca\x02\x1fRuntime\\Middleware\\Ratelimit\\V1\xe2\x02+Runtime\\Middleware\\Ratelimit\\V1\\GPBMetadata\xea\x02\"Runtime::Middleware::Ratelimit::V1b\x06proto3"
 
 var (
@@ -294,15 +309,17 @@ var file_runtime_middleware_ratelimit_v1_ratelimiter_proto_goTypes = []any{
 	(*RateLimiter)(nil),        // 0: runtime.middleware.ratelimit.v1.RateLimiter
 	(*RateLimiter_Redis)(nil),  // 1: runtime.middleware.ratelimit.v1.RateLimiter.Redis
 	(*RateLimiter_Memory)(nil), // 2: runtime.middleware.ratelimit.v1.RateLimiter.Memory
+	(*structpb.Struct)(nil),    // 3: google.protobuf.Struct
 }
 var file_runtime_middleware_ratelimit_v1_ratelimiter_proto_depIdxs = []int32{
 	2, // 0: runtime.middleware.ratelimit.v1.RateLimiter.memory:type_name -> runtime.middleware.ratelimit.v1.RateLimiter.Memory
 	1, // 1: runtime.middleware.ratelimit.v1.RateLimiter.redis:type_name -> runtime.middleware.ratelimit.v1.RateLimiter.Redis
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 2: runtime.middleware.ratelimit.v1.RateLimiter.customize:type_name -> google.protobuf.Struct
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_runtime_middleware_ratelimit_v1_ratelimiter_proto_init() }
@@ -310,6 +327,7 @@ func file_runtime_middleware_ratelimit_v1_ratelimiter_proto_init() {
 	if File_runtime_middleware_ratelimit_v1_ratelimiter_proto != nil {
 		return
 	}
+	file_runtime_middleware_ratelimit_v1_ratelimiter_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

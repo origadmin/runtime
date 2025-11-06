@@ -19,32 +19,26 @@ message FilestoreConfig {
     (gnostic.openapi.v3.property) = {description: "file store name"}
   ];
 
-  // The 'driver' field determines which configuration block (local or oss) to use.
-  // This field is crucial for ensuring JSON/YAML compatibility.
+  // The 'driver' field determines which configuration block to use.
+  // For built-in drivers, specify "local" or "oss".
+  // For custom drivers, specify the registered name of the custom driver (e.g., "sftp").
+  // When a custom driver is used, its configuration should be placed in the 'customize' field.
   string driver = 2 [
     json_name = "driver",
-    (validate.rules).string = {
-      in: [
-        "local",
-        "oss",
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "file store driver name"}
+    (gnostic.openapi.v3.property) = {description: "File store driver name. Built-in: 'local', 'oss'. Custom drivers use their registered name."}
   ];
 
   // Local file system configuration. Only effective when driver is "local".
-  // The optional keyword clearly indicates that this field may not be present.
   optional FileLocalConfig local = 3 [
     json_name = "local",
     (gnostic.openapi.v3.property) = {description: "local file system configuration"}
-  ]; // Updated to FileLocalConfig
+  ];
 
   // Cloud object storage configuration. Only effective when driver is "oss".
   optional OssConfig oss = 4 [
     json_name = "oss",
     (gnostic.openapi.v3.property) = {description: "cloud object storage configuration"}
-  ]; // Updated to OssConfig
+  ];
 
   // Chunk size in bytes for splitting large files.
   // For OSS, this corresponds to the multipart upload part size.
@@ -55,9 +49,9 @@ message FilestoreConfig {
     (gnostic.openapi.v3.property) = {description: "chunk size in bytes"}
   ];
 
-  // Optional custom configuration for file store types not explicitly defined.
+  // Optional custom configuration for drivers not explicitly defined as 'local' or 'oss'.
   optional google.protobuf.Struct customize = 6 [
     json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Custom configuration for file store types not explicitly defined."}
+    (gnostic.openapi.v3.property) = {description: "Custom configuration for drivers not explicitly defined as 'local' or 'oss'."}
   ];
 }

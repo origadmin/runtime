@@ -299,33 +299,34 @@ var File_runtime_security_transport_v1_tls_proto protoreflect.FileDescriptor
 
 const file_runtime_security_transport_v1_tls_proto_rawDesc = "" +
 	"\n" +
-	"'runtime/security/transport/v1/tls.proto\x12\x1druntime.security.transport.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xf1\x04\n" +
-	"\tTLSConfig\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
-	"\aenabled\x18\x02 \x01(\bR\aenabled\x12B\n" +
-	"\x04file\x18\x03 \x01(\v2).runtime.security.transport.v1.FileConfigH\x00R\x04file\x88\x01\x01\x12?\n" +
-	"\x03pem\x18\x04 \x01(\v2(.runtime.security.transport.v1.PEMConfigH\x01R\x03pem\x88\x01\x01\x12;\n" +
-	"\vmin_version\x18\x05 \x01(\tB\x19\xfaB\x16r\x14R\x031.0R\x031.1R\x031.2R\x031.3R\vmin_version\x12$\n" +
-	"\rcipher_suites\x18\x06 \x03(\tR\rcipher_suites\x120\n" +
-	"\x13require_client_cert\x18\a \x01(\bR\x13require_client_cert\x12&\n" +
-	"\x0eclient_ca_file\x18\b \x01(\tR\x0eclient_ca_file\x122\n" +
-	"\x14insecure_skip_verify\x18\t \x01(\bR\x14insecure_skip_verify\x12 \n" +
+	"'runtime/security/transport/v1/tls.proto\x12\x1druntime.security.transport.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xf0\n" +
+	"\n" +
+	"\tTLSConfig\x12J\n" +
+	"\x04name\x18\x01 \x01(\tB6\xbaG3\x92\x020Unique name for this TLS configuration instance.R\x04name\x12N\n" +
+	"\aenabled\x18\x02 \x01(\bB4\xbaG1\x92\x02.Whether TLS is enabled for this configuration.R\aenabled\x12o\n" +
+	"\x04file\x18\x03 \x01(\v2).runtime.security.transport.v1.FileConfigB+\xbaG(\x92\x02%File-based certificate configuration.H\x00R\x04file\x88\x01\x01\x12k\n" +
+	"\x03pem\x18\x04 \x01(\v2(.runtime.security.transport.v1.PEMConfigB*\xbaG'\x92\x02$Inline PEM-encoded certificate data.H\x01R\x03pem\x88\x01\x01\x12\x97\x01\n" +
+	"\vmin_version\x18\x05 \x01(\tBu\xfaB\x16r\x14R\x031.0R\x031.1R\x031.2R\x031.3\xbaGY\x92\x02VMinimum TLS version to use. Allowed values: \"1.0\", \"1.1\", \"1.2\", \"1.3\". Default: \"1.2\"R\vmin_version\x12\x7f\n" +
+	"\rcipher_suites\x18\x06 \x03(\tBY\xbaGV\x92\x02SList of supported cipher suites. Example: [\"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256\"]R\rcipher_suites\x12\x8b\x01\n" +
+	"\x13require_client_cert\x18\a \x01(\bBY\xbaGV\x92\x02SWhether to require client certificate for mutual TLS authentication. Default: falseR\x13require_client_cert\x12|\n" +
+	"\x0eclient_ca_file\x18\b \x01(\tBT\xbaGQ\x92\x02NPath to the client CA certificate file used for client certificate validation.R\x0eclient_ca_file\x12\x91\x01\n" +
+	"\x14insecure_skip_verify\x18\t \x01(\bB]\xbaGZ\x92\x02WIf true, skips server certificate verification. Only use in development. Default: falseR\x14insecure_skip_verify\x12\x8d\x01\n" +
 	"\vserver_name\x18\n" +
-	" \x01(\tR\vserver_name\x12\x7f\n" +
+	" \x01(\tBk\xbaGh\x92\x02eServer name for SNI (Server Name Indication), used by client to specify the hostname being contacted.R\vserver_name\x12\x7f\n" +
 	"\tcustomize\x18\v \x01(\v2\x17.google.protobuf.StructBC\xbaG@\x92\x02=Custom configuration for TLS settings not explicitly defined.H\x02R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_fileB\x06\n" +
 	"\x04_pemB\f\n" +
 	"\n" +
-	"_customize\"T\n" +
+	"_customize\"\x95\x02\n" +
 	"\n" +
-	"FileConfig\x12\x1b\n" +
-	"\x04cert\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04cert\x12\x19\n" +
-	"\x03key\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x03key\x12\x0e\n" +
-	"\x02ca\x18\x03 \x01(\tR\x02ca\"S\n" +
-	"\tPEMConfig\x12\x1b\n" +
-	"\x04cert\x18\x01 \x01(\fB\a\xfaB\x04z\x02\x10\x01R\x04cert\x12\x19\n" +
-	"\x03key\x18\x02 \x01(\fB\a\xfaB\x04z\x02\x10\x01R\x03key\x12\x0e\n" +
-	"\x02ca\x18\x03 \x01(\fR\x02caB\x9a\x02\n" +
+	"FileConfig\x12S\n" +
+	"\x04cert\x18\x01 \x01(\tB?\xfaB\x04r\x02\x10\x01\xbaG5\xba\x01\x04cert\x92\x02+Path to the certificate file in PEM format.R\x04cert\x12P\n" +
+	"\x03key\x18\x02 \x01(\tB>\xfaB\x04r\x02\x10\x01\xbaG4\xba\x01\x03key\x92\x02+Path to the private key file in PEM format.R\x03key\x12`\n" +
+	"\x02ca\x18\x03 \x01(\tBP\xbaGM\x92\x02JPath to the CA certificate file for verifying peer certificates. Optional.R\x02ca\"\xf8\x01\n" +
+	"\tPEMConfig\x12E\n" +
+	"\x04cert\x18\x01 \x01(\fB1\xfaB\x04z\x02\x10\x01\xbaG'\xba\x01\x04cert\x92\x02\x1dPEM-encoded certificate data.R\x04cert\x12B\n" +
+	"\x03key\x18\x02 \x01(\fB0\xfaB\x04z\x02\x10\x01\xbaG&\xba\x01\x03key\x92\x02\x1dPEM-encoded private key data.R\x03key\x12`\n" +
+	"\x02ca\x18\x03 \x01(\fBP\xbaGM\x92\x02JPEM-encoded CA certificate data for verifying peer certificates. Optional.R\x02caB\x9a\x02\n" +
 	"!com.runtime.security.transport.v1B\bTlsProtoP\x01ZQgithub.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1;transportv1\xf8\x01\x01\xa2\x02\x03RST\xaa\x02\x1dRuntime.Security.Transport.V1\xca\x02\x1dRuntime\\Security\\Transport\\V1\xe2\x02)Runtime\\Security\\Transport\\V1\\GPBMetadata\xea\x02 Runtime::Security::Transport::V1b\x06proto3"
 
 var (

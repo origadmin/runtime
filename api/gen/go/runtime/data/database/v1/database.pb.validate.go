@@ -61,16 +61,7 @@ func (m *DatabaseConfig) validate(all bool) error {
 
 	// no validation rules for Debug
 
-	if _, ok := _DatabaseConfig_Dialect_InLookup[m.GetDialect()]; !ok {
-		err := DatabaseConfigValidationError{
-			field:  "Dialect",
-			reason: "value must be in list [mssql mysql postgresql sqlite oracle sqlserver sqlite3 customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Dialect
 
 	// no validation rules for Source
 
@@ -225,14 +216,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DatabaseConfigValidationError{}
-
-var _DatabaseConfig_Dialect_InLookup = map[string]struct{}{
-	"mssql":      {},
-	"mysql":      {},
-	"postgresql": {},
-	"sqlite":     {},
-	"oracle":     {},
-	"sqlserver":  {},
-	"sqlite3":    {},
-	"customize":  {},
-}

@@ -57,16 +57,7 @@ func (m *CacheConfig) validate(all bool) error {
 
 	var errors []error
 
-	if _, ok := _CacheConfig_Driver_InLookup[m.GetDriver()]; !ok {
-		err := CacheConfigValidationError{
-			field:  "Driver",
-			reason: "value must be in list [none redis memcached memory customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Driver
 
 	// no validation rules for Name
 
@@ -268,11 +259,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CacheConfigValidationError{}
-
-var _CacheConfig_Driver_InLookup = map[string]struct{}{
-	"none":      {},
-	"redis":     {},
-	"memcached": {},
-	"memory":    {},
-	"customize": {},
-}

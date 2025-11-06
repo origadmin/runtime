@@ -29,7 +29,10 @@ type Discovery struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// name is the the service key in the registry.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// type specifies which discovery provider to use.
+	// The 'type' field determines which discovery provider to use.
+	// For built-in types, specify "consul", "etcd", "nacos", etc.
+	// For custom types, specify the registered name of the custom discovery provider.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// debug enables verbose logging for the discovery client.
 	Debug bool `protobuf:"varint,5,opt,name=debug,proto3" json:"debug,omitempty"`
@@ -213,12 +216,12 @@ type Consul struct {
 	Address                        string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	Scheme                         string                 `protobuf:"bytes,2,opt,name=scheme,proto3" json:"scheme,omitempty"`
 	Token                          string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
-	HeartBeat                      bool                   `protobuf:"varint,4,opt,name=heart_beat,json=heartBeat,proto3" json:"heart_beat,omitempty"`
-	HealthCheck                    bool                   `protobuf:"varint,5,opt,name=health_check,json=healthCheck,proto3" json:"health_check,omitempty"`
+	HeartBeat                      bool                   `protobuf:"varint,4,opt,name=heart_beat,proto3" json:"heart_beat,omitempty"`
+	HealthCheck                    bool                   `protobuf:"varint,5,opt,name=health_check,proto3" json:"health_check,omitempty"`
 	Datacenter                     string                 `protobuf:"bytes,6,opt,name=datacenter,proto3" json:"datacenter,omitempty"`
-	HealthCheckInterval            uint32                 `protobuf:"varint,8,opt,name=health_check_interval,json=healthCheckInterval,proto3" json:"health_check_interval,omitempty"`
+	HealthCheckInterval            uint32                 `protobuf:"varint,8,opt,name=health_check_interval,proto3" json:"health_check_interval,omitempty"`
 	Timeout                        int64                  `protobuf:"varint,10,opt,name=timeout,proto3" json:"timeout,omitempty"`
-	DeregisterCriticalServiceAfter uint32                 `protobuf:"varint,11,opt,name=deregister_critical_service_after,json=deregisterCriticalServiceAfter,proto3" json:"deregister_critical_service_after,omitempty"`
+	DeregisterCriticalServiceAfter uint32                 `protobuf:"varint,11,opt,name=deregister_critical_service_after,proto3" json:"deregister_critical_service_after,omitempty"`
 	unknownFields                  protoimpl.UnknownFields
 	sizeCache                      protoimpl.SizeCache
 }
@@ -537,11 +540,10 @@ var File_runtime_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
 const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/discovery/v1/discovery.proto\x12\x14runtime.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xf3\b\n" +
+	"$runtime/discovery/v1/discovery.proto\x12\x14runtime.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xfd\b\n" +
 	"\tDiscovery\x12J\n" +
-	"\x04name\x18\x01 \x01(\tB6\xbaG3\x92\x020The name of the discovery service configuration.R\x04name\x12\x88\x01\n" +
-	"\x04type\x18\x02 \x01(\tBt\xfaBErCR\x04noneR\x06consulR\x04etcdR\x05nacosR\x06apolloR\n" +
-	"kubernetesR\apolarisR\tcustomize\xbaG)\x92\x02&The type of discovery provider to use.R\x04type\x12M\n" +
+	"\x04name\x18\x01 \x01(\tB6\xbaG3\x92\x020The name of the discovery service configuration.R\x04name\x12\x92\x01\n" +
+	"\x04type\x18\x02 \x01(\tB~\xbaG{\x92\x02xThe type of discovery provider to use. Built-in: 'consul', 'etcd', 'nacos', etc. Custom types use their registered name.R\x04type\x12M\n" +
 	"\x05debug\x18\x05 \x01(\bB7\xbaG4\x92\x021Enables verbose logging for the discovery client.R\x05debug\x12h\n" +
 	"\x06consul\x18\n" +
 	" \x01(\v2\x1c.runtime.discovery.v1.ConsulB-\xbaG*\x92\x02'Consul provider specific configuration.H\x00R\x06consul\x88\x01\x01\x12`\n" +
@@ -568,21 +570,22 @@ const file_runtime_discovery_v1_discovery_proto_rawDesc = "" +
 	"\aconfigs\x18\x03 \x03(\v2\x1f.runtime.discovery.v1.DiscoveryB1\xbaG.\x92\x02+A list of discovery service configurations.R\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
-	"\a_active\"\xe2\x06\n" +
+	"\a_active\"\xe9\x06\n" +
 	"\x06Consul\x12@\n" +
 	"\aaddress\x18\x01 \x01(\tB&\xbaG#\x92\x02 The address of the Consul agent.R\aaddress\x12]\n" +
 	"\x06scheme\x18\x02 \x01(\tBE\xbaGB\x92\x02?The scheme to use for connecting to Consul (e.g., http, https).R\x06scheme\x12D\n" +
-	"\x05token\x18\x03 \x01(\tB.\xbaG+\x92\x02(The ACL token for Consul authentication.R\x05token\x12^\n" +
+	"\x05token\x18\x03 \x01(\tB.\xbaG+\x92\x02(The ACL token for Consul authentication.R\x05token\x12_\n" +
 	"\n" +
-	"heart_beat\x18\x04 \x01(\bB?\xbaG<\x92\x029Whether to enable heartbeating for service health checks.R\theartBeat\x12a\n" +
-	"\fhealth_check\x18\x05 \x01(\bB>\xbaG;\x92\x028Whether to enable health checks for registered services.R\vhealthCheck\x12R\n" +
+	"heart_beat\x18\x04 \x01(\bB?\xbaG<\x92\x029Whether to enable heartbeating for service health checks.R\n" +
+	"heart_beat\x12b\n" +
+	"\fhealth_check\x18\x05 \x01(\bB>\xbaG;\x92\x028Whether to enable health checks for registered services.R\fhealth_check\x12R\n" +
 	"\n" +
 	"datacenter\x18\x06 \x01(\tB2\xbaG/\x92\x02,The datacenter to use for Consul operations.R\n" +
-	"datacenter\x12f\n" +
-	"\x15health_check_interval\x18\b \x01(\rB2\xbaG/\x92\x02,The interval (in seconds) for health checks.R\x13healthCheckInterval\x12T\n" +
+	"datacenter\x12h\n" +
+	"\x15health_check_interval\x18\b \x01(\rB2\xbaG/\x92\x02,The interval (in seconds) for health checks.R\x15health_check_interval\x12T\n" +
 	"\atimeout\x18\n" +
-	" \x01(\x03B:\xbaG7\x92\x024The timeout (in milliseconds) for Consul operations.R\atimeout\x12\x9b\x01\n" +
-	"!deregister_critical_service_after\x18\v \x01(\rBP\xbaGM\x92\x02JThe time (in seconds) after which a critical service will be deregistered.R\x1ederegisterCriticalServiceAfter\"J\n" +
+	" \x01(\x03B:\xbaG7\x92\x024The timeout (in milliseconds) for Consul operations.R\atimeout\x12\x9e\x01\n" +
+	"!deregister_critical_service_after\x18\v \x01(\rBP\xbaGM\x92\x02JThe time (in seconds) after which a critical service will be deregistered.R!deregister_critical_service_after\"J\n" +
 	"\x04ETCD\x12B\n" +
 	"\tendpoints\x18\x01 \x03(\tB$\xbaG!\x92\x02\x1eList of ETCD server endpoints.R\tendpoints\"\a\n" +
 	"\x05Nacos\"\b\n" +

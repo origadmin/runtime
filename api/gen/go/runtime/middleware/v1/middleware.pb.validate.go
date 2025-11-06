@@ -357,16 +357,7 @@ func (m *Middleware) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _Middleware_Type_InLookup[m.GetType()]; !ok {
-		err := MiddlewareValidationError{
-			field:  "Type",
-			reason: "value must be in list [none logging recovery rate_limiter metrics validator jwt selector cors circuit_breaker customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	// no validation rules for Enabled
 
@@ -809,20 +800,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = MiddlewareValidationError{}
-
-var _Middleware_Type_InLookup = map[string]struct{}{
-	"none":            {},
-	"logging":         {},
-	"recovery":        {},
-	"rate_limiter":    {},
-	"metrics":         {},
-	"validator":       {},
-	"jwt":             {},
-	"selector":        {},
-	"cors":            {},
-	"circuit_breaker": {},
-	"customize":       {},
-}
 
 // Validate checks the field values on Middlewares with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

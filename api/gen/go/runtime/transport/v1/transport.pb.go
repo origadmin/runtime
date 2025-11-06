@@ -7,6 +7,7 @@
 package transportv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/transport/websocket/v1"
@@ -325,14 +326,14 @@ var File_runtime_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_runtime_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/transport/v1/transport.proto\x12\x14runtime.transport.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a$runtime/transport/grpc/v1/grpc.proto\x1a$runtime/transport/http/v1/http.proto\x1a.runtime/transport/websocket/v1/websocket.proto\"\xe5\x02\n" +
-	"\x06Server\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
-	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12:\n" +
-	"\x04grpc\x18\x03 \x01(\v2!.runtime.transport.grpc.v1.ServerH\x00R\x04grpc\x88\x01\x01\x12:\n" +
-	"\x04http\x18\x04 \x01(\v2!.runtime.transport.http.v1.ServerH\x01R\x04http\x88\x01\x01\x12I\n" +
-	"\twebsocket\x18\x05 \x01(\v2&.runtime.transport.websocket.v1.ServerH\x02R\twebsocket\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x03R\tcustomize\x88\x01\x01B\a\n" +
+	"$runtime/transport/v1/transport.proto\x12\x14runtime.transport.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a$runtime/transport/grpc/v1/grpc.proto\x1a$runtime/transport/http/v1/http.proto\x1a.runtime/transport/websocket/v1/websocket.proto\"\xa4\x05\n" +
+	"\x06Server\x12I\n" +
+	"\x04name\x18\x01 \x01(\tB5\xbaG2\x92\x02/The logical name for this server configuration.R\x04name\x12o\n" +
+	"\bprotocol\x18\x02 \x01(\tBS\xbaGP\x92\x02MThe name of the transport protocol to use, e.g., \"grpc\", \"http\", \"websocket\".R\bprotocol\x12\\\n" +
+	"\x04grpc\x18\x03 \x01(\v2!.runtime.transport.grpc.v1.ServerB \xbaG\x1d\x92\x02\x1agRPC server configuration.H\x00R\x04grpc\x88\x01\x01\x12\\\n" +
+	"\x04http\x18\x04 \x01(\v2!.runtime.transport.http.v1.ServerB \xbaG\x1d\x92\x02\x1aHTTP server configuration.H\x01R\x04http\x88\x01\x01\x12p\n" +
+	"\twebsocket\x18\x05 \x01(\v2&.runtime.transport.websocket.v1.ServerB%\xbaG\"\x92\x02\x1fWebSocket server configuration.H\x02R\twebsocket\x88\x01\x01\x12\x81\x01\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBE\xbaGB\x92\x02?Non-standard or user-defined transport protocols configuration.H\x03R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
 	"\x05_httpB\f\n" +
 	"\n" +
@@ -340,13 +341,13 @@ const file_runtime_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
 	"_customize\"A\n" +
 	"\aServers\x126\n" +
-	"\aconfigs\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aconfigs\"\x8c\x02\n" +
-	"\x06Client\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
-	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12:\n" +
+	"\aconfigs\x18\x01 \x03(\v2\x1c.runtime.transport.v1.ServerR\aconfigs\"\xe0\x03\n" +
+	"\x06Client\x12I\n" +
+	"\x04name\x18\x01 \x01(\tB5\xbaG2\x92\x02/The logical name for this server configuration.R\x04name\x12o\n" +
+	"\bprotocol\x18\x02 \x01(\tBS\xbaGP\x92\x02MThe name of the transport protocol to use, e.g., \"grpc\", \"http\", \"websocket\".R\bprotocol\x12:\n" +
 	"\x04grpc\x18\x03 \x01(\v2!.runtime.transport.grpc.v1.ClientH\x00R\x04grpc\x88\x01\x01\x12:\n" +
-	"\x04http\x18\x04 \x01(\v2!.runtime.transport.http.v1.ClientH\x01R\x04http\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x02R\tcustomize\x88\x01\x01B\a\n" +
+	"\x04http\x18\x04 \x01(\v2!.runtime.transport.http.v1.ClientH\x01R\x04http\x88\x01\x01\x12\x81\x01\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBE\xbaGB\x92\x02?Non-standard or user-defined transport protocols configuration.H\x02R\tcustomize\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
 	"\x05_httpB\f\n" +
 	"\n" +

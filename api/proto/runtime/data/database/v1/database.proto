@@ -22,22 +22,13 @@ message DatabaseConfig {
     json_name = "debug",
     (gnostic.openapi.v3.property) = {description: "whether to enable debug mode "}
   ];
-  // Dialect name: mysql, postgresql, sqlite......
+  // The 'dialect' field determines the database type.
+  // For built-in dialects, specify "mysql", "postgresql", "sqlite", etc.
+  // For custom dialects, specify the registered name of the custom dialect.
+  // When a custom dialect is used, its configuration should be placed in the 'customize' field.
   string dialect = 3 [
     json_name = "dialect",
-    (validate.rules).string = {
-      in: [
-        "mssql",
-        "mysql",
-        "postgresql",
-        "sqlite",
-        "oracle",
-        "sqlserver",
-        "sqlite3",
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "database driver name"}
+    (gnostic.openapi.v3.property) = {description: "Database dialect name. Built-in: 'mysql', 'postgresql', 'sqlite', etc. Custom dialects use their registered name."}
   ];
   // Data source (DSN string)
   string source = 4 [

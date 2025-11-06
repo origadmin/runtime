@@ -7,6 +7,7 @@
 package tracev1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
@@ -114,13 +115,13 @@ var File_runtime_trace_v1_trace_proto protoreflect.FileDescriptor
 
 const file_runtime_trace_v1_trace_proto_rawDesc = "" +
 	"\n" +
-	"\x1cruntime/trace/v1/trace.proto\x12\x10runtime.trace.v1\x1a\x1egoogle/protobuf/duration.proto\"\xc6\x01\n" +
-	"\x05Trace\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
-	"\bendpoint\x18\x02 \x01(\tR\bendpoint\x12\"\n" +
-	"\fservice_name\x18\x03 \x01(\tR\fservice_name\x128\n" +
-	"\atimeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationH\x00R\atimeout\x88\x01\x01\x12\x19\n" +
-	"\x05ratio\x18\x05 \x01(\x01H\x01R\x05ratio\x88\x01\x01B\n" +
+	"\x1cruntime/trace/v1/trace.proto\x12\x10runtime.trace.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\"\xa2\x05\n" +
+	"\x05Trace\x12V\n" +
+	"\x04name\x18\x01 \x01(\tBB\xbaG?\x92\x02<The tracing system to use, e.g., \"jaeger\", \"zipkin\", \"otlp\".R\x04name\x12\x99\x01\n" +
+	"\bendpoint\x18\x02 \x01(\tB}\xbaGz\x92\x02wThe address of the tracing collector/agent, e.g., \"localhost:6831\" for Jaeger agent, or \"localhost:4317\" for OTLP gRPC.R\bendpoint\x12\x8b\x01\n" +
+	"\fservice_name\x18\x03 \x01(\tBg\xbaGd\x92\x02aThe name of the service reporting traces. If not set, it might default to the application's name.R\fservice_name\x12t\n" +
+	"\atimeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationB:\xbaG7\x92\x024Timeout for trace operations, e.g., exporting spans.H\x00R\atimeout\x88\x01\x01\x12\x8a\x01\n" +
+	"\x05ratio\x18\x05 \x01(\x01Bo\xbaGl\x92\x02iThe sampling probability (e.g., 0.01 for 1%). A value of 1.0 means always sample, 0.0 means never sample.H\x01R\x05ratio\x88\x01\x01B\n" +
 	"\n" +
 	"\b_timeoutB\b\n" +
 	"\x06_ratioB\xc6\x01\n" +

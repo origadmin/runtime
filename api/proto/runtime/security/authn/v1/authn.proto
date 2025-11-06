@@ -140,21 +140,13 @@ message JwtAuth {
 message AuthN {
   // Unique name for this authentication configuration instance.
   string name = 1;
-  // The type of authentication, e.g., "basic", "bearer", "digest", "oauth2", "api_key", "jwt", "customize".
+  // The 'type' field determines which authentication mechanism to use.
+  // For built-in types, specify "basic", "bearer", "jwt", etc.
+  // For custom types, specify the registered name of the custom authentication mechanism.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
   string type = 2 [
     json_name = "type",
-    (validate.rules).string = {
-      in: [
-        "basic",
-        "bearer",
-        "digest",
-        "oauth2",
-        "api_key",
-        "jwt",
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "The type of authentication, e.g., 'basic', 'bearer', 'digest', 'oauth2', 'api_key', 'jwt', 'customize'."}
+    (gnostic.openapi.v3.property) = {description: "The type of authentication. Built-in: 'basic', 'bearer', 'jwt', etc. Custom types use their registered name."}
   ];
 
   optional BasicAuth basic = 10 [

@@ -195,16 +195,7 @@ func (m *SourceConfig) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _SourceConfig_Type_InLookup[m.GetType()]; !ok {
-		err := SourceConfigValidationError{
-			field:  "Type",
-			reason: "value must be in list [env file etcd consul apollo nacos kubernetes polaris customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	// no validation rules for Priority
 
@@ -581,15 +572,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SourceConfigValidationError{}
-
-var _SourceConfig_Type_InLookup = map[string]struct{}{
-	"env":        {},
-	"file":       {},
-	"etcd":       {},
-	"consul":     {},
-	"apollo":     {},
-	"nacos":      {},
-	"kubernetes": {},
-	"polaris":    {},
-	"customize":  {},
-}

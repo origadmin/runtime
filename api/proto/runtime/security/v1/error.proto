@@ -13,10 +13,10 @@ enum SecurityErrorReason {
   option (errors.default_code) = 500;
 
   // The default, unspecified reason. This is required by proto3 syntax.
-  SECURITY_ERROR_REASON_UNSPECIFIED = 0;
+  SECURITY_ERROR_REASON_UNSPECIFIED = 0 [(errors.code) = 500];
 
   // --- Specific Authentication Errors (mapped to common.UNAUTHENTICATED) ---
-  
+
   // The provided credentials (e.g., username/password) are invalid.
   INVALID_CREDENTIALS = 1002 [(errors.code) = 401];
   // The authentication token has expired.

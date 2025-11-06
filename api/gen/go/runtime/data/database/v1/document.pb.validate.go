@@ -59,16 +59,7 @@ func (m *DocumentConfig) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _DocumentConfig_Type_InLookup[m.GetType()]; !ok {
-		err := DocumentConfigValidationError{
-			field:  "Type",
-			reason: "value must be in list [mongo customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	if m.Mongo != nil {
 
@@ -213,8 +204,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DocumentConfigValidationError{}
-
-var _DocumentConfig_Type_InLookup = map[string]struct{}{
-	"mongo":     {},
-	"customize": {},
-}

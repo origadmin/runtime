@@ -49,24 +49,13 @@ message Middleware {
     json_name = "name",
     (gnostic.openapi.v3.property) = {description: "The name of the middleware instance."}
   ];
+  // The 'type' field determines which configuration block to use.
+  // For built-in types, specify "logging", "recovery", "rate_limiter", etc.
+  // For custom types, specify the registered name of the custom middleware.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
   string type = 2 [
     json_name = "type",
-    (validate.rules).string = {
-      in: [
-        "none",
-        "logging",
-        "recovery",
-        "rate_limiter",
-        "metrics",
-        "validator",
-        "jwt",
-        "selector",
-        "cors",
-        "circuit_breaker",
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "The type of the middleware."}
+    (gnostic.openapi.v3.property) = {description: "The type of the middleware. Built-in: 'logging', 'recovery', 'rate_limiter', etc. Custom types use their registered name."}
   ];
 
   bool enabled = 3 [

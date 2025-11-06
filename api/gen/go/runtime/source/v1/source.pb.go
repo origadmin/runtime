@@ -92,8 +92,11 @@ type SourceConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// name specifies the configuration name
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// type specifies the type of the configuration source
-	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"` // Type
+	// type specifies the type of the configuration source.
+	// For built-in types, specify "env", "file", "etcd", "consul", "apollo", "nacos", "kubernetes", or "polaris".
+	// For custom types, specify the registered name of the custom source.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// set the supported file format, if not set, all formats are supported
 	Formats []string `protobuf:"bytes,3,rep,name=formats,proto3" json:"formats,omitempty"`
 	// priority for this configuration source.
@@ -243,11 +246,10 @@ const file_runtime_source_v1_source_proto_rawDesc = "" +
 	"\aSources\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x129\n" +
-	"\aconfigs\x18\x03 \x03(\v2\x1f.runtime.source.v1.SourceConfigR\aconfigs\"\xc1\x06\n" +
+	"\aconfigs\x18\x03 \x03(\v2\x1f.runtime.source.v1.SourceConfigR\aconfigs\"\xf2\x05\n" +
 	"\fSourceConfig\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12a\n" +
-	"\x04type\x18\x02 \x01(\tBM\xfaBJrHR\x03envR\x04fileR\x04etcdR\x06consulR\x06apolloR\x05nacosR\n" +
-	"kubernetesR\apolarisR\tcustomizeR\x04type\x12\x18\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
+	"\x04type\x18\x02 \x01(\tR\x04type\x12\x18\n" +
 	"\aformats\x18\x03 \x03(\tR\aformats\x12\x1a\n" +
 	"\bpriority\x18\x04 \x01(\x05R\bpriority\x123\n" +
 	"\x03env\x18\n" +

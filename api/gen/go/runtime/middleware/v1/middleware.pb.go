@@ -158,21 +158,25 @@ func (*Recovery) Descriptor() ([]byte, []int) {
 
 // Middleware represents a single middleware configuration with an enable switch.
 type Middleware struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type           string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Enabled        bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	RateLimiter    *v1.RateLimiter        `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"`
-	Metrics        *v11.Metrics           `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
-	Validator      *v12.Validator         `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
-	Jwt            *v13.JWT               `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
-	Selector       *v14.Selector          `protobuf:"bytes,8,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
-	Cors           *v15.Cors              `protobuf:"bytes,9,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
-	CircuitBreaker *v16.CircuitBreaker    `protobuf:"bytes,10,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
-	Logging        *Logging               `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
-	Recovery       *Recovery              `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
-	Metadata       *Metadata              `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
-	Customize      *structpb.Struct       `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The 'type' field determines which configuration block to use.
+	// For built-in types, specify "logging", "recovery", "rate_limiter", etc.
+	// For custom types, specify the registered name of the custom middleware.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
+	Type           string              `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Enabled        bool                `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	RateLimiter    *v1.RateLimiter     `protobuf:"bytes,4,opt,name=rate_limiter,proto3,oneof" json:"rate_limiter,omitempty"`
+	Metrics        *v11.Metrics        `protobuf:"bytes,5,opt,name=metrics,proto3,oneof" json:"metrics,omitempty"`
+	Validator      *v12.Validator      `protobuf:"bytes,6,opt,name=validator,proto3,oneof" json:"validator,omitempty"`
+	Jwt            *v13.JWT            `protobuf:"bytes,7,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
+	Selector       *v14.Selector       `protobuf:"bytes,8,opt,name=selector,proto3,oneof" json:"selector,omitempty"`
+	Cors           *v15.Cors           `protobuf:"bytes,9,opt,name=cors,proto3,oneof" json:"cors,omitempty"`
+	CircuitBreaker *v16.CircuitBreaker `protobuf:"bytes,10,opt,name=circuit_breaker,proto3,oneof" json:"circuit_breaker,omitempty"`
+	Logging        *Logging            `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
+	Recovery       *Recovery           `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
+	Metadata       *Metadata           `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Customize      *structpb.Struct    `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -364,11 +368,11 @@ const file_runtime_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
 	"\aLogging\"\n" +
 	"\n" +
-	"\bRecovery\"\x83\r\n" +
+	"\bRecovery\"\xef\f\n" +
 	"\n" +
 	"Middleware\x12>\n" +
-	"\x04name\x18\x01 \x01(\tB*\xbaG'\x92\x02$The name of the middleware instance.R\x04name\x12\xa7\x01\n" +
-	"\x04type\x18\x02 \x01(\tB\x92\x01\xfaBnrlR\x04noneR\aloggingR\brecoveryR\frate_limiterR\ametricsR\tvalidatorR\x03jwtR\bselectorR\x04corsR\x0fcircuit_breakerR\tcustomize\xbaG\x1e\x92\x02\x1bThe type of the middleware.R\x04type\x12B\n" +
+	"\x04name\x18\x01 \x01(\tB*\xbaG'\x92\x02$The name of the middleware instance.R\x04name\x12\x93\x01\n" +
+	"\x04type\x18\x02 \x01(\tB\x7f\xbaG|\x92\x02yThe type of the middleware. Built-in: 'logging', 'recovery', 'rate_limiter', etc. Custom types use their registered name.R\x04type\x12B\n" +
 	"\aenabled\x18\x03 \x01(\bB(\xbaG%\x92\x02\"Whether the middleware is enabled.R\aenabled\x12x\n" +
 	"\frate_limiter\x18\x04 \x01(\v2,.runtime.middleware.ratelimit.v1.RateLimiterB!\xbaG\x1e\x92\x02\x1bRate limiter configuration.H\x00R\frate_limiter\x88\x01\x01\x12c\n" +
 	"\ametrics\x18\x05 \x01(\v2&.runtime.middleware.metrics.v1.MetricsB\x1c\xbaG\x19\x92\x02\x16Metrics configuration.H\x01R\ametrics\x88\x01\x01\x12m\n" +

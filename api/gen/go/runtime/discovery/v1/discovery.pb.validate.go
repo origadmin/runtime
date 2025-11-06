@@ -59,16 +59,7 @@ func (m *Discovery) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _Discovery_Type_InLookup[m.GetType()]; !ok {
-		err := DiscoveryValidationError{
-			field:  "Type",
-			reason: "value must be in list [none consul etcd nacos apollo kubernetes polaris customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	// no validation rules for Debug
 
@@ -379,17 +370,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DiscoveryValidationError{}
-
-var _Discovery_Type_InLookup = map[string]struct{}{
-	"none":       {},
-	"consul":     {},
-	"etcd":       {},
-	"nacos":      {},
-	"apollo":     {},
-	"kubernetes": {},
-	"polaris":    {},
-	"customize":  {},
-}
 
 // Validate checks the field values on Discoveries with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

@@ -13,15 +13,31 @@ option java_package = "com.github.origadmin.api.runtime.config.v1";
 option objc_class_prefix = "ORC";
 
 message Gateway {
-  string name = 1 [(gnostic.openapi.v3.property) = {description: "The name of the gateway."}];
-  string version = 2 [(gnostic.openapi.v3.property) = {description: "The version of the gateway."}];
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "The name of the gateway."}
+  ];
+  string version = 2 [
+    json_name = "version",
+    (gnostic.openapi.v3.property) = {description: "The version of the gateway."}
+  ];
   repeated string hosts = 3 [
+    json_name = "hosts",
     deprecated = true,
     (gnostic.openapi.v3.property) = {description: "Deprecated: Use host in Endpoint instead. List of hosts the gateway serves."}
   ];
-  repeated Endpoint endpoints = 4 [(gnostic.openapi.v3.property) = {description: "List of API endpoints configured for the gateway."}];
-  repeated Middleware middlewares = 5 [(gnostic.openapi.v3.property) = {description: "List of global middlewares applied to the gateway."}];
-  map<string, security.transport.v1.TLSConfig> tls_store = 6 [(gnostic.openapi.v3.property) = {description: "TLS configurations stored by name."}];
+  repeated Endpoint endpoints = 4 [
+    json_name = "endpoints",
+    (gnostic.openapi.v3.property) = {description: "List of API endpoints configured for the gateway."}
+  ];
+  repeated Middleware middlewares = 5 [
+    json_name = "middlewares",
+    (gnostic.openapi.v3.property) = {description: "List of global middlewares applied to the gateway."}
+  ];
+  map<string, security.transport.v1.TLSConfig> tls_store = 6 [
+    json_name = "tls_store",
+    (gnostic.openapi.v3.property) = {description: "TLS configurations stored by name."}
+  ];
 }
 
 message PriorityConfig {

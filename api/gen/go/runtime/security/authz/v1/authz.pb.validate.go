@@ -215,16 +215,7 @@ func (m *AuthZ) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _AuthZ_Type_InLookup[m.GetType()]; !ok {
-		err := AuthZValidationError{
-			field:  "Type",
-			reason: "value must be in list [casbin opa customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	// no validation rules for Root
 
@@ -387,12 +378,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AuthZValidationError{}
-
-var _AuthZ_Type_InLookup = map[string]struct{}{
-	"casbin":    {},
-	"opa":       {},
-	"customize": {},
-}
 
 var _AuthZ_UserType_InLookup = map[string]struct{}{
 	"admin": {},

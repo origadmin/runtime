@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-// 修正 package 声明以匹配新的目录结构
 package runtime.middleware.ratelimit.v1;
 
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
-// 修正 go_package 声明以匹配新的目录结构
 option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/middleware/ratelimit/v1;ratelimitv1";
 option java_multiple_files = true;
 option java_outer_classname = "RateLimitProto";
@@ -26,16 +26,13 @@ message RateLimiter {
     int64 expiration = 1 [json_name = "expiration"];
     int64 cleanup_interval = 2 [json_name = "cleanup_interval"];
   }
-  // rate limiter name, supported: bbr, memory, redis.
+  // The 'name' field determines which rate limiter to use.
+  // For built-in types, specify "bbr", "memory", or "redis".
+  // For custom types, specify the registered name of the custom rate limiter.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
   string name = 1 [
     json_name = "name",
-    (validate.rules).string = {
-      in: [
-        "bbr",
-        "memory",
-        "redis"
-      ]
-    }
+    (gnostic.openapi.v3.property) = {description: "Rate limiter name. Built-in: 'bbr', 'memory', 'redis'. Custom types use their registered name."}
   ];
   // The number of seconds in a rate limit window
   int32 period = 2 [json_name = "period"];
@@ -51,4 +48,9 @@ message RateLimiter {
 
   Memory memory = 101 [json_name = "memory"];
   Redis redis = 102 [json_name = "redis"];
+  // Optional custom configuration for rate limiter types not explicitly defined.
+  optional google.protobuf.Struct customize = 103 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom configuration for rate limiter types not explicitly defined."}
+  ];
 }

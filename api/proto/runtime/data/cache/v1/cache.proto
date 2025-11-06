@@ -14,19 +14,13 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/
 // CacheConfig defines the configuration for various caching mechanisms.
 // This message was extracted from storage.proto and renamed for consistency.
 message CacheConfig {
-  // Driver name: redis, memcached, etc.
+  // The 'driver' field determines which configuration block to use.
+  // For built-in drivers, specify "redis", "memcached", or "memory".
+  // For custom drivers, specify the registered name of the custom driver.
+  // When a custom driver is used, its configuration should be placed in the 'customize' field.
   string driver = 1 [
     json_name = "driver",
-    (validate.rules).string = {
-      in: [
-        "none",
-        "redis",
-        "memcached",
-        "memory",
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "cache driver name"}
+    (gnostic.openapi.v3.property) = {description: "Cache driver name. Built-in: 'redis', 'memcached', 'memory'. Custom drivers use their registered name."}
   ];
   string name = 2 [
     json_name = "name",

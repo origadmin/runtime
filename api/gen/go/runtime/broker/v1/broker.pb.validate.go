@@ -58,16 +58,7 @@ func (m *Broker) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _Broker_Type_InLookup[m.GetType()]; !ok {
-		err := BrokerValidationError{
-			field:  "Type",
-			reason: "value must be in list [none kafka rabbitmq mqtt nats nsq pulsar redis_mq rocketmq sqs stomp customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	if m.Kafka != nil {
 
@@ -508,21 +499,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = BrokerValidationError{}
-
-var _Broker_Type_InLookup = map[string]struct{}{
-	"none":      {},
-	"kafka":     {},
-	"rabbitmq":  {},
-	"mqtt":      {},
-	"nats":      {},
-	"nsq":       {},
-	"pulsar":    {},
-	"redis_mq":  {},
-	"rocketmq":  {},
-	"sqs":       {},
-	"stomp":     {},
-	"customize": {},
-}
 
 // Validate checks the field values on Brokers with the rules defined in the
 // proto definition for this message. If any rules are violated, the first

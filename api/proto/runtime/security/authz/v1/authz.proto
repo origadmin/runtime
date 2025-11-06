@@ -3,10 +3,10 @@ syntax = "proto3";
 package runtime.security.authz.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 import "runtime/security/authn/v1/authn.proto";
 import "runtime/security/authz/v1/casbin.proto";
 import "validate/validate.proto";
-import "google/protobuf/struct.proto";
 
 option cc_enable_arenas = true;
 option csharp_namespace = "OrigAdmin.Runtime.Security.Authz.V1";
@@ -33,17 +33,13 @@ message CasbinAuth {
 message AuthZ {
   // Unique name for this authorization configuration instance.
   string name = 1;
-  // The type of authorization mechanism, e.g., "casbin", "opa", "customize".
+  // The type of authorization mechanism.
+  // For built-in types, specify "casbin" or "opa".
+  // For custom types, specify the registered name of the custom authorization mechanism.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
   string type = 2 [
     json_name = "type",
-    (validate.rules).string = {
-      in: [
-        "casbin",
-        "opa", // Placeholder for another common authorization mechanism like OPA
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "The type of authorization mechanism, e.g., 'casbin', 'opa', 'customize'."}
+    (gnostic.openapi.v3.property) = {description: "The type of authorization mechanism. Built-in: 'casbin', 'opa'. Custom types use their registered name."}
   ];
 
   // Optional Casbin authorization configuration.

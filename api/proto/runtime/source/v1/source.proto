@@ -35,23 +35,11 @@ message SourceConfig {
   // name specifies the configuration name
   string name = 1 [json_name = "name"];
 
-  // type specifies the type of the configuration source
-  string type = 2 [
-    json_name = "type",
-    (validate.rules).string = {
-      in: [
-        "env",
-        "file",
-        "etcd",
-        "consul",
-        "apollo",
-        "nacos",
-        "kubernetes",
-        "polaris",
-        "customize"
-      ]
-    }
-  ]; // Type
+  // type specifies the type of the configuration source.
+  // For built-in types, specify "env", "file", "etcd", "consul", "apollo", "nacos", "kubernetes", or "polaris".
+  // For custom types, specify the registered name of the custom source.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
+  string type = 2 [json_name = "type"];
 
   // set the supported file format, if not set, all formats are supported
   repeated string formats = 3 [json_name = "formats"];

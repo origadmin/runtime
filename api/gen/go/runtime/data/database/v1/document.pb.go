@@ -29,7 +29,10 @@ type DocumentConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Unique name for this document database configuration instance.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The type of document database, e.g., "mongo", "customize".
+	// The 'type' field determines which document database to use.
+	// For built-in types, specify "mongo".
+	// For custom types, specify the registered name of the custom document database.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// Optional MongoDB configuration.
 	Mongo *MongoConfig `protobuf:"bytes,10,opt,name=mongo,proto3,oneof" json:"mongo,omitempty"`
@@ -101,10 +104,10 @@ var File_runtime_data_database_v1_document_proto protoreflect.FileDescriptor
 
 const file_runtime_data_database_v1_document_proto_rawDesc = "" +
 	"\n" +
-	"'runtime/data/database/v1/document.proto\x12\x18runtime.data.database.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a$runtime/data/database/v1/mongo.proto\"\xe2\x03\n" +
+	"'runtime/data/database/v1/document.proto\x12\x18runtime.data.database.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a$runtime/data/database/v1/mongo.proto\"\xed\x03\n" +
 	"\x0eDocumentConfig\x12X\n" +
-	"\x04name\x18\x01 \x01(\tBD\xbaGA\x92\x02>Unique name for this document database configuration instance.R\x04name\x12h\n" +
-	"\x04type\x18\x02 \x01(\tBT\xfaB\x14r\x12R\x05mongoR\tcustomize\xbaG:\x92\x027The type of document database (e.g., mongo, customize).R\x04type\x12g\n" +
+	"\x04name\x18\x01 \x01(\tBD\xbaGA\x92\x02>Unique name for this document database configuration instance.R\x04name\x12s\n" +
+	"\x04type\x18\x02 \x01(\tB_\xbaG\\\x92\x02YThe type of document database. Built-in: 'mongo'. Custom types use their registered name.R\x04type\x12g\n" +
 	"\x05mongo\x18\n" +
 	" \x01(\v2%.runtime.data.database.v1.MongoConfigB%\xbaG\"\x92\x02\x1fMongoDB specific configuration.H\x00R\x05mongo\x88\x01\x01\x12\x8a\x01\n" +
 	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBN\xbaGK\x92\x02HCustom configuration for document database types not explicitly defined.H\x01R\tcustomize\x88\x01\x01B\b\n" +

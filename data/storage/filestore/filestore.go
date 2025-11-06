@@ -8,7 +8,7 @@ package filestore
 import (
 	"io"
 
-	filestorev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v1" // Assuming a similar proto structure for filestore
+	filev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v1" // Assuming a similar proto structure for filestore
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
@@ -67,7 +67,7 @@ func (f *filestoreImpl) Write(path string, data io.Reader, size int64) error {
 }
 
 // New creates a new filestore instance based on the provided configuration.
-func New(cfg *filestorev1.FileStoreConfig) (storageiface.FileStore, error) {
+func New(cfg *filev1.FilestoreConfig) (storageiface.FileStore, error) {
 	if cfg == nil {
 		return nil, ErrFilestoreConfigNil
 	}

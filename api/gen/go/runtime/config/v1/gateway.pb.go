@@ -132,7 +132,7 @@ type Gateway struct {
 	Hosts         []string                 `protobuf:"bytes,3,rep,name=hosts,proto3" json:"hosts,omitempty"`
 	Endpoints     []*Endpoint              `protobuf:"bytes,4,rep,name=endpoints,proto3" json:"endpoints,omitempty"`
 	Middlewares   []*Middleware            `protobuf:"bytes,5,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
-	TlsStore      map[string]*v1.TLSConfig `protobuf:"bytes,6,rep,name=tls_store,json=tlsStore,proto3" json:"tls_store,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	TlsStore      map[string]*v1.TLSConfig `protobuf:"bytes,6,rep,name=tls_store,proto3" json:"tls_store,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -765,14 +765,14 @@ var File_runtime_config_v1_gateway_proto protoreflect.FileDescriptor
 
 const file_runtime_config_v1_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x1fruntime/config/v1/gateway.proto\x12\x11runtime.config.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a'runtime/security/transport/v1/tls.proto\"\xac\x05\n" +
+	"\x1fruntime/config/v1/gateway.proto\x12\x11runtime.config.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a'runtime/security/transport/v1/tls.proto\"\xad\x05\n" +
 	"\aGateway\x122\n" +
 	"\x04name\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18The name of the gateway.R\x04name\x12;\n" +
 	"\aversion\x18\x02 \x01(\tB!\xbaG\x1e\x92\x02\x1bThe version of the gateway.R\aversion\x12i\n" +
 	"\x05hosts\x18\x03 \x03(\tBS\xbaGN\x92\x02KDeprecated: Use host in Endpoint instead. List of hosts the gateway serves.\x18\x01R\x05hosts\x12r\n" +
 	"\tendpoints\x18\x04 \x03(\v2\x1b.runtime.config.v1.EndpointB7\xbaG4\x92\x021List of API endpoints configured for the gateway.R\tendpoints\x12y\n" +
-	"\vmiddlewares\x18\x05 \x03(\v2\x1d.runtime.config.v1.MiddlewareB8\xbaG5\x92\x022List of global middlewares applied to the gateway.R\vmiddlewares\x12o\n" +
-	"\ttls_store\x18\x06 \x03(\v2(.runtime.config.v1.Gateway.TlsStoreEntryB(\xbaG%\x92\x02\"TLS configurations stored by name.R\btlsStore\x1ae\n" +
+	"\vmiddlewares\x18\x05 \x03(\v2\x1d.runtime.config.v1.MiddlewareB8\xbaG5\x92\x022List of global middlewares applied to the gateway.R\vmiddlewares\x12p\n" +
+	"\ttls_store\x18\x06 \x03(\v2(.runtime.config.v1.Gateway.TlsStoreEntryB(\xbaG%\x92\x02\"TLS configurations stored by name.R\ttls_store\x1ae\n" +
 	"\rTlsStoreEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12>\n" +
 	"\x05value\x18\x02 \x01(\v2(.runtime.security.transport.v1.TLSConfigR\x05value:\x028\x01\"\x94\x02\n" +

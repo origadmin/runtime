@@ -7,6 +7,7 @@
 package grpcv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/selector/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -39,7 +40,7 @@ type Server struct {
 	// The framework will look up these names in a middleware provider.
 	Middlewares []string `protobuf:"bytes,4,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	// tls_config defines the TLS settings for the gRPC server.
-	TlsConfig     *v1.TLSConfig `protobuf:"bytes,5,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
+	TlsConfig     *v1.TLSConfig `protobuf:"bytes,5,opt,name=tls_config,proto3,oneof" json:"tls_config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -207,14 +208,15 @@ var File_runtime_transport_grpc_v1_grpc_proto protoreflect.FileDescriptor
 
 const file_runtime_transport_grpc_v1_grpc_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/transport/grpc/v1/grpc.proto\x12\x19runtime.transport.grpc.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\"runtime/selector/v1/selector.proto\x1a'runtime/security/transport/v1/tls.proto\"\xea\x01\n" +
-	"\x06Server\x12\x18\n" +
-	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
-	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
-	"\vmiddlewares\x18\x04 \x03(\tR\vmiddlewares\x12L\n" +
+	"$runtime/transport/grpc/v1/grpc.proto\x12\x19runtime.transport.grpc.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\x1a'runtime/security/transport/v1/tls.proto\x1a\"runtime/selector/v1/selector.proto\"\x8c\x04\n" +
+	"\x06Server\x12b\n" +
+	"\anetwork\x18\x01 \x01(\tBH\xbaGE\x92\x02BThe network type for the server to listen on, e.g., \"tcp\", \"unix\".R\anetwork\x12X\n" +
+	"\x04addr\x18\x02 \x01(\tBD\xbaGA\x92\x02>The address for the server to listen on, e.g., \"0.0.0.0:9000\".R\x04addr\x12X\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationB#\xbaG \x92\x02\x1dThe request handling timeout.R\atimeout\x12_\n" +
+	"\vmiddlewares\x18\x04 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12z\n" +
 	"\n" +
-	"tls_config\x18\x05 \x01(\v2(.runtime.security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01B\r\n" +
+	"tls_config\x18\x05 \x01(\v2(.runtime.security.transport.v1.TLSConfigB+\xbaG(\x92\x02%The TLS settings for the gRPC server.H\x00R\n" +
+	"tls_config\x88\x01\x01B\r\n" +
 	"\v_tls_config\"\xd8\x02\n" +
 	"\x06Client\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x123\n" +

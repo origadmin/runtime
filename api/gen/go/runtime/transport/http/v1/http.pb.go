@@ -7,6 +7,7 @@
 package httpv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	v11 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/cors/v1"
 	v1 "github.com/origadmin/runtime/api/gen/go/runtime/security/transport/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/runtime/selector/v1"
@@ -37,7 +38,7 @@ type Server struct {
 	// The framework will look up these names in a middleware provider.
 	Middlewares []string `protobuf:"bytes,3,rep,name=middlewares,proto3" json:"middlewares,omitempty"`
 	// tls_config defines the TLS settings for the HTTP server.
-	TlsConfig *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls_config,json=tlsConfig,proto3,oneof" json:"tls_config,omitempty"`
+	TlsConfig *v1.TLSConfig `protobuf:"bytes,4,opt,name=tls_config,proto3,oneof" json:"tls_config,omitempty"`
 	// network specifies the network type, e.g., "tcp", "tcp4", "tcp6".
 	Network string `protobuf:"bytes,5,opt,name=network,proto3" json:"network,omitempty"`
 	// cors configuration for the HTTP server
@@ -234,22 +235,23 @@ var File_runtime_transport_http_v1_http_proto protoreflect.FileDescriptor
 
 const file_runtime_transport_http_v1_http_proto_rawDesc = "" +
 	"\n" +
-	"$runtime/transport/http/v1/http.proto\x12\x19runtime.transport.http.v1\x1a\x1egoogle/protobuf/duration.proto\x1a%runtime/middleware/cors/v1/cors.proto\x1a'runtime/security/transport/v1/tls.proto\x1a\"runtime/selector/v1/selector.proto\"\xd1\x02\n" +
-	"\x06Server\x12\x12\n" +
-	"\x04addr\x18\x01 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
-	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x12L\n" +
+	"$runtime/transport/http/v1/http.proto\x12\x19runtime.transport.http.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\x1a%runtime/middleware/cors/v1/cors.proto\x1a'runtime/security/transport/v1/tls.proto\x1a\"runtime/selector/v1/selector.proto\"\xdf\x04\n" +
+	"\x06Server\x12X\n" +
+	"\x04addr\x18\x01 \x01(\tBD\xbaGA\x92\x02>The address for the server to listen on, e.g., \"0.0.0.0:8000\".R\x04addr\x12X\n" +
+	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationB#\xbaG \x92\x02\x1dThe request handling timeout.R\atimeout\x12_\n" +
+	"\vmiddlewares\x18\x03 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12z\n" +
 	"\n" +
-	"tls_config\x18\x04 \x01(\v2(.runtime.security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01\x12\x18\n" +
-	"\anetwork\x18\x05 \x01(\tR\anetwork\x129\n" +
+	"tls_config\x18\x04 \x01(\v2(.runtime.security.transport.v1.TLSConfigB+\xbaG(\x92\x02%The TLS settings for the HTTP server.H\x00R\n" +
+	"tls_config\x88\x01\x01\x12N\n" +
+	"\anetwork\x18\x05 \x01(\tB4\xbaG1\x92\x02.The network type, e.g., \"tcp\", \"tcp4\", \"tcp6\".R\anetwork\x129\n" +
 	"\x04cors\x18\x06 \x01(\v2 .runtime.middleware.cors.v1.CorsH\x01R\x04cors\x88\x01\x01\x12!\n" +
 	"\fenable_pprof\x18\a \x01(\bR\venablePprofB\r\n" +
 	"\v_tls_configB\a\n" +
-	"\x05_cors\"\x94\x03\n" +
+	"\x05_cors\"\xf8\x03\n" +
 	"\x06Client\x12\x1a\n" +
-	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x123\n" +
-	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
-	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x12?\n" +
+	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x12X\n" +
+	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationB#\xbaG \x92\x02\x1dThe request handling timeout.R\atimeout\x12_\n" +
+	"\vmiddlewares\x18\x03 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12?\n" +
 	"\bselector\x18\x04 \x01(\v2#.runtime.selector.v1.SelectorConfigR\bselector\x12%\n" +
 	"\x0ediscovery_name\x18\x05 \x01(\tR\rdiscoveryName\x12L\n" +
 	"\n" +

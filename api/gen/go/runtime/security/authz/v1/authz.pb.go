@@ -83,7 +83,10 @@ type AuthZ struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Unique name for this authorization configuration instance.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// The type of authorization mechanism, e.g., "casbin", "opa", "customize".
+	// The type of authorization mechanism.
+	// For built-in types, specify "casbin" or "opa".
+	// For custom types, specify the registered name of the custom authorization mechanism.
+	// When a custom type is used, its configuration should be placed in the 'customize' field.
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// Optional Casbin authorization configuration.
 	Casbin *CasbinAuth `protobuf:"bytes,10,opt,name=casbin,proto3,oneof" json:"casbin,omitempty"`
@@ -205,14 +208,14 @@ var File_runtime_security_authz_v1_authz_proto protoreflect.FileDescriptor
 
 const file_runtime_security_authz_v1_authz_proto_rawDesc = "" +
 	"\n" +
-	"%runtime/security/authz/v1/authz.proto\x12\x19runtime.security.authz.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a%runtime/security/authn/v1/authn.proto\x1a&runtime/security/authz/v1/casbin.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xe7\x01\n" +
+	"%runtime/security/authz/v1/authz.proto\x12\x19runtime.security.authz.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a%runtime/security/authn/v1/authn.proto\x1a&runtime/security/authz/v1/casbin.proto\x1a\x17validate/validate.proto\"\xe7\x01\n" +
 	"\n" +
 	"CasbinAuth\x12u\n" +
 	"\x06policy\x18\x01 \x01(\v2!.runtime.security.authz.v1.PolicyB:\xbaG7\x92\x024The Casbin policy associated with the authorization.R\x06policy\x12b\n" +
-	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\xe2\x06\n" +
+	"\x06claims\x18\x14 \x01(\v2!.runtime.security.authn.v1.ClaimsB'\xbaG$\x92\x02!The claims embedded in the token.R\x06claims\"\xe5\x06\n" +
 	"\x05AuthZ\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x7f\n" +
-	"\x04type\x18\x02 \x01(\tBk\xfaB\x1ar\x18R\x06casbinR\x03opaR\tcustomize\xbaGK\x92\x02HThe type of authorization mechanism, e.g., 'casbin', 'opa', 'customize'.R\x04type\x12k\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x81\x01\n" +
+	"\x04type\x18\x02 \x01(\tBm\xbaGj\x92\x02gThe type of authorization mechanism. Built-in: 'casbin', 'opa'. Custom types use their registered name.R\x04type\x12k\n" +
 	"\x06casbin\x18\n" +
 	" \x01(\v2%.runtime.security.authz.v1.CasbinAuthB'\xbaG$\x92\x02!The Casbin authorization details.H\x00R\x06casbin\x88\x01\x01\x12\x86\x01\n" +
 	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBJ\xbaGG\x92\x02DCustom configuration for authorization types not explicitly defined.H\x01R\tcustomize\x88\x01\x01\x12D\n" +

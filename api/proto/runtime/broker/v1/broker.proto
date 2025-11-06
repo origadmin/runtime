@@ -30,25 +30,13 @@ message Broker {
     json_name = "name",
     (gnostic.openapi.v3.property) = {description: "The name of the broker configuration."}
   ];
+  // The 'type' field determines which message broker to use.
+  // For built-in types, specify "kafka", "rabbitmq", "mqtt", etc.
+  // For custom types, specify the registered name of the custom broker.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
   string type = 2 [
     json_name = "type",
-    (validate.rules).string = {
-      in: [
-        "none",
-        "kafka",
-        "rabbitmq",
-        "mqtt",
-        "nats",
-        "nsq",
-        "pulsar",
-        "redis_mq",
-        "rocketmq",
-        "sqs",
-        "stomp",
-        "customize"
-      ]
-    },
-    (gnostic.openapi.v3.property) = {description: "The type of the message broker."}
+    (gnostic.openapi.v3.property) = {description: "The type of the message broker. Built-in: 'kafka', 'rabbitmq', 'mqtt', etc. Custom types use their registered name."}
   ];
 
   // Optional Kafka configuration.

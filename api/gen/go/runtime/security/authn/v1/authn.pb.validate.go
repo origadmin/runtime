@@ -918,16 +918,7 @@ func (m *AuthN) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if _, ok := _AuthN_Type_InLookup[m.GetType()]; !ok {
-		err := AuthNValidationError{
-			field:  "Type",
-			reason: "value must be in list [basic bearer digest oauth2 api_key jwt customize]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Type
 
 	if m.Basic != nil {
 
@@ -1236,16 +1227,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = AuthNValidationError{}
-
-var _AuthN_Type_InLookup = map[string]struct{}{
-	"basic":     {},
-	"bearer":    {},
-	"digest":    {},
-	"oauth2":    {},
-	"api_key":   {},
-	"jwt":       {},
-	"customize": {},
-}
 
 // Validate checks the field values on Claims with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
