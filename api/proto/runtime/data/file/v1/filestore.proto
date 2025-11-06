@@ -13,7 +13,7 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v
 // FileStoreConfig groups all "file/object storage" type backends into one category.
 // It uses the 'driver' field to determine which specific implementation to use.
 // This message was extracted from storage.proto and renamed for consistency.
-message FileStoreConfig {
+message FilestoreConfig {
   string name = 1 [
     json_name = "name",
     (gnostic.openapi.v3.property) = {description: "file store name"}

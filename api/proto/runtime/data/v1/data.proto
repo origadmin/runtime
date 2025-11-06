@@ -7,7 +7,7 @@ import "google/protobuf/struct.proto";
 import "runtime/data/cache/v1/cache.proto";
 import "runtime/data/database/v1/database.proto";
 import "runtime/data/database/v1/document.proto";
-import "runtime/data/file/v1/file_store.proto";
+import "runtime/data/file/v1/filestore.proto";
 import "validate/validate.proto";
 
 option cc_enable_arenas = true;
@@ -20,7 +20,7 @@ option objc_class_prefix = "ORDV1";
 // Data is the top-level configuration for all data-related components.
 message Data {
   // FileStore configurations.
-  optional FileStores filestores = 1 [
+  optional Filestores filestores = 1 [
     json_name = "filestores",
     (gnostic.openapi.v3.property) = {description: "FileStore configurations"}
   ];

@@ -63,94 +63,150 @@ func NewProvider(dataConfig *datav1.Data) (storageiface.Provider, error) {
 		filestores: make(map[string]storageiface.FileStore),
 	}
 
-	// Read default names from the top-level 'storage' configuration
-	var defaults struct {
-		DefaultCache     string `json:"defaultCache" yaml:"defaultCache"`
-		DefaultDatabase  string `json:"defaultDatabase" yaml:"defaultDatabase"`
-		DefaultFilestore string `json:"defaultFilestore" yaml:"defaultFilestore"`
-	}
+	var err error
 
 	// Initialize Caches
-	var cacheConfigs map[string]*cachev1.CacheConfig
-	cacheConfigs = maps.FromSlice(dataConfig.GetCaches().GetConfigs(),
-		func(cfg *cachev1.CacheConfig) (string, *cachev1.CacheConfig) {
-			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
-		})
-	defaults.DefaultCache = cmp.Or(dataConfig.GetCaches().GetActive(), dataConfig.GetCaches().GetDefault(), interfaces.GlobalDefaultKey)
-
-	for name, cacheCfg := range cacheConfigs {
-		c, err := cache.New(cacheCfg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create cache '%s': %w", name, err)
-		}
-		p.defaultCache = name
-		p.caches[name] = c
-	}
-	if _, ok := p.caches[defaults.DefaultCache]; ok {
-		p.defaultCache = defaults.DefaultCache
+	p.caches, p.defaultCache, err = NewCaches(dataConfig.GetCaches())
+	if err != nil {
+		return nil, err
 	}
 
 	// Initialize Databases
-	var databaseConfigs map[string]*databasev1.DatabaseConfig
-	databaseConfigs = maps.FromSlice(dataConfig.GetDatabases().GetConfigs(),
-		func(cfg *databasev1.DatabaseConfig) (string, *databasev1.DatabaseConfig) {
-			return cmp.Or(cfg.GetName(), cfg.GetDialect()), cfg
-		})
-	defaults.DefaultDatabase = cmp.Or(dataConfig.GetDatabases().GetActive(), dataConfig.GetDatabases().GetDefault(), interfaces.GlobalDefaultKey)
-
-	for name, dbCfg := range databaseConfigs {
-		db, err := database.New(dbCfg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create database '%s': %w", name, err)
-		}
-		p.defaultDatabase = name
-		p.databases[name] = db
+	p.databases, p.defaultDatabase, err = NewDatabases(dataConfig.GetDatabases())
+	if err != nil {
+		return nil, err
 	}
 
-	if _, ok := p.databases[defaults.DefaultDatabase]; ok {
-		p.defaultDatabase = defaults.DefaultDatabase
-	}
-
-	// Initialize FileStores
-	var filestoreConfigs map[string]*filestorev1.FileStoreConfig
-	filestoreConfigs = maps.FromSlice(dataConfig.GetFilestores().GetConfigs(),
-		func(cfg *filestorev1.FileStoreConfig) (string, *filestorev1.FileStoreConfig) {
-			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
-		})
-	defaults.DefaultFilestore = cmp.Or(dataConfig.GetFilestores().GetActive(), dataConfig.GetFilestores().GetDefault(), interfaces.GlobalDefaultKey)
-
-	for name, fsCfg := range filestoreConfigs {
-		fs, err := filestore.New(fsCfg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create filestore '%s': %w", name, err)
-		}
-		p.defaultFilestore = name
-		p.filestores[name] = fs
-	}
-
-	if _, ok := p.filestores[defaults.DefaultFilestore]; ok {
-		p.defaultFilestore = defaults.DefaultFilestore
+	// Initialize Filestores
+	p.filestores, p.defaultFilestore, err = NewFilestores(dataConfig.GetFilestores())
+	if err != nil {
+		return nil, err
 	}
 
 	return p, nil
 }
 
-// NewCache creates a new cache instance based on the provided CacheConfig.
-// This allows for creating individual cache components without initializing a full storage provider.
-func NewCache(cfg *cachev1.CacheConfig) (storageiface.Cache, error) {
-	return cache.New(cfg)
+// NewCaches creates a map of cache instances and determines the default cache name
+// from a datav1.Caches configuration object.
+func NewCaches(cachesConfig *datav1.Caches) (map[string]storageiface.Cache, string, error) {
+	if cachesConfig == nil {
+		return nil, "", nil
+	}
+
+	cacheConfigsMap := maps.FromSlice(cachesConfig.GetConfigs(),
+		func(cfg *cachev1.CacheConfig) (string, *cachev1.CacheConfig) {
+			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
+		})
+
+	caches, err := NewCachesFromConfigs(cacheConfigsMap)
+	if err != nil {
+		return nil, "", err
+	}
+
+	defaultCacheName := cmp.Or(cachesConfig.GetActive(), cachesConfig.GetDefault(), interfaces.GlobalDefaultKey)
+	if _, ok := caches[defaultCacheName]; !ok && len(caches) > 0 {
+		// If default not found, but caches exist, pick the first one
+		for name := range caches {
+			defaultCacheName = name
+			break
+		}
+	}
+	return caches, defaultCacheName, nil
 }
 
-// NewDatabase creates a new database instance based on the provided DatabaseConfig.
-// This allows for creating individual database components without initializing a full storage provider.
-func NewDatabase(cfg *databasev1.DatabaseConfig) (storageiface.Database, error) {
-	return database.New(cfg)
+// NewDatabases creates a map of database instances and determines the default database name
+// from a datav1.Databases configuration object.
+func NewDatabases(databasesConfig *datav1.Databases) (map[string]storageiface.Database, string, error) {
+	if databasesConfig == nil {
+		return nil, "", nil
+	}
+
+	databaseConfigsMap := maps.FromSlice(databasesConfig.GetConfigs(),
+		func(cfg *databasev1.DatabaseConfig) (string, *databasev1.DatabaseConfig) {
+			return cmp.Or(cfg.GetName(), cfg.GetDialect()), cfg
+		})
+
+	databases, err := NewDatabasesFromConfigs(databaseConfigsMap)
+	if err != nil {
+		return nil, "", err
+	}
+
+	defaultDatabaseName := cmp.Or(databasesConfig.GetActive(), databasesConfig.GetDefault(), interfaces.GlobalDefaultKey)
+	if _, ok := databases[defaultDatabaseName]; !ok && len(databases) > 0 {
+		// If default not found, but databases exist, pick the first one
+		for name := range databases {
+			defaultDatabaseName = name
+			break
+		}
+	}
+	return databases, defaultDatabaseName, nil
 }
 
-// NewFileStore creates a new file store instance based on the provided FileStoreConfig.
-// This allows for creating individual file store components without initializing a full storage provider.
-func NewFileStore(cfg *filestorev1.FileStoreConfig) (storageiface.FileStore, error) {
-	return filestore.New(cfg)
+// NewFilestores creates a map of file store instances and determines the default file store name
+// from a datav1.FileStores configuration object.
+func NewFilestores(filestoresConfig *datav1.FileStores) (map[string]storageiface.FileStore, string, error) {
+	if filestoresConfig == nil {
+		return nil, "", nil
+	}
+
+	filestoreConfigsMap := maps.FromSlice(filestoresConfig.GetConfigs(),
+		func(cfg *filestorev1.FileStoreConfig) (string, *filestorev1.FileStoreConfig) {
+			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
+		})
+
+	filestores, err := NewFileStoresFromConfigs(filestoreConfigsMap)
+	if err != nil {
+		return nil, "", err
+	}
+
+	defaultFilestoreName := cmp.Or(filestoresConfig.GetActive(), filestoresConfig.GetDefault(), interfaces.GlobalDefaultKey)
+	if _, ok := filestores[defaultFilestoreName]; !ok && len(filestores) > 0 {
+		// If default not found, but filestores exist, pick the first one
+		for name := range filestores {
+			defaultFilestoreName = name
+			break
+		}
+	}
+	return filestores, defaultFilestoreName, nil
+}
+
+// NewCachesFromConfigs creates a map of cache instances from a map of cache configurations.
+func NewCachesFromConfigs(configs map[string]*cachev1.CacheConfig) (map[string]storageiface.Cache, error) {
+	caches := make(map[string]storageiface.Cache)
+	for name, cfg := range configs {
+		c, err := cache.New(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create cache '%s': %w", name, err)
+		}
+		caches[name] = c
+	}
+	return caches, nil
+}
+
+// NewDatabasesFromConfigs creates a map of database instances from a map of database configurations.
+func NewDatabasesFromConfigs(configs map[string]*databasev1.DatabaseConfig) (map[string]storageiface.Database, error) {
+	databases := make(map[string]storageiface.Database)
+	for name, cfg := range configs {
+		db, err := database.New(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create database '%s': %w", name, err)
+		}
+		databases[name] = db
+	}
+	return databases, nil
+}
+
+// NewFileStoresFromConfigs creates a map of file store instances from a map of file store configurations.
+func NewFileStoresFromConfigs(configs map[string]*filestorev1.FileStoreConfig) (map[string]storageiface.FileStore, error) {
+	filestores := make(map[string]storageiface.FileStore)
+	for name, cfg := range configs {
+		fs, err := filestore.New(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create filestore '%s': %w", name, err)
+		}
+		filestores[name] = fs
+	}
+	return filestores, nil
 }
 
 // FileStore returns the configured file storage service by name.
