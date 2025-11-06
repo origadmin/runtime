@@ -107,16 +107,20 @@ else
 		echo "protoc already installed."; \
 	else \
 		echo "Installing protoc for Linux/macOS..."; \
-		UNAME_S := $(shell uname -s); \
-		ifeq ($(UNAME_S), Linux)\
+		UNAME_S=$$(uname -s); \
+		if [ "$$UNAME_S" = "Linux" ]; then \
+			PROTOC_ZIP="protoc-$(PROTOC_VERSION)-linux-x86_64.zip"; \
 			sudo apt-get update && sudo apt-get install -y unzip; \
-			PROTOC_ZIP=protoc-$(PROTOC_VERSION)-linux-x86_64.zip; \
-		else ifeq ($(UNAME_S), Darwin)\
-			PROTOC_ZIP=protoc-$(PROTOC_VERSION)-osx-x86_64.zip; \
-		endif \
-		curl -sSL -o /tmp/$$PROTOC_ZIP https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/$$PROTOC_ZIP; \
-		sudo unzip -o /tmp/$$PROTOC_ZIP -d /usr/local; \
+		elif [ "$$UNAME_S" = "Darwin" ]; then \
+			PROTOC_ZIP="protoc-$(PROTOC_VERSION)-osx-x86_64.zip"; \
+		else \
+			echo "Unsupported OS for protoc auto-install: $$UNAME_S"; \
+			exit 1; \
+		fi; \
+		curl -sSL "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/$$PROTOC_ZIP" -o "/tmp/$$PROTOC_ZIP"; \
+		sudo unzip -o "/tmp/$$PROTOC_ZIP" -d /usr/local; \
 		sudo chmod +x /usr/local/bin/protoc; \
+		rm "/tmp/$$PROTOC_ZIP"; \
 	fi
 endif
 
