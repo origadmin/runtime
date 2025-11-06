@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.12](https://github.com/origadmin/runtime/compare/v0.2.11...v0.2.12) (2025-11-06)
+
+
+### Features
+
+* **runtime:** Add protobuf definitions for app, bootstrap and kafka configurations ([8ba1a06](https://github.com/origadmin/runtime/commit/8ba1a060917f857c73a2c184a2955993b1b590db))
+* **storage:** Add NewProvider function and individual component constructors for better modularity ([4842051](https://github.com/origadmin/runtime/commit/4842051b0fd4e460a0c77be3be566a81f64c2f0c))
+
+
+### Bug Fixes
+
+* **ci:** Add protoc-gen-go-errors/v2 dependency and update build tooling ([0b2ca98](https://github.com/origadmin/runtime/commit/0b2ca9860425aecd844ea70f6e7e45e74a99f67e))
+* **storage:** Correct DataConfig and Filestores type usage ([4803be8](https://github.com/origadmin/runtime/commit/4803be8f701640fec2a4ee67c9926e1ff8c570b5))
+
 ## [0.2.11](https://github.com/origadmin/runtime/compare/v0.2.10...v0.2.11) (2025-11-04)
 
 
