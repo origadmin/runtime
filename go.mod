@@ -9,8 +9,8 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/genelet/determined v1.12.3
 	github.com/gin-gonic/gin v1.11.0
-	github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251015020953-cdff24709025
-	github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2 v2.0.0-20251015020953-cdff24709025
+	github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251106012513-9262193e351a
+	github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2 v2.0.0-20251106012513-9262193e351a
 	github.com/go-kratos/kratos/v2 v2.9.1
 	github.com/go-viper/encoding/dotenv v0.1.0
 	github.com/go-viper/encoding/ini v0.1.1

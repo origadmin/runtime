@@ -133,8 +133,12 @@ github.com/go-kratos/aegis v0.2.0 h1:dObzCDWn3XVjUkgxyBp6ZeWtx/do0DPZ7LY3yNSJLUQ
 github.com/go-kratos/aegis v0.2.0/go.mod h1:v0R2m73WgEEYB3XYu6aE2WcMwsZkJ/Rzuf5eVccm7bI=
 github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251015020953-cdff24709025 h1:BrlPmv3HIlZmVTE/E9rPsLO6TAdkwycymQmTZZcEJjg=
 github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251015020953-cdff24709025/go.mod h1:wV0NtE9GUCrmBn+A5rd6LZ/JxXFz6Imp9Mn4iInYbdw=
+github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251106012513-9262193e351a h1:hXTsD6lWaAU7UQchbmafi9WLTyBMjoLttEnVpWMiGJA=
+github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251106012513-9262193e351a/go.mod h1:tr3LJLUypg8Js3bClD6s7p2eWLTIitvq9Paf7FAK3R4=
 github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2 v2.0.0-20251015020953-cdff24709025 h1:eRBvvl1dszWPedfT8Q67FVYWRwd+bLN+/neJqkrTijU=
 github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2 v2.0.0-20251015020953-cdff24709025/go.mod h1:KM6kzp9bXgo9JzweRBejhuyXTZ4JA9hfDCTbknVyS5Q=
+github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2 v2.0.0-20251106012513-9262193e351a h1:lyM6XpKxtzwcII0cvVk8QsGyJvu9xMJT8yoW6fwIbT4=
+github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2 v2.0.0-20251106012513-9262193e351a/go.mod h1:vq88Fzyqs42QnpH+vkJxdJKpkWLnNPzfkjStSUUCKDk=
 github.com/go-kratos/kratos/v2 v2.9.1 h1:EGif6/S/aK/RCR5clIbyhioTNyoSrii3FC118jG40Z0=
 github.com/go-kratos/kratos/v2 v2.9.1/go.mod h1:a1MQLjMhIh7R0kcJS9SzJYR43BRI7EPzzN0J1Ksu2bA=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
