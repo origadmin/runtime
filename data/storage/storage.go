@@ -16,19 +16,16 @@ import (
 	cachev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/v1"
 	databasev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/database/v1"
 	filestorev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v1"
+	"github.com/origadmin/runtime/data/storage/cache"
+	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/filestore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
-	"github.com/origadmin/toolkits/errors"
-
-	"github.com/origadmin/runtime/data/storage/cache"
-	"github.com/origadmin/runtime/data/storage/database"
 )
 
 const (
-	Module      = "storage"
-	ErrNotFound = errors.String("storage: %s not found")
+	Module = "storage"
 )
 
 // providerImpl implements the storageiface.Provider interface.
@@ -68,11 +65,7 @@ func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
 	var cacheConfigs map[string]*cachev1.CacheConfig
 	cacheConfigs = maps.FromSlice(dataConfig.GetCaches().GetConfigs(),
 		func(cfg *cachev1.CacheConfig) (string, *cachev1.CacheConfig) {
-			key := cfg.GetName()
-			if key == "" {
-				key = cfg.GetDriver()
-			}
-			return key, cfg
+			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
 		})
 	defaults.DefaultCache = cmp.Or(dataConfig.GetCaches().GetActive(), dataConfig.GetCaches().GetDefault(), interfaces.GlobalDefaultKey)
 
@@ -92,11 +85,7 @@ func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
 	var databaseConfigs map[string]*databasev1.DatabaseConfig
 	databaseConfigs = maps.FromSlice(dataConfig.GetDatabases().GetConfigs(),
 		func(cfg *databasev1.DatabaseConfig) (string, *databasev1.DatabaseConfig) {
-			key := cfg.GetName()
-			if key == "" {
-				key = cfg.GetDialect()
-			}
-			return key, cfg
+			return cmp.Or(cfg.GetName(), cfg.GetDialect()), cfg
 		})
 	defaults.DefaultDatabase = cmp.Or(dataConfig.GetDatabases().GetActive(), dataConfig.GetDatabases().GetDefault(), interfaces.GlobalDefaultKey)
 
@@ -117,11 +106,7 @@ func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
 	var filestoreConfigs map[string]*filestorev1.FileStoreConfig
 	filestoreConfigs = maps.FromSlice(dataConfig.GetFilestores().GetConfigs(),
 		func(cfg *filestorev1.FileStoreConfig) (string, *filestorev1.FileStoreConfig) {
-			key := cfg.GetName()
-			if key == "" {
-				key = cfg.GetDriver()
-			}
-			return key, cfg
+			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
 		})
 	defaults.DefaultFilestore = cmp.Or(dataConfig.GetFilestores().GetActive(), dataConfig.GetFilestores().GetDefault(), interfaces.GlobalDefaultKey)
 
