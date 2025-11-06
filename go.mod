@@ -15,7 +15,7 @@ require (
 	github.com/go-viper/encoding/dotenv v0.1.0
 	github.com/go-viper/encoding/ini v0.1.1
 	github.com/go-viper/encoding/javaproperties v0.1.0
-	github.com/goexts/generic v0.10.0
+	github.com/goexts/generic v0.11.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/gnostic v0.7.1
 	github.com/google/go-cmp v0.7.0
