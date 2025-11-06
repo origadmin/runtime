@@ -134,6 +134,7 @@ init: install-protoc ## 🔧 Install tools from tools.go, ensuring reproducible 
 	@go install github.com/envoyproxy/protoc-gen-validate
 	@go install github.com/go-kratos/kratos/cmd/kratos/v2
 	@go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2
+	@go install github.com/go-kratos/kratos/cmd/protoc-gen-go-errors/v2
 	@go install github.com/google/gnostic/cmd/protoc-gen-openapi
 	@go install github.com/google/wire/cmd/wire
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
