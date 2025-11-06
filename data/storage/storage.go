@@ -16,6 +16,7 @@ import (
 	cachev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/v1"
 	databasev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/database/v1"
 	filestorev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v1"
+	datav1 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/filestore"
@@ -42,7 +43,20 @@ type providerImpl struct {
 }
 
 // New creates a new storage provider instance based on the provided structured configuration.
+// This function is primarily for backward compatibility or when a custom interfaces.StructuredConfig
+// implementation is used. For most cases, NewProvider is recommended.
 func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
+	dataConfig, err := sc.DecodeData()
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode structured config: %w", err)
+	}
+	return NewProvider(dataConfig)
+}
+
+// NewProvider creates a new storage provider instance based on the provided decoded DataConfig.
+// This is the recommended way to initialize a full storage provider when you have the
+// configuration already decoded.
+func NewProvider(dataConfig *datav1.Data) (storageiface.Provider, error) {
 	p := &providerImpl{
 		caches:     make(map[string]storageiface.Cache),
 		databases:  make(map[string]storageiface.Database),
@@ -54,11 +68,6 @@ func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
 		DefaultCache     string `json:"defaultCache" yaml:"defaultCache"`
 		DefaultDatabase  string `json:"defaultDatabase" yaml:"defaultDatabase"`
 		DefaultFilestore string `json:"defaultFilestore" yaml:"defaultFilestore"`
-	}
-
-	dataConfig, err := sc.DecodeData()
-	if err != nil {
-		return nil, err
 	}
 
 	// Initialize Caches
@@ -124,6 +133,24 @@ func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
 	}
 
 	return p, nil
+}
+
+// NewCache creates a new cache instance based on the provided CacheConfig.
+// This allows for creating individual cache components without initializing a full storage provider.
+func NewCache(cfg *cachev1.CacheConfig) (storageiface.Cache, error) {
+	return cache.New(cfg)
+}
+
+// NewDatabase creates a new database instance based on the provided DatabaseConfig.
+// This allows for creating individual database components without initializing a full storage provider.
+func NewDatabase(cfg *databasev1.DatabaseConfig) (storageiface.Database, error) {
+	return database.New(cfg)
+}
+
+// NewFileStore creates a new file store instance based on the provided FileStoreConfig.
+// This allows for creating individual file store components without initializing a full storage provider.
+func NewFileStore(cfg *filestorev1.FileStoreConfig) (storageiface.FileStore, error) {
+	return filestore.New(cfg)
 }
 
 // FileStore returns the configured file storage service by name.
