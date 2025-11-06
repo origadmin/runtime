@@ -51,7 +51,7 @@ message Data {
 }
 
 // FileStores is a collection of named FileStore configurations.
-message FileStores {
+message Filestores {
   // Default filestore name.
   optional string default = 1 [
     json_name = "default",
@@ -63,7 +63,7 @@ message FileStores {
     (gnostic.openapi.v3.property) = {description: "Active filestore name, overrides default"}
   ];
   // List of named FileStore configurations.
-  repeated runtime.data.file.v1.FileStoreConfig configs = 3 [
+  repeated runtime.data.file.v1.FilestoreConfig configs = 3 [
     json_name = "configs",
     (gnostic.openapi.v3.property) = {description: "List of named FileStore configurations"}
   ];

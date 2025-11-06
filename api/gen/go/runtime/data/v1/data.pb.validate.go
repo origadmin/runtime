@@ -298,22 +298,22 @@ var _ interface {
 	ErrorName() string
 } = DataValidationError{}
 
-// Validate checks the field values on FileStores with the rules defined in the
+// Validate checks the field values on Filestores with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *FileStores) Validate() error {
+func (m *Filestores) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on FileStores with the rules defined in
+// ValidateAll checks the field values on Filestores with the rules defined in
 // the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in FileStoresMultiError, or
+// result is a list of violation errors wrapped in FilestoresMultiError, or
 // nil if none found.
-func (m *FileStores) ValidateAll() error {
+func (m *Filestores) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *FileStores) validate(all bool) error {
+func (m *Filestores) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -327,7 +327,7 @@ func (m *FileStores) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, FileStoresValidationError{
+					errors = append(errors, FilestoresValidationError{
 						field:  fmt.Sprintf("Configs[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -335,7 +335,7 @@ func (m *FileStores) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, FileStoresValidationError{
+					errors = append(errors, FilestoresValidationError{
 						field:  fmt.Sprintf("Configs[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -344,7 +344,7 @@ func (m *FileStores) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return FileStoresValidationError{
+				return FilestoresValidationError{
 					field:  fmt.Sprintf("Configs[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -363,18 +363,18 @@ func (m *FileStores) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return FileStoresMultiError(errors)
+		return FilestoresMultiError(errors)
 	}
 
 	return nil
 }
 
-// FileStoresMultiError is an error wrapping multiple validation errors
-// returned by FileStores.ValidateAll() if the designated constraints aren't met.
-type FileStoresMultiError []error
+// FilestoresMultiError is an error wrapping multiple validation errors
+// returned by Filestores.ValidateAll() if the designated constraints aren't met.
+type FilestoresMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m FileStoresMultiError) Error() string {
+func (m FilestoresMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -383,11 +383,11 @@ func (m FileStoresMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m FileStoresMultiError) AllErrors() []error { return m }
+func (m FilestoresMultiError) AllErrors() []error { return m }
 
-// FileStoresValidationError is the validation error returned by
-// FileStores.Validate if the designated constraints aren't met.
-type FileStoresValidationError struct {
+// FilestoresValidationError is the validation error returned by
+// Filestores.Validate if the designated constraints aren't met.
+type FilestoresValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -395,22 +395,22 @@ type FileStoresValidationError struct {
 }
 
 // Field function returns field value.
-func (e FileStoresValidationError) Field() string { return e.field }
+func (e FilestoresValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e FileStoresValidationError) Reason() string { return e.reason }
+func (e FilestoresValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e FileStoresValidationError) Cause() error { return e.cause }
+func (e FilestoresValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e FileStoresValidationError) Key() bool { return e.key }
+func (e FilestoresValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e FileStoresValidationError) ErrorName() string { return "FileStoresValidationError" }
+func (e FilestoresValidationError) ErrorName() string { return "FilestoresValidationError" }
 
 // Error satisfies the builtin error interface
-func (e FileStoresValidationError) Error() string {
+func (e FilestoresValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -422,14 +422,14 @@ func (e FileStoresValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sFileStores.%s: %s%s",
+		"invalid %sFilestores.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = FileStoresValidationError{}
+var _ error = FilestoresValidationError{}
 
 var _ interface {
 	Field() string
@@ -437,7 +437,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = FileStoresValidationError{}
+} = FilestoresValidationError{}
 
 // Validate checks the field values on Caches with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
