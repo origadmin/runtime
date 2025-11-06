@@ -13,10 +13,10 @@ import (
 
 	"github.com/goexts/generic/maps"
 
-	cachev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/v1"
-	databasev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/database/v1"
-	filestorev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v1"
-	datav1 "github.com/origadmin/runtime/api/gen/go/runtime/data/v1"
+	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
+	databasev1 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
+	filestorev1 "github.com/origadmin/runtime/api/gen/go/config/data/file/v1"
+	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/filestore"
@@ -144,13 +144,13 @@ func NewDatabases(databasesConfig *datav1.Databases) (map[string]storageiface.Da
 
 // NewFilestores creates a map of file store instances and determines the default file store name
 // from a datav1.FileStores configuration object.
-func NewFilestores(filestoresConfig *datav1.FileStores) (map[string]storageiface.FileStore, string, error) {
+func NewFilestores(filestoresConfig *datav1.Filestores) (map[string]storageiface.FileStore, string, error) {
 	if filestoresConfig == nil {
 		return nil, "", nil
 	}
 
 	filestoreConfigsMap := maps.FromSlice(filestoresConfig.GetConfigs(),
-		func(cfg *filestorev1.FileStoreConfig) (string, *filestorev1.FileStoreConfig) {
+		func(cfg *filestorev1.FilestoreConfig) (string, *filestorev1.FilestoreConfig) {
 			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
 		})
 
@@ -197,7 +197,7 @@ func NewDatabasesFromConfigs(configs map[string]*databasev1.DatabaseConfig) (map
 }
 
 // NewFileStoresFromConfigs creates a map of file store instances from a map of file store configurations.
-func NewFileStoresFromConfigs(configs map[string]*filestorev1.FileStoreConfig) (map[string]storageiface.FileStore, error) {
+func NewFileStoresFromConfigs(configs map[string]*filestorev1.FilestoreConfig) (map[string]storageiface.FileStore, error) {
 	filestores := make(map[string]storageiface.FileStore)
 	for name, cfg := range configs {
 		fs, err := filestore.New(cfg)

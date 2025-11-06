@@ -3,11 +3,11 @@ syntax = "proto3";
 package test.app.configs;
 
 // 1. Import all basic "building blocks" provided by the framework
-import "runtime/discovery/v1/discovery.proto";
-import "runtime/middleware/v1/middleware.proto"; // Added middleware import
-// Removed unused import: import "runtime/transport/grpc/v1/grpc.proto";
-// Removed unused import: import "runtime/transport/http/v1/http.proto";
-import "runtime/transport/v1/transport.proto";
+import "config/discovery/v1/discovery.proto";
+import "config/middleware/v1/middleware.proto"; // Added middleware import
+// Removed unused import: import "config/transport/grpc/v1/grpc.proto";
+// Removed unused import: import "config/transport/http/v1/http.proto";
+import "config/transport/v1/transport.proto";
 
 option go_package = "github.com/origadmin/framework/test/integration/app/proto;configs";
 
@@ -15,17 +15,17 @@ option go_package = "github.com/origadmin/framework/test/integration/app/proto;c
 //    This is the final application, composed entirely of the assembled components above.
 message Bootstrap {
   // Discovery configuration pool.
-  map<string, runtime.discovery.v1.Discovery> discoveries = 1;
+  map<string, config.discovery.v1.Discovery> discoveries = 1;
 
   // Name of the discovery configuration used for service registration.
   string registration_discovery_name = 2;
 
   // Use our assembled `Server` components to construct a unified server list.
-  repeated runtime.transport.v1.Server servers = 3;
+  repeated config.transport.v1.Server servers = 3;
 
   // Use our assembled `Client` components to construct a client list, where each client has its exclusive configuration.
-  optional runtime.transport.v1.Clients clients = 4;
+  optional config.transport.v1.Clients clients = 4;
 
   // Middlewares defines the global middleware chain.
-  runtime.middleware.v1.Middlewares middlewares = 5; // Added middlewares field
+  config.middleware.v1.Middlewares middlewares = 5; // Added middlewares field
 }

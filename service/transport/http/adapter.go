@@ -8,7 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	httpv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1"
+	httpv1 "github.com/origadmin/runtime/api/gen/go/config/transport/http/v1"
 	"github.com/origadmin/runtime/context"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"

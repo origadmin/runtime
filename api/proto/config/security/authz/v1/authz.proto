@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package config.security.authz.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
+import "config/security/authn/v1/authn.proto";
+import "config/security/authz/v1/casbin.proto";
+import "validate/validate.proto";
+
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authz/v1;authzv1";
+
+
+
+
+
+
+message CasbinAuth {
+  Policy policy = 1 [
+    json_name = "policy",
+    (gnostic.openapi.v3.property) = {description: "The Casbin policy associated with the authorization."}
+  ];
+  security.authn.v1.Claims claims = 20 [
+    json_name = "claims",
+    (gnostic.openapi.v3.property) = {description: "The claims embedded in the token."}
+  ]; // Claims
+}
+
+// AuthZ defines the configuration for an authorization mechanism instance.
+// It can also contain attributes of the authorized entity.
+message AuthZ {
+  // Unique name for this authorization configuration instance.
+  string name = 1;
+  // The type of authorization mechanism.
+  // For built-in types, specify "casbin" or "opa".
+  // For custom types, specify the registered name of the custom authorization mechanism.
+  // When a custom type is used, its configuration should be placed in the 'customize' field.
+  string type = 2 [
+    json_name = "type",
+    (gnostic.openapi.v3.property) = {description: "The type of authorization mechanism. Built-in: 'casbin', 'opa'. Custom types use their registered name."}
+  ];
+
+  // Optional Casbin authorization configuration.
+  optional CasbinAuth casbin = 10 [
+    json_name = "casbin",
+    (gnostic.openapi.v3.property) = {description: "The Casbin authorization details."}
+  ];
+  // Optional custom configuration for authorization types not explicitly defined.
+  optional google.protobuf.Struct customize = 100 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Custom configuration for authorization types not explicitly defined."}
+  ];
+
+  // The following fields describe attributes of the authorized entity or context.
+  // They are re-numbered to accommodate the new 'type' field and future mechanism configurations.
+  bool root = 3 [
+    json_name = "root",
+    (gnostic.openapi.v3.property) = {description: "Indicates if the user has root privileges."}
+  ];
+  string id = 4 [
+    json_name = "id",
+    (gnostic.openapi.v3.property) = {description: "The unique identifier of the user."}
+  ];
+  string user_type = 5 [
+    json_name = "user_type",
+    (validate.rules).string = {
+      in: [
+        "admin",
+        "user",
+        "guest"
+      ]
+    },
+    (gnostic.openapi.v3.property) = {description: "The type of user, either 'admin', 'user', or 'guest'."}
+  ];
+  string username = 6 [
+    json_name = "username",
+    (gnostic.openapi.v3.property) = {description: "The username of the user."}
+  ];
+  repeated string roles = 7 [
+    json_name = "roles",
+    (gnostic.openapi.v3.property) = {description: "The roles assigned to the user."}
+  ];
+  int64 timestamp = 8 [
+    json_name = "timestamp",
+    (gnostic.openapi.v3.property) = {description: "The timestamp of the authorization."}
+  ];
+}

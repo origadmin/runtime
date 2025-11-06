@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	projectContext "github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"

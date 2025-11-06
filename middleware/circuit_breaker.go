@@ -8,7 +8,7 @@ package middleware
 import (
 	"github.com/go-kratos/kratos/v2/middleware/circuitbreaker"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/log"
 )
 

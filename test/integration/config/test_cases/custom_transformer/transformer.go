@@ -3,9 +3,9 @@ package custom_transformer
 import (
 	"fmt"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"

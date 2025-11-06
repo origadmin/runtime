@@ -12,9 +12,9 @@ import (
 	"github.com/goexts/generic/maps"
 	"github.com/golang-jwt/jwt/v5"
 
-	jwtv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/jwt/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	authnv1 "github.com/origadmin/runtime/api/gen/go/runtime/security/authn/v1"
+	jwtv1 "github.com/origadmin/runtime/api/gen/go/config/middleware/jwt/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	authnv1 "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1"
 	"github.com/origadmin/runtime/log"
 )
 

@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
-	grpcv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
+	grpcv1 "github.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	serviceselector "github.com/origadmin/runtime/service/selector"

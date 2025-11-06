@@ -8,7 +8,7 @@ package filestore
 import (
 	"io"
 
-	filev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/file/v1" // Assuming a similar proto structure for filestore
+	filev1 "github.com/origadmin/runtime/api/gen/go/config/data/file/v1" // Assuming a similar proto structure for filestore
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"

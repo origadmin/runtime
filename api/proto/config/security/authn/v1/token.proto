@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package config.security.authn.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "validate/validate.proto";
+
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1;authnv1";
+
+
+
+
+
+
+// PWT is a web token that can be used to authenticate a user with protobuf services.
+message Token {
+  string client_id = 1 [
+    json_name = "client_id",
+    (gnostic.openapi.v3.property) = {description: "The client ID associated with the token."}
+  ];
+  string user_id = 2 [
+    json_name = "user_id",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The ID of the user associated with the token."}
+  ];
+  string access_token = 10 [
+    json_name = "access_token",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The web access token used for authentication."}
+  ];
+  string refresh_token = 11 [
+    json_name = "refresh_token",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The refresh token used to obtain a new access token."}
+  ];
+  int64 expiration_time = 12 [
+    json_name = "expiration_time",
+    (gnostic.openapi.v3.property) = {description: "The expiration time of the token."}
+  ];
+}

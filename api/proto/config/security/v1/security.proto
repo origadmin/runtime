@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package config.security.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "config/security/authn/v1/authn.proto";
+import "config/security/authz/v1/authz.proto";
+import "config/security/transport/v1/tls.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;securityv1";
+
+// Security defines the top-level configuration for all security-related components.
+message Security {
+  // List of authentication configurations.
+  AuthNConfigs authn_configs = 1 [
+    json_name = "authn_configs",
+    (gnostic.openapi.v3.property) = {description: "List of authentication configurations."}
+  ];
+  // List of authorization configurations.
+  AuthZConfigs authz_configs = 2 [
+    json_name = "authz_configs",
+    (gnostic.openapi.v3.property) = {description: "List of authorization configurations."}
+  ];
+  // List of transport layer security (TLS) configurations.
+  TransportSecurityConfigs transport_security_configs = 3 [
+    json_name = "transport_security_configs",
+    (gnostic.openapi.v3.property) = {description: "List of transport layer security (TLS) configurations."}
+  ];
+}
+
+message AuthNConfigs {
+  optional string default = 1 [json_name = "default"];
+  optional string active = 2 [json_name = "active"];
+  repeated config.security.authn.v1.AuthN configs = 3 [json_name = "configs"];
+}
+
+message AuthZConfigs {
+  optional string default = 1 [json_name = "default"];
+  optional string active = 2 [json_name = "active"];
+  repeated config.security.authz.v1.AuthZ configs = 3 [json_name = "configs"];
+}
+
+message TransportSecurityConfigs {
+  optional string default = 1 [json_name = "default"];
+  optional string active = 2 [json_name = "active"];
+  repeated config.security.transport.v1.TLSConfig configs = 3 [json_name = "configs"];
+}

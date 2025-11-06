@@ -7,7 +7,7 @@ import (
 
 	kratosregistry "github.com/go-kratos/kratos/v2/registry"
 
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/registry"
 )

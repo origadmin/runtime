@@ -12,8 +12,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"gopkg.in/yaml.v3"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	sourcev1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	filesource "github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces/options"

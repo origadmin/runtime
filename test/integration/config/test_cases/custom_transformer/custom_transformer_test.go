@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	rt "github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"

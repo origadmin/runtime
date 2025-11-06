@@ -4,7 +4,7 @@ import (
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/selector/filter"
 
-	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/selector/v1"
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/config/selector/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	cachev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/v1"
+	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
 )
 
 // CacheItem represents an item stored in the cache.

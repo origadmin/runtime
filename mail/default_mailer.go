@@ -10,7 +10,7 @@ import (
 	"net/smtp"
 	"strings"
 
-	mailv1 "github.com/origadmin/runtime/api/gen/go/runtime/mail/v1"
+	mailv1 "github.com/origadmin/runtime/api/gen/go/config/mail/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 )

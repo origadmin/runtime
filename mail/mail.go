@@ -8,7 +8,7 @@ package mail
 import (
 	"sync"
 
-	mailv1 "github.com/origadmin/runtime/api/gen/go/runtime/mail/v1"
+	mailv1 "github.com/origadmin/runtime/api/gen/go/config/mail/v1"
 	"github.com/origadmin/runtime/interfaces"
 )
 

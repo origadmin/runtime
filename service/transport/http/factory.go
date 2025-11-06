@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/service"

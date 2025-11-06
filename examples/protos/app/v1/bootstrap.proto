@@ -3,23 +3,23 @@ syntax = "proto3";
 package app.v1;
 
 // Import runtime framework component configuration definitions
-import "runtime/logger/v1/logger.proto";
-import "runtime/transport/v1/transport.proto";
-// import "runtime/data/v1/data.proto"; // Uncomment if data component is needed
-// import "runtime/security/v1/security.proto"; // Uncomment if security component is needed
-// import "runtime/discovery/v1/discovery.proto"; // Uncomment if service discovery component is needed
-// import "runtime/middleware/v1/middleware.proto"; // Uncomment if middleware component is needed
+import "config/logger/v1/logger.proto";
+import "config/transport/v1/transport.proto";
+// import "config/data/v1/data.proto"; // Uncomment if data component is needed
+// import "config/security/v1/security.proto"; // Uncomment if security component is needed
+// import "config/discovery/v1/discovery.proto"; // Uncomment if service discovery component is needed
+// import "config/middleware/v1/middleware.proto"; // Uncomment if middleware component is needed
 
 option go_package = "github.com/origadmin/runtime/examples/configs/app/v1;conf";
 
 // Bootstrap is the top-level configuration structure for the application, aggregating all component configurations.
 message Bootstrap {
-  runtime.logger.v1.Logger logger = 1;
+  config.logger.v1.Logger logger = 1;
   // Servers holds configurations for all network servers (HTTP, gRPC, WebSocket).
   // This now uses the repeated Server pattern from the transport module.
-  repeated runtime.transport.v1.Server servers = 2;
-  // runtime.data.v1.Data data = 3; // Uncomment if data component is needed
-  // runtime.security.v1.Security security = 4; // Uncomment if security component is needed
-  // runtime.discovery.v1.Discoveries discoveries = 5; // Uncomment if service discovery component is needed
-  // runtime.middleware.v1.Middlewares middlewares = 6; // Uncomment if middleware component is needed
+  repeated config.transport.v1.Server servers = 2;
+  // config.data.v1.Data data = 3; // Uncomment if data component is needed
+  // config.security.v1.Security security = 4; // Uncomment if security component is needed
+  // config.discovery.v1.Discoveries discoveries = 5; // Uncomment if service discovery component is needed
+  // config.middleware.v1.Middlewares middlewares = 6; // Uncomment if middleware component is needed
 }

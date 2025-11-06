@@ -6,7 +6,7 @@
 package cache
 
 import (
-	cachev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/cache/v1"
+	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"

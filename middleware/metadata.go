@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/metadata"
 	middlewareMetadata "github.com/go-kratos/kratos/v2/middleware/metadata"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/log"
 )
 

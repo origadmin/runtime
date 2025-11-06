@@ -7,8 +7,8 @@ import (
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
-	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/runtime/bootstrap/v1"
-	sourcev1 "github.com/origadmin/runtime/api/gen/go/runtime/source/v1"
+	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
+	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	"github.com/origadmin/runtime/bootstrap/constant"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/envsource"

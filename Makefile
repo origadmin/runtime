@@ -20,12 +20,14 @@ GIT_VERSION     := $(shell git describe --tags --always)
 ifeq ($(GOHOSTOS), windows)
     SHELL          := powershell.exe
     .SHELLFLAGS    := -NoProfile -Command
+    RM_RF          := Remove-Item -Recurse -Force
     GIT_HEAD_TAG   := $(shell git tag --points-at HEAD 2>$$null)
     BUILD_DATE     := $(shell powershell -Command "Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'")
     GIT_TREE_STATE := $(shell powershell -Command "if ((git status --porcelain)) { 'dirty' } else { 'clean' }")
     GIT_TAG        := $(shell powershell -Command "if ('${GIT_HEAD_TAG}') { '${GIT_HEAD_TAG}' } else { '${GIT_COMMIT}' }")
 else
     SHELL          := /bin/bash
+    RM_RF          := rm -rf
     GIT_HEAD_TAG   := $(shell git tag --points-at HEAD 2>/dev/null)
     BUILD_DATE     := $(shell TZ=Asia/Shanghai date +%FT%T%z)
     GIT_TREE_STATE := $(if $(shell git status --porcelain),dirty,clean)
@@ -68,15 +70,19 @@ EXAMPLE_PLUGINS := $(PROTOC_GO_OUT):. \
 		$(PROTOC_ERRORS_OUT):. \
 		$(PROTOC_VALIDATE_OUT):.
 
-# Proto file discovery
+# Proto file discovery and cleanup commands
 ifeq ($(GOHOSTOS), windows)
-    API_PROTO_FILES     := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./api/proto -Filter *.proto | Resolve-Path -Relative) -join ' '"))
-    TEST_PROTO_DIRS     := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./test/integration -Directory -Filter proto | Resolve-Path -Relative) -join ' '"))
-    EXAMPLE_PROTO_FILES := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./examples/protos -Filter *.proto | Resolve-Path -Relative) -join ' '"))
+    API_PROTO_FILES           := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./api/proto -Filter *.proto | Resolve-Path -Relative) -join ' '"))
+    TEST_PROTO_DIRS           := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./test/integration -Directory -Filter proto | Resolve-Path -Relative) -join ' '"))
+    EXAMPLE_PROTO_FILES       := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./examples/protos -Filter *.proto | Resolve-Path -Relative) -join ' '"))
+    CLEAN_EXAMPLE_PROTOS_CMD  := Get-ChildItem -Recurse ./examples/protos -Filter *.pb.go | Remove-Item -Force
+    CLEAN_TEST_PROTOS_CMD     := Get-ChildItem -Recurse ./test/integration -Filter *.pb.go | Remove-Item -Force
 else
-    API_PROTO_FILES     := $(shell find ./api/proto -name '*.proto')
-    TEST_PROTO_DIRS     := $(shell find ./test/integration -maxdepth 2 -type d -name "proto")
-    EXAMPLE_PROTO_FILES := $(shell find ./examples/protos -name '*.proto')
+    API_PROTO_FILES           := $(shell find ./api/proto -name '*.proto')
+    TEST_PROTO_DIRS           := $(shell find ./test/integration -maxdepth 2 -type d -name "proto")
+    EXAMPLE_PROTO_FILES       := $(shell find ./examples/protos -name '*.proto')
+    CLEAN_EXAMPLE_PROTOS_CMD  := find ./examples/protos -name '*.pb.go' -delete
+    CLEAN_TEST_PROTOS_CMD     := find ./test/integration -name '*.pb.go' -delete
 endif
 
 
@@ -158,8 +164,11 @@ update-tools: ## ⚠️  Update all Go tools in tools.go to latest. High-risk, u
 	@go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 	@go mod tidy
 
-protos: ## 🧬 Generate API protos (smartly uses buf, falls back to protoc)
-	@echo "Generating API protos..."
+protos: config-protos test-protos example-protos ## 🧬 Generate all protos
+	@echo "Generating all protos done."
+
+config-protos: ## 🧬 Generate API protos (smartly uses buf, falls back to protoc)
+	@echo "Generating config protos..."
 ifeq ($(GOHOSTOS), windows)
 	@if (Get-Command buf -ErrorAction SilentlyContinue) { echo '--> `buf` command found. Using buf to build and generate protos (recommended).'; buf build; buf generate } else { echo '--> WARNING: `buf` command not found. Falling back to protoc.'; echo '--> Please run ''make init'' to install buf for reproducible builds.'; protoc $(PROTOC_INCLUDES) $(PLUGINS) $(API_PROTO_FILES) }
 else
@@ -195,35 +204,27 @@ else
 	done
 endif
 
-test: test-protos ## 🧪 Run all Go tests
-	go test -v ./...
+test: test-protos example-protos ## 🧪 Run all Go tests
+	@go test -v ./...
 
 generate: ## 🧬 Run go generate to generate code (e.g., wire)
 	@echo "Running go generate..."
-	go generate ./...
+	@go generate ./...
 
 
 clean: clean-api-gen clean-example-protos clean-test-protos ## 🧹 Clean up all generated files
 
 clean-api-gen: ## 🧹 Clean up API generated files
 	@echo "Cleaning up API generated files..."
-	@rm -rf ./api/gen
+	@$(RM_RF) ./api/gen
 
 clean-example-protos: ## 🧹 Clean up example generated protos
 	@echo "Cleaning up example generated protos..."
-ifeq ($(GOHOSTOS), windows)
-	@Get-ChildItem -Recurse ./examples/protos -Filter *.pb.go | Remove-Item -Force
-else
-	@find ./examples/protos -name '*.pb.go' -delete
-endif
+	@$(CLEAN_EXAMPLE_PROTOS_CMD)
 
 clean-test-protos: ## 🧹 Clean up test generated protos
 	@echo "Cleaning up test generated protos..."
-ifeq ($(GOHOSTOS), windows)
-	@Get-ChildItem -Recurse ./test/integration -Filter *.pb.go | Remove-Item -Force
-else
-	@find ./test/integration -name '*.pb.go' -delete
-endif
+	@$(CLEAN_TEST_PROTOS_CMD)
 
 buf-push: ## 🚀 Push Protobuf module to Buf Schema Registry
 	@echo "Pushing Protobuf module to Buf Schema Registry..."

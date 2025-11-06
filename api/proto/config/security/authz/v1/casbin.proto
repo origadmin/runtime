@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package config.security.authz.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "validate/validate.proto";
+
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authz/v1;authzv1";
+
+
+
+
+
+
+message Policy {
+  string subject = 1 [
+    json_name = "subject",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The subject of the policy."}
+  ];
+  string object = 2 [
+    json_name = "object",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The object of the policy."}
+  ];
+  string action = 3 [
+    json_name = "action",
+    (validate.rules).string.min_len = 1,
+    (gnostic.openapi.v3.property) = {description: "The action of the policy."}
+  ];
+  repeated string domain = 4 [
+    json_name = "domain",
+    (gnostic.openapi.v3.property) = {description: "The domains associated with the policy."}
+  ];
+  map<string, string> extras = 6 [
+    json_name = "extras",
+    (gnostic.openapi.v3.property) = {description: "The extra data associated with the policy."}
+  ];
+}

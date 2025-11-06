@@ -3,7 +3,7 @@ package grpc
 import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
-	grpcv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
+	grpcv1 "github.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1"
 )
 
 // NewServer creates a new concrete gRPC server instance based on the provided configuration.

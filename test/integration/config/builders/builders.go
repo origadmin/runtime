@@ -3,16 +3,16 @@ package builders
 import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/runtime/app/v1"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/runtime/discovery/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/runtime/logger/v1"
-	corsv1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/cors/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
-	selectorv1 "github.com/origadmin/runtime/api/gen/go/runtime/selector/v1"
-	tracev1 "github.com/origadmin/runtime/api/gen/go/runtime/trace/v1"
-	grpcv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/grpc/v1"
-	httpv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/http/v1"
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
+	corsv1 "github.com/origadmin/runtime/api/gen/go/config/middleware/cors/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	selectorv1 "github.com/origadmin/runtime/api/gen/go/config/selector/v1"
+	tracev1 "github.com/origadmin/runtime/api/gen/go/config/trace/v1"
+	grpcv1 "github.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1"
+	httpv1 "github.com/origadmin/runtime/api/gen/go/config/transport/http/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 )
 
 func NewDefaultApp() *appv1.App {

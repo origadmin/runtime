@@ -10,7 +10,7 @@ import (
 	"database/sql"
 	"time"
 
-	databasev1 "github.com/origadmin/runtime/api/gen/go/runtime/data/database/v1"
+	databasev1 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"

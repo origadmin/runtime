@@ -8,7 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/config/file"
 	"google.golang.org/protobuf/encoding/protojson"
 	// Import the transportv1 package which contains the Server message definition.
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	// Import the generated Go code from the api_gateway proto for the ClientConfig message.
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 	"github.com/origadmin/runtime/interfaces"

@@ -3,7 +3,7 @@ package interfaces
 import (
 	"github.com/go-kratos/kratos/v2/middleware"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/runtime/middleware/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
 )

@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/runtime/transport/v1"
+	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"

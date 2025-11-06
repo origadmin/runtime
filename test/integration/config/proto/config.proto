@@ -3,18 +3,18 @@ syntax = "proto3";
 package test.configs;
 
 import "google/protobuf/struct.proto";
-import "runtime/app/v1/app.proto";
-import "runtime/config/v1/gateway.proto";
-import "runtime/trace/v1/trace.proto"; // Updated import for tracer
-import "runtime/data/v1/data.proto";
-import "runtime/discovery/v1/discovery.proto";
-import "runtime/logger/v1/logger.proto";
-import "runtime/middleware/v1/middleware.proto";
-import "runtime/security/authn/v1/authn.proto";
-import "runtime/security/authz/v1/authz.proto";
-import "runtime/security/transport/v1/tls.proto";
-import "runtime/task/v1/task.proto";
-import "runtime/transport/v1/transport.proto";
+import "config/app/v1/app.proto";
+import "config/config/v1/gateway.proto";
+import "config/trace/v1/trace.proto"; // Updated import for tracer
+import "config/data/v1/data.proto";
+import "config/discovery/v1/discovery.proto";
+import "config/logger/v1/logger.proto";
+import "config/middleware/v1/middleware.proto";
+import "config/security/authn/v1/authn.proto";
+import "config/security/authz/v1/authz.proto";
+import "config/security/transport/v1/tls.proto";
+import "config/task/v1/task.proto";
+import "config/transport/v1/transport.proto";
 // Removed import for runtime/websocket/v1/websocket.proto
 
 option go_package = "github.com/origadmin/runtime/test/integration/config/proto;configs";
@@ -22,33 +22,33 @@ option go_package = "github.com/origadmin/runtime/test/integration/config/proto;
 // TestConfig is the unified configuration structure for all integration tests.
 message TestConfig {
   // App configuration from app.proto
-  runtime.app.v1.App app = 1;
+  config.app.v1.App app = 1;
 
-  runtime.transport.v1.Servers servers = 2;
-  runtime.transport.v1.Clients clients = 3;
+  config.transport.v1.Servers servers = 2;
+  config.transport.v1.Clients clients = 3;
 
-  runtime.transport.v1.Server server = 4;
-  runtime.transport.v1.Client client = 5;
+  config.transport.v1.Server server = 4;
+  config.transport.v1.Client client = 5;
 
   // Service discovery configurations
-  runtime.discovery.v1.Discoveries discoveries = 6;
+  config.discovery.v1.Discoveries discoveries = 6;
 
-  runtime.discovery.v1.Discovery discovery = 7;
+  config.discovery.v1.Discovery discovery = 7;
 
   // Service registration configuration
   string registration_discovery_name = 8;
 
   // Other component configurations
-  runtime.logger.v1.Logger logger = 9;
-  runtime.trace.v1.Trace trace = 10; // Updated type for tracer
-  runtime.middleware.v1.Middlewares middlewares = 11;
-  runtime.middleware.v1.Middleware middleware = 12;
-  runtime.config.v1.Gateway gateway = 13;
-  runtime.data.v1.Data data = 14;
-  runtime.task.v1.Task task = 15;
-  // Removed runtime.websocket.v1.WebSocket websocket = 16;
-  runtime.security.authn.v1.AuthN authn = 17;
-  runtime.security.authz.v1.AuthZ authz = 18;
-  runtime.security.transport.v1.TLSConfig tls = 19;
+  config.logger.v1.Logger logger = 9;
+  config.trace.v1.Trace trace = 10; // Updated type for tracer
+  config.middleware.v1.Middlewares middlewares = 11;
+  config.middleware.v1.Middleware middleware = 12;
+  config.config.v1.Gateway gateway = 13;
+  config.data.v1.Data data = 14;
+  config.task.v1.Task task = 15;
+  // Removed config.websocket.v1.WebSocket websocket = 16;
+  config.security.authn.v1.AuthN authn = 17;
+  config.security.authz.v1.AuthZ authz = 18;
+  config.security.transport.v1.TLSConfig tls = 19;
   google.protobuf.Struct customize = 20;
 }
