@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package examples.custom_extension;
+package runtime.examples.custom_extension;
 
 import "google/protobuf/struct.proto";
 

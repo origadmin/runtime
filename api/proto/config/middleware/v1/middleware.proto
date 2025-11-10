@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.middleware.v1;
+package runtime.api.config.middleware.v1;
 
 import "config/middleware/circuitbreaker/v1/circuitbreaker.proto";
 import "config/middleware/cors/v1/cors.proto";

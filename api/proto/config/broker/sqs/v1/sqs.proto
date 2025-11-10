@@ -1,15 +1,10 @@
 syntax = "proto3";
 
-package config.broker.sqs.v1;
+package runtime.api.config.broker.sqs.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/sqs/v1;sqsv1";
-
-
-
-
-
 
 // SqsConfig defines the configuration for an AWS SQS message queue.
 message SqsConfig {

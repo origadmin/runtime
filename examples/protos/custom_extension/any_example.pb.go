@@ -90,7 +90,7 @@ var File_examples_protos_custom_extension_any_example_proto protoreflect.FileDes
 
 const file_examples_protos_custom_extension_any_example_proto_rawDesc = "" +
 	"\n" +
-	"2examples/protos/custom_extension/any_example.proto\x12\x19examples.custom_extension\x1a\x19google/protobuf/any.proto\"~\n" +
+	"2examples/protos/custom_extension/any_example.proto\x12!runtime.examples.custom_extension\x1a\x19google/protobuf/any.proto\"~\n" +
 	"\rMiddlewareAny\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x127\n" +
@@ -112,11 +112,11 @@ func file_examples_protos_custom_extension_any_example_proto_rawDescGZIP() []byt
 
 var file_examples_protos_custom_extension_any_example_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_examples_protos_custom_extension_any_example_proto_goTypes = []any{
-	(*MiddlewareAny)(nil), // 0: examples.custom_extension.MiddlewareAny
+	(*MiddlewareAny)(nil), // 0: runtime.examples.custom_extension.MiddlewareAny
 	(*anypb.Any)(nil),     // 1: google.protobuf.Any
 }
 var file_examples_protos_custom_extension_any_example_proto_depIdxs = []int32{
-	1, // 0: examples.custom_extension.MiddlewareAny.customize:type_name -> google.protobuf.Any
+	1, // 0: runtime.examples.custom_extension.MiddlewareAny.customize:type_name -> google.protobuf.Any
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.security.v1;
+package runtime.api.config.security.v1;
 
 import "errors/errors.proto";
 

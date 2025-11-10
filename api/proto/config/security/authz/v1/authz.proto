@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.security.authz.v1;
+package runtime.api.config.security.authz.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";

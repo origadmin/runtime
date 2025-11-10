@@ -1,15 +1,10 @@
 syntax = "proto3";
 
-package config.broker.nats.v1;
+package runtime.api.config.broker.nats.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/nats/v1;natsv1";
-
-
-
-
-
 
 // NatsConfig defines the configuration for a NATS message queue.
 message NatsConfig {

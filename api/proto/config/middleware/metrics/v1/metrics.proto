@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.middleware.metrics.v1;
+package runtime.api.config.middleware.metrics.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/metrics/v1;metricsv1";
 

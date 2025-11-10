@@ -1,15 +1,10 @@
 syntax = "proto3";
 
-package config.broker.stomp.v1;
+package runtime.api.config.broker.stomp.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/stomp/v1;stompv1";
-
-
-
-
-
 
 // StompConfig defines the configuration for a STOMP message queue.
 message StompConfig {

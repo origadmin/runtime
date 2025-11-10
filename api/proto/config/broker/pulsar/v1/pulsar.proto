@@ -1,15 +1,10 @@
 syntax = "proto3";
 
-package config.broker.pulsar.v1;
+package runtime.api.config.broker.pulsar.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/pulsar/v1;pulsarv1";
-
-
-
-
-
 
 // PulsarConfig defines the configuration for a Pulsar message queue.
 message PulsarConfig {

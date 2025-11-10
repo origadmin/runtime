@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.app.v1;
+package runtime.api.config.app.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 

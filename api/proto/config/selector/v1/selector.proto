@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.selector.v1;
+package runtime.api.config.selector.v1;
 
 import "google/protobuf/struct.proto";
 

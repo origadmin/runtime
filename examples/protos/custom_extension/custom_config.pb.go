@@ -264,15 +264,15 @@ var File_examples_protos_custom_extension_custom_config_proto protoreflect.FileD
 
 const file_examples_protos_custom_extension_custom_config_proto_rawDesc = "" +
 	"\n" +
-	"4examples/protos/custom_extension/custom_config.proto\x12\x19examples.custom_extension\x1a\x1cgoogle/protobuf/struct.proto\"Q\n" +
+	"4examples/protos/custom_extension/custom_config.proto\x12!runtime.examples.custom_extension\x1a\x1cgoogle/protobuf/struct.proto\"Q\n" +
 	"\x10CustomAuthConfig\x12\x16\n" +
 	"\x06policy\x18\x01 \x01(\tR\x06policy\x12%\n" +
-	"\x0erequired_scope\x18\x02 \x01(\tR\rrequiredScope\"\xf8\x01\n" +
+	"\x0erequired_scope\x18\x02 \x01(\tR\rrequiredScope\"\x80\x02\n" +
 	"\fCustomConfig\x12!\n" +
 	"\fcustom_field\x18\x01 \x01(\tR\vcustomField\x12#\n" +
 	"\rcustom_number\x18\x02 \x01(\x05R\fcustomNumber\x12\x14\n" +
-	"\x05items\x18\x03 \x03(\tR\x05items\x12L\n" +
-	"\x06nested\x18\x04 \x01(\v24.examples.custom_extension.CustomConfig.NestedConfigR\x06nested\x1a<\n" +
+	"\x05items\x18\x03 \x03(\tR\x05items\x12T\n" +
+	"\x06nested\x18\x04 \x01(\v2<.runtime.examples.custom_extension.CustomConfig.NestedConfigR\x06nested\x1a<\n" +
 	"\fNestedConfig\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"\xa0\x01\n" +
@@ -296,15 +296,15 @@ func file_examples_protos_custom_extension_custom_config_proto_rawDescGZIP() []b
 
 var file_examples_protos_custom_extension_custom_config_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_examples_protos_custom_extension_custom_config_proto_goTypes = []any{
-	(*CustomAuthConfig)(nil),          // 0: examples.custom_extension.CustomAuthConfig
-	(*CustomConfig)(nil),              // 1: examples.custom_extension.CustomConfig
-	(*ApplicationConfig)(nil),         // 2: examples.custom_extension.ApplicationConfig
-	(*CustomConfig_NestedConfig)(nil), // 3: examples.custom_extension.CustomConfig.NestedConfig
+	(*CustomAuthConfig)(nil),          // 0: runtime.examples.custom_extension.CustomAuthConfig
+	(*CustomConfig)(nil),              // 1: runtime.examples.custom_extension.CustomConfig
+	(*ApplicationConfig)(nil),         // 2: runtime.examples.custom_extension.ApplicationConfig
+	(*CustomConfig_NestedConfig)(nil), // 3: runtime.examples.custom_extension.CustomConfig.NestedConfig
 	(*structpb.Struct)(nil),           // 4: google.protobuf.Struct
 }
 var file_examples_protos_custom_extension_custom_config_proto_depIdxs = []int32{
-	3, // 0: examples.custom_extension.CustomConfig.nested:type_name -> examples.custom_extension.CustomConfig.NestedConfig
-	4, // 1: examples.custom_extension.ApplicationConfig.customize_config:type_name -> google.protobuf.Struct
+	3, // 0: runtime.examples.custom_extension.CustomConfig.nested:type_name -> runtime.examples.custom_extension.CustomConfig.NestedConfig
+	4, // 1: runtime.examples.custom_extension.ApplicationConfig.customize_config:type_name -> google.protobuf.Struct
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package config.bootstrap.v1;
+package runtime.api.config.bootstrap.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
 import "config/source/v1/source.proto";
+import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1;v1";
 

@@ -1,17 +1,12 @@
 syntax = "proto3";
 
-package config.common.v1;
+package runtime.api.config.common.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/field_mask.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/common/v1;commonv1";
-
-
-
-
-
 
 // PaginationRequest provides a flexible structure for pagination requests, supporting
 // both cursor-based (infinite scroll) and offset-based (numbered pages) pagination.

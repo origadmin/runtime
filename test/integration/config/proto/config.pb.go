@@ -56,7 +56,7 @@ type TestConfig struct {
 	Gateway     *v16.Gateway     `protobuf:"bytes,13,opt,name=gateway,proto3" json:"gateway,omitempty"`
 	Data        *v17.Data        `protobuf:"bytes,14,opt,name=data,proto3" json:"data,omitempty"`
 	Task        *v18.Task        `protobuf:"bytes,15,opt,name=task,proto3" json:"task,omitempty"`
-	// Removed config.websocket.v1.WebSocket websocket = 16;
+	// Removed runtime.api.config.websocket.v1.WebSocket websocket = 16;
 	Authn         *v19.AuthN       `protobuf:"bytes,17,opt,name=authn,proto3" json:"authn,omitempty"`
 	Authz         *v110.AuthZ      `protobuf:"bytes,18,opt,name=authz,proto3" json:"authz,omitempty"`
 	Tls           *v111.TLSConfig  `protobuf:"bytes,19,opt,name=tls,proto3" json:"tls,omitempty"`
@@ -232,30 +232,30 @@ var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
 
 const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\ftest.configs\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a$config/security/authn/v1/authn.proto\x1a$config/security/authz/v1/authz.proto\x1a&config/security/transport/v1/tls.proto\x1a\x19config/task/v1/task.proto\x1a#config/transport/v1/transport.proto\"\x9e\b\n" +
+	"*test/integration/config/proto/config.proto\x12\x1bruntime.test.config.configs\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a$config/security/authn/v1/authn.proto\x1a$config/security/authz/v1/authz.proto\x1a&config/security/transport/v1/tls.proto\x1a\x19config/task/v1/task.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xea\t\n" +
 	"\n" +
-	"TestConfig\x12$\n" +
-	"\x03app\x18\x01 \x01(\v2\x12.config.app.v1.AppR\x03app\x126\n" +
-	"\aservers\x18\x02 \x01(\v2\x1c.config.transport.v1.ServersR\aservers\x126\n" +
-	"\aclients\x18\x03 \x01(\v2\x1c.config.transport.v1.ClientsR\aclients\x123\n" +
-	"\x06server\x18\x04 \x01(\v2\x1b.config.transport.v1.ServerR\x06server\x123\n" +
-	"\x06client\x18\x05 \x01(\v2\x1b.config.transport.v1.ClientR\x06client\x12B\n" +
-	"\vdiscoveries\x18\x06 \x01(\v2 .config.discovery.v1.DiscoveriesR\vdiscoveries\x12<\n" +
-	"\tdiscovery\x18\a \x01(\v2\x1e.config.discovery.v1.DiscoveryR\tdiscovery\x12>\n" +
-	"\x1bregistration_discovery_name\x18\b \x01(\tR\x19registrationDiscoveryName\x120\n" +
-	"\x06logger\x18\t \x01(\v2\x18.config.logger.v1.LoggerR\x06logger\x12,\n" +
+	"TestConfig\x120\n" +
+	"\x03app\x18\x01 \x01(\v2\x1e.runtime.api.config.app.v1.AppR\x03app\x12B\n" +
+	"\aservers\x18\x02 \x01(\v2(.runtime.api.config.transport.v1.ServersR\aservers\x12B\n" +
+	"\aclients\x18\x03 \x01(\v2(.runtime.api.config.transport.v1.ClientsR\aclients\x12?\n" +
+	"\x06server\x18\x04 \x01(\v2'.runtime.api.config.transport.v1.ServerR\x06server\x12?\n" +
+	"\x06client\x18\x05 \x01(\v2'.runtime.api.config.transport.v1.ClientR\x06client\x12N\n" +
+	"\vdiscoveries\x18\x06 \x01(\v2,.runtime.api.config.discovery.v1.DiscoveriesR\vdiscoveries\x12H\n" +
+	"\tdiscovery\x18\a \x01(\v2*.runtime.api.config.discovery.v1.DiscoveryR\tdiscovery\x12>\n" +
+	"\x1bregistration_discovery_name\x18\b \x01(\tR\x19registrationDiscoveryName\x12<\n" +
+	"\x06logger\x18\t \x01(\v2$.runtime.api.config.logger.v1.LoggerR\x06logger\x128\n" +
 	"\x05trace\x18\n" +
-	" \x01(\v2\x16.config.trace.v1.TraceR\x05trace\x12C\n" +
-	"\vmiddlewares\x18\v \x01(\v2!.config.middleware.v1.MiddlewaresR\vmiddlewares\x12@\n" +
+	" \x01(\v2\".runtime.api.config.trace.v1.TraceR\x05trace\x12O\n" +
+	"\vmiddlewares\x18\v \x01(\v2-.runtime.api.config.middleware.v1.MiddlewaresR\vmiddlewares\x12L\n" +
 	"\n" +
-	"middleware\x18\f \x01(\v2 .config.middleware.v1.MiddlewareR\n" +
-	"middleware\x123\n" +
-	"\agateway\x18\r \x01(\v2\x19.config.config.v1.GatewayR\agateway\x12(\n" +
-	"\x04data\x18\x0e \x01(\v2\x14.config.data.v1.DataR\x04data\x12(\n" +
-	"\x04task\x18\x0f \x01(\v2\x14.config.task.v1.TaskR\x04task\x125\n" +
-	"\x05authn\x18\x11 \x01(\v2\x1f.config.security.authn.v1.AuthNR\x05authn\x125\n" +
-	"\x05authz\x18\x12 \x01(\v2\x1f.config.security.authz.v1.AuthZR\x05authz\x129\n" +
-	"\x03tls\x18\x13 \x01(\v2'.config.security.transport.v1.TLSConfigR\x03tls\x125\n" +
+	"middleware\x18\f \x01(\v2,.runtime.api.config.middleware.v1.MiddlewareR\n" +
+	"middleware\x12?\n" +
+	"\agateway\x18\r \x01(\v2%.runtime.api.config.config.v1.GatewayR\agateway\x124\n" +
+	"\x04data\x18\x0e \x01(\v2 .runtime.api.config.data.v1.DataR\x04data\x124\n" +
+	"\x04task\x18\x0f \x01(\v2 .runtime.api.config.task.v1.TaskR\x04task\x12A\n" +
+	"\x05authn\x18\x11 \x01(\v2+.runtime.api.config.security.authn.v1.AuthNR\x05authn\x12A\n" +
+	"\x05authz\x18\x12 \x01(\v2+.runtime.api.config.security.authz.v1.AuthZR\x05authz\x12E\n" +
+	"\x03tls\x18\x13 \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigR\x03tls\x125\n" +
 	"\tcustomize\x18\x14 \x01(\v2\x17.google.protobuf.StructR\tcustomizeBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
@@ -272,45 +272,45 @@ func file_test_integration_config_proto_config_proto_rawDescGZIP() []byte {
 
 var file_test_integration_config_proto_config_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_test_integration_config_proto_config_proto_goTypes = []any{
-	(*TestConfig)(nil),      // 0: test.configs.TestConfig
-	(*v1.App)(nil),          // 1: config.app.v1.App
-	(*v11.Servers)(nil),     // 2: config.transport.v1.Servers
-	(*v11.Clients)(nil),     // 3: config.transport.v1.Clients
-	(*v11.Server)(nil),      // 4: config.transport.v1.Server
-	(*v11.Client)(nil),      // 5: config.transport.v1.Client
-	(*v12.Discoveries)(nil), // 6: config.discovery.v1.Discoveries
-	(*v12.Discovery)(nil),   // 7: config.discovery.v1.Discovery
-	(*v13.Logger)(nil),      // 8: config.logger.v1.Logger
-	(*v14.Trace)(nil),       // 9: config.trace.v1.Trace
-	(*v15.Middlewares)(nil), // 10: config.middleware.v1.Middlewares
-	(*v15.Middleware)(nil),  // 11: config.middleware.v1.Middleware
-	(*v16.Gateway)(nil),     // 12: config.config.v1.Gateway
-	(*v17.Data)(nil),        // 13: config.data.v1.Data
-	(*v18.Task)(nil),        // 14: config.task.v1.Task
-	(*v19.AuthN)(nil),       // 15: config.security.authn.v1.AuthN
-	(*v110.AuthZ)(nil),      // 16: config.security.authz.v1.AuthZ
-	(*v111.TLSConfig)(nil),  // 17: config.security.transport.v1.TLSConfig
+	(*TestConfig)(nil),      // 0: runtime.test.config.configs.TestConfig
+	(*v1.App)(nil),          // 1: runtime.api.config.app.v1.App
+	(*v11.Servers)(nil),     // 2: runtime.api.config.transport.v1.Servers
+	(*v11.Clients)(nil),     // 3: runtime.api.config.transport.v1.Clients
+	(*v11.Server)(nil),      // 4: runtime.api.config.transport.v1.Server
+	(*v11.Client)(nil),      // 5: runtime.api.config.transport.v1.Client
+	(*v12.Discoveries)(nil), // 6: runtime.api.config.discovery.v1.Discoveries
+	(*v12.Discovery)(nil),   // 7: runtime.api.config.discovery.v1.Discovery
+	(*v13.Logger)(nil),      // 8: runtime.api.config.logger.v1.Logger
+	(*v14.Trace)(nil),       // 9: runtime.api.config.trace.v1.Trace
+	(*v15.Middlewares)(nil), // 10: runtime.api.config.middleware.v1.Middlewares
+	(*v15.Middleware)(nil),  // 11: runtime.api.config.middleware.v1.Middleware
+	(*v16.Gateway)(nil),     // 12: runtime.api.config.config.v1.Gateway
+	(*v17.Data)(nil),        // 13: runtime.api.config.data.v1.Data
+	(*v18.Task)(nil),        // 14: runtime.api.config.task.v1.Task
+	(*v19.AuthN)(nil),       // 15: runtime.api.config.security.authn.v1.AuthN
+	(*v110.AuthZ)(nil),      // 16: runtime.api.config.security.authz.v1.AuthZ
+	(*v111.TLSConfig)(nil),  // 17: runtime.api.config.security.transport.v1.TLSConfig
 	(*structpb.Struct)(nil), // 18: google.protobuf.Struct
 }
 var file_test_integration_config_proto_config_proto_depIdxs = []int32{
-	1,  // 0: test.configs.TestConfig.app:type_name -> config.app.v1.App
-	2,  // 1: test.configs.TestConfig.servers:type_name -> config.transport.v1.Servers
-	3,  // 2: test.configs.TestConfig.clients:type_name -> config.transport.v1.Clients
-	4,  // 3: test.configs.TestConfig.server:type_name -> config.transport.v1.Server
-	5,  // 4: test.configs.TestConfig.client:type_name -> config.transport.v1.Client
-	6,  // 5: test.configs.TestConfig.discoveries:type_name -> config.discovery.v1.Discoveries
-	7,  // 6: test.configs.TestConfig.discovery:type_name -> config.discovery.v1.Discovery
-	8,  // 7: test.configs.TestConfig.logger:type_name -> config.logger.v1.Logger
-	9,  // 8: test.configs.TestConfig.trace:type_name -> config.trace.v1.Trace
-	10, // 9: test.configs.TestConfig.middlewares:type_name -> config.middleware.v1.Middlewares
-	11, // 10: test.configs.TestConfig.middleware:type_name -> config.middleware.v1.Middleware
-	12, // 11: test.configs.TestConfig.gateway:type_name -> config.config.v1.Gateway
-	13, // 12: test.configs.TestConfig.data:type_name -> config.data.v1.Data
-	14, // 13: test.configs.TestConfig.task:type_name -> config.task.v1.Task
-	15, // 14: test.configs.TestConfig.authn:type_name -> config.security.authn.v1.AuthN
-	16, // 15: test.configs.TestConfig.authz:type_name -> config.security.authz.v1.AuthZ
-	17, // 16: test.configs.TestConfig.tls:type_name -> config.security.transport.v1.TLSConfig
-	18, // 17: test.configs.TestConfig.customize:type_name -> google.protobuf.Struct
+	1,  // 0: runtime.test.config.configs.TestConfig.app:type_name -> runtime.api.config.app.v1.App
+	2,  // 1: runtime.test.config.configs.TestConfig.servers:type_name -> runtime.api.config.transport.v1.Servers
+	3,  // 2: runtime.test.config.configs.TestConfig.clients:type_name -> runtime.api.config.transport.v1.Clients
+	4,  // 3: runtime.test.config.configs.TestConfig.server:type_name -> runtime.api.config.transport.v1.Server
+	5,  // 4: runtime.test.config.configs.TestConfig.client:type_name -> runtime.api.config.transport.v1.Client
+	6,  // 5: runtime.test.config.configs.TestConfig.discoveries:type_name -> runtime.api.config.discovery.v1.Discoveries
+	7,  // 6: runtime.test.config.configs.TestConfig.discovery:type_name -> runtime.api.config.discovery.v1.Discovery
+	8,  // 7: runtime.test.config.configs.TestConfig.logger:type_name -> runtime.api.config.logger.v1.Logger
+	9,  // 8: runtime.test.config.configs.TestConfig.trace:type_name -> runtime.api.config.trace.v1.Trace
+	10, // 9: runtime.test.config.configs.TestConfig.middlewares:type_name -> runtime.api.config.middleware.v1.Middlewares
+	11, // 10: runtime.test.config.configs.TestConfig.middleware:type_name -> runtime.api.config.middleware.v1.Middleware
+	12, // 11: runtime.test.config.configs.TestConfig.gateway:type_name -> runtime.api.config.config.v1.Gateway
+	13, // 12: runtime.test.config.configs.TestConfig.data:type_name -> runtime.api.config.data.v1.Data
+	14, // 13: runtime.test.config.configs.TestConfig.task:type_name -> runtime.api.config.task.v1.Task
+	15, // 14: runtime.test.config.configs.TestConfig.authn:type_name -> runtime.api.config.security.authn.v1.AuthN
+	16, // 15: runtime.test.config.configs.TestConfig.authz:type_name -> runtime.api.config.security.authz.v1.AuthZ
+	17, // 16: runtime.test.config.configs.TestConfig.tls:type_name -> runtime.api.config.security.transport.v1.TLSConfig
+	18, // 17: runtime.test.config.configs.TestConfig.customize:type_name -> google.protobuf.Struct
 	18, // [18:18] is the sub-list for method output_type
 	18, // [18:18] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name

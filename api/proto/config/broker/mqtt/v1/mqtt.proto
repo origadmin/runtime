@@ -1,15 +1,10 @@
 syntax = "proto3";
 
-package config.broker.mqtt.v1;
+package runtime.api.config.broker.mqtt.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/mqtt/v1;mqttv1";
-
-
-
-
-
 
 // MqttConfig defines the configuration for an MQTT message queue.
 message MqttConfig {

@@ -230,23 +230,23 @@ var File_examples_protos_load_with_runtime_bootstrap_proto protoreflect.FileDesc
 
 const file_examples_protos_load_with_runtime_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"1examples/protos/load_with_runtime/bootstrap.proto\x12\x1aexamples.load_with_runtime\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a#config/transport/v1/transport.proto\"\xec\x03\n" +
-	"\tBootstrap\x125\n" +
-	"\aservers\x18\x01 \x03(\v2\x1b.config.transport.v1.ServerR\aservers\x12R\n" +
-	"\tendpoints\x18\x02 \x03(\v24.examples.load_with_runtime.Bootstrap.EndpointsEntryR\tendpoints\x120\n" +
-	"\x06logger\x18\x03 \x01(\v2\x18.config.logger.v1.LoggerR\x06logger\x12X\n" +
-	"\vdiscoveries\x18\x04 \x03(\v26.examples.load_with_runtime.Bootstrap.DiscoveriesEntryR\vdiscoveries\x1ah\n" +
+	"1examples/protos/load_with_runtime/bootstrap.proto\x12\"runtime.examples.load_with_runtime\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a#config/transport/v1/transport.proto\"\xa8\x04\n" +
+	"\tBootstrap\x12A\n" +
+	"\aservers\x18\x01 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aservers\x12Z\n" +
+	"\tendpoints\x18\x02 \x03(\v2<.runtime.examples.load_with_runtime.Bootstrap.EndpointsEntryR\tendpoints\x12<\n" +
+	"\x06logger\x18\x03 \x01(\v2$.runtime.api.config.logger.v1.LoggerR\x06logger\x12`\n" +
+	"\vdiscoveries\x18\x04 \x03(\v2>.runtime.examples.load_with_runtime.Bootstrap.DiscoveriesEntryR\vdiscoveries\x1ap\n" +
 	"\x0eEndpointsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
-	"\x05value\x18\x02 \x01(\v2*.examples.load_with_runtime.EndpointConfigR\x05value:\x028\x01\x1a^\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12H\n" +
+	"\x05value\x18\x02 \x01(\v22.runtime.examples.load_with_runtime.EndpointConfigR\x05value:\x028\x01\x1aj\n" +
 	"\x10DiscoveriesEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x124\n" +
-	"\x05value\x18\x02 \x01(\v2\x1e.config.discovery.v1.DiscoveryR\x05value:\x028\x01\"\x8a\x02\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
+	"\x05value\x18\x02 \x01(\v2*.runtime.api.config.discovery.v1.DiscoveryR\x05value:\x028\x01\"\x9e\x02\n" +
 	"\x0eEndpointConfig\x12&\n" +
 	"\x0ediscovery_name\x18\x01 \x01(\tR\x0ediscovery_name\x12\x10\n" +
-	"\x03uri\x18\x02 \x01(\tR\x03uri\x12O\n" +
-	"\bselector\x18\x03 \x01(\v23.examples.load_with_runtime.EndpointConfig.SelectorR\bselector\x123\n" +
-	"\x06client\x18\x04 \x01(\v2\x1b.config.transport.v1.ClientR\x06client\x1a8\n" +
+	"\x03uri\x18\x02 \x01(\tR\x03uri\x12W\n" +
+	"\bselector\x18\x03 \x01(\v2;.runtime.examples.load_with_runtime.EndpointConfig.SelectorR\bselector\x12?\n" +
+	"\x06client\x18\x04 \x01(\v2'.runtime.api.config.transport.v1.ClientR\x06client\x1a8\n" +
 	"\bSelector\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversionB\x1fZ\x1d./load_with_runtime/conf;confb\x06proto3"
@@ -265,25 +265,25 @@ func file_examples_protos_load_with_runtime_bootstrap_proto_rawDescGZIP() []byte
 
 var file_examples_protos_load_with_runtime_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_examples_protos_load_with_runtime_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),               // 0: examples.load_with_runtime.Bootstrap
-	(*EndpointConfig)(nil),          // 1: examples.load_with_runtime.EndpointConfig
-	nil,                             // 2: examples.load_with_runtime.Bootstrap.EndpointsEntry
-	nil,                             // 3: examples.load_with_runtime.Bootstrap.DiscoveriesEntry
-	(*EndpointConfig_Selector)(nil), // 4: examples.load_with_runtime.EndpointConfig.Selector
-	(*v1.Server)(nil),               // 5: config.transport.v1.Server
-	(*v11.Logger)(nil),              // 6: config.logger.v1.Logger
-	(*v1.Client)(nil),               // 7: config.transport.v1.Client
-	(*v12.Discovery)(nil),           // 8: config.discovery.v1.Discovery
+	(*Bootstrap)(nil),               // 0: runtime.examples.load_with_runtime.Bootstrap
+	(*EndpointConfig)(nil),          // 1: runtime.examples.load_with_runtime.EndpointConfig
+	nil,                             // 2: runtime.examples.load_with_runtime.Bootstrap.EndpointsEntry
+	nil,                             // 3: runtime.examples.load_with_runtime.Bootstrap.DiscoveriesEntry
+	(*EndpointConfig_Selector)(nil), // 4: runtime.examples.load_with_runtime.EndpointConfig.Selector
+	(*v1.Server)(nil),               // 5: runtime.api.config.transport.v1.Server
+	(*v11.Logger)(nil),              // 6: runtime.api.config.logger.v1.Logger
+	(*v1.Client)(nil),               // 7: runtime.api.config.transport.v1.Client
+	(*v12.Discovery)(nil),           // 8: runtime.api.config.discovery.v1.Discovery
 }
 var file_examples_protos_load_with_runtime_bootstrap_proto_depIdxs = []int32{
-	5, // 0: examples.load_with_runtime.Bootstrap.servers:type_name -> config.transport.v1.Server
-	2, // 1: examples.load_with_runtime.Bootstrap.endpoints:type_name -> examples.load_with_runtime.Bootstrap.EndpointsEntry
-	6, // 2: examples.load_with_runtime.Bootstrap.logger:type_name -> config.logger.v1.Logger
-	3, // 3: examples.load_with_runtime.Bootstrap.discoveries:type_name -> examples.load_with_runtime.Bootstrap.DiscoveriesEntry
-	4, // 4: examples.load_with_runtime.EndpointConfig.selector:type_name -> examples.load_with_runtime.EndpointConfig.Selector
-	7, // 5: examples.load_with_runtime.EndpointConfig.client:type_name -> config.transport.v1.Client
-	1, // 6: examples.load_with_runtime.Bootstrap.EndpointsEntry.value:type_name -> examples.load_with_runtime.EndpointConfig
-	8, // 7: examples.load_with_runtime.Bootstrap.DiscoveriesEntry.value:type_name -> config.discovery.v1.Discovery
+	5, // 0: runtime.examples.load_with_runtime.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Server
+	2, // 1: runtime.examples.load_with_runtime.Bootstrap.endpoints:type_name -> runtime.examples.load_with_runtime.Bootstrap.EndpointsEntry
+	6, // 2: runtime.examples.load_with_runtime.Bootstrap.logger:type_name -> runtime.api.config.logger.v1.Logger
+	3, // 3: runtime.examples.load_with_runtime.Bootstrap.discoveries:type_name -> runtime.examples.load_with_runtime.Bootstrap.DiscoveriesEntry
+	4, // 4: runtime.examples.load_with_runtime.EndpointConfig.selector:type_name -> runtime.examples.load_with_runtime.EndpointConfig.Selector
+	7, // 5: runtime.examples.load_with_runtime.EndpointConfig.client:type_name -> runtime.api.config.transport.v1.Client
+	1, // 6: runtime.examples.load_with_runtime.Bootstrap.EndpointsEntry.value:type_name -> runtime.examples.load_with_runtime.EndpointConfig
+	8, // 7: runtime.examples.load_with_runtime.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.api.config.discovery.v1.Discovery
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name

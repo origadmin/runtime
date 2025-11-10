@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.middleware.cors.v1;
+package runtime.api.config.middleware.cors.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/cors/v1;corsv1";
 

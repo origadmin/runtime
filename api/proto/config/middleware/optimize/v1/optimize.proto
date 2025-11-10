@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.middleware.optimize.v1;
+package runtime.api.config.middleware.optimize.v1;
 
 import "google/protobuf/duration.proto";
 

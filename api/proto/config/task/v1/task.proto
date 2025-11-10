@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.task.v1;
+package runtime.api.config.task.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/task/v1;taskv1";
 

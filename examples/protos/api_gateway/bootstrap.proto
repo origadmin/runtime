@@ -3,7 +3,7 @@
 syntax = "proto3";
 
 // Package name to prevent naming conflicts
-package examples.api_gateway;
+package runtime.examples.api_gateway;
 
 // Import server and client building block containers provided by the framework
 import "config/transport/v1/transport.proto";
@@ -22,7 +22,7 @@ message Bootstrap {
   // - HTTP RESTful API for external access
   // - gRPC interface
   // - - WebSocket service
-  repeated config.transport.v1.Server servers = 1;
+  repeated runtime.api.config.transport.v1.Server servers = 1;
 
   // Downstream client configuration mapping
   // The key is the logical name of the client, used to reference specific clients in code
@@ -36,5 +36,5 @@ message Bootstrap {
 // It now directly wraps the config.config.v1.Client message.
 message ClientConfig {
   // Transport-level client configuration, now encapsulating all client-side settings.
-  config.transport.v1.Client client = 1;
+  runtime.api.config.transport.v1.Client client = 1;
 }

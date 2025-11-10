@@ -1,15 +1,10 @@
 syntax = "proto3";
 
-package config.broker.rocketmq.v1;
+package runtime.api.config.broker.rocketmq.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/rocketmq/v1;rocketmqv1";
-
-
-
-
-
 
 // RocketMQConfig defines the configuration for a RocketMQ message queue.
 message RocketMQConfig {

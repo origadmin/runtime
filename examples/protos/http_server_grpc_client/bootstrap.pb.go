@@ -162,16 +162,16 @@ var File_examples_protos_http_server_grpc_client_bootstrap_proto protoreflect.Fi
 
 const file_examples_protos_http_server_grpc_client_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"7examples/protos/http_server_grpc_client/bootstrap.proto\x12 examples.http_server_grpc_client\x1a#config/transport/v1/transport.proto\x1a\"config/discovery/v1/endpoint.proto\"\x82\x02\n" +
-	"\tBootstrap\x125\n" +
-	"\aservers\x18\x01 \x03(\v2\x1b.config.transport.v1.ServerR\aservers\x12R\n" +
-	"\aclients\x18\x02 \x03(\v28.examples.http_server_grpc_client.Bootstrap.ClientsEntryR\aclients\x1aj\n" +
+	"7examples/protos/http_server_grpc_client/bootstrap.proto\x12(runtime.examples.http_server_grpc_client\x1a#config/transport/v1/transport.proto\x1a\"config/discovery/v1/endpoint.proto\"\x9e\x02\n" +
+	"\tBootstrap\x12A\n" +
+	"\aservers\x18\x01 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aservers\x12Z\n" +
+	"\aclients\x18\x02 \x03(\v2@.runtime.examples.http_server_grpc_client.Bootstrap.ClientsEntryR\aclients\x1ar\n" +
 	"\fClientsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12D\n" +
-	"\x05value\x18\x02 \x01(\v2..examples.http_server_grpc_client.ClientConfigR\x05value:\x028\x01\"\x84\x01\n" +
-	"\fClientConfig\x129\n" +
-	"\bendpoint\x18\x01 \x01(\v2\x1d.config.discovery.v1.EndpointR\bendpoint\x129\n" +
-	"\ttransport\x18\x02 \x01(\v2\x1b.config.transport.v1.ClientR\ttransportB%Z#./http_server_grpc_client/conf;confb\x06proto3"
+	"\x03key\x18\x01 \x01(\tR\x03key\x12L\n" +
+	"\x05value\x18\x02 \x01(\v26.runtime.examples.http_server_grpc_client.ClientConfigR\x05value:\x028\x01\"\x9c\x01\n" +
+	"\fClientConfig\x12E\n" +
+	"\bendpoint\x18\x01 \x01(\v2).runtime.api.config.discovery.v1.EndpointR\bendpoint\x12E\n" +
+	"\ttransport\x18\x02 \x01(\v2'.runtime.api.config.transport.v1.ClientR\ttransportB%Z#./http_server_grpc_client/conf;confb\x06proto3"
 
 var (
 	file_examples_protos_http_server_grpc_client_bootstrap_proto_rawDescOnce sync.Once
@@ -187,19 +187,19 @@ func file_examples_protos_http_server_grpc_client_bootstrap_proto_rawDescGZIP() 
 
 var file_examples_protos_http_server_grpc_client_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_examples_protos_http_server_grpc_client_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),    // 0: examples.http_server_grpc_client.Bootstrap
-	(*ClientConfig)(nil), // 1: examples.http_server_grpc_client.ClientConfig
-	nil,                  // 2: examples.http_server_grpc_client.Bootstrap.ClientsEntry
-	(*v1.Server)(nil),    // 3: config.transport.v1.Server
-	(*v11.Endpoint)(nil), // 4: config.discovery.v1.Endpoint
-	(*v1.Client)(nil),    // 5: config.transport.v1.Client
+	(*Bootstrap)(nil),    // 0: runtime.examples.http_server_grpc_client.Bootstrap
+	(*ClientConfig)(nil), // 1: runtime.examples.http_server_grpc_client.ClientConfig
+	nil,                  // 2: runtime.examples.http_server_grpc_client.Bootstrap.ClientsEntry
+	(*v1.Server)(nil),    // 3: runtime.api.config.transport.v1.Server
+	(*v11.Endpoint)(nil), // 4: runtime.api.config.discovery.v1.Endpoint
+	(*v1.Client)(nil),    // 5: runtime.api.config.transport.v1.Client
 }
 var file_examples_protos_http_server_grpc_client_bootstrap_proto_depIdxs = []int32{
-	3, // 0: examples.http_server_grpc_client.Bootstrap.servers:type_name -> config.transport.v1.Server
-	2, // 1: examples.http_server_grpc_client.Bootstrap.clients:type_name -> examples.http_server_grpc_client.Bootstrap.ClientsEntry
-	4, // 2: examples.http_server_grpc_client.ClientConfig.endpoint:type_name -> config.discovery.v1.Endpoint
-	5, // 3: examples.http_server_grpc_client.ClientConfig.transport:type_name -> config.transport.v1.Client
-	1, // 4: examples.http_server_grpc_client.Bootstrap.ClientsEntry.value:type_name -> examples.http_server_grpc_client.ClientConfig
+	3, // 0: runtime.examples.http_server_grpc_client.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Server
+	2, // 1: runtime.examples.http_server_grpc_client.Bootstrap.clients:type_name -> runtime.examples.http_server_grpc_client.Bootstrap.ClientsEntry
+	4, // 2: runtime.examples.http_server_grpc_client.ClientConfig.endpoint:type_name -> runtime.api.config.discovery.v1.Endpoint
+	5, // 3: runtime.examples.http_server_grpc_client.ClientConfig.transport:type_name -> runtime.api.config.transport.v1.Client
+	1, // 4: runtime.examples.http_server_grpc_client.Bootstrap.ClientsEntry.value:type_name -> runtime.examples.http_server_grpc_client.ClientConfig
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name

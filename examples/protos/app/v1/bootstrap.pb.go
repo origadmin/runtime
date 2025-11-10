@@ -82,10 +82,10 @@ var File_examples_protos_app_v1_bootstrap_proto protoreflect.FileDescriptor
 
 const file_examples_protos_app_v1_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"&examples/protos/app/v1/bootstrap.proto\x12\x06app.v1\x1a\x1dconfig/logger/v1/logger.proto\x1a#config/transport/v1/transport.proto\"t\n" +
-	"\tBootstrap\x120\n" +
-	"\x06logger\x18\x01 \x01(\v2\x18.config.logger.v1.LoggerR\x06logger\x125\n" +
-	"\aservers\x18\x02 \x03(\v2\x1b.config.transport.v1.ServerR\aserversB;Z9github.com/origadmin/runtime/examples/configs/app/v1;confb\x06proto3"
+	"&examples/protos/app/v1/bootstrap.proto\x12\x06app.v1\x1a\x1dconfig/logger/v1/logger.proto\x1a#config/transport/v1/transport.proto\"\x8c\x01\n" +
+	"\tBootstrap\x12<\n" +
+	"\x06logger\x18\x01 \x01(\v2$.runtime.api.config.logger.v1.LoggerR\x06logger\x12A\n" +
+	"\aservers\x18\x02 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aserversB;Z9github.com/origadmin/runtime/examples/configs/app/v1;confb\x06proto3"
 
 var (
 	file_examples_protos_app_v1_bootstrap_proto_rawDescOnce sync.Once
@@ -102,12 +102,12 @@ func file_examples_protos_app_v1_bootstrap_proto_rawDescGZIP() []byte {
 var file_examples_protos_app_v1_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_examples_protos_app_v1_bootstrap_proto_goTypes = []any{
 	(*Bootstrap)(nil),  // 0: app.v1.Bootstrap
-	(*v1.Logger)(nil),  // 1: config.logger.v1.Logger
-	(*v11.Server)(nil), // 2: config.transport.v1.Server
+	(*v1.Logger)(nil),  // 1: runtime.api.config.logger.v1.Logger
+	(*v11.Server)(nil), // 2: runtime.api.config.transport.v1.Server
 }
 var file_examples_protos_app_v1_bootstrap_proto_depIdxs = []int32{
-	1, // 0: app.v1.Bootstrap.logger:type_name -> config.logger.v1.Logger
-	2, // 1: app.v1.Bootstrap.servers:type_name -> config.transport.v1.Server
+	1, // 0: app.v1.Bootstrap.logger:type_name -> runtime.api.config.logger.v1.Logger
+	2, // 1: app.v1.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Server
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

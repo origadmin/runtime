@@ -3,7 +3,7 @@
 syntax = "proto3";
 
 // Package name to prevent naming conflicts
-package examples.simple_grpc_server;
+package runtime.examples.simple_grpc_server;
 
 // Import the server building block container provided by the framework
 import "config/transport/v1/transport.proto"; // Updated import path
@@ -18,9 +18,9 @@ message Bootstrap {
   // Using repeated allows configuring multiple server instances, for example:
   // - A gRPC server for internal service communication
   // - An HTTP server for providing RESTful APIs
-  repeated config.transport.v1.Server servers = 1;
+  repeated runtime.api.config.transport.v1.Server servers = 1;
 
   // Note: This service does not call other services, so the clients field is not needed
   // If you need to call other services, uncomment the following line and implement ClientConfig
-  // map<string, ClientConfig> clients = 2; 
+  // map<string, ClientConfig> clients = 2;
 }

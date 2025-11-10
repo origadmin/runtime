@@ -1,15 +1,11 @@
 syntax = "proto3";
 
-package config.config.v1;
+package runtime.api.config.config.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
 import "config/security/transport/v1/tls.proto";
+import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/config/v1;configv1";
-
-
-
-
 
 message Gateway {
   string name = 1 [

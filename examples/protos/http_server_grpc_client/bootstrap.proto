@@ -3,7 +3,7 @@
 syntax = "proto3";
 
 // Package name to prevent naming conflicts
-package examples.http_server_grpc_client;
+package runtime.examples.http_server_grpc_client;
 
 // Import server and client building block containers provided by the framework
 import "config/transport/v1/transport.proto";
@@ -22,7 +22,7 @@ message Bootstrap {
   // - Port number
   // - Middleware configuration
   // - Timeout settings
-  repeated config.transport.v1.Server servers = 1;
+  repeated runtime.api.config.transport.v1.Server servers = 1;
 
   // Downstream gRPC client configuration mapping
   // The key is the logical name of the client, used to reference specific clients in code
@@ -40,7 +40,7 @@ message ClientConfig {
   // - Service discovery method (direct, DNS, Consul, etc.)
   // - Load balancing strategy
   // - Circuit breaking and fallback configuration
-  config.discovery.v1.Endpoint endpoint = 1;
+  runtime.api.config.discovery.v1.Endpoint endpoint = 1;
 
   // Transport-level client configuration
   // Mainly configures how to communicate with gRPC service instances, for example:
@@ -48,5 +48,5 @@ message ClientConfig {
   // - Timeout settings
   // - Retry policy
   // - TLS configuration
-  config.transport.v1.Client transport = 2;
+  runtime.api.config.transport.v1.Client transport = 2;
 }

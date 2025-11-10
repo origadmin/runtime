@@ -1,15 +1,10 @@
 syntax = "proto3";
 
-package config.broker.nsq.v1;
+package runtime.api.config.broker.nsq.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/nsq/v1;nsqv1";
-
-
-
-
-
 
 // NsqConfig defines the configuration for an NSQ message queue.
 message NsqConfig {

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.security.transport.v1;
+package runtime.api.config.security.transport.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";

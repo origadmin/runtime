@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.middleware.circuitbreaker.v1;
+package runtime.api.config.middleware.circuitbreaker.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 

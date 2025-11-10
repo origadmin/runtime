@@ -81,9 +81,9 @@ var File_examples_protos_simple_grpc_server_bootstrap_proto protoreflect.FileDes
 
 const file_examples_protos_simple_grpc_server_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"2examples/protos/simple_grpc_server/bootstrap.proto\x12\x1bexamples.simple_grpc_server\x1a#config/transport/v1/transport.proto\"B\n" +
-	"\tBootstrap\x125\n" +
-	"\aservers\x18\x01 \x03(\v2\x1b.config.transport.v1.ServerR\aserversB Z\x1e./simple_grpc_server/conf;confb\x06proto3"
+	"2examples/protos/simple_grpc_server/bootstrap.proto\x12#runtime.examples.simple_grpc_server\x1a#config/transport/v1/transport.proto\"N\n" +
+	"\tBootstrap\x12A\n" +
+	"\aservers\x18\x01 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aserversB Z\x1e./simple_grpc_server/conf;confb\x06proto3"
 
 var (
 	file_examples_protos_simple_grpc_server_bootstrap_proto_rawDescOnce sync.Once
@@ -99,11 +99,11 @@ func file_examples_protos_simple_grpc_server_bootstrap_proto_rawDescGZIP() []byt
 
 var file_examples_protos_simple_grpc_server_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_examples_protos_simple_grpc_server_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil), // 0: examples.simple_grpc_server.Bootstrap
-	(*v1.Server)(nil), // 1: config.transport.v1.Server
+	(*Bootstrap)(nil), // 0: runtime.examples.simple_grpc_server.Bootstrap
+	(*v1.Server)(nil), // 1: runtime.api.config.transport.v1.Server
 }
 var file_examples_protos_simple_grpc_server_bootstrap_proto_depIdxs = []int32{
-	1, // 0: examples.simple_grpc_server.Bootstrap.servers:type_name -> config.transport.v1.Server
+	1, // 0: runtime.examples.simple_grpc_server.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Server
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

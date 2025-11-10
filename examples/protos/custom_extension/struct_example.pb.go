@@ -90,7 +90,7 @@ var File_examples_protos_custom_extension_struct_example_proto protoreflect.File
 
 const file_examples_protos_custom_extension_struct_example_proto_rawDesc = "" +
 	"\n" +
-	"5examples/protos/custom_extension/struct_example.proto\x12\x19examples.custom_extension\x1a\x1cgoogle/protobuf/struct.proto\"\x84\x01\n" +
+	"5examples/protos/custom_extension/struct_example.proto\x12!runtime.examples.custom_extension\x1a\x1cgoogle/protobuf/struct.proto\"\x84\x01\n" +
 	"\x10MiddlewareStruct\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12:\n" +
@@ -112,11 +112,11 @@ func file_examples_protos_custom_extension_struct_example_proto_rawDescGZIP() []
 
 var file_examples_protos_custom_extension_struct_example_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_examples_protos_custom_extension_struct_example_proto_goTypes = []any{
-	(*MiddlewareStruct)(nil), // 0: examples.custom_extension.MiddlewareStruct
+	(*MiddlewareStruct)(nil), // 0: runtime.examples.custom_extension.MiddlewareStruct
 	(*structpb.Struct)(nil),  // 1: google.protobuf.Struct
 }
 var file_examples_protos_custom_extension_struct_example_proto_depIdxs = []int32{
-	1, // 0: examples.custom_extension.MiddlewareStruct.customize:type_name -> google.protobuf.Struct
+	1, // 0: runtime.examples.custom_extension.MiddlewareStruct.customize:type_name -> google.protobuf.Struct
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

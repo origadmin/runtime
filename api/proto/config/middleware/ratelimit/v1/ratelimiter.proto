@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.middleware.ratelimit.v1;
+package runtime.api.config.middleware.ratelimit.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";

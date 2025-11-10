@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.common.v1;
+package runtime.api.config.common.v1;
 
 import "errors/errors.proto";
 import "gnostic/openapi/v3/annotations.proto";
@@ -26,9 +26,15 @@ enum ErrorCategory {
 // It can be used for logging and debugging purposes.
 message ErrorMetadata {
   // The category of the error.
-  ErrorCategory category = 1 [json_name = "category", (gnostic.openapi.v3.property) = {description: "The category of the error."}];
+  ErrorCategory category = 1 [
+    json_name = "category",
+    (gnostic.openapi.v3.property) = {description: "The category of the error."}
+  ];
   // Additional key-value pairs providing context about the error.
-  map<string, string> metadata = 2 [json_name = "metadata", (gnostic.openapi.v3.property) = {description: "Additional key-value pairs providing context about the error."}];
+  map<string, string> metadata = 2 [
+    json_name = "metadata",
+    (gnostic.openapi.v3.property) = {description: "Additional key-value pairs providing context about the error."}
+  ];
 }
 
 // ErrorReason defines the application's common error codes.

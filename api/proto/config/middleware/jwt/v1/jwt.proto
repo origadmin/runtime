@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.middleware.jwt.v1;
+package runtime.api.config.middleware.jwt.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "config/security/authn/v1/jwt.proto";

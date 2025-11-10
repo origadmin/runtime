@@ -23,40 +23,40 @@ option go_package = "github.com/origadmin/runtime/examples/configs/bootstrap_sam
 // The new structure aggregates all configuration items into logical groups, making it clearer and easier to understand.
 message Bootstrap {
   // App contains application-level metadata (e.g., name, version, environment).
-  config.app.v1.App app = 1;
+  runtime.api.config.app.v1.App app = 1;
 
   // Servers holds configurations for all network servers (HTTP, gRPC, WebSocket).
   // This now uses the Servers collection from the transport module.
-  config.transport.v1.Servers servers = 2;
+  runtime.api.config.transport.v1.Servers servers = 2;
 
   // Data holds configurations for all data sources (databases, caches).
-  config.data.v1.Data data = 3;
+  runtime.api.config.data.v1.Data data = 3;
 
   // Logger configures the application's logging behavior.
-  config.logger.v1.Logger logger = 4;
+  runtime.api.config.logger.v1.Logger logger = 4;
 
   // Trace configures the distributed tracing system.
-  config.trace.v1.Trace trace = 5;
+  runtime.api.config.trace.v1.Trace trace = 5;
 
   // Discovery configures the service discovery client.
-  config.discovery.v1.Discoveries discoveries = 6;
+  runtime.api.config.discovery.v1.Discoveries discoveries = 6;
 
   // Broker configures the message brokers.
-  config.broker.v1.Brokers brokers = 7;
+  runtime.api.config.broker.v1.Brokers brokers = 7;
 
   // Middlewares defines the middleware chain.
-  config.middleware.v1.Middlewares middlewares = 8;
+  runtime.api.config.middleware.v1.Middlewares middlewares = 8;
 
   // Security defines authentication and authorization policies.
-  config.security.v1.Security security = 9;
+  runtime.api.config.security.v1.Security security = 9;
 
   // Clients holds configurations for all network clients (HTTP, gRPC).
   // This now uses the Clients collection from the transport module.
-  config.transport.v1.Clients clients = 10;
+  runtime.api.config.transport.v1.Clients clients = 10;
 }
 
 // The nested Servers message is no longer needed as we use repeated config.transport.v1.Server directly.
 // message Servers {
-//   config.server.v1.Server http = 1;
-//   config.server.v1.Server grpc = 2;
+//   runtime.api.config.server.v1.Server http = 1;
+//   runtime.api.config.server.v1.Server grpc = 2;
 // }

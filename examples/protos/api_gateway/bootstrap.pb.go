@@ -143,15 +143,15 @@ var File_examples_protos_api_gateway_bootstrap_proto protoreflect.FileDescriptor
 
 const file_examples_protos_api_gateway_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"+examples/protos/api_gateway/bootstrap.proto\x12\x14examples.api_gateway\x1a#config/transport/v1/transport.proto\"\xea\x01\n" +
-	"\tBootstrap\x125\n" +
-	"\aservers\x18\x01 \x03(\v2\x1b.config.transport.v1.ServerR\aservers\x12F\n" +
-	"\aclients\x18\x02 \x03(\v2,.examples.api_gateway.Bootstrap.ClientsEntryR\aclients\x1a^\n" +
+	"+examples/protos/api_gateway/bootstrap.proto\x12\x1cruntime.examples.api_gateway\x1a#config/transport/v1/transport.proto\"\x86\x02\n" +
+	"\tBootstrap\x12A\n" +
+	"\aservers\x18\x01 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aservers\x12N\n" +
+	"\aclients\x18\x02 \x03(\v24.runtime.examples.api_gateway.Bootstrap.ClientsEntryR\aclients\x1af\n" +
 	"\fClientsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x128\n" +
-	"\x05value\x18\x02 \x01(\v2\".examples.api_gateway.ClientConfigR\x05value:\x028\x01\"C\n" +
-	"\fClientConfig\x123\n" +
-	"\x06client\x18\x01 \x01(\v2\x1b.config.transport.v1.ClientR\x06clientB\x19Z\x17./api_gateway/conf;confb\x06proto3"
+	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
+	"\x05value\x18\x02 \x01(\v2*.runtime.examples.api_gateway.ClientConfigR\x05value:\x028\x01\"O\n" +
+	"\fClientConfig\x12?\n" +
+	"\x06client\x18\x01 \x01(\v2'.runtime.api.config.transport.v1.ClientR\x06clientB\x19Z\x17./api_gateway/conf;confb\x06proto3"
 
 var (
 	file_examples_protos_api_gateway_bootstrap_proto_rawDescOnce sync.Once
@@ -167,17 +167,17 @@ func file_examples_protos_api_gateway_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_examples_protos_api_gateway_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_examples_protos_api_gateway_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),    // 0: examples.api_gateway.Bootstrap
-	(*ClientConfig)(nil), // 1: examples.api_gateway.ClientConfig
-	nil,                  // 2: examples.api_gateway.Bootstrap.ClientsEntry
-	(*v1.Server)(nil),    // 3: config.transport.v1.Server
-	(*v1.Client)(nil),    // 4: config.transport.v1.Client
+	(*Bootstrap)(nil),    // 0: runtime.examples.api_gateway.Bootstrap
+	(*ClientConfig)(nil), // 1: runtime.examples.api_gateway.ClientConfig
+	nil,                  // 2: runtime.examples.api_gateway.Bootstrap.ClientsEntry
+	(*v1.Server)(nil),    // 3: runtime.api.config.transport.v1.Server
+	(*v1.Client)(nil),    // 4: runtime.api.config.transport.v1.Client
 }
 var file_examples_protos_api_gateway_bootstrap_proto_depIdxs = []int32{
-	3, // 0: examples.api_gateway.Bootstrap.servers:type_name -> config.transport.v1.Server
-	2, // 1: examples.api_gateway.Bootstrap.clients:type_name -> examples.api_gateway.Bootstrap.ClientsEntry
-	4, // 2: examples.api_gateway.ClientConfig.client:type_name -> config.transport.v1.Client
-	1, // 3: examples.api_gateway.Bootstrap.ClientsEntry.value:type_name -> examples.api_gateway.ClientConfig
+	3, // 0: runtime.examples.api_gateway.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Server
+	2, // 1: runtime.examples.api_gateway.Bootstrap.clients:type_name -> runtime.examples.api_gateway.Bootstrap.ClientsEntry
+	4, // 2: runtime.examples.api_gateway.ClientConfig.client:type_name -> runtime.api.config.transport.v1.Client
+	1, // 3: runtime.examples.api_gateway.Bootstrap.ClientsEntry.value:type_name -> runtime.examples.api_gateway.ClientConfig
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name

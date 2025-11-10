@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.source.v1;
+package runtime.api.config.source.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1";
 

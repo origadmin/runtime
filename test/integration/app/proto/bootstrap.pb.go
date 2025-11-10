@@ -111,16 +111,16 @@ var File_test_integration_app_proto_bootstrap_proto protoreflect.FileDescriptor
 
 const file_test_integration_app_proto_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/app/proto/bootstrap.proto\x12\x10test.app.configs\x1a#config/discovery/v1/discovery.proto\x1a%config/middleware/v1/middleware.proto\x1a#config/transport/v1/transport.proto\"\xc0\x03\n" +
-	"\tBootstrap\x12N\n" +
-	"\vdiscoveries\x18\x01 \x03(\v2,.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
-	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x125\n" +
-	"\aservers\x18\x03 \x03(\v2\x1b.config.transport.v1.ServerR\aservers\x12;\n" +
-	"\aclients\x18\x04 \x01(\v2\x1c.config.transport.v1.ClientsH\x00R\aclients\x88\x01\x01\x12C\n" +
-	"\vmiddlewares\x18\x05 \x01(\v2!.config.middleware.v1.MiddlewaresR\vmiddlewares\x1a^\n" +
+	"*test/integration/app/proto/bootstrap.proto\x12\x18runtime.test.app.configs\x1a#config/discovery/v1/discovery.proto\x1a%config/middleware/v1/middleware.proto\x1a#config/transport/v1/transport.proto\"\xf8\x03\n" +
+	"\tBootstrap\x12V\n" +
+	"\vdiscoveries\x18\x01 \x03(\v24.runtime.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
+	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12A\n" +
+	"\aservers\x18\x03 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aservers\x12G\n" +
+	"\aclients\x18\x04 \x01(\v2(.runtime.api.config.transport.v1.ClientsH\x00R\aclients\x88\x01\x01\x12O\n" +
+	"\vmiddlewares\x18\x05 \x01(\v2-.runtime.api.config.middleware.v1.MiddlewaresR\vmiddlewares\x1aj\n" +
 	"\x10DiscoveriesEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x124\n" +
-	"\x05value\x18\x02 \x01(\v2\x1e.config.discovery.v1.DiscoveryR\x05value:\x028\x01B\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
+	"\x05value\x18\x02 \x01(\v2*.runtime.api.config.discovery.v1.DiscoveryR\x05value:\x028\x01B\n" +
 	"\n" +
 	"\b_clientsBCZAgithub.com/origadmin/framework/test/integration/app/proto;configsb\x06proto3"
 
@@ -138,19 +138,19 @@ func file_test_integration_app_proto_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_test_integration_app_proto_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_test_integration_app_proto_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),       // 0: test.app.configs.Bootstrap
-	nil,                     // 1: test.app.configs.Bootstrap.DiscoveriesEntry
-	(*v11.Server)(nil),      // 2: config.transport.v1.Server
-	(*v11.Clients)(nil),     // 3: config.transport.v1.Clients
-	(*v12.Middlewares)(nil), // 4: config.middleware.v1.Middlewares
-	(*v1.Discovery)(nil),    // 5: config.discovery.v1.Discovery
+	(*Bootstrap)(nil),       // 0: runtime.test.app.configs.Bootstrap
+	nil,                     // 1: runtime.test.app.configs.Bootstrap.DiscoveriesEntry
+	(*v11.Server)(nil),      // 2: runtime.api.config.transport.v1.Server
+	(*v11.Clients)(nil),     // 3: runtime.api.config.transport.v1.Clients
+	(*v12.Middlewares)(nil), // 4: runtime.api.config.middleware.v1.Middlewares
+	(*v1.Discovery)(nil),    // 5: runtime.api.config.discovery.v1.Discovery
 }
 var file_test_integration_app_proto_bootstrap_proto_depIdxs = []int32{
-	1, // 0: test.app.configs.Bootstrap.discoveries:type_name -> test.app.configs.Bootstrap.DiscoveriesEntry
-	2, // 1: test.app.configs.Bootstrap.servers:type_name -> config.transport.v1.Server
-	3, // 2: test.app.configs.Bootstrap.clients:type_name -> config.transport.v1.Clients
-	4, // 3: test.app.configs.Bootstrap.middlewares:type_name -> config.middleware.v1.Middlewares
-	5, // 4: test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> config.discovery.v1.Discovery
+	1, // 0: runtime.test.app.configs.Bootstrap.discoveries:type_name -> runtime.test.app.configs.Bootstrap.DiscoveriesEntry
+	2, // 1: runtime.test.app.configs.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Server
+	3, // 2: runtime.test.app.configs.Bootstrap.clients:type_name -> runtime.api.config.transport.v1.Clients
+	4, // 3: runtime.test.app.configs.Bootstrap.middlewares:type_name -> runtime.api.config.middleware.v1.Middlewares
+	5, // 4: runtime.test.app.configs.Bootstrap.DiscoveriesEntry.value:type_name -> runtime.api.config.discovery.v1.Discovery
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
