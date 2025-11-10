@@ -19,12 +19,11 @@ func NewServer(httpConfig *httpv1.Server, serverOpts *ServerOptions) (*transhttp
 
 	// Create the HTTP server instance.
 	srv := transhttp.NewServer(kratosOpts...)
-
 	return srv, nil
 }
 
-// registerPprof registers the pprof handlers with the HTTP server.
-func registerPprof(srv *transhttp.Server) {
+// RegisterPprof registers the pprof handlers with the HTTP server.
+func RegisterPprof(srv *transhttp.Server) {
 	srv.HandleFunc("/debug/pprof", pprof.Index)
 	srv.HandleFunc("/debug/cmdline", pprof.Cmdline)
 	srv.HandleFunc("/debug/profile", pprof.Profile)

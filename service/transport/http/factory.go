@@ -37,7 +37,7 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 
 	// Register pprof handlers if enabled
 	if httpConfig.GetEnablePprof() {
-		registerPprof(srv)
+		RegisterPprof(srv)
 	}
 
 	ctx := context.Background()
