@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
-// Package registry implements a pluggable mechanism for service registration and discovery.
 package registry
 
 import (
@@ -10,20 +5,6 @@ import (
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
 )
-
-// --- Error Definitions ---
-// Following the project's error handling specification.
-// const (
-// 	ReasonRegistryNotFound = "REGISTRY_NOT_FOUND"
-// 	ReasonInvalidConfig    = "INVALID_CONFIG"
-// 	ReasonCreationFailure  = "CREATION_FAILURE"
-// )
-
-// Registry defines the interface for service registration and discovery.
-type Registry interface {
-	KRegistrar
-	KDiscovery
-}
 
 type Builder interface {
 	factory.Registry[Factory]

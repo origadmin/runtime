@@ -41,8 +41,8 @@ func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions)
 
 	// Get the container instance. It will be nil if not provided in options.
 	var c interfaces.Container
-	if serverOpts.ServiceOptions != nil {
-		c = serverOpts.ServiceOptions.Container
+	if serverOpts.Container != nil {
+		c = serverOpts.Container
 	}
 
 	// Check if middlewares are configured.
@@ -93,8 +93,8 @@ func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions)
 
 	// Apply any external Kratos gRPC server options passed via functional options.
 	// These are applied last, allowing them to override previous options if needed.
-	if len(serverOpts.GrpcServerOptions) > 0 {
-		kratosOpts = append(kratosOpts, serverOpts.GrpcServerOptions...)
+	if len(serverOpts.ServerOptions) > 0 {
+		kratosOpts = append(kratosOpts, serverOpts.ServerOptions...)
 	}
 
 	return kratosOpts, nil
@@ -107,8 +107,8 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *grpcv1.Client, clien
 
 	// Get the container instance. It will be nil if not provided in options.
 	var c interfaces.Container
-	if clientOpts.ServiceOptions != nil {
-		c = clientOpts.ServiceOptions.Container
+	if clientOpts.Container != nil {
+		c = clientOpts.Container
 	}
 
 	// Check if middlewares are configured.
@@ -216,8 +216,8 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *grpcv1.Client, clien
 
 	// Apply any external native gRPC dial options passed via functional options.
 	// These are applied last, allowing them to override previous options if needed.
-	if len(clientOpts.GrpcDialOptions) > 0 {
-		kratosOpts = append(kratosOpts, transgrpc.WithOptions(clientOpts.GrpcDialOptions...))
+	if len(clientOpts.DialOptions) > 0 {
+		kratosOpts = append(kratosOpts, transgrpc.WithOptions(clientOpts.DialOptions...))
 	}
 
 	return kratosOpts, nil

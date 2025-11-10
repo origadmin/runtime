@@ -6,8 +6,8 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
+	internalfactory "github.com/origadmin/runtime/internal/factory"
 )
 
 // Protocol is the name of the gRPC, HTTP, or other protocol.
@@ -17,7 +17,7 @@ const (
 )
 
 // defaultRegistry is the default, package-level instance of the protocol registry.
-var defaultRegistry = factory.New[ProtocolFactory]()
+var defaultRegistry = internalfactory.New[ProtocolFactory]()
 
 // RegisterProtocol registers a new protocol factory with the default registry.
 // This function is the public API for registration and is safe for concurrent use.

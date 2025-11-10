@@ -14,6 +14,8 @@ import (
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
+
+	kratosmiddleware "github.com/go-kratos/kratos/v2/middleware"
 )
 
 // defaultCorsOptions returns default CORS options when none are provided
@@ -107,23 +109,18 @@ func NewKratosCors(cfg *corsv1.Cors) transhttp.FilterFunc {
 	return handlers.CORS(opts...)
 }
 
-// corsFactory implements middleware.Factory interface for CORS middleware
+// Factory implements middleware.Factory interface for CORS middleware
 // This is a middleware pattern implementation that can be used with the framework's middleware registry
 // Note: CORS is primarily for HTTP servers, so this implementation is designed for HTTP transport
 // but follows the standard middleware interface for consistency
 
-type corsFactory struct{}
-
-// NewCorsFactory creates a new CORS middleware factory
-func NewCorsFactory() middleware.Factory {
-	return &corsFactory{}
-}
+type Factory struct{}
 
 // NewMiddlewareClient implements middleware.Factory interface
 // Since CORS is primarily for servers, this returns nil for clients
-func (f *corsFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...options.Option) (middleware.KMiddleware, bool) {
+func (f *Factory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...options.Option) (kratosmiddleware.Middleware, bool) {
 	// CORS is not typically used for client-side middleware
-	return func(handler middleware.KHandler) middleware.KHandler {
+	return func(handler kratosmiddleware.Handler) kratosmiddleware.Handler {
 		// This is a no-op middleware for the standard middleware chain
 		// The actual CORS handling is done in the HTTP transport adapter
 		return handler
@@ -132,7 +129,7 @@ func (f *corsFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...
 
 // NewMiddlewareServer implements middleware.Factory interface
 // This creates a server-side CORS middleware handler
-func (f *corsFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...options.Option) (middleware.KMiddleware, bool) {
+func (f *Factory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...options.Option) (kratosmiddleware.Middleware, bool) {
 	// Resolve common options
 	mwOpts := middleware.FromOptions(opts...)
 	logger := log.NewHelper(mwOpts.Logger)
@@ -153,7 +150,7 @@ func (f *corsFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...
 	// For HTTP servers, we use the standard middleware chain
 	// The actual CORS handling is done in the HTTP transport layer
 	// This middleware is a placeholder that follows the framework's pattern
-	return func(handler middleware.KHandler) middleware.KHandler {
+	return func(handler kratosmiddleware.Handler) kratosmiddleware.Handler {
 		// This is a no-op middleware for the standard middleware chain
 		// The actual CORS handling is done in the HTTP transport adapter
 		return handler

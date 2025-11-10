@@ -691,6 +691,39 @@ func (m *Middleware) validate(all bool) error {
 
 	}
 
+	if m.Security != nil {
+
+		if all {
+			switch v := interface{}(m.GetSecurity()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, MiddlewareValidationError{
+						field:  "Security",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, MiddlewareValidationError{
+						field:  "Security",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetSecurity()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return MiddlewareValidationError{
+					field:  "Security",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if m.Customize != nil {
 
 		if all {

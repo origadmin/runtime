@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package security_declarative provides declarative security interfaces for authentication and authorization.
+// Package declarative provides declarative security interfaces for authentication and authorization.
 package declarative
 
 // SecurityPolicy combines an Authenticator and an Authorizer.

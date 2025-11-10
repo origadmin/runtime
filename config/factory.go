@@ -10,6 +10,7 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
+	internalfactory "github.com/origadmin/runtime/internal/factory"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -85,11 +86,11 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 	})
 
 	for _, src := range sourceConfigs {
-		buildFactory, ok := f.Get(src.Type)
+		f, ok := f.Get(src.Type)
 		if !ok {
 			return nil, fmt.Errorf("unknown type: %s", src.Type)
 		}
-		source, err := buildFactory.NewSource(src, opts...)
+		source, err := f.NewSource(src, opts...)
 		if err != nil {
 			return nil, err
 		}
@@ -122,6 +123,6 @@ func (f *sourceFactory) SyncConfig(cfg *sourcev1.SourceConfig, v any, opts ...op
 // NewBuilder creates a new config factory.
 func NewBuilder() Builder {
 	return &sourceFactory{
-		Registry: factory.New[SourceFactory](),
+		Registry: internalfactory.New[SourceFactory](),
 	}
 }

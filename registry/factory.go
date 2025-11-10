@@ -9,6 +9,7 @@ import (
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/factory"
 	"github.com/origadmin/runtime/interfaces/options"
+	internalfactory "github.com/origadmin/runtime/internal/factory"
 )
 
 const (
@@ -60,7 +61,7 @@ func (b *buildImpl) NewDiscovery(cfg *discoveryv1.Discovery, opts ...options.Opt
 
 // defaultBuilder is a private variable to prevent accidental modification from other packages.
 var defaultBuilder = &buildImpl{
-	Registry: factory.New[Factory](),
+	Registry: internalfactory.New[Factory](),
 }
 
 // DefaultBuilder returns the shared instance of the registry builder.

@@ -15,17 +15,17 @@ type Name string
 
 // Middleware names.
 const (
-	Jwt            Name = "jwt"
-	CircuitBreaker Name = "circuit_breaker"
-	Logging        Name = "logging"
-	Metadata       Name = "metadata"
-	RateLimiter    Name = "rate_limiter"
-	Tracing        Name = "tracing"
-	Validator      Name = "validator"
-	Optimize       Name = "optimize"
-	Recovery       Name = "recovery"
-	Selector       Name = "selector"
-	Security       Name = "security"
+	Jwt                 Name = "jwt"
+	CircuitBreaker      Name = "circuit_breaker"
+	Logging             Name = "logging"
+	Metadata            Name = "metadata"
+	RateLimiter         Name = "rate_limiter"
+	Tracing             Name = "tracing"
+	Validator           Name = "validator"
+	Optimize            Name = "optimize"
+	Recovery            Name = "recovery"
+	Selector            Name = "selector"
+	DeclarativeSecurity Name = "declarative_security"
 )
 
 // Carrier is a struct that holds the middlewares for client and server.

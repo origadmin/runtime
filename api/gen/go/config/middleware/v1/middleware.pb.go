@@ -176,6 +176,7 @@ type Middleware struct {
 	Logging        *Logging            `protobuf:"bytes,11,opt,name=logging,proto3,oneof" json:"logging,omitempty"`
 	Recovery       *Recovery           `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
 	Metadata       *Metadata           `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
+	Security       *Security           `protobuf:"bytes,14,opt,name=security,proto3,oneof" json:"security,omitempty"`
 	Customize      *structpb.Struct    `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -302,6 +303,13 @@ func (x *Middleware) GetMetadata() *Metadata {
 	return nil
 }
 
+func (x *Middleware) GetSecurity() *Security {
+	if x != nil {
+		return x.Security
+	}
+	return nil
+}
+
 func (x *Middleware) GetCustomize() *structpb.Struct {
 	if x != nil {
 		return x.Customize
@@ -359,7 +367,7 @@ var File_config_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"%config/middleware/v1/middleware.proto\x12\x14config.middleware.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a8config/middleware/circuitbreaker/v1/circuitbreaker.proto\x1a$config/middleware/cors/v1/cors.proto\x1a\"config/middleware/jwt/v1/jwt.proto\x1a*config/middleware/metrics/v1/metrics.proto\x1a0config/middleware/ratelimit/v1/ratelimiter.proto\x1a,config/middleware/selector/v1/selector.proto\x1a.config/middleware/validator/v1/validator.proto\x1a\x17validate/validate.proto\"\xeb\x01\n" +
+	"%config/middleware/v1/middleware.proto\x12\x14config.middleware.v1\x1a8config/middleware/circuitbreaker/v1/circuitbreaker.proto\x1a$config/middleware/cors/v1/cors.proto\x1a\"config/middleware/jwt/v1/jwt.proto\x1a*config/middleware/metrics/v1/metrics.proto\x1a0config/middleware/ratelimit/v1/ratelimiter.proto\x1a,config/middleware/selector/v1/selector.proto\x1a#config/middleware/v1/security.proto\x1a.config/middleware/validator/v1/validator.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xeb\x01\n" +
 	"\bMetadata\x12D\n" +
 	"\bprefixes\x18\x01 \x03(\tB(\xbaG%\x92\x02\"List of prefixes for the metadata.R\bprefixes\x12`\n" +
 	"\x04data\x18\x02 \x03(\v2(.config.middleware.v1.Metadata.DataEntryB\"\xbaG\x1f\x92\x02\x1cKey-value pairs of metadata.R\x04data\x1a7\n" +
@@ -368,7 +376,7 @@ const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
 	"\aLogging\"\n" +
 	"\n" +
-	"\bRecovery\"\xe5\f\n" +
+	"\bRecovery\"\xe9\r\n" +
 	"\n" +
 	"Middleware\x12>\n" +
 	"\x04name\x18\x01 \x01(\tB*\xbaG'\x92\x02$The name of the middleware instance.R\x04name\x12\x93\x01\n" +
@@ -384,9 +392,10 @@ const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	" \x01(\v23.config.middleware.circuitbreaker.v1.CircuitBreakerB$\xbaG!\x92\x02\x1eCircuit breaker configuration.H\x06R\x0fcircuit_breaker\x88\x01\x01\x12e\n" +
 	"\alogging\x18\v \x01(\v2\x1d.config.middleware.v1.LoggingB'\xbaG$\x92\x02!Logging middleware configuration.H\aR\alogging\x88\x01\x01\x12i\n" +
 	"\brecovery\x18\f \x01(\v2\x1e.config.middleware.v1.RecoveryB(\xbaG%\x92\x02\"Recovery middleware configuration.H\bR\brecovery\x88\x01\x01\x12q\n" +
-	"\bmetadata\x18\r \x01(\v2\x1e.config.middleware.v1.MetadataB0\xbaG-\x92\x02*Metadata configuration for the middleware.H\tR\bmetadata\x88\x01\x01\x12b\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB&\xbaG#\x92\x02 Custom middleware configuration.H\n" +
-	"R\tcustomize\x88\x01\x01B\x0f\n" +
+	"\bmetadata\x18\r \x01(\v2\x1e.config.middleware.v1.MetadataB0\xbaG-\x92\x02*Metadata configuration for the middleware.H\tR\bmetadata\x88\x01\x01\x12u\n" +
+	"\bsecurity\x18\x0e \x01(\v2\x1e.config.middleware.v1.SecurityB4\xbaG1\x92\x02.Declarative security middleware configuration.H\n" +
+	"R\bsecurity\x88\x01\x01\x12b\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB&\xbaG#\x92\x02 Custom middleware configuration.H\vR\tcustomize\x88\x01\x01B\x0f\n" +
 	"\r_rate_limiterB\n" +
 	"\n" +
 	"\b_metricsB\f\n" +
@@ -399,7 +408,8 @@ const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
 	"\b_loggingB\v\n" +
 	"\t_recoveryB\v\n" +
-	"\t_metadataB\f\n" +
+	"\t_metadataB\v\n" +
+	"\t_securityB\f\n" +
 	"\n" +
 	"_customize\"\x8c\x01\n" +
 	"\vMiddlewares\x12}\n" +
@@ -433,7 +443,8 @@ var file_config_middleware_v1_middleware_proto_goTypes = []any{
 	(*v14.Selector)(nil),       // 10: config.middleware.selector.v1.Selector
 	(*v15.Cors)(nil),           // 11: config.middleware.cors.v1.Cors
 	(*v16.CircuitBreaker)(nil), // 12: config.middleware.circuitbreaker.v1.CircuitBreaker
-	(*structpb.Struct)(nil),    // 13: google.protobuf.Struct
+	(*Security)(nil),           // 13: config.middleware.v1.Security
+	(*structpb.Struct)(nil),    // 14: google.protobuf.Struct
 }
 var file_config_middleware_v1_middleware_proto_depIdxs = []int32{
 	5,  // 0: config.middleware.v1.Metadata.data:type_name -> config.middleware.v1.Metadata.DataEntry
@@ -447,13 +458,14 @@ var file_config_middleware_v1_middleware_proto_depIdxs = []int32{
 	1,  // 8: config.middleware.v1.Middleware.logging:type_name -> config.middleware.v1.Logging
 	2,  // 9: config.middleware.v1.Middleware.recovery:type_name -> config.middleware.v1.Recovery
 	0,  // 10: config.middleware.v1.Middleware.metadata:type_name -> config.middleware.v1.Metadata
-	13, // 11: config.middleware.v1.Middleware.customize:type_name -> google.protobuf.Struct
-	3,  // 12: config.middleware.v1.Middlewares.configs:type_name -> config.middleware.v1.Middleware
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	13, // 11: config.middleware.v1.Middleware.security:type_name -> config.middleware.v1.Security
+	14, // 12: config.middleware.v1.Middleware.customize:type_name -> google.protobuf.Struct
+	3,  // 13: config.middleware.v1.Middlewares.configs:type_name -> config.middleware.v1.Middleware
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_config_middleware_v1_middleware_proto_init() }
@@ -461,6 +473,7 @@ func file_config_middleware_v1_middleware_proto_init() {
 	if File_config_middleware_v1_middleware_proto != nil {
 		return
 	}
+	file_config_middleware_v1_security_proto_init()
 	file_config_middleware_v1_middleware_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

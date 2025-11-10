@@ -29,15 +29,3 @@ type Authenticator interface {
 	// returning a Principal object if successful.
 	Authenticate(ctx context.Context, source CredentialSource) (Principal, error)
 }
-
-// NewContextWithPrincipal returns a new context with the given Principal stored.
-func NewContextWithPrincipal(ctx context.Context, principal Principal) context.Context {
-	return context.WithValue(ctx, principalKey{}, principal)
-}
-
-// PrincipalFromContext retrieves the Principal object from the context.
-// It returns nil if the Principal is not found.
-func PrincipalFromContext(ctx context.Context) Principal {
-	p, _ := ctx.Value(principalKey{}).(Principal)
-	return p
-}

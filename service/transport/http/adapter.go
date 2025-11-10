@@ -41,8 +41,8 @@ func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions)
 
 	// Get the container instance. It will be nil if not provided in options.
 	var c interfaces.Container
-	if serverOpts.ServiceOptions != nil {
-		c = serverOpts.ServiceOptions.Container
+	if serverOpts.Container != nil {
+		c = serverOpts.Container
 	}
 
 	// Add CORS support, merging proto config with code-based options.
@@ -124,8 +124,8 @@ func initHttpClientOptions(ctx context.Context, httpConfig *httpv1.Client,
 
 	// Get the container instance.
 	var c interfaces.Container
-	if clientOpts.ServiceOptions != nil {
-		c = clientOpts.ServiceOptions.Container
+	if clientOpts.Container != nil {
+		c = clientOpts.Container
 	}
 
 	hasMiddlewaresConfigured := len(httpConfig.GetMiddlewares()) > 0
