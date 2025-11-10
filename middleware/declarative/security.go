@@ -12,7 +12,6 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 	kratosmiddleware "github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
-	"github.com/go-kratos/kratos/v2/transport/http"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/options"
