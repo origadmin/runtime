@@ -25,7 +25,9 @@ const (
 	Optimize            Name = "optimize"
 	Recovery            Name = "recovery"
 	Selector            Name = "selector"
+	Security            Name = "security"
 	DeclarativeSecurity Name = "declarative_security"
+	Cors                Name = "cors"
 )
 
 // Carrier is a struct that holds the middlewares for client and server.
