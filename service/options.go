@@ -1,9 +1,9 @@
 package service
 
 import (
+	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/optionutil"
 )
 
 // Options is a container for all service-level options.

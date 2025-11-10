@@ -3,8 +3,8 @@ package config
 import (
 	"github.com/go-kratos/kratos/v2/config"
 
+	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/optionutil"
 )
 
 // Options holds the configuration for the config module.

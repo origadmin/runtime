@@ -6,8 +6,8 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/rs/cors"
 
+	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
 )
 

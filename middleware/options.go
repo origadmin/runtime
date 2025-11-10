@@ -3,9 +3,9 @@ package middleware
 import (
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 
+	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/optionutil"
 )
 
 // Options holds common options that have been resolved once at the top level.

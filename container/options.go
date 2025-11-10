@@ -1,9 +1,9 @@
 package container
 
 import (
+	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/optionutil"
 )
 
 // containerContext holds the application container instance.

@@ -1,5 +1,8 @@
 // Copyright (c) 2024 OrigAdmin. All rights reserved.
 
+// Package customize provides utility functions for working with protobuf Any messages.
+// It includes methods for packing and unpacking protobuf messages into and from Any types,
+// as well as creating new instances of strongly-typed messages from Any values.
 package customize
 
 import (
@@ -17,11 +20,11 @@ import (
 //
 //	anyValue, err := customize.Pack(&myCfg)
 func Pack(msg proto.Message) (*anypb.Any, error) {
-	any, err := anypb.New(msg)
+	anyMsg, err := anypb.New(msg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pack message into Any: %w", err)
 	}
-	return any, nil
+	return anyMsg, nil
 }
 
 // UnpackTo unpacks the configuration from an anypb.Any into the destination

@@ -4,8 +4,8 @@ import (
 	kgprc "github.com/go-kratos/kratos/v2/transport/grpc"
 	grpcx "google.golang.org/grpc"
 
+	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/optionutil"
 	"github.com/origadmin/runtime/service"
 )
 

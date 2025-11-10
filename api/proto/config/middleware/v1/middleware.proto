@@ -2,23 +2,19 @@ syntax = "proto3";
 
 package config.middleware.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
-import "google/protobuf/struct.proto";
 import "config/middleware/circuitbreaker/v1/circuitbreaker.proto";
 import "config/middleware/cors/v1/cors.proto";
 import "config/middleware/jwt/v1/jwt.proto";
 import "config/middleware/metrics/v1/metrics.proto";
 import "config/middleware/ratelimit/v1/ratelimiter.proto";
 import "config/middleware/selector/v1/selector.proto";
+import "config/middleware/v1/security.proto"; // Import the new security config
 import "config/middleware/validator/v1/validator.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/v1;middlewarev1";
-
-
-
- // Changed from OMXV1 to OMWV1 for Middleware V1
-
 
 // Metadata configuration for the middleware.
 message Metadata {
@@ -101,6 +97,10 @@ message Middleware {
   optional Metadata metadata = 13 [
     json_name = "metadata",
     (gnostic.openapi.v3.property) = {description: "Metadata configuration for the middleware."}
+  ];
+  optional Security security = 14 [
+    json_name = "security",
+    (gnostic.openapi.v3.property) = {description: "Declarative security middleware configuration."}
   ];
   optional google.protobuf.Struct customize = 100 [
     json_name = "customize",

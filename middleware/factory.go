@@ -8,6 +8,7 @@ package middleware
 import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/factory"
+	internalfactory "github.com/origadmin/runtime/internal/factory"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -229,6 +230,6 @@ func Register(name Name, factory Factory) {
 // NewBuilder creates a new middleware builder.
 func NewBuilder() Builder {
 	return &middlewareBuilder{
-		Registry: factory.New[Factory](),
+		Registry: internalfactory.New[Factory](),
 	}
 }
