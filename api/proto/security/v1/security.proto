@@ -4,18 +4,20 @@ package runtime.api.security.v1;
 
 import "google/protobuf/descriptor.proto";
 
-option go_package = "github.com/origadmin/runtime/gen/go/security/v1;securityv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/security/v1;securityv1";
 
-// Expand a security field for MethodOptions
+// Extends MethodOptions with a 'security' field.
 extend google.protobuf.MethodOptions {
-  SecurityRule security = 72295729; // Select an extension number that is not occupied
+  // The extension number has been changed to 57005, which is in the user-defined range
+  // and does not conflict with Google's reserved extension number 72295729 (http).
+  SecurityRule security = 57005;
 }
 
-// A SecurityRule defines a security policy that applies to a method
+// SecurityRule defines the security policy applied to a method.
 message SecurityRule {
-//  The policy field specifies the name of the security policy to apply.
-//  For example: "jwt-auth", "admin-only", "public"
-//  If empty or unspecified, authentication is required by default.
-//  If it is explicitly specified as "public", it means that the interface is public, skipping all security checks.
+  // The 'policy' field specifies the name of the security policy to apply.
+  // Examples: "jwt-auth", "admin-only", "public"
+  // If empty or not specified, it defaults to requiring authentication.
+  // If explicitly set to "public", all security checks are skipped.
   string policy = 1;
 }

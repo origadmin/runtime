@@ -4,17 +4,18 @@ package declarative
 import (
 	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/interfaces/security/declarative"
 )
 
 type Options struct {
-	policyManager PolicyManager
-	defaultPolicy string
+	policyProvider declarative.PolicyProvider
+	defaultPolicy  string
 }
 
-// WithPolicyManager sets the PolicyManager for the middleware.
-func WithPolicyManager(pm PolicyManager) options.Option {
+// WithPolicyProvider sets the PolicyProvider for the middleware.
+func WithPolicyProvider(pm declarative.PolicyProvider) options.Option {
 	return optionutil.Update(func(o *Options) {
-		o.policyManager = pm
+		o.policyProvider = pm
 	})
 }
 

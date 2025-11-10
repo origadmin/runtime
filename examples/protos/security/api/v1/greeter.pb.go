@@ -7,7 +7,7 @@
 package v1
 
 import (
-	_ "github.com/origadmin/runtime/gen/go/security/v1"
+	_ "github.com/origadmin/runtime/api/gen/go/security/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -122,15 +122,15 @@ const file_examples_protos_security_api_v1_greeter_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"&\n" +
 	"\n" +
 	"HelloReply\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2\x8e\x04\n" +
-	"\aGreeter\x12\x9f\x01\n" +
-	"\x0eSayHelloPublic\x12..runtime.examples.security.api.v1.HelloRequest\x1a,.runtime.examples.security.api.v1.HelloReply\"/\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/greeter/public/{name}\x8a\xd3\xe4\x93\x02\b\n" +
-	"\x06public\x12\xb1\x01\n" +
-	"\x15SayHelloAuthenticated\x12..runtime.examples.security.api.v1.HelloRequest\x1a,.runtime.examples.security.api.v1.HelloReply\":\x82\xd3\xe4\x93\x02\"\x12 /v1/greeter/authenticated/{name}\x8a\xd3\xe4\x93\x02\f\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\x88\x04\n" +
+	"\aGreeter\x12\x9d\x01\n" +
+	"\x0eSayHelloPublic\x12..runtime.examples.security.api.v1.HelloRequest\x1a,.runtime.examples.security.api.v1.HelloReply\"-\xea\xea\x1b\b\n" +
+	"\x06public\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/greeter/public/{name}\x12\xaf\x01\n" +
+	"\x15SayHelloAuthenticated\x12..runtime.examples.security.api.v1.HelloRequest\x1a,.runtime.examples.security.api.v1.HelloReply\"8\xea\xea\x1b\f\n" +
 	"\n" +
-	"authn-only\x12\xac\x01\n" +
-	"\x12SayHelloAuthorized\x12..runtime.examples.security.api.v1.HelloRequest\x1a,.runtime.examples.security.api.v1.HelloReply\"8\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/greeter/authorized/{name}\x8a\xd3\xe4\x93\x02\r\n" +
-	"\vauthn-authzB:Z8github.com/origadmin/runtime/examples/security/api/v1;v1b\x06proto3"
+	"authn-only\x82\xd3\xe4\x93\x02\"\x12 /v1/greeter/authenticated/{name}\x12\xaa\x01\n" +
+	"\x12SayHelloAuthorized\x12..runtime.examples.security.api.v1.HelloRequest\x1a,.runtime.examples.security.api.v1.HelloReply\"6\xea\xea\x1b\r\n" +
+	"\vauthn-authz\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/greeter/authorized/{name}B:Z8github.com/origadmin/runtime/examples/security/api/v1;v1b\x06proto3"
 
 var (
 	file_examples_protos_security_api_v1_greeter_proto_rawDescOnce sync.Once

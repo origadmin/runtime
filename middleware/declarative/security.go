@@ -38,7 +38,7 @@ func (f *factory) NewMiddlewareServer(cfg *middlewarev1.Middleware,
 		return nil, false
 	}
 
-	if o.policyManager == nil {
+	if o.policyProvider == nil {
 		return nil, false
 	}
 
@@ -59,12 +59,6 @@ Middleware, bool) {
 	return nil, false
 }
 
-// PolicyManager defines the interface for managing and retrieving security policies.
-type PolicyManager interface {
-	// GetPolicy retrieves a SecurityPolicy by its name.
-	GetPolicy(name string) (iface.SecurityPolicy, error)
-}
-
 // Option is a function that configures the SecurityMiddleware.
 type Option func(*Options)
 
@@ -79,7 +73,16 @@ func SecurityMiddleware(o *Options) kratosmiddleware.Middleware {
 			}
 
 			// 1. Get policy name from metadata
-			policyName := getPolicyNameFromMetadata(tr)
+			var policyName string
+			// The full gRPC method name is the canonical identifier for the policy.
+			fullMethodName := tr.Operation()
+			// For HTTP requests, the router might store the matched template in the transport.
+			// We prioritize the gRPC method name but could fall back to HTTP path if needed.
+			policyName, err = o.policyProvider.GetPolicyNameForMethod(ctx, fullMethodName)
+			if err != nil {
+				log.Errorf("Failed to get policy name for method %s: %v", fullMethodName, err)
+				return nil, errors.New(500, "SECURITY_POLICY_ERROR", "failed to determine security policy")
+			}
 
 			// Handle "public" policy (skip authentication and authorization)
 			if policyName == "public" {
@@ -98,7 +101,7 @@ func SecurityMiddleware(o *Options) kratosmiddleware.Middleware {
 			}
 
 			// 2. Get SecurityPolicy instance from PolicyManager
-			policy, err := o.policyManager.GetPolicy(policyName)
+			policy, err := o.policyProvider.GetPolicy(ctx, policyName)
 			if err != nil {
 				log.Errorf("Failed to get security policy '%s': %v", policyName, err)
 				return nil, errors.New(500, "SECURITY_POLICY_ERROR", fmt.Sprintf("failed to get security policy '%s'", policyName))
@@ -113,7 +116,6 @@ func SecurityMiddleware(o *Options) kratosmiddleware.Middleware {
 			}
 
 			// 4. Authorize
-			fullMethodName := tr.Operation() // Kratos operation usually is the full method name
 			authorized, authzErr := policy.Authorize(ctx, principal, fullMethodName)
 			if authzErr != nil {
 				log.Errorf("Authorization check failed for method %s with policy '%s': %v", tr.Operation(), policyName, authzErr)
@@ -129,41 +131,4 @@ func SecurityMiddleware(o *Options) kratosmiddleware.Middleware {
 			return handler(ctx, req)
 		}
 	}
-}
-
-// getPolicyNameFromMetadata extracts the security policy name from Kratos transport metadata.
-func getPolicyNameFromMetadata(tr transport.Transporter) string {
-	// For HTTP, metadata is usually in the header. For gRPC, it's in grpc.metadata.
-	// Kratos's transport.Transporter.Operation() often contains the full method name,
-	// and the policy name would be attached to the route's metadata during code generation.
-	// This is a placeholder; the actual mechanism to retrieve the policy name from metadata
-	// might depend on how 'origen' or 'protoc-gen-go-http' injects it.
-	// For now, we assume it's directly accessible or can be derived from the operation.
-
-	// A more robust solution would involve Kratos's router context or a custom metadata key.
-	// For example, if the policy name is stored in a context value.
-	// For the purpose of this design, we assume it's directly available via some Kratos mechanism
-	// or can be retrieved from the operation's Options.
-
-	// The design document states: "中间件从 Kratos 的 transport.Context 中获取路由信息，
-	// 并找到之前代码生成时注入的元数据，得到策略名"
-	// This implies a mechanism to get route-specific metadata.
-	// Kratos's `transport.Transporter` has `Operation()`, which is the full method name.
-	// We need a way to map `Operation()` to the policy name.
-	// This mapping is typically done by the router itself, or by a custom metadata injector.
-
-	// For the sake of this example, let's assume the policy name is stored in a custom HTTP header
-	// or gRPC metadata key.
-	// In a real scenario, `origen` would generate code that makes this accessible.
-
-	// If using HTTP, check a custom header
-	if ht, ok := tr.(*http.Transport); ok {
-		if policy := ht.Request().Header.Get("X-Security-Policy"); policy != "" {
-			return policy
-		}
-	}
-
-	// Fallback or default logic if not found in custom header
-	// For now, let's return an empty string if not explicitly set.
-	return ""
 }
