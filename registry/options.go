@@ -10,7 +10,7 @@ type registryOptions struct {
 	Registrar KRegistrar
 }
 
-// WithRegistrar sets the Registrar for the service.
+// WithRegistrar sets the ServerRegistrar for the service.
 func WithRegistrar(r KRegistrar) options.Option {
 	return optionutil.Update(func(o *registryOptions) {
 		o.Registrar = r

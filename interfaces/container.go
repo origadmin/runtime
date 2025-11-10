@@ -14,7 +14,7 @@ type ComponentFactory func(cfg StructuredConfig, container Container) (interface
 // Container defines the interface for retrieving fully-initialized application components.
 // It is the return type of bootstrap.NewProvider and the input for runtime.New.
 type Container interface {
-	// --- Discovery and Registrar ---
+	// --- Discovery and ServerRegistrar ---
 
 	// Discoveries returns a map of all configured service discovery components.
 	Discoveries() map[string]registry.Discovery

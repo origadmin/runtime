@@ -37,12 +37,12 @@ func (d *localDiscovery) Watch(ctx context.Context, serviceName string) (kratosr
 type localRegistrar struct{}
 
 func (r *localRegistrar) Register(ctx context.Context, service *kratosregistry.ServiceInstance) error {
-	fmt.Printf("Local Registrar: Registered service %s - %s\n", service.Name, service.ID)
+	fmt.Printf("Local ServerRegistrar: Registered service %s - %s\n", service.Name, service.ID)
 	return nil
 }
 
 func (r *localRegistrar) Deregister(ctx context.Context, service *kratosregistry.ServiceInstance) error {
-	fmt.Printf("Local Registrar: Deregistered service %s - %s\n", service.Name, service.ID)
+	fmt.Printf("Local ServerRegistrar: Deregistered service %s - %s\n", service.Name, service.ID)
 	return nil
 }
 
@@ -80,7 +80,7 @@ func (f *localFactory) NewDiscovery(cfg *discoveryv1.Discovery, opts ...options.
 }
 
 func (f *localFactory) NewRegistrar(cfg *discoveryv1.Discovery, opts ...options.Option) (kratosregistry.Registrar, error) {
-	fmt.Printf("Creating Local Registrar for service: %s\n", cfg.GetName())
+	fmt.Printf("Creating Local ServerRegistrar for service: %s\n", cfg.GetName())
 	return &localRegistrar{}, nil
 }
 

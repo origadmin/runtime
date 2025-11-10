@@ -10,6 +10,7 @@ import (
 	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
+	rtservice "github.com/origadmin/runtime/service"
 )
 
 // CorsOption defines a functional option for configuring advanced CORS settings in code.
@@ -36,8 +37,8 @@ func WithAllowOriginVaryRequestFunc(f func(r *http.Request, origin string) (bool
 
 // ServerOptions is a container for HTTP server-specific options.
 type ServerOptions struct {
-	// HttpServerOptions allows passing native Kratos HTTP server options.
-	HttpServerOptions []transhttp.ServerOption
+	// ServerOptions allows passing native Kratos HTTP server options.
+	ServerOptions []transhttp.ServerOption
 
 	// CorsOptions allows applying advanced, code-based configurations to the CORS handler.
 	// These options will be applied *after* the base configuration from the proto file.
@@ -48,6 +49,9 @@ type ServerOptions struct {
 
 	// Container holds the application container instance.
 	Container interfaces.Container
+
+	// ServerRegistrar holds the service registration instance.
+	ServerRegistrar rtservice.ServerRegistrar
 }
 
 // FromServerOptions creates a new HTTP ServerOptions struct by applying a slice of functional options.
@@ -57,13 +61,14 @@ func FromServerOptions(opts []options.Option) *ServerOptions {
 	o := optionutil.NewT[ServerOptions](opts...)
 	o.Options = opts
 	o.Container = rtcontainer.FromOptions(opts)
+	o.ServerRegistrar = rtservice.ServerRegistrarFromOptions(opts)
 	return o
 }
 
-// WithHttpServerOptions appends Kratos HTTP server options.
-func WithHttpServerOptions(opts ...transhttp.ServerOption) options.Option {
+// WithServerOptions appends Kratos HTTP server options.
+func WithServerOptions(opts ...transhttp.ServerOption) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
-		o.HttpServerOptions = append(o.HttpServerOptions, opts...)
+		o.ServerOptions = append(o.ServerOptions, opts...)
 	})
 }
 
@@ -77,8 +82,8 @@ func WithCorsOptions(opts ...CorsOption) options.Option {
 
 // ClientOptions is a container for HTTP client-specific options.
 type ClientOptions struct {
-	// HttpClientOptions allows passing native Kratos HTTP client dial options.
-	HttpClientOptions []transhttp.ClientOption
+	// ClientOptions allows passing native Kratos HTTP client dial options.
+	ClientOptions []transhttp.ClientOption
 
 	// Options holds common service-level configurations.
 	Options []options.Option
@@ -98,9 +103,9 @@ func FromClientOptions(opts []options.Option) *ClientOptions {
 	return o
 }
 
-// WithHttpClientOptions appends Kratos HTTP client options.
-func WithHttpClientOptions(opts ...transhttp.ClientOption) options.Option {
+// WithClientOptions appends Kratos HTTP client options.
+func WithClientOptions(opts ...transhttp.ClientOption) options.Option {
 	return optionutil.Update(func(o *ClientOptions) {
-		o.HttpClientOptions = append(o.HttpClientOptions, opts...)
+		o.ClientOptions = append(o.ClientOptions, opts...)
 	})
 }

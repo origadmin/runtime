@@ -263,7 +263,7 @@ func (b *Builder) initRegistries(opts ...options.Option) error {
 			continue // Skip this one
 		}
 
-		// Create Registrar
+		// Create ServerRegistrar
 		r, err := runtimeRegistry.NewRegistrar(discoveryCfg, opts...)
 		if err != nil {
 			helper.Warnw("msg", "failed to create registrar", "key", key, "error", err)

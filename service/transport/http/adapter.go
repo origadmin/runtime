@@ -109,8 +109,8 @@ func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions)
 
 	// Apply any external Kratos HTTP server options passed via functional options.
 	// These are applied last, allowing them to override previous options if needed.
-	if len(serverOpts.HttpServerOptions) > 0 {
-		kratosOpts = append(kratosOpts, serverOpts.HttpServerOptions...)
+	if len(serverOpts.ServerOptions) > 0 {
+		kratosOpts = append(kratosOpts, serverOpts.ServerOptions...)
 	}
 
 	return kratosOpts, nil
@@ -209,8 +209,8 @@ func initHttpClientOptions(ctx context.Context, httpConfig *httpv1.Client,
 	}
 
 	// Apply any external Kratos HTTP client options passed via functional options.
-	if len(clientOpts.HttpClientOptions) > 0 {
-		kratosOpts = append(kratosOpts, clientOpts.HttpClientOptions...)
+	if len(clientOpts.ClientOptions) > 0 {
+		kratosOpts = append(kratosOpts, clientOpts.ClientOptions...)
 	}
 
 	return kratosOpts, nil

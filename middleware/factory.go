@@ -10,7 +10,6 @@ import (
 	"github.com/origadmin/runtime/interfaces/factory"
 	internalfactory "github.com/origadmin/runtime/internal/factory"
 	"github.com/origadmin/runtime/log"
-	"github.com/origadmin/runtime/middleware/declarative"
 )
 
 // defaultBuilder is the default instance of the middlewareBuilder .
@@ -29,7 +28,6 @@ func init() {
 	Register(Selector, &selectorFactory{})
 	Register(Tracing, &tracingFactory{})
 	Register(Validator, &validatorFactory{})
-	Register(DeclarativeSecurity, &declarative.Factory{})
 }
 
 // middlewareBuilder is a builder for creating middleware chains.

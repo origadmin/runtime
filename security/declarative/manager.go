@@ -6,11 +6,11 @@
 package declarative
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/go-kratos/kratos/v2/errors"
 
+	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/security/declarative"
 )
 
@@ -73,14 +73,20 @@ func (m *Manager) GetPolicy(name string) (declarative.SecurityPolicy, error) {
 
 	factory, ok := m.factories[name]
 	if !ok {
-		return nil, fmt.Errorf("%w: no factory registered for policy '%s'", ErrPolicyNotFound, name)
+		return nil, runtimeerrors.NewStructured(
+			"SECURITY_POLICY",
+			"security policy not found: %s", name,
+		)
 	}
 
 	config, _ := m.configs[name] // config can be nil if not provided
 
 	newPolicy, err := factory(config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create policy '%s': %w", name, err)
+		return nil, runtimeerrors.NewStructured(
+			"SECURITY_POLICY",
+			"failed to create security policy: %s", err.Error(),
+		)
 	}
 
 	m.policies[name] = newPolicy

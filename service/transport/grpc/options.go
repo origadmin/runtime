@@ -8,6 +8,7 @@ import (
 	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
+	rtservice "github.com/origadmin/runtime/service"
 )
 
 // ServerOptions is a container for gRPC server-specific options.
@@ -20,6 +21,9 @@ type ServerOptions struct {
 
 	// Options holds the common service-level options.
 	Options []options.Option
+
+	// ServerRegistrar holds the service registrar instance.
+	ServerRegistrar rtservice.ServerRegistrar
 }
 
 // FromServerOptions creates a new gRPC ServerOptions struct by applying a slice of functional options.
@@ -29,11 +33,12 @@ func FromServerOptions(opts []options.Option) *ServerOptions {
 	o := optionutil.NewT[ServerOptions](opts...)
 	o.Options = opts
 	o.Container = rtcontainer.FromOptions(opts)
+	o.ServerRegistrar = rtservice.ServerRegistrarFromOptions(opts)
 	return o
 }
 
-// WithGrpcServerOptions appends Kratos gRPC server options.
-func WithGrpcServerOptions(opts ...kgprc.ServerOption) options.Option {
+// WithServerOptions appends Kratos gRPC server options.
+func WithServerOptions(opts ...kgprc.ServerOption) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
 		o.ServerOptions = append(o.ServerOptions, opts...)
 	})
@@ -62,8 +67,8 @@ func FromClientOptions(opts []options.Option) *ClientOptions {
 	return o
 }
 
-// WithGrpcDialOptions appends native gRPC client dial options.
-func WithGrpcDialOptions(opts ...grpcx.DialOption) options.Option {
+// WithDialOptions appends native gRPC client dial options.
+func WithDialOptions(opts ...grpcx.DialOption) options.Option {
 	return optionutil.Update(func(o *ClientOptions) {
 		o.DialOptions = append(o.DialOptions, opts...)
 	})

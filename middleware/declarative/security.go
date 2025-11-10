@@ -19,13 +19,18 @@ import (
 	iface "github.com/origadmin/runtime/interfaces/security/declarative"
 	internal "github.com/origadmin/runtime/internal/security/declarative"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/middleware"
 )
 
-// Factory is the Factory for creating the declarative security middleware.
-type Factory struct{}
+// factory is the factory for creating the declarative security middleware.
+type factory struct{}
+
+func init() {
+	middleware.Register(middleware.DeclarativeSecurity, &factory{})
+}
 
 // NewMiddlewareServer creates a new server-side security middleware.
-func (f *Factory) NewMiddlewareServer(cfg *middlewarev1.Middleware,
+func (f *factory) NewMiddlewareServer(cfg *middlewarev1.Middleware,
 	opts ...options.Option) (kratosmiddleware.Middleware, bool) {
 	o := FromOptions(opts)
 
@@ -49,7 +54,7 @@ func (f *Factory) NewMiddlewareServer(cfg *middlewarev1.Middleware,
 
 // NewMiddlewareClient creates a new client-side security middleware.
 // This is not applicable for the declarative security middleware.
-func (f *Factory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...options.Option) (kratosmiddleware.
+func (f *factory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...options.Option) (kratosmiddleware.
 Middleware, bool) {
 	return nil, false
 }
