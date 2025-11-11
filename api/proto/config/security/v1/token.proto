@@ -5,7 +5,7 @@ package runtime.api.config.security.v1;
 import "gnostic/openapi/v3/annotations.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;configsecurityv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;securityv1";
 
 // TokenCredential holds the credentials for token-based authentication flows
 // like OAuth2 and JWT. It is a shared structure representing the typical

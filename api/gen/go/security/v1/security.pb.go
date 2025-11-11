@@ -25,11 +25,11 @@ const (
 // SecurityRule defines the security policy applied to a method.
 type SecurityRule struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The 'policy' field specifies the name of the security policy to apply.
+	// The 'name' field specifies the name of the security policy to apply.
 	// Examples: "jwt-auth", "admin-only", "public"
 	// If empty or not specified, it defaults to requiring authentication.
 	// If explicitly set to "public", all security checks are skipped.
-	Policy        string `protobuf:"bytes,1,opt,name=policy,proto3" json:"policy,omitempty"`
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"` // Field name is 'name'
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -64,9 +64,9 @@ func (*SecurityRule) Descriptor() ([]byte, []int) {
 	return file_security_v1_security_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *SecurityRule) GetPolicy() string {
+func (x *SecurityRule) GetName() string {
 	if x != nil {
-		return x.Policy
+		return x.Name
 	}
 	return ""
 }
@@ -76,29 +76,28 @@ var file_security_v1_security_proto_extTypes = []protoimpl.ExtensionInfo{
 		ExtendedType:  (*descriptorpb.MethodOptions)(nil),
 		ExtensionType: (*SecurityRule)(nil),
 		Field:         57005,
-		Name:          "runtime.api.security.v1.security",
-		Tag:           "bytes,57005,opt,name=security",
+		Name:          "runtime.api.security.v1.policy",
+		Tag:           "bytes,57005,opt,name=policy",
 		Filename:      "security/v1/security.proto",
 	},
 }
 
 // Extension fields to descriptorpb.MethodOptions.
 var (
-	// The extension number has been changed to 57005, which is in the user-defined range
-	// and does not conflict with Google's reserved extension number 72295729 (http).
+	// The extension number 57005 is in the user-defined range.
 	//
-	// optional runtime.api.security.v1.SecurityRule security = 57005;
-	E_Security = &file_security_v1_security_proto_extTypes[0]
+	// optional runtime.api.security.v1.SecurityRule policy = 57005;
+	E_Policy = &file_security_v1_security_proto_extTypes[0] // Renamed from 'security_policy' to 'policy'
 )
 
 var File_security_v1_security_proto protoreflect.FileDescriptor
 
 const file_security_v1_security_proto_rawDesc = "" +
 	"\n" +
-	"\x1asecurity/v1/security.proto\x12\x17runtime.api.security.v1\x1a google/protobuf/descriptor.proto\"&\n" +
-	"\fSecurityRule\x12\x16\n" +
-	"\x06policy\x18\x01 \x01(\tR\x06policy:c\n" +
-	"\bsecurity\x12\x1e.google.protobuf.MethodOptions\x18\xad\xbd\x03 \x01(\v2%.runtime.api.security.v1.SecurityRuleR\bsecurityB\xeb\x01\n" +
+	"\x1asecurity/v1/security.proto\x12\x17runtime.api.security.v1\x1a google/protobuf/descriptor.proto\"\"\n" +
+	"\fSecurityRule\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name:_\n" +
+	"\x06policy\x12\x1e.google.protobuf.MethodOptions\x18\xad\xbd\x03 \x01(\v2%.runtime.api.security.v1.SecurityRuleR\x06policyB\xeb\x01\n" +
 	"\x1bcom.runtime.api.security.v1B\rSecurityProtoP\x01Z>github.com/origadmin/runtime/api/gen/go/security/v1;securityv1\xa2\x02\x03RAS\xaa\x02\x17Runtime.Api.Security.V1\xca\x02\x17Runtime\\Api\\Security\\V1\xe2\x02#Runtime\\Api\\Security\\V1\\GPBMetadata\xea\x02\x1aRuntime::Api::Security::V1b\x06proto3"
 
 var (
@@ -119,8 +118,8 @@ var file_security_v1_security_proto_goTypes = []any{
 	(*descriptorpb.MethodOptions)(nil), // 1: google.protobuf.MethodOptions
 }
 var file_security_v1_security_proto_depIdxs = []int32{
-	1, // 0: runtime.api.security.v1.security:extendee -> google.protobuf.MethodOptions
-	0, // 1: runtime.api.security.v1.security:type_name -> runtime.api.security.v1.SecurityRule
+	1, // 0: runtime.api.security.v1.policy:extendee -> google.protobuf.MethodOptions
+	0, // 1: runtime.api.security.v1.policy:type_name -> runtime.api.security.v1.SecurityRule
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	1, // [1:2] is the sub-list for extension type_name

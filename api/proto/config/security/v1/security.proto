@@ -3,8 +3,8 @@ syntax = "proto3";
 package runtime.api.config.security.v1;
 
 // Import the new AuthNConfig
-import "config/security/authn/v1/authn.proto"; // Updated import to authn.proto which now contains AuthNConfig
-import "config/security/authz/v1/authz.proto";
+import "config/security/authn/v1/authenticator.proto"; // Updated import to authn.proto which now contains AuthNConfig
+import "config/security/authz/v1/authorizer.proto";
 import "config/security/transport/v1/tls.proto";
 import "gnostic/openapi/v3/annotations.proto";
 
@@ -32,17 +32,17 @@ message Security {
 message AuthenticatorConfigs {
   optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
-  repeated config.security.authn.v1.Authenticator configs = 3 [json_name = "configs"]; // Changed type to AuthNConfig
+  repeated runtime.api.config.security.authn.v1.Authenticator configs = 3 [json_name = "configs"]; // Changed type to AuthNConfig
 }
 
 message AuthorizerConfigs {
   optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
-  repeated config.security.authz.v1.Authorizer configs = 3 [json_name = "configs"];
+  repeated runtime.api.config.security.authz.v1.Authorizer configs = 3 [json_name = "configs"];
 }
 
 message TransportSecurityConfigs {
   optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
-  repeated config.security.transport.v1.TLSConfig configs = 3 [json_name = "configs"];
+  repeated runtime.api.config.security.transport.v1.TLSConfig configs = 3 [json_name = "configs"];
 }
