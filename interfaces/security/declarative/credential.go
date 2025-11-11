@@ -38,5 +38,9 @@ type CredentialParser interface {
 	// (e.g., signature, expiration, format).
 	ParseCredential(ctx context.Context, rawToken string) (Credential, error)
 
+	// ParseCredentialFrom parses a credential from a source of type sourceType.
+	// The source can be a string, map, or any other type that the parser supports.
+	// sourceType specifies the type of the source (e.g., "header", "query", "body").
+	// source is the actual data to be parsed.
 	ParseCredentialFrom(ctx context.Context, sourceType string, source any) (Credential, error)
 }
