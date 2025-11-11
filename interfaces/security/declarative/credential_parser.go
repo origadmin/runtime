@@ -3,7 +3,6 @@ package declarative
 
 import (
 	"github.com/origadmin/runtime/context"
-	"google.golang.org/protobuf/proto" // Import proto for proto.Message
 )
 
 // CredentialParser defines the contract for parsing and validating a credential
