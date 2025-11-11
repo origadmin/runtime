@@ -118,12 +118,13 @@ func getPolicyName(method *protogen.Method) string {
 	if !ok {
 		return ""
 	}
-	ext := proto.GetExtension(opts, securityv1.E_Security)
+	// Changed from securityv1.E_SecurityPolicy to securityv1.E_Policy
+	ext := proto.GetExtension(opts, securityv1.E_Policy)
 	rule, ok := ext.(*securityv1.SecurityRule)
 	if !ok || rule == nil {
 		return ""
 	}
-	return rule.Policy
+	return rule.Name // Changed from rule.Policy to rule.Name
 }
 
 func getHttpRule(method *protogen.Method) *annotations.HttpRule {
