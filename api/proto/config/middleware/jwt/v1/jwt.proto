@@ -23,7 +23,7 @@ message JWT {
   ];
   map<string, string> token_header = 3 [json_name = 'token_header'];
   // The token used security.authn.v1.
-  runtime.api.config.security.authn config = 100 [
+  runtime.api.config.security.authn.jwt.v1.Config config = 100 [
     json_name = "config",
     (gnostic.openapi.v3.property) = {description: "The configuration used to create the token."}
   ];
