@@ -7,7 +7,6 @@ package declarative
 
 import (
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
-	"github.com/origadmin/runtime/context"
 )
 
 // CredentialResponse represents a credential structure intended for
@@ -34,11 +33,4 @@ type CredentialResponse interface {
 	// MarshalPayload serializes only the value within the Payload field to JSON.
 	// This provides direct access to the core payload's JSON representation.
 	MarshalPayload() ([]byte, error)
-}
-
-// CredentialCreator defines the contract for issuing new credentials.
-type CredentialCreator interface {
-	// CreateCredential issues a new credential for the given principal and returns
-	// a standard, serializable Credential.
-	CreateCredential(ctx context.Context, p Principal) (CredentialResponse, error)
 }
