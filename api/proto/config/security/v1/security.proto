@@ -2,7 +2,8 @@ syntax = "proto3";
 
 package runtime.api.config.security.v1;
 
-import "config/security/authn/v1/authn.proto";
+// Import the new AuthNConfig
+import "config/security/authn/v1/authn.proto"; // Updated import to authn.proto which now contains AuthNConfig
 import "config/security/authz/v1/authz.proto";
 import "config/security/transport/v1/tls.proto";
 import "gnostic/openapi/v3/annotations.proto";
@@ -31,7 +32,7 @@ message Security {
 message AuthNConfigs {
   optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
-  repeated config.security.authn.v1.AuthN configs = 3 [json_name = "configs"];
+  repeated config.security.authn.v1.AuthNConfig configs = 3 [json_name = "configs"]; // Changed type to AuthNConfig
 }
 
 message AuthZConfigs {
