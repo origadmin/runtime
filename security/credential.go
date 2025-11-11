@@ -1,4 +1,3 @@
-// Package security implements the functions, types, and interfaces for the module.
 package security
 
 import (
@@ -8,7 +7,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/wrapperspb" // Import wrapperspb
 
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/interfaces/security/declarative"
@@ -36,14 +35,13 @@ func (c *credential) Get(key string) (string, bool) {
 		return "", false
 	}
 	if v, ok := meta[key]; ok {
-		stringValue := new(structpb.Value)
-		if v.MessageIs(stringValue) {
-			err := v.UnmarshalTo(stringValue)
-			if err != nil {
-				return "", false
-			}
-			return stringValue.GetStringValue(), true
+		stringValue := &wrapperspb.StringValue{} // Use wrapperspb.StringValue
+		err := v.UnmarshalTo(stringValue)
+		if err != nil {
+			log.Printf("failed to unmarshal metadata key %s to StringValue: %v", key, err)
+			return "", false
 		}
+		return stringValue.GetValue(), true // Use GetValue()
 	}
 	return "", false
 }
@@ -57,33 +55,51 @@ func (c *credential) GetAll() map[string]any {
 	}
 	result := make(map[string]any)
 	for k, v := range meta {
-		var val structpb.Value
-		if err := v.UnmarshalTo(&val); err != nil {
-			log.Printf("failed to unmarshal metadata key %s: %v", k, err) // Log the error
+		// Try to unmarshal into various wrapperspb types
+		var stringVal wrapperspb.StringValue
+		if err := v.UnmarshalTo(&stringVal); err == nil {
+			result[k] = stringVal.GetValue()
 			continue
 		}
-		switch kind := val.Kind.(type) {
-		case *structpb.Value_StringValue:
-			result[k] = kind.StringValue
-		case *structpb.Value_NumberValue:
-			result[k] = kind.NumberValue
-		case *structpb.Value_BoolValue:
-			result[k] = kind.BoolValue
-		case *structpb.Value_ListValue:
-			// Handle list values if necessary, potentially recursively
-			var list []any
-			for _, item := range kind.ListValue.Values {
-				// This is a simplified conversion, might need a more robust one for nested structures
-				list = append(list, item.AsInterface())
-			}
-			result[k] = list
-		case *structpb.Value_StructValue:
-			// Handle struct values if necessary, potentially recursively
-			result[k] = kind.StructValue.AsMap()
-		default:
-			// For other types or unknown types, we can just store the interface representation
-			result[k] = val.AsInterface()
+		var boolVal wrapperspb.BoolValue
+		if err := v.UnmarshalTo(&boolVal); err == nil {
+			result[k] = boolVal.GetValue()
+			continue
 		}
+		var int32Val wrapperspb.Int32Value
+		if err := v.UnmarshalTo(&int32Val); err == nil {
+			result[k] = int32Val.GetValue()
+			continue
+		}
+		var int64Val wrapperspb.Int64Value
+		if err := v.UnmarshalTo(&int64Val); err == nil {
+			result[k] = int64Val.GetValue()
+			continue
+		}
+		var uint32Val wrapperspb.UInt32Value
+		if err := v.UnmarshalTo(&uint32Val); err == nil {
+			result[k] = uint32Val.GetValue()
+			continue
+		}
+		var uint64Val wrapperspb.UInt64Value
+		if err := v.UnmarshalTo(&uint64Val); err == nil {
+			result[k] = uint64Val.GetValue()
+			continue
+		}
+		var floatVal wrapperspb.FloatValue
+		if err := v.UnmarshalTo(&floatVal); err == nil {
+			result[k] = floatVal.GetValue()
+			continue
+		}
+		var doubleVal wrapperspb.DoubleValue
+		if err := v.UnmarshalTo(&doubleVal); err == nil {
+			result[k] = doubleVal.GetValue()
+			continue
+		}
+
+		// If it's not a wrapperspb primitive, log and store the anypb.Any itself
+		log.Printf("metadata key %s contains a non-wrapperspb primitive type or complex type; storing as anypb.Any", k)
+		result[k] = v
 	}
 	return result
 }
