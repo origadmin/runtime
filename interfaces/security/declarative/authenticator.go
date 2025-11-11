@@ -7,6 +7,8 @@ package declarative
 
 import (
 	"context"
+
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 // principalKey is the context key for storing the Principal object.
@@ -16,12 +18,18 @@ type principalKey struct{}
 // It defines a contract for accessing credential information without coupling
 // to the underlying transport (e.g., HTTP headers, gRPC metadata).
 type Credential interface {
-	// GetAuthorization returns the value of the Authorization header, if present.
-	GetAuthorization() (string, bool)
-	// Get returns the value of a specific header/metadata key.
-	Get(key string) (string, bool)
-	// GetAll returns all available headers/metadata as a map.
-	GetAll() map[string][]string
+	// Type returns the type of the credential (e.g., "jwt", "apikey").
+	Type() string
+
+	// Raw returns the original, unparsed credential string.
+	Raw() string
+
+	// Payload returns the parsed credential payload.
+	// The type of the message inside Any should correspond to the 'type' field.
+	Payload() anypb.Any
+
+	// String returns a string representation of the credential.
+	String() string
 }
 
 // Authenticator is responsible for validating the identity of the request initiator.
