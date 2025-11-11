@@ -2,28 +2,28 @@ syntax = "proto3";
 
 package runtime.api.config.security.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
 import "config/security/authn/v1/authn.proto";
 import "config/security/authz/v1/authz.proto";
 import "config/security/transport/v1/tls.proto";
+import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;securityv1";
 
 // Security defines the top-level configuration for all security-related components.
 message Security {
   // List of authentication configurations.
-  AuthNConfigs authn_configs = 1 [
-    json_name = "authn_configs",
+  AuthNConfigs authn = 1 [
+    json_name = "authn",
     (gnostic.openapi.v3.property) = {description: "List of authentication configurations."}
   ];
   // List of authorization configurations.
-  AuthZConfigs authz_configs = 2 [
-    json_name = "authz_configs",
+  AuthZConfigs authz = 2 [
+    json_name = "authz",
     (gnostic.openapi.v3.property) = {description: "List of authorization configurations."}
   ];
   // List of transport layer security (TLS) configurations.
-  TransportSecurityConfigs transport_security_configs = 3 [
-    json_name = "transport_security_configs",
+  TransportSecurityConfigs transport_security = 3 [
+    json_name = "transport_security",
     (gnostic.openapi.v3.property) = {description: "List of transport layer security (TLS) configurations."}
   ];
 }

@@ -2,19 +2,13 @@ syntax = "proto3";
 
 package runtime.api.config.security.authz.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
-import "google/protobuf/struct.proto";
 import "config/security/authn/v1/authn.proto";
 import "config/security/authz/v1/casbin.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 
-
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authz/v1;authzv1";
-
-
-
-
-
 
 message CasbinAuth {
   Policy policy = 1 [

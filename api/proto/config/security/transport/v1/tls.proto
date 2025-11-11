@@ -8,10 +8,6 @@ import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1;transportv1";
 
-
-
-
-
 // TLS configuration for secure connections
 message TLSConfig {
   // Unique name for this TLS configuration instance.

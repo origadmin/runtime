@@ -1,8 +1,10 @@
-// Package security implements the functions, types, and interfaces for the module.
 package security
 
 import (
+	"context"
 	"sync"
+
+	"github.com/origadmin/runtime/interfaces/security/declarative"
 )
 
 // --- Global Policy Registry (for init() function registration) ---
@@ -15,7 +17,48 @@ var (
 	// gatewayPolicies stores policies generated from .proto for HTTP paths.
 	gatewayPolicies = make(map[string]string)
 	mu              sync.RWMutex
+
+	// policyFactories stores registered SecurityFactory functions.
+	policyFactories = make(map[string]declarative.SecurityFactory)
 )
+
+// RegisterPolicyFactory registers a SecurityFactory for a given policy name.
+// This function is typically called during application initialization.
+func RegisterPolicyFactory(name string, factory declarative.SecurityFactory) {
+	mu.Lock()
+	defer mu.Unlock()
+	if _, exists := policyFactories[name]; exists {
+		// Log or handle error if a factory with the same name is already registered
+		// For now, we'll just overwrite it, but a warning might be appropriate.
+	}
+	policyFactories[name] = factory
+}
+
+// GetPolicyFactory retrieves a registered SecurityFactory by its name.
+func GetPolicyFactory(name string) declarative.SecurityFactory {
+	mu.RLock()
+	defer mu.RUnlock()
+	return policyFactories[name]
+}
+
+// contextKey is an unexported type for context keys.
+type contextKey string
+
+const (
+	principalContextKey contextKey = "principal"
+)
+
+// ContextWithPrincipal returns a new context with the given Principal attached.
+func ContextWithPrincipal(ctx context.Context, p declarative.Principal) context.Context {
+	return context.WithValue(ctx, principalContextKey, p)
+}
+
+// PrincipalFromContext extracts the Principal from the context.
+// It returns the Principal and a boolean indicating whether a Principal was found.
+func PrincipalFromContext(ctx context.Context) (declarative.Principal, bool) {
+	p, ok := ctx.Value(principalContextKey).(declarative.Principal)
+	return p, ok
+}
 
 // RegisterPolicies is a public function, intended to be called by generated code in init().
 // It merges the incoming policies into the global default maps.
