@@ -23,18 +23,15 @@ type Principal interface {
 // PrincipalFromContext extracts the Principal from the given context.
 // It returns the Principal and a boolean indicating if it was found.
 func PrincipalFromContext(ctx context.Context) (Principal, bool) {
-	p, ok := ctx.Value(contextKeyPrincipal).(Principal)
+	p, ok := ctx.Value(principalKey{}).(Principal)
 	return p, ok
 }
 
 // NewContextWithPrincipal injects the given Principal into the context.
 // It returns a new context with the Principal value.
 func NewContextWithPrincipal(ctx context.Context, p Principal) context.Context {
-	return context.WithValue(ctx, contextKeyPrincipal, p)
+	return context.WithValue(ctx, principalKey{}, p)
 }
 
-type contextKey string
-
-const (
-	contextKeyPrincipal contextKey = "security-principal"
-)
+// principalKey is the context key for storing the Principal object.
+type principalKey struct{}

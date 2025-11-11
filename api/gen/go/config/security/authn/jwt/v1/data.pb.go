@@ -9,7 +9,6 @@ package jwtv1
 import (
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
-	_ "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -84,7 +83,7 @@ var File_config_security_authn_jwt_v1_data_proto protoreflect.FileDescriptor
 
 const file_config_security_authn_jwt_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"'config/security/authn/jwt/v1/data.proto\x12(runtime.api.config.security.authn.jwt.v1\x1a)config/security/authn/jwt/v1/claims.proto\x1a\x1econfig/security/v1/token.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\x80\x01\n" +
+	"'config/security/authn/jwt/v1/data.proto\x12(runtime.api.config.security.authn.jwt.v1\x1a)config/security/authn/jwt/v1/claims.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\x80\x01\n" +
 	"\x04Data\x12x\n" +
 	"\x06claims\x18\x03 \x01(\v20.runtime.api.config.security.authn.jwt.v1.ClaimsB.\xbaG+\x92\x02(The claims extracted from the JWT token.R\x06claimsB\xce\x02\n" +
 	",com.runtime.api.config.security.authn.jwt.v1B\tDataProtoP\x01ZJgithub.com/origadmin/runtime/api/gen/go/config/security/authn/jwt/v1;jwtv1\xa2\x02\x06RACSAJ\xaa\x02(Runtime.Api.Config.Security.Authn.Jwt.V1\xca\x02(Runtime\\Api\\Config\\Security\\Authn\\Jwt\\V1\xe2\x024Runtime\\Api\\Config\\Security\\Authn\\Jwt\\V1\\GPBMetadata\xea\x02.Runtime::Api::Config::Security::Authn::Jwt::V1b\x06proto3"
