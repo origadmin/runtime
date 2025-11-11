@@ -115,27 +115,35 @@ func (a *jwtAuthenticator) Authenticate(ctx context.Context, cred declarative.Cr
 	roles := []string{"guest"}
 	claims := make(map[string]*anypb.Any) // Collect all claims from the payload's specific types
 
-	// Check for specific credential types in the payload
-	if token := payload.GetToken(); token != nil {
-		principalID = token.GetAccessToken() // Using AccessToken as a placeholder for ID
-		roles = []string{"user"}             // Default role for token users
-		// You might also extract other claims from the token if it were a full JWT object
-	} else if basic := payload.GetBasic(); basic != nil {
-		principalID = basic.GetUsername()
-		roles = []string{"basic_user"}
-	} else if key := payload.GetKey(); key != nil {
-		principalID = key.GetKey() // Using key as ID
-		roles = []string{"api_key_user"}
-	} else if oidc := payload.GetOidc(); oidc != nil {
-		// Handle OIDC specific fields if needed
-		principalID = oidc.GetIdToken() // Placeholder
-		roles = []string{"oidc_user"}
-	} else if rawData := payload.GetRawData(); rawData != "" {
-		// Handle raw data if needed
-		principalID = "raw_data_user" // Placeholder
-		roles = []string{"raw_data_user"}
-	} else {
-		// No specific credential data found, use defaults
+	switch cred.Type() {
+	case "jwt":
+		if token := payload.GetToken(); token != nil {
+			principalID = token.GetAccessToken() // Using AccessToken as a placeholder for ID
+			roles = []string{"user"}             // Default role for token users
+			// You might also extract other claims from the token if it were a full JWT object
+		}
+	case "basic":
+		if basic := payload.GetBasic(); basic != nil {
+			principalID = basic.GetUsername()
+			roles = []string{"basic_user"}
+		}
+	case "key":
+		if key := payload.GetKey(); key != nil {
+			principalID = key.GetKey()
+			roles = []string{"api_key_user"}
+		}
+	case "oidc":
+		if oidc := payload.GetOidc(); oidc != nil {
+			principalID = oidc.GetIdToken() // Placeholder
+			roles = []string{"oidc_user"}
+		}
+	case "raw":
+		if rawData := payload.GetRawData(); rawData != "" {
+			principalID = rawData
+			roles = []string{"raw_data_user"}
+		}
+	default:
+		return nil, errors.Unauthorized("UNAUTHORIZED", "unknown credential type")
 	}
 
 	// If a more specific ID was not found, try to get it from a generic claim if available
