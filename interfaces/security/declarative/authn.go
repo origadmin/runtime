@@ -12,8 +12,10 @@ import (
 // principalKey is the context key for storing the Principal object.
 type principalKey struct{}
 
-// CredentialSource abstracts the source from which credentials can be extracted.
-type CredentialSource interface {
+// Credential abstracts the source from which credential data can be extracted.
+// It defines a contract for accessing credential information without coupling
+// to the underlying transport (e.g., HTTP headers, gRPC metadata).
+type Credential interface {
 	// GetAuthorization returns the value of the Authorization header, if present.
 	GetAuthorization() (string, bool)
 	// Get returns the value of a specific header/metadata key.
@@ -23,9 +25,9 @@ type CredentialSource interface {
 }
 
 // Authenticator is responsible for validating the identity of the request initiator.
-// It parses credentials from a CredentialSource and returns a Principal object.
+// It parses credential data from a Credential and returns a Principal object.
 type Authenticator interface {
-	// Authenticate extracts credentials from the provided source and validates them,
-	// returning a Principal object if successful.
-	Authenticate(ctx context.Context, source CredentialSource) (Principal, error)
+	// Authenticate extracts credential data from the provided credential contract
+	// and validates them, returning a Principal object if successful.
+	Authenticate(ctx context.Context, cred Credential) (Principal, error)
 }
