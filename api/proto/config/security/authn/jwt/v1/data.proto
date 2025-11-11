@@ -2,27 +2,27 @@ syntax = "proto3";
 
 package runtime.api.config.security.authn.jwt.v1;
 
+import "config/security/v1/claims.proto"; // Import Claims message from new location
+import "config/security/v1/token.proto";  // Import Token message from new location
 import "gnostic/openapi/v3/annotations.proto";
 import "validate/validate.proto";
-import "config/security/authn/v1/token.proto"; // Import Token message
-import "config/security/authn/v1/claims.proto"; // Import Claims message
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/jwt/v1;jwtconfigv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/jwt/v1;jwtv1";
 
 // JwtAuthData represents the data associated with a JWT authentication request or response.
-message JwtAuthData {
-  string raw_token = 1 [
-    json_name = "raw_token",
+message Data {
+  string raw = 1 [
+    json_name = "raw",
     (validate.rules).string.min_len = 1,
     (gnostic.openapi.v3.property) = {description: "The raw JWT token string received in the request."}
   ];
   // Parsed JWT token data.
-  runtime.api.config.security.authn.v1.Token parsed_token = 2 [
+  runtime.api.config.security.v1.Token parsed_token = 2 [ // Updated type reference
     json_name = "parsed_token",
     (gnostic.openapi.v3.property) = {description: "The parsed JWT token data."}
   ];
   // Claims extracted from the JWT token.
-  runtime.api.config.security.authn.v1.Claims claims = 3 [
+  runtime.api.config.security.v1.Claims claims = 3 [ // Updated type reference
     json_name = "claims",
     (gnostic.openapi.v3.property) = {description: "The claims extracted from the JWT token."}
   ];

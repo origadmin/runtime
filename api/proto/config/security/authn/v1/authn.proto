@@ -2,196 +2,68 @@ syntax = "proto3";
 
 package runtime.api.config.security.authn.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
-import "validate/validate.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "config/security/authn/jwt/v1/config.proto";
+import "config/security/authn/apikey/v1/config.proto";
+import "config/security/authn/presharedkey/v1/config.proto";
+import "config/security/authn/oidc/v1/config.proto";
 
-// Import specific authentication config types
-import "config/security/authn/jwt/v1/config.proto"; // New import for JwtAuthConfig
-// TODO: Add imports for basic, bearer, digest, oauth2, api_key configs once they are moved to their own files
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1;authnconfigv1";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1;authnconfigv1"; // Changed go_package
+// Authenticator defines the configuration for a single authentication mechanism.
+message Authenticator {
+  // A unique name for this authenticator instance. This name is used in
+  // security policies to reference which authenticator to apply.
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "A unique name for this authenticator instance."}
+  ];
 
-// AuthNConfig defines the configuration for a single authentication mechanism.
-// It uses a oneof field to allow specifying different authentication types.
-message AuthNConfig { // Renamed from AuthN to AuthNConfig
-  // Unique name for this authentication configuration instance.
-  string name = 1;
-  // The 'type' field determines which authentication mechanism to use.
-  // For built-in types, specify "basic", "bearer", "jwt", etc.
-  // For custom types, specify the registered name of the custom authentication mechanism.
-  // When a custom type is used, its configuration should be placed in the 'customize' field.
+  // The type of the authenticator. This string MUST match one of the keys
+  // of the configuration fields below (e.g., "jwt", "apikey") or a registered
+  // custom authenticator type. It acts as a discriminator.
   string type = 2 [
     json_name = "type",
-    (gnostic.openapi.v3.property) = {description: "The type of authentication. Built-in: 'basic', 'bearer', 'jwt', etc. Custom types use their registered name."}
+    (gnostic.openapi.v3.property) = {description: "The type of the authenticator, e.g., 'jwt', 'apikey', 'presharedkey', 'oidc'."}
   ];
 
-  oneof auth_config {
-    // Basic authentication configuration.
-    // TODO: Move BasicAuth message to config/security/authn/basic/v1/config.proto
-    BasicAuth basic = 10 [
-      json_name = "basic",
-      (gnostic.openapi.v3.property) = {description: "The basic authentication details."}
-    ];
-    // Bearer authentication configuration.
-    // TODO: Move BearerAuth message to config/security/authn/bearer/v1/config.proto
-    BearerAuth bearer = 11 [
-      json_name = "bearer",
-      (gnostic.openapi.v3.property) = {description: "The bearer authentication details."}
-    ];
-    // Digest authentication configuration.
-    // TODO: Move DigestAuth message to config/security/authn/digest/v1/config.proto
-    DigestAuth digest = 12 [
-      json_name = "digest",
-      (gnostic.openapi.v3.property) = {description: "The digest authentication details."}
-    ];
-    // OAuth2 authentication configuration.
-    // TODO: Move OAuth2Auth message to config/security/authn/oauth2/v1/config.proto
-    OAuth2Auth oauth2 = 13 [
-      json_name = "oauth2",
-      (gnostic.openapi.v3.property) = {description: "The OAuth2 authentication details."}
-    ];
-    // API Key authentication configuration.
-    // TODO: Move ApiKeyAuth message to config/security/authn/api_key/v1/config.proto
-    ApiKeyAuth api_key = 14 [
-      json_name = "api_key",
-      (gnostic.openapi.v3.property) = {description: "The API key authentication details."}
-    ];
-    // JWT authentication configuration.
-    config.security.authn.jwt.v1.JwtAuthConfig jwt = 15 [ // Updated type to JwtAuthConfig
-      json_name = "jwt",
-      (gnostic.openapi.v3.property) = {description: "The JWT authentication configuration."}
-    ];
-    // Optional custom configuration for authentication types not explicitly defined.
-    google.protobuf.Struct customize = 16 [
-      json_name = "customize",
-      (gnostic.openapi.v3.property) = {description: "Custom configuration for authentication types not explicitly defined."}
-    ];
-  }
-}
+  // --- Built-in Authenticator Configurations ---
 
-// TODO: Move BasicAuth, BearerAuth, DigestAuth, OAuth2Auth, ApiKeyAuth messages to their respective config files.
-// For now, they are kept here as placeholders to avoid breaking compilation immediately.
+  // Configuration for a JWT-based authenticator.
+  // Must be present if 'type' is "jwt".
+  optional runtime.api.config.security.authn.jwt.v1.Config jwt = 10 [
+    json_name = "jwt",
+    (gnostic.openapi.v3.property) = {description: "Configuration for a JWT-based authenticator."}
+  ];
 
-message BasicAuth {
-  string username = 1 [
-    json_name = "username",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The username for basic authentication."}
+  // Configuration for an API Key-based authenticator.
+  // Must be present if 'type' is "apikey".
+  optional runtime.api.config.security.authn.apikey.v1.Config apikey = 11 [
+    json_name = "apikey",
+    (gnostic.openapi.v3.property) = {description: "Configuration for an API Key-based authenticator."}
   ];
-  string password = 2 [
-    json_name = "password",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The password for basic authentication."}
-  ];
-}
 
-message BearerAuth {
-  string token = 1 [
-    json_name = "token",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The bearer token for authentication."}
+  // Configuration for a Preshared Key-based authenticator.
+  // Must be present if 'type' is "presharedkey".
+  optional runtime.api.config.security.authn.presharedkey.v1.Config presharedkey = 12 [
+    json_name = "presharedkey",
+    (gnostic.openapi.v3.property) = {description: "Configuration for a Preshared Key-based authenticator."}
   ];
-}
 
-message DigestAuth {
-  string username = 1 [
-    json_name = "username",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The username for digest authentication."}
+  // Configuration for an OpenID Connect (OIDC) authenticator.
+  // Must be present if 'type' is "oidc".
+  optional runtime.api.config.security.authn.oidc.v1.Config oidc = 13 [
+    json_name = "oidc",
+    (gnostic.openapi.v3.property) = {description: "Configuration for an OpenID Connect (OIDC) authenticator."}
   ];
-  string realm = 2 [
-    json_name = "realm",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The authentication realm."}
-  ];
-  string nonce = 3 [
-    json_name = "nonce",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The server-specified nonce."}
-  ];
-  string uri = 4 [
-    json_name = "uri",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The URI being authenticated."}
-  ];
-  string response = 5 [
-    json_name = "response",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The client-generated response."}
-  ];
-  string algorithm = 6 [
-    json_name = "algorithm",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The algorithm used for the digest, e.g., MD5."}
-  ];
-  string qop = 7 [
-    json_name = "qop",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The quality of protection value, e.g., 'auth'."}
-  ];
-  string nc = 8 [
-    json_name = "nc",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The nonce count."}
-  ];
-  string cnonce = 9 [
-    json_name = "cnonce",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The client nonce."}
-  ];
-}
 
-message OAuth2Auth {
-  string access_token = 1 [
-    json_name = "access_token",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The OAuth2 access token."}
-  ];
-  string token_type = 2 [
-    json_name = "token_type",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The type of the OAuth2 token, e.g., 'Bearer'."}
-  ];
-  int32 expires_in = 3 [
-    json_name = "expires_in",
-    (validate.rules).int32.gt = 0,
-    (gnostic.openapi.v3.property) = {description: "The lifetime of the OAuth2 token in seconds."}
-  ];
-  string refresh_token = 4 [
-    json_name = "refresh_token",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The OAuth2 refresh token."}
-  ];
-  repeated string scope = 5 [
-    json_name = "scope",
-    (validate.rules).repeated.min_items = 1,
-    (gnostic.openapi.v3.property) = {description: "The scopes of the OAuth2 token."}
-  ];
-}
+  // --- Custom Authenticator Configuration ---
 
-message ApiKeyAuth {
-  string api_key = 1 [
-    json_name = "api_key",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The API key for authentication."}
+  // For custom types, the 'type' field will contain the custom name,
+  // and this 'customize' field will hold its configuration.
+  optional google.protobuf.Struct customize = 100 [
+    json_name = "customize",
+    (gnostic.openapi.v3.property) = {description: "Configuration for a custom authenticator."}
   ];
-}
-
-message JwtAuth {
-  string token = 1 [
-    json_name = "token",
-    (validate.rules).string.min_len = 1,
-    (gnostic.openapi.v3.property) = {description: "The JWT token for authentication."}
-  ];
-  // TODO: Update import path for Token
-  Token jwt_token = 2 [
-    json_name = "jwt_token",
-    (gnostic.openapi.v3.property) = {description: "The JWT token data for authentication."}
-  ];
-  // TODO: Update import path for Claims
-  Claims claims = 20 [
-    json_name = "claims",
-    (gnostic.openapi.v3.property) = {description: "The claims embedded in the token."}
-  ]; // Claims
 }

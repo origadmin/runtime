@@ -1,12 +1,16 @@
 syntax = "proto3";
 
-package runtime.api.config.security.authn.v1;
+package runtime.api.config.security.authn.jwt.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1;configauthnv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/jwt/v1;jwtv1";
 
+// Claims defines the standard claims for a JSON Web Token (JWT).
+// This message is specifically used within the security module for JWT-related
+// configuration and data transfer, ensuring clarity and preventing confusion
+// with other potential 'Claims' concepts in the project.
 message Claims {
   string sub = 1 [
     json_name = "sub",

@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package runtime.api.config.security.authn.v1;
+package runtime.api.config.security.v1; // Changed package
 
 import "gnostic/openapi/v3/annotations.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1;configauthnv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;configsecurityv1"; // Changed go_package
 
 // Token represents a web token that can be used for authentication.
 message Token {

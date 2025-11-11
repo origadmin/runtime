@@ -58,31 +58,31 @@ message Middleware {
     (gnostic.openapi.v3.property) = {description: "Whether the middleware is enabled."}
   ];
 
-  optional config.middleware.ratelimit.v1.RateLimiter rate_limiter = 4 [
+  optional runtime.api.config.middleware.ratelimit.v1.RateLimiter rate_limiter = 4 [
     json_name = "rate_limiter",
     (gnostic.openapi.v3.property) = {description: "Rate limiter configuration."}
   ];
-  optional config.middleware.metrics.v1.Metrics metrics = 5 [
+  optional runtime.api.config.middleware.metrics.v1.Metrics metrics = 5 [
     json_name = "metrics",
     (gnostic.openapi.v3.property) = {description: "Metrics configuration."}
   ];
-  optional config.middleware.validator.v1.Validator validator = 6 [
+  optional runtime.api.config.middleware.validator.v1.Validator validator = 6 [
     json_name = "validator",
     (gnostic.openapi.v3.property) = {description: "Validator configuration."}
   ];
-  optional config.middleware.jwt.v1.JWT jwt = 7 [
+  optional runtime.api.config.middleware.jwt.v1.JWT jwt = 7 [
     json_name = "jwt",
     (gnostic.openapi.v3.property) = {description: "JWT middleware configuration."}
   ];
-  optional config.middleware.selector.v1.Selector selector = 8 [
+  optional runtime.api.config.middleware.selector.v1.Selector selector = 8 [
     json_name = "selector",
     (gnostic.openapi.v3.property) = {description: "Selector middleware configuration."}
   ];
-  optional config.middleware.cors.v1.Cors cors = 9 [
+  optional runtime.api.config.middleware.cors.v1.Cors cors = 9 [
     json_name = "cors",
     (gnostic.openapi.v3.property) = {description: "CORS middleware configuration."}
   ];
-  optional config.middleware.circuitbreaker.v1.CircuitBreaker circuit_breaker = 10 [
+  optional runtime.api.config.middleware.circuitbreaker.v1.CircuitBreaker circuit_breaker = 10 [
     json_name = "circuit_breaker",
     (gnostic.openapi.v3.property) = {description: "Circuit breaker configuration."}
   ];
