@@ -13,12 +13,12 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;
 // Security defines the top-level configuration for all security-related components.
 message Security {
   // List of authentication configurations.
-  AuthNConfigs authn = 1 [
+  AuthenticatorConfigs authn = 1 [
     json_name = "authn",
     (gnostic.openapi.v3.property) = {description: "List of authentication configurations."}
   ];
   // List of authorization configurations.
-  AuthZConfigs authz = 2 [
+  AuthorizerConfigs authz = 2 [
     json_name = "authz",
     (gnostic.openapi.v3.property) = {description: "List of authorization configurations."}
   ];
@@ -29,16 +29,16 @@ message Security {
   ];
 }
 
-message AuthNConfigs {
+message AuthenticatorConfigs {
   optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
-  repeated config.security.authn.v1.AuthNConfig configs = 3 [json_name = "configs"]; // Changed type to AuthNConfig
+  repeated config.security.authn.v1.Authenticator configs = 3 [json_name = "configs"]; // Changed type to AuthNConfig
 }
 
-message AuthZConfigs {
+message AuthorizerConfigs {
   optional string default = 1 [json_name = "default"];
   optional string active = 2 [json_name = "active"];
-  repeated config.security.authz.v1.AuthZ configs = 3 [json_name = "configs"];
+  repeated config.security.authz.v1.Authorizer configs = 3 [json_name = "configs"];
 }
 
 message TransportSecurityConfigs {
