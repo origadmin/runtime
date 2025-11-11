@@ -2,8 +2,7 @@ syntax = "proto3";
 
 package runtime.api.config.security.authn.jwt.v1;
 
-import "config/security/authn/jwt/v1/claims.proto"; // Import Claims message from new location
-import "config/security/v1/token.proto"; // Import Token message from new location
+import "config/security/authn/jwt/v1/claims.proto";
 import "gnostic/openapi/v3/annotations.proto";
 import "validate/validate.proto";
 
