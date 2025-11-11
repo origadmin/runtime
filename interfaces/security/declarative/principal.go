@@ -12,8 +12,12 @@ import (
 // Principal defines the identity of an authenticated user or system.
 // It contains information such as user ID, roles, and claims, and is injected into context.Context for downstream business logic.
 type Principal interface {
+	// GetID returns the unique identifier of the principal.
 	GetID() string
+
+	// GetRoles returns the roles assigned to the principal.
 	GetRoles() []string
+
 	// GetClaims returns all claims associated with the principal as a map.
 	GetClaims() map[string]interface{}
 }
