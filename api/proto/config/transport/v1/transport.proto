@@ -35,19 +35,19 @@ message Server {
   // Only one of these should be set for a given Server instance.
 
   // gRPC server configuration.
-  optional config.transport.grpc.v1.Server grpc = 3 [
+  optional runtime.api.config.transport.grpc.v1.Server grpc = 3 [
     json_name = "grpc",
     (gnostic.openapi.v3.property) = {description: "gRPC server configuration."}
   ];
 
   // HTTP server configuration.
-  optional config.transport.http.v1.Server http = 4 [
+  optional runtime.api.config.transport.http.v1.Server http = 4 [
     json_name = "http",
     (gnostic.openapi.v3.property) = {description: "HTTP server configuration."}
   ];
 
   // WebSocket server configuration.
-  optional config.transport.websocket.v1.Server websocket = 5 [
+  optional runtime.api.config.transport.websocket.v1.Server websocket = 5 [
     json_name = "websocket",
     (gnostic.openapi.v3.property) = {description: "WebSocket server configuration."}
   ];
@@ -93,10 +93,10 @@ message Client {
   // Only one of these should be set for a given Client instance.
 
   // gRPC client configuration.
-  optional config.transport.grpc.v1.Client grpc = 3 [json_name = "grpc"];
+  optional runtime.api.config.transport.grpc.v1.Client grpc = 3 [json_name = "grpc"];
 
   // HTTP client configuration.
-  optional config.transport.http.v1.Client http = 4 [json_name = "http"];
+  optional runtime.api.config.transport.http.v1.Client http = 4 [json_name = "http"];
 
   // customize is used for non-standard or user-defined transport protocols.
   optional google.protobuf.Struct customize = 100 [

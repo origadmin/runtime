@@ -33,7 +33,7 @@ message Server {
   ];
 
   // tls_config defines the TLS settings for the HTTP server.
-  optional config.security.transport.v1.TLSConfig tls_config = 4 [
+  optional runtime.api.config.security.transport.v1.TLSConfig tls_config = 4 [
     json_name = "tls_config",
     (gnostic.openapi.v3.property) = {description: "The TLS settings for the HTTP server."}
   ];
@@ -45,7 +45,7 @@ message Server {
   ];
 
   // cors configuration for the HTTP server
-  optional config.middleware.cors.v1.Cors cors = 6;
+  optional runtime.api.config.middleware.cors.v1.Cors cors = 6;
 
   // enable_pprof indicates whether to enable pprof debugging endpoints.
   bool enable_pprof = 7;
@@ -78,7 +78,7 @@ message Client {
   string discovery_name = 5;
 
   // tls_config defines the TLS settings for the HTTP client.
-  optional config.security.transport.v1.TLSConfig tls_config = 6;
+  optional runtime.api.config.security.transport.v1.TLSConfig tls_config = 6;
 
   // dial_timeout is the timeout for establishing a connection.
   optional google.protobuf.Duration dial_timeout = 7;
