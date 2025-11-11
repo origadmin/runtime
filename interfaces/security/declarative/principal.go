@@ -31,8 +31,8 @@ func PrincipalFromContext(ctx context.Context) (Principal, bool) {
 	return p, ok
 }
 
-// PrincipalWithPrincipal returns a new context with the given Principal attached.
+// PrincipalWithContext returns a new context with the given Principal attached.
 // It is used to inject the Principal into the context for downstream business logic.
-func PrincipalWithPrincipal(ctx context.Context, p Principal) context.Context {
+func PrincipalWithContext(ctx context.Context, p Principal) context.Context {
 	return context.WithValue(ctx, principalKey{}, p)
 }
