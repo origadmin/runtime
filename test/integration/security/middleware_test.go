@@ -194,10 +194,10 @@ func (s *testServiceHTTPImpl) TestCall(ctx context.Context, req *emptypb.Empty) 
 
 func RegisterTestServiceHTTPServer(s *kratoshttp.Server, srv TestServiceHTTP) {
 	r := s.Route("/")
-	r.GET("/test", _TestService_TestCall0_HTTP_Handler(srv))
+	r.GET("/test", testServiceCallHTTPHandler(srv))
 }
 
-func _TestService_TestCall0_HTTP_Handler(srv TestServiceHTTP) func(ctx kratoshttp.Context) error {
+func testServiceCallHTTPHandler(srv TestServiceHTTP) func(ctx kratoshttp.Context) error {
 	return func(ctx kratoshttp.Context) error {
 		var in emptypb.Empty
 		// No binding needed for empty request
@@ -222,7 +222,7 @@ func _TestService_TestCall0_HTTP_Handler(srv TestServiceHTTP) func(ctx kratoshtt
 func authFilterFunc(authenticators []declarative.Authenticator, extractor declarative.CredentialExtractor) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			var provider declarative.ValueProvider = &impl.HTTPHeaderProvider{Header: r.Header}
+			provider := impl.FromHTTPRequest(r)
 
 			cred, err := extractor.Extract(provider)
 			if err != nil {
