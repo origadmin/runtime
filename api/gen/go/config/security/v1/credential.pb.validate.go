@@ -269,6 +269,105 @@ var _ interface {
 	ErrorName() string
 } = PayloadValidationError{}
 
+// Validate checks the field values on MetaValue with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *MetaValue) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on MetaValue with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in MetaValueMultiError, or nil
+// if none found.
+func (m *MetaValue) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *MetaValue) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return MetaValueMultiError(errors)
+	}
+
+	return nil
+}
+
+// MetaValueMultiError is an error wrapping multiple validation errors returned
+// by MetaValue.ValidateAll() if the designated constraints aren't met.
+type MetaValueMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m MetaValueMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m MetaValueMultiError) AllErrors() []error { return m }
+
+// MetaValueValidationError is the validation error returned by
+// MetaValue.Validate if the designated constraints aren't met.
+type MetaValueValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MetaValueValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MetaValueValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MetaValueValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MetaValueValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MetaValueValidationError) ErrorName() string { return "MetaValueValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MetaValueValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMetaValue.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MetaValueValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MetaValueValidationError{}
+
 // Validate checks the field values on CredentialSource with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -325,25 +424,25 @@ func (m *CredentialSource) validate(all bool) error {
 	}
 
 	{
-		sorted_keys := make([]string, len(m.GetMeta()))
+		sorted_keys := make([]string, len(m.GetMetadata()))
 		i := 0
-		for key := range m.GetMeta() {
+		for key := range m.GetMetadata() {
 			sorted_keys[i] = key
 			i++
 		}
 		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
 		for _, key := range sorted_keys {
-			val := m.GetMeta()[key]
+			val := m.GetMetadata()[key]
 			_ = val
 
-			// no validation rules for Meta[key]
+			// no validation rules for Metadata[key]
 
 			if all {
 				switch v := interface{}(val).(type) {
 				case interface{ ValidateAll() error }:
 					if err := v.ValidateAll(); err != nil {
 						errors = append(errors, CredentialSourceValidationError{
-							field:  fmt.Sprintf("Meta[%v]", key),
+							field:  fmt.Sprintf("Metadata[%v]", key),
 							reason: "embedded message failed validation",
 							cause:  err,
 						})
@@ -351,7 +450,7 @@ func (m *CredentialSource) validate(all bool) error {
 				case interface{ Validate() error }:
 					if err := v.Validate(); err != nil {
 						errors = append(errors, CredentialSourceValidationError{
-							field:  fmt.Sprintf("Meta[%v]", key),
+							field:  fmt.Sprintf("Metadata[%v]", key),
 							reason: "embedded message failed validation",
 							cause:  err,
 						})
@@ -360,7 +459,7 @@ func (m *CredentialSource) validate(all bool) error {
 			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
 				if err := v.Validate(); err != nil {
 					return CredentialSourceValidationError{
-						field:  fmt.Sprintf("Meta[%v]", key),
+						field:  fmt.Sprintf("Metadata[%v]", key),
 						reason: "embedded message failed validation",
 						cause:  err,
 					}
@@ -502,25 +601,25 @@ func (m *CredentialResponse) validate(all bool) error {
 	}
 
 	{
-		sorted_keys := make([]string, len(m.GetMeta()))
+		sorted_keys := make([]string, len(m.GetMetadata()))
 		i := 0
-		for key := range m.GetMeta() {
+		for key := range m.GetMetadata() {
 			sorted_keys[i] = key
 			i++
 		}
 		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
 		for _, key := range sorted_keys {
-			val := m.GetMeta()[key]
+			val := m.GetMetadata()[key]
 			_ = val
 
-			// no validation rules for Meta[key]
+			// no validation rules for Metadata[key]
 
 			if all {
 				switch v := interface{}(val).(type) {
 				case interface{ ValidateAll() error }:
 					if err := v.ValidateAll(); err != nil {
 						errors = append(errors, CredentialResponseValidationError{
-							field:  fmt.Sprintf("Meta[%v]", key),
+							field:  fmt.Sprintf("Metadata[%v]", key),
 							reason: "embedded message failed validation",
 							cause:  err,
 						})
@@ -528,7 +627,7 @@ func (m *CredentialResponse) validate(all bool) error {
 				case interface{ Validate() error }:
 					if err := v.Validate(); err != nil {
 						errors = append(errors, CredentialResponseValidationError{
-							field:  fmt.Sprintf("Meta[%v]", key),
+							field:  fmt.Sprintf("Metadata[%v]", key),
 							reason: "embedded message failed validation",
 							cause:  err,
 						})
@@ -537,7 +636,7 @@ func (m *CredentialResponse) validate(all bool) error {
 			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
 				if err := v.Validate(); err != nil {
 					return CredentialResponseValidationError{
-						field:  fmt.Sprintf("Meta[%v]", key),
+						field:  fmt.Sprintf("Metadata[%v]", key),
 						reason: "embedded message failed validation",
 						cause:  err,
 					}
@@ -626,6 +725,108 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CredentialResponseValidationError{}
+
+// Validate checks the field values on BearerCredential with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *BearerCredential) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on BearerCredential with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// BearerCredentialMultiError, or nil if none found.
+func (m *BearerCredential) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *BearerCredential) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Token
+
+	if len(errors) > 0 {
+		return BearerCredentialMultiError(errors)
+	}
+
+	return nil
+}
+
+// BearerCredentialMultiError is an error wrapping multiple validation errors
+// returned by BearerCredential.ValidateAll() if the designated constraints
+// aren't met.
+type BearerCredentialMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m BearerCredentialMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m BearerCredentialMultiError) AllErrors() []error { return m }
+
+// BearerCredentialValidationError is the validation error returned by
+// BearerCredential.Validate if the designated constraints aren't met.
+type BearerCredentialValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e BearerCredentialValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e BearerCredentialValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e BearerCredentialValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e BearerCredentialValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e BearerCredentialValidationError) ErrorName() string { return "BearerCredentialValidationError" }
+
+// Error satisfies the builtin error interface
+func (e BearerCredentialValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sBearerCredential.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = BearerCredentialValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = BearerCredentialValidationError{}
 
 // Validate checks the field values on TokenCredential with the rules defined
 // in the proto definition for this message. If any rules are violated, the

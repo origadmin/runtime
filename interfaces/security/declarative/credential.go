@@ -3,6 +3,8 @@ package declarative
 
 import (
 	"google.golang.org/protobuf/proto" // Import proto for proto.Message
+
+	"github.com/origadmin/runtime/interfaces/metadata"
 )
 
 // Credential represents a credential, either received from a request or newly issued.
@@ -20,9 +22,18 @@ type Credential interface {
 	// This allows for type-safe unmarshalling into specific protobuf messages.
 	ParsedPayload(message proto.Message) error
 
+	// FromMeta populates the credential from a metadata.Meta object.
+	FromMeta(meta metadata.Meta)
+
 	// Get returns the value of a specific header/metadata key.
 	Get(key string) (string, bool)
 
 	// GetAll returns all available headers/metadata as a map.
-	GetAll() map[string]any
+	GetAll() map[string][]string
+
+	// ToJSON serializes the entire credential
+	ToJSON() (string, error)
+
+	// ToProto converts the Credential to its protobuf representation.
+	ToProto() ([]byte, error)
 }

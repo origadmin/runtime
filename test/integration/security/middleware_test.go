@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/transport"
 	kratosgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/stretchr/testify/assert"
@@ -76,24 +75,10 @@ func (m *mockAuthenticator) Supports(cred declarative.Credential) bool {
 func kratosSecurityMiddleware(authenticators []declarative.Authenticator, extractor declarative.CredentialExtractor) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
-			var provider declarative.ValueProvider
-
-			// Adapt request to ValueProvider
-			if tr, ok := transport.FromServerContext(ctx); ok {
-				switch tr.Kind() {
-				case transport.KindHTTP:
-					if ht, ok := tr.(kratoshttp.Transporter); ok {
-						provider = &impl.HTTPHeaderProvider{Header: ht.Request().Header}
-					}
-				case transport.KindGRPC:
-					md, _ := metadata.FromIncomingContext(ctx)
-					provider = &impl.GRPCCredentialsProvider{MD: md}
-				}
-			} else {
-                // This middleware is specifically for Kratos transports.
-                // If it's not a Kratos transport, it's an unexpected scenario for this middleware.
-                return nil, errors.InternalServer("UNEXPECTED_TRANSPORT_TYPE", "kratosSecurityMiddleware expects Kratos transports")
-            }
+			provider, err := impl.FromServerContext(ctx)
+			if err != nil {
+				return nil, err
+			}
 
 			if provider == nil {
 				return nil, errors.InternalServer("UNKNOWN_REQUEST_TYPE", "request type not supported by security middleware")
@@ -131,7 +116,7 @@ func kratosSecurityMiddleware(authenticators []declarative.Authenticator, extrac
 			return handler(newCtx, req)
 		}
 	}
-}// standardSecurityMiddleware is the core logic for our security middleware/interceptor for standard net/http.
+} // standardSecurityMiddleware is the core logic for our security middleware/interceptor for standard net/http.
 func standardSecurityMiddleware(authenticators []declarative.Authenticator, extractor declarative.CredentialExtractor) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
@@ -139,7 +124,7 @@ func standardSecurityMiddleware(authenticators []declarative.Authenticator, extr
 
 			// Adapt request to ValueProvider
 			if r, ok := req.(*http.Request); ok {
-				provider = &impl.HTTPHeaderProvider{Header: r.Header}
+				provider = impl.FromHTTPRequest(r)
 			} else {
 				// This middleware is specifically for standard net/http.
 				// If it's not an http.Request, it's an unexpected scenario for this middleware.

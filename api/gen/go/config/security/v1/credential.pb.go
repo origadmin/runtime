@@ -15,7 +15,6 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	anypb "google.golang.org/protobuf/types/known/anypb"
-	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -28,6 +27,8 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Payload is a union of structured credential types, primarily for use in
+// CredentialResponse.
 type Payload struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Basic authentication credential.
@@ -37,6 +38,8 @@ type Payload struct {
 	// OIDC credential.
 	Oidc *v12.OidcCredential `protobuf:"bytes,12,opt,name=oidc,proto3,oneof" json:"oidc,omitempty"`
 	// Token-based credential (JWT, OAuth2).
+	// IMPORTANT: This structure is designed for OUTPUT (e.g., in CredentialResponse)
+	// after a token has been successfully issued.
 	Token *TokenCredential `protobuf:"bytes,13,opt,name=token,proto3,oneof" json:"token,omitempty"`
 	// Raw serialized data for unsupported credential types.
 	RawData       *string `protobuf:"bytes,14,opt,name=raw_data,json=rawData,proto3,oneof" json:"raw_data,omitempty"`
@@ -109,29 +112,89 @@ func (x *Payload) GetRawData() string {
 	return ""
 }
 
-// Credential is a generic container for transmitting credential data between services.
-// It carries the raw credential string and optionally a parsed, structured payload.
+// MetaValue is a wrapper for multi-value metadata entries, designed to
+// losslessly and type-safely represent transport-layer metadata like HTTP headers.
+type MetaValue struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Values        []string               `protobuf:"bytes,1,rep,name=values,proto3" json:"values,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MetaValue) Reset() {
+	*x = MetaValue{}
+	mi := &file_config_security_v1_credential_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MetaValue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MetaValue) ProtoMessage() {}
+
+func (x *MetaValue) ProtoReflect() protoreflect.Message {
+	mi := &file_config_security_v1_credential_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MetaValue.ProtoReflect.Descriptor instead.
+func (*MetaValue) Descriptor() ([]byte, []int) {
+	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *MetaValue) GetValues() []string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+// CredentialSource is a generic container for transmitting credential data.
+// It follows a "dumb pipe" philosophy, where it acts as a simple, unopinionated
+// container for the raw credential data extracted from a request. The responsibility
+// of parsing and interpreting the data lies solely with the consumer (the Authenticator).
 type CredentialSource struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Type indicates the kind of credential, e.g., "jwt", "apikey", "basic".
-	// This helps the receiving service understand how to interpret the raw data or payload.
+	// Type indicates the kind of credential, e.g., "bearer", "basic", "apikey".
+	// This serves as a hint to the Authenticator on how to interpret the data.
 	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	// Raw contains the original, unparsed credential string.
-	// For example, the full "Bearer eyJ..." JWT string, or the API key string.
+	// Raw contains the original, unmodified credential string extracted from the request
+	// (e.g., the full content of the `Authorization` header).
+	// This field MUST be treated as the authoritative source of truth by any Authenticator.
 	Raw string `protobuf:"bytes,2,opt,name=raw,proto3" json:"raw,omitempty"`
-	// ParsedPayload optionally contains a structured representation of the credential.
-	// This can be used if the sending service (e.g., Gateway) has already
-	// performed some parsing and wants to avoid re-parsing on the receiving end.
-	// The type of the message inside Any should correspond to the 'type' field.
-	Payload       *anypb.Any            `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
-	Meta          map[string]*anypb.Any `protobuf:"bytes,4,rep,name=meta,proto3" json:"meta,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Payload serves as an OPTIONAL, pre-parsed cache for the `raw` field to improve
+	// ease of use for consumers.
+	//
+	// Filling Rules:
+	// - CredentialExtractor SHOULD identify common credential patterns (e.g., "Bearer <token>")
+	//   and pack a corresponding well-known type (e.g., `BearerCredential`) into this field.
+	//
+	// Usage Rules:
+	// - Authenticator SHOULD first attempt to unpack a known type from this field.
+	//   If successful, it can use the structured data directly, avoiding reparsing.
+	//   If it fails or the field is empty, it MUST fall back to parsing the `raw` field.
+	Payload *anypb.Any `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+	// Metadata contains additional, non-credential data extracted from the request
+	// (e.g., from headers) that may be relevant for authentication/authorization decisions.
+	// The CredentialExtractor MUST support configurable mapping from request metadata
+	// (e.g., HTTP headers which are map[string][]string) to this field.
+	Metadata      map[string]*MetaValue `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CredentialSource) Reset() {
 	*x = CredentialSource{}
-	mi := &file_config_security_v1_credential_proto_msgTypes[1]
+	mi := &file_config_security_v1_credential_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -143,7 +206,7 @@ func (x *CredentialSource) String() string {
 func (*CredentialSource) ProtoMessage() {}
 
 func (x *CredentialSource) ProtoReflect() protoreflect.Message {
-	mi := &file_config_security_v1_credential_proto_msgTypes[1]
+	mi := &file_config_security_v1_credential_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -156,7 +219,7 @@ func (x *CredentialSource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CredentialSource.ProtoReflect.Descriptor instead.
 func (*CredentialSource) Descriptor() ([]byte, []int) {
-	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{1}
+	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CredentialSource) GetType() string {
@@ -180,37 +243,31 @@ func (x *CredentialSource) GetPayload() *anypb.Any {
 	return nil
 }
 
-func (x *CredentialSource) GetMeta() map[string]*anypb.Any {
+func (x *CredentialSource) GetMetadata() map[string]*MetaValue {
 	if x != nil {
-		return x.Meta
+		return x.Metadata
 	}
 	return nil
 }
 
 // CredentialResponse represents a credential structure intended for
-// transmission to clients (e.g., frontend applications). It contains
-// processed and safe-to-expose credential information.
-// It uses optional fields for credential data, allowing application logic
-// to enforce that only one is meaningfully populated.
+// transmission to clients (e.g., frontend applications) after a successful
+// authentication or token issuance event.
 type CredentialResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Type indicates the kind of credential, e.g., "jwt", "apikey", "basic".
-	// This helps the receiving client understand how to interpret the payload.
+	// Type indicates the kind of credential being returned, e.g., "jwt", "apikey".
 	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	// Payload contains the credential data, which is a union of all possible
-	// credential types. The client should use the 'type' field to determine
-	// which specific credential data to use.
+	// Payload contains the structured data of the issued credential.
 	Payload *Payload `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
-	// Optional metadata of the credential, using google.protobuf.Value for
-	// more direct JSON serialization.
-	Meta          map[string]*structpb.Value `protobuf:"bytes,4,rep,name=meta,proto3" json:"meta,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Optional metadata to be sent to the client.
+	Metadata      map[string]*MetaValue `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CredentialResponse) Reset() {
 	*x = CredentialResponse{}
-	mi := &file_config_security_v1_credential_proto_msgTypes[2]
+	mi := &file_config_security_v1_credential_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -222,7 +279,7 @@ func (x *CredentialResponse) String() string {
 func (*CredentialResponse) ProtoMessage() {}
 
 func (x *CredentialResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_config_security_v1_credential_proto_msgTypes[2]
+	mi := &file_config_security_v1_credential_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -235,7 +292,7 @@ func (x *CredentialResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CredentialResponse.ProtoReflect.Descriptor instead.
 func (*CredentialResponse) Descriptor() ([]byte, []int) {
-	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{2}
+	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CredentialResponse) GetType() string {
@@ -252,16 +309,67 @@ func (x *CredentialResponse) GetPayload() *Payload {
 	return nil
 }
 
-func (x *CredentialResponse) GetMeta() map[string]*structpb.Value {
+func (x *CredentialResponse) GetMetadata() map[string]*MetaValue {
 	if x != nil {
-		return x.Meta
+		return x.Metadata
 	}
 	return nil
 }
 
+// BearerCredential represents the structured payload for a "Bearer" scheme credential.
+// It is a well-known type intended to be packed into the `google.protobuf.Any`
+// `payload` field of a `CredentialSource` message.
+type BearerCredential struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The token string, without the "Bearer " prefix.
+	Token         string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BearerCredential) Reset() {
+	*x = BearerCredential{}
+	mi := &file_config_security_v1_credential_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BearerCredential) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BearerCredential) ProtoMessage() {}
+
+func (x *BearerCredential) ProtoReflect() protoreflect.Message {
+	mi := &file_config_security_v1_credential_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BearerCredential.ProtoReflect.Descriptor instead.
+func (*BearerCredential) Descriptor() ([]byte, []int) {
+	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *BearerCredential) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
 // TokenCredential holds the credentials for token-based authentication flows
-// like OAuth2 and JWT. It is a shared structure representing the typical
-// payload returned from a token endpoint.
+// like OAuth2 and JWT.
+//
+// IMPORTANT: This message represents the full set of tokens typically returned
+// from a token issuance endpoint (e.g., /login). It is designed for use in
+// CredentialResponse.
 type TokenCredential struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The access token used for authentication.
@@ -278,7 +386,7 @@ type TokenCredential struct {
 
 func (x *TokenCredential) Reset() {
 	*x = TokenCredential{}
-	mi := &file_config_security_v1_credential_proto_msgTypes[3]
+	mi := &file_config_security_v1_credential_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -290,7 +398,7 @@ func (x *TokenCredential) String() string {
 func (*TokenCredential) ProtoMessage() {}
 
 func (x *TokenCredential) ProtoReflect() protoreflect.Message {
-	mi := &file_config_security_v1_credential_proto_msgTypes[3]
+	mi := &file_config_security_v1_credential_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -303,7 +411,7 @@ func (x *TokenCredential) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TokenCredential.ProtoReflect.Descriptor instead.
 func (*TokenCredential) Descriptor() ([]byte, []int) {
-	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{3}
+	return file_config_security_v1_credential_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TokenCredential) GetAccessToken() string {
@@ -338,34 +446,38 @@ var File_config_security_v1_credential_proto protoreflect.FileDescriptor
 
 const file_config_security_v1_credential_proto_rawDesc = "" +
 	"\n" +
-	"#config/security/v1/credential.proto\x12\x1eruntime.api.config.security.v1\x1a0config/security/authn/apikey/v1/credential.proto\x1a/config/security/authn/basic/v1/credential.proto\x1a.config/security/authn/oidc/v1/credential.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xfc\x04\n" +
+	"#config/security/v1/credential.proto\x12\x1eruntime.api.config.security.v1\x1a0config/security/authn/apikey/v1/credential.proto\x1a/config/security/authn/basic/v1/credential.proto\x1a.config/security/authn/oidc/v1/credential.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x19google/protobuf/any.proto\x1a\x17validate/validate.proto\"\x96\x05\n" +
 	"\aPayload\x12~\n" +
 	"\x05basic\x18\n" +
 	" \x01(\v2;.runtime.api.config.security.authn.basic.v1.BasicCredentialB&\xbaG#\x92\x02 Basic authentication credential.H\x00R\x05basic\x88\x01\x01\x12}\n" +
 	"\x03key\x18\v \x01(\v2:.runtime.api.config.security.authn.apikey.v1.KeyCredentialB*\xbaG'\x92\x02$API Key or Preshared Key credential.H\x01R\x03key\x88\x01\x01\x12j\n" +
-	"\x04oidc\x18\f \x01(\v29.runtime.api.config.security.authn.oidc.v1.OidcCredentialB\x16\xbaG\x13\x92\x02\x10OIDC credential.H\x02R\x04oidc\x88\x01\x01\x12w\n" +
-	"\x05token\x18\r \x01(\v2/.runtime.api.config.security.v1.TokenCredentialB+\xbaG(\x92\x02%Token-based credential (JWT, OAuth2).H\x03R\x05token\x88\x01\x01\x12[\n" +
+	"\x04oidc\x18\f \x01(\v29.runtime.api.config.security.authn.oidc.v1.OidcCredentialB\x16\xbaG\x13\x92\x02\x10OIDC credential.H\x02R\x04oidc\x88\x01\x01\x12\x90\x01\n" +
+	"\x05token\x18\r \x01(\v2/.runtime.api.config.security.v1.TokenCredentialBD\xbaGA\x92\x02>Token-based credential (JWT, OAuth2), primarily for responses.H\x03R\x05token\x88\x01\x01\x12[\n" +
 	"\braw_data\x18\x0e \x01(\tB;\xbaG8\x92\x025Raw serialized data for unsupported credential types.H\x04R\arawData\x88\x01\x01B\b\n" +
 	"\x06_basicB\x06\n" +
 	"\x04_keyB\a\n" +
 	"\x05_oidcB\b\n" +
 	"\x06_tokenB\v\n" +
-	"\t_raw_data\"\xcd\x03\n" +
-	"\x10CredentialSource\x12I\n" +
-	"\x04type\x18\x01 \x01(\tB5\xbaG2\x92\x02/Type of the credential (e.g., 'jwt', 'apikey').R\x04type\x12=\n" +
-	"\x03raw\x18\x02 \x01(\tB+\xbaG(\x92\x02%Original, unparsed credential string.R\x03raw\x12d\n" +
-	"\apayload\x18\x03 \x01(\v2\x14.google.protobuf.AnyB4\xbaG1\x92\x02.Optional structured payload of the credential.R\apayload\x12z\n" +
-	"\x04meta\x18\x04 \x03(\v2:.runtime.api.config.security.v1.CredentialSource.MetaEntryB*\xbaG'\x92\x02$Optional metadata of the credential.R\x04meta\x1aM\n" +
-	"\tMetaEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
-	"\x05value\x18\x02 \x01(\v2\x14.google.protobuf.AnyR\x05value:\x028\x01\"\xbd\x03\n" +
-	"\x12CredentialResponse\x12I\n" +
-	"\x04type\x18\x01 \x01(\tB5\xbaG2\x92\x02/Type of the credential (e.g., 'jwt', 'apikey').R\x04type\x12\x8c\x01\n" +
-	"\apayload\x18\x02 \x01(\v2'.runtime.api.config.security.v1.PayloadBI\xbaGF\x92\x02CCredential data, which is a union of all possible credential types.R\apayload\x12|\n" +
-	"\x04meta\x18\x04 \x03(\v2<.runtime.api.config.security.v1.CredentialResponse.MetaEntryB*\xbaG'\x92\x02$Optional metadata of the credential.R\x04meta\x1aO\n" +
-	"\tMetaEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12,\n" +
-	"\x05value\x18\x02 \x01(\v2\x16.google.protobuf.ValueR\x05value:\x028\x01\"\xfb\x02\n" +
+	"\t_raw_data\"#\n" +
+	"\tMetaValue\x12\x16\n" +
+	"\x06values\x18\x01 \x03(\tR\x06values\"\xa4\x05\n" +
+	"\x10CredentialSource\x12Z\n" +
+	"\x04type\x18\x01 \x01(\tBF\xbaGC\x92\x02@A hint indicating the credential type (e.g., 'bearer', 'basic').R\x04type\x12n\n" +
+	"\x03raw\x18\x02 \x01(\tB\\\xbaGY\x92\x02VThe original, unmodified credential string. This is the authoritative source of truth.R\x03raw\x12\x95\x01\n" +
+	"\apayload\x18\x03 \x01(\v2\x14.google.protobuf.AnyBe\xbaGb\x92\x02_Optional pre-parsed cache of the credential, for ease of use. Consumers must fallback to `raw`.R\apayload\x12\xc3\x01\n" +
+	"\bmetadata\x18\x04 \x03(\v2>.runtime.api.config.security.v1.CredentialSource.MetadataEntryBg\xbaGd\x92\x02aConfigurable auxiliary data from the request context, perfectly representing multi-value headers.R\bmetadata\x1af\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12?\n" +
+	"\x05value\x18\x02 \x01(\v2).runtime.api.config.security.v1.MetaValueR\x05value:\x028\x01\"\xe0\x03\n" +
+	"\x12CredentialResponse\x12X\n" +
+	"\x04type\x18\x01 \x01(\tBD\xbaGA\x92\x02>Type of the credential being returned (e.g., 'jwt', 'apikey').R\x04type\x12v\n" +
+	"\apayload\x18\x02 \x01(\v2'.runtime.api.config.security.v1.PayloadB3\xbaG0\x92\x02-The structured data of the issued credential.R\apayload\x12\x8f\x01\n" +
+	"\bmetadata\x18\x04 \x03(\v2@.runtime.api.config.security.v1.CredentialResponse.MetadataEntryB1\xbaG.\x92\x02+Optional metadata to be sent to the client.R\bmetadata\x1af\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12?\n" +
+	"\x05value\x18\x02 \x01(\v2).runtime.api.config.security.v1.MetaValueR\x05value:\x028\x01\"_\n" +
+	"\x10BearerCredential\x12K\n" +
+	"\x05token\x18\x01 \x01(\tB5\xbaG2\x92\x02/The token string, without the 'Bearer ' prefix.R\x05token\"\xfb\x02\n" +
 	"\x0fTokenCredential\x12Y\n" +
 	"\faccess_token\x18\x01 \x01(\tB6\xfaB\x04r\x02\x10\x01\xbaG,\x92\x02)The access token used for authentication.R\vaccessToken\x12_\n" +
 	"\rrefresh_token\x18\x02 \x01(\tB:\xbaG7\x92\x024The refresh token used to obtain a new access token.R\frefreshToken\x12[\n" +
@@ -387,31 +499,32 @@ func file_config_security_v1_credential_proto_rawDescGZIP() []byte {
 	return file_config_security_v1_credential_proto_rawDescData
 }
 
-var file_config_security_v1_credential_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_config_security_v1_credential_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_config_security_v1_credential_proto_goTypes = []any{
 	(*Payload)(nil),            // 0: runtime.api.config.security.v1.Payload
-	(*CredentialSource)(nil),   // 1: runtime.api.config.security.v1.CredentialSource
-	(*CredentialResponse)(nil), // 2: runtime.api.config.security.v1.CredentialResponse
-	(*TokenCredential)(nil),    // 3: runtime.api.config.security.v1.TokenCredential
-	nil,                        // 4: runtime.api.config.security.v1.CredentialSource.MetaEntry
-	nil,                        // 5: runtime.api.config.security.v1.CredentialResponse.MetaEntry
-	(*v1.BasicCredential)(nil), // 6: runtime.api.config.security.authn.basic.v1.BasicCredential
-	(*v11.KeyCredential)(nil),  // 7: runtime.api.config.security.authn.apikey.v1.KeyCredential
-	(*v12.OidcCredential)(nil), // 8: runtime.api.config.security.authn.oidc.v1.OidcCredential
-	(*anypb.Any)(nil),          // 9: google.protobuf.Any
-	(*structpb.Value)(nil),     // 10: google.protobuf.Value
+	(*MetaValue)(nil),          // 1: runtime.api.config.security.v1.MetaValue
+	(*CredentialSource)(nil),   // 2: runtime.api.config.security.v1.CredentialSource
+	(*CredentialResponse)(nil), // 3: runtime.api.config.security.v1.CredentialResponse
+	(*BearerCredential)(nil),   // 4: runtime.api.config.security.v1.BearerCredential
+	(*TokenCredential)(nil),    // 5: runtime.api.config.security.v1.TokenCredential
+	nil,                        // 6: runtime.api.config.security.v1.CredentialSource.MetadataEntry
+	nil,                        // 7: runtime.api.config.security.v1.CredentialResponse.MetadataEntry
+	(*v1.BasicCredential)(nil), // 8: runtime.api.config.security.authn.basic.v1.BasicCredential
+	(*v11.KeyCredential)(nil),  // 9: runtime.api.config.security.authn.apikey.v1.KeyCredential
+	(*v12.OidcCredential)(nil), // 10: runtime.api.config.security.authn.oidc.v1.OidcCredential
+	(*anypb.Any)(nil),          // 11: google.protobuf.Any
 }
 var file_config_security_v1_credential_proto_depIdxs = []int32{
-	6,  // 0: runtime.api.config.security.v1.Payload.basic:type_name -> runtime.api.config.security.authn.basic.v1.BasicCredential
-	7,  // 1: runtime.api.config.security.v1.Payload.key:type_name -> runtime.api.config.security.authn.apikey.v1.KeyCredential
-	8,  // 2: runtime.api.config.security.v1.Payload.oidc:type_name -> runtime.api.config.security.authn.oidc.v1.OidcCredential
-	3,  // 3: runtime.api.config.security.v1.Payload.token:type_name -> runtime.api.config.security.v1.TokenCredential
-	9,  // 4: runtime.api.config.security.v1.CredentialSource.payload:type_name -> google.protobuf.Any
-	4,  // 5: runtime.api.config.security.v1.CredentialSource.meta:type_name -> runtime.api.config.security.v1.CredentialSource.MetaEntry
+	8,  // 0: runtime.api.config.security.v1.Payload.basic:type_name -> runtime.api.config.security.authn.basic.v1.BasicCredential
+	9,  // 1: runtime.api.config.security.v1.Payload.key:type_name -> runtime.api.config.security.authn.apikey.v1.KeyCredential
+	10, // 2: runtime.api.config.security.v1.Payload.oidc:type_name -> runtime.api.config.security.authn.oidc.v1.OidcCredential
+	5,  // 3: runtime.api.config.security.v1.Payload.token:type_name -> runtime.api.config.security.v1.TokenCredential
+	11, // 4: runtime.api.config.security.v1.CredentialSource.payload:type_name -> google.protobuf.Any
+	6,  // 5: runtime.api.config.security.v1.CredentialSource.metadata:type_name -> runtime.api.config.security.v1.CredentialSource.MetadataEntry
 	0,  // 6: runtime.api.config.security.v1.CredentialResponse.payload:type_name -> runtime.api.config.security.v1.Payload
-	5,  // 7: runtime.api.config.security.v1.CredentialResponse.meta:type_name -> runtime.api.config.security.v1.CredentialResponse.MetaEntry
-	9,  // 8: runtime.api.config.security.v1.CredentialSource.MetaEntry.value:type_name -> google.protobuf.Any
-	10, // 9: runtime.api.config.security.v1.CredentialResponse.MetaEntry.value:type_name -> google.protobuf.Value
+	7,  // 7: runtime.api.config.security.v1.CredentialResponse.metadata:type_name -> runtime.api.config.security.v1.CredentialResponse.MetadataEntry
+	1,  // 8: runtime.api.config.security.v1.CredentialSource.MetadataEntry.value:type_name -> runtime.api.config.security.v1.MetaValue
+	1,  // 9: runtime.api.config.security.v1.CredentialResponse.MetadataEntry.value:type_name -> runtime.api.config.security.v1.MetaValue
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
@@ -431,7 +544,7 @@ func file_config_security_v1_credential_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_security_v1_credential_proto_rawDesc), len(file_config_security_v1_credential_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -7,6 +7,7 @@ package declarative
 
 import (
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
+	"github.com/origadmin/runtime/interfaces/metadata"
 )
 
 // CredentialResponse represents a credential structure intended for
@@ -21,7 +22,7 @@ type CredentialResponse interface {
 
 	// GetMeta returns the metadata associated with the credential as a map.
 	// The values are converted from google.protobuf.Value to Go's any type.
-	GetMeta() map[string]any
+	GetMeta() metadata.Meta
 
 	// ToProto converts the CredentialResponse to its protobuf representation.
 	// This allows direct access to the underlying protobuf message, including its oneof fields.

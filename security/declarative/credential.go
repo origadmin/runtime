@@ -2,20 +2,52 @@ package declarative
 
 import (
 	"fmt"
-	"log"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
+	"github.com/origadmin/runtime/interfaces/metadata"
 	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/security/meta"
 )
 
 // credential is the internal implementation of the Credential interface.
 type credential struct {
 	c *securityv1.CredentialSource
+	m meta.Meta
+}
+
+func (c *credential) ToJSON() (string, error) {
+	if c.c == nil {
+		return "", fmt.Errorf("credential source is nil")
+	}
+	if c.c.Metadata == nil {
+		c.c.Metadata = c.m.ToProto()
+	}
+	jsonStr, err := protojson.Marshal(c.c)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonStr), nil
+}
+
+func (c *credential) ToProto() ([]byte, error) {
+	if c.c == nil {
+		return nil, fmt.Errorf("credential source is nil")
+	}
+	if c.c.Metadata == nil {
+		c.c.Metadata = c.m.ToProto()
+	}
+	return protojson.Marshal(c.c)
+}
+
+func (c *credential) FromMeta(meta metadata.Meta) {
+	if c == nil || meta == nil {
+		return
+	}
+	c.m = meta.GetAll()
 }
 
 // ParsedPayload unmarshals the credential's payload into the provided protobuf message.
@@ -30,78 +62,30 @@ func (c *credential) ParsedPayload(message proto.Message) error {
 // Get returns the string value of a specific metadata key.
 // It returns the value and true if the key exists and its value is a string, otherwise it returns an empty string and false.
 func (c *credential) Get(key string) (string, bool) {
-	meta := c.c.GetMeta()
-	if meta == nil {
+	metaValue := c.m.Get(key)
+	if metaValue == "" {
 		return "", false
-	}
-	if v, ok := meta[key]; ok {
-		stringValue := &wrapperspb.StringValue{}
-		err := v.UnmarshalTo(stringValue)
-		if err != nil {
-			log.Printf("failed to unmarshal metadata key %s to StringValue: %v", key, err)
-			return "", false
-		}
-		return stringValue.GetValue(), true
 	}
 	return "", false
 }
 
 // GetAll returns all available metadata as a map.
 // The values in the map are unmarshalled from their protobuf Any type to their corresponding Go types.
-func (c *credential) GetAll() map[string]any {
-	meta := c.c.GetMeta()
-	if meta == nil {
+func (c *credential) GetAll() map[string][]string {
+	if c == nil || c.m == nil {
 		return nil
 	}
-	result := make(map[string]any)
-	for k, v := range meta {
-		// Try to unmarshal into various wrapperspb types
-		var stringVal wrapperspb.StringValue
-		if err := v.UnmarshalTo(&stringVal); err == nil {
-			result[k] = stringVal.GetValue()
-			continue
-		}
-		var boolVal wrapperspb.BoolValue
-		if err := v.UnmarshalTo(&boolVal); err == nil {
-			result[k] = boolVal.GetValue()
-			continue
-		}
-		var int32Val wrapperspb.Int32Value
-		if err := v.UnmarshalTo(&int32Val); err == nil {
-			result[k] = int32Val.GetValue()
-			continue
-		}
-		var int64Val wrapperspb.Int64Value
-		if err := v.UnmarshalTo(&int64Val); err == nil {
-			result[k] = int64Val.GetValue()
-			continue
-		}
-		var uint32Val wrapperspb.UInt32Value
-		if err := v.UnmarshalTo(&uint32Val); err == nil {
-			result[k] = uint32Val.GetValue()
-			continue
-		}
-		var uint64Val wrapperspb.UInt64Value
-		if err := v.UnmarshalTo(&uint64Val); err == nil {
-			result[k] = uint64Val.GetValue()
-			continue
-		}
-		var floatVal wrapperspb.FloatValue
-		if err := v.UnmarshalTo(&floatVal); err == nil {
-			result[k] = floatVal.GetValue()
-			continue
-		}
-		var doubleVal wrapperspb.DoubleValue
-		if err := v.UnmarshalTo(&doubleVal); err == nil {
-			result[k] = doubleVal.GetValue()
-			continue
-		}
+	return c.m
+}
 
-		// If it's not a wrapperspb primitive, log and store the anypb.Any itself
-		log.Printf("metadata key %s contains a non-wrapperspb primitive type or complex type; storing as anypb.Any", k)
-		result[k] = v
-	}
-	return result
+// Type returns the type of the credential.
+func (c *credential) Type() string {
+	return c.c.GetType()
+}
+
+// Raw returns the original, unparsed credential string.
+func (c *credential) Raw() string {
+	return c.c.GetRaw()
 }
 
 // NewCredential creates a new Credential instance from a securityv1.Credential protobuf message.
@@ -117,19 +101,10 @@ func NewCredential(typo, raw string, src proto.Message) (declarative.Credential,
 	}}, nil
 }
 
-// Type returns the type of the credential.
-func (c *credential) Type() string {
-	return c.c.GetType()
-}
-
-// Raw returns the original, unparsed credential string.
-func (c *credential) Raw() string {
-	return c.c.GetRaw()
-}
-
 // credentialResponse is the internal implementation of the CredentialResponse interface.
 type credentialResponse struct {
 	cr *securityv1.CredentialResponse
+	m  meta.Meta
 }
 
 func (c *credentialResponse) Payload() *securityv1.Payload {
@@ -146,16 +121,11 @@ func (c *credentialResponse) GetType() string {
 
 // GetMeta returns the metadata associated with the credential as a map.
 // The values are converted from google.protobuf.Value to Go's any type.
-func (c *credentialResponse) GetMeta() map[string]any {
-	if c.cr == nil || c.cr.GetMeta() == nil {
+func (c *credentialResponse) GetMeta() metadata.Meta {
+	if c == nil || c.m == nil {
 		return nil
 	}
-
-	result := make(map[string]any)
-	for k, v := range c.cr.GetMeta() {
-		result[k] = v.AsInterface()
-	}
-	return result
+	return c.m
 }
 
 // ToProto converts the CredentialResponse to its protobuf representation.
