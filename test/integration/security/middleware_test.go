@@ -72,8 +72,8 @@ func (m *mockAuthenticator) Supports(cred declarative.Credential) bool {
 
 // --- 2. Middleware/Interceptor Implementation ---
 
-// securityMiddleware is the core logic for our security middleware/interceptor.
-func securityMiddleware(authenticators []declarative.Authenticator, extractor declarative.CredentialExtractor) middleware.Middleware {
+// kratosSecurityMiddleware is the core logic for our security middleware/interceptor for Kratos.
+func kratosSecurityMiddleware(authenticators []declarative.Authenticator, extractor declarative.CredentialExtractor) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			var provider declarative.ValueProvider
@@ -89,8 +89,10 @@ func securityMiddleware(authenticators []declarative.Authenticator, extractor de
 					md, _ := metadata.FromIncomingContext(ctx)
 					provider = &impl.GRPCCredentialsProvider{MD: md}
 				}
-			} else if r, ok := req.(*http.Request); ok {
-				provider = &impl.HTTPHeaderProvider{Header: r.Header}
+			} else {
+				// This middleware is specifically for Kratos transports.
+				// If it's not a Kratos transport, it's an unexpected scenario for this middleware.
+				return nil, errors.InternalServer("UNEXPECTED_TRANSPORT_TYPE", "kratosSecurityMiddleware expects Kratos transports")
 			}
 
 			if provider == nil {
@@ -124,12 +126,8 @@ func securityMiddleware(authenticators []declarative.Authenticator, extractor de
 			// 4. Inject Principal into context
 			newCtx := declarative.PrincipalWithContext(ctx, principal)
 
-			// For standard net/http, we must create a new request with the new context
-			if r, ok := req.(*http.Request); ok {
-				*r = *r.WithContext(newCtx)
-				return handler(newCtx, r)
-			}
-
+			// For Kratos, simply pass the new context down the chain.
+			// Kratos's http.Server will handle propagating this context to the http.Request's context.
 			return handler(newCtx, req)
 		}
 	}
@@ -179,13 +177,70 @@ func _TestService_TestCall0_HTTP_Handler(srv TestServiceHTTP) func(ctx kratoshtt
 	}
 }
 
+// standardSecurityMiddleware is the core logic for our security middleware/interceptor for standard net/http.
+func standardSecurityMiddleware(authenticators []declarative.Authenticator, extractor declarative.CredentialExtractor) middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			var provider declarative.ValueProvider
+
+			// Adapt request to ValueProvider
+			if r, ok := req.(*http.Request); ok {
+				provider = &impl.HTTPHeaderProvider{Header: r.Header}
+			} else {
+				// This middleware is specifically for standard net/http.
+				// If it's not an http.Request, it's an unexpected scenario for this middleware.
+				return nil, errors.InternalServer("UNEXPECTED_REQUEST_TYPE", "standardSecurityMiddleware expects *http.Request")
+			}
+
+			if provider == nil {
+				return nil, errors.InternalServer("UNKNOWN_REQUEST_TYPE", "request type not supported by security middleware")
+			}
+
+			// 1. Extract Credential
+			cred, err := extractor.Extract(provider)
+			if err != nil {
+				return nil, errors.Unauthorized("CREDENTIAL_MISSING", err.Error())
+			}
+
+			// 2. Find a suitable Authenticator
+			var authenticator declarative.Authenticator
+			for _, auth := range authenticators {
+				if auth.Supports(cred) {
+					authenticator = auth
+					break
+				}
+			}
+			if authenticator == nil {
+				return nil, errors.Unauthorized("AUTHENTICATOR_NOT_FOUND", "no authenticator found for credential type: "+cred.Type())
+			}
+
+			// 3. Authenticate
+			principal, err := authenticator.Authenticate(ctx, cred)
+			if err != nil {
+				return nil, err // Return the error from the authenticator
+			}
+
+			// 4. Inject Principal into context
+			newCtx := declarative.PrincipalWithContext(ctx, principal)
+
+			// For standard net/http, we must create a new request with the new context
+			if r, ok := req.(*http.Request); ok {
+				*r = *r.WithContext(newCtx)
+				return handler(newCtx, r)
+			}
+			// This should not be reached if the initial check for *http.Request passed.
+			return nil, errors.InternalServer("UNEXPECTED_STATE", "standardSecurityMiddleware failed to update http.Request")
+		}
+	}
+}
+
 // --- 3. Test Scenarios ---
 
 func TestMiddlewareIntegration(t *testing.T) {
 	// --- Setup common components ---
 	auth := &mockAuthenticator{validToken: validToken}
 	extractor := impl.NewHeaderCredentialExtractor()
-	securityChain := securityMiddleware([]declarative.Authenticator{auth}, extractor)
+	securityChain := kratosSecurityMiddleware([]declarative.Authenticator{auth}, extractor)
 
 	// --- Scenario 1: Standard net/http Server ---
 	t.Run("Standard net/http", func(t *testing.T) {
