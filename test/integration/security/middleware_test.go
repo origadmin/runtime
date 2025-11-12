@@ -135,6 +135,50 @@ func securityMiddleware(authenticators []declarative.Authenticator, extractor de
 	}
 }
 
+// TestServiceHTTP defines a simple HTTP service for Kratos.
+type TestServiceHTTP interface {
+	TestCall(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+}
+
+// testServiceHTTPImpl implements TestServiceHTTP.
+type testServiceHTTPImpl struct {
+	t *testing.T
+}
+
+func (s *testServiceHTTPImpl) TestCall(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
+	p, ok := declarative.PrincipalFromContext(ctx)
+	assert.True(s.t, ok, "Principal should be in Kratos HTTP context (native handler)")
+	if ok {
+		assert.Equal(s.t, "test-user", p.GetID())
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func RegisterTestServiceHTTPServer(s *kratoshttp.Server, srv TestServiceHTTP) {
+	r := s.Route("/")
+	r.GET("/test", _TestService_TestCall0_HTTP_Handler(srv))
+}
+
+func _TestService_TestCall0_HTTP_Handler(srv TestServiceHTTP) func(ctx kratoshttp.Context) error {
+	return func(ctx kratoshttp.Context) error {
+		var in emptypb.Empty
+		// No binding needed for empty request
+		// if err := ctx.BindQuery(&in); err != nil {
+		// 	return err
+		// }
+		// http.SetOperation(ctx, OperationTestServiceTestCall) // No operation constant needed for manual test
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.TestCall(ctx, req.(*emptypb.Empty))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
 // --- 3. Test Scenarios ---
 
 func TestMiddlewareIntegration(t *testing.T) {
@@ -198,21 +242,16 @@ func TestMiddlewareIntegration(t *testing.T) {
 
 	// --- Scenario 2: Kratos HTTP Server ---
 	t.Run("Kratos HTTP", func(t *testing.T) {
-		// Handler that checks for principal
-		httpHandler := func(w http.ResponseWriter, r *http.Request) {
-			p, ok := declarative.PrincipalFromContext(r.Context())
-			assert.True(t, ok, "Principal should be in Kratos HTTP context")
-			if ok {
-				assert.Equal(t, "test-user", p.GetID())
-			}
-			w.WriteHeader(http.StatusOK)
-		}
-
 		srv := kratoshttp.NewServer(
 			kratoshttp.Address("127.0.0.1:0"),
 			kratoshttp.Middleware(securityChain),
 		)
-		srv.Handle("/test", http.HandlerFunc(httpHandler))
+
+		// Create an instance of the Kratos-native service implementation
+		testService := &testServiceHTTPImpl{t: t}
+
+		// Register the service using the manually created registration function
+		RegisterTestServiceHTTPServer(srv, testService)
 
 		go func() {
 			if err := srv.Start(context.Background()); err != nil && !errors.Is(err, http.ErrServerClosed) {
