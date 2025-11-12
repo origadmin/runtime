@@ -6,9 +6,9 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/origadmin/runtime/interfaces/security/declarative"
 	impl "github.com/origadmin/runtime/security/declarative"
@@ -85,14 +86,11 @@ func securityMiddleware(authenticators []declarative.Authenticator, extractor de
 						provider = &impl.HTTPHeaderProvider{Header: ht.Request().Header}
 					}
 				case transport.KindGRPC:
-					// No need to cast to gt, as we extract metadata from ctx directly
-					md, _ := metadata.FromIncomingContext(ctx) // Extract metadata from the context directly
+					md, _ := metadata.FromIncomingContext(ctx)
 					provider = &impl.GRPCCredentialsProvider{MD: md}
 				}
 			} else if r, ok := req.(*http.Request); ok {
-				// For standard net/http
 				provider = &impl.HTTPHeaderProvider{Header: r.Header}
-				ctx = r.Context()
 			}
 
 			if provider == nil {
@@ -126,7 +124,7 @@ func securityMiddleware(authenticators []declarative.Authenticator, extractor de
 			// 4. Inject Principal into context
 			newCtx := declarative.PrincipalWithContext(ctx, principal)
 
-			// For standard net/http, update the request's context
+			// For standard net/http, we must create a new request with the new context
 			if r, ok := req.(*http.Request); ok {
 				*r = *r.WithContext(newCtx)
 				return handler(newCtx, r)
@@ -147,34 +145,38 @@ func TestMiddlewareIntegration(t *testing.T) {
 
 	// --- Scenario 1: Standard net/http Server ---
 	t.Run("Standard net/http", func(t *testing.T) {
-		// Handler that checks for principal
-		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The final handler that checks for the principal
+		finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			p, ok := declarative.PrincipalFromContext(r.Context())
-			assert.True(t, ok)
-			assert.Equal(t, "test-user", p.GetID())
+			assert.True(t, ok, "Principal should be in context")
+			if ok {
+				assert.Equal(t, "test-user", p.GetID())
+			}
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, "OK")
 		})
 
-		// Wrap handler with middleware
-		wrappedHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// The middleware expects to return the handler's result, which we ignore here.
-			// We pass the request as the second argument as per our middleware's adaptation.
-			_, err := securityChain(func(ctx context.Context, req interface{}) (interface{}, error) {
-				handler.ServeHTTP(w, req.(*http.Request))
-				return "ok", nil
-			})(r.Context(), r)
-
-			if err != nil {
-				if se := errors.FromError(err); se != nil {
-					http.Error(w, se.Message, int(se.Code))
-				} else {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+		// Adapt the Kratos middleware to a standard http.Handler
+		middlewareAdapter := func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				kratosHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
+					next.ServeHTTP(w, req.(*http.Request))
+					return "ok", nil
 				}
-			}
-		})
 
-		server := httptest.NewServer(wrappedHandler)
+				_, err := securityChain(kratosHandler)(r.Context(), r)
+
+				if err != nil {
+					if se := errors.FromError(err); se != nil {
+						http.Error(w, se.Message, int(se.Code))
+					} else {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+					}
+				}
+			})
+		}
+
+		server := httptest.NewServer(middlewareAdapter(finalHandler))
 		defer server.Close()
 
 		// Test with valid token
@@ -199,35 +201,28 @@ func TestMiddlewareIntegration(t *testing.T) {
 		// Handler that checks for principal
 		httpHandler := func(w http.ResponseWriter, r *http.Request) {
 			p, ok := declarative.PrincipalFromContext(r.Context())
-			assert.True(t, ok)
-			assert.Equal(t, "test-user", p.GetID())
+			assert.True(t, ok, "Principal should be in Kratos HTTP context")
+			if ok {
+				assert.Equal(t, "test-user", p.GetID())
+			}
 			w.WriteHeader(http.StatusOK)
 		}
 
 		srv := kratoshttp.NewServer(
-			kratoshttp.Address("127.0.0.1:0"), // Use dynamic port
+			kratoshttp.Address("127.0.0.1:0"),
 			kratoshttp.Middleware(securityChain),
 		)
 		srv.Handle("/test", http.HandlerFunc(httpHandler))
-		// srv.HandlePrefix("/", router) // No longer needed with direct Handle
 
-		// Start server in background
 		go func() {
-			if err := srv.Start(context.Background()); err != nil {
+			if err := srv.Start(context.Background()); err != nil && !errors.Is(err, http.ErrServerClosed) {
 				panic(err)
 			}
 		}()
 		defer srv.Stop(context.Background())
+		time.Sleep(100 * time.Millisecond)
 
-		// Wait for server to be ready by getting the endpoint
-		var endpoint *url.URL
-		var err error
-		for i := 0; i < 10; i++ {
-			endpoint, err = srv.Endpoint()
-			if err == nil && endpoint != nil {
-				break
-			}
-		}
+		endpoint, err := srv.Endpoint()
 		assert.NoError(t, err)
 		assert.NotNil(t, endpoint)
 
@@ -255,25 +250,25 @@ func TestMiddlewareIntegration(t *testing.T) {
 		// Simple gRPC handler
 		handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 			p, ok := declarative.PrincipalFromContext(ctx)
-			assert.True(t, ok)
-			assert.Equal(t, "test-user", p.GetID())
-			return "OK", nil
+			assert.True(t, ok, "Principal should be in Kratos gRPC context")
+			if ok {
+				assert.Equal(t, "test-user", p.GetID())
+			}
+			return &emptypb.Empty{}, nil // Return a proto.Message
 		}
 
-		// Create a listener on a dynamic port
 		lis, err := net.Listen("tcp", "127.0.0.1:0")
 		if err != nil {
 			t.Fatalf("failed to listen: %v", err)
 		}
 		addr := lis.Addr().String()
-		lis.Close() // Close immediately, Kratos will re-open it
+		lis.Close()
 
 		srv := kratosgrpc.NewServer(
 			kratosgrpc.Address(addr),
 			kratosgrpc.Middleware(securityChain),
 		)
 
-		// Create a minimal service descriptor to register a method
 		gsd := &grpc.ServiceDesc{
 			ServiceName: "test.Service",
 			HandlerType: (*interface{})(nil),
@@ -296,33 +291,26 @@ func TestMiddlewareIntegration(t *testing.T) {
 		srv.RegisterService(gsd, struct{}{})
 
 		go func() {
-			if err := srv.Start(context.Background()); err != nil {
+			if err := srv.Start(context.Background()); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 				panic(err)
 			}
 		}()
 		defer srv.Stop(context.Background())
+		time.Sleep(100 * time.Millisecond)
 
-		// Wait for server to be ready
-		var conn *grpc.ClientConn
-		for i := 0; i < 10; i++ {
-			conn, err = grpc.Dial(addr, grpc.WithInsecure())
-			if err == nil {
-				break
-			}
-		}
+		conn, err := grpc.Dial(addr, grpc.WithInsecure())
 		assert.NoError(t, err)
 		defer conn.Close()
 
 		// Test with valid token
 		ctxValid := metadata.NewOutgoingContext(context.Background(), metadata.Pairs(authHeader, "Bearer "+validToken))
-		var reply string
-		err = conn.Invoke(ctxValid, "/test.Service/TestCall", struct{}{}, &reply)
+		var reply emptypb.Empty
+		err = conn.Invoke(ctxValid, "/test.Service/TestCall", &emptypb.Empty{}, &reply)
 		assert.NoError(t, err)
-		assert.Equal(t, "OK", reply)
 
 		// Test with invalid token
 		ctxInvalid := metadata.NewOutgoingContext(context.Background(), metadata.Pairs(authHeader, "Bearer "+invalidToken))
-		err = conn.Invoke(ctxInvalid, "/test.Service/TestCall", struct{}{}, &reply)
+		err = conn.Invoke(ctxInvalid, "/test.Service/TestCall", &emptypb.Empty{}, &reply)
 		assert.Error(t, err)
 		st, ok := status.FromError(err)
 		assert.True(t, ok)
