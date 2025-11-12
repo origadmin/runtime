@@ -80,10 +80,8 @@ func FromServerContext(ctx context.Context) (declarative.ValueProvider, error) {
 			}
 			return nil, errors.New("invalid HTTP transport type")
 		case transport.KindGRPC:
-			if md, ok := metadata.FromIncomingContext(ctx); ok {
-				return FromGRPCMetadata(md), nil
-			}
-			return nil, errors.New("missing gRPC metadata in context")
+			md, _ := metadata.FromIncomingContext(ctx)
+			return FromGRPCMetadata(md), nil
 		default:
 			return nil, fmt.Errorf("unsupported transport type: %v", tr.Kind())
 		}

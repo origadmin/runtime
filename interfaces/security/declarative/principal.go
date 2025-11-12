@@ -6,8 +6,6 @@
 package declarative
 
 import (
-	"google.golang.org/protobuf/types/known/anypb" // Import for anypb.Any
-
 	"github.com/origadmin/runtime/context"
 )
 
@@ -22,7 +20,7 @@ type Principal interface {
 
 	// GetClaims returns all claims associated with the principal as a map of string to *anypb.Any.
 	// This allows for type-safe unpacking of claims into specific protobuf messages.
-	GetClaims() map[string]*anypb.Any
+	GetClaims() map[string]any
 }
 
 type principalKey struct{}

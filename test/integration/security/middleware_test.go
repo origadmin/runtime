@@ -22,6 +22,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/interfaces/security/declarative"
 	impl "github.com/origadmin/runtime/security/declarative"
 )
@@ -49,8 +50,8 @@ func (mp *MockPrincipal) GetRoles() []string {
 	return mp.Roles
 }
 
-func (mp *MockPrincipal) GetClaims() map[string]*anypb.Any {
-	return mp.Claims
+func (mp *MockPrincipal) GetClaims() map[string]any {
+	panic("TODO")
 }
 
 // mockAuthenticator implements the Authenticator interface for testing.
@@ -59,14 +60,18 @@ type mockAuthenticator struct {
 }
 
 func (m *mockAuthenticator) Authenticate(ctx context.Context, cred declarative.Credential) (declarative.Principal, error) {
-	if cred.Raw() == m.validToken {
-		return &MockPrincipal{ID: "test-user", Roles: []string{"user"}}, nil
+	var token securityv1.BearerCredential
+	if err := cred.ParsedPayload(&token); err != nil {
+		return nil, errors.Unauthorized("UNAUTHORIZED", "invalid token format")
 	}
-	return nil, errors.Unauthorized("UNAUTHORIZED", "invalid token")
+	if token.Token != m.validToken {
+		return nil, errors.Unauthorized("UNAUTHORIZED", "invalid token")
+	}
+	return &MockPrincipal{ID: "test-user", Roles: []string{"user"}}, nil
 }
 
 func (m *mockAuthenticator) Supports(cred declarative.Credential) bool {
-	return strings.ToLower(cred.Type()) == "bearer"
+	return strings.ToLower(cred.Type()) == "jwt"
 }
 
 // --- 2. Middleware/Interceptor Implementation ---

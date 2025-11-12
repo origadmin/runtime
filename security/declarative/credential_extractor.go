@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"strings"
 
+	"google.golang.org/protobuf/proto"
+
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/security/declarative"
@@ -51,14 +53,15 @@ func (e *HeaderCredentialExtractor) Extract(provider declarative.ValueProvider) 
 	// Convert scheme to lowercase for case-insensitive comparison
 	// Create a simple string value as the payload
 
-	payload := &securityv1.BearerCredential{
-		Token: rawCredential,
-	}
-
 	t := ""
+	var payload proto.Message
 	switch strings.ToLower(scheme) {
 	case "bearer":
 		t = "jwt"
+		payload = &securityv1.BearerCredential{
+			Token: rawCredential,
+		}
+
 	default:
 		t = scheme
 	}
