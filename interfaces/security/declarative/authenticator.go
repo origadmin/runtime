@@ -14,4 +14,8 @@ import (
 type Authenticator interface {
 	// Authenticate validates the provided credential and returns a Principal object if successful.
 	Authenticate(ctx context.Context, cred Credential) (Principal, error)
+
+	// Supports returns true if this authenticator can handle the given credential.
+	// For example, a JWTAuthenticator would return true for a credential where cred.Type() == "jwt".
+	Supports(cred Credential) bool
 }

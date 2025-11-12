@@ -1,4 +1,4 @@
-package security
+package declarative
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/wrapperspb" // Import wrapperspb
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/interfaces/security/declarative"
@@ -35,13 +35,13 @@ func (c *credential) Get(key string) (string, bool) {
 		return "", false
 	}
 	if v, ok := meta[key]; ok {
-		stringValue := &wrapperspb.StringValue{} // Use wrapperspb.StringValue
+		stringValue := &wrapperspb.StringValue{}
 		err := v.UnmarshalTo(stringValue)
 		if err != nil {
 			log.Printf("failed to unmarshal metadata key %s to StringValue: %v", key, err)
 			return "", false
 		}
-		return stringValue.GetValue(), true // Use GetValue()
+		return stringValue.GetValue(), true
 	}
 	return "", false
 }
