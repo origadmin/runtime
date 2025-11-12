@@ -14,6 +14,7 @@ import (
 
 	storagev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
+	"github.com/origadmin/runtime/interfaces/security/token"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
@@ -58,7 +59,7 @@ func (obj *tokenCacheStorage) Close(ctx context.Context) error {
 }
 
 // New creates a new CacheStorage instance
-func New(ss ...StorageOption) CacheStorage {
+func New(ss ...StorageOption) token.CacheStorage {
 	service := configure.New[tokenCacheStorage](ss)
 	if service.c == nil {
 		defaultCacheConfig := &storagev1.CacheConfig{
