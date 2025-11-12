@@ -232,6 +232,43 @@ func _TestService_TestCall0_HTTP_Handler(srv TestServiceHTTP) func(ctx kratoshtt
 	}
 }
 
+// authFilterFunc is a standard net/http middleware (FilterFunc) that performs authentication
+// and injects the Principal into the http.Request's context.
+func authFilterFunc(authenticators []declarative.Authenticator, extractor declarative.CredentialExtractor) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var provider declarative.ValueProvider = &impl.HTTPHeaderProvider{Header: r.Header}
+
+			cred, err := extractor.Extract(provider)
+			if err != nil {
+				http.Error(w, errors.Unauthorized("CREDENTIAL_MISSING", err.Error()).Error(), http.StatusUnauthorized)
+				return
+			}
+
+			var authenticator declarative.Authenticator
+			for _, auth := range authenticators {
+				if auth.Supports(cred) {
+					authenticator = auth
+					break
+				}
+			}
+			if authenticator == nil {
+				http.Error(w, errors.Unauthorized("AUTHENTICATOR_NOT_FOUND", "no authenticator found for credential type: "+cred.Type()).Error(), http.StatusUnauthorized)
+				return
+			}
+
+			principal, err := authenticator.Authenticate(r.Context(), cred)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return
+			}
+
+			newCtx := declarative.PrincipalWithContext(r.Context(), principal)
+			next.ServeHTTP(w, r.WithContext(newCtx)) // Inject new context into the request
+		})
+	}
+}
+
 // --- 3. Test Scenarios ---
 
 func TestMiddlewareIntegration(t *testing.T) {
@@ -342,21 +379,17 @@ func TestMiddlewareIntegration(t *testing.T) {
 	t.Run("Kratos HTTP - HandlerFunc Context Propagation", func(t *testing.T) {
 		// Handler that checks for principal
 		httpHandler := func(w http.ResponseWriter, r *http.Request) {
-			// This handler is expected to *not* find the principal due to Kratos's context propagation limitations.
 			p, ok := declarative.PrincipalFromContext(r.Context())
-			t.Logf("Kratos HTTP - HandlerFunc: Principal found: %v, ok: %v", p, ok)
-			assert.False(t, ok, "Principal should NOT be in Kratos HTTP context (HandlerFunc) due to known limitation")
-			
-			// For the invalid token case, the middleware will return an error, but Kratos's
-			// http.Server.Handle with http.HandlerFunc seems to ignore it and call the handler anyway,
-			// leading to a 200 OK instead of 401 Unauthorized.
-			// So, we assert that it returns 200 OK, confirming the limitation.
+			assert.True(t, ok, "Principal should be in Kratos HTTP context (HandlerFunc) via FilterFunc")
+			if ok {
+				assert.Equal(t, "test-user", p.GetID())
+			}
 			w.WriteHeader(http.StatusOK)
 		}
 
 		srv := kratoshttp.NewServer(
 			kratoshttp.Address("127.0.0.1:0"),
-			kratoshttp.Middleware(kratosSecurityChain),
+			kratoshttp.Filter(authFilterFunc([]declarative.Authenticator{auth}, extractor)), // Use FilterFunc
 		)
 		srv.Handle("/test-handlerfunc", http.HandlerFunc(httpHandler))
 
@@ -379,8 +412,7 @@ func TestMiddlewareIntegration(t *testing.T) {
 		req.Header.Set(authHeader, "Bearer "+validToken)
 		resp, err := client.Do(req)
 		assert.NoError(t, err)
-		// Assert that it returns 200 OK, confirming the limitation.
-		assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected 200 OK due to Kratos HandlerFunc context propagation limitation")
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		resp.Body.Close()
 
 		// Test with invalid token
@@ -388,8 +420,7 @@ func TestMiddlewareIntegration(t *testing.T) {
 		req.Header.Set(authHeader, "Bearer "+invalidToken)
 		resp, err = client.Do(req)
 		assert.NoError(t, err)
-		// Assert that it returns 200 OK, confirming the limitation.
-		assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected 200 OK due to Kratos HandlerFunc context propagation limitation")
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 		resp.Body.Close()
 	})
 
