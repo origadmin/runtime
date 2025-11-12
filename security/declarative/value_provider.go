@@ -40,7 +40,11 @@ func (p GRPCCredentialsProvider) Values(key string) []string {
 }
 
 func (p GRPCCredentialsProvider) Get(key string) string {
-	return p.MD.Get(key)[0]
+	values := p.MD.Get(key)
+	if len(values) > 0 {
+		return values[0]
+	}
+	return ""
 }
 
 func (p GRPCCredentialsProvider) GetAll() map[string][]string {
@@ -80,8 +84,10 @@ func FromServerContext(ctx context.Context) (declarative.ValueProvider, error) {
 			}
 			return nil, errors.New("invalid HTTP transport type")
 		case transport.KindGRPC:
-			md, _ := metadata.FromIncomingContext(ctx)
-			return FromGRPCMetadata(md), nil
+			if md, ok := metadata.FromIncomingContext(ctx); ok {
+				return FromGRPCMetadata(md), nil
+			}
+			return nil, errors.New("no metadata found in context")
 		default:
 			return nil, fmt.Errorf("unsupported transport type: %v", tr.Kind())
 		}

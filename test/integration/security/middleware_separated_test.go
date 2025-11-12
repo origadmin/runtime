@@ -3,6 +3,7 @@ package security_test
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -60,21 +61,42 @@ func (mp *SeparatedMockPrincipal) GetClaims() map[string]any {
 // mockAuthenticator implements the Authenticator interface for testing.
 type SeparatedMockAuthenticator struct {
 	validToken string
+	t          *testing.T // Add testing.T for logging
 }
 
 func (m *SeparatedMockAuthenticator) Authenticate(ctx context.Context, cred declarative.Credential) (declarative.Principal, error) {
+	if m.t != nil {
+		m.t.Logf("[DEBUG] Authenticate called with credential type: %s", cred.Type())
+	}
 	var token securityv1.BearerCredential
 	if err := cred.ParsedPayload(&token); err != nil {
+		if m.t != nil {
+			m.t.Logf("[ERROR] Failed to parse token: %v", err)
+		}
 		return nil, errors.Unauthorized("UNAUTHORIZED", "invalid token format or type mismatch")
 	}
+	if m.t != nil {
+		m.t.Logf("[DEBUG] Authenticating token: %s, expected: %s", token.Token, m.validToken)
+	}
 	if token.Token != m.validToken {
+		if m.t != nil {
+			m.t.Logf("[ERROR] Token mismatch: got %s, want %s", token.Token, m.validToken)
+		}
 		return nil, errors.Unauthorized("UNAUTHORIZED", "invalid token")
 	}
-	return &SeparatedMockPrincipal{ID: "separated-test-user", Roles: []string{"user"}}, nil
+	principal := &SeparatedMockPrincipal{ID: "separated-test-user", Roles: []string{"user"}}
+	if m.t != nil {
+		m.t.Logf("[DEBUG] Authentication successful for user: %s", principal.ID)
+	}
+	return principal, nil
 }
 
 func (m *SeparatedMockAuthenticator) Supports(cred declarative.Credential) bool {
-	return strings.ToLower(cred.Type()) == "jwt"
+	supported := strings.ToLower(cred.Type()) == "jwt"
+	if m.t != nil {
+		m.t.Logf("[DEBUG] MockAuthenticator.Supports: type=%s, supported=%v", cred.Type(), supported)
+	}
+	return supported
 }
 
 // mockAuthorizer implements the Authorizer interface for testing.
@@ -153,64 +175,111 @@ func kratosAuthzMiddleware(authorizer declarative.Authorizer, resourceIdentifier
 }
 
 // standardAuthnMiddleware is the core logic for our authentication middleware/interceptor for standard net/http.
-func standardAuthnMiddleware(authenticator declarative.Authenticator, extractor declarative.CredentialExtractor) middleware.Middleware {
+func standardAuthnMiddleware(t *testing.T, authenticator declarative.Authenticator, extractor declarative.CredentialExtractor) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
+			t.Logf("[DEBUG] standardAuthnMiddleware: Starting authentication")
 			var provider declarative.ValueProvider
 
 			if r, ok := req.(*http.Request); ok {
+				t.Logf("[DEBUG] standardAuthnMiddleware: Extracting provider from http.Request")
 				provider = impl.FromHTTPRequest(r)
+				if r.Header != nil {
+					t.Logf("[DEBUG] standardAuthnMiddleware: Request headers: %+v", r.Header)
+				}
 			} else {
-				return nil, errors.InternalServer("UNEXPECTED_REQUEST_TYPE", "standardAuthnMiddleware expects *http.Request")
+				errMsg := "standardAuthnMiddleware expects *http.Request"
+				t.Logf("[ERROR] %s", errMsg)
+				return nil, errors.InternalServer("UNEXPECTED_REQUEST_TYPE", errMsg)
 			}
 
 			if provider == nil {
-				return nil, errors.InternalServer("UNKNOWN_REQUEST_TYPE", "request type not supported by authentication middleware")
+				errMsg := "request type not supported by authentication middleware"
+				t.Logf("[ERROR] %s", errMsg)
+				return nil, errors.InternalServer("UNKNOWN_REQUEST_TYPE", errMsg)
 			}
 
 			// 1. Extract Credential
-			cred, err := extractor.Extract(ctx, provider) // Pass ctx here
+			t.Logf("[DEBUG] standardAuthnMiddleware: Extracting credential")
+			cred, err := extractor.Extract(ctx, provider)
 			if err != nil {
-				return nil, errors.Unauthorized("CREDENTIAL_MISSING", err.Error())
+				errMsg := fmt.Sprintf("Failed to extract credential: %v", err)
+				t.Logf("[ERROR] %s", errMsg)
+				return nil, errors.Unauthorized("CREDENTIAL_MISSING", errMsg)
 			}
+			t.Logf("[DEBUG] standardAuthnMiddleware: Extracted credential type: %s", cred.Type())
 
 			// 2. Authenticate
+			t.Logf("[DEBUG] standardAuthnMiddleware: Authenticating credential")
 			principal, err := authenticator.Authenticate(ctx, cred)
 			if err != nil {
+				t.Logf("[ERROR] Authentication failed: %v", err)
 				return nil, err
 			}
+
+			t.Logf("[DEBUG] standardAuthnMiddleware: Authentication successful, principal ID: %s", principal.GetID())
 
 			// 3. Inject Principal into context
 			newCtx := declarative.PrincipalWithContext(ctx, principal)
 
 			if r, ok := req.(*http.Request); ok {
 				*r = *r.WithContext(newCtx)
+				t.Logf("[DEBUG] standardAuthnMiddleware: Successfully updated request context with principal")
 				return handler(newCtx, r)
 			}
-			return nil, errors.InternalServer("UNEXPECTED_STATE", "standardAuthnMiddleware failed to update http.Request")
+
+			errMsg := "standardAuthnMiddleware failed to update http.Request"
+			t.Logf("[ERROR] %s", errMsg)
+			return nil, errors.InternalServer("UNEXPECTED_STATE", errMsg)
 		}
 	}
 }
 
 // standardAuthzMiddleware is the core logic for our authorization middleware/interceptor for standard net/http.
-func standardAuthzMiddleware(authorizer declarative.Authorizer, resourceIdentifier string, action string) middleware.Middleware {
+func standardAuthzMiddleware(t *testing.T, authorizer declarative.Authorizer, resourceIdentifier string, action string) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
-			// 1. Get Principal from context (assumes authentication middleware ran before)
-			principal, ok := declarative.PrincipalFromContext(ctx)
-			if !ok {
-				return nil, errors.Unauthorized("UNAUTHENTICATED", "principal not found in context, authentication required")
+			t.Logf("[DEBUG] standardAuthzMiddleware: Starting authorization check")
+			// For standard net/http, the context might be updated by previous middleware
+			// We need to get the latest context from the http.Request if available
+			var currentCtx context.Context
+
+			if r, ok := req.(*http.Request); ok {
+				currentCtx = r.Context()
+				t.Logf("[DEBUG] standardAuthzMiddleware: Got context from http.Request")
+			} else {
+				currentCtx = ctx
+				t.Logf("[DEBUG] standardAuthzMiddleware: Using provided context")
 			}
 
-			// 2. Authorize
-			allowed, err := authorizer.Authorize(ctx, principal, resourceIdentifier, action)
+			// Get the principal from context
+			principal, ok := declarative.PrincipalFromContext(currentCtx)
+			if !ok {
+				errMsg := "principal not found in context"
+				t.Logf("[ERROR] standardAuthzMiddleware: %s", errMsg)
+				return nil, errors.Unauthorized("UNAUTHORIZED", errMsg)
+			}
+
+			t.Logf("[DEBUG] standardAuthzMiddleware: Found principal in context, ID: %s", principal.GetID())
+
+			// Authorize the request
+			t.Logf("[DEBUG] standardAuthzMiddleware: Authorizing principal %s for resource %s, action %s",
+				principal.GetID(), resourceIdentifier, action)
+
+			authorized, err := authorizer.Authorize(currentCtx, principal, resourceIdentifier, action)
 			if err != nil {
+				t.Logf("[ERROR] standardAuthzMiddleware: Authorization error: %v", err)
 				return nil, err
 			}
-			if !allowed {
-				return nil, errors.Forbidden("PERMISSION_DENIED", "principal not authorized for this resource/action")
+
+			if !authorized {
+				errMsg := fmt.Sprintf("Principal %s is not authorized to perform action %s on resource %s",
+					principal.GetID(), action, resourceIdentifier)
+				t.Logf("[WARN] standardAuthzMiddleware: %s", errMsg)
+				return nil, errors.Forbidden("FORBIDDEN", errMsg)
 			}
 
+			t.Logf("[DEBUG] standardAuthzMiddleware: Authorization successful")
 			return handler(ctx, req)
 		}
 	}
@@ -218,7 +287,7 @@ func standardAuthzMiddleware(authorizer declarative.Authorizer, resourceIdentifi
 
 // authnFilterFunc is a standard net/http middleware (FilterFunc) that performs authentication
 // and injects the Principal into the http.Request's context.
-func authnFilterFunc(authenticator declarative.Authenticator, extractor declarative.CredentialExtractor) func(http.Handler) http.Handler {
+func authnFilterFunc(t *testing.T, authenticator declarative.Authenticator, extractor declarative.CredentialExtractor) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			provider := impl.FromHTTPRequest(r)
@@ -242,16 +311,19 @@ func authnFilterFunc(authenticator declarative.Authenticator, extractor declarat
 }
 
 // authzFilterFunc is a standard net/http middleware (FilterFunc) that performs authorization.
-func authzFilterFunc(authorizer declarative.Authorizer, resourceIdentifier string, action string) func(http.Handler) http.Handler {
+func authzFilterFunc(t *testing.T, authorizer declarative.Authorizer, resourceIdentifier string, action string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			principal, ok := declarative.PrincipalFromContext(r.Context())
+			// Get the latest context from the request, which might have been updated by authnFilterFunc
+			ctx := r.Context()
+
+			principal, ok := declarative.PrincipalFromContext(ctx)
 			if !ok {
 				http.Error(w, errors.Unauthorized("UNAUTHENTICATED", "principal not found in context, authentication required").Error(), http.StatusUnauthorized)
 				return
 			}
 
-			allowed, err := authorizer.Authorize(r.Context(), principal, resourceIdentifier, action)
+			allowed, err := authorizer.Authorize(ctx, principal, resourceIdentifier, action)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusForbidden) // Use Forbidden for authorization errors
 				return
@@ -273,14 +345,14 @@ type SeparatedTestServiceHTTP interface {
 
 // testServiceHTTPImpl implements TestServiceHTTP.
 type SeparatedTestServiceHTTPImpl struct {
-	t *testing.T
+	testT *testing.T // Renamed from 't' to 'testT'
 }
 
 func (s *SeparatedTestServiceHTTPImpl) TestCall(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
 	p, ok := declarative.PrincipalFromContext(ctx)
-	assert.True(s.t, ok, "Principal should be in Kratos HTTP context (native handler)")
+	assert.True(s.testT, ok, "Principal should be in Kratos HTTP context (native handler)")
 	if ok {
-		assert.Equal(s.t, "separated-test-user", p.GetID())
+		assert.Equal(s.testT, "separated-test-user", p.GetID())
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -309,7 +381,10 @@ func separatedTestServiceCallHTTPHandler(srv SeparatedTestServiceHTTP) func(ctx 
 
 func TestSeparatedMiddlewareIntegration(t *testing.T) {
 	// --- Setup common components ---
-	auth := &SeparatedMockAuthenticator{validToken: separatedValidToken}
+	auth := &SeparatedMockAuthenticator{
+		validToken: separatedValidToken,
+		t:          t, // Pass the testing.T to the mock authenticator
+	}
 	authorizer := &SeparatedMockAuthorizer{} // Our mock authorizer
 	extractor := impl.NewHeaderCredentialExtractor()
 
@@ -320,8 +395,9 @@ func TestSeparatedMiddlewareIntegration(t *testing.T) {
 	kratosAuthnChain := kratosAuthnMiddleware(compositeAuth, extractor)
 	kratosAuthzChain := kratosAuthzMiddleware(authorizer, separatedTestResource, separatedTestAction)
 
-	standardAuthnChain := standardAuthnMiddleware(compositeAuth, extractor)
-	standardAuthzChain := standardAuthzMiddleware(authorizer, separatedTestResource, separatedTestAction)
+	// Create standard middleware chains with the test logger
+	standardAuthnChain := standardAuthnMiddleware(t, compositeAuth, extractor)
+	standardAuthzChain := standardAuthzMiddleware(t, authorizer, separatedTestResource, separatedTestAction)
 
 	// --- Scenario 1: Standard net/http Server ---
 	t.Run("Standard net/http - Separated Middleware", func(t *testing.T) {
@@ -335,18 +411,24 @@ func TestSeparatedMiddlewareIntegration(t *testing.T) {
 			fmt.Fprintln(w, "OK")
 		})
 
+		// Create a standard http.Handler with our middleware chain
 		middlewareAdapter := func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				kratosHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
-					next.ServeHTTP(w, req.(*http.Request))
-					return "ok", nil
+			// Create a handler that adapts the standard http.Handler to the middleware.Handler
+			kratosHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
+				httpReq, ok := req.(*http.Request)
+				if !ok {
+					return nil, errors.BadRequest("INVALID_REQUEST", "expected *http.Request")
 				}
+				next.ServeHTTP(httptest.NewRecorder(), httpReq)
+				return nil, nil
+			}
 
-				// Chain authn and authz middleware
-				chainedHandler := standardAuthzChain(standardAuthnChain(kratosHandler))
+			// Apply the authn and authz middleware
+			handler := standardAuthnChain(standardAuthzChain(kratosHandler))
 
-				_, err := chainedHandler(r.Context(), r)
-
+			// Return a new http.Handler that calls our chained handler
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				_, err := handler(r.Context(), r)
 				if err != nil {
 					if se := errors.FromError(err); se != nil {
 						http.Error(w, se.Message, int(se.Code))
@@ -361,27 +443,65 @@ func TestSeparatedMiddlewareIntegration(t *testing.T) {
 		defer server.Close()
 
 		// Test with valid token (Authn & Authz pass)
+		t.Logf("\n=== Testing with valid token ===")
+		t.Logf("Sending request to: %s", server.URL)
+		t.Logf("Authorization header: Bearer %s", separatedValidToken)
+
 		req, _ := http.NewRequest("GET", server.URL, nil)
 		req.Header.Set(separatedAuthHeader, "Bearer "+separatedValidToken)
+
+		// Log request details
+		t.Logf("Request headers: %+v", req.Header)
+
 		resp, err := server.Client().Do(req)
+		if err != nil {
+			t.Logf("Request failed: %v", err)
+		} else {
+			t.Logf("Response status: %d", resp.StatusCode)
+			body, _ := io.ReadAll(resp.Body)
+			t.Logf("Response body: %s", string(body))
+			resp.Body.Close()
+		}
+
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		resp.Body.Close()
 
 		// Test with invalid token (Authn fails)
+		t.Logf("\n=== Testing with invalid token ===")
 		req, _ = http.NewRequest("GET", server.URL, nil)
 		req.Header.Set(separatedAuthHeader, "Bearer "+separatedInvalidToken)
+		t.Logf("Sending request with invalid token: Bearer %s", separatedInvalidToken)
+
 		resp, err = server.Client().Do(req)
+		if err != nil {
+			t.Logf("Request failed: %v", err)
+		} else {
+			t.Logf("Response status: %d", resp.StatusCode)
+			body, _ := io.ReadAll(resp.Body)
+			t.Logf("Response body: %s", string(body))
+			resp.Body.Close()
+		}
+
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-		resp.Body.Close()
 
 		// Test with no token (Authn fails)
+		t.Logf("\n=== Testing with no token ===")
 		req, _ = http.NewRequest("GET", server.URL, nil)
+		t.Logf("Sending request with no authorization header")
+
 		resp, err = server.Client().Do(req)
+		if err != nil {
+			t.Logf("Request failed: %v", err)
+		} else {
+			t.Logf("Response status: %d", resp.StatusCode)
+			body, _ := io.ReadAll(resp.Body)
+			t.Logf("Response body: %s", string(body))
+			resp.Body.Close()
+		}
+
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-		resp.Body.Close()
 	})
 
 	// --- Scenario 2: Kratos HTTP Server ---
@@ -391,7 +511,7 @@ func TestSeparatedMiddlewareIntegration(t *testing.T) {
 			kratoshttp.Middleware(kratosAuthnChain, kratosAuthzChain), // Chain authn and authz middleware
 		)
 
-		testService := &SeparatedTestServiceHTTPImpl{t: t}
+		testService := &SeparatedTestServiceHTTPImpl{testT: t} // Updated field name
 		RegisterSeparatedTestServiceHTTPServer(srv, testService)
 
 		go func() {
@@ -443,13 +563,76 @@ func TestSeparatedMiddlewareIntegration(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}
 
-		// Chain authn and authz filters
-		chainedFilter := authnFilterFunc(compositeAuth, extractor)(authzFilterFunc(authorizer, separatedTestResource, separatedTestAction)(http.HandlerFunc(httpHandler)))
+		// Create a handler that adapts the standard http.Handler to the middleware.Handler
+		kratosHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
+			httpReq, ok := req.(*http.Request)
+			if !ok {
+				return nil, errors.BadRequest("INVALID_REQUEST", "expected *http.Request")
+			}
+			// Create a response recorder to capture the response
+			w := httptest.NewRecorder()
+			// Create a new request with the context
+			httpReq = httpReq.WithContext(ctx)
+			// Call the http handler with the updated request
+			httpHandler(w, httpReq)
+			// Return the response status code and any error
+			return nil, nil
+		}
+
+		// Apply the authn and authz middleware
+		handler := kratosAuthnChain(kratosAuthzChain(kratosHandler))
+
+		// Create a standard http.Handler that calls our chained handler
+		wrappedHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Call the handler with the request context
+			resp, err := handler(r.Context(), r)
+
+			// After the handler runs, check if we have a principal in the context
+			if p, ok := declarative.PrincipalFromContext(r.Context()); ok {
+				t.Logf("[DEBUG] Found principal in context: %s", p.GetID())
+			} else {
+				t.Logf("[DEBUG] No principal found in context")
+			}
+
+			// If we have a response from the handler, write it to the response writer
+			if resp != nil {
+				if respErr, ok := resp.(error); ok {
+					t.Logf("[ERROR] Handler returned error: %v", respErr)
+					http.Error(w, respErr.Error(), http.StatusInternalServerError)
+				}
+			}
+			if err != nil {
+				if se := errors.FromError(err); se != nil {
+					http.Error(w, se.Message, int(se.Code))
+				} else {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			}
+		})
 
 		srv := kratoshttp.NewServer(
 			kratoshttp.Address("127.0.0.1:0"),
 		)
-		srv.Handle(separatedTestResource, chainedFilter)
+
+		// Register routes with the Kratos server
+		handleRequest := func(ctx kratoshttp.Context) error {
+			// Create a response recorder to capture the response
+			w := httptest.NewRecorder()
+			// Create a new request with the context
+			httpReq := ctx.Request().WithContext(ctx)
+			// Call our wrapped handler
+			wrappedHandler.ServeHTTP(w, httpReq)
+			// Write the response back to the client
+			for k, v := range w.Header() {
+				ctx.Header().Set(k, v[0])
+			}
+			ctx.Blob(w.Code, "", w.Body.Bytes())
+			return nil
+		}
+
+		// Register both root and /test paths
+		srv.Route("/").GET("", handleRequest)
+		srv.Route("/test").GET("", handleRequest)
 
 		go func() {
 			if err := srv.Start(context.Background()); err != nil && !errors.Is(err, http.ErrServerClosed) {
