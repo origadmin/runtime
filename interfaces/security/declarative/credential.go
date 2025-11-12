@@ -4,12 +4,11 @@ package declarative
 import (
 	"google.golang.org/protobuf/proto" // Import proto for proto.Message
 
-	"github.com/origadmin/runtime/interfaces/metadata"
+	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 )
 
 // Credential represents a credential, either received from a request or newly issued.
-// It provides a unified interface to access credential data and supports various
-// serialization formats like JSON and Protobuf.
+// It provides a unified interface to access credential data and its canonical Protobuf representation.
 type Credential interface {
 	// Type returns the type of the credential (e.g., "jwt", "apikey").
 	Type() string
@@ -18,22 +17,16 @@ type Credential interface {
 	// For example, the full "Bearer eyJ..." JWT string, or the API key string.
 	Raw() string
 
-	// ParsedPayload returns the parsed credential payload as a google.protobuf.Any message.
-	// This allows for type-safe unmarshalling into specific protobuf messages.
+	// ParsedPayload unmarshals the credential's payload into the provided protobuf message.
+	// This allows for type-safe unpacking of the payload into specific protobuf messages.
 	ParsedPayload(message proto.Message) error
 
-	// FromMeta populates the credential from a metadata.Meta object.
-	FromMeta(meta metadata.Meta)
+	// GetMeta returns the authentication-related metadata associated with the credential
+	// as a standard Go map[string][]string, for easy consumption by Authenticator implementations.
+	// This metadata is typically extracted and processed from the request context.
+	GetMeta() map[string][]string
 
-	// Get returns the value of a specific header/metadata key.
-	Get(key string) (string, bool)
-
-	// GetAll returns all available headers/metadata as a map.
-	GetAll() map[string][]string
-
-	// ToJSON serializes the entire credential
-	ToJSON() (string, error)
-
-	// ToProto converts the Credential to its protobuf representation.
-	ToProto() ([]byte, error)
+	// Source returns the canonical Protobuf representation of the credential.
+	// This is essential for transmitting the credential data, for example, in a CredentialResponse.
+	Source() *securityv1.CredentialSource
 }

@@ -5,7 +5,7 @@
 package declarative
 
 import (
-	"fmt"
+	"context"
 	"strings"
 
 	"google.golang.org/protobuf/proto"
@@ -13,7 +13,6 @@ import (
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/security/declarative"
-	"github.com/origadmin/runtime/security/meta"
 )
 
 const (
@@ -30,9 +29,9 @@ func NewHeaderCredentialExtractor() declarative.CredentialExtractor {
 	return &HeaderCredentialExtractor{}
 }
 
-// Extract retrieves a credential from the "Authorization" header provided by a ValueProvider.
-// It expects the header value to be in the format "Scheme CredentialString".
-func (e *HeaderCredentialExtractor) Extract(provider declarative.ValueProvider) (declarative.Credential, error) {
+// Extract is responsible for all extraction and parsing logic. It prepares all
+// necessary components and then calls the pure NewCredential constructor.
+func (e *HeaderCredentialExtractor) Extract(ctx context.Context, provider declarative.ValueProvider) (declarative.Credential, error) {
 	authHeader := provider.Get(AuthorizationHeader)
 	if authHeader == "" {
 		return nil, errors.New(401, "AUTHORIZATION_HEADER_NOT_FOUND", "authorization header not found")
@@ -49,29 +48,23 @@ func (e *HeaderCredentialExtractor) Extract(provider declarative.ValueProvider) 
 		return nil, errors.New(401, "INVALID_AUTHORIZATION_HEADER", "invalid authorization header format")
 	}
 
-	// Here, we use the NewCredential function from the same package.
-	// Convert scheme to lowercase for case-insensitive comparison
-	// Create a simple string value as the payload
-
-	t := ""
+	// Prepare all components for the constructor
+	var credentialType string
 	var payload proto.Message
 	switch strings.ToLower(scheme) {
 	case "bearer":
-		t = "jwt"
+		credentialType = "jwt"
 		payload = &securityv1.BearerCredential{
 			Token: rawCredential,
 		}
-
 	default:
-		t = scheme
+		credentialType = scheme
 	}
 
-	cred, err := NewCredential(t, authHeader, payload)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create credential object: %w", err)
-	}
+	// Directly get Go-idiomatic metadata from the provider.
+	goMeta := provider.GetAll()
 
-	cred.FromMeta(meta.FromProvider(provider))
-
-	return cred, nil
+	// Call the pure constructor with the final, prepared components.
+	// NewCredential is now defined in credential.go
+	return NewCredential(credentialType, authHeader, payload, goMeta)
 }

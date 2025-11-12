@@ -49,8 +49,13 @@ func FromHTTPHeader(h http.Header) Meta {
 	return Meta(maps.Clone(h))
 }
 
+// ToProto converts the Meta map to its Protobuf representation (map<string, MetaValue>).
 func (m Meta) ToProto() map[string]*securityv1.MetaValue {
-	return ToProtoMeta(m)
+	protoMeta := make(map[string]*securityv1.MetaValue)
+	for k, v := range m {
+		protoMeta[k] = Values(v...)
+	}
+	return protoMeta
 }
 
 func FromGRPCHeader(md metadata.MD) Meta {
@@ -69,13 +74,6 @@ func Values(values ...string) *securityv1.MetaValue {
 	return &securityv1.MetaValue{
 		Values: values,
 	}
-}
-func ToProtoMeta(m Meta) map[string]*securityv1.MetaValue {
-	protoMeta := make(map[string]*securityv1.MetaValue)
-	for k, v := range m {
-		protoMeta[k] = Values(v...)
-	}
-	return protoMeta
 }
 
 func FromProtoMeta(protoMeta map[string]*securityv1.MetaValue) Meta {

@@ -90,7 +90,7 @@ func kratosSecurityMiddleware(authenticators []declarative.Authenticator, extrac
 			}
 
 			// 1. Extract Credential
-			cred, err := extractor.Extract(provider)
+			cred, err := extractor.Extract(ctx, provider) // Pass ctx here
 			if err != nil {
 				return nil, errors.Unauthorized("CREDENTIAL_MISSING", err.Error())
 			}
@@ -141,7 +141,7 @@ func standardSecurityMiddleware(authenticators []declarative.Authenticator, extr
 			}
 
 			// 1. Extract Credential
-			cred, err := extractor.Extract(provider)
+			cred, err := extractor.Extract(ctx, provider) // Pass ctx here
 			if err != nil {
 				return nil, errors.Unauthorized("CREDENTIAL_MISSING", err.Error())
 			}
@@ -229,7 +229,7 @@ func authFilterFunc(authenticators []declarative.Authenticator, extractor declar
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			provider := impl.FromHTTPRequest(r)
 
-			cred, err := extractor.Extract(provider)
+			cred, err := extractor.Extract(r.Context(), provider) // Pass r.Context() here
 			if err != nil {
 				http.Error(w, errors.Unauthorized("CREDENTIAL_MISSING", err.Error()).Error(), http.StatusUnauthorized)
 				return
