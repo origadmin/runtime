@@ -31,7 +31,7 @@ func NewHeaderCredentialExtractor() declarative.CredentialExtractor {
 
 // Extract is responsible for all extraction and parsing logic. It prepares all
 // necessary components and then calls the pure NewCredential constructor.
-func (e *HeaderCredentialExtractor) Extract(ctx context.Context, provider declarative.ValueProvider) (declarative.Credential, error) {
+func (e *HeaderCredentialExtractor) Extract(ctx context.Context, provider declarative.SecurityRequest) (declarative.Credential, error) {
 	authHeader := provider.Get(AuthorizationHeader)
 	if authHeader == "" {
 		return nil, errors.New(401, "AUTHORIZATION_HEADER_NOT_FOUND", "authorization header not found")
