@@ -7,41 +7,26 @@ import (
 	"github.com/origadmin/runtime/interfaces/security/declarative"
 )
 
-// --- Global Policy Registry (for init() function registration) ---
+// Policy holds all information for a single resource's policy.
+// This struct is created by generated code and registered via init().
+type Policy struct {
+	ServiceMethod string // gRPC full method name, e.g., "/user.v1.UserService/GetUser"
+	GatewayPath   string // HTTP path and method, e.g., "GET:/api/v1/users/{id}"
+	Name          string // The policy name/definition string from the proto annotation, e.g., "admin-only"
+	VersionID     string // A hash representing the version of this policy definition
+}
+
+// --- Global Policy Registry ---
 
 var (
-	// servicePolicies stores policies generated from .proto annotations for gRPC methods.
-	// The key is the full gRPC method name (e.g., /helloworld.v1.Greeter/SayHello),
-	// and the value is the policy name (e.g., "jwt-auth").
-	servicePolicies = make(map[string]string)
-	// gatewayPolicies stores policies generated from .proto for HTTP paths.
-	gatewayPolicies = make(map[string]string)
-	mu              sync.RWMutex
+	// unifiedPolicies stores all policy registrations from generated code.
+	// It's populated by init() functions via the RegisterPolicies function.
+	unifiedPolicies []Policy
 
-	// policyFactories stores registered SecurityFactory functions.
-	policyFactories = make(map[string]declarative.SecurityFactory)
+	mu sync.RWMutex
 )
 
-// RegisterPolicyFactory registers a SecurityFactory for a given policy name.
-// This function is typically called during application initialization.
-func RegisterPolicyFactory(name string, factory declarative.SecurityFactory) {
-	mu.Lock()
-	defer mu.Unlock()
-	if _, exists := policyFactories[name]; exists {
-		// Log or handle error if a factory with the same name is already registered
-		// For now, we'll just overwrite it, but a warning might be appropriate.
-	}
-	policyFactories[name] = factory
-}
-
-// GetPolicyFactory retrieves a registered SecurityFactory by its name.
-func GetPolicyFactory(name string) declarative.SecurityFactory {
-	mu.RLock()
-	defer mu.RUnlock()
-	return policyFactories[name]
-}
-
-// contextKey is an unexported type for context keys.
+// contextKey is an unexported type for context keys to avoid collisions.
 type contextKey string
 
 const (
@@ -60,43 +45,21 @@ func PrincipalFromContext(ctx context.Context) (declarative.Principal, bool) {
 	return p, ok
 }
 
-// RegisterPolicies is a public function, intended to be called by generated code in init().
-// It merges the incoming policies into the global default maps.
-func RegisterPolicies(serviceMap, gatewayMap map[string]string) {
+// RegisterPolicies is a public function called by generated code in init() functions.
+// It appends a slice of policies to the global unifiedPolicies registry.
+func RegisterPolicies(policies []Policy) {
 	mu.Lock()
 	defer mu.Unlock()
-
-	// Merge policies for gRPC methods. The full RPC method name is the canonical key.
-	for method, policy := range serviceMap {
-		servicePolicies[method] = policy
-	}
-
-	// Merge policies for HTTP gateway paths. The key is typically "METHOD:/path/template".
-	for path, policy := range gatewayMap {
-		gatewayPolicies[path] = policy
-	}
+	unifiedPolicies = append(unifiedPolicies, policies...)
 }
 
-// GetDefaultServicePolicies returns a copy of the currently registered default policies for gRPC services.
-// This is primarily for the PolicyProvider to use during its initialization or sync process.
-func GetDefaultServicePolicies() map[string]string {
+// RegisteredPolicies returns a copy of all policy registrations.
+// This is called once at application startup to sync policies to the database.
+func RegisteredPolicies() []Policy {
 	mu.RLock()
 	defer mu.RUnlock()
-	// Return a copy to prevent external modification
-	copiedMap := make(map[string]string, len(servicePolicies))
-	for k, v := range servicePolicies {
-		copiedMap[k] = v
-	}
-	return copiedMap
-}
-
-// GetDefaultGatewayPolicies returns a copy of the currently registered default policies for HTTP gateway paths.
-func GetDefaultGatewayPolicies() map[string]string {
-	mu.RLock()
-	defer mu.RUnlock()
-	copiedMap := make(map[string]string, len(gatewayPolicies))
-	for k, v := range gatewayPolicies {
-		copiedMap[k] = v
-	}
-	return copiedMap
+	
+	clone := make([]Policy, len(unifiedPolicies))
+	copy(clone, unifiedPolicies)
+	return clone
 }
