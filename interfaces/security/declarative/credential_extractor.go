@@ -11,5 +11,5 @@ type CredentialExtractor interface {
 	// Credential object, and returns it.
 	// The context is provided for passing request-scoped values like deadlines,
 	// cancellation signals, and other request-scoped data.
-	Extract(ctx context.Context, provider ValueProvider) (Credential, error)
+	Extract(ctx context.Context, sr SecurityRequest) (Credential, error)
 }

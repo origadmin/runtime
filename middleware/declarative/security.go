@@ -11,14 +11,14 @@ import (
 
 	"github.com/go-kratos/kratos/v2/errors"
 	kratosmiddleware "github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/go-kratos/kratos/v2/transport" // Keep import for transport.KindHTTP/GRPC if needed elsewhere, but tr.Operation() is removed
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/options"
 	iface "github.com/origadmin/runtime/interfaces/security/declarative"
-	internal "github.com/origadmin/runtime/internal/security/declarative"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
+	securityImpl "github.com/origadmin/runtime/security/declarative" // Renamed alias
 )
 
 // factory is the factory for creating the declarative security middleware.
@@ -31,13 +31,17 @@ func init() {
 // NewMiddlewareServer creates a new server-side security middleware.
 func (f *factory) NewMiddlewareServer(cfg *middlewarev1.Middleware,
 	opts ...options.Option) (kratosmiddleware.Middleware, bool) {
-	o := FromOptions(opts)
+	o := FromOptions(opts) // Use FromOptions from this package
 
 	if cfg.GetSecurity() == nil {
 		return nil, false
 	}
 
 	if o.policyProvider == nil {
+		return nil, false
+	}
+	// Check if CredentialExtractor is provided
+	if o.credentialExtractor == nil {
 		return nil, false
 	}
 
@@ -53,28 +57,35 @@ func (f *factory) NewMiddlewareServer(cfg *middlewarev1.Middleware,
 
 // NewMiddlewareClient creates a new client-side security middleware.
 // This is not applicable for the declarative security middleware.
-func (f *factory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...options.Option) (kratosmiddleware.
+func (f *factory) NewMiddlewareClient(_cfg *middlewarev1.Middleware, _opts ...options.Option) (kratosmiddleware.
 Middleware, bool) {
 	return nil, false
 }
-
-// Option is a function that configures the SecurityMiddleware.
-type Option func(*Options)
 
 // SecurityMiddleware creates a Kratos middleware for declarative security.
 // It uses policy names from route metadata to apply authentication and authorization.
 func SecurityMiddleware(o *Options) kratosmiddleware.Middleware {
 	return func(handler kratosmiddleware.Handler) kratosmiddleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			tr, ok := transport.FromServerContext(ctx)
-			if !ok {
-				return nil, errors.New(500, "TRANSPORT_CONTEXT_MISSING", "transport context is missing")
+			// Get ValueProvider from the context using the utility function
+			valueProvider, vpErr := securityImpl.FromServerContext(ctx)
+			if vpErr != nil {
+				// If we can't get a ValueProvider, it means transport context is missing or invalid.
+				// We can't proceed with security checks without it.
+				log.Errorf("Failed to get ValueProvider from context: %v", vpErr)
+				return nil, errors.New(500, "VALUE_PROVIDER_ERROR", "failed to get value provider from context")
+			}
+
+			// Extract fullMethodName from the ValueProvider
+			fullMethodName := valueProvider.Get("fullMethodName")
+			if fullMethodName == "" {
+				log.Errorf("fullMethodName not found in ValueProvider")
+				return nil, errors.New(500, "SECURITY_POLICY_ERROR", "fullMethodName not found in request context")
 			}
 
 			// 1. Get policy name from metadata
 			var policyName string
 			// The full gRPC method name is the canonical identifier for the policy.
-			fullMethodName := tr.Operation()
 			// For HTTP requests, the router might store the matched template in the transport.
 			// We prioritize the gRPC method name but could fall back to HTTP path if needed.
 			policyName, err = o.policyProvider.GetPolicyNameForMethod(ctx, fullMethodName)
@@ -85,14 +96,14 @@ func SecurityMiddleware(o *Options) kratosmiddleware.Middleware {
 
 			// Handle "public" policy (skip authentication and authorization)
 			if policyName == "public" {
-				log.Debugf("Policy 'public' detected for method %s, skipping security checks.", tr.Operation())
+				log.Debugf("Policy 'public' detected for method %s, skipping security checks.", fullMethodName)
 				return handler(ctx, req)
 			}
 
 			// Use default policy if not specified
 			if policyName == "" && o.defaultPolicy != "" {
 				policyName = o.defaultPolicy
-				log.Debugf("No policy specified for method %s, using default policy '%s'.", tr.Operation(), policyName)
+				log.Debugf("No policy specified for method %s, using default policy '%s'.", fullMethodName, policyName)
 			}
 
 			if policyName == "" {
@@ -107,26 +118,33 @@ func SecurityMiddleware(o *Options) kratosmiddleware.Middleware {
 			}
 
 			// 3. Authenticate
-			credentialSource := internal.NewKratosTransportHeaderAdapter(tr.RequestHeader())
-			principal, authErr := policy.Authenticate(ctx, credentialSource)
+			// Extract credential using the provided CredentialExtractor
+			cred, extractErr := o.credentialExtractor.Extract(ctx, valueProvider)
+			if extractErr != nil {
+				log.Debugf("Authentication failed for method %s with policy '%s': %v", fullMethodName, policyName, extractErr)
+				return nil, errors.Unauthorized("UNAUTHENTICATED", "failed to extract credential")
+			}
+
+			principal, authErr := policy.Authenticate(ctx, cred) // Use extracted credential
 			if authErr != nil {
-				log.Debugf("Authentication failed for method %s with policy '%s': %v", tr.Operation(), policyName, authErr)
+				log.Debugf("Authentication failed for method %s with policy '%s': %v", fullMethodName, policyName, authErr)
 				return nil, errors.Unauthorized("UNAUTHENTICATED", "authentication failed")
 			}
 
 			// 4. Authorize
-			authorized, authzErr := policy.Authorize(ctx, principal, fullMethodName)
+			// For now, using a placeholder "access" action. This should ideally be derived from the request.
+			authorized, authzErr := policy.Authorize(ctx, principal, fullMethodName, "access") // Added action parameter
 			if authzErr != nil {
-				log.Errorf("Authorization check failed for method %s with policy '%s': %v", tr.Operation(), policyName, authzErr)
+				log.Errorf("Authorization check failed for method %s with policy '%s': %v", fullMethodName, policyName, authzErr)
 				return nil, errors.New(500, "AUTHORIZATION_ERROR", fmt.Sprintf("authorization check failed: %v", authzErr))
 			}
 			if !authorized {
-				log.Debugf("Authorization denied for principal %s on method %s with policy '%s'.", principal.GetID(), tr.Operation(), policyName)
+				log.Debugf("Authorization denied for principal %s on method %s with policy '%s'.", principal.GetID(), fullMethodName, policyName)
 				return nil, errors.Forbidden("FORBIDDEN", "authorization denied")
 			}
 
 			// 5. Inject Principal into context and proceed
-			ctx = iface.NewContextWithPrincipal(ctx, principal)
+			ctx = iface.PrincipalWithContext(ctx, principal) // Corrected function name
 			return handler(ctx, req)
 		}
 	}
