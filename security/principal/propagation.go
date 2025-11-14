@@ -16,6 +16,8 @@ const (
 	MetadataKey = "x-principal-proto"
 )
 
+type principalKey struct{}
+
 // FromContext extracts the Principal from the given context.
 // It returns the Principal and a boolean indicating if it was found.
 func FromContext(ctx context.Context) (security.Principal, bool) {
@@ -34,11 +36,7 @@ func EncodePrincipal(p security.Principal) (string, error) {
 	if p == nil {
 		return "", nil
 	}
-	protoP, err := ToProto(p)
-	if err != nil {
-		return "", fmt.Errorf("failed to convert security.Principal to proto: %w", err)
-	}
-	data, err := proto.Marshal(protoP)
+	data, err := proto.Marshal(p.Export())
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal proto.Principal: %w", err)
 	}

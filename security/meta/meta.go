@@ -40,7 +40,7 @@ func (m Meta) Set(key string, value string) {
 	m[key] = []string{value}
 }
 
-func FromProvider(p security.ValueProvider) Meta {
+func FromProvider(p security.Request) Meta {
 	meta := maps.Clone(p.GetAll())
 	return meta
 }
