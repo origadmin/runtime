@@ -218,6 +218,43 @@ func TestWithGroup(t *testing.T) {
 	assert.Equal(t, 456, val2)
 }
 
+// TestOptionCarriesContextData verifies that data stored in the context via an options.Option
+// can be retrieved after applying options with NewContext.
+func TestOptionCarriesContextData(t *testing.T) {
+	type customData struct {
+		ID   string
+		Name string
+	}
+
+	expectedData := customData{ID: "test-id", Name: "Test Name"}
+
+	// Define an options.Option that puts customData into the context
+	withCustomContextData := func(data customData) options.Option {
+		return func(ctx options.Context) options.Context {
+			return WithValue(ctx, data)
+		}
+	}
+
+	// Apply the option using NewContext
+	ctx := NewContext[serverConfig](
+		withHost("context.data.example.com"),
+		withCustomContextData(expectedData),
+	)
+
+	assert.NotNil(t, ctx)
+
+	// Retrieve the custom data from the context
+	retrievedData, ok := Value[customData](ctx)
+	assert.True(t, ok, "Expected customData to be found in context")
+	assert.Equal(t, expectedData, retrievedData, "Retrieved customData should match expectedData")
+
+	// Verify other options still work
+	retrievedCfg, ok := Value[*serverConfig](ctx)
+	assert.True(t, ok)
+	assert.NotNil(t, retrievedCfg)
+	assert.Equal(t, "context.data.example.com", retrievedCfg.Host)
+}
+
 // --- Other Tests ---
 
 func TestImmutability(t *testing.T) {
