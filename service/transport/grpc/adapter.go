@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"context"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -11,7 +10,6 @@ import (
 
 	grpcv1 "github.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/interfaces"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
@@ -34,25 +32,36 @@ func DefaultClientMiddlewares() []middleware.Middleware {
 	}
 }
 
+// getMiddlewares resolves and returns a slice of middlewares based on configuration.
+// It checks for configured middleware names, retrieves them from the available map,
+// and falls back to default middlewares if none are explicitly configured.
+func getMiddlewares(
+	configuredNames []string,
+	availableMws map[string]middleware.Middleware,
+	defaultMws []middleware.Middleware,
+	mwType string, // "server" or "client" for error messages
+) ([]middleware.Middleware, error) {
+	if len(configuredNames) > 0 {
+		if len(availableMws) == 0 {
+			return nil, runtimeerrors.NewStructured(Module, "application container is required for %s middlewares but not found in options", mwType)
+		}
+		var mws []middleware.Middleware
+		for _, name := range configuredNames {
+			m, ok := availableMws[name]
+			if !ok {
+				return nil, runtimeerrors.NewStructured(Module, "%s middleware '%s' not found in options", mwType, name)
+			}
+			mws = append(mws, m)
+		}
+		return mws, nil
+	}
+	return defaultMws, nil
+}
+
 // initGrpcServerOptions initialize the grpc server option
 func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions) ([]transgrpc.ServerOption, error) {
 	// Prepare the Kratos gRPC server options.
 	var kratosOpts []transgrpc.ServerOption
-
-	// Get the container instance. It will be nil if not provided in options.
-	var c interfaces.Container
-	if serverOpts.Container != nil {
-		c = serverOpts.Container
-	}
-
-	// Check if middlewares are configured.
-	hasMiddlewaresConfigured := len(grpcConfig.GetMiddlewares()) > 0
-
-	// If middlewares are configured but no container is provided, return an error.
-	// This consolidates the nil check for the container.
-	if hasMiddlewaresConfigured && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
-	}
 
 	// Apply options from the protobuf configuration.
 	if grpcConfig.GetAddr() != "" {
@@ -72,21 +81,10 @@ func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions)
 	}
 
 	// Configure middlewares.
-	var mws []middleware.Middleware
-	if hasMiddlewaresConfigured {
-		// 'c' is guaranteed to be non-nil at this point due to the early check above.
-		for _, name := range grpcConfig.GetMiddlewares() {
-			m, ok := c.ServerMiddleware(name)
-			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "server middleware '%s' not found in container", name)
-			}
-			mws = append(mws, m)
-		}
-	} else {
-		// If no specific middlewares are configured, use default ones from adapter.go.
-		mws = DefaultServerMiddlewares()
+	mws, err := getMiddlewares(grpcConfig.GetMiddlewares(), serverOpts.ServerMiddlewares, DefaultServerMiddlewares(), "server")
+	if err != nil {
+		return nil, err
 	}
-
 	if len(mws) > 0 {
 		kratosOpts = append(kratosOpts, transgrpc.Middleware(mws...))
 	}
@@ -101,24 +99,9 @@ func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions)
 }
 
 // initGrpcClientOptions initialize grpc client options
-func initGrpcClientOptions(ctx context.Context, grpcConfig *grpcv1.Client, clientOpts *ClientOptions) ([]transgrpc.ClientOption, error) {
+func initGrpcClientOptions(grpcConfig *grpcv1.Client, clientOpts *ClientOptions) ([]transgrpc.ClientOption, error) {
 	// Prepare the Kratos gRPC client options.
 	var kratosOpts []transgrpc.ClientOption
-
-	// Get the container instance. It will be nil if not provided in options.
-	var c interfaces.Container
-	if clientOpts.Container != nil {
-		c = clientOpts.Container
-	}
-
-	// Check if middlewares are configured.
-	hasMiddlewaresConfigured := len(grpcConfig.GetMiddlewares()) > 0
-
-	// If middlewares are configured but no container is provided, return an error.
-	// This consolidates the nil check for the container.
-	if hasMiddlewaresConfigured && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
-	}
 
 	// Apply options from the protobuf configuration.
 	if grpcConfig.GetTimeout() != nil {
@@ -126,24 +109,10 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *grpcv1.Client, clien
 	}
 
 	// Configure middlewares.
-	var mws []middleware.Middleware
-	if hasMiddlewaresConfigured {
-		// If middlewares are configured but no container is provided, return an error.
-		if c == nil {
-			return nil, runtimeerrors.NewStructured(Module, "application container is required for client middlewares but not found in options")
-		}
-		for _, name := range grpcConfig.GetMiddlewares() {
-			m, ok := c.ClientMiddleware(name)
-			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "client middleware '%s' not found in container", name)
-			}
-			mws = append(mws, m)
-		}
-	} else {
-		// If no specific middlewares are configured, use default ones from adapter.go.
-		mws = DefaultClientMiddlewares()
+	mws, err := getMiddlewares(grpcConfig.GetMiddlewares(), clientOpts.ClientMiddlewares, DefaultClientMiddlewares(), "client")
+	if err != nil {
+		return nil, err
 	}
-
 	if len(mws) > 0 {
 		kratosOpts = append(kratosOpts, transgrpc.WithMiddleware(mws...))
 	}
@@ -152,54 +121,45 @@ func initGrpcClientOptions(ctx context.Context, grpcConfig *grpcv1.Client, clien
 	var discoveryClient registry.Discovery
 	endpoint := grpcConfig.GetEndpoint()
 
-	// Always apply the endpoint option.
-	if endpoint != "" {
-		kratosOpts = append(kratosOpts, transgrpc.WithEndpoint(endpoint))
-	}
-
-	// Determine the discovery client.
+	// 1. Try to get discovery client by name from config
 	if discoveryName := grpcConfig.GetDiscoveryName(); discoveryName != "" {
-		// If a named discovery client is configured but no container is provided, return an error.
-		if c == nil {
-			return nil, runtimeerrors.NewStructured(Module, "application container is required for named discovery client but not found in options")
-		}
-		if d, ok := c.Discovery(discoveryName); ok {
+		if d, ok := clientOpts.Discoveries[discoveryName]; ok {
 			discoveryClient = d
 		} else {
-			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in container", discoveryName)
+			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in options", discoveryName)
 		}
-	} else if c != nil {
-		// If no specific discovery name, try to infer if only one is available from the container.
-		// This block is only executed if 'c' is not nil.
-		discoveries := c.Discoveries()
-		if len(discoveries) == 1 {
-			for _, d := range discoveries {
+	} else {
+		// 2. If no specific name, try to find a default or single discovery client
+		if d, ok := clientOpts.Discoveries["default"]; ok {
+			discoveryClient = d
+		} else if len(clientOpts.Discoveries) == 1 {
+			// If there's only one discovery client, use it as the default
+			for _, d := range clientOpts.Discoveries { // Iterate once to get the single client
 				discoveryClient = d
 				break
 			}
-		} else if len(discoveries) > 1 {
-			return nil, runtimeerrors.NewStructured(Module, "multiple discovery clients found in container, but no specific discovery client is configured for gRPC client")
 		}
 	}
 
-	// Apply discovery option if a client was found.
-	if discoveryClient != nil {
-		kratosOpts = append(kratosOpts, transgrpc.WithDiscovery(discoveryClient))
-	}
-
-	// Crucial check: If the endpoint implies discovery but no discovery client is configured.
+	// Validate endpoint and discovery client combination
 	if strings.HasPrefix(endpoint, "discovery:///") && discoveryClient == nil {
 		return nil, runtimeerrors.NewStructured(Module, "endpoint '%s' requires a discovery client, but none is configured", endpoint)
 	}
 
+	// Apply Kratos options
+	if endpoint != "" {
+		kratosOpts = append(kratosOpts, transgrpc.WithEndpoint(endpoint))
+	}
+	if discoveryClient != nil {
+		kratosOpts = append(kratosOpts, transgrpc.WithDiscovery(discoveryClient))
+	}
+
 	// Configure node filters (selector).
 	if selectorConfig := grpcConfig.GetSelector(); selectorConfig != nil {
-		// Call the original, trusted NewFilter function from your app's selector package.
 		nodeFilter, err := serviceselector.NewFilter(selectorConfig)
 		if err != nil {
 			return nil, runtimeerrors.WrapStructured(err, Module, "failed to create node filter")
 		}
-
 		if nodeFilter != nil {
 			kratosOpts = append(kratosOpts, transgrpc.WithNodeFilter(nodeFilter))
 		}
