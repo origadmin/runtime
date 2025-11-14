@@ -11,11 +11,6 @@ import (
 	"github.com/origadmin/runtime/interfaces/security"
 )
 
-const (
-	// MetadataKey is the key used to store the Principal in gRPC metadata or HTTP headers.
-	MetadataKey = "x-principal-proto"
-)
-
 // principalKey is an unexported type for context.Context keys.
 type principalKey struct{}
 

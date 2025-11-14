@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package security
+package credential
 
 import (
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"

@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package security
+package credential
 
 import (
 	"fmt"
@@ -10,6 +10,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 
+	apikeyv1 "github.com/origadmin/runtime/api/gen/go/config/security/authn/apikey/v1"
+	oidcv1 "github.com/origadmin/runtime/api/gen/go/config/security/authn/oidc/v1"
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/interfaces/security"
 	"github.com/origadmin/runtime/security/meta"
@@ -87,4 +89,40 @@ func (c *credential) Source() *securityv1.CredentialSource {
 		Payload:  c.payload,
 		Metadata: protoMeta,
 	}
+}
+
+func PayloadBearerCredential(cred security.Credential) (*securityv1.BearerCredential, error) {
+	if cred.Type() != "jwt" {
+		return nil, fmt.Errorf("credential type is not jwt")
+	}
+	var bearer securityv1.BearerCredential
+	err := cred.ParsedPayload(&bearer)
+	if err != nil {
+		return nil, err
+	}
+	return &bearer, nil
+}
+
+func PayloadOIDCCredential(cred security.Credential) (*oidcv1.OidcCredential, error) {
+	if cred.Type() != "oidc" {
+		return nil, fmt.Errorf("credential type is not oidc")
+	}
+	var oidc oidcv1.OidcCredential
+	err := cred.ParsedPayload(&oidc)
+	if err != nil {
+		return nil, err
+	}
+	return &oidc, nil
+}
+
+func PayloadAPIKeyCredential(cred security.Credential) (*apikeyv1.KeyCredential, error) {
+	if cred.Type() != "api_key" {
+		return nil, fmt.Errorf("credential type is not api_key")
+	}
+	var apiKey apikeyv1.KeyCredential
+	err := cred.ParsedPayload(&apiKey)
+	if err != nil {
+		return nil, err
+	}
+	return &apiKey, nil
 }
