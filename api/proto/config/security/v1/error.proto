@@ -8,7 +8,7 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;
 
 // SecurityErrorReason defines the application's specific security error codes.
 // These codes supplement the common error codes and provide more specific details
-// for authentication and authorization failures.
+// for authentication and authorization failures. The naming convention follows SUBJECT_MODIFIER format.
 enum SecurityErrorReason {
   option (errors.default_code) = 500;
 
@@ -18,7 +18,7 @@ enum SecurityErrorReason {
   // --- Specific Authentication Errors (mapped to common.UNAUTHENTICATED) ---
 
   // The provided credentials (e.g., username/password) are invalid.
-  INVALID_CREDENTIALS = 1002 [(errors.code) = 401];
+  CREDENTIALS_INVALID = 1002 [(errors.code) = 401];
   // The authentication token has expired.
   TOKEN_EXPIRED = 1003 [(errors.code) = 401];
   // The authentication token is malformed or invalid.
@@ -26,16 +26,16 @@ enum SecurityErrorReason {
   // The authentication token is missing from the request.
   TOKEN_MISSING = 1005 [(errors.code) = 401];
   // The claims within the token are invalid.
-  INVALID_CLAIMS = 1006 [(errors.code) = 401];
+  CLAIMS_INVALID = 1006 [(errors.code) = 401];
   // The bearer token is specifically invalid or malformed.
-  INVALID_BEARER_TOKEN = 1007 [(errors.code) = 401];
+  BEARER_TOKEN_INVALID = 1007 [(errors.code) = 401];
   // The signing method used in the token is not supported.
-  UNSUPPORTED_SIGNING_METHOD = 1008 [(errors.code) = 401];
+  SIGNING_METHOD_UNSUPPORTED = 1008 [(errors.code) = 401];
   // Failed to sign a new token.
-  SIGN_TOKEN_FAILED = 1009 [(errors.code) = 500];
+  TOKEN_SIGN_FAILED = 1009 [(errors.code) = 500];
 
   // --- Specific Authorization Errors (mapped to common.FORBIDDEN) ---
 
   // The user is authenticated but does not have permission for the specific resource or action.
-  INVALID_AUTHORIZATION = 2000 [(errors.code) = 403];
+  PERMISSION_DENIED = 2000 [(errors.code) = 403];
 }
