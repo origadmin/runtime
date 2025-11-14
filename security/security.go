@@ -1,10 +1,7 @@
 package security
 
 import (
-	"context"
 	"sync"
-
-	"github.com/origadmin/runtime/interfaces/security/declarative"
 )
 
 // Policy holds all information for a single resource's policy.
@@ -26,25 +23,6 @@ var (
 	mu sync.RWMutex
 )
 
-// contextKey is an unexported type for context keys to avoid collisions.
-type contextKey string
-
-const (
-	principalContextKey contextKey = "principal"
-)
-
-// ContextWithPrincipal returns a new context with the given Principal attached.
-func ContextWithPrincipal(ctx context.Context, p declarative.Principal) context.Context {
-	return context.WithValue(ctx, principalContextKey, p)
-}
-
-// PrincipalFromContext extracts the Principal from the context.
-// It returns the Principal and a boolean indicating whether a Principal was found.
-func PrincipalFromContext(ctx context.Context) (declarative.Principal, bool) {
-	p, ok := ctx.Value(principalContextKey).(declarative.Principal)
-	return p, ok
-}
-
 // RegisterPolicies is a public function called by generated code in init() functions.
 // It appends a slice of policies to the global unifiedPolicies registry.
 func RegisterPolicies(policies []Policy) {
@@ -58,7 +36,7 @@ func RegisterPolicies(policies []Policy) {
 func RegisteredPolicies() []Policy {
 	mu.RLock()
 	defer mu.RUnlock()
-	
+
 	clone := make([]Policy, len(unifiedPolicies))
 	copy(clone, unifiedPolicies)
 	return clone

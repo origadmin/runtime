@@ -5,10 +5,10 @@
 // Package security provides declarative security interfaces for authentication and authorization.
 package security
 
-// AuthRequest provides access to security-relevant information needed for authorization decisions.
+// Request provides access to security-relevant information needed for authorization decisions.
 // It abstracts away the underlying transport (HTTP/gRPC) and provides a unified interface
 // for accessing request metadata, operation details, and routing information.
-type AuthRequest interface {
+type Request interface {
 	// Kind returns the type of the request as a string (e.g., "grpc", "http").
 	// This helps consumers understand how to interpret GetOperation(), GetMethod(), and GetRouteTemplate().
 	Kind() string

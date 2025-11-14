@@ -7,12 +7,12 @@ import (
 	authzv1 "github.com/origadmin/runtime/api/gen/go/config/security/authz/v1"
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 // AuthorizerFactory is a function type that creates an Authorizer instance
 // from a specific Protobuf configuration message.
-type AuthorizerFactory func(config *authzv1.Authorizer, opts ...options.Option) (declarative.Authorizer, error)
+type AuthorizerFactory func(config *authzv1.Authorizer, opts ...options.Option) (security.Authorizer, error)
 
 // authorizerFactories stores all registered Authorizer factories.
 // The key is a string identifier for the authorizer type (e.g., "rbac", "acl").
@@ -27,13 +27,13 @@ func RegisterAuthorizerFactory(name string, factory AuthorizerFactory) {
 	authorizerFactories[name] = factory
 }
 
-func NewAuthorizers(authzConfigs *securityv1.AuthorizerConfigs, opts ...options.Option) (map[string]declarative.Authorizer, error) {
+func NewAuthorizers(authzConfigs *securityv1.AuthorizerConfigs, opts ...options.Option) (map[string]security.Authorizer, error) {
 	if authzConfigs == nil {
 		return nil, nil // No config provided, so no authorizer is needed
 	}
 
 	configs := authzConfigs.GetConfigs()
-	authorizers := make(map[string]declarative.Authorizer)
+	authorizers := make(map[string]security.Authorizer)
 	for _, config := range configs {
 		authorizer, err := NewAuthorizer(config)
 		if err != nil {
@@ -45,7 +45,7 @@ func NewAuthorizers(authzConfigs *securityv1.AuthorizerConfigs, opts ...options.
 	return authorizers, nil
 }
 
-func NewAuthorizer(authzConfig *authzv1.Authorizer, opts ...options.Option) (declarative.Authorizer, error) {
+func NewAuthorizer(authzConfig *authzv1.Authorizer, opts ...options.Option) (security.Authorizer, error) {
 	if authzConfig == nil {
 		return nil, nil // No config provided, so no authorizer is needed
 	}

@@ -7,12 +7,12 @@ import (
 	authnv1 "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1"
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 // AuthenticatorFactory is a function type that creates an Authenticator instance
 // from a specific Protobuf configuration message.
-type AuthenticatorFactory func(config *authnv1.Authenticator, opts ...options.Option) (declarative.Authenticator, error)
+type AuthenticatorFactory func(config *authnv1.Authenticator, opts ...options.Option) (security.Authenticator, error)
 
 // authenticatorFactories stores all registered Authenticator factories.
 // The key is a string identifier for the authenticator type (e.g., "jwt", "apikey").
@@ -29,13 +29,13 @@ func RegisterAuthenticatorFactory(name string, factory AuthenticatorFactory) {
 
 // NewAuthenticators creates an Authenticator instance based on the provided AuthnConfig Protobuf message.
 // It inspects the oneof field in AuthnConfig to determine which specific authenticator to create.
-func NewAuthenticators(authnConfigs *securityv1.AuthenticatorConfigs, opts ...options.Option) (map[string]declarative.Authenticator, error) {
+func NewAuthenticators(authnConfigs *securityv1.AuthenticatorConfigs, opts ...options.Option) (map[string]security.Authenticator, error) {
 	if authnConfigs == nil {
 		return nil, nil // No config provided, so no authenticator is needed
 	}
 
 	configs := authnConfigs.GetConfigs()
-	authenticators := make(map[string]declarative.Authenticator)
+	authenticators := make(map[string]security.Authenticator)
 	for _, config := range configs {
 		authenticator, err := NewAuthenticator(config)
 		if err != nil {
@@ -47,7 +47,7 @@ func NewAuthenticators(authnConfigs *securityv1.AuthenticatorConfigs, opts ...op
 	return authenticators, nil
 }
 
-func NewAuthenticator(authnConfig *authnv1.Authenticator, opts ...options.Option) (declarative.Authenticator, error) {
+func NewAuthenticator(authnConfig *authnv1.Authenticator, opts ...options.Option) (security.Authenticator, error) {
 	if authnConfig == nil {
 		return nil, nil // No config provided, so no authenticator is needed
 	}

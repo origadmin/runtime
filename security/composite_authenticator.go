@@ -2,31 +2,31 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package declarative
+package security
 
 import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/errors"
 
-	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 // CompositeAuthenticator is an authenticator that delegates to a list of other authenticators.
 // It tries each authenticator in order until one of them successfully authenticates the credential.
 type CompositeAuthenticator struct {
-	authenticators []declarative.Authenticator
+	authenticators []security.Authenticator
 }
 
 // NewCompositeAuthenticator creates a new CompositeAuthenticator.
 // It takes a variadic list of authenticators to be tried in order.
-func NewCompositeAuthenticator(authenticators ...declarative.Authenticator) declarative.Authenticator {
+func NewCompositeAuthenticator(authenticators ...security.Authenticator) security.Authenticator {
 	return &CompositeAuthenticator{authenticators: authenticators}
 }
 
 // Authenticate iterates through the list of authenticators and calls the first one that supports the credential.
 // If no authenticator supports the credential, it returns an "authenticator not found" error.
-func (c *CompositeAuthenticator) Authenticate(ctx context.Context, cred declarative.Credential) (declarative.Principal, error) {
+func (c *CompositeAuthenticator) Authenticate(ctx context.Context, cred security.Credential) (security.Principal, error) {
 	for _, auth := range c.authenticators {
 		if auth.Supports(cred) {
 			return auth.Authenticate(ctx, cred)
@@ -36,7 +36,7 @@ func (c *CompositeAuthenticator) Authenticate(ctx context.Context, cred declarat
 }
 
 // Supports returns true if any of the underlying authenticators supports the credential.
-func (c *CompositeAuthenticator) Supports(cred declarative.Credential) bool {
+func (c *CompositeAuthenticator) Supports(cred security.Credential) bool {
 	for _, auth := range c.authenticators {
 		if auth.Supports(cred) {
 			return true

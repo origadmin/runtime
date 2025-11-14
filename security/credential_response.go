@@ -2,11 +2,11 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package declarative
+package security
 
 import (
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
-	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/interfaces/security"
 	"github.com/origadmin/runtime/security/meta"
 )
 
@@ -24,7 +24,7 @@ func NewCredentialResponse(
 	crType string,
 	payload *securityv1.Payload,
 	meta map[string][]string, // Receives Go-idiomatic metadata
-) declarative.CredentialResponse {
+) security.CredentialResponse {
 	return &credentialResponse{
 		crType:  crType,
 		payload: payload,

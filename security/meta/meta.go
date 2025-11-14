@@ -8,7 +8,7 @@ import (
 
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	ifacemetadata "github.com/origadmin/runtime/interfaces/metadata"
-	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 type Meta map[string][]string
@@ -40,7 +40,7 @@ func (m Meta) Set(key string, value string) {
 	m[key] = []string{value}
 }
 
-func FromProvider(p declarative.ValueProvider) Meta {
+func FromProvider(p security.ValueProvider) Meta {
 	meta := maps.Clone(p.GetAll())
 	return meta
 }

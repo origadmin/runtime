@@ -1,4 +1,4 @@
-package declarative
+package security
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/origadmin/runtime/interfaces/security/declarative" // This import path remains the same
+	"github.com/origadmin/runtime/interfaces/security" // This import path remains the same
 )
 
 // valueSource defines the common interface for extracting key-value pairs from different sources.
@@ -82,7 +82,7 @@ func (t transportHeaderSource) Values(key string) []string {
 
 // GetAll returns all key-value pairs from the transport header.
 func (t transportHeaderSource) GetAll() map[string][]string {
-	all := make(map[string][]string) // Initialize map without a specific capacity for now
+	all := make(map[string][]string)      // Initialize map without a specific capacity for now
 	for _, key := range t.Header.Keys() { // Use Keys() method to get all keys
 		values := t.Header.Values(key) // Use Values(key) method to get corresponding values
 		// Create a copy of the slice to prevent external modifications to the underlying slice
@@ -93,9 +93,9 @@ func (t transportHeaderSource) GetAll() map[string][]string {
 	return all
 }
 
-// serverSecurityRequest implements declarative.SecurityRequest by wrapping a valueSource
+// serverRequest implements security.Request by wrapping a valueSource
 // and providing context-specific information like Kind, Operation, Method, and RouteTemplate.
-type serverSecurityRequest struct {
+type serverRequest struct {
 	kind          string
 	operation     string
 	method        string
@@ -104,28 +104,28 @@ type serverSecurityRequest struct {
 }
 
 // Kind returns the type of the request as a string (e.g., "grpc", "http").
-func (c *serverSecurityRequest) Kind() string {
+func (c *serverRequest) Kind() string {
 	return c.kind
 }
 
 // GetOperation returns the primary identifier for the logical operation being performed.
-func (c *serverSecurityRequest) GetOperation() string {
+func (c *serverRequest) GetOperation() string {
 	return c.operation
 }
 
 // GetMethod returns the HTTP verb (e.g., "GET", "POST") if the request is an HTTP call.
-func (c *serverSecurityRequest) GetMethod() string {
+func (c *serverRequest) GetMethod() string {
 	return c.method
 }
 
 // GetRouteTemplate returns the matched HTTP route template (e.g., "/v1/users/{id}")
 // if the request is an HTTP call and a route template was matched.
-func (c *serverSecurityRequest) GetRouteTemplate() string {
+func (c *serverRequest) GetRouteTemplate() string {
 	return c.routeTemplate
 }
 
 // Get returns the first value associated with the given key from the delegate valueSource.
-func (c *serverSecurityRequest) Get(key string) string {
+func (c *serverRequest) Get(key string) string {
 	if c.delegate != nil {
 		return c.delegate.Get(key)
 	}
@@ -133,7 +133,7 @@ func (c *serverSecurityRequest) Get(key string) string {
 }
 
 // Values returns the values associated with the given key from the delegate valueSource.
-func (c *serverSecurityRequest) Values(key string) []string {
+func (c *serverRequest) Values(key string) []string {
 	if c.delegate != nil {
 		return c.delegate.Values(key)
 	}
@@ -141,7 +141,7 @@ func (c *serverSecurityRequest) Values(key string) []string {
 }
 
 // GetAll returns all key-value pairs from the delegate valueSource.
-func (c *serverSecurityRequest) GetAll() map[string][]string {
+func (c *serverRequest) GetAll() map[string][]string {
 	if c.delegate != nil {
 		return c.delegate.GetAll()
 	}
@@ -158,22 +158,22 @@ func newGRPCMetadataSource(md metadata.MD) *grpcMetadataSource {
 	return &grpcMetadataSource{MD: md}
 }
 
-// NewSecurityRequestFromHTTPRequest creates a declarative.SecurityRequest from a standard http.Request.
+// NewRequestFromHTTPRequest creates a security.Request from a standard http.Request.
 // This is useful when the full Kratos transport context is not available or needed.
-func NewSecurityRequestFromHTTPRequest(r *http.Request) declarative.SecurityRequest {
-	return &serverSecurityRequest{
+func NewRequestFromHTTPRequest(r *http.Request) security.Request {
+	return &serverRequest{
 		kind:          "http",
 		operation:     r.URL.Path, // Use the request URL path as the operation
 		method:        r.Method,
-		routeTemplate: "",         // Route template cannot be determined from a raw http.Request
+		routeTemplate: "", // Route template cannot be determined from a raw http.Request
 		delegate:      newHTTPHeaderSource(r),
 	}
 }
 
-// NewSecurityRequestFromGRPCMetadata creates a declarative.SecurityRequest from gRPC metadata and a full method name.
+// NewRequestFromGRPCMetadata creates a security.Request from gRPC metadata and a full method name.
 // This is useful for gRPC requests when the full Kratos transport context is not available or needed.
-func NewSecurityRequestFromGRPCMetadata(md metadata.MD, fullMethodName string) declarative.SecurityRequest {
-	return &serverSecurityRequest{
+func NewRequestFromGRPCMetadata(md metadata.MD, fullMethodName string) security.Request {
+	return &serverRequest{
 		kind:          "grpc",
 		operation:     fullMethodName,
 		method:        "", // Not applicable for raw gRPC metadata
@@ -182,8 +182,8 @@ func NewSecurityRequestFromGRPCMetadata(md metadata.MD, fullMethodName string) d
 	}
 }
 
-// NewSecurityRequestFromServerContext extracts a SecurityRequest from the server context.
-func NewSecurityRequestFromServerContext(ctx context.Context) (declarative.SecurityRequest, error) {
+// NewRequestFromServerContext extracts a Request from the server context.
+func NewRequestFromServerContext(ctx context.Context) (security.Request, error) {
 	tr, ok := transport.FromServerContext(ctx)
 	if !ok {
 		return nil, kratoserrors.New(500, "TRANSPORT_CONTEXT_MISSING", "transport context is missing")
@@ -227,7 +227,7 @@ func NewSecurityRequestFromServerContext(ctx context.Context) (declarative.Secur
 		return nil, err
 	}
 
-	return &serverSecurityRequest{
+	return &serverRequest{
 		kind:          kind,
 		operation:     operation,
 		method:        method,

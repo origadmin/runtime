@@ -1,15 +1,14 @@
 package principal
 
 import (
-	"context"
-	"encoding/base64"
 	"fmt"
 
-	"github.com/origadmin/runtime/interfaces/security/declarative"
-	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+
+	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 const (
@@ -20,13 +19,13 @@ const (
 // principalKey is an unexported type for context.Context keys.
 type principalKey struct{}
 
-// concretePrincipal is a concrete implementation of the declarative.Principal interface.
+// concretePrincipal is a concrete implementation of the security.Principal interface.
 type concretePrincipal struct {
 	id          string
 	roles       []string
-	permissions []string // New field
+	permissions []string        // New field
 	scopes      map[string]bool // New field
-	extraClaims map[string]any // Renamed from 'claims'
+	extraClaims map[string]any  // Renamed from 'claims'
 }
 
 // GetID returns the unique identifier of the principal.
@@ -54,8 +53,8 @@ func (p *concretePrincipal) GetClaims() map[string]any {
 	return p.extraClaims
 }
 
-// New creates a new declarative.Principal instance.
-func New(id string, roles []string, permissions []string, scopes map[string]bool, extraClaims map[string]any) declarative.Principal {
+// New creates a new security.Principal instance.
+func New(id string, roles []string, permissions []string, scopes map[string]bool, extraClaims map[string]any) security.Principal {
 	if extraClaims == nil {
 		extraClaims = make(map[string]any)
 	}
@@ -71,9 +70,9 @@ func New(id string, roles []string, permissions []string, scopes map[string]bool
 	}
 }
 
-// ToProto converts a declarative.Principal to a *securityv1.Principal Protobuf message.
+// ToProto converts a security.Principal to a *securityv1.Principal Protobuf message.
 // It attempts to pack various Go types into anypb.Any.
-func ToProto(p declarative.Principal) (*securityv1.Principal, error) {
+func ToProto(p security.Principal) (*securityv1.Principal, error) {
 	if p == nil {
 		return nil, nil
 	}
@@ -117,9 +116,9 @@ func ToProto(p declarative.Principal) (*securityv1.Principal, error) {
 	}, nil
 }
 
-// FromProto converts a *securityv1.Principal Protobuf message to a declarative.Principal.
+// FromProto converts a *securityv1.Principal Protobuf message to a security.Principal.
 // It stores anypb.Any directly in the extraClaims map; consumers will need to unpack them.
-func FromProto(protoP *securityv1.Principal) (declarative.Principal, error) {
+func FromProto(protoP *securityv1.Principal) (security.Principal, error) {
 	if protoP == nil {
 		return nil, nil
 	}
@@ -130,49 +129,4 @@ func FromProto(protoP *securityv1.Principal) (declarative.Principal, error) {
 	}
 
 	return New(protoP.GetId(), protoP.GetRoles(), protoP.GetPermissions(), protoP.GetScopes(), extraClaims), nil
-}
-
-// PrincipalFromContext extracts the Principal from the given context.
-// It returns the Principal and a boolean indicating if it was found.
-func PrincipalFromContext(ctx context.Context) (declarative.Principal, bool) {
-	p, ok := ctx.Value(principalKey{}).(declarative.Principal)
-	return p, ok
-}
-
-// PrincipalWithContext returns a new context with the given Principal attached.
-// It is used to inject the Principal into the context for downstream business logic.
-func PrincipalWithContext(ctx context.Context, p declarative.Principal) context.Context {
-	return context.WithValue(ctx, principalKey{}, p)
-}
-
-// EncodePrincipal encodes a declarative.Principal into a base64-encoded Protobuf string.
-func EncodePrincipal(p declarative.Principal) (string, error) {
-	if p == nil {
-		return "", nil
-	}
-	protoP, err := ToProto(p)
-	if err != nil {
-		return "", fmt.Errorf("failed to convert declarative.Principal to proto: %w", err)
-	}
-	data, err := proto.Marshal(protoP)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal proto.Principal: %w", err)
-	}
-	return base64.StdEncoding.EncodeToString(data), nil
-}
-
-// DecodePrincipal decodes a base64-encoded Protobuf string into a declarative.Principal.
-func DecodePrincipal(encoded string) (declarative.Principal, error) {
-	if encoded == "" {
-		return nil, nil
-	}
-	data, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode base64 string: %w", err)
-	}
-	protoP := &securityv1.Principal{}
-	if err := proto.Unmarshal(data, protoP); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal proto.Principal: %w", err)
-	}
-	return FromProto(protoP)
 }

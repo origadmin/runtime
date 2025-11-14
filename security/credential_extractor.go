@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package declarative
+package security
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/interfaces/security"
 )
 
 const (
@@ -20,19 +20,19 @@ const (
 	AuthorizationHeader = "Authorization"
 )
 
-// HeaderCredentialExtractor implements the declarative.CredentialExtractor interface.
+// HeaderCredentialExtractor implements the security.CredentialExtractor interface.
 // It extracts credentials from the "Authorization" HTTP header.
 type HeaderCredentialExtractor struct{}
 
 // NewHeaderCredentialExtractor creates a new instance of HeaderCredentialExtractor.
-func NewHeaderCredentialExtractor() declarative.CredentialExtractor {
+func NewHeaderCredentialExtractor() security.CredentialExtractor {
 	return &HeaderCredentialExtractor{}
 }
 
 // Extract is responsible for all extraction and parsing logic. It prepares all
 // necessary components and then calls the pure NewCredential constructor.
-func (e *HeaderCredentialExtractor) Extract(ctx context.Context, provider declarative.SecurityRequest) (declarative.Credential, error) {
-	authHeader := provider.Get(AuthorizationHeader)
+func (e *HeaderCredentialExtractor) Extract(ctx context.Context, request security.Request) (security.Credential, error) {
+	authHeader := request.Get(AuthorizationHeader)
 	if authHeader == "" {
 		return nil, errors.New(401, "AUTHORIZATION_HEADER_NOT_FOUND", "authorization header not found")
 	}
@@ -61,8 +61,8 @@ func (e *HeaderCredentialExtractor) Extract(ctx context.Context, provider declar
 		credentialType = scheme
 	}
 
-	// Directly get Go-idiomatic metadata from the provider.
-	goMeta := provider.GetAll()
+	// Directly get Go-idiomatic metadata from the request.
+	goMeta := request.GetAll()
 
 	// Call the pure constructor with the final, prepared components.
 	// NewCredential is now defined in credential.go

@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-package declarative
+package security
 
 import (
 	"fmt"
@@ -11,13 +11,13 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
-	"github.com/origadmin/runtime/interfaces/security/declarative"
+	"github.com/origadmin/runtime/interfaces/security"
 	"github.com/origadmin/runtime/security/meta"
 )
 
-// credentialImpl is the concrete implementation of the declarative.Credential interface.
+// credential is the concrete implementation of the security.Credential interface.
 // It stores credential data in a Go-idiomatic way.
-type credentialImpl struct {
+type credential struct {
 	credentialType string
 	rawCredential  string
 	payload        *anypb.Any
@@ -31,7 +31,7 @@ func NewCredential(
 	rawCredential string,
 	payload proto.Message,
 	meta map[string][]string, // Receives Go-idiomatic metadata
-) (declarative.Credential, error) {
+) (security.Credential, error) {
 	// Convert payload to Any type
 	var anyPayload *anypb.Any
 	if payload != nil {
@@ -42,7 +42,7 @@ func NewCredential(
 		}
 	}
 
-	return &credentialImpl{
+	return &credential{
 		credentialType: credentialType,
 		rawCredential:  rawCredential,
 		payload:        anyPayload,
@@ -51,17 +51,17 @@ func NewCredential(
 }
 
 // Type returns the type of the credential.
-func (c *credentialImpl) Type() string {
+func (c *credential) Type() string {
 	return c.credentialType
 }
 
 // Raw returns the original, unparsed credential string.
-func (c *credentialImpl) Raw() string {
+func (c *credential) Raw() string {
 	return c.rawCredential
 }
 
 // ParsedPayload unmarshals the credential's payload into the provided protobuf message.
-func (c *credentialImpl) ParsedPayload(message proto.Message) error {
+func (c *credential) ParsedPayload(message proto.Message) error {
 	if c.payload == nil {
 		return fmt.Errorf("credential payload is nil")
 	}
@@ -70,13 +70,13 @@ func (c *credentialImpl) ParsedPayload(message proto.Message) error {
 
 // GetMeta returns the authentication-related metadata associated with the credential
 // as a standard Go map[string][]string, for easy consumption by Authenticator implementations.
-func (c *credentialImpl) GetMeta() map[string][]string {
+func (c *credential) GetMeta() map[string][]string {
 	return c.meta
 }
 
 // Source returns the canonical Protobuf representation of the credential.
 // This method performs the conversion from Go-idiomatic internal storage to Protobuf format.
-func (c *credentialImpl) Source() *securityv1.CredentialSource {
+func (c *credential) Source() *securityv1.CredentialSource {
 	// Convert Go-idiomatic metadata to Protobuf MetaValue map only when Source() is called.
 	// Use the ToProto method on the meta.Meta type.
 	protoMeta := meta.Meta(c.meta).ToProto()
