@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package security implements the functions, types, and interfaces for the module.
-package security
+// Package security_deprecated implements the functions, types, and interfaces for the module.
+package security_deprecated
 
 import (
 	"context"

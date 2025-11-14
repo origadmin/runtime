@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package security provides interfaces and types for security-related operations
-package security
+// Package security_deprecated provides interfaces and types for security-related operations
+package security_deprecated
 
 import (
 	"context"

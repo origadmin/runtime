@@ -1,6 +1,9 @@
-// Package declarative defines the contract for extracting a credential from a request
-// by using a ValueProvider to access request data in a transport-agnostic way.
-package declarative
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
+// Package security provides declarative security interfaces for authentication and authorization.
+package security
 
 import "context"
 

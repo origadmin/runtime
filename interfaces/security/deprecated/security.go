@@ -2,10 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package security implements the functions, types, and interfaces for the module.
-
-// Package security is a package that provides security-related functions and types.
-package security
+// Package security_deprecated is a package that provides security-related functions and types.
+package security_deprecated
 
 // TokenSource type is defined to represent the origin of the token.
 //

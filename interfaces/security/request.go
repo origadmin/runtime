@@ -1,11 +1,14 @@
-// Package declarative provides a generic way to access key-value pairs from a request source,
-// such as HTTP headers or gRPC metadata. This avoids using 'any' and ensures type safety.
-package declarative
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
 
-// SecurityRequest provides a generic way to access security-relevant information from a request source,
-// such as HTTP headers, gRPC metadata, request operation, method, and route template.
-// This avoids using 'any' and ensures type safety for security policy evaluation.
-type SecurityRequest interface {
+// Package security provides declarative security interfaces for authentication and authorization.
+package security
+
+// AuthRequest provides access to security-relevant information needed for authorization decisions.
+// It abstracts away the underlying transport (HTTP/gRPC) and provides a unified interface
+// for accessing request metadata, operation details, and routing information.
+type AuthRequest interface {
 	// Kind returns the type of the request as a string (e.g., "grpc", "http").
 	// This helps consumers understand how to interpret GetOperation(), GetMethod(), and GetRouteTemplate().
 	Kind() string

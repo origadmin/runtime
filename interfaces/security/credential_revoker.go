@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package declarative provides interfaces for declarative security policies.
-package declarative
+// Package security provides interfaces for declarative security policies.
+package security
 
 import (
 	"context"

@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package security is a toolkit for security check and authorization
-package security
+// Package security_deprecated implements the functions, types, and interfaces for the module.
+package security_deprecated
 
 // Claims is an interface that defines the methods that a security claims object should have
 // It provides methods for getting the subject, issuer, audience, expiration, not before, issued at, JWT ID, and scopes of the claims

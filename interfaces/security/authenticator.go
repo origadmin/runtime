@@ -2,8 +2,8 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package declarative provides declarative security interfaces for authentication and authorization.
-package declarative
+// Package security provides declarative security interfaces for authentication and authorization.
+package security
 
 import (
 	"context"

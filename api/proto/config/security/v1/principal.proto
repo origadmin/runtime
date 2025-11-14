@@ -23,11 +23,21 @@ message Principal {
     (gnostic.openapi.v3.property) = {description: "List of roles assigned to the principal."}
   ];
 
-  // A map of additional claims associated with the principal.
+  // A list of permissions assigned to the principal.
+  repeated string permissions = 4 [
+    (gnostic.openapi.v3.property) = {description: "List of permissions assigned to the principal."}
+  ];
+
+  // A map of scopes assigned to the principal.
+  map<string, bool> scopes = 5 [
+    (gnostic.openapi.v3.property) = {description: "Map of scopes assigned to the principal."}
+  ];
+
+  // A map of additional, non-structured claims associated with the principal.
   // Using `google.protobuf.Any` allows for type-safe, flexible claims that can
   // hold any protobuf message. In Go, helper functions should be provided to
   // wrap the complexity of packing and unpacking these `Any` values.
-  map<string, google.protobuf.Any> claims = 3 [
-    (gnostic.openapi.v3.property) = {description: "Flexible, type-safe claims associated with the principal."}
+  map<string, google.protobuf.Any> extra_claims = 3 [
+    (gnostic.openapi.v3.property) = {description: "Flexible, type-safe extra claims associated with the principal."}
   ];
 }
