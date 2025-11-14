@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package runtime.api.config.security.v1;
 
-import "google/protobuf/any.proto";
 import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/v1;securityv1";
@@ -19,25 +19,16 @@ message Principal {
   ];
 
   // A list of roles assigned to the principal.
-  repeated string roles = 2 [
-    (gnostic.openapi.v3.property) = {description: "List of roles assigned to the principal."}
-  ];
+  repeated string roles = 2 [(gnostic.openapi.v3.property) = {description: "List of roles assigned to the principal."}];
 
   // A list of permissions assigned to the principal.
-  repeated string permissions = 4 [
-    (gnostic.openapi.v3.property) = {description: "List of permissions assigned to the principal."}
-  ];
+  repeated string permissions = 3 [(gnostic.openapi.v3.property) = {description: "List of permissions assigned to the principal."}];
 
   // A map of scopes assigned to the principal.
-  map<string, bool> scopes = 5 [
-    (gnostic.openapi.v3.property) = {description: "Map of scopes assigned to the principal."}
-  ];
+  map<string, bool> scopes = 4 [(gnostic.openapi.v3.property) = {description: "Map of scopes assigned to the principal."}];
 
-  // A map of additional, non-structured claims associated with the principal.
-  // Using `google.protobuf.Any` allows for type-safe, flexible claims that can
-  // hold any protobuf message. In Go, helper functions should be provided to
-  // wrap the complexity of packing and unpacking these `Any` values.
-  map<string, google.protobuf.Any> extra_claims = 3 [
-    (gnostic.openapi.v3.property) = {description: "Flexible, type-safe extra claims associated with the principal."}
-  ];
+  // A map of standardized, type-safe claims associated with the principal.
+  // Using google.protobuf.Value allows for flexible, JSON-like claims,
+  // with robust Go helper functions in the structpb package.
+  map<string, google.protobuf.Value> claims = 5 [(gnostic.openapi.v3.property) = {description: "Standardized, flexible claims associated with the principal."}];
 }

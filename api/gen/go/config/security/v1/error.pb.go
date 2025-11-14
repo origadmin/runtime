@@ -24,14 +24,14 @@ const (
 
 // SecurityErrorReason defines the application's specific security error codes.
 // These codes supplement the common error codes and provide more specific details
-// for authentication and authorization failures.
+// for authentication and authorization failures. The naming convention follows SUBJECT_MODIFIER format.
 type SecurityErrorReason int32
 
 const (
 	// The default, unspecified reason. This is required by proto3 syntax.
 	SecurityErrorReason_SECURITY_ERROR_REASON_UNSPECIFIED SecurityErrorReason = 0
 	// The provided credentials (e.g., username/password) are invalid.
-	SecurityErrorReason_INVALID_CREDENTIALS SecurityErrorReason = 1002
+	SecurityErrorReason_CREDENTIALS_INVALID SecurityErrorReason = 1002
 	// The authentication token has expired.
 	SecurityErrorReason_TOKEN_EXPIRED SecurityErrorReason = 1003
 	// The authentication token is malformed or invalid.
@@ -39,42 +39,42 @@ const (
 	// The authentication token is missing from the request.
 	SecurityErrorReason_TOKEN_MISSING SecurityErrorReason = 1005
 	// The claims within the token are invalid.
-	SecurityErrorReason_INVALID_CLAIMS SecurityErrorReason = 1006
+	SecurityErrorReason_CLAIMS_INVALID SecurityErrorReason = 1006
 	// The bearer token is specifically invalid or malformed.
-	SecurityErrorReason_INVALID_BEARER_TOKEN SecurityErrorReason = 1007
+	SecurityErrorReason_BEARER_TOKEN_INVALID SecurityErrorReason = 1007
 	// The signing method used in the token is not supported.
-	SecurityErrorReason_UNSUPPORTED_SIGNING_METHOD SecurityErrorReason = 1008
+	SecurityErrorReason_SIGNING_METHOD_UNSUPPORTED SecurityErrorReason = 1008
 	// Failed to sign a new token.
-	SecurityErrorReason_SIGN_TOKEN_FAILED SecurityErrorReason = 1009
+	SecurityErrorReason_TOKEN_SIGN_FAILED SecurityErrorReason = 1009
 	// The user is authenticated but does not have permission for the specific resource or action.
-	SecurityErrorReason_INVALID_AUTHORIZATION SecurityErrorReason = 2000
+	SecurityErrorReason_PERMISSION_DENIED SecurityErrorReason = 2000
 )
 
 // Enum value maps for SecurityErrorReason.
 var (
 	SecurityErrorReason_name = map[int32]string{
 		0:    "SECURITY_ERROR_REASON_UNSPECIFIED",
-		1002: "INVALID_CREDENTIALS",
+		1002: "CREDENTIALS_INVALID",
 		1003: "TOKEN_EXPIRED",
 		1004: "TOKEN_INVALID",
 		1005: "TOKEN_MISSING",
-		1006: "INVALID_CLAIMS",
-		1007: "INVALID_BEARER_TOKEN",
-		1008: "UNSUPPORTED_SIGNING_METHOD",
-		1009: "SIGN_TOKEN_FAILED",
-		2000: "INVALID_AUTHORIZATION",
+		1006: "CLAIMS_INVALID",
+		1007: "BEARER_TOKEN_INVALID",
+		1008: "SIGNING_METHOD_UNSUPPORTED",
+		1009: "TOKEN_SIGN_FAILED",
+		2000: "PERMISSION_DENIED",
 	}
 	SecurityErrorReason_value = map[string]int32{
 		"SECURITY_ERROR_REASON_UNSPECIFIED": 0,
-		"INVALID_CREDENTIALS":               1002,
+		"CREDENTIALS_INVALID":               1002,
 		"TOKEN_EXPIRED":                     1003,
 		"TOKEN_INVALID":                     1004,
 		"TOKEN_MISSING":                     1005,
-		"INVALID_CLAIMS":                    1006,
-		"INVALID_BEARER_TOKEN":              1007,
-		"UNSUPPORTED_SIGNING_METHOD":        1008,
-		"SIGN_TOKEN_FAILED":                 1009,
-		"INVALID_AUTHORIZATION":             2000,
+		"CLAIMS_INVALID":                    1006,
+		"BEARER_TOKEN_INVALID":              1007,
+		"SIGNING_METHOD_UNSUPPORTED":        1008,
+		"TOKEN_SIGN_FAILED":                 1009,
+		"PERMISSION_DENIED":                 2000,
 	}
 )
 
@@ -109,18 +109,18 @@ var File_config_security_v1_error_proto protoreflect.FileDescriptor
 
 const file_config_security_v1_error_proto_rawDesc = "" +
 	"\n" +
-	"\x1econfig/security/v1/error.proto\x12\x1eruntime.api.config.security.v1\x1a\x13errors/errors.proto*\xd9\x02\n" +
+	"\x1econfig/security/v1/error.proto\x12\x1eruntime.api.config.security.v1\x1a\x13errors/errors.proto*\xd5\x02\n" +
 	"\x13SecurityErrorReason\x12+\n" +
 	"!SECURITY_ERROR_REASON_UNSPECIFIED\x10\x00\x1a\x04\xa8E\xf4\x03\x12\x1e\n" +
-	"\x13INVALID_CREDENTIALS\x10\xea\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
+	"\x13CREDENTIALS_INVALID\x10\xea\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
 	"\rTOKEN_EXPIRED\x10\xeb\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
 	"\rTOKEN_INVALID\x10\xec\a\x1a\x04\xa8E\x91\x03\x12\x18\n" +
 	"\rTOKEN_MISSING\x10\xed\a\x1a\x04\xa8E\x91\x03\x12\x19\n" +
-	"\x0eINVALID_CLAIMS\x10\xee\a\x1a\x04\xa8E\x91\x03\x12\x1f\n" +
-	"\x14INVALID_BEARER_TOKEN\x10\xef\a\x1a\x04\xa8E\x91\x03\x12%\n" +
-	"\x1aUNSUPPORTED_SIGNING_METHOD\x10\xf0\a\x1a\x04\xa8E\x91\x03\x12\x1c\n" +
-	"\x11SIGN_TOKEN_FAILED\x10\xf1\a\x1a\x04\xa8E\xf4\x03\x12 \n" +
-	"\x15INVALID_AUTHORIZATION\x10\xd0\x0f\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B\x94\x02\n" +
+	"\x0eCLAIMS_INVALID\x10\xee\a\x1a\x04\xa8E\x91\x03\x12\x1f\n" +
+	"\x14BEARER_TOKEN_INVALID\x10\xef\a\x1a\x04\xa8E\x91\x03\x12%\n" +
+	"\x1aSIGNING_METHOD_UNSUPPORTED\x10\xf0\a\x1a\x04\xa8E\x91\x03\x12\x1c\n" +
+	"\x11TOKEN_SIGN_FAILED\x10\xf1\a\x1a\x04\xa8E\xf4\x03\x12\x1c\n" +
+	"\x11PERMISSION_DENIED\x10\xd0\x0f\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03B\x94\x02\n" +
 	"\"com.runtime.api.config.security.v1B\n" +
 	"ErrorProtoP\x01ZEgithub.com/origadmin/runtime/api/gen/go/config/security/v1;securityv1\xa2\x02\x04RACS\xaa\x02\x1eRuntime.Api.Config.Security.V1\xca\x02\x1eRuntime\\Api\\Config\\Security\\V1\xe2\x02*Runtime\\Api\\Config\\Security\\V1\\GPBMetadata\xea\x02\"Runtime::Api::Config::Security::V1b\x06proto3"
 

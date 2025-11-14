@@ -5,6 +5,10 @@
 // Package security provides interfaces for declarative security policies.
 package security
 
+import (
+	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
+)
+
 // Principal defines the identity of an authenticated user or system.
 // It contains information such as user ID, roles, and claims, and is injected into context.Context for downstream business logic.
 type Principal interface {
@@ -20,7 +24,11 @@ type Principal interface {
 	// GetScopes returns the scopes assigned to the principal.
 	GetScopes() map[string]bool
 
-	// GetClaims returns all claims associated with the principal as a map of string to *anypb.Any.
-	// This allows for type-safe unpacking of claims into specific protobuf messages.
-	GetClaims() map[string]any
+	// GetClaims returns a standard, type-safe accessor for the principal's claims.
+	// This is the single, recommended way to access all custom claims data.
+	GetClaims() Claims
+
+	// Export returns the serializable, transportable representation of the principal.
+	// This method is guaranteed to succeed for a valid Principal.
+	Export() *securityv1.Principal
 }

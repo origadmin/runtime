@@ -26,17 +26,17 @@ func ErrorSecurityErrorReasonUnspecified(format string, args ...interface{}) *er
 }
 
 // The provided credentials (e.g., username/password) are invalid.
-func IsInvalidCredentials(err error) bool {
+func IsCredentialsInvalid(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == SecurityErrorReason_INVALID_CREDENTIALS.String() && e.Code == 401
+	return e.Reason == SecurityErrorReason_CREDENTIALS_INVALID.String() && e.Code == 401
 }
 
 // The provided credentials (e.g., username/password) are invalid.
-func ErrorInvalidCredentials(format string, args ...interface{}) *errors.Error {
-	return errors.New(401, SecurityErrorReason_INVALID_CREDENTIALS.String(), fmt.Sprintf(format, args...))
+func ErrorCredentialsInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, SecurityErrorReason_CREDENTIALS_INVALID.String(), fmt.Sprintf(format, args...))
 }
 
 // The authentication token has expired.
@@ -82,71 +82,71 @@ func ErrorTokenMissing(format string, args ...interface{}) *errors.Error {
 }
 
 // The claims within the token are invalid.
-func IsInvalidClaims(err error) bool {
+func IsClaimsInvalid(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == SecurityErrorReason_INVALID_CLAIMS.String() && e.Code == 401
+	return e.Reason == SecurityErrorReason_CLAIMS_INVALID.String() && e.Code == 401
 }
 
 // The claims within the token are invalid.
-func ErrorInvalidClaims(format string, args ...interface{}) *errors.Error {
-	return errors.New(401, SecurityErrorReason_INVALID_CLAIMS.String(), fmt.Sprintf(format, args...))
+func ErrorClaimsInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, SecurityErrorReason_CLAIMS_INVALID.String(), fmt.Sprintf(format, args...))
 }
 
 // The bearer token is specifically invalid or malformed.
-func IsInvalidBearerToken(err error) bool {
+func IsBearerTokenInvalid(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == SecurityErrorReason_INVALID_BEARER_TOKEN.String() && e.Code == 401
+	return e.Reason == SecurityErrorReason_BEARER_TOKEN_INVALID.String() && e.Code == 401
 }
 
 // The bearer token is specifically invalid or malformed.
-func ErrorInvalidBearerToken(format string, args ...interface{}) *errors.Error {
-	return errors.New(401, SecurityErrorReason_INVALID_BEARER_TOKEN.String(), fmt.Sprintf(format, args...))
+func ErrorBearerTokenInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, SecurityErrorReason_BEARER_TOKEN_INVALID.String(), fmt.Sprintf(format, args...))
 }
 
 // The signing method used in the token is not supported.
-func IsUnsupportedSigningMethod(err error) bool {
+func IsSigningMethodUnsupported(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == SecurityErrorReason_UNSUPPORTED_SIGNING_METHOD.String() && e.Code == 401
+	return e.Reason == SecurityErrorReason_SIGNING_METHOD_UNSUPPORTED.String() && e.Code == 401
 }
 
 // The signing method used in the token is not supported.
-func ErrorUnsupportedSigningMethod(format string, args ...interface{}) *errors.Error {
-	return errors.New(401, SecurityErrorReason_UNSUPPORTED_SIGNING_METHOD.String(), fmt.Sprintf(format, args...))
+func ErrorSigningMethodUnsupported(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, SecurityErrorReason_SIGNING_METHOD_UNSUPPORTED.String(), fmt.Sprintf(format, args...))
 }
 
 // Failed to sign a new token.
-func IsSignTokenFailed(err error) bool {
+func IsTokenSignFailed(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == SecurityErrorReason_SIGN_TOKEN_FAILED.String() && e.Code == 500
+	return e.Reason == SecurityErrorReason_TOKEN_SIGN_FAILED.String() && e.Code == 500
 }
 
 // Failed to sign a new token.
-func ErrorSignTokenFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, SecurityErrorReason_SIGN_TOKEN_FAILED.String(), fmt.Sprintf(format, args...))
+func ErrorTokenSignFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, SecurityErrorReason_TOKEN_SIGN_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // The user is authenticated but does not have permission for the specific resource or action.
-func IsInvalidAuthorization(err error) bool {
+func IsPermissionDenied(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == SecurityErrorReason_INVALID_AUTHORIZATION.String() && e.Code == 403
+	return e.Reason == SecurityErrorReason_PERMISSION_DENIED.String() && e.Code == 403
 }
 
 // The user is authenticated but does not have permission for the specific resource or action.
-func ErrorInvalidAuthorization(format string, args ...interface{}) *errors.Error {
-	return errors.New(403, SecurityErrorReason_INVALID_AUTHORIZATION.String(), fmt.Sprintf(format, args...))
+func ErrorPermissionDenied(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, SecurityErrorReason_PERMISSION_DENIED.String(), fmt.Sprintf(format, args...))
 }

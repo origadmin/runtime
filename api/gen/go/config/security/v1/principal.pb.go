@@ -11,7 +11,7 @@ import (
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	anypb "google.golang.org/protobuf/types/known/anypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -33,11 +33,14 @@ type Principal struct {
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// A list of roles assigned to the principal.
 	Roles []string `protobuf:"bytes,2,rep,name=roles,proto3" json:"roles,omitempty"`
-	// A map of additional claims associated with the principal.
-	// Using `google.protobuf.Any` allows for type-safe, flexible claims that can
-	// hold any protobuf message. In Go, helper functions should be provided to
-	// wrap the complexity of packing and unpacking these `Any` values.
-	Claims        map[string]*anypb.Any `protobuf:"bytes,3,rep,name=claims,proto3" json:"claims,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// A list of permissions assigned to the principal.
+	Permissions []string `protobuf:"bytes,3,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	// A map of scopes assigned to the principal.
+	Scopes map[string]bool `protobuf:"bytes,4,rep,name=scopes,proto3" json:"scopes,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	// A map of standardized, type-safe claims associated with the principal.
+	// Using google.protobuf.Value allows for flexible, JSON-like claims,
+	// with robust Go helper functions in the structpb package.
+	Claims        map[string]*structpb.Value `protobuf:"bytes,5,rep,name=claims,proto3" json:"claims,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -86,7 +89,21 @@ func (x *Principal) GetRoles() []string {
 	return nil
 }
 
-func (x *Principal) GetClaims() map[string]*anypb.Any {
+func (x *Principal) GetPermissions() []string {
+	if x != nil {
+		return x.Permissions
+	}
+	return nil
+}
+
+func (x *Principal) GetScopes() map[string]bool {
+	if x != nil {
+		return x.Scopes
+	}
+	return nil
+}
+
+func (x *Principal) GetClaims() map[string]*structpb.Value {
 	if x != nil {
 		return x.Claims
 	}
@@ -97,14 +114,19 @@ var File_config_security_v1_principal_proto protoreflect.FileDescriptor
 
 const file_config_security_v1_principal_proto_rawDesc = "" +
 	"\n" +
-	"\"config/security/v1/principal.proto\x12\x1eruntime.api.config.security.v1\x1a\x19google/protobuf/any.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\xf6\x02\n" +
+	"\"config/security/v1/principal.proto\x12\x1eruntime.api.config.security.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x8d\x05\n" +
 	"\tPrincipal\x12A\n" +
 	"\x02id\x18\x01 \x01(\tB1\xfaB\x04r\x02\x10\x01\xbaG'\x92\x02$Unique identifier for the principal.R\x02id\x12D\n" +
-	"\x05roles\x18\x02 \x03(\tB.\xbaG+\x92\x02(List of roles assigned to the principal.R\x05roles\x12\x8e\x01\n" +
-	"\x06claims\x18\x03 \x03(\v25.runtime.api.config.security.v1.Principal.ClaimsEntryB?\xbaG<\x92\x029Flexible, type-safe claims associated with the principal.R\x06claims\x1aO\n" +
+	"\x05roles\x18\x02 \x03(\tB.\xbaG+\x92\x02(List of roles assigned to the principal.R\x05roles\x12V\n" +
+	"\vpermissions\x18\x03 \x03(\tB4\xbaG1\x92\x02.List of permissions assigned to the principal.R\vpermissions\x12}\n" +
+	"\x06scopes\x18\x04 \x03(\v25.runtime.api.config.security.v1.Principal.ScopesEntryB.\xbaG+\x92\x02(Map of scopes assigned to the principal.R\x06scopes\x12\x91\x01\n" +
+	"\x06claims\x18\x05 \x03(\v25.runtime.api.config.security.v1.Principal.ClaimsEntryBB\xbaG?\x92\x02<Standardized, flexible claims associated with the principal.R\x06claims\x1a9\n" +
+	"\vScopesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\x1aQ\n" +
 	"\vClaimsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
-	"\x05value\x18\x02 \x01(\v2\x14.google.protobuf.AnyR\x05value:\x028\x01B\x98\x02\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12,\n" +
+	"\x05value\x18\x02 \x01(\v2\x16.google.protobuf.ValueR\x05value:\x028\x01B\x98\x02\n" +
 	"\"com.runtime.api.config.security.v1B\x0ePrincipalProtoP\x01ZEgithub.com/origadmin/runtime/api/gen/go/config/security/v1;securityv1\xa2\x02\x04RACS\xaa\x02\x1eRuntime.Api.Config.Security.V1\xca\x02\x1eRuntime\\Api\\Config\\Security\\V1\xe2\x02*Runtime\\Api\\Config\\Security\\V1\\GPBMetadata\xea\x02\"Runtime::Api::Config::Security::V1b\x06proto3"
 
 var (
@@ -119,20 +141,22 @@ func file_config_security_v1_principal_proto_rawDescGZIP() []byte {
 	return file_config_security_v1_principal_proto_rawDescData
 }
 
-var file_config_security_v1_principal_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_config_security_v1_principal_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_config_security_v1_principal_proto_goTypes = []any{
-	(*Principal)(nil), // 0: runtime.api.config.security.v1.Principal
-	nil,               // 1: runtime.api.config.security.v1.Principal.ClaimsEntry
-	(*anypb.Any)(nil), // 2: google.protobuf.Any
+	(*Principal)(nil),      // 0: runtime.api.config.security.v1.Principal
+	nil,                    // 1: runtime.api.config.security.v1.Principal.ScopesEntry
+	nil,                    // 2: runtime.api.config.security.v1.Principal.ClaimsEntry
+	(*structpb.Value)(nil), // 3: google.protobuf.Value
 }
 var file_config_security_v1_principal_proto_depIdxs = []int32{
-	1, // 0: runtime.api.config.security.v1.Principal.claims:type_name -> runtime.api.config.security.v1.Principal.ClaimsEntry
-	2, // 1: runtime.api.config.security.v1.Principal.ClaimsEntry.value:type_name -> google.protobuf.Any
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 0: runtime.api.config.security.v1.Principal.scopes:type_name -> runtime.api.config.security.v1.Principal.ScopesEntry
+	2, // 1: runtime.api.config.security.v1.Principal.claims:type_name -> runtime.api.config.security.v1.Principal.ClaimsEntry
+	3, // 2: runtime.api.config.security.v1.Principal.ClaimsEntry.value:type_name -> google.protobuf.Value
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_config_security_v1_principal_proto_init() }
@@ -146,7 +170,7 @@ func file_config_security_v1_principal_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_security_v1_principal_proto_rawDesc), len(file_config_security_v1_principal_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

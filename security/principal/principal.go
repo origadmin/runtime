@@ -1,127 +1,331 @@
 package principal
 
 import (
+	"encoding/json" // Import the json package
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	securityv1 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	"github.com/origadmin/runtime/interfaces/security"
 )
 
-// principalKey is an unexported type for context.Context keys.
-type principalKey struct{}
+// --- concretePrincipal Implementation ---
 
 // concretePrincipal is a concrete implementation of the security.Principal interface.
 type concretePrincipal struct {
 	id          string
 	roles       []string
-	permissions []string        // New field
-	scopes      map[string]bool // New field
-	extraClaims map[string]any  // Renamed from 'claims'
+	permissions []string
+	scopes      map[string]bool
+	claims      security.Claims
 }
 
-// GetID returns the unique identifier of the principal.
-func (p *concretePrincipal) GetID() string {
-	return p.id
+func (p *concretePrincipal) GetID() string              { return p.id }
+func (p *concretePrincipal) GetRoles() []string         { return p.roles }
+func (p *concretePrincipal) GetPermissions() []string   { return p.permissions }
+func (p *concretePrincipal) GetScopes() map[string]bool { return p.scopes }
+func (p *concretePrincipal) GetClaims() security.Claims { return p.claims }
+func (p *concretePrincipal) Export() *securityv1.Principal {
+	return &securityv1.Principal{
+		Id:          p.GetID(),
+		Roles:       p.GetRoles(),
+		Permissions: p.GetPermissions(),
+		Scopes:      p.GetScopes(),
+		Claims:      p.claims.Export(),
+	}
 }
 
-// GetRoles returns a list of roles assigned to the principal.
-func (p *concretePrincipal) GetRoles() []string {
-	return p.roles
+// --- defaultClaims Implementation ---
+
+// defaultClaims is a concrete implementation of the security.Claims interface.
+type defaultClaims struct {
+	data map[string]*structpb.Value // Changed to store structpb.Value
 }
 
-// GetPermissions returns a list of permissions assigned to the principal.
-func (p *concretePrincipal) GetPermissions() []string {
-	return p.permissions
+func (c *defaultClaims) Get(key string) (any, bool) {
+	claimValue, ok := c.data[key]
+	if !ok || claimValue == nil {
+		return nil, false
+	}
+
+	switch k := claimValue.Kind.(type) {
+	case *structpb.Value_StringValue:
+		return k.StringValue, true
+	case *structpb.Value_NumberValue:
+		return k.NumberValue, true
+	case *structpb.Value_BoolValue:
+		return k.BoolValue, true
+	case *structpb.Value_StructValue:
+		return k.StructValue.AsMap(), true // Convert structpb.Struct to map[string]any
+	case *structpb.Value_ListValue:
+		// Convert structpb.ListValue to []any
+		list := make([]any, len(k.ListValue.Values))
+		for i, val := range k.ListValue.Values {
+			// Recursively get the value for each item in the list
+			switch innerKind := val.Kind.(type) {
+			case *structpb.Value_StringValue:
+				list[i] = innerKind.StringValue
+			case *structpb.Value_NumberValue:
+				list[i] = innerKind.NumberValue
+			case *structpb.Value_BoolValue:
+				list[i] = innerKind.BoolValue
+			case *structpb.Value_StructValue:
+				list[i] = innerKind.StructValue.AsMap()
+			case *structpb.Value_ListValue:
+				// For nested lists, return the raw structpb.Value for now,
+				// or a more complex recursive conversion could be implemented.
+				list[i] = val
+			case *structpb.Value_NullValue:
+				list[i] = nil
+			default:
+				list[i] = nil // Unknown type in list
+			}
+		}
+		return list, true
+	case *structpb.Value_NullValue:
+		return nil, true
+	default:
+		return nil, false
+	}
 }
 
-// GetScopes returns a map of scopes assigned to the principal.
-func (p *concretePrincipal) GetScopes() map[string]bool {
-	return p.scopes
+func (c *defaultClaims) GetString(key string) (string, bool) {
+	val, ok := c.data[key]
+	if !ok || val == nil {
+		return "", false
+	}
+	if s, isString := val.Kind.(*structpb.Value_StringValue); isString {
+		return s.StringValue, true
+	}
+	return "", false
 }
 
-// GetClaims returns a map of all extra claims associated with the principal.
-func (p *concretePrincipal) GetClaims() map[string]any {
-	return p.extraClaims
+func (c *defaultClaims) GetInt64(key string) (int64, bool) {
+	val, ok := c.data[key]
+	if !ok || val == nil {
+		return 0, false
+	}
+	if n, isNumber := val.Kind.(*structpb.Value_NumberValue); isNumber {
+		return int64(n.NumberValue), true
+	}
+	return 0, false
+}
+
+func (c *defaultClaims) GetFloat64(key string) (float64, bool) {
+	val, ok := c.data[key]
+	if !ok || val == nil {
+		return 0, false
+	}
+	if n, isNumber := val.Kind.(*structpb.Value_NumberValue); isNumber {
+		return n.NumberValue, true
+	}
+	return 0, false
+}
+
+func (c *defaultClaims) GetBool(key string) (bool, bool) {
+	val, ok := c.data[key]
+	if !ok || val == nil {
+		return false, false
+	}
+	if b, isBool := val.Kind.(*structpb.Value_BoolValue); isBool {
+		return b.BoolValue, true
+	}
+	return false, false
+}
+
+func (c *defaultClaims) GetStringSlice(key string) ([]string, bool) {
+	val, ok := c.data[key]
+	if !ok || val == nil {
+		return nil, false
+	}
+	if l, isList := val.Kind.(*structpb.Value_ListValue); isList {
+		strSlice := make([]string, 0, len(l.ListValue.Values))
+		for _, item := range l.ListValue.Values {
+			if s, isString := item.Kind.(*structpb.Value_StringValue); isString {
+				strSlice = append(strSlice, s.StringValue)
+			} else {
+				// If any item is not a string, return false
+				return nil, false
+			}
+		}
+		return strSlice, true
+	}
+	return nil, false
+}
+
+// GetMap retrieves a claim as a map[string]any.
+func (c *defaultClaims) GetMap(key string) (map[string]any, bool) {
+	val, ok := c.data[key]
+	if !ok || val == nil {
+		return nil, false
+	}
+	if s, isStruct := val.Kind.(*structpb.Value_StructValue); isStruct {
+		return s.StructValue.AsMap(), true
+	}
+	return nil, false
+}
+
+// UnmarshalValue unmarshals a claim with the given key into the provided Go type.
+// The target must be a pointer to a struct.
+func (c *defaultClaims) UnmarshalValue(key string, target any) error {
+	val, ok := c.data[key]
+	if !ok || val == nil {
+		return fmt.Errorf("claim with key '%s' not found or is nil", key)
+	}
+
+	if s, isStruct := val.Kind.(*structpb.Value_StructValue); isStruct {
+		// Convert structpb.Struct to map[string]any
+		m := s.StructValue.AsMap()
+		// Marshal the map to JSON and then unmarshal into the target struct
+		jsonData, err := json.Marshal(m)
+		if err != nil {
+			return fmt.Errorf("failed to marshal claim '%s' to JSON: %w", key, err)
+		}
+		if err := json.Unmarshal(jsonData, target); err != nil {
+			return fmt.Errorf("failed to unmarshal claim '%s' into target type: %w", key, err)
+		}
+		return nil
+	}
+	return fmt.Errorf("claim with key '%s' is not a struct type", key)
+}
+
+// Export now simply returns the internally stored map of structpb.Value
+func (c *defaultClaims) Export() map[string]*structpb.Value {
+	// Return a copy to prevent external modification
+	exportedClaims := make(map[string]*structpb.Value, len(c.data))
+	for k, v := range c.data {
+		exportedClaims[k] = v
+	}
+	return exportedClaims
+}
+
+// ClaimEncoder defines an interface for custom claim encoders.
+// Users can implement this to provide custom logic for converting Go types to structpb.Value.
+type ClaimEncoder interface {
+	// Encode attempts to convert a Go value to a *structpb.Value.
+	// It returns the converted value, a boolean indicating if it handled the conversion,
+	// and an error if the conversion failed.
+	Encode(key string, value any) (*structpb.Value, bool, error)
+}
+
+// convertToGoValueToStructpbValue converts a Go native type to a *structpb.Value.
+// It handles basic types, slices of strings, and maps to structpb.Struct.
+func convertToGoValueToStructpbValue(value any) (*structpb.Value, error) {
+	switch v := value.(type) {
+	case string:
+		return structpb.NewStringValue(v), nil
+	case int:
+		return structpb.NewNumberValue(float64(v)), nil
+	case int32:
+		return structpb.NewNumberValue(float64(v)), nil
+	case int64:
+		return structpb.NewNumberValue(float64(v)), nil
+	case bool:
+		return structpb.NewBoolValue(v), nil
+	case float32:
+		return structpb.NewNumberValue(float64(v)), nil
+	case float64:
+		return structpb.NewNumberValue(v), nil
+	case []string:
+		listValues := make([]*structpb.Value, len(v))
+		for i, s := range v {
+			listValues[i] = structpb.NewStringValue(s)
+		}
+		return structpb.NewListValue(&structpb.ListValue{Values: listValues}), nil
+	case []any:
+		listValues := make([]*structpb.Value, len(v))
+		for i, item := range v {
+			innerClaimValue, err := convertToGoValueToStructpbValue(item)
+			if err != nil {
+				return nil, err // Propagate error from nested conversion
+			}
+			listValues[i] = innerClaimValue
+		}
+		return structpb.NewListValue(&structpb.ListValue{Values: listValues}), nil
+	case map[string]any:
+		structVal, err := structpb.NewStruct(v)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert map to structpb.Struct: %w", err)
+		}
+		return structpb.NewStructValue(structVal), nil
+	case nil:
+		return structpb.NewNullValue(), nil
+	default:
+		return nil, fmt.Errorf("unsupported claim type: %T", value)
+	}
+}
+
+// --- Factory and Constructors ---
+
+// NewClaims is a factory function that creates a standard Claims object from a raw map.
+// It validates and normalizes the data, converting Go native types into structpb.Value protobuf messages.
+// Custom encoders can be provided to handle specific types or override default conversion logic.
+func NewClaims(rawData map[string]any, encoders ...ClaimEncoder) (security.Claims, error) {
+	claimsData := make(map[string]*structpb.Value)
+
+	if rawData == nil {
+		return &defaultClaims{data: claimsData}, nil
+	}
+
+	for key, value := range rawData {
+		var claimValue *structpb.Value
+		var err error
+		handled := false
+
+		// Try custom encoders first
+		for _, encoder := range encoders {
+			claimValue, handled, err = encoder.Encode(key, value)
+			if err != nil {
+				return nil, fmt.Errorf("custom encoder for key '%s' failed: %w", key, err)
+			}
+			if handled {
+				break // Encoder handled it, move to next rawData item
+			}
+		}
+
+		// If not handled by custom encoders, use default conversion logic
+		if !handled {
+			claimValue, err = convertToGoValueToStructpbValue(value)
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert claim for key '%s': %w", key, err)
+			}
+		}
+		claimsData[key] = claimValue
+	}
+	return &defaultClaims{data: claimsData}, nil
 }
 
 // New creates a new security.Principal instance.
-func New(id string, roles []string, permissions []string, scopes map[string]bool, extraClaims map[string]any) security.Principal {
-	if extraClaims == nil {
-		extraClaims = make(map[string]any)
-	}
+func New(id string, roles, permissions []string, scopes map[string]bool, claims security.Claims) security.Principal {
 	if scopes == nil {
 		scopes = make(map[string]bool)
+	}
+	if claims == nil {
+		// Call NewClaims without any custom encoders
+		claims, _ = NewClaims(nil)
 	}
 	return &concretePrincipal{
 		id:          id,
 		roles:       roles,
 		permissions: permissions,
 		scopes:      scopes,
-		extraClaims: extraClaims,
+		claims:      claims,
 	}
-}
-
-// ToProto converts a security.Principal to a *securityv1.Principal Protobuf message.
-// It attempts to pack various Go types into anypb.Any.
-func ToProto(p security.Principal) (*securityv1.Principal, error) {
-	if p == nil {
-		return nil, nil
-	}
-
-	protoExtraClaims := make(map[string]*anypb.Any)
-	for key, value := range p.GetClaims() { // GetClaims now returns extraClaims
-		var anyValue *anypb.Any
-		var err error
-
-		switch v := value.(type) {
-		case proto.Message: // Already a protobuf message
-			anyValue, err = anypb.New(v)
-		case string:
-			anyValue, err = anypb.New(wrapperspb.String(v))
-		case int32:
-			anyValue, err = anypb.New(wrapperspb.Int32(v))
-		case int64:
-			anyValue, err = anypb.New(wrapperspb.Int64(v))
-		case bool:
-			anyValue, err = anypb.New(wrapperspb.Bool(v))
-		case float32:
-			anyValue, err = anypb.New(wrapperspb.Float(v))
-		case float64:
-			anyValue, err = anypb.New(wrapperspb.Double(v))
-		default:
-			return nil, fmt.Errorf("unsupported claim type for key '%s': %T, cannot pack into anypb.Any", key, v)
-		}
-
-		if err != nil {
-			return nil, fmt.Errorf("failed to pack claim '%s' into anypb.Any: %w", key, err)
-		}
-		protoExtraClaims[key] = anyValue
-	}
-
-	return &securityv1.Principal{
-		Id:          p.GetID(),
-		Roles:       p.GetRoles(),
-		Permissions: p.GetPermissions(), // New field
-		Scopes:      p.GetScopes(),      // New field
-		ExtraClaims: protoExtraClaims,   // Renamed field
-	}, nil
 }
 
 // FromProto converts a *securityv1.Principal Protobuf message to a security.Principal.
-// It stores anypb.Any directly in the extraClaims map; consumers will need to unpack them.
 func FromProto(protoP *securityv1.Principal) (security.Principal, error) {
 	if protoP == nil {
 		return nil, nil
 	}
 
-	extraClaims := make(map[string]any)
-	for key, anyValue := range protoP.GetExtraClaims() { // Renamed field
-		extraClaims[key] = anyValue
+	claimsData := make(map[string]*structpb.Value)
+	for key, claimValue := range protoP.GetClaims() {
+		claimsData[key] = claimValue
 	}
 
-	return New(protoP.GetId(), protoP.GetRoles(), protoP.GetPermissions(), protoP.GetScopes(), extraClaims), nil
+	claims := &defaultClaims{data: claimsData}
+
+	return New(protoP.GetId(), protoP.GetRoles(), protoP.GetPermissions(), protoP.GetScopes(), claims), nil
 }
