@@ -6,9 +6,10 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/rs/cors"
 
-	rtcontainer "github.com/origadmin/runtime/container"
+	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/registry"
+
 	"github.com/origadmin/runtime/extension/optionutil"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	rtservice "github.com/origadmin/runtime/service"
 )
@@ -28,7 +29,7 @@ func WithAllowOriginFunc(f func(origin string) bool) CorsOption {
 
 // WithAllowOriginVaryRequestFunc sets the `AllowOriginVaryRequestFunc` on the underlying `cors.Options`.
 // This allows dynamic origin control based on the full http.Request.
-// Example: `WithAllowOriginVaryRequestFunc(func(r *http.Request, origin string) bool { return r.Header.Get("X-Custom") == "true" })`
+// Example: `WithAllowOriginVaryRequestFunc(func(r *http.Request, origin string) (bool, []string) { return r.Header.Get("X-Custom") == "true", nil })`
 func WithAllowOriginVaryRequestFunc(f func(r *http.Request, origin string) (bool, []string)) CorsOption {
 	return func(o *cors.Options) {
 		o.AllowOriginVaryRequestFunc = f
@@ -44,14 +45,11 @@ type ServerOptions struct {
 	// These options will be applied *after* the base configuration from the proto file.
 	CorsOptions []CorsOption
 
-	// Options holds common service-level configurations.
-	Options []options.Option
-
-	// Container holds the application container instance.
-	Container interfaces.Container
-
 	// ServerRegistrar holds the service registration instance.
 	ServerRegistrar rtservice.ServerRegistrar
+
+	// ServerMiddlewares holds a map of named server middlewares.
+	ServerMiddlewares map[string]middleware.Middleware
 }
 
 // FromServerOptions creates a new HTTP ServerOptions struct by applying a slice of functional options.
@@ -59,8 +57,7 @@ type ServerOptions struct {
 func FromServerOptions(opts []options.Option) *ServerOptions {
 	// Apply HTTP server-specific options first
 	o := optionutil.NewT[ServerOptions](opts...)
-	o.Options = opts
-	o.Container = rtcontainer.FromOptions(opts)
+	// Removed: o.Container = rtcontainer.FromOptions(opts)
 	o.ServerRegistrar = rtservice.ServerRegistrarFromOptions(opts)
 	return o
 }
@@ -78,6 +75,19 @@ func WithCorsOptions(opts ...CorsOption) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
 		o.CorsOptions = append(o.CorsOptions, opts...)
 	})
+	
+}
+
+// WithServerMiddlewares adds a map of named server middlewares to the options.
+func WithServerMiddlewares(mws map[string]middleware.Middleware) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		if o.ServerMiddlewares == nil {
+			o.ServerMiddlewares = make(map[string]middleware.Middleware)
+		}
+		for name, mw := range mws {
+			o.ServerMiddlewares[name] = mw
+		}
+	})
 }
 
 // ClientOptions is a container for HTTP client-specific options.
@@ -85,11 +95,11 @@ type ClientOptions struct {
 	// ClientOptions allows passing native Kratos HTTP client dial options.
 	ClientOptions []transhttp.ClientOption
 
-	// Options holds common service-level configurations.
-	Options []options.Option
+	// ClientMiddlewares holds a map of named client middlewares.
+	ClientMiddlewares map[string]middleware.Middleware
 
-	// Container holds the application container instance.
-	Container interfaces.Container
+	// Discoveries holds a map of named service discovery clients.
+	Discoveries map[string]registry.Discovery
 }
 
 // FromClientOptions creates a new HTTP ClientOptions struct by applying a slice of functional options.
@@ -97,9 +107,7 @@ type ClientOptions struct {
 func FromClientOptions(opts []options.Option) *ClientOptions {
 	// Apply HTTP client-specific options first
 	o := optionutil.NewT[ClientOptions](opts...)
-	o.Options = opts
-	o.Container = rtcontainer.FromOptions(opts)
-
+	// Removed: o.Container = rtcontainer.FromOptions(opts)
 	return o
 }
 
@@ -107,5 +115,30 @@ func FromClientOptions(opts []options.Option) *ClientOptions {
 func WithClientOptions(opts ...transhttp.ClientOption) options.Option {
 	return optionutil.Update(func(o *ClientOptions) {
 		o.ClientOptions = append(o.ClientOptions, opts...)
+	})
+}
+
+// WithClientMiddlewares adds a map of named client middlewares to the options.
+func WithClientMiddlewares(mws map[string]middleware.Middleware) options.Option {
+	return optionutil.Update(func(o *ClientOptions) {
+		if o.ClientMiddlewares == nil {
+			o.ClientMiddlewares = make(map[string]middleware.Middleware)
+		}
+		for name, mw := range mws {
+			o.ClientMiddlewares[name] = mw
+		}
+	})
+}
+
+// WithDiscoveries adds a map of named service discovery clients to the options.
+func WithDiscoveries(discoveries map[string]registry.Discovery) options.Option {
+	return optionutil.Update(func(o *ClientOptions) {
+		if o.Discoveries == nil {
+			o.Discoveries = make(map[string]registry.Discovery)
+		}
+		for name, d := range discoveries {
+			o.Discoveries[name] = d
+		}
+		
 	})
 }

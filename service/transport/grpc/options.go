@@ -4,9 +4,7 @@ import (
 	kgprc "github.com/go-kratos/kratos/v2/transport/grpc"
 	grpcx "google.golang.org/grpc"
 
-	rtcontainer "github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/extension/optionutil"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	rtservice "github.com/origadmin/runtime/service"
 )
@@ -15,12 +13,6 @@ import (
 type ServerOptions struct {
 	// ServerOptions allows passing native Kratos gRPC server options.
 	ServerOptions []kgprc.ServerOption
-
-	// Container holds the application container instance.
-	Container interfaces.Container
-
-	// Options holds the common service-level options.
-	Options []options.Option
 
 	// ServerRegistrar holds the service registrar instance.
 	ServerRegistrar rtservice.ServerRegistrar
@@ -31,8 +23,6 @@ type ServerOptions struct {
 func FromServerOptions(opts []options.Option) *ServerOptions {
 	// Apply gRPC server-specific options first
 	o := optionutil.NewT[ServerOptions](opts...)
-	o.Options = opts
-	o.Container = rtcontainer.FromOptions(opts)
 	o.ServerRegistrar = rtservice.ServerRegistrarFromOptions(opts)
 	return o
 }
@@ -48,12 +38,6 @@ func WithServerOptions(opts ...kgprc.ServerOption) options.Option {
 type ClientOptions struct {
 	// DialOptions allows passing native gRPC client dial options.
 	DialOptions []grpcx.DialOption
-
-	// Container holds the application container instance.
-	Container interfaces.Container
-
-	// Options holds the common service-level options.
-	Options []options.Option
 }
 
 // FromClientOptions creates a new gRPC ClientOptions struct by applying a slice of functional options.
@@ -61,9 +45,6 @@ type ClientOptions struct {
 func FromClientOptions(opts []options.Option) *ClientOptions {
 	// Apply gRPC client-specific options first
 	o := optionutil.NewT[ClientOptions](opts...)
-	o.Options = opts
-	o.Container = rtcontainer.FromOptions(opts)
-
 	return o
 }
 

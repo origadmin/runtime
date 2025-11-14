@@ -9,9 +9,7 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	httpv1 "github.com/origadmin/runtime/api/gen/go/config/transport/http/v1"
-	"github.com/origadmin/runtime/context"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/interfaces"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
 )
@@ -34,16 +32,36 @@ func DefaultClientMiddlewares() []middleware.Middleware {
 	}
 }
 
+// getMiddlewares resolves and returns a slice of middlewares based on configuration.
+// It checks for configured middleware names, retrieves them from the available map,
+// and falls back to default middlewares if none are explicitly configured.
+func getMiddlewares(
+	configuredNames []string,
+	availableMws map[string]middleware.Middleware,
+	defaultMws []middleware.Middleware,
+	mwType string, // "server" or "client" for error messages
+) ([]middleware.Middleware, error) {
+	if len(configuredNames) > 0 {
+		if len(availableMws) == 0 {
+			return nil, runtimeerrors.NewStructured(Module, "application container is required for %s middlewares but not found in options", mwType)
+		}
+		var mws []middleware.Middleware
+		for _, name := range configuredNames {
+			m, ok := availableMws[name]
+			if !ok {
+				return nil, runtimeerrors.NewStructured(Module, "%s middleware '%s' not found in options", mwType, name)
+			}
+			mws = append(mws, m)
+		}
+		return mws, nil
+	}
+	return defaultMws, nil
+}
+
 // initHttpServerOptions initialize the http server option
 func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions) ([]transhttp.ServerOption, error) {
 	// Prepare the Kratos HTTP server options.
 	var kratosOpts []transhttp.ServerOption
-
-	// Get the container instance. It will be nil if not provided in options.
-	var c interfaces.Container
-	if serverOpts.Container != nil {
-		c = serverOpts.Container
-	}
 
 	// Add CORS support, merging proto config with code-based options.
 	if corsConfig := httpConfig.GetCors(); corsConfig != nil {
@@ -57,31 +75,11 @@ func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions)
 		}
 	}
 
-	// Check if middlewares are configured.
-	hasMiddlewaresConfigured := len(httpConfig.GetMiddlewares()) > 0
-
-	// If middlewares are configured but no container is provided, return an error.
-	// This consolidates the nil check for the container.
-	if hasMiddlewaresConfigured && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
-	}
-
 	// Configure middlewares.
-	var mws []middleware.Middleware
-	if hasMiddlewaresConfigured {
-		// 'c' is guaranteed to be non-nil at this point due to the early check above.
-		for _, name := range httpConfig.GetMiddlewares() {
-			m, ok := c.ServerMiddleware(name)
-			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "server middleware '%s' not found in container", name)
-			}
-			mws = append(mws, m)
-		}
-	} else {
-		// If no specific middlewares are configured, use default ones from adapter.go.
-		mws = DefaultServerMiddlewares()
+	mws, err := getMiddlewares(httpConfig.GetMiddlewares(), serverOpts.ServerMiddlewares, DefaultServerMiddlewares(), "server")
+	if err != nil {
+		return nil, err
 	}
-
 	if len(mws) > 0 {
 		kratosOpts = append(kratosOpts, transhttp.Middleware(mws...))
 	}
@@ -117,23 +115,10 @@ func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions)
 }
 
 // initHttpClientOptions initialize http client options
-func initHttpClientOptions(ctx context.Context, httpConfig *httpv1.Client,
+func initHttpClientOptions(httpConfig *httpv1.Client,
 	clientOpts *ClientOptions) ([]transhttp.ClientOption, error) {
 	// Prepare the Kratos HTTP client options.
 	var kratosOpts []transhttp.ClientOption
-
-	// Get the container instance.
-	var c interfaces.Container
-	if clientOpts.Container != nil {
-		c = clientOpts.Container
-	}
-
-	hasMiddlewaresConfigured := len(httpConfig.GetMiddlewares()) > 0
-
-	// Centralized check for container dependency.
-	if hasMiddlewaresConfigured && c == nil {
-		return nil, runtimeerrors.NewStructured(Module, "application container is required for server middlewares but not found in options")
-	}
 
 	// Apply options from the protobuf configuration.
 	if httpConfig.GetTimeout() != nil {
@@ -141,17 +126,9 @@ func initHttpClientOptions(ctx context.Context, httpConfig *httpv1.Client,
 	}
 
 	// Configure middlewares.
-	var mws []middleware.Middleware
-	if hasMiddlewaresConfigured {
-		for _, name := range httpConfig.GetMiddlewares() {
-			m, ok := c.ClientMiddleware(name)
-			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "client middleware '%s' not found in container", name)
-			}
-			mws = append(mws, m)
-		}
-	} else {
-		mws = DefaultClientMiddlewares()
+	mws, err := getMiddlewares(httpConfig.GetMiddlewares(), clientOpts.ClientMiddlewares, DefaultClientMiddlewares(), "client")
+	if err != nil {
+		return nil, err
 	}
 	if len(mws) > 0 {
 		kratosOpts = append(kratosOpts, transhttp.WithMiddleware(mws...))
@@ -160,32 +137,38 @@ func initHttpClientOptions(ctx context.Context, httpConfig *httpv1.Client,
 	// Configure service discovery and endpoint.
 	var discoveryClient registry.Discovery
 	endpoint := httpConfig.GetEndpoint()
-	if endpoint != "" {
-		kratosOpts = append(kratosOpts, transhttp.WithEndpoint(endpoint))
-	}
 
+	// 1. Try to get discovery client by name from config
 	if discoveryName := httpConfig.GetDiscoveryName(); discoveryName != "" {
-		if d, ok := c.Discovery(discoveryName); ok {
+		if d, ok := clientOpts.Discoveries[discoveryName]; ok {
 			discoveryClient = d
 		} else {
-			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in container", discoveryName)
+			return nil, runtimeerrors.NewStructured(Module, "discovery client '%s' not found in options", discoveryName)
 		}
-	} else if c != nil {
-		discoveries := c.Discoveries()
-		if len(discoveries) == 1 {
-			for _, d := range discoveries {
+	} else {
+		// 2. If no specific name, try to find a default or single discovery client
+		if d, ok := clientOpts.Discoveries["default"]; ok {
+			discoveryClient = d
+		} else if len(clientOpts.Discoveries) == 1 {
+			// If there's only one discovery client, use it as the default
+			for _, d := range clientOpts.Discoveries { // Iterate once to get the single client
 				discoveryClient = d
 				break
 			}
 		}
 	}
 
-	if discoveryClient != nil {
-		kratosOpts = append(kratosOpts, transhttp.WithDiscovery(discoveryClient))
-	}
-
+	// Validate endpoint and discovery client combination
 	if strings.HasPrefix(endpoint, "discovery:///") && discoveryClient == nil {
 		return nil, runtimeerrors.NewStructured(Module, "endpoint '%s' requires a discovery client, but none is configured", endpoint)
+	}
+
+	// Apply Kratos options
+	if endpoint != "" {
+		kratosOpts = append(kratosOpts, transhttp.WithEndpoint(endpoint))
+	}
+	if discoveryClient != nil {
+		kratosOpts = append(kratosOpts, transhttp.WithDiscovery(discoveryClient))
 	}
 
 	// Configure node filters (selector).
