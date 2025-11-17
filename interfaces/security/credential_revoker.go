@@ -12,8 +12,9 @@ import (
 // CredentialRevoker is responsible for invalidating or revoking previously issued credentials.
 // This is typically used for logout, forced sign-out, or security-related credential invalidation.
 type CredentialRevoker interface {
-	// Revoke invalidates the given raw credential string, making it unusable for authentication.
-	// Implementations might add the credential to a blacklist, update a session store,
-	// or perform other actions to ensure the credential is no longer valid.
-	Revoke(ctx context.Context, rawCredential string) error
+	// Revoke invalidates the given credential, making it unusable for future authentication.
+	// Implementations should parse the provided Credential object to extract the necessary
+	// information (e.g., a token ID) to perform the revocation, for instance, by adding it
+	// to a denylist.
+	Revoke(ctx context.Context, cred Credential) error
 }
