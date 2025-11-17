@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 
 	"github.com/origadmin/runtime/extension/optionutil"
@@ -11,10 +12,12 @@ import (
 // Options holds common options that have been resolved once at the top level.
 // These options are then passed down to individual middleware factories.
 type Options struct {
-	Logger    log.Logger
-	MatchFunc selector.MatchFunc // MatchFunc for selector middleware
-	Carrier   *Carrier
-	Options   []Option
+	Logger           log.Logger
+	MatchFunc        selector.MatchFunc // MatchFunc for selector middleware
+	Carrier          *Carrier
+	Options          []Option
+	JWTOptions       []jwt.Option
+	SubjectGenerator func() string
 }
 
 type Option = options.Option
@@ -28,6 +31,19 @@ func WithMatchFunc(matchFunc selector.MatchFunc) Option {
 func WithCarrier(carrier *Carrier) Option {
 	return optionutil.Update(func(o *Options) {
 		o.Carrier = carrier
+	})
+}
+
+// WithJWT sets custom claims to be included in the JWT.
+func WithJWT(options ...jwt.Option) Option {
+	return optionutil.Update(func(o *Options) {
+		o.JWTOptions = options
+	})
+}
+
+func WithSubjectGenerator(subjectGenerator func() string) Option {
+	return optionutil.Update(func(o *Options) {
+		o.SubjectGenerator = subjectGenerator
 	})
 }
 

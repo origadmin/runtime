@@ -6,22 +6,17 @@
 package middleware
 
 import (
-	"time"
-
 	authjwt "github.com/go-kratos/kratos/v2/middleware/auth/jwt"
-	"github.com/goexts/generic/maps"
 	"github.com/golang-jwt/jwt/v5"
 
 	jwtv1 "github.com/origadmin/runtime/api/gen/go/config/middleware/jwt/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	authnv1 "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1"
 	"github.com/origadmin/runtime/log"
 )
 
 type jwtFactory struct{}
 
 func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
-	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 	helper.Debugf("enabling jwt client middleware")
@@ -31,11 +26,10 @@ func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Op
 		return nil, false
 	}
 
-	return JwtClient(jwtConfig)
+	return JwtClient(jwtConfig, mwOpts)
 }
 
 func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
-	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
 	helper := log.NewHelper(mwOpts.Logger)
 	helper.Debugf("enabling jwt server middleware")
@@ -45,47 +39,37 @@ func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Op
 		return nil, false
 	}
 
-	return JwtServer(jwtConfig)
+	return JwtServer(jwtConfig, mwOpts)
 }
 
-func JwtServer(cfg *jwtv1.JWT) (KMiddleware, bool) {
+// JwtServer creates a Kratos server middleware for JWT authentication.
+// It uses the provided JWT configuration to validate incoming tokens.
+func JwtServer(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	config := cfg.GetConfig()
 	if config == nil {
 		return nil, false
 	}
-	kf := getKeyFunc(config.Key, config.SigningMethod)
-	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
-	return authjwt.Server(kf, opts...), true
+	// The key function can be created once and reused for all requests, as the key and method are static.
+	kf := getKeyFunc(config.SigningKey, config.SigningMethod)
+	claimsFactory := getClaimsFactory(cfg.GetClaimType())
+	return authjwt.Server(kf, authjwt.WithClaims(claimsFactory)), true
 }
-func JwtClient(cfg *jwtv1.JWT) (KMiddleware, bool) {
+
+// JwtClient creates a Kratos client middleware for JWT token generation and injection.
+// This middleware dynamically creates a new `authjwt.Client` instance for each request,
+// ensuring that the JWT is generated based on the claims present in the request's context.
+func JwtClient(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	config := cfg.GetConfig()
 	if config == nil {
 		return nil, false
 	}
-	kf := getKeyFunc(config.Key, config.SigningMethod)
-	opts := fromJwtConfig(config, cfg.GetSubject(), cfg.GetClaimType(), cfg.GetTokenHeader())
-	return authjwt.Client(kf, opts...), true
+	// The key function can be created once and reused for all requests, as the key and method are static.
+	kf := getKeyFunc(config.SigningKey, config.SigningMethod)
+	claimsFactory := getClaimsFactory(cfg.GetClaimType())
+	return authjwt.Client(kf, authjwt.WithClaims(claimsFactory)), true
 }
 
-func fromJwtConfig(cfg *authnv1.Config, subject string, ctp string, header map[string]string) []authjwt.Option {
-	sm := getSigningMethod(cfg.SigningMethod)
-	jcf := getClaimsFunc(subject, ctp, cfg)
-	tkh := getTokenHeader(header)
-	return []authjwt.Option{
-		authjwt.WithSigningMethod(sm),
-		authjwt.WithClaims(jcf),
-		authjwt.WithTokenHeader(tkh),
-	}
-}
-
-func getTokenHeader(header map[string]string) map[string]any {
-	if header == nil {
-		return map[string]any{}
-	}
-	return maps.Transform(header, func(k, v string) (string, any, bool) {
-		return k, v, true
-	})
-}
+// getSigningMethod returns the jwt.SigningMethod based on the provided string.
 func getSigningMethod(sm string) jwt.SigningMethod {
 	switch sm {
 	case "HS256":
@@ -111,6 +95,7 @@ func getSigningMethod(sm string) jwt.SigningMethod {
 	}
 }
 
+// getKeyFunc returns a jwt.Keyfunc for token validation.
 func getKeyFunc(key string, method string) jwt.Keyfunc {
 	return func(token *jwt.Token) (interface{}, error) {
 		if key == "" {
@@ -119,42 +104,21 @@ func getKeyFunc(key string, method string) jwt.Keyfunc {
 		if token.Method.Alg() != method {
 			return nil, authjwt.ErrUnSupportSigningMethod
 		}
-		return key, nil
+		return []byte(key), nil
 	}
 }
 
-func getClaimsFunc(subject string, claimType string, cfg *authnv1.Config) func() jwt.Claims {
-	if subject == "" {
-		subject = "anonymous"
-	}
-	exp := time.Duration(cfg.GetAccessTokenLifetime())
-	if exp == 0 {
-		exp = time.Hour
-	}
+// getClaimsFactory returns a function that creates an empty jwt.Claims object
+// based on the claimType. This is used by the server to parse incoming tokens.
+func getClaimsFactory(claimType string) func() jwt.Claims {
 	switch claimType {
 	case "map":
 		return func() jwt.Claims {
-			now := time.Now()
-			return jwt.MapClaims{
-				"iss": cfg.Issuer,
-				"sub": subject,
-				"aud": cfg.Audience,
-				"exp": now.Add(exp).Unix(),
-				"nbf": now.Unix(),
-				"iat": now.Unix(),
-			}
+			return jwt.MapClaims{}
 		}
 	default:
 		return func() jwt.Claims {
-			now := time.Now()
-			return &jwt.RegisteredClaims{
-				Issuer:    cfg.Issuer,
-				Subject:   subject,
-				Audience:  cfg.Audience,
-				ExpiresAt: jwt.NewNumericDate(now.Add(exp)),
-				NotBefore: jwt.NewNumericDate(now),
-				IssuedAt:  jwt.NewNumericDate(now),
-			}
+			return &jwt.RegisteredClaims{}
 		}
 	}
 }

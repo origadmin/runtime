@@ -13,9 +13,7 @@ import (
 	v12 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	v19 "github.com/origadmin/runtime/api/gen/go/config/security/authn/v1"
-	v110 "github.com/origadmin/runtime/api/gen/go/config/security/authz/v1"
-	v111 "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
+	_ "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
 	v18 "github.com/origadmin/runtime/api/gen/go/config/task/v1"
 	v14 "github.com/origadmin/runtime/api/gen/go/config/trace/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
@@ -49,17 +47,13 @@ type TestConfig struct {
 	// Service registration configuration
 	RegistrationDiscoveryName string `protobuf:"bytes,8,opt,name=registration_discovery_name,json=registrationDiscoveryName,proto3" json:"registration_discovery_name,omitempty"`
 	// Other component configurations
-	Logger      *v13.Logger      `protobuf:"bytes,9,opt,name=logger,proto3" json:"logger,omitempty"`
-	Trace       *v14.Trace       `protobuf:"bytes,10,opt,name=trace,proto3" json:"trace,omitempty"` // Updated type for tracer
-	Middlewares *v15.Middlewares `protobuf:"bytes,11,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
-	Middleware  *v15.Middleware  `protobuf:"bytes,12,opt,name=middleware,proto3" json:"middleware,omitempty"`
-	Gateway     *v16.Gateway     `protobuf:"bytes,13,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Data        *v17.Data        `protobuf:"bytes,14,opt,name=data,proto3" json:"data,omitempty"`
-	Task        *v18.Task        `protobuf:"bytes,15,opt,name=task,proto3" json:"task,omitempty"`
-	// Removed runtime.api.config.websocket.v1.WebSocket websocket = 16;
-	Authn         *v19.AuthN       `protobuf:"bytes,17,opt,name=authn,proto3" json:"authn,omitempty"`
-	Authz         *v110.AuthZ      `protobuf:"bytes,18,opt,name=authz,proto3" json:"authz,omitempty"`
-	Tls           *v111.TLSConfig  `protobuf:"bytes,19,opt,name=tls,proto3" json:"tls,omitempty"`
+	Logger        *v13.Logger      `protobuf:"bytes,9,opt,name=logger,proto3" json:"logger,omitempty"`
+	Trace         *v14.Trace       `protobuf:"bytes,10,opt,name=trace,proto3" json:"trace,omitempty"` // Updated type for tracer
+	Middlewares   *v15.Middlewares `protobuf:"bytes,11,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
+	Middleware    *v15.Middleware  `protobuf:"bytes,12,opt,name=middleware,proto3" json:"middleware,omitempty"`
+	Gateway       *v16.Gateway     `protobuf:"bytes,13,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Data          *v17.Data        `protobuf:"bytes,14,opt,name=data,proto3" json:"data,omitempty"`
+	Task          *v18.Task        `protobuf:"bytes,15,opt,name=task,proto3" json:"task,omitempty"`
 	Customize     *structpb.Struct `protobuf:"bytes,20,opt,name=customize,proto3" json:"customize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -200,27 +194,6 @@ func (x *TestConfig) GetTask() *v18.Task {
 	return nil
 }
 
-func (x *TestConfig) GetAuthn() *v19.AuthN {
-	if x != nil {
-		return x.Authn
-	}
-	return nil
-}
-
-func (x *TestConfig) GetAuthz() *v110.AuthZ {
-	if x != nil {
-		return x.Authz
-	}
-	return nil
-}
-
-func (x *TestConfig) GetTls() *v111.TLSConfig {
-	if x != nil {
-		return x.Tls
-	}
-	return nil
-}
-
 func (x *TestConfig) GetCustomize() *structpb.Struct {
 	if x != nil {
 		return x.Customize
@@ -232,7 +205,7 @@ var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
 
 const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\x1bruntime.test.config.configs\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a$config/security/authn/v1/authn.proto\x1a$config/security/authz/v1/authz.proto\x1a&config/security/transport/v1/tls.proto\x1a\x19config/task/v1/task.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xea\t\n" +
+	"*test/integration/config/proto/config.proto\x12\x1bruntime.test.config.configs\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a&config/security/transport/v1/tls.proto\x1a\x19config/task/v1/task.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x9d\b\n" +
 	"\n" +
 	"TestConfig\x120\n" +
 	"\x03app\x18\x01 \x01(\v2\x1e.runtime.api.config.app.v1.AppR\x03app\x12B\n" +
@@ -252,10 +225,7 @@ const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"middleware\x12?\n" +
 	"\agateway\x18\r \x01(\v2%.runtime.api.config.config.v1.GatewayR\agateway\x124\n" +
 	"\x04data\x18\x0e \x01(\v2 .runtime.api.config.data.v1.DataR\x04data\x124\n" +
-	"\x04task\x18\x0f \x01(\v2 .runtime.api.config.task.v1.TaskR\x04task\x12A\n" +
-	"\x05authn\x18\x11 \x01(\v2+.runtime.api.config.security.authn.v1.AuthNR\x05authn\x12A\n" +
-	"\x05authz\x18\x12 \x01(\v2+.runtime.api.config.security.authz.v1.AuthZR\x05authz\x12E\n" +
-	"\x03tls\x18\x13 \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigR\x03tls\x125\n" +
+	"\x04task\x18\x0f \x01(\v2 .runtime.api.config.task.v1.TaskR\x04task\x125\n" +
 	"\tcustomize\x18\x14 \x01(\v2\x17.google.protobuf.StructR\tcustomizeBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
 
 var (
@@ -287,10 +257,7 @@ var file_test_integration_config_proto_config_proto_goTypes = []any{
 	(*v16.Gateway)(nil),     // 12: runtime.api.config.config.v1.Gateway
 	(*v17.Data)(nil),        // 13: runtime.api.config.data.v1.Data
 	(*v18.Task)(nil),        // 14: runtime.api.config.task.v1.Task
-	(*v19.AuthN)(nil),       // 15: runtime.api.config.security.authn.v1.AuthN
-	(*v110.AuthZ)(nil),      // 16: runtime.api.config.security.authz.v1.AuthZ
-	(*v111.TLSConfig)(nil),  // 17: runtime.api.config.security.transport.v1.TLSConfig
-	(*structpb.Struct)(nil), // 18: google.protobuf.Struct
+	(*structpb.Struct)(nil), // 15: google.protobuf.Struct
 }
 var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	1,  // 0: runtime.test.config.configs.TestConfig.app:type_name -> runtime.api.config.app.v1.App
@@ -307,15 +274,12 @@ var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	12, // 11: runtime.test.config.configs.TestConfig.gateway:type_name -> runtime.api.config.config.v1.Gateway
 	13, // 12: runtime.test.config.configs.TestConfig.data:type_name -> runtime.api.config.data.v1.Data
 	14, // 13: runtime.test.config.configs.TestConfig.task:type_name -> runtime.api.config.task.v1.Task
-	15, // 14: runtime.test.config.configs.TestConfig.authn:type_name -> runtime.api.config.security.authn.v1.AuthN
-	16, // 15: runtime.test.config.configs.TestConfig.authz:type_name -> runtime.api.config.security.authz.v1.AuthZ
-	17, // 16: runtime.test.config.configs.TestConfig.tls:type_name -> runtime.api.config.security.transport.v1.TLSConfig
-	18, // 17: runtime.test.config.configs.TestConfig.customize:type_name -> google.protobuf.Struct
-	18, // [18:18] is the sub-list for method output_type
-	18, // [18:18] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	15, // 14: runtime.test.config.configs.TestConfig.customize:type_name -> google.protobuf.Struct
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_test_integration_config_proto_config_proto_init() }

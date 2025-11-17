@@ -8,8 +8,6 @@ import "config/data/v1/data.proto";
 import "config/discovery/v1/discovery.proto";
 import "config/logger/v1/logger.proto";
 import "config/middleware/v1/middleware.proto";
-import "config/security/authn/v1/authn.proto";
-import "config/security/authz/v1/authz.proto";
 import "config/security/transport/v1/tls.proto";
 import "config/task/v1/task.proto";
 import "config/trace/v1/trace.proto"; // Updated import for tracer
@@ -46,9 +44,5 @@ message TestConfig {
   runtime.api.config.config.v1.Gateway gateway = 13;
   runtime.api.config.data.v1.Data data = 14;
   runtime.api.config.task.v1.Task task = 15;
-  // Removed runtime.api.config.websocket.v1.WebSocket websocket = 16;
-  runtime.api.config.security.authn.v1.AuthN authn = 17;
-  runtime.api.config.security.authz.v1.AuthZ authz = 18;
-  runtime.api.config.security.transport.v1.TLSConfig tls = 19;
   google.protobuf.Struct customize = 20;
 }

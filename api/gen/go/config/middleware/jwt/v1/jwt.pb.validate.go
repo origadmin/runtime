@@ -58,16 +58,7 @@ func (m *JWT) validate(all bool) error {
 
 	// no validation rules for Subject
 
-	if _, ok := _JWT_ClaimType_InLookup[m.GetClaimType()]; !ok {
-		err := JWTValidationError{
-			field:  "ClaimType",
-			reason: "value must be in list [map registered]",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for ClaimType
 
 	// no validation rules for TokenHeader
 
@@ -177,7 +168,199 @@ var _ interface {
 	ErrorName() string
 } = JWTValidationError{}
 
-var _JWT_ClaimType_InLookup = map[string]struct{}{
-	"map":        {},
-	"registered": {},
+// Validate checks the field values on JwtAuthConfig with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *JwtAuthConfig) Validate() error {
+	return m.validate(false)
 }
+
+// ValidateAll checks the field values on JwtAuthConfig with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in JwtAuthConfigMultiError, or
+// nil if none found.
+func (m *JwtAuthConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *JwtAuthConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if l := utf8.RuneCountInString(m.GetSigningMethod()); l < 1 || l > 1024 {
+		err := JwtAuthConfigValidationError{
+			field:  "SigningMethod",
+			reason: "value length must be between 1 and 1024 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_JwtAuthConfig_SigningMethod_Pattern.MatchString(m.GetSigningMethod()) {
+		err := JwtAuthConfigValidationError{
+			field:  "SigningMethod",
+			reason: "value does not match regex pattern \"^[A-Z0-9]+$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetSigningKey()); l < 1 || l > 1024 {
+		err := JwtAuthConfigValidationError{
+			field:  "SigningKey",
+			reason: "value length must be between 1 and 1024 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for SecondarySigningKey
+
+	if val := m.GetAccessTokenLifetime(); val < 1 || val > 31536000 {
+		err := JwtAuthConfigValidationError{
+			field:  "AccessTokenLifetime",
+			reason: "value must be inside range [1, 31536000]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if val := m.GetRefreshTokenLifetime(); val < 1 || val > 31536000 {
+		err := JwtAuthConfigValidationError{
+			field:  "RefreshTokenLifetime",
+			reason: "value must be inside range [1, 31536000]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Issuer
+
+	if l := len(m.GetAudience()); l < 1 || l > 1024 {
+		err := JwtAuthConfigValidationError{
+			field:  "Audience",
+			reason: "value must contain between 1 and 1024 items, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	_JwtAuthConfig_Audience_Unique := make(map[string]struct{}, len(m.GetAudience()))
+
+	for idx, item := range m.GetAudience() {
+		_, _ = idx, item
+
+		if _, exists := _JwtAuthConfig_Audience_Unique[item]; exists {
+			err := JwtAuthConfigValidationError{
+				field:  fmt.Sprintf("Audience[%v]", idx),
+				reason: "repeated value must contain unique items",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else {
+			_JwtAuthConfig_Audience_Unique[item] = struct{}{}
+		}
+
+		// no validation rules for Audience[idx]
+	}
+
+	if m.TokenSource != nil {
+		// no validation rules for TokenSource
+	}
+
+	if len(errors) > 0 {
+		return JwtAuthConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// JwtAuthConfigMultiError is an error wrapping multiple validation errors
+// returned by JwtAuthConfig.ValidateAll() if the designated constraints
+// aren't met.
+type JwtAuthConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m JwtAuthConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m JwtAuthConfigMultiError) AllErrors() []error { return m }
+
+// JwtAuthConfigValidationError is the validation error returned by
+// JwtAuthConfig.Validate if the designated constraints aren't met.
+type JwtAuthConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e JwtAuthConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e JwtAuthConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e JwtAuthConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e JwtAuthConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e JwtAuthConfigValidationError) ErrorName() string { return "JwtAuthConfigValidationError" }
+
+// Error satisfies the builtin error interface
+func (e JwtAuthConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sJwtAuthConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = JwtAuthConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = JwtAuthConfigValidationError{}
+
+var _JwtAuthConfig_SigningMethod_Pattern = regexp.MustCompile("^[A-Z0-9]+$")
