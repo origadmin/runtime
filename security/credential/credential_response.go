@@ -23,7 +23,7 @@ type credentialResponse struct {
 func NewCredentialResponse(
 	crType string,
 	payload *securityv1.Payload,
-	meta map[string][]string, // Receives Go-idiomatic metadata
+	meta map[string][]string,
 ) security.CredentialResponse {
 	return &credentialResponse{
 		crType:  crType,
