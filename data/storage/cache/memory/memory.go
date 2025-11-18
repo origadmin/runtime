@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
 package memory
 
 import (
@@ -7,7 +11,44 @@ import (
 	"time"
 
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
+
+const (
+	ModuleName = "storage.cache.memory"
+	DriverName = "memory"
+)
+
+// builder implements the storageiface.CacheBuilder interface.
+type builder struct{}
+
+func init() {
+	// Register the memory cache builder.
+	storageiface.RegisterCache(DriverName, &builder{})
+}
+
+// New builds a new Cache instance from the given configuration.
+func (b *builder) New(cfg *cachev1.CacheConfig) (storageiface.Cache, error) {
+	memoryCfg := cfg.GetMemory() // Assuming CacheConfig has a GetMemory() method
+	if memoryCfg == nil {
+		return nil, errors.New("memory cache configuration is nil")
+	}
+
+	cache := &Cache{
+		items:           make(map[string]CacheItem),
+		size:            int(memoryCfg.GetSize()),
+		defaultExpiry:   time.Duration(memoryCfg.GetExpiration()) * time.Millisecond,
+		cleanupInterval: time.Duration(memoryCfg.GetCleanupInterval()) * time.Millisecond,
+		stopCleanup:     make(chan struct{}),
+	}
+
+	// Start background cleanup goroutine if cleanupInterval is set
+	if cache.cleanupInterval > 0 {
+		go cache.startCleanup()
+	}
+
+	return cache
+}
 
 // CacheItem represents an item stored in the cache.
 type CacheItem struct {
@@ -25,24 +66,6 @@ type Cache struct {
 	stopCleanup     chan struct{} // Channel to stop the background cleanup goroutine
 }
 
-// NewCache creates a new instance of Cache with the given configuration.
-func NewCache(config *cachev1.MemoryConfig) *Cache {
-	cache := &Cache{
-		items:           make(map[string]CacheItem),
-		size:            int(config.GetSize()),
-		defaultExpiry:   time.Duration(config.GetExpiration()) * time.Millisecond,
-		cleanupInterval: time.Duration(config.GetCleanupInterval()) * time.Millisecond,
-		stopCleanup:     make(chan struct{}),
-	}
-
-	// Start background cleanup goroutine if cleanupInterval is set
-	if cache.cleanupInterval > 0 {
-		go cache.startCleanup()
-	}
-
-	return cache
-}
-
 // Get retrieves the value associated with the given key.
 func (c *Cache) Get(ctx context.Context, key string) (string, error) {
 	c.mu.RLock()
@@ -55,7 +78,7 @@ func (c *Cache) Get(ctx context.Context, key string) (string, error) {
 
 	// Check if the item has expired
 	if !item.expiryTime.IsZero() && time.Now().After(item.expiryTime) {
-		c.Delete(ctx, key)
+		c.Delete(ctx, key) // Pass context to Delete
 		return "", errors.New("key expired")
 	}
 

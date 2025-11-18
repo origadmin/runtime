@@ -1,37 +1,61 @@
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
 package storage
 
 import (
 	"context"
+	"fmt"
+	"sync"
 	"time"
+
+	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
+)
+
+var (
+	// cacheBuilders is a global registry for Cache builders.
+	cacheBuilders = make(map[string]CacheBuilder)
+	// cacheMu protects the global cache registry.
+	cacheMu sync.RWMutex
 )
 
 // Cache defines the interface for a key-value cache.
-// It uses string as the value type, allowing for flexible conversion to []byte
-// and zero-copy resource optimization after go1.22.
 type Cache interface {
-	// Get retrieves the value associated with the given key.
-	// It returns the cached value and an error if the key is not found.
 	Get(ctx context.Context, key string) (string, error)
-
-	// GetAndDelete retrieves the value associated with the given key and deletes it.
-	// It returns the cached value and an error if the key is not found.
 	GetAndDelete(ctx context.Context, key string) (string, error)
-
-	// Exists checks if a value exists for the given key.
-	// It returns an error if the key is not found.
 	Exists(ctx context.Context, key string) (bool, error)
-
-	// Set sets the value for the given key.
-	// It returns an error if the operation fails.
 	Set(ctx context.Context, key string, value string, exp ...time.Duration) error
-
-	// Delete deletes the value associated with the given key.
-	// It returns an error if the operation fails.
 	Delete(ctx context.Context, key string) error
-
-	// Close closes the cache.
 	Close(ctx context.Context) error
-
-	// Clear clears the cache.
 	Clear(ctx context.Context) error
+}
+
+// CacheBuilder defines the interface for building a Cache instance.
+type CacheBuilder interface {
+	// New builds a new Cache instance from the given configuration.
+	New(cfg *cachev1.CacheConfig) (Cache, error)
+	// Removed Name() string from the interface.
+}
+
+// RegisterCache registers a new CacheBuilder with a given name.
+// This function is typically called from the init() function of a storage provider package.
+// If a builder with the same name is already registered, it will panic.
+func RegisterCache(name string, b CacheBuilder) {
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
+
+	if _, exists := cacheBuilders[name]; exists {
+		panic(fmt.Sprintf("storage: Cache builder named %s already registered", name))
+	}
+	cacheBuilders[name] = b
+}
+
+// GetCacheBuilder retrieves a registered CacheBuilder by name.
+// It returns the builder and true if found, otherwise nil and false.
+func GetCacheBuilder(name string) (CacheBuilder, bool) {
+	cacheMu.RLock()
+	defer cacheMu.RUnlock()
+	b, ok := cacheBuilders[name]
+	return b, ok
 }

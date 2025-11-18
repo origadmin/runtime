@@ -116,8 +116,7 @@ func initHttpServerOptions(_ context.Context, httpConfig *httpv1.Server, serverO
 }
 
 // initHttpClientOptions initialize http client options
-func initHttpClientOptions(httpConfig *httpv1.Client,
-	clientOpts *ClientOptions) ([]transhttp.ClientOption, error) {
+func initHttpClientOptions(_ context.Context, httpConfig *httpv1.Client, clientOpts *ClientOptions) ([]transhttp.ClientOption, error) {
 	// Prepare the Kratos HTTP client options.
 	var kratosOpts []transhttp.ClientOption
 
