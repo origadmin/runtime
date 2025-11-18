@@ -15,7 +15,6 @@ import (
 	v15 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	v17 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	v18 "github.com/origadmin/runtime/api/gen/go/config/security/v1"
 	v14 "github.com/origadmin/runtime/api/gen/go/config/trace/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -53,8 +52,6 @@ type Bootstrap struct {
 	Brokers *v16.Brokers `protobuf:"bytes,7,opt,name=brokers,proto3" json:"brokers,omitempty"`
 	// Middlewares defines the middleware chain.
 	Middlewares *v17.Middlewares `protobuf:"bytes,8,opt,name=middlewares,proto3" json:"middlewares,omitempty"`
-	// Security defines authentication and authorization policies.
-	Security *v18.Security `protobuf:"bytes,9,opt,name=security,proto3" json:"security,omitempty"`
 	// Clients holds configurations for all network clients (HTTP, gRPC).
 	// This now uses the Clients collection from the transport module.
 	Clients       *v11.Clients `protobuf:"bytes,10,opt,name=clients,proto3" json:"clients,omitempty"`
@@ -148,13 +145,6 @@ func (x *Bootstrap) GetMiddlewares() *v17.Middlewares {
 	return nil
 }
 
-func (x *Bootstrap) GetSecurity() *v18.Security {
-	if x != nil {
-		return x.Security
-	}
-	return nil
-}
-
 func (x *Bootstrap) GetClients() *v11.Clients {
 	if x != nil {
 		return x.Clients
@@ -166,7 +156,7 @@ var File_examples_protos_bootstrap_sample_bootstrap_proto protoreflect.FileDescr
 
 const file_examples_protos_bootstrap_sample_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"0examples/protos/bootstrap_sample/bootstrap.proto\x12\x10bootstrap_sample\x1a\x17config/app/v1/app.proto\x1a\x1dconfig/broker/v1/broker.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a!config/security/v1/security.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\"\x9b\x05\n" +
+	"0examples/protos/bootstrap_sample/bootstrap.proto\x12\x10bootstrap_sample\x1a\x17config/app/v1/app.proto\x1a\x1dconfig/broker/v1/broker.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\"\xd5\x04\n" +
 	"\tBootstrap\x120\n" +
 	"\x03app\x18\x01 \x01(\v2\x1e.runtime.api.config.app.v1.AppR\x03app\x12B\n" +
 	"\aservers\x18\x02 \x01(\v2(.runtime.api.config.transport.v1.ServersR\aservers\x124\n" +
@@ -175,8 +165,7 @@ const file_examples_protos_bootstrap_sample_bootstrap_proto_rawDesc = "" +
 	"\x05trace\x18\x05 \x01(\v2\".runtime.api.config.trace.v1.TraceR\x05trace\x12N\n" +
 	"\vdiscoveries\x18\x06 \x01(\v2,.runtime.api.config.discovery.v1.DiscoveriesR\vdiscoveries\x12?\n" +
 	"\abrokers\x18\a \x01(\v2%.runtime.api.config.broker.v1.BrokersR\abrokers\x12O\n" +
-	"\vmiddlewares\x18\b \x01(\v2-.runtime.api.config.middleware.v1.MiddlewaresR\vmiddlewares\x12D\n" +
-	"\bsecurity\x18\t \x01(\v2(.runtime.api.config.security.v1.SecurityR\bsecurity\x12B\n" +
+	"\vmiddlewares\x18\b \x01(\v2-.runtime.api.config.middleware.v1.MiddlewaresR\vmiddlewares\x12B\n" +
 	"\aclients\x18\n" +
 	" \x01(\v2(.runtime.api.config.transport.v1.ClientsR\aclientsBEZCgithub.com/origadmin/runtime/examples/configs/bootstrap_sample;confb\x06proto3"
 
@@ -203,25 +192,23 @@ var file_examples_protos_bootstrap_sample_bootstrap_proto_goTypes = []any{
 	(*v15.Discoveries)(nil), // 6: runtime.api.config.discovery.v1.Discoveries
 	(*v16.Brokers)(nil),     // 7: runtime.api.config.broker.v1.Brokers
 	(*v17.Middlewares)(nil), // 8: runtime.api.config.middleware.v1.Middlewares
-	(*v18.Security)(nil),    // 9: runtime.api.config.security.v1.Security
-	(*v11.Clients)(nil),     // 10: runtime.api.config.transport.v1.Clients
+	(*v11.Clients)(nil),     // 9: runtime.api.config.transport.v1.Clients
 }
 var file_examples_protos_bootstrap_sample_bootstrap_proto_depIdxs = []int32{
-	1,  // 0: bootstrap_sample.Bootstrap.app:type_name -> runtime.api.config.app.v1.App
-	2,  // 1: bootstrap_sample.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Servers
-	3,  // 2: bootstrap_sample.Bootstrap.data:type_name -> runtime.api.config.data.v1.Data
-	4,  // 3: bootstrap_sample.Bootstrap.logger:type_name -> runtime.api.config.logger.v1.Logger
-	5,  // 4: bootstrap_sample.Bootstrap.trace:type_name -> runtime.api.config.trace.v1.Trace
-	6,  // 5: bootstrap_sample.Bootstrap.discoveries:type_name -> runtime.api.config.discovery.v1.Discoveries
-	7,  // 6: bootstrap_sample.Bootstrap.brokers:type_name -> runtime.api.config.broker.v1.Brokers
-	8,  // 7: bootstrap_sample.Bootstrap.middlewares:type_name -> runtime.api.config.middleware.v1.Middlewares
-	9,  // 8: bootstrap_sample.Bootstrap.security:type_name -> runtime.api.config.security.v1.Security
-	10, // 9: bootstrap_sample.Bootstrap.clients:type_name -> runtime.api.config.transport.v1.Clients
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	1, // 0: bootstrap_sample.Bootstrap.app:type_name -> runtime.api.config.app.v1.App
+	2, // 1: bootstrap_sample.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Servers
+	3, // 2: bootstrap_sample.Bootstrap.data:type_name -> runtime.api.config.data.v1.Data
+	4, // 3: bootstrap_sample.Bootstrap.logger:type_name -> runtime.api.config.logger.v1.Logger
+	5, // 4: bootstrap_sample.Bootstrap.trace:type_name -> runtime.api.config.trace.v1.Trace
+	6, // 5: bootstrap_sample.Bootstrap.discoveries:type_name -> runtime.api.config.discovery.v1.Discoveries
+	7, // 6: bootstrap_sample.Bootstrap.brokers:type_name -> runtime.api.config.broker.v1.Brokers
+	8, // 7: bootstrap_sample.Bootstrap.middlewares:type_name -> runtime.api.config.middleware.v1.Middlewares
+	9, // 8: bootstrap_sample.Bootstrap.clients:type_name -> runtime.api.config.transport.v1.Clients
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_examples_protos_bootstrap_sample_bootstrap_proto_init() }
