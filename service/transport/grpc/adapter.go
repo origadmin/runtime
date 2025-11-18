@@ -9,6 +9,7 @@ import (
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 
 	grpcv1 "github.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1"
+	"github.com/origadmin/runtime/context"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
@@ -99,7 +100,8 @@ func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions)
 }
 
 // initGrpcClientOptions initialize grpc client options
-func initGrpcClientOptions(grpcConfig *grpcv1.Client, clientOpts *ClientOptions) ([]transgrpc.ClientOption, error) {
+func initGrpcClientOptions(_ context.Context, grpcConfig *grpcv1.Client,
+	clientOpts *ClientOptions) ([]transgrpc.ClientOption, error) {
 	// Prepare the Kratos gRPC client options.
 	var kratosOpts []transgrpc.ClientOption
 

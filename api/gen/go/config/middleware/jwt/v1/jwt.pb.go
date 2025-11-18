@@ -30,7 +30,7 @@ type JWT struct {
 	ClaimType   string                 `protobuf:"bytes,1,opt,name=claim_type,proto3" json:"claim_type,omitempty"`
 	TokenHeader *structpb.Struct       `protobuf:"bytes,2,opt,name=token_header,proto3" json:"token_header,omitempty"`
 	// The configuration for creating and validating a JWT.
-	Config        *JwtAuthConfig `protobuf:"bytes,100,opt,name=config,proto3" json:"config,omitempty"`
+	Config        *AuthConfig `protobuf:"bytes,100,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -79,15 +79,15 @@ func (x *JWT) GetTokenHeader() *structpb.Struct {
 	return nil
 }
 
-func (x *JWT) GetConfig() *JwtAuthConfig {
+func (x *JWT) GetConfig() *AuthConfig {
 	if x != nil {
 		return x.Config
 	}
 	return nil
 }
 
-// JwtAuthConfig contains configuration parameters for creating and validating a JWT.
-type JwtAuthConfig struct {
+// AuthConfig contains configuration parameters for creating and validating a JWT.
+type AuthConfig struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	SigningMethod        string                 `protobuf:"bytes,1,opt,name=signing_method,proto3" json:"signing_method,omitempty"`
 	SigningKey           string                 `protobuf:"bytes,2,opt,name=signing_key,proto3" json:"signing_key,omitempty"`
@@ -104,20 +104,20 @@ type JwtAuthConfig struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *JwtAuthConfig) Reset() {
-	*x = JwtAuthConfig{}
+func (x *AuthConfig) Reset() {
+	*x = AuthConfig{}
 	mi := &file_config_middleware_jwt_v1_jwt_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *JwtAuthConfig) String() string {
+func (x *AuthConfig) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*JwtAuthConfig) ProtoMessage() {}
+func (*AuthConfig) ProtoMessage() {}
 
-func (x *JwtAuthConfig) ProtoReflect() protoreflect.Message {
+func (x *AuthConfig) ProtoReflect() protoreflect.Message {
 	mi := &file_config_middleware_jwt_v1_jwt_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -129,61 +129,61 @@ func (x *JwtAuthConfig) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use JwtAuthConfig.ProtoReflect.Descriptor instead.
-func (*JwtAuthConfig) Descriptor() ([]byte, []int) {
+// Deprecated: Use AuthConfig.ProtoReflect.Descriptor instead.
+func (*AuthConfig) Descriptor() ([]byte, []int) {
 	return file_config_middleware_jwt_v1_jwt_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *JwtAuthConfig) GetSigningMethod() string {
+func (x *AuthConfig) GetSigningMethod() string {
 	if x != nil {
 		return x.SigningMethod
 	}
 	return ""
 }
 
-func (x *JwtAuthConfig) GetSigningKey() string {
+func (x *AuthConfig) GetSigningKey() string {
 	if x != nil {
 		return x.SigningKey
 	}
 	return ""
 }
 
-func (x *JwtAuthConfig) GetSecondarySigningKey() string {
+func (x *AuthConfig) GetSecondarySigningKey() string {
 	if x != nil {
 		return x.SecondarySigningKey
 	}
 	return ""
 }
 
-func (x *JwtAuthConfig) GetAccessTokenLifetime() int64 {
+func (x *AuthConfig) GetAccessTokenLifetime() int64 {
 	if x != nil {
 		return x.AccessTokenLifetime
 	}
 	return 0
 }
 
-func (x *JwtAuthConfig) GetRefreshTokenLifetime() int64 {
+func (x *AuthConfig) GetRefreshTokenLifetime() int64 {
 	if x != nil {
 		return x.RefreshTokenLifetime
 	}
 	return 0
 }
 
-func (x *JwtAuthConfig) GetIssuer() string {
+func (x *AuthConfig) GetIssuer() string {
 	if x != nil {
 		return x.Issuer
 	}
 	return ""
 }
 
-func (x *JwtAuthConfig) GetAudience() []string {
+func (x *AuthConfig) GetAudience() []string {
 	if x != nil {
 		return x.Audience
 	}
 	return nil
 }
 
-func (x *JwtAuthConfig) GetTokenSource() string {
+func (x *AuthConfig) GetTokenSource() string {
 	if x != nil && x.TokenSource != nil {
 		return *x.TokenSource
 	}
@@ -194,14 +194,15 @@ var File_config_middleware_jwt_v1_jwt_proto protoreflect.FileDescriptor
 
 const file_config_middleware_jwt_v1_jwt_proto_rawDesc = "" +
 	"\n" +
-	"\"config/middleware/jwt/v1/jwt.proto\x12$runtime.api.config.middleware.jwt.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x9a\x02\n" +
+	"\"config/middleware/jwt/v1/jwt.proto\x12$runtime.api.config.middleware.jwt.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x97\x02\n" +
 	"\x03JWT\x12V\n" +
 	"\n" +
 	"claim_type\x18\x01 \x01(\tB6\xbaG3\x92\x020The type of the claim used to extract the token.R\n" +
 	"claim_type\x12;\n" +
-	"\ftoken_header\x18\x02 \x01(\v2\x17.google.protobuf.StructR\ftoken_header\x12~\n" +
-	"\x06config\x18d \x01(\v23.runtime.api.config.middleware.jwt.v1.JwtAuthConfigB1\xbaG.\x92\x02+The configuration used to create the token.R\x06config\"\xa5\a\n" +
-	"\rJwtAuthConfig\x12\x80\x01\n" +
+	"\ftoken_header\x18\x02 \x01(\v2\x17.google.protobuf.StructR\ftoken_header\x12{\n" +
+	"\x06config\x18d \x01(\v20.runtime.api.config.middleware.jwt.v1.AuthConfigB1\xbaG.\x92\x02+The configuration used to create the token.R\x06config\"\xa2\a\n" +
+	"\n" +
+	"AuthConfig\x12\x80\x01\n" +
 	"\x0esigning_method\x18\x01 \x01(\tBX\xfaB\x14r\x12\x10\x01\x18\x80\b2\v^[A-Z0-9]+$\xbaG>\x92\x02;The signing method used for the token (e.g., HS256, RS256).R\x0esigning_method\x12]\n" +
 	"\vsigning_key\x18\x02 \x01(\tB;\xfaB\ar\x05\x10\x01\x18\x80\b\xbaG.\x92\x02+The signing key used for signing the token.R\vsigning_key\x12q\n" +
 	"\x15secondary_signing_key\x18\x03 \x01(\tB;\xbaG8\x92\x025The secondary signing key used for signing the token.R\x15secondary_signing_key\x12\x96\x01\n" +
@@ -229,12 +230,12 @@ func file_config_middleware_jwt_v1_jwt_proto_rawDescGZIP() []byte {
 var file_config_middleware_jwt_v1_jwt_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_config_middleware_jwt_v1_jwt_proto_goTypes = []any{
 	(*JWT)(nil),             // 0: runtime.api.config.middleware.jwt.v1.JWT
-	(*JwtAuthConfig)(nil),   // 1: runtime.api.config.middleware.jwt.v1.JwtAuthConfig
+	(*AuthConfig)(nil),      // 1: runtime.api.config.middleware.jwt.v1.AuthConfig
 	(*structpb.Struct)(nil), // 2: google.protobuf.Struct
 }
 var file_config_middleware_jwt_v1_jwt_proto_depIdxs = []int32{
 	2, // 0: runtime.api.config.middleware.jwt.v1.JWT.token_header:type_name -> google.protobuf.Struct
-	1, // 1: runtime.api.config.middleware.jwt.v1.JWT.config:type_name -> runtime.api.config.middleware.jwt.v1.JwtAuthConfig
+	1, // 1: runtime.api.config.middleware.jwt.v1.JWT.config:type_name -> runtime.api.config.middleware.jwt.v1.AuthConfig
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

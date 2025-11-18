@@ -16,14 +16,14 @@ message JWT {
   ];
   google.protobuf.Struct token_header = 2 [json_name = 'token_header'];
   // The configuration for creating and validating a JWT.
-  JwtAuthConfig config = 100 [
+  AuthConfig config = 100 [
     json_name = "config",
     (gnostic.openapi.v3.property) = {description: "The configuration used to create the token."}
   ];
 }
 
-// JwtAuthConfig contains configuration parameters for creating and validating a JWT.
-message JwtAuthConfig {
+// AuthConfig contains configuration parameters for creating and validating a JWT.
+message AuthConfig {
   string signing_method = 1 [
     json_name = "signing_method",
     (validate.rules).string = {

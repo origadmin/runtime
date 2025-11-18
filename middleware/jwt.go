@@ -152,6 +152,7 @@ type claimsConfig struct {
 // generates a new set of claims based on the provided configuration.
 // It automatically handles issuer, lifetime, and generates a random UUID for the subject.
 // The implementation is optimized to avoid recreating static configuration on each call.
+// Exported for testing purposes.
 func NewClaimsFactory(cfg *jwtv1.JWT, opts *Options) func() jwt.Claims {
 	// Pre-compute static configuration
 	config := cfg.GetConfig()
@@ -233,8 +234,9 @@ func NewClaimsFactory(cfg *jwtv1.JWT, opts *Options) func() jwt.Claims {
 	}
 }
 
-// getSigningMethod returns the jwt.SigningMethod based on the provided string.
-func getSigningMethod(alg string) jwt.SigningMethod {
+// GetSigningMethod returns the jwt.SigningMethod based on the provided string.
+// Exported for testing purposes.
+func GetSigningMethod(alg string) jwt.SigningMethod {
 	switch alg {
 	case "HS256":
 		return jwt.SigningMethodHS256
@@ -257,6 +259,11 @@ func getSigningMethod(alg string) jwt.SigningMethod {
 	default:
 		return jwt.SigningMethodNone
 	}
+}
+
+// getSigningMethod returns the jwt.SigningMethod based on the provided string.
+func getSigningMethod(alg string) jwt.SigningMethod {
+	return GetSigningMethod(alg)
 }
 
 // getKeyFunc returns a jwt.Keyfunc for token validation.

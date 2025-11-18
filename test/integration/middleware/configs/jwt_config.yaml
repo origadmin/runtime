@@ -1,0 +1,49 @@
+configs:
+  - name: jwt_hs256_registered
+    type: jwt
+    enabled: true
+    jwt:
+      config:
+        signing_method: "HS256"
+        signing_key: "test-secret-key-for-hs256"
+        issuer: "test-issuer"
+        audience: ["test-audience"]
+        access_token_lifetime: 3600
+      claim_type: "registered"
+  
+  - name: jwt_hs256_map
+    type: jwt
+    enabled: true
+    jwt:
+      config:
+        signing_method: "HS256"
+        signing_key: "test-secret-key-for-hs256"
+        issuer: "test-issuer"
+        audience: ["test-audience"]
+        access_token_lifetime: 3600
+      claim_type: "map"
+  
+  - name: jwt_none
+    type: jwt
+    enabled: true
+    jwt:
+      config:
+        signing_method: "none"
+        issuer: "test-issuer"
+        access_token_lifetime: 3600
+      claim_type: "registered"
+  
+  - name: jwt_with_header
+    type: jwt
+    enabled: true
+    jwt:
+      config:
+        signing_method: "HS256"
+        signing_key: "test-secret-key"
+        issuer: "test-issuer"
+        access_token_lifetime: 3600
+      claim_type: "registered"
+      token_header:
+        additional_headers:
+          kid: "test-key-id"
+          typ: "JWT"

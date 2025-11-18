@@ -9,6 +9,7 @@ import (
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	httpv1 "github.com/origadmin/runtime/api/gen/go/config/transport/http/v1"
+	"github.com/origadmin/runtime/context"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	serviceselector "github.com/origadmin/runtime/service/selector"
 	servicetls "github.com/origadmin/runtime/service/tls"
@@ -59,7 +60,7 @@ func getMiddlewares(
 }
 
 // initHttpServerOptions initialize the http server option
-func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions) ([]transhttp.ServerOption, error) {
+func initHttpServerOptions(_ context.Context, httpConfig *httpv1.Server, serverOpts *ServerOptions) ([]transhttp.ServerOption, error) {
 	// Prepare the Kratos HTTP server options.
 	var kratosOpts []transhttp.ServerOption
 

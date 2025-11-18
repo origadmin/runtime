@@ -193,22 +193,22 @@ var _ interface {
 	ErrorName() string
 } = JWTValidationError{}
 
-// Validate checks the field values on JwtAuthConfig with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
+// Validate checks the field values on AuthConfig with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
-func (m *JwtAuthConfig) Validate() error {
+func (m *AuthConfig) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on JwtAuthConfig with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in JwtAuthConfigMultiError, or
+// ValidateAll checks the field values on AuthConfig with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AuthConfigMultiError, or
 // nil if none found.
-func (m *JwtAuthConfig) ValidateAll() error {
+func (m *AuthConfig) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *JwtAuthConfig) validate(all bool) error {
+func (m *AuthConfig) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -216,7 +216,7 @@ func (m *JwtAuthConfig) validate(all bool) error {
 	var errors []error
 
 	if l := utf8.RuneCountInString(m.GetSigningMethod()); l < 1 || l > 1024 {
-		err := JwtAuthConfigValidationError{
+		err := AuthConfigValidationError{
 			field:  "SigningMethod",
 			reason: "value length must be between 1 and 1024 runes, inclusive",
 		}
@@ -226,8 +226,8 @@ func (m *JwtAuthConfig) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if !_JwtAuthConfig_SigningMethod_Pattern.MatchString(m.GetSigningMethod()) {
-		err := JwtAuthConfigValidationError{
+	if !_AuthConfig_SigningMethod_Pattern.MatchString(m.GetSigningMethod()) {
+		err := AuthConfigValidationError{
 			field:  "SigningMethod",
 			reason: "value does not match regex pattern \"^[A-Z0-9]+$\"",
 		}
@@ -238,7 +238,7 @@ func (m *JwtAuthConfig) validate(all bool) error {
 	}
 
 	if l := utf8.RuneCountInString(m.GetSigningKey()); l < 1 || l > 1024 {
-		err := JwtAuthConfigValidationError{
+		err := AuthConfigValidationError{
 			field:  "SigningKey",
 			reason: "value length must be between 1 and 1024 runes, inclusive",
 		}
@@ -251,7 +251,7 @@ func (m *JwtAuthConfig) validate(all bool) error {
 	// no validation rules for SecondarySigningKey
 
 	if val := m.GetAccessTokenLifetime(); val < 1 || val > 31536000 {
-		err := JwtAuthConfigValidationError{
+		err := AuthConfigValidationError{
 			field:  "AccessTokenLifetime",
 			reason: "value must be inside range [1, 31536000]",
 		}
@@ -262,7 +262,7 @@ func (m *JwtAuthConfig) validate(all bool) error {
 	}
 
 	if val := m.GetRefreshTokenLifetime(); val < 1 || val > 31536000 {
-		err := JwtAuthConfigValidationError{
+		err := AuthConfigValidationError{
 			field:  "RefreshTokenLifetime",
 			reason: "value must be inside range [1, 31536000]",
 		}
@@ -275,7 +275,7 @@ func (m *JwtAuthConfig) validate(all bool) error {
 	// no validation rules for Issuer
 
 	if l := len(m.GetAudience()); l < 1 || l > 1024 {
-		err := JwtAuthConfigValidationError{
+		err := AuthConfigValidationError{
 			field:  "Audience",
 			reason: "value must contain between 1 and 1024 items, inclusive",
 		}
@@ -285,13 +285,13 @@ func (m *JwtAuthConfig) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	_JwtAuthConfig_Audience_Unique := make(map[string]struct{}, len(m.GetAudience()))
+	_AuthConfig_Audience_Unique := make(map[string]struct{}, len(m.GetAudience()))
 
 	for idx, item := range m.GetAudience() {
 		_, _ = idx, item
 
-		if _, exists := _JwtAuthConfig_Audience_Unique[item]; exists {
-			err := JwtAuthConfigValidationError{
+		if _, exists := _AuthConfig_Audience_Unique[item]; exists {
+			err := AuthConfigValidationError{
 				field:  fmt.Sprintf("Audience[%v]", idx),
 				reason: "repeated value must contain unique items",
 			}
@@ -300,7 +300,7 @@ func (m *JwtAuthConfig) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		} else {
-			_JwtAuthConfig_Audience_Unique[item] = struct{}{}
+			_AuthConfig_Audience_Unique[item] = struct{}{}
 		}
 
 		// no validation rules for Audience[idx]
@@ -311,19 +311,18 @@ func (m *JwtAuthConfig) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return JwtAuthConfigMultiError(errors)
+		return AuthConfigMultiError(errors)
 	}
 
 	return nil
 }
 
-// JwtAuthConfigMultiError is an error wrapping multiple validation errors
-// returned by JwtAuthConfig.ValidateAll() if the designated constraints
-// aren't met.
-type JwtAuthConfigMultiError []error
+// AuthConfigMultiError is an error wrapping multiple validation errors
+// returned by AuthConfig.ValidateAll() if the designated constraints aren't met.
+type AuthConfigMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m JwtAuthConfigMultiError) Error() string {
+func (m AuthConfigMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -332,11 +331,11 @@ func (m JwtAuthConfigMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m JwtAuthConfigMultiError) AllErrors() []error { return m }
+func (m AuthConfigMultiError) AllErrors() []error { return m }
 
-// JwtAuthConfigValidationError is the validation error returned by
-// JwtAuthConfig.Validate if the designated constraints aren't met.
-type JwtAuthConfigValidationError struct {
+// AuthConfigValidationError is the validation error returned by
+// AuthConfig.Validate if the designated constraints aren't met.
+type AuthConfigValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -344,22 +343,22 @@ type JwtAuthConfigValidationError struct {
 }
 
 // Field function returns field value.
-func (e JwtAuthConfigValidationError) Field() string { return e.field }
+func (e AuthConfigValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e JwtAuthConfigValidationError) Reason() string { return e.reason }
+func (e AuthConfigValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e JwtAuthConfigValidationError) Cause() error { return e.cause }
+func (e AuthConfigValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e JwtAuthConfigValidationError) Key() bool { return e.key }
+func (e AuthConfigValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e JwtAuthConfigValidationError) ErrorName() string { return "JwtAuthConfigValidationError" }
+func (e AuthConfigValidationError) ErrorName() string { return "AuthConfigValidationError" }
 
 // Error satisfies the builtin error interface
-func (e JwtAuthConfigValidationError) Error() string {
+func (e AuthConfigValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -371,14 +370,14 @@ func (e JwtAuthConfigValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sJwtAuthConfig.%s: %s%s",
+		"invalid %sAuthConfig.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = JwtAuthConfigValidationError{}
+var _ error = AuthConfigValidationError{}
 
 var _ interface {
 	Field() string
@@ -386,6 +385,6 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = JwtAuthConfigValidationError{}
+} = AuthConfigValidationError{}
 
-var _JwtAuthConfig_SigningMethod_Pattern = regexp.MustCompile("^[A-Z0-9]+$")
+var _AuthConfig_SigningMethod_Pattern = regexp.MustCompile("^[A-Z0-9]+$")
