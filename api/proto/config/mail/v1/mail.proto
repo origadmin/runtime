@@ -6,10 +6,6 @@ import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/mail/v1;mailv1";
 
-
-
-
-
 // Mail represents the general configuration for a mail service.
 message Mail {
   // Common mailer settings

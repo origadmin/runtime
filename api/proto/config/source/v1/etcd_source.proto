@@ -2,13 +2,9 @@ syntax = "proto3";
 
 package runtime.api.config.source.v1;
 
-import "config/security/transport/v1/tls.proto";
+import "config/transport/tls/v1/tls.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1";
-
-
-
-
 
 // ETCDSource defines the configuration for ETCD configuration source
 message ETCDSource {
@@ -21,5 +17,5 @@ message ETCDSource {
   // Path to the configuration in ETCD (e.g., "/config/app")
   string path = 4 [json_name = "path"];
   // TLS configuration for secure connection
-  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
+  runtime.api.config.transport.tls.v1.TLSConfig tls = 10 [json_name = "tls"];
 }

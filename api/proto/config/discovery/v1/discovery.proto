@@ -4,13 +4,8 @@ package runtime.api.config.discovery.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
-import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/discovery/v1;discoveryv1";
-
-
-
-
 
 // Discovery defines the configuration for service registration.
 message Discovery {
@@ -129,9 +124,7 @@ message Consul {
 
 // ETCD provider specific configuration.
 message ETCD {
-  repeated string endpoints = 1 [
-    (gnostic.openapi.v3.property) = {description: "List of ETCD server endpoints."}
-  ];
+  repeated string endpoints = 1 [(gnostic.openapi.v3.property) = {description: "List of ETCD server endpoints."}];
 }
 
 // Nacos provider specific configuration (placeholder).
@@ -153,13 +146,7 @@ message Kubernetes {
 
 // Polaris provider specific configuration (placeholder).
 message Polaris {
-  string address = 1 [
-    (gnostic.openapi.v3.property) = {description: "The address of the Polaris server."}
-  ];
-  string scheme = 2 [
-    (gnostic.openapi.v3.property) = {description: "The scheme to use for connecting to Polaris (e.g., http, https)."}
-  ];
-  string token = 3 [
-    (gnostic.openapi.v3.property) = {description: "The token for Polaris authentication."}
-  ];
+  string address = 1 [(gnostic.openapi.v3.property) = {description: "The address of the Polaris server."}];
+  string scheme = 2 [(gnostic.openapi.v3.property) = {description: "The scheme to use for connecting to Polaris (e.g., http, https)."}];
+  string token = 3 [(gnostic.openapi.v3.property) = {description: "The token for Polaris authentication."}];
 }

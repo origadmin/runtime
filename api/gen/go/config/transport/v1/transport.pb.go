@@ -326,7 +326,7 @@ var File_config_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_config_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
-	"#config/transport/v1/transport.proto\x12\x1fruntime.api.config.transport.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a#config/transport/grpc/v1/grpc.proto\x1a#config/transport/http/v1/http.proto\x1a-config/transport/websocket/v1/websocket.proto\"\xc5\x05\n" +
+	"#config/transport/v1/transport.proto\x12\x1fruntime.api.config.transport.v1\x1a#config/transport/grpc/v1/grpc.proto\x1a#config/transport/http/v1/http.proto\x1a-config/transport/websocket/v1/websocket.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xc5\x05\n" +
 	"\x06Server\x12I\n" +
 	"\x04name\x18\x01 \x01(\tB5\xbaG2\x92\x02/The logical name for this server configuration.R\x04name\x12o\n" +
 	"\bprotocol\x18\x02 \x01(\tBS\xbaGP\x92\x02MThe name of the transport protocol to use, e.g., \"grpc\", \"http\", \"websocket\".R\bprotocol\x12g\n" +

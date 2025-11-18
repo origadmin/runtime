@@ -8,8 +8,8 @@ package grpcv1
 
 import (
 	_ "github.com/google/gnostic/openapiv3"
-	v1 "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/config/selector/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
@@ -208,24 +208,24 @@ var File_config_transport_grpc_v1_grpc_proto protoreflect.FileDescriptor
 
 const file_config_transport_grpc_v1_grpc_proto_rawDesc = "" +
 	"\n" +
-	"#config/transport/grpc/v1/grpc.proto\x12$runtime.api.config.transport.grpc.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\x1a&config/security/transport/v1/tls.proto\x1a!config/selector/v1/selector.proto\"\x98\x04\n" +
+	"#config/transport/grpc/v1/grpc.proto\x12$runtime.api.config.transport.grpc.v1\x1a!config/selector/v1/selector.proto\x1a!config/transport/tls/v1/tls.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\"\x93\x04\n" +
 	"\x06Server\x12b\n" +
 	"\anetwork\x18\x01 \x01(\tBH\xbaGE\x92\x02BThe network type for the server to listen on, e.g., \"tcp\", \"unix\".R\anetwork\x12X\n" +
 	"\x04addr\x18\x02 \x01(\tBD\xbaGA\x92\x02>The address for the server to listen on, e.g., \"0.0.0.0:9000\".R\x04addr\x12X\n" +
 	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationB#\xbaG \x92\x02\x1dThe request handling timeout.R\atimeout\x12_\n" +
-	"\vmiddlewares\x18\x04 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12\x85\x01\n" +
+	"\vmiddlewares\x18\x04 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12\x80\x01\n" +
 	"\n" +
-	"tls_config\x18\x05 \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigB+\xbaG(\x92\x02%The TLS settings for the gRPC server.H\x00R\n" +
+	"tls_config\x18\x05 \x01(\v2..runtime.api.config.transport.tls.v1.TLSConfigB+\xbaG(\x92\x02%The TLS settings for the gRPC server.H\x00R\n" +
 	"tls_config\x88\x01\x01B\r\n" +
-	"\v_tls_config\"\xee\x02\n" +
+	"\v_tls_config\"\xe9\x02\n" +
 	"\x06Client\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x123\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12 \n" +
 	"\vmiddlewares\x18\x03 \x03(\tR\vmiddlewares\x12J\n" +
 	"\bselector\x18\x04 \x01(\v2..runtime.api.config.selector.v1.SelectorConfigR\bselector\x12*\n" +
-	"\x0ediscovery_name\x18\x05 \x01(\tH\x00R\rdiscoveryName\x88\x01\x01\x12W\n" +
+	"\x0ediscovery_name\x18\x05 \x01(\tH\x00R\rdiscoveryName\x88\x01\x01\x12R\n" +
 	"\n" +
-	"tls_config\x18\x06 \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigH\x01R\ttlsConfig\x88\x01\x01B\x11\n" +
+	"tls_config\x18\x06 \x01(\v2..runtime.api.config.transport.tls.v1.TLSConfigH\x01R\ttlsConfig\x88\x01\x01B\x11\n" +
 	"\x0f_discovery_nameB\r\n" +
 	"\v_tls_configB\xb5\x02\n" +
 	"(com.runtime.api.config.transport.grpc.v1B\tGrpcProtoP\x01ZGgithub.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1;grpcv1\xa2\x02\x05RACTG\xaa\x02$Runtime.Api.Config.Transport.Grpc.V1\xca\x02$Runtime\\Api\\Config\\Transport\\Grpc\\V1\xe2\x020Runtime\\Api\\Config\\Transport\\Grpc\\V1\\GPBMetadata\xea\x02)Runtime::Api::Config::Transport::Grpc::V1b\x06proto3"
@@ -247,15 +247,15 @@ var file_config_transport_grpc_v1_grpc_proto_goTypes = []any{
 	(*Server)(nil),              // 0: runtime.api.config.transport.grpc.v1.Server
 	(*Client)(nil),              // 1: runtime.api.config.transport.grpc.v1.Client
 	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
-	(*v1.TLSConfig)(nil),        // 3: runtime.api.config.security.transport.v1.TLSConfig
+	(*v1.TLSConfig)(nil),        // 3: runtime.api.config.transport.tls.v1.TLSConfig
 	(*v11.SelectorConfig)(nil),  // 4: runtime.api.config.selector.v1.SelectorConfig
 }
 var file_config_transport_grpc_v1_grpc_proto_depIdxs = []int32{
 	2, // 0: runtime.api.config.transport.grpc.v1.Server.timeout:type_name -> google.protobuf.Duration
-	3, // 1: runtime.api.config.transport.grpc.v1.Server.tls_config:type_name -> runtime.api.config.security.transport.v1.TLSConfig
+	3, // 1: runtime.api.config.transport.grpc.v1.Server.tls_config:type_name -> runtime.api.config.transport.tls.v1.TLSConfig
 	2, // 2: runtime.api.config.transport.grpc.v1.Client.timeout:type_name -> google.protobuf.Duration
 	4, // 3: runtime.api.config.transport.grpc.v1.Client.selector:type_name -> runtime.api.config.selector.v1.SelectorConfig
-	3, // 4: runtime.api.config.transport.grpc.v1.Client.tls_config:type_name -> runtime.api.config.security.transport.v1.TLSConfig
+	3, // 4: runtime.api.config.transport.grpc.v1.Client.tls_config:type_name -> runtime.api.config.transport.tls.v1.TLSConfig
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name

@@ -7,10 +7,6 @@ import "google/protobuf/duration.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/transport/websocket/v1;websocketv1";
 
-
-
-
-
 // Server defines the configuration for a WebSocket server.
 message Server {
   string network = 1 [

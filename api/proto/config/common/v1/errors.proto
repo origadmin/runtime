@@ -11,15 +11,15 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/config/common/v1;co
 // This helps in grouping related errors together for monitoring and client handling.
 enum ErrorCategory {
   // General errors not specific to any category.
-  GENERAL = 0;
+  ERROR_CATEGORY_GENERAL_UNSPECIFIED = 0;
   // Authentication and authorization related errors.
-  AUTHENTICATION = 1;
+  ERROR_CATEGORY_AUTHENTICATION = 1;
   // Database related errors.
-  DATABASE = 2;
+  ERROR_CATEGORY_DATABASE = 2;
   // Business logic related errors.
-  BUSINESS = 3;
+  ERROR_CATEGORY_BUSINESS = 3;
   // External service related errors.
-  EXTERNAL_SERVICE = 4;
+  ERROR_CATEGORY_EXTERNAL_SERVICE = 4;
 }
 
 // ErrorMetadata contains additional, structured context about an error.
@@ -52,42 +52,42 @@ enum ErrorReason {
   option (errors.default_code) = 500;
 
   // --- General Framework Errors (0-999) ---
-  UNKNOWN_ERROR = 0 [(errors.code) = 500];
-  VALIDATION_ERROR = 1 [(errors.code) = 400];
-  NOT_FOUND = 2 [(errors.code) = 404];
-  INTERNAL_SERVER_ERROR = 3 [(errors.code) = 500];
-  METHOD_NOT_ALLOWED = 4 [(errors.code) = 405];
-  REQUEST_TIMEOUT = 5 [(errors.code) = 408];
-  CONFLICT = 6 [(errors.code) = 409];
-  TOO_MANY_REQUESTS = 7 [(errors.code) = 429];
-  SERVICE_UNAVAILABLE = 8 [(errors.code) = 503];
-  GATEWAY_TIMEOUT = 9 [(errors.code) = 504];
+  ERROR_REASON_UNKNOWN_UNSPECIFIED = 0 [(errors.code) = 500];
+  ERROR_REASON_VALIDATION_ERROR = 1 [(errors.code) = 400];
+  ERROR_REASON_NOT_FOUND = 2 [(errors.code) = 404];
+  ERROR_REASON_INTERNAL_SERVER_ERROR = 3 [(errors.code) = 500];
+  ERROR_REASON_METHOD_NOT_ALLOWED = 4 [(errors.code) = 405];
+  ERROR_REASON_REQUEST_TIMEOUT = 5 [(errors.code) = 408];
+  ERROR_REASON_CONFLICT = 6 [(errors.code) = 409];
+  ERROR_REASON_TOO_MANY_REQUESTS = 7 [(errors.code) = 429];
+  ERROR_REASON_SERVICE_UNAVAILABLE = 8 [(errors.code) = 503];
+  ERROR_REASON_GATEWAY_TIMEOUT = 9 [(errors.code) = 504];
 
   // --- Common Authentication & Authorization Errors (1000-1999) ---
-  UNAUTHENTICATED = 1000 [(errors.code) = 401];
-  FORBIDDEN = 1001 [(errors.code) = 403];
+  ERROR_REASON_UNAUTHENTICATED = 1000 [(errors.code) = 401];
+  ERROR_REASON_FORBIDDEN = 1001 [(errors.code) = 403];
 
   // --- Common Database Errors (2000-2999) ---
-  DATABASE_ERROR = 2000 [(errors.code) = 500];
-  RECORD_NOT_FOUND = 2001 [(errors.code) = 404];
-  CONSTRAINT_VIOLATION = 2002 [(errors.code) = 409];
-  DUPLICATE_KEY = 2003 [(errors.code) = 409];
-  DATABASE_CONNECTION_FAILED = 2004 [(errors.code) = 503];
+  ERROR_REASON_DATABASE_ERROR = 2000 [(errors.code) = 500];
+  ERROR_REASON_RECORD_NOT_FOUND = 2001 [(errors.code) = 404];
+  ERROR_REASON_CONSTRAINT_VIOLATION = 2002 [(errors.code) = 409];
+  ERROR_REASON_DUPLICATE_KEY = 2003 [(errors.code) = 409];
+  ERROR_REASON_DATABASE_CONNECTION_FAILED = 2004 [(errors.code) = 503];
 
   // --- Common Business Logic Errors (3000-3999) ---
-  INVALID_STATE = 3000 [(errors.code) = 400];
-  RESOURCE_EXISTS = 3001 [(errors.code) = 409];
-  RESOURCE_IN_USE = 3002 [(errors.code) = 409];
-  CANCELLED = 3003 [(errors.code) = 499];
-  ABORTED = 3004 [(errors.code) = 409];
-  MISSING_PARAMETER = 3005 [(errors.code) = 400];
-  INVALID_PARAMETER = 3006 [(errors.code) = 400];
-  OPERATION_NOT_ALLOWED = 3007 [(errors.code) = 403];
+  ERROR_REASON_INVALID_STATE = 3000 [(errors.code) = 400];
+  ERROR_REASON_RESOURCE_EXISTS = 3001 [(errors.code) = 409];
+  ERROR_REASON_RESOURCE_IN_USE = 3002 [(errors.code) = 409];
+  ERROR_REASON_CANCELLED = 3003 [(errors.code) = 499];
+  ERROR_REASON_ABORTED = 3004 [(errors.code) = 409];
+  ERROR_REASON_MISSING_PARAMETER = 3005 [(errors.code) = 400];
+  ERROR_REASON_INVALID_PARAMETER = 3006 [(errors.code) = 400];
+  ERROR_REASON_OPERATION_NOT_ALLOWED = 3007 [(errors.code) = 403];
 
   // --- Common External Service Errors (4000-4999) ---
-  EXTERNAL_SERVICE_UNAVAILABLE = 4000 [(errors.code) = 503];
-  EXTERNAL_SERVICE_ERROR = 4001 [(errors.code) = 502];
+  ERROR_REASON_EXTERNAL_SERVICE_UNAVAILABLE = 4000 [(errors.code) = 503];
+  ERROR_REASON_EXTERNAL_SERVICE_ERROR = 4001 [(errors.code) = 502];
 
   // --- Common Registry Errors (6000-6999) ---
-  REGISTRY_NOT_FOUND = 6000 [(errors.code) = 404];
+  ERROR_REASON_REGISTRY_NOT_FOUND = 6000 [(errors.code) = 404];
 }

@@ -4,11 +4,6 @@ package runtime.api.config.middleware.selector.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/selector/v1;selectorv1";
 
-
-
-
-
-
 // Selector
 message Selector {
   repeated string includes = 1 [json_name = "includes"];

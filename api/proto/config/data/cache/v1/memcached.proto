@@ -25,7 +25,7 @@ message MemcachedConfig {
   int32 max_idle = 4 [
     json_name = "max_idle",
     (gnostic.openapi.v3.property) = {
-      description: "maximum number of idle connections",
+      description: "maximum number of idle connections"
       minimum: 1
     }
   ];

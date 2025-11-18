@@ -6,10 +6,6 @@ import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/logger/v1;loggerv1";
 
-
-
-
-
 // Logger level
 enum LoggerLevel {
   LOGGER_LEVEL_UNSPECIFIED = 0;

@@ -7,7 +7,7 @@
 package sourcev1
 
 import (
-	v1 "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -135,7 +135,7 @@ var File_config_source_v1_consul_source_proto protoreflect.FileDescriptor
 
 const file_config_source_v1_consul_source_proto_rawDesc = "" +
 	"\n" +
-	"$config/source/v1/consul_source.proto\x12\x1cruntime.api.config.source.v1\x1a&config/security/transport/v1/tls.proto\"\xa7\x02\n" +
+	"$config/source/v1/consul_source.proto\x12\x1cruntime.api.config.source.v1\x1a!config/transport/tls/v1/tls.proto\"\xa2\x02\n" +
 	"\fConsulSource\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x16\n" +
 	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
@@ -146,9 +146,9 @@ const file_config_source_v1_consul_source_proto_rawDesc = "" +
 	"datacenter\x12\x1c\n" +
 	"\tnamespace\x18\x06 \x01(\tR\tnamespace\x12\x1c\n" +
 	"\twait_time\x18\a \x01(\tR\twait_time\x12\x18\n" +
-	"\atimeout\x18\b \x01(\tR\atimeout\x12E\n" +
+	"\atimeout\x18\b \x01(\tR\atimeout\x12@\n" +
 	"\x03tls\x18\n" +
-	" \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigR\x03tlsB\x8d\x02\n" +
+	" \x01(\v2..runtime.api.config.transport.tls.v1.TLSConfigR\x03tlsB\x8d\x02\n" +
 	" com.runtime.api.config.source.v1B\x11ConsulSourceProtoP\x01ZAgithub.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1\xa2\x02\x04RACS\xaa\x02\x1cRuntime.Api.Config.Source.V1\xca\x02\x1cRuntime\\Api\\Config\\Source\\V1\xe2\x02(Runtime\\Api\\Config\\Source\\V1\\GPBMetadata\xea\x02 Runtime::Api::Config::Source::V1b\x06proto3"
 
 var (
@@ -166,10 +166,10 @@ func file_config_source_v1_consul_source_proto_rawDescGZIP() []byte {
 var file_config_source_v1_consul_source_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_config_source_v1_consul_source_proto_goTypes = []any{
 	(*ConsulSource)(nil), // 0: runtime.api.config.source.v1.ConsulSource
-	(*v1.TLSConfig)(nil), // 1: runtime.api.config.security.transport.v1.TLSConfig
+	(*v1.TLSConfig)(nil), // 1: runtime.api.config.transport.tls.v1.TLSConfig
 }
 var file_config_source_v1_consul_source_proto_depIdxs = []int32{
-	1, // 0: runtime.api.config.source.v1.ConsulSource.tls:type_name -> runtime.api.config.security.transport.v1.TLSConfig
+	1, // 0: runtime.api.config.source.v1.ConsulSource.tls:type_name -> runtime.api.config.transport.tls.v1.TLSConfig
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

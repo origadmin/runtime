@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package runtime.api.config.transport.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
-import "google/protobuf/struct.proto";
 import "config/transport/grpc/v1/grpc.proto";
 import "config/transport/http/v1/http.proto";
 import "config/transport/websocket/v1/websocket.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/transport/v1;transportv1";
 

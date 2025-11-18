@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package runtime.api.config.transport.http.v1;
 
+import "config/middleware/cors/v1/cors.proto";
+import "config/selector/v1/selector.proto";
+import "config/transport/tls/v1/tls.proto";
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/duration.proto";
-import "config/middleware/cors/v1/cors.proto";
-import "config/security/transport/v1/tls.proto";
-import "config/selector/v1/selector.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/transport/http/v1;httpv1";
 
@@ -33,7 +33,7 @@ message Server {
   ];
 
   // tls_config defines the TLS settings for the HTTP server.
-  optional runtime.api.config.security.transport.v1.TLSConfig tls_config = 4 [
+  optional runtime.api.config.transport.tls.v1.TLSConfig tls_config = 4 [
     json_name = "tls_config",
     (gnostic.openapi.v3.property) = {description: "The TLS settings for the HTTP server."}
   ];
@@ -78,7 +78,7 @@ message Client {
   string discovery_name = 5;
 
   // tls_config defines the TLS settings for the HTTP client.
-  optional runtime.api.config.security.transport.v1.TLSConfig tls_config = 6;
+  optional runtime.api.config.transport.tls.v1.TLSConfig tls_config = 6;
 
   // dial_timeout is the timeout for establishing a connection.
   optional google.protobuf.Duration dial_timeout = 7;

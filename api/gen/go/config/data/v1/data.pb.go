@@ -369,7 +369,7 @@ var File_config_data_v1_data_proto protoreflect.FileDescriptor
 
 const file_config_data_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a#config/data/file/v1/filestore.proto\x1a\x17validate/validate.proto\"\x96\x05\n" +
+	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a#config/data/file/v1/filestore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x96\x05\n" +
 	"\x04Data\x12k\n" +
 	"\n" +
 	"filestores\x18\x01 \x01(\v2&.runtime.api.config.data.v1.FilestoresB\x1e\xbaG\x1b\x92\x02\x18FileStore configurationsH\x00R\n" +

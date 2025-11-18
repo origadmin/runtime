@@ -2,13 +2,9 @@ syntax = "proto3";
 
 package runtime.api.config.source.v1;
 
-import "config/security/transport/v1/tls.proto";
+import "config/transport/tls/v1/tls.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1";
-
-
-
-
 
 // Nacos defines the configuration for Nacos configuration center
 message NacosSource {
@@ -27,5 +23,5 @@ message NacosSource {
   // Configuration format (e.g., "yaml", "json")
   string format = 7 [json_name = "format"];
   // TLS configuration
-  security.transport.v1.TLSConfig tls = 10 [json_name = "tls"];
+  runtime.api.config.transport.tls.v1.TLSConfig tls = 10 [json_name = "tls"];
 }

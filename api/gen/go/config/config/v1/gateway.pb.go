@@ -8,7 +8,7 @@ package configv1
 
 import (
 	_ "github.com/google/gnostic/openapiv3"
-	v1 "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -765,17 +765,17 @@ var File_config_config_v1_gateway_proto protoreflect.FileDescriptor
 
 const file_config_config_v1_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x1econfig/config/v1/gateway.proto\x12\x1cruntime.api.config.config.v1\x1a&config/security/transport/v1/tls.proto\x1a$gnostic/openapi/v3/annotations.proto\"\xda\x05\n" +
+	"\x1econfig/config/v1/gateway.proto\x12\x1cruntime.api.config.config.v1\x1a!config/transport/tls/v1/tls.proto\x1a$gnostic/openapi/v3/annotations.proto\"\xd5\x05\n" +
 	"\aGateway\x122\n" +
 	"\x04name\x18\x01 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18The name of the gateway.R\x04name\x12;\n" +
 	"\aversion\x18\x02 \x01(\tB!\xbaG\x1e\x92\x02\x1bThe version of the gateway.R\aversion\x12i\n" +
 	"\x05hosts\x18\x03 \x03(\tBS\xbaGN\x92\x02KDeprecated: Use host in Endpoint instead. List of hosts the gateway serves.\x18\x01R\x05hosts\x12}\n" +
 	"\tendpoints\x18\x04 \x03(\v2&.runtime.api.config.config.v1.EndpointB7\xbaG4\x92\x021List of API endpoints configured for the gateway.R\tendpoints\x12\x84\x01\n" +
 	"\vmiddlewares\x18\x05 \x03(\v2(.runtime.api.config.config.v1.MiddlewareB8\xbaG5\x92\x022List of global middlewares applied to the gateway.R\vmiddlewares\x12{\n" +
-	"\ttls_store\x18\x06 \x03(\v23.runtime.api.config.config.v1.Gateway.TlsStoreEntryB(\xbaG%\x92\x02\"TLS configurations stored by name.R\ttls_store\x1ap\n" +
+	"\ttls_store\x18\x06 \x03(\v23.runtime.api.config.config.v1.Gateway.TlsStoreEntryB(\xbaG%\x92\x02\"TLS configurations stored by name.R\ttls_store\x1ak\n" +
 	"\rTlsStoreEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12I\n" +
-	"\x05value\x18\x02 \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigR\x05value:\x028\x01\"\x9f\x02\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12D\n" +
+	"\x05value\x18\x02 \x01(\v2..runtime.api.config.transport.tls.v1.TLSConfigR\x05value:\x028\x01\"\x9f\x02\n" +
 	"\x0ePriorityConfig\x12A\n" +
 	"\x04name\x18\x01 \x01(\tB-\xbaG*\x92\x02'The name of the priority configuration.R\x04name\x12J\n" +
 	"\aversion\x18\x02 \x01(\tB0\xbaG-\x92\x02*The version of the priority configuration.R\aversion\x12~\n" +
@@ -872,7 +872,7 @@ var file_config_config_v1_gateway_proto_goTypes = []any{
 	nil,                        // 11: runtime.api.config.config.v1.Endpoint.MetadataEntry
 	nil,                        // 12: runtime.api.config.config.v1.Backend.MetadataEntry
 	(*Condition_Header)(nil),   // 13: runtime.api.config.config.v1.Condition.Header
-	(*v1.TLSConfig)(nil),       // 14: runtime.api.config.security.transport.v1.TLSConfig
+	(*v1.TLSConfig)(nil),       // 14: runtime.api.config.transport.tls.v1.TLSConfig
 }
 var file_config_config_v1_gateway_proto_depIdxs = []int32{
 	4,  // 0: runtime.api.config.config.v1.Gateway.endpoints:type_name -> runtime.api.config.config.v1.Endpoint
@@ -889,7 +889,7 @@ var file_config_config_v1_gateway_proto_depIdxs = []int32{
 	1,  // 11: runtime.api.config.config.v1.HealthCheck.type:type_name -> runtime.api.config.config.v1.HealthCheck.CheckType
 	9,  // 12: runtime.api.config.config.v1.Retry.conditions:type_name -> runtime.api.config.config.v1.Condition
 	13, // 13: runtime.api.config.config.v1.Condition.by_header:type_name -> runtime.api.config.config.v1.Condition.Header
-	14, // 14: runtime.api.config.config.v1.Gateway.TlsStoreEntry.value:type_name -> runtime.api.config.security.transport.v1.TLSConfig
+	14, // 14: runtime.api.config.config.v1.Gateway.TlsStoreEntry.value:type_name -> runtime.api.config.transport.tls.v1.TLSConfig
 	15, // [15:15] is the sub-list for method output_type
 	15, // [15:15] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name

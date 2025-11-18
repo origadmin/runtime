@@ -4,10 +4,6 @@ package runtime.api.config.source.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1";
 
-
-
-
-
 // EnvSource is the environment variable source
 message EnvSource {
   // Environment variable prefixes to include

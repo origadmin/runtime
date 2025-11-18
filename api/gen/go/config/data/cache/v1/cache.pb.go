@@ -132,7 +132,7 @@ var File_config_data_cache_v1_cache_proto protoreflect.FileDescriptor
 
 const file_config_data_cache_v1_cache_proto_rawDesc = "" +
 	"\n" +
-	" config/data/cache/v1/cache.proto\x12 runtime.api.config.data.cache.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\x1a$config/data/cache/v1/memcached.proto\x1a!config/data/cache/v1/memory.proto\x1a config/data/cache/v1/redis.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xef\x05\n" +
+	" config/data/cache/v1/cache.proto\x12 runtime.api.config.data.cache.v1\x1a$config/data/cache/v1/memcached.proto\x1a!config/data/cache/v1/memory.proto\x1a config/data/cache/v1/redis.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xef\x05\n" +
 	"\vCacheConfig\x12\x84\x01\n" +
 	"\x06driver\x18\x01 \x01(\tBl\xbaGi\x92\x02fCache driver name. Built-in: 'redis', 'memcached', 'memory'. Custom drivers use their registered name.R\x06driver\x12$\n" +
 	"\x04name\x18\x02 \x01(\tB\x10\xbaG\r\x92\x02\n" +

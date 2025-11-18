@@ -126,7 +126,7 @@ var File_config_data_file_v1_filestore_proto protoreflect.FileDescriptor
 
 const file_config_data_file_v1_filestore_proto_rawDesc = "" +
 	"\n" +
-	"#config/data/file/v1/filestore.proto\x12\x1fruntime.api.config.data.file.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a$config/data/file/v1/file_local.proto\x1a\x1dconfig/data/file/v1/oss.proto\x1a\x17validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x84\x05\n" +
+	"#config/data/file/v1/filestore.proto\x12\x1fruntime.api.config.data.file.v1\x1a$config/data/file/v1/file_local.proto\x1a\x1dconfig/data/file/v1/oss.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x84\x05\n" +
 	"\x0fFilestoreConfig\x12)\n" +
 	"\x04name\x18\x01 \x01(\tB\x15\xbaG\x12\x92\x02\x0ffile store nameR\x04name\x12y\n" +
 	"\x06driver\x18\x02 \x01(\tBa\xbaG^\x92\x02[File store driver name. Built-in: 'local', 'oss'. Custom drivers use their registered name.R\x06driver\x12r\n" +

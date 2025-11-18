@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package runtime.api.config.data.file.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
 import "config/data/file/v1/file_local.proto"; // Import FileLocalConfig
 import "config/data/file/v1/oss.proto"; // Import OssConfig
-import "validate/validate.proto";
+import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/data/file/v1;filev1";

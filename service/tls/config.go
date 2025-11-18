@@ -13,8 +13,8 @@ import (
 	"os"
 
 	"github.com/goexts/generic/configure"
+	tlsv1 "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1"
 
-	transportv1 "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -66,7 +66,7 @@ func parseCipherSuites(cipherSuites []string) []uint16 {
 	return suites
 }
 
-func NewServerTLSConfig(cfg *transportv1.TLSConfig, options ...Option) (*tls.Config, error) {
+func NewServerTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, error) {
 	if cfg == nil {
 		return nil, nil
 	}
@@ -188,7 +188,7 @@ func NewServerTLSConfigFromFile(keyFile, certFile, caFile string, options ...Opt
 	return cfg, nil
 }
 
-func NewClientTLSConfig(cfg *transportv1.TLSConfig, options ...Option) (*tls.Config, error) {
+func NewClientTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, error) {
 	if cfg == nil {
 		return nil, nil
 	}

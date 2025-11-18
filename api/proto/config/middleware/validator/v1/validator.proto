@@ -6,11 +6,6 @@ import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/validator/v1;validatorv1";
 
-
-
-
-
-
 message Validator {
   int32 version = 1 [
     json_name = "version",

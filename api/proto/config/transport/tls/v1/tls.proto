@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package runtime.api.config.security.transport.v1;
+package runtime.api.config.transport.tls.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 
-option go_package = "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1;transportv1";
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1;tlsv1";
 
 // TLS configuration for secure connections
 message TLSConfig {

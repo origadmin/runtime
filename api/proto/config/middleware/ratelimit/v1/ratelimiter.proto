@@ -4,14 +4,8 @@ package runtime.api.config.middleware.ratelimit.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
-import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/ratelimit/v1;ratelimitv1";
-
-
-
-
-
 
 // Rate limiter
 message RateLimiter {

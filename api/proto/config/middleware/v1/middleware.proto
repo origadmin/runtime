@@ -12,7 +12,6 @@ import "config/middleware/v1/security.proto"; // Import the new security config
 import "config/middleware/validator/v1/validator.proto";
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
-import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/v1;middlewarev1";
 

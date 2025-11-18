@@ -9,8 +9,8 @@ package httpv1
 import (
 	_ "github.com/google/gnostic/openapiv3"
 	v11 "github.com/origadmin/runtime/api/gen/go/config/middleware/cors/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/config/selector/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
@@ -235,27 +235,27 @@ var File_config_transport_http_v1_http_proto protoreflect.FileDescriptor
 
 const file_config_transport_http_v1_http_proto_rawDesc = "" +
 	"\n" +
-	"#config/transport/http/v1/http.proto\x12$runtime.api.config.transport.http.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\x1a$config/middleware/cors/v1/cors.proto\x1a&config/security/transport/v1/tls.proto\x1a!config/selector/v1/selector.proto\"\xf6\x04\n" +
+	"#config/transport/http/v1/http.proto\x12$runtime.api.config.transport.http.v1\x1a$config/middleware/cors/v1/cors.proto\x1a!config/selector/v1/selector.proto\x1a!config/transport/tls/v1/tls.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\"\xf1\x04\n" +
 	"\x06Server\x12X\n" +
 	"\x04addr\x18\x01 \x01(\tBD\xbaGA\x92\x02>The address for the server to listen on, e.g., \"0.0.0.0:8000\".R\x04addr\x12X\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationB#\xbaG \x92\x02\x1dThe request handling timeout.R\atimeout\x12_\n" +
-	"\vmiddlewares\x18\x03 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12\x85\x01\n" +
+	"\vmiddlewares\x18\x03 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12\x80\x01\n" +
 	"\n" +
-	"tls_config\x18\x04 \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigB+\xbaG(\x92\x02%The TLS settings for the HTTP server.H\x00R\n" +
+	"tls_config\x18\x04 \x01(\v2..runtime.api.config.transport.tls.v1.TLSConfigB+\xbaG(\x92\x02%The TLS settings for the HTTP server.H\x00R\n" +
 	"tls_config\x88\x01\x01\x12N\n" +
 	"\anetwork\x18\x05 \x01(\tB4\xbaG1\x92\x02.The network type, e.g., \"tcp\", \"tcp4\", \"tcp6\".R\anetwork\x12D\n" +
 	"\x04cors\x18\x06 \x01(\v2+.runtime.api.config.middleware.cors.v1.CorsH\x01R\x04cors\x88\x01\x01\x12!\n" +
 	"\fenable_pprof\x18\a \x01(\bR\venablePprofB\r\n" +
 	"\v_tls_configB\a\n" +
-	"\x05_cors\"\x8e\x04\n" +
+	"\x05_cors\"\x89\x04\n" +
 	"\x06Client\x12\x1a\n" +
 	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x12X\n" +
 	"\atimeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationB#\xbaG \x92\x02\x1dThe request handling timeout.R\atimeout\x12_\n" +
 	"\vmiddlewares\x18\x03 \x03(\tB=\xbaG:\x92\x027A list of middleware names to be applied to the server.R\vmiddlewares\x12J\n" +
 	"\bselector\x18\x04 \x01(\v2..runtime.api.config.selector.v1.SelectorConfigR\bselector\x12%\n" +
-	"\x0ediscovery_name\x18\x05 \x01(\tR\rdiscoveryName\x12W\n" +
+	"\x0ediscovery_name\x18\x05 \x01(\tR\rdiscoveryName\x12R\n" +
 	"\n" +
-	"tls_config\x18\x06 \x01(\v23.runtime.api.config.security.transport.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01\x12A\n" +
+	"tls_config\x18\x06 \x01(\v2..runtime.api.config.transport.tls.v1.TLSConfigH\x00R\ttlsConfig\x88\x01\x01\x12A\n" +
 	"\fdial_timeout\x18\a \x01(\v2\x19.google.protobuf.DurationH\x01R\vdialTimeout\x88\x01\x01B\r\n" +
 	"\v_tls_configB\x0f\n" +
 	"\r_dial_timeoutB\xb5\x02\n" +
@@ -278,17 +278,17 @@ var file_config_transport_http_v1_http_proto_goTypes = []any{
 	(*Server)(nil),              // 0: runtime.api.config.transport.http.v1.Server
 	(*Client)(nil),              // 1: runtime.api.config.transport.http.v1.Client
 	(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
-	(*v1.TLSConfig)(nil),        // 3: runtime.api.config.security.transport.v1.TLSConfig
+	(*v1.TLSConfig)(nil),        // 3: runtime.api.config.transport.tls.v1.TLSConfig
 	(*v11.Cors)(nil),            // 4: runtime.api.config.middleware.cors.v1.Cors
 	(*v12.SelectorConfig)(nil),  // 5: runtime.api.config.selector.v1.SelectorConfig
 }
 var file_config_transport_http_v1_http_proto_depIdxs = []int32{
 	2, // 0: runtime.api.config.transport.http.v1.Server.timeout:type_name -> google.protobuf.Duration
-	3, // 1: runtime.api.config.transport.http.v1.Server.tls_config:type_name -> runtime.api.config.security.transport.v1.TLSConfig
+	3, // 1: runtime.api.config.transport.http.v1.Server.tls_config:type_name -> runtime.api.config.transport.tls.v1.TLSConfig
 	4, // 2: runtime.api.config.transport.http.v1.Server.cors:type_name -> runtime.api.config.middleware.cors.v1.Cors
 	2, // 3: runtime.api.config.transport.http.v1.Client.timeout:type_name -> google.protobuf.Duration
 	5, // 4: runtime.api.config.transport.http.v1.Client.selector:type_name -> runtime.api.config.selector.v1.SelectorConfig
-	3, // 5: runtime.api.config.transport.http.v1.Client.tls_config:type_name -> runtime.api.config.security.transport.v1.TLSConfig
+	3, // 5: runtime.api.config.transport.http.v1.Client.tls_config:type_name -> runtime.api.config.transport.tls.v1.TLSConfig
 	2, // 6: runtime.api.config.transport.http.v1.Client.dial_timeout:type_name -> google.protobuf.Duration
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type

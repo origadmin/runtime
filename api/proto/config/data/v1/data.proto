@@ -2,19 +2,14 @@ syntax = "proto3";
 
 package runtime.api.config.data.v1;
 
-import "gnostic/openapi/v3/annotations.proto";
-import "google/protobuf/struct.proto";
 import "config/data/cache/v1/cache.proto";
 import "config/data/database/v1/database.proto";
 import "config/data/database/v1/document.proto";
 import "config/data/file/v1/filestore.proto";
-import "validate/validate.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/data/v1;datav1";
-
-
-
-
 
 // Data is the top-level configuration for all data-related components.
 message Data {

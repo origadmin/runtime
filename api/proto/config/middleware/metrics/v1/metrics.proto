@@ -4,11 +4,6 @@ package runtime.api.config.middleware.metrics.v1;
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/metrics/v1;metricsv1";
 
-
-
-
-
-
 message UserMetric {
   // Timestamp: indicates the time of indicator data
   int64 timestamp = 1;
