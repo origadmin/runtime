@@ -56,11 +56,36 @@ func (m *JWT) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Subject
-
 	// no validation rules for ClaimType
 
-	// no validation rules for TokenHeader
+	if all {
+		switch v := interface{}(m.GetTokenHeader()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, JWTValidationError{
+					field:  "TokenHeader",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, JWTValidationError{
+					field:  "TokenHeader",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTokenHeader()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return JWTValidationError{
+				field:  "TokenHeader",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if all {
 		switch v := interface{}(m.GetConfig()).(type) {

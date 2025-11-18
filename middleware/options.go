@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	kratosjwt "github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	"github.com/golang-jwt/jwt/v5"
 
@@ -14,12 +13,12 @@ import (
 // These options are then passed down to individual middleware factory functions.
 type Options struct {
 	Logger         log.Logger
-	MatchFunc      selector.MatchFunc // MatchFunc for the selector middleware.
+	MatchFunc      selector.MatchFunc
 	Carrier        *Carrier
 	Options        []Option
-	JWTOptions     []kratosjwt.Option // Options for configuring the JWT middleware itself (e.g., signing method, token lookup).
-	ClaimsFactory  func() jwt.Claims  // A factory function to generate JWT claims dynamically.
-	SubjectFactory func() string      // A factory function to generate the JWT 'subject' claim.
+	ClaimsFactory  func() jwt.Claims
+	SubjectFactory func() string
+	SigningMethod  jwt.SigningMethod
 }
 
 // Option is a functional option for configuring middleware options.
@@ -43,6 +42,14 @@ func WithCarrier(carrier *Carrier) Option {
 func WithClaimsFactory(factory func() jwt.Claims) Option {
 	return optionutil.Update(func(o *Options) {
 		o.ClaimsFactory = factory
+	})
+}
+
+// WithSigningMethod sets the signing method to be used for JWT tokens.
+// If not provided, the default from the configuration will be used.
+func WithSigningMethod(method jwt.SigningMethod) Option {
+	return optionutil.Update(func(o *Options) {
+		o.SigningMethod = method
 	})
 }
 

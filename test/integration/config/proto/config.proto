@@ -8,7 +8,6 @@ import "config/data/v1/data.proto";
 import "config/discovery/v1/discovery.proto";
 import "config/logger/v1/logger.proto";
 import "config/middleware/v1/middleware.proto";
-import "config/security/transport/v1/tls.proto";
 import "config/task/v1/task.proto";
 import "config/trace/v1/trace.proto"; // Updated import for tracer
 import "config/transport/v1/transport.proto";

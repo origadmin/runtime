@@ -52,7 +52,14 @@ func JwtServer(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	if config == nil {
 		return nil, false
 	}
-	kf := getKeyFunc(config.SigningKey, config.SigningMethod)
+	// Use the provided SigningMethod from options if available, otherwise get from config
+	var signMethod jwt.SigningMethod
+	if opts != nil && opts.SigningMethod != nil {
+		signMethod = opts.SigningMethod
+	} else {
+		signMethod = getSigningMethod(config.SigningMethod)
+	}
+	kf := getKeyFunc(config.SigningKey, signMethod.Alg())
 
 	// Prioritize user-provided ClaimsFactory.
 	// If not provided, use the default factory which is driven by config.
@@ -62,7 +69,7 @@ func JwtServer(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 		claimsFactory = NewClaimsFactory(cfg, opts)
 	}
 
-	return authjwt.Server(kf, authjwt.WithClaims(claimsFactory)), true
+	return authjwt.Server(kf, authjwt.WithClaims(claimsFactory), authjwt.WithSigningMethod(signMethod)), true
 }
 
 // JwtClient creates a Kratos client middleware for JWT token generation and injection.
@@ -73,7 +80,14 @@ func JwtClient(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	if config == nil {
 		return nil, false
 	}
-	kf := getKeyFunc(config.SigningKey, config.SigningMethod)
+	// Use the provided SigningMethod from options if available, otherwise get from config
+	var signMethod jwt.SigningMethod
+	if opts != nil && opts.SigningMethod != nil {
+		signMethod = opts.SigningMethod
+	} else {
+		signMethod = getSigningMethod(config.SigningMethod)
+	}
+	kf := getKeyFunc(config.SigningKey, signMethod.Alg())
 
 	// Prioritize user-provided ClaimsFactory.
 	// If not provided, use the default factory which is driven by config.
@@ -83,48 +97,67 @@ func JwtClient(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 		claimsFactory = NewClaimsFactory(cfg, opts)
 	}
 
-	return authjwt.Client(kf, authjwt.WithClaims(claimsFactory)), true
+	return authjwt.Client(kf, authjwt.WithClaims(claimsFactory), authjwt.WithSigningMethod(signMethod)), true
+}
+
+// claimsConfig holds the pre-computed configuration for JWT claims
+type claimsConfig struct {
+	lifetime   time.Duration
+	issuer     string
+	audience   []string
+	getSubject func() string
 }
 
 // NewClaimsFactory is a higher-order function that takes JWT configuration
 // and returns a `func() jwt.Claims`. This returned function, when called,
 // generates a new set of claims based on the provided configuration.
 // It automatically handles issuer, lifetime, and generates a random UUID for the subject.
+// The implementation is optimized to avoid recreating static configuration on each call.
 func NewClaimsFactory(cfg *jwtv1.JWT, opts *Options) func() jwt.Claims {
+	// Pre-compute static configuration
+	config := cfg.GetConfig()
+	if config == nil {
+		// Return a no-op factory if config is missing
+		return func() jwt.Claims { return &jwt.RegisteredClaims{} }
+	}
+
+	// Initialize claims configuration
+	cc := claimsConfig{
+		lifetime: 2 * time.Hour, // default lifetime
+		issuer:   "origadmin",   // default issuer
+	}
+
+	// Set up lifetime if configured
+	if config.GetAccessTokenLifetime() != 0 {
+		cc.lifetime = time.Duration(config.GetAccessTokenLifetime()) * time.Second
+	}
+
+	// Set up issuer if configured
+	if config.GetIssuer() != "" {
+		cc.issuer = config.GetIssuer()
+	}
+
+	// Set up audience if configured
+	if len(config.GetAudience()) > 0 {
+		cc.audience = append([]string{}, config.GetAudience()...)
+	}
+
+	// Set up subject factory
+	if opts != nil && opts.SubjectFactory != nil {
+		cc.getSubject = opts.SubjectFactory
+	} else {
+		log.Warn("JWT 'subject' is being generated as a random UUID. For production use, provide a meaningful user identifier via middleware.WithSubjectFactory().")
+		cc.getSubject = func() string { return uuid.New().String() }
+	}
+
+	// Return a closure that only updates dynamic values
 	return func() jwt.Claims {
-		// The actual configuration for claims is nested within the Config object.
-		config := cfg.GetConfig()
-		if config == nil {
-			// Return empty claims if config is missing to avoid panics.
-			return &jwt.RegisteredClaims{}
-		}
-
-		lifetime := time.Hour * 2
-		if config.GetAccessTokenLifetime() != 0 {
-			lifetime = time.Duration(config.GetAccessTokenLifetime()) * time.Second
-		}
-
-		issuer := "origadmin"
-		if config.GetIssuer() != "" {
-			issuer = config.GetIssuer()
-		}
-
-		var subject string
-		// Prioritize the SubjectFactory from options for a meaningful user identifier.
-		if opts != nil && opts.SubjectFactory != nil {
-			subject = opts.SubjectFactory()
-		} else {
-			// Fallback to a random UUID, which is not recommended for production.
-			log.Warn("JWT 'subject' is being generated as a random UUID. For production use, provide a meaningful user identifier via middleware.WithSubjectFactory().")
-			subject = uuid.New().String()
-		}
-
 		now := time.Now()
 		return &jwt.RegisteredClaims{
-			Issuer:    issuer,
-			Subject:   subject,
-			Audience:  nil, // Can be configured if needed
-			ExpiresAt: jwt.NewNumericDate(now.Add(lifetime)),
+			Issuer:    cc.issuer,
+			Subject:   cc.getSubject(),
+			Audience:  cc.audience,
+			ExpiresAt: jwt.NewNumericDate(now.Add(cc.lifetime)),
 			NotBefore: jwt.NewNumericDate(now),
 			IssuedAt:  jwt.NewNumericDate(now),
 		}
@@ -132,8 +165,8 @@ func NewClaimsFactory(cfg *jwtv1.JWT, opts *Options) func() jwt.Claims {
 }
 
 // getSigningMethod returns the jwt.SigningMethod based on the provided string.
-func getSigningMethod(sm string) jwt.SigningMethod {
-	switch sm {
+func getSigningMethod(alg string) jwt.SigningMethod {
+	switch alg {
 	case "HS256":
 		return jwt.SigningMethodHS256
 	case "HS384":

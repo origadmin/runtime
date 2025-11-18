@@ -3,18 +3,18 @@ syntax = "proto3";
 package runtime.api.config.middleware.jwt.v1;
 
 import "gnostic/openapi/v3/annotations.proto";
+import "google/protobuf/struct.proto";
 import "validate/validate.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/middleware/jwt/v1;jwtv1";
 
 // JSON Web Token
 message JWT {
-  string subject = 1 [json_name = 'subject'];
-  string claim_type = 2 [
+  string claim_type = 1 [
     json_name = 'claim_type',
     (gnostic.openapi.v3.property) = {description: "The type of the claim used to extract the token."}
   ];
-  map<string, string> token_header = 3 [json_name = 'token_header'];
+  google.protobuf.Struct token_header = 2 [json_name = 'token_header'];
   // The configuration for creating and validating a JWT.
   JwtAuthConfig config = 100 [
     json_name = "config",
@@ -27,8 +27,8 @@ message JwtAuthConfig {
   string signing_method = 1 [
     json_name = "signing_method",
     (validate.rules).string = {
-      min_len: 1,
-      max_len: 1024,
+      min_len: 1
+      max_len: 1024
       pattern: "^[A-Z0-9]+$"
     },
     (gnostic.openapi.v3.property) = {description: "The signing method used for the token (e.g., HS256, RS256)."}
@@ -36,7 +36,7 @@ message JwtAuthConfig {
   string signing_key = 2 [
     json_name = "signing_key",
     (validate.rules).string = {
-      min_len: 1,
+      min_len: 1
       max_len: 1024
     },
     (gnostic.openapi.v3.property) = {description: "The signing key used for signing the token."}
@@ -45,31 +45,31 @@ message JwtAuthConfig {
     json_name = "secondary_signing_key",
     (gnostic.openapi.v3.property) = {description: "The secondary signing key used for signing the token."}
   ];
-  int64 access_token_lifetime = 5 [
+  int64 access_token_lifetime = 4 [
     json_name = "access_token_lifetime",
     (validate.rules).int64 = {
-      gte: 1,
+      gte: 1
       lte: 31536000
     },
     (gnostic.openapi.v3.property) = {description: "The lifetime of the access token in seconds. A common value is 7200 (2 hours)."}
   ];
-  int64 refresh_token_lifetime = 6 [
+  int64 refresh_token_lifetime = 5 [
     json_name = "refresh_token_lifetime",
     (validate.rules).int64 = {
-      gte: 1,
+      gte: 1
       lte: 31536000
     },
     (gnostic.openapi.v3.property) = {description: "The lifetime of the refresh token in seconds."}
   ];
-  string issuer = 7 [
+  string issuer = 6 [
     json_name = "issuer",
     (gnostic.openapi.v3.property) = {description: "The issuer of the token."}
   ];
-  repeated string audience = 8 [
+  repeated string audience = 7 [
     json_name = "audience",
     (validate.rules).repeated = {
-      min_items: 1,
-      max_items: 1024,
+      min_items: 1
+      max_items: 1024
       unique: true
     },
     (gnostic.openapi.v3.property) = {description: "The audience for which the token is intended."}
@@ -77,7 +77,7 @@ message JwtAuthConfig {
   // Optional: Defines how to extract the token from the request.
   // Defaults to "header:Authorization" with "Bearer " prefix.
   // Example: "cookie:access_token"
-  optional string token_source = 9 [
+  optional string token_source = 8 [
     json_name = "token_source",
     (gnostic.openapi.v3.property) = {description: "Defines how to extract the token from the request. Defaults to 'header:Authorization'."}
   ];

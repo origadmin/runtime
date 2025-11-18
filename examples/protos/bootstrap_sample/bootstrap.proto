@@ -12,7 +12,6 @@ import "config/data/v1/data.proto";
 import "config/discovery/v1/discovery.proto";
 import "config/logger/v1/logger.proto";
 import "config/middleware/v1/middleware.proto";
-import "config/security/v1/security.proto";
 import "config/trace/v1/trace.proto";
 import "config/transport/v1/transport.proto";
 
@@ -46,9 +45,6 @@ message Bootstrap {
 
   // Middlewares defines the middleware chain.
   runtime.api.config.middleware.v1.Middlewares middlewares = 8;
-
-  // Security defines authentication and authorization policies.
-  runtime.api.config.security.v1.Security security = 9;
 
   // Clients holds configurations for all network clients (HTTP, gRPC).
   // This now uses the Clients collection from the transport module.

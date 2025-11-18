@@ -11,6 +11,7 @@ import (
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -26,9 +27,8 @@ const (
 // JSON Web Token
 type JWT struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
-	Subject     string                 `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
-	ClaimType   string                 `protobuf:"bytes,2,opt,name=claim_type,proto3" json:"claim_type,omitempty"`
-	TokenHeader map[string]string      `protobuf:"bytes,3,rep,name=token_header,proto3" json:"token_header,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	ClaimType   string                 `protobuf:"bytes,1,opt,name=claim_type,proto3" json:"claim_type,omitempty"`
+	TokenHeader *structpb.Struct       `protobuf:"bytes,2,opt,name=token_header,proto3" json:"token_header,omitempty"`
 	// The configuration for creating and validating a JWT.
 	Config        *JwtAuthConfig `protobuf:"bytes,100,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -65,13 +65,6 @@ func (*JWT) Descriptor() ([]byte, []int) {
 	return file_config_middleware_jwt_v1_jwt_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *JWT) GetSubject() string {
-	if x != nil {
-		return x.Subject
-	}
-	return ""
-}
-
 func (x *JWT) GetClaimType() string {
 	if x != nil {
 		return x.ClaimType
@@ -79,7 +72,7 @@ func (x *JWT) GetClaimType() string {
 	return ""
 }
 
-func (x *JWT) GetTokenHeader() map[string]string {
+func (x *JWT) GetTokenHeader() *structpb.Struct {
 	if x != nil {
 		return x.TokenHeader
 	}
@@ -99,14 +92,14 @@ type JwtAuthConfig struct {
 	SigningMethod        string                 `protobuf:"bytes,1,opt,name=signing_method,proto3" json:"signing_method,omitempty"`
 	SigningKey           string                 `protobuf:"bytes,2,opt,name=signing_key,proto3" json:"signing_key,omitempty"`
 	SecondarySigningKey  string                 `protobuf:"bytes,3,opt,name=secondary_signing_key,proto3" json:"secondary_signing_key,omitempty"`
-	AccessTokenLifetime  int64                  `protobuf:"varint,5,opt,name=access_token_lifetime,proto3" json:"access_token_lifetime,omitempty"`
-	RefreshTokenLifetime int64                  `protobuf:"varint,6,opt,name=refresh_token_lifetime,proto3" json:"refresh_token_lifetime,omitempty"`
-	Issuer               string                 `protobuf:"bytes,7,opt,name=issuer,proto3" json:"issuer,omitempty"`
-	Audience             []string               `protobuf:"bytes,8,rep,name=audience,proto3" json:"audience,omitempty"` // Audience
+	AccessTokenLifetime  int64                  `protobuf:"varint,4,opt,name=access_token_lifetime,proto3" json:"access_token_lifetime,omitempty"`
+	RefreshTokenLifetime int64                  `protobuf:"varint,5,opt,name=refresh_token_lifetime,proto3" json:"refresh_token_lifetime,omitempty"`
+	Issuer               string                 `protobuf:"bytes,6,opt,name=issuer,proto3" json:"issuer,omitempty"`
+	Audience             []string               `protobuf:"bytes,7,rep,name=audience,proto3" json:"audience,omitempty"` // Audience
 	// Optional: Defines how to extract the token from the request.
 	// Defaults to "header:Authorization" with "Bearer " prefix.
 	// Example: "cookie:access_token"
-	TokenSource   *string `protobuf:"bytes,9,opt,name=token_source,proto3,oneof" json:"token_source,omitempty"`
+	TokenSource   *string `protobuf:"bytes,8,opt,name=token_source,proto3,oneof" json:"token_source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -201,27 +194,23 @@ var File_config_middleware_jwt_v1_jwt_proto protoreflect.FileDescriptor
 
 const file_config_middleware_jwt_v1_jwt_proto_rawDesc = "" +
 	"\n" +
-	"\"config/middleware/jwt/v1/jwt.proto\x12$runtime.api.config.middleware.jwt.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17validate/validate.proto\"\x97\x03\n" +
-	"\x03JWT\x12\x18\n" +
-	"\asubject\x18\x01 \x01(\tR\asubject\x12V\n" +
+	"\"config/middleware/jwt/v1/jwt.proto\x12$runtime.api.config.middleware.jwt.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x9a\x02\n" +
+	"\x03JWT\x12V\n" +
 	"\n" +
-	"claim_type\x18\x02 \x01(\tB6\xbaG3\x92\x020The type of the claim used to extract the token.R\n" +
-	"claim_type\x12^\n" +
-	"\ftoken_header\x18\x03 \x03(\v2:.runtime.api.config.middleware.jwt.v1.JWT.TokenHeaderEntryR\ftoken_header\x12~\n" +
-	"\x06config\x18d \x01(\v23.runtime.api.config.middleware.jwt.v1.JwtAuthConfigB1\xbaG.\x92\x02+The configuration used to create the token.R\x06config\x1a>\n" +
-	"\x10TokenHeaderEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa5\a\n" +
+	"claim_type\x18\x01 \x01(\tB6\xbaG3\x92\x020The type of the claim used to extract the token.R\n" +
+	"claim_type\x12;\n" +
+	"\ftoken_header\x18\x02 \x01(\v2\x17.google.protobuf.StructR\ftoken_header\x12~\n" +
+	"\x06config\x18d \x01(\v23.runtime.api.config.middleware.jwt.v1.JwtAuthConfigB1\xbaG.\x92\x02+The configuration used to create the token.R\x06config\"\xa5\a\n" +
 	"\rJwtAuthConfig\x12\x80\x01\n" +
 	"\x0esigning_method\x18\x01 \x01(\tBX\xfaB\x14r\x12\x10\x01\x18\x80\b2\v^[A-Z0-9]+$\xbaG>\x92\x02;The signing method used for the token (e.g., HS256, RS256).R\x0esigning_method\x12]\n" +
 	"\vsigning_key\x18\x02 \x01(\tB;\xfaB\ar\x05\x10\x01\x18\x80\b\xbaG.\x92\x02+The signing key used for signing the token.R\vsigning_key\x12q\n" +
 	"\x15secondary_signing_key\x18\x03 \x01(\tB;\xbaG8\x92\x025The secondary signing key used for signing the token.R\x15secondary_signing_key\x12\x96\x01\n" +
-	"\x15access_token_lifetime\x18\x05 \x01(\x03B`\xfaB\t\"\a\x18\x80\xe7\x84\x0f(\x01\xbaGQ\x92\x02NThe lifetime of the access token in seconds. A common value is 7200 (2 hours).R\x15access_token_lifetime\x12w\n" +
-	"\x16refresh_token_lifetime\x18\x06 \x01(\x03B?\xfaB\t\"\a\x18\x80\xe7\x84\x0f(\x01\xbaG0\x92\x02-The lifetime of the refresh token in seconds.R\x16refresh_token_lifetime\x126\n" +
-	"\x06issuer\x18\a \x01(\tB\x1e\xbaG\x1b\x92\x02\x18The issuer of the token.R\x06issuer\x12\\\n" +
-	"\baudience\x18\b \x03(\tB@\xfaB\n" +
+	"\x15access_token_lifetime\x18\x04 \x01(\x03B`\xfaB\t\"\a\x18\x80\xe7\x84\x0f(\x01\xbaGQ\x92\x02NThe lifetime of the access token in seconds. A common value is 7200 (2 hours).R\x15access_token_lifetime\x12w\n" +
+	"\x16refresh_token_lifetime\x18\x05 \x01(\x03B?\xfaB\t\"\a\x18\x80\xe7\x84\x0f(\x01\xbaG0\x92\x02-The lifetime of the refresh token in seconds.R\x16refresh_token_lifetime\x126\n" +
+	"\x06issuer\x18\x06 \x01(\tB\x1e\xbaG\x1b\x92\x02\x18The issuer of the token.R\x06issuer\x12\\\n" +
+	"\baudience\x18\a \x03(\tB@\xfaB\n" +
 	"\x92\x01\a\b\x01\x10\x80\b\x18\x01\xbaG0\x92\x02-The audience for which the token is intended.R\baudience\x12\x85\x01\n" +
-	"\ftoken_source\x18\t \x01(\tB\\\xbaGY\x92\x02VDefines how to extract the token from the request. Defaults to 'header:Authorization'.H\x00R\ftoken_source\x88\x01\x01B\x0f\n" +
+	"\ftoken_source\x18\b \x01(\tB\\\xbaGY\x92\x02VDefines how to extract the token from the request. Defaults to 'header:Authorization'.H\x00R\ftoken_source\x88\x01\x01B\x0f\n" +
 	"\r_token_sourceB\xb3\x02\n" +
 	"(com.runtime.api.config.middleware.jwt.v1B\bJwtProtoP\x01ZFgithub.com/origadmin/runtime/api/gen/go/config/middleware/jwt/v1;jwtv1\xa2\x02\x05RACMJ\xaa\x02$Runtime.Api.Config.Middleware.Jwt.V1\xca\x02$Runtime\\Api\\Config\\Middleware\\Jwt\\V1\xe2\x020Runtime\\Api\\Config\\Middleware\\Jwt\\V1\\GPBMetadata\xea\x02)Runtime::Api::Config::Middleware::Jwt::V1b\x06proto3"
 
@@ -237,14 +226,14 @@ func file_config_middleware_jwt_v1_jwt_proto_rawDescGZIP() []byte {
 	return file_config_middleware_jwt_v1_jwt_proto_rawDescData
 }
 
-var file_config_middleware_jwt_v1_jwt_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_config_middleware_jwt_v1_jwt_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_config_middleware_jwt_v1_jwt_proto_goTypes = []any{
-	(*JWT)(nil),           // 0: runtime.api.config.middleware.jwt.v1.JWT
-	(*JwtAuthConfig)(nil), // 1: runtime.api.config.middleware.jwt.v1.JwtAuthConfig
-	nil,                   // 2: runtime.api.config.middleware.jwt.v1.JWT.TokenHeaderEntry
+	(*JWT)(nil),             // 0: runtime.api.config.middleware.jwt.v1.JWT
+	(*JwtAuthConfig)(nil),   // 1: runtime.api.config.middleware.jwt.v1.JwtAuthConfig
+	(*structpb.Struct)(nil), // 2: google.protobuf.Struct
 }
 var file_config_middleware_jwt_v1_jwt_proto_depIdxs = []int32{
-	2, // 0: runtime.api.config.middleware.jwt.v1.JWT.token_header:type_name -> runtime.api.config.middleware.jwt.v1.JWT.TokenHeaderEntry
+	2, // 0: runtime.api.config.middleware.jwt.v1.JWT.token_header:type_name -> google.protobuf.Struct
 	1, // 1: runtime.api.config.middleware.jwt.v1.JWT.config:type_name -> runtime.api.config.middleware.jwt.v1.JwtAuthConfig
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
@@ -265,7 +254,7 @@ func file_config_middleware_jwt_v1_jwt_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_middleware_jwt_v1_jwt_proto_rawDesc), len(file_config_middleware_jwt_v1_jwt_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

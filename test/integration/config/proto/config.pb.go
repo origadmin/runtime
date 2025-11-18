@@ -13,7 +13,6 @@ import (
 	v12 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	v13 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	_ "github.com/origadmin/runtime/api/gen/go/config/security/transport/v1"
 	v18 "github.com/origadmin/runtime/api/gen/go/config/task/v1"
 	v14 "github.com/origadmin/runtime/api/gen/go/config/trace/v1"
 	v11 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
@@ -205,7 +204,7 @@ var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
 
 const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\x1bruntime.test.config.configs\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a&config/security/transport/v1/tls.proto\x1a\x19config/task/v1/task.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x9d\b\n" +
+	"*test/integration/config/proto/config.proto\x12\x1bruntime.test.config.configs\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a\x19config/task/v1/task.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x9d\b\n" +
 	"\n" +
 	"TestConfig\x120\n" +
 	"\x03app\x18\x01 \x01(\v2\x1e.runtime.api.config.app.v1.AppR\x03app\x12B\n" +
