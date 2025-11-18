@@ -6,6 +6,10 @@
 package middleware
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
 	"time"
 
 	authjwt "github.com/go-kratos/kratos/v2/middleware/auth/jwt"
@@ -52,6 +56,12 @@ func JwtServer(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	if config == nil {
 		return nil, false
 	}
+
+	var options []authjwt.Option
+	if cfg.GetTokenHeader() != nil {
+		// TokenHeader sets additional header fields for the JWT token itself (e.g., kid, typ)
+		options = append(options, authjwt.WithTokenHeader(cfg.GetTokenHeader().AsMap()))
+	}
 	// Use the provided SigningMethod from options if available, otherwise get from config
 	var signMethod jwt.SigningMethod
 	if opts != nil && opts.SigningMethod != nil {
@@ -59,17 +69,31 @@ func JwtServer(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	} else {
 		signMethod = getSigningMethod(config.SigningMethod)
 	}
-	kf := getKeyFunc(config.SigningKey, signMethod.Alg())
-
-	// Prioritize user-provided ClaimsFactory.
-	// If not provided, use the default factory which is driven by config.
-	claimsFactory := opts.ClaimsFactory
-	if claimsFactory == nil {
-		// Create a default claims factory using the provided configuration.
-		claimsFactory = NewClaimsFactory(cfg, opts)
+	options = append(options, authjwt.WithSigningMethod(signMethod))
+	// Check for insecure signing method
+	if signMethod == jwt.SigningMethodNone {
+		log.Warn("Using insecure signing method 'none'. This should only be used for testing.")
 	}
 
-	return authjwt.Server(kf, authjwt.WithClaims(claimsFactory), authjwt.WithSigningMethod(signMethod)), true
+	kf := getKeyFunc(config.SigningKey, signMethod.Alg())
+
+	// For server middleware, we need to validate tokens, not generate them
+	// Use a claims factory that creates appropriate claims for parsing
+	var claimsFactory func() jwt.Claims
+	if opts != nil && opts.ClaimsFactory != nil {
+		claimsFactory = opts.ClaimsFactory
+	} else {
+		// For server validation, we need a factory that creates the correct claims type
+		// This ensures the token can be parsed into the expected claims structure
+		claimType := "registered" // default claim type
+		if cfg.GetClaimType() != "" {
+			claimType = cfg.GetClaimType()
+		}
+		claimsFactory = getClaimsFactory(claimType)
+	}
+	options = append(options, authjwt.WithClaims(claimsFactory))
+
+	return authjwt.Server(kf, options...), true
 }
 
 // JwtClient creates a Kratos client middleware for JWT token generation and injection.
@@ -80,6 +104,12 @@ func JwtClient(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	if config == nil {
 		return nil, false
 	}
+
+	var options []authjwt.Option
+	if cfg.GetTokenHeader() != nil {
+		// TokenHeader sets additional header fields for the JWT token itself (e.g., kid, typ)
+		options = append(options, authjwt.WithTokenHeader(cfg.GetTokenHeader().AsMap()))
+	}
 	// Use the provided SigningMethod from options if available, otherwise get from config
 	var signMethod jwt.SigningMethod
 	if opts != nil && opts.SigningMethod != nil {
@@ -87,17 +117,26 @@ func JwtClient(cfg *jwtv1.JWT, opts *Options) (KMiddleware, bool) {
 	} else {
 		signMethod = getSigningMethod(config.SigningMethod)
 	}
-	kf := getKeyFunc(config.SigningKey, signMethod.Alg())
-
-	// Prioritize user-provided ClaimsFactory.
-	// If not provided, use the default factory which is driven by config.
-	claimsFactory := opts.ClaimsFactory
-	if claimsFactory == nil {
-		// Create a default claims factory using the provided configuration.
-		claimsFactory = NewClaimsFactory(cfg, opts)
+	options = append(options, authjwt.WithSigningMethod(signMethod))
+	// Check for insecure signing method
+	if signMethod == jwt.SigningMethodNone {
+		log.Warn("Using insecure signing method 'none'. This should only be used for testing.")
 	}
 
-	return authjwt.Client(kf, authjwt.WithClaims(claimsFactory), authjwt.WithSigningMethod(signMethod)), true
+	kf := getKeyFunc(config.SigningKey, signMethod.Alg())
+
+	// For client middleware, we need to generate tokens, not validate them
+	// Use the claims factory to create claims for token generation
+	var claimsFactory func() jwt.Claims
+	if opts != nil && opts.ClaimsFactory != nil {
+		claimsFactory = opts.ClaimsFactory
+	} else {
+		// NewClaimsFactory internally reads cfg.GetClaimType() to ensure
+		// the generated claims match the expected type for consistency
+		claimsFactory = NewClaimsFactory(cfg, opts)
+	}
+	options = append(options, authjwt.WithClaims(claimsFactory))
+	return authjwt.Client(kf, options...), true
 }
 
 // claimsConfig holds the pre-computed configuration for JWT claims
@@ -119,6 +158,12 @@ func NewClaimsFactory(cfg *jwtv1.JWT, opts *Options) func() jwt.Claims {
 	if config == nil {
 		// Return a no-op factory if config is missing
 		return func() jwt.Claims { return &jwt.RegisteredClaims{} }
+	}
+
+	// Determine claim type from configuration
+	claimType := "registered" // default claim type
+	if cfg.GetClaimType() != "" {
+		claimType = cfg.GetClaimType()
 	}
 
 	// Initialize claims configuration
@@ -150,16 +195,40 @@ func NewClaimsFactory(cfg *jwtv1.JWT, opts *Options) func() jwt.Claims {
 		cc.getSubject = func() string { return uuid.New().String() }
 	}
 
-	// Return a closure that only updates dynamic values
-	return func() jwt.Claims {
-		now := time.Now()
-		return &jwt.RegisteredClaims{
-			Issuer:    cc.issuer,
-			Subject:   cc.getSubject(),
-			Audience:  cc.audience,
-			ExpiresAt: jwt.NewNumericDate(now.Add(cc.lifetime)),
-			NotBefore: jwt.NewNumericDate(now),
-			IssuedAt:  jwt.NewNumericDate(now),
+	// Pre-create the appropriate claims factory based on claim type
+	// This avoids repeated switch statements on each call
+	switch claimType {
+	case "map":
+		// Return a factory that creates MapClaims
+		return func() jwt.Claims {
+			now := time.Now()
+			claims := jwt.MapClaims{
+				"iss": cc.issuer,
+				"sub": cc.getSubject(),
+				"iat": now.Unix(),
+				"nbf": now.Unix(),
+				"exp": now.Add(cc.lifetime).Unix(),
+			}
+			
+			// Add audience if configured
+			if len(cc.audience) > 0 {
+				claims["aud"] = cc.audience
+			}
+			
+			return claims
+		}
+	default:
+		// Return a factory that creates RegisteredClaims
+		return func() jwt.Claims {
+			now := time.Now()
+			return &jwt.RegisteredClaims{
+				Issuer:    cc.issuer,
+				Subject:   cc.getSubject(),
+				Audience:  cc.audience,
+				ExpiresAt: jwt.NewNumericDate(now.Add(cc.lifetime)),
+				NotBefore: jwt.NewNumericDate(now),
+				IssuedAt:  jwt.NewNumericDate(now),
+			}
 		}
 	}
 }
@@ -199,8 +268,76 @@ func getKeyFunc(key string, method string) jwt.Keyfunc {
 		if token.Method.Alg() != method {
 			return nil, authjwt.ErrUnSupportSigningMethod
 		}
-		return []byte(key), nil
+
+		// Handle different signing methods appropriately
+		switch method {
+		case "HS256", "HS384", "HS512":
+			// HMAC methods use the same key for signing and verification
+			return []byte(key), nil
+		case "RS256", "RS384", "RS512":
+			// RSA methods require proper key parsing
+			pubKey, err := parseRSAPublicKey(key)
+			if err != nil {
+				log.Errorf("Failed to parse RSA public key: %v", err)
+				return nil, fmt.Errorf("failed to parse RSA public key: %w", err)
+			}
+			return pubKey, nil
+		case "ES256", "ES384", "ES512":
+			// ECDSA methods require proper key parsing
+			pubKey, err := parseECDSAPublicKey(key)
+			if err != nil {
+				log.Errorf("Failed to parse ECDSA public key: %v", err)
+				return nil, fmt.Errorf("failed to parse ECDSA public key: %w", err)
+			}
+			return pubKey, nil
+		case "none":
+			// No signature verification
+			return nil, nil
+		default:
+			return nil, authjwt.ErrUnSupportSigningMethod
+		}
 	}
+}
+
+// parseRSAPublicKey parses a PEM-encoded RSA public key.
+func parseRSAPublicKey(keyData string) (interface{}, error) {
+	block, _ := pem.Decode([]byte(keyData))
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block containing RSA public key")
+	}
+
+	// Try PKIX format first
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		// Fallback to PKCS1 format
+		if key, errPkcs1 := x509.ParsePKCS1PublicKey(block.Bytes); errPkcs1 == nil {
+			return key, nil
+		}
+		return nil, fmt.Errorf("failed to parse RSA public key: %w", err)
+	}
+
+	rsaKey, ok := pub.(*rsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("key is not an RSA public key")
+	}
+	return rsaKey, nil
+}
+
+// parseECDSAPublicKey parses a PEM-encoded ECDSA public key.
+func parseECDSAPublicKey(keyData string) (interface{}, error) {
+	block, _ := pem.Decode([]byte(keyData))
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block containing ECDSA public key")
+	}
+
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse ECDSA public key: %w", err)
+	}
+
+	// Verify it's a valid public key (ECDSA or other types)
+	// The actual type checking will be done by the JWT library during verification
+	return pub, nil
 }
 
 // getClaimsFactory returns a function that creates an empty jwt.Claims object
