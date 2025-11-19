@@ -34,9 +34,17 @@ type Builder[T any, C any] interface {
 // using the provided configuration and options.
 type Func[T any, C any] func(config C, opts ...options.Option) (T, error)
 
+func (f Func[T, C]) New(config C, opts ...options.Option) (T, error) {
+	return f(config, opts...)
+}
+
 // ContextFunc is a function that creates an instance of T with context support
 // using the provided context, configuration and options.
 type ContextFunc[T any, C any] func(ctx context.Context, config C, opts ...options.Option) (T, error)
+
+func (f ContextFunc[T, C]) New(ctx context.Context, config C, opts ...options.Option) (T, error) {
+	return f(ctx, config, opts...)
+}
 
 // FuncRegistry is a specialized registry for factory functions
 // that create instances of type T using configuration of type C.

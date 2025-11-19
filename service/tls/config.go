@@ -13,8 +13,8 @@ import (
 	"os"
 
 	"github.com/goexts/generic/configure"
-	tlsv1 "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1"
 
+	tlsv1 "github.com/origadmin/runtime/api/gen/go/config/transport/tls/v1"
 	"github.com/origadmin/toolkits/errors"
 )
 
@@ -84,11 +84,11 @@ func NewServerTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 			return nil, err
 		}
 	} else if cfg.GetPem() != nil {
-		pem := cfg.GetPem()
+		pemConfig := cfg.GetPem()
 		if tlsCfg, err = NewServerTLSConfigFromPem(
-			pem.GetKey(),
-			pem.GetCert(),
-			pem.GetCa(),
+			pemConfig.GetKey(),
+			pemConfig.GetCert(),
+			pemConfig.GetCa(),
 			options...,
 		); err != nil {
 			return nil, err
@@ -206,11 +206,11 @@ func NewClientTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 			return nil, err
 		}
 	} else if cfg.GetPem() != nil {
-		pem := cfg.GetPem()
+		pemConfig := cfg.GetPem()
 		if tlsCfg, err = NewClientTLSConfigFromPem(
-			pem.GetKey(),
-			pem.GetCert(),
-			pem.GetCa(),
+			pemConfig.GetKey(),
+			pemConfig.GetCert(),
+			pemConfig.GetCa(),
 			options...,
 		); err != nil {
 			return nil, err
