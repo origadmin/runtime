@@ -31,7 +31,7 @@ func main() {
 		fmt.Printf("Warning: .env file not found or could not be loaded: %v\n", err)
 	}
 
-	// 2. Create and start Runtime instance
+	// 2. Create and start App instance
 	// NewFromBootstrap encapsulates all bootstrap processes
 	rt, err := runtime.NewFromBootstrap(
 		"./configs/bootstrap.yaml",
@@ -42,12 +42,12 @@ func main() {
 		}),
 	)
 	if err != nil {
-		fmt.Println("Failed to create Runtime:", err)
+		fmt.Println("Failed to create App:", err)
 		os.Exit(1)
 	}
 	defer rt.Cleanup()
 
-	// 3. Get components from Runtime and use them
+	// 3. Get components from App and use them
 	logger := log.NewHelper(rt.Logger())
 	appInfo := rt.AppInfo()
 

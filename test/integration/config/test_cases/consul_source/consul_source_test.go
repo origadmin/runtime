@@ -57,7 +57,7 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 	err = json.Unmarshal(data, &mockData)
 	assert.NoError(err, "Failed to unmarshal mock config JSON: %v", err)
 
-	// Initialize Runtime. The framework should automatically use the registered MockConsulSource
+	// Initialize App. The framework should automatically use the registered MockConsulSource
 	// based on the 'type: consul' in bootstrap_consul.yaml.
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
@@ -71,7 +71,7 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 	defer rtInstance.Cleanup()
 
 	configDecoder := rtInstance.Config()
-	assert.NotNil(configDecoder, "Runtime ConfigDecoder should not be nil")
+	assert.NotNil(configDecoder, "App ConfigDecoder should not be nil")
 
 	var cfg testconfigs.TestConfig
 	err = configDecoder.Decode("app", &cfg.App)

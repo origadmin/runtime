@@ -32,7 +32,7 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	// The path should be relative to the test's working directory.
 	bootstrapPath := "bootstrap_transformer.yaml"
 
-	// Initialize Runtime, which should apply the registered custom transformer.
+	// Initialize App, which should apply the registered custom transformer.
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
 		bootstrap.WithAppInfo(&interfaces.AppInfo{

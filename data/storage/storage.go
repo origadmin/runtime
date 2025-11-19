@@ -33,7 +33,7 @@ const (
 type providerImpl struct {
 	caches     map[string]storageiface.Cache
 	databases  map[string]storageiface.Database
-	filestores map[string]storageiface.FileStore
+	filestores map[string]storageiface.ObjectStore
 
 	defaultCache     string
 	defaultDatabase  string

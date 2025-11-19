@@ -26,7 +26,7 @@ type TestCustomSettings struct {
 	} `json:"endpoints"`
 }
 
-// RuntimeIntegrationTestSuite tests configuration integration with Runtime
+// RuntimeIntegrationTestSuite tests configuration integration with App
 type RuntimeIntegrationTestSuite struct {
 	suite.Suite
 }
@@ -35,7 +35,7 @@ func TestRuntimeIntegrationTestSuite(t *testing.T) {
 	suite.Run(t, new(RuntimeIntegrationTestSuite))
 }
 
-// TestRuntimeLoadCompleteConfig tests loading complete configuration using Runtime
+// TestRuntimeLoadCompleteConfig tests loading complete configuration using App
 func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 	t := s.T()
 
@@ -77,7 +77,7 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 
 	// Use the shared, robust assertion logic
 	parentconfig.AssertTestConfig(t, expectedConfig, &actualConfig)
-	t.Logf("Runtime loaded and verified complete config successfully!")
+	t.Logf("App loaded and verified complete config successfully!")
 }
 
 // TestConfigProtoIntegration tests integration between configuration and Protocol Buffers

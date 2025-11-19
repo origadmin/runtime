@@ -155,7 +155,7 @@ func main() {
 		return protoCfg, nil
 	})
 
-	// 1. Create a new Runtime instance from the new bootstrap config.
+	// 1. Create a new App instance from the new bootstrap config.
 	//    Path is now relative to the CWD (runtime directory), pointing to the bootstrap.yaml.
 	rtInstance, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml

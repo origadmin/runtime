@@ -143,7 +143,7 @@ func main() {
 		Metadata:  make(map[string]string),
 	}
 
-	// 1. Create a new Runtime instance from the bootstrap config
+	// 1. Create a new App instance from the bootstrap config
 	rtInstance, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_custom_parser/config/bootstrap.yaml",
 		bootstrap.WithAppInfo(&appInfo), // Pass the AppInfo struct
