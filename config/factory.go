@@ -14,55 +14,17 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-const (
-	SourceTypeFile SourceType = "file"
-	SourceTypeEnv  SourceType = "env"
-	//SourceTypeConsul = "consul"
-	//SourceTypeNacos  = "nacos"
-	//SourceTypeEtcd   = "etcd"
-)
-
-type SourceType string
-
-var (
-	// defaultBuilder is the default config factory.
-	defaultBuilder = NewBuilder()
-)
-
-// sourceFactory is a config factory that implements interfaces.ConfigBuilder.
+// sourceFactory is the internal builder implementation for configurations.
+// It holds a registry of source factories and is responsible for creating
+// a final configuration object from multiple sources.
 type sourceFactory struct {
-	factory.Registry[SourceFactory]
+	registry factory.Registry[SourceFactory]
 }
 
-// BuildFunc is a function type that takes a KConfig and a list of Options and returns a Selector and an error.
-type BuildFunc func(*sourcev1.SourceConfig, ...options.Option) (kratosconfig.Source, error)
-
-// NewSource is a method that implements the ConfigBuilder interface for ConfigBuildFunc.
-func (fn BuildFunc) NewSource(cfg *sourcev1.SourceConfig, opts ...options.Option) (kratosconfig.Source, error) {
-	// Call the function with the given KConfig and a list of Options.
-	return fn(cfg, opts...)
-}
-
-// getDefaultPriorityForSourceType returns a default priority based on the source type.
-// Higher values mean higher priority (overrides lower priority configs).
-func getDefaultPriorityForSourceType(sourceType string) int32 {
-	switch SourceType(sourceType) {
-	case SourceTypeEnv:
-		return 900 // Environment variables (highest common override)
-	case SourceTypeFile:
-		return 600 // Main application config file
-	// Add other remote types as needed, e.g., "consul", "nacos", "etcd"
-	// case SourceTypeConsul:
-	// 	return 800 // Remote config service
-	default:
-		return 100 // Lowest default priority for unknown or base types
-	}
-}
-
-// NewConfig creates a new configuration object that conforms to the interfaces.Config interface.
+// New creates a new configuration object that conforms to the interfaces.Config interface.
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
-func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+func (sf *sourceFactory) New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
@@ -70,25 +32,24 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 	// Get the list of sources from the protobuf config.
 	sourceConfigs := srcs.GetConfigs()
 
-	// --- START: Assign Default Priorities if not set ---
+	// Assign default priorities if not set.
 	for _, src := range sourceConfigs {
 		if src.GetPriority() == 0 {
 			src.Priority = getDefaultPriorityForSourceType(src.GetType())
 		}
 	}
-	// --- END: Assign Default Priorities if not set ---
 
 	// Sort the sources by priority before creating them.
+	// Sources with lower priority values are loaded first.
+	// Sources with higher priority values are loaded later, thus overriding earlier ones.
 	sort.SliceStable(sourceConfigs, func(i, j int) bool {
-		// Sources with lower priority values are loaded first.
-		// Sources with higher priority values are loaded later, thus overriding earlier ones.
 		return sourceConfigs[i].GetPriority() < sourceConfigs[j].GetPriority()
 	})
 
 	for _, src := range sourceConfigs {
-		f, ok := f.Get(src.Type)
+		f, ok := sf.registry.Get(src.Type)
 		if !ok {
-			return nil, fmt.Errorf("unknown type: %s", src.Type)
+			return nil, fmt.Errorf("unknown config source type: %s", src.Type)
 		}
 		source, err := f.NewSource(src, opts...)
 		if err != nil {
@@ -114,15 +75,45 @@ func (f *sourceFactory) NewConfig(srcs *sourcev1.Sources, opts ...options.Option
 	return &adapter{kc: kc}, nil
 }
 
-func (f *sourceFactory) SyncConfig(cfg *sourcev1.SourceConfig, v any, opts ...options.Option) error {
-	// This method is a placeholder. Actual synchronization logic would go here.
-	// For now, we'll just return nil or an error if needed.
-	return nil
+// defaultSourceBuilder is the package-level internal singleton builder instance.
+var defaultSourceBuilder = &sourceFactory{
+	registry: internalfactory.New[SourceFactory](),
 }
 
-// NewBuilder creates a new config factory.
-func NewBuilder() Builder {
-	return &sourceFactory{
-		Registry: internalfactory.New[SourceFactory](),
+// NewConfig is a publicly exposed package-level function for creating config instances.
+// It delegates the call to the internal defaultSourceBuilder.
+func NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+	return defaultSourceBuilder.New(srcs, opts...)
+}
+
+// RegisterSourceFactory is a publicly exposed package-level function for registering a SourceFactory.
+// It delegates the call to the internal defaultSourceBuilder.
+func RegisterSourceFactory(name string, factory SourceFactory) {
+	defaultSourceBuilder.registry.Register(name, factory)
+}
+
+// GetSourceFactory is a publicly exposed package-level function for retrieving a SourceFactory.
+// It delegates the call to the internal defaultSourceBuilder.
+func GetSourceFactory(name string) (SourceFactory, bool) {
+	return defaultSourceBuilder.registry.Get(name)
+}
+
+// getDefaultPriorityForSourceType returns a default priority based on the source type.
+// Higher values mean higher priority (overrides lower priority configs).
+func getDefaultPriorityForSourceType(sourceType string) int32 {
+	switch SourceType(sourceType) {
+	case SourceTypeEnv:
+		return 900 // Environment variables (highest common override)
+	case SourceTypeFile:
+		return 600 // Main application config file
+	default:
+		return 100 // Lowest default priority for unknown or base types
 	}
 }
+
+type SourceType string
+
+const (
+	SourceTypeFile SourceType = "file"
+	SourceTypeEnv  SourceType = "env"
+)
