@@ -44,7 +44,7 @@ func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *transpo
 
 // Helper to reset the registry for isolated tests
 func resetProtocolRegistry() {
-	defaultRegistry.Reset()
+	defaultFactory.Reset()
 }
 
 func TestRegisterAndGetProtocol(t *testing.T) {
@@ -53,7 +53,7 @@ func TestRegisterAndGetProtocol(t *testing.T) {
 	aFactory := &MockProtocolFactory{}
 	RegisterProtocol("mock_protocol", aFactory)
 
-	factory, ok := GetProtocolFactory("mock_protocol")
+	factory, ok := defaultFactory.Get("mock_protocol")
 	if !ok {
 		t.Errorf("Expected protocol 'mock_protocol' to be registered, but it was not found.")
 	}
@@ -63,7 +63,7 @@ func TestRegisterAndGetProtocol(t *testing.T) {
 	}
 
 	// Test for a non-existent protocol
-	_, ok = GetProtocolFactory("non_existent_protocol")
+	_, ok = defaultFactory.Get("non_existent_protocol")
 	if ok {
 		t.Errorf("Expected protocol 'non_existent_protocol' not to be found, but it was.")
 	}

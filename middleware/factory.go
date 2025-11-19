@@ -12,31 +12,31 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-// defaultBuilder is the default instance of the middlewareBuilder .
+// defaultBuilder is the default instance of the Builder.
 var defaultBuilder = NewBuilder()
 
 func init() {
 	// The factories will be registered here once they are updated to the new interface.
 	// optimizeFactory is removed from here as it's not a formal feature and should be registered by the user.
 	// All other factories will be uncommented as they are updated.
-	Register(Recovery, &recoveryFactory{})
-	Register(Jwt, &jwtFactory{})
-	Register(CircuitBreaker, &circuitBreakerFactory{})
-	Register(Logging, &loggingFactory{})
-	Register(RateLimiter, &rateLimitFactory{})
-	Register(Metadata, &metadataFactory{})
-	Register(Selector, &selectorFactory{})
-	Register(Tracing, &tracingFactory{})
-	Register(Validator, &validatorFactory{})
+	RegisterFactory(Recovery, &recoveryFactory{})
+	RegisterFactory(Jwt, &jwtFactory{})
+	RegisterFactory(CircuitBreaker, &circuitBreakerFactory{})
+	RegisterFactory(Logging, &loggingFactory{})
+	RegisterFactory(RateLimiter, &rateLimitFactory{})
+	RegisterFactory(Metadata, &metadataFactory{})
+	RegisterFactory(Selector, &selectorFactory{})
+	RegisterFactory(Tracing, &tracingFactory{})
+	RegisterFactory(Validator, &validatorFactory{})
 }
 
-// middlewareBuilder is a builder for creating middleware chains.
-type middlewareBuilder struct {
+// Builder is a builder for creating middleware chains.
+type Builder struct {
 	factory.Registry[Factory]
 }
 
 // BuildClientMiddlewares builds the client middleware chain
-func (b *middlewareBuilder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	var middlewares []KMiddleware
 	var selectorConfigs []*middlewarev1.Middleware
 	if cfg == nil {
@@ -128,7 +128,7 @@ func (b *middlewareBuilder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares
 }
 
 // BuildServerMiddlewares builds the server middleware chain (similar to BuildClient)
-func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	var middlewares []KMiddleware
 	var selectorConfigs []*middlewarev1.Middleware
 	if cfg == nil {
@@ -222,14 +222,50 @@ func (b *middlewareBuilder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares
 	return middlewares
 }
 
-// Register registers a middleware factory with the given name.
-func Register(name Name, factory Factory) {
+// NewClientMiddleware creates a single client-side middleware instance.
+// This is the public API for creating individual client-side middlewares.
+func NewClientMiddleware(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+	middlewareType := cfg.GetType()
+	f, ok := defaultBuilder.Get(middlewareType)
+	if !ok {
+		log.Warnf("unknown client middleware type: %s", middlewareType)
+		return nil, false
+	}
+	return f.NewMiddlewareClient(cfg, opts...)
+}
+
+// NewServerMiddleware creates a single server-side middleware instance.
+// This is the public API for creating individual server-side middlewares.
+func NewServerMiddleware(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+	middlewareType := cfg.GetType()
+	f, ok := defaultBuilder.Get(middlewareType)
+	if !ok {
+		log.Warnf("unknown server middleware type: %s", middlewareType)
+		return nil, false
+	}
+	return f.NewMiddlewareServer(cfg, opts...)
+}
+
+// NewClientMiddlewares creates a new client middleware chain using the default builder.
+// This is the public API for building client-side middlewares.
+func NewClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+	return defaultBuilder.BuildClientMiddlewares(cfg, opts...)
+}
+
+// NewServerMiddlewares creates a new server middleware chain using the default builder.
+// This is the public API for building server-side middlewares.
+func NewServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+	return defaultBuilder.BuildServerMiddlewares(cfg, opts...)
+}
+
+// RegisterFactory registers a middleware factory with the given name.
+func RegisterFactory(name Name, factory Factory) {
 	defaultBuilder.Register(string(name), factory)
 }
 
 // NewBuilder creates a new middleware builder.
-func NewBuilder() Builder {
-	return &middlewareBuilder{
+func NewBuilder() *Builder {
+	return &Builder{
 		Registry: internalfactory.New[Factory](),
 	}
 }

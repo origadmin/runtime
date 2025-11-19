@@ -31,10 +31,10 @@ func NewBuilder() *Builder {
 	}
 }
 
-// New creates a new configuration object that conforms to the interfaces.Config interface.
+// NewConfig creates a new configuration object that conforms to the interfaces.Config interface.
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
-func (b *Builder) New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
@@ -88,16 +88,10 @@ func (b *Builder) New(srcs *sourcev1.Sources, opts ...options.Option) (interface
 // defaultBuilder is the package-level global singleton builder instance.
 var defaultBuilder = NewBuilder()
 
-// GetBuilder returns the default global singleton Builder instance.
-// This allows advanced users to access the default builder directly if needed.
-func GetBuilder() *Builder {
-	return defaultBuilder
-}
-
-// NewConfig is a publicly exposed package-level function for creating config instances.
+// New is a publicly exposed package-level function for creating config instances.
 // It delegates the call to the default global builder, providing a simple API for common use cases.
-func NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
-	return defaultBuilder.New(srcs, opts...)
+func New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+	return defaultBuilder.NewConfig(srcs, opts...)
 }
 
 // RegisterSourceFactory is a publicly exposed package-level function for registering a SourceFactory.

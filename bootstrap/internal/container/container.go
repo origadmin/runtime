@@ -304,13 +304,13 @@ func (b *Builder) initMiddlewares(opts ...options.Option) error {
 			if mc.GetName() != "" {
 				key = mc.GetName()
 			}
-			// Assuming NewClient and NewServer support WithLogger option
-			mclient, ok := runtimeMiddleware.NewClient(mc, opts...) // Use runtimeMiddleware
+			// Assuming NewClientMiddleware and NewServerMiddleware support WithLogger option
+			mclient, ok := runtimeMiddleware.NewClientMiddleware(mc, opts...) // Use runtimeMiddleware
 			if !ok {
 				helper.Warnw("msg", "failed to create client middleware", "key", key)
 				continue
 			}
-			mserver, ok := runtimeMiddleware.NewServer(mc, opts...) // Use runtimeMiddleware
+			mserver, ok := runtimeMiddleware.NewServerMiddleware(mc, opts...) // Use runtimeMiddleware
 			if !ok {
 				helper.Warnw("msg", "failed to create server middleware", "key", key)
 				continue
