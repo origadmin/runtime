@@ -14,17 +14,27 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-// sourceFactory is the internal builder implementation for configurations.
-// It holds a registry of source factories and is responsible for creating
+// SourceFunc is a function type that adapts a function to the SourceFactory interface.
+// This allows registering a simple function as a factory, avoiding the need for a struct.
+type SourceFunc func(*sourcev1.SourceConfig, ...options.Option) (kratosconfig.Source, error)
+
+// NewSource makes SourceFunc implement the SourceFactory interface.
+// The function itself becomes the factory method.
+func (c SourceFunc) NewSource(config *sourcev1.SourceConfig, options ...options.Option) (kratosconfig.Source, error) {
+	return c(config, options...)
+}
+
+// sourceBuilder is the internal builder implementation for configurations.
+// It embeds a registry of source factories and is responsible for creating
 // a final configuration object from multiple sources.
-type sourceFactory struct {
-	registry factory.Registry[SourceFactory]
+type sourceBuilder struct {
+	factory.Registry[SourceFactory]
 }
 
 // New creates a new configuration object that conforms to the interfaces.Config interface.
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
-func (sf *sourceFactory) New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+func (sb *sourceBuilder) New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
@@ -47,7 +57,7 @@ func (sf *sourceFactory) New(srcs *sourcev1.Sources, opts ...options.Option) (in
 	})
 
 	for _, src := range sourceConfigs {
-		f, ok := sf.registry.Get(src.Type)
+		f, ok := sb.Get(src.Type)
 		if !ok {
 			return nil, fmt.Errorf("unknown config source type: %s", src.Type)
 		}
@@ -76,8 +86,8 @@ func (sf *sourceFactory) New(srcs *sourcev1.Sources, opts ...options.Option) (in
 }
 
 // defaultSourceBuilder is the package-level internal singleton builder instance.
-var defaultSourceBuilder = &sourceFactory{
-	registry: internalfactory.New[SourceFactory](),
+var defaultSourceBuilder = &sourceBuilder{
+	Registry: internalfactory.New[SourceFactory](),
 }
 
 // NewConfig is a publicly exposed package-level function for creating config instances.
@@ -89,13 +99,13 @@ func NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Confi
 // RegisterSourceFactory is a publicly exposed package-level function for registering a SourceFactory.
 // It delegates the call to the internal defaultSourceBuilder.
 func RegisterSourceFactory(name string, factory SourceFactory) {
-	defaultSourceBuilder.registry.Register(name, factory)
+	defaultSourceBuilder.Register(name, factory)
 }
 
 // GetSourceFactory is a publicly exposed package-level function for retrieving a SourceFactory.
 // It delegates the call to the internal defaultSourceBuilder.
 func GetSourceFactory(name string) (SourceFactory, bool) {
-	return defaultSourceBuilder.registry.Get(name)
+	return defaultSourceBuilder.Get(name)
 }
 
 // getDefaultPriorityForSourceType returns a default priority based on the source type.

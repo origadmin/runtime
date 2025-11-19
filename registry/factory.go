@@ -48,7 +48,7 @@ func (b *registryBuilder) NewRegistrar(cfg *discoveryv1.Discovery, opts ...optio
 
 	f, ok := b.Get(cfg.Type)
 	if !ok {
-		return nil, runtimeerrors.NewStructured(Module, "no registry factory found for type: %s", cfg.Type).WithMetadata(map[string]string{"type": cfg.Type}).WithCaller()
+		return nil, runtimeerrors.NewStructured(Module, "no registry factory found for type: %s", cfg.Type).WithCaller()
 	}
 	registrar, err := f.NewRegistrar(cfg, opts...)
 	if err != nil {
