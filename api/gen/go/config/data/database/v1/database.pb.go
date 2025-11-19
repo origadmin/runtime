@@ -7,7 +7,6 @@
 package databasev1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -177,7 +176,7 @@ var File_config_data_database_v1_database_proto protoreflect.FileDescriptor
 
 const file_config_data_database_v1_database_proto_rawDesc = "" +
 	"\n" +
-	"&config/data/database/v1/database.proto\x12#runtime.api.config.data.database.v1\x1a'config/data/database/v1/migration.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xd9\t\n" +
+	"&config/data/database/v1/database.proto\x12#runtime.api.config.data.database.v1\x1a'config/data/database/v1/migration.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd9\t\n" +
 	"\x0eDatabaseConfig\x12O\n" +
 	"\x04name\x18\x01 \x01(\tB;\xbaG8\x92\x025Unique name for this database configuration instance.R\x04name\x129\n" +
 	"\x05debug\x18\x02 \x01(\bB#\xbaG \x92\x02\x1dwhether to enable debug mode R\x05debug\x12\x91\x01\n" +

@@ -7,7 +7,6 @@
 package databasev1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -104,7 +103,7 @@ var File_config_data_database_v1_document_proto protoreflect.FileDescriptor
 
 const file_config_data_database_v1_document_proto_rawDesc = "" +
 	"\n" +
-	"&config/data/database/v1/document.proto\x12#runtime.api.config.data.database.v1\x1a#config/data/database/v1/mongo.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xf8\x03\n" +
+	"&config/data/database/v1/document.proto\x12#runtime.api.config.data.database.v1\x1a#config/data/database/v1/mongo.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xf8\x03\n" +
 	"\x0eDocumentConfig\x12X\n" +
 	"\x04name\x18\x01 \x01(\tBD\xbaGA\x92\x02>Unique name for this document database configuration instance.R\x04name\x12s\n" +
 	"\x04type\x18\x02 \x01(\tB_\xbaG\\\x92\x02YThe type of document database. Built-in: 'mongo'. Custom types use their registered name.R\x04type\x12r\n" +

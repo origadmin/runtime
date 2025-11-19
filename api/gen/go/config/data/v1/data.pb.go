@@ -7,11 +7,10 @@
 package datav1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
 	v11 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
-	v1 "github.com/origadmin/runtime/api/gen/go/config/data/file/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -117,7 +116,7 @@ type Filestores struct {
 	// Active filestore name, overrides default.
 	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	// List of named FileStore configurations.
-	Configs       []*v1.FilestoreConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
+	Configs       []*v1.ObjectStoreConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -166,7 +165,7 @@ func (x *Filestores) GetActive() string {
 	return ""
 }
 
-func (x *Filestores) GetConfigs() []*v1.FilestoreConfig {
+func (x *Filestores) GetConfigs() []*v1.ObjectStoreConfig {
 	if x != nil {
 		return x.Configs
 	}
@@ -369,7 +368,7 @@ var File_config_data_v1_data_proto protoreflect.FileDescriptor
 
 const file_config_data_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a#config/data/file/v1/filestore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\x96\x05\n" +
+	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a$config/data/oss/v1/objectstore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x96\x05\n" +
 	"\x04Data\x12k\n" +
 	"\n" +
 	"filestores\x18\x01 \x01(\v2&.runtime.api.config.data.v1.FilestoresB\x1e\xbaG\x1b\x92\x02\x18FileStore configurationsH\x00R\n" +
@@ -385,12 +384,12 @@ const file_config_data_v1_data_proto_rawDesc = "" +
 	"\n" +
 	"_documentsB\f\n" +
 	"\n" +
-	"_customize\"\xa7\x02\n" +
+	"_customize\"\xa8\x02\n" +
 	"\n" +
 	"Filestores\x12;\n" +
 	"\adefault\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default filestore nameH\x00R\adefault\x88\x01\x01\x12K\n" +
-	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x01R\x06active\x88\x01\x01\x12x\n" +
-	"\aconfigs\x18\x03 \x03(\v20.runtime.api.config.data.file.v1.FilestoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\n" +
+	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x01R\x06active\x88\x01\x01\x12y\n" +
+	"\aconfigs\x18\x03 \x03(\v21.runtime.api.config.data.oss.v1.ObjectStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\n" +
 	"\n" +
 	"\b_defaultB\t\n" +
 	"\a_active\"\x94\x02\n" +
@@ -431,16 +430,16 @@ func file_config_data_v1_data_proto_rawDescGZIP() []byte {
 
 var file_config_data_v1_data_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_config_data_v1_data_proto_goTypes = []any{
-	(*Data)(nil),               // 0: runtime.api.config.data.v1.Data
-	(*Filestores)(nil),         // 1: runtime.api.config.data.v1.Filestores
-	(*Caches)(nil),             // 2: runtime.api.config.data.v1.Caches
-	(*Databases)(nil),          // 3: runtime.api.config.data.v1.Databases
-	(*Documents)(nil),          // 4: runtime.api.config.data.v1.Documents
-	(*structpb.Struct)(nil),    // 5: google.protobuf.Struct
-	(*v1.FilestoreConfig)(nil), // 6: runtime.api.config.data.file.v1.FilestoreConfig
-	(*v11.CacheConfig)(nil),    // 7: runtime.api.config.data.cache.v1.CacheConfig
-	(*v12.DatabaseConfig)(nil), // 8: runtime.api.config.data.database.v1.DatabaseConfig
-	(*v12.DocumentConfig)(nil), // 9: runtime.api.config.data.database.v1.DocumentConfig
+	(*Data)(nil),                 // 0: runtime.api.config.data.v1.Data
+	(*Filestores)(nil),           // 1: runtime.api.config.data.v1.Filestores
+	(*Caches)(nil),               // 2: runtime.api.config.data.v1.Caches
+	(*Databases)(nil),            // 3: runtime.api.config.data.v1.Databases
+	(*Documents)(nil),            // 4: runtime.api.config.data.v1.Documents
+	(*structpb.Struct)(nil),      // 5: google.protobuf.Struct
+	(*v1.ObjectStoreConfig)(nil), // 6: runtime.api.config.data.oss.v1.ObjectStoreConfig
+	(*v11.CacheConfig)(nil),      // 7: runtime.api.config.data.cache.v1.CacheConfig
+	(*v12.DatabaseConfig)(nil),   // 8: runtime.api.config.data.database.v1.DatabaseConfig
+	(*v12.DocumentConfig)(nil),   // 9: runtime.api.config.data.database.v1.DocumentConfig
 }
 var file_config_data_v1_data_proto_depIdxs = []int32{
 	1, // 0: runtime.api.config.data.v1.Data.filestores:type_name -> runtime.api.config.data.v1.Filestores
@@ -448,7 +447,7 @@ var file_config_data_v1_data_proto_depIdxs = []int32{
 	3, // 2: runtime.api.config.data.v1.Data.databases:type_name -> runtime.api.config.data.v1.Databases
 	4, // 3: runtime.api.config.data.v1.Data.documents:type_name -> runtime.api.config.data.v1.Documents
 	5, // 4: runtime.api.config.data.v1.Data.customize:type_name -> google.protobuf.Struct
-	6, // 5: runtime.api.config.data.v1.Filestores.configs:type_name -> runtime.api.config.data.file.v1.FilestoreConfig
+	6, // 5: runtime.api.config.data.v1.Filestores.configs:type_name -> runtime.api.config.data.oss.v1.ObjectStoreConfig
 	7, // 6: runtime.api.config.data.v1.Caches.configs:type_name -> runtime.api.config.data.cache.v1.CacheConfig
 	8, // 7: runtime.api.config.data.v1.Databases.configs:type_name -> runtime.api.config.data.database.v1.DatabaseConfig
 	9, // 8: runtime.api.config.data.v1.Documents.configs:type_name -> runtime.api.config.data.database.v1.DocumentConfig

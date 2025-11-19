@@ -29,32 +29,32 @@ type ErrorCategory int32
 
 const (
 	// General errors not specific to any category.
-	ErrorCategory_GENERAL ErrorCategory = 0
+	ErrorCategory_ERROR_CATEGORY_GENERAL_UNSPECIFIED ErrorCategory = 0
 	// Authentication and authorization related errors.
-	ErrorCategory_AUTHENTICATION ErrorCategory = 1
+	ErrorCategory_ERROR_CATEGORY_AUTHENTICATION ErrorCategory = 1
 	// Database related errors.
-	ErrorCategory_DATABASE ErrorCategory = 2
+	ErrorCategory_ERROR_CATEGORY_DATABASE ErrorCategory = 2
 	// Business logic related errors.
-	ErrorCategory_BUSINESS ErrorCategory = 3
+	ErrorCategory_ERROR_CATEGORY_BUSINESS ErrorCategory = 3
 	// External service related errors.
-	ErrorCategory_EXTERNAL_SERVICE ErrorCategory = 4
+	ErrorCategory_ERROR_CATEGORY_EXTERNAL_SERVICE ErrorCategory = 4
 )
 
 // Enum value maps for ErrorCategory.
 var (
 	ErrorCategory_name = map[int32]string{
-		0: "GENERAL",
-		1: "AUTHENTICATION",
-		2: "DATABASE",
-		3: "BUSINESS",
-		4: "EXTERNAL_SERVICE",
+		0: "ERROR_CATEGORY_GENERAL_UNSPECIFIED",
+		1: "ERROR_CATEGORY_AUTHENTICATION",
+		2: "ERROR_CATEGORY_DATABASE",
+		3: "ERROR_CATEGORY_BUSINESS",
+		4: "ERROR_CATEGORY_EXTERNAL_SERVICE",
 	}
 	ErrorCategory_value = map[string]int32{
-		"GENERAL":          0,
-		"AUTHENTICATION":   1,
-		"DATABASE":         2,
-		"BUSINESS":         3,
-		"EXTERNAL_SERVICE": 4,
+		"ERROR_CATEGORY_GENERAL_UNSPECIFIED": 0,
+		"ERROR_CATEGORY_AUTHENTICATION":      1,
+		"ERROR_CATEGORY_DATABASE":            2,
+		"ERROR_CATEGORY_BUSINESS":            3,
+		"ERROR_CATEGORY_EXTERNAL_SERVICE":    4,
 	}
 )
 
@@ -100,102 +100,102 @@ type ErrorReason int32
 
 const (
 	// --- General Framework Errors (0-999) ---
-	ErrorReason_UNKNOWN_ERROR         ErrorReason = 0
-	ErrorReason_VALIDATION_ERROR      ErrorReason = 1
-	ErrorReason_NOT_FOUND             ErrorReason = 2
-	ErrorReason_INTERNAL_SERVER_ERROR ErrorReason = 3
-	ErrorReason_METHOD_NOT_ALLOWED    ErrorReason = 4
-	ErrorReason_REQUEST_TIMEOUT       ErrorReason = 5
-	ErrorReason_CONFLICT              ErrorReason = 6
-	ErrorReason_TOO_MANY_REQUESTS     ErrorReason = 7
-	ErrorReason_SERVICE_UNAVAILABLE   ErrorReason = 8
-	ErrorReason_GATEWAY_TIMEOUT       ErrorReason = 9
+	ErrorReason_ERROR_REASON_UNKNOWN_UNSPECIFIED   ErrorReason = 0
+	ErrorReason_ERROR_REASON_VALIDATION_ERROR      ErrorReason = 1
+	ErrorReason_ERROR_REASON_NOT_FOUND             ErrorReason = 2
+	ErrorReason_ERROR_REASON_INTERNAL_SERVER_ERROR ErrorReason = 3
+	ErrorReason_ERROR_REASON_METHOD_NOT_ALLOWED    ErrorReason = 4
+	ErrorReason_ERROR_REASON_REQUEST_TIMEOUT       ErrorReason = 5
+	ErrorReason_ERROR_REASON_CONFLICT              ErrorReason = 6
+	ErrorReason_ERROR_REASON_TOO_MANY_REQUESTS     ErrorReason = 7
+	ErrorReason_ERROR_REASON_SERVICE_UNAVAILABLE   ErrorReason = 8
+	ErrorReason_ERROR_REASON_GATEWAY_TIMEOUT       ErrorReason = 9
 	// --- Common Authentication & Authorization Errors (1000-1999) ---
-	ErrorReason_UNAUTHENTICATED ErrorReason = 1000
-	ErrorReason_FORBIDDEN       ErrorReason = 1001
+	ErrorReason_ERROR_REASON_UNAUTHENTICATED ErrorReason = 1000
+	ErrorReason_ERROR_REASON_FORBIDDEN       ErrorReason = 1001
 	// --- Common Database Errors (2000-2999) ---
-	ErrorReason_DATABASE_ERROR             ErrorReason = 2000
-	ErrorReason_RECORD_NOT_FOUND           ErrorReason = 2001
-	ErrorReason_CONSTRAINT_VIOLATION       ErrorReason = 2002
-	ErrorReason_DUPLICATE_KEY              ErrorReason = 2003
-	ErrorReason_DATABASE_CONNECTION_FAILED ErrorReason = 2004
+	ErrorReason_ERROR_REASON_DATABASE_ERROR             ErrorReason = 2000
+	ErrorReason_ERROR_REASON_RECORD_NOT_FOUND           ErrorReason = 2001
+	ErrorReason_ERROR_REASON_CONSTRAINT_VIOLATION       ErrorReason = 2002
+	ErrorReason_ERROR_REASON_DUPLICATE_KEY              ErrorReason = 2003
+	ErrorReason_ERROR_REASON_DATABASE_CONNECTION_FAILED ErrorReason = 2004
 	// --- Common Business Logic Errors (3000-3999) ---
-	ErrorReason_INVALID_STATE         ErrorReason = 3000
-	ErrorReason_RESOURCE_EXISTS       ErrorReason = 3001
-	ErrorReason_RESOURCE_IN_USE       ErrorReason = 3002
-	ErrorReason_CANCELLED             ErrorReason = 3003
-	ErrorReason_ABORTED               ErrorReason = 3004
-	ErrorReason_MISSING_PARAMETER     ErrorReason = 3005
-	ErrorReason_INVALID_PARAMETER     ErrorReason = 3006
-	ErrorReason_OPERATION_NOT_ALLOWED ErrorReason = 3007
+	ErrorReason_ERROR_REASON_INVALID_STATE         ErrorReason = 3000
+	ErrorReason_ERROR_REASON_RESOURCE_EXISTS       ErrorReason = 3001
+	ErrorReason_ERROR_REASON_RESOURCE_IN_USE       ErrorReason = 3002
+	ErrorReason_ERROR_REASON_CANCELLED             ErrorReason = 3003
+	ErrorReason_ERROR_REASON_ABORTED               ErrorReason = 3004
+	ErrorReason_ERROR_REASON_MISSING_PARAMETER     ErrorReason = 3005
+	ErrorReason_ERROR_REASON_INVALID_PARAMETER     ErrorReason = 3006
+	ErrorReason_ERROR_REASON_OPERATION_NOT_ALLOWED ErrorReason = 3007
 	// --- Common External Service Errors (4000-4999) ---
-	ErrorReason_EXTERNAL_SERVICE_UNAVAILABLE ErrorReason = 4000
-	ErrorReason_EXTERNAL_SERVICE_ERROR       ErrorReason = 4001
+	ErrorReason_ERROR_REASON_EXTERNAL_SERVICE_UNAVAILABLE ErrorReason = 4000
+	ErrorReason_ERROR_REASON_EXTERNAL_SERVICE_ERROR       ErrorReason = 4001
 	// --- Common Registry Errors (6000-6999) ---
-	ErrorReason_REGISTRY_NOT_FOUND ErrorReason = 6000
+	ErrorReason_ERROR_REASON_REGISTRY_NOT_FOUND ErrorReason = 6000
 )
 
 // Enum value maps for ErrorReason.
 var (
 	ErrorReason_name = map[int32]string{
-		0:    "UNKNOWN_ERROR",
-		1:    "VALIDATION_ERROR",
-		2:    "NOT_FOUND",
-		3:    "INTERNAL_SERVER_ERROR",
-		4:    "METHOD_NOT_ALLOWED",
-		5:    "REQUEST_TIMEOUT",
-		6:    "CONFLICT",
-		7:    "TOO_MANY_REQUESTS",
-		8:    "SERVICE_UNAVAILABLE",
-		9:    "GATEWAY_TIMEOUT",
-		1000: "UNAUTHENTICATED",
-		1001: "FORBIDDEN",
-		2000: "DATABASE_ERROR",
-		2001: "RECORD_NOT_FOUND",
-		2002: "CONSTRAINT_VIOLATION",
-		2003: "DUPLICATE_KEY",
-		2004: "DATABASE_CONNECTION_FAILED",
-		3000: "INVALID_STATE",
-		3001: "RESOURCE_EXISTS",
-		3002: "RESOURCE_IN_USE",
-		3003: "CANCELLED",
-		3004: "ABORTED",
-		3005: "MISSING_PARAMETER",
-		3006: "INVALID_PARAMETER",
-		3007: "OPERATION_NOT_ALLOWED",
-		4000: "EXTERNAL_SERVICE_UNAVAILABLE",
-		4001: "EXTERNAL_SERVICE_ERROR",
-		6000: "REGISTRY_NOT_FOUND",
+		0:    "ERROR_REASON_UNKNOWN_UNSPECIFIED",
+		1:    "ERROR_REASON_VALIDATION_ERROR",
+		2:    "ERROR_REASON_NOT_FOUND",
+		3:    "ERROR_REASON_INTERNAL_SERVER_ERROR",
+		4:    "ERROR_REASON_METHOD_NOT_ALLOWED",
+		5:    "ERROR_REASON_REQUEST_TIMEOUT",
+		6:    "ERROR_REASON_CONFLICT",
+		7:    "ERROR_REASON_TOO_MANY_REQUESTS",
+		8:    "ERROR_REASON_SERVICE_UNAVAILABLE",
+		9:    "ERROR_REASON_GATEWAY_TIMEOUT",
+		1000: "ERROR_REASON_UNAUTHENTICATED",
+		1001: "ERROR_REASON_FORBIDDEN",
+		2000: "ERROR_REASON_DATABASE_ERROR",
+		2001: "ERROR_REASON_RECORD_NOT_FOUND",
+		2002: "ERROR_REASON_CONSTRAINT_VIOLATION",
+		2003: "ERROR_REASON_DUPLICATE_KEY",
+		2004: "ERROR_REASON_DATABASE_CONNECTION_FAILED",
+		3000: "ERROR_REASON_INVALID_STATE",
+		3001: "ERROR_REASON_RESOURCE_EXISTS",
+		3002: "ERROR_REASON_RESOURCE_IN_USE",
+		3003: "ERROR_REASON_CANCELLED",
+		3004: "ERROR_REASON_ABORTED",
+		3005: "ERROR_REASON_MISSING_PARAMETER",
+		3006: "ERROR_REASON_INVALID_PARAMETER",
+		3007: "ERROR_REASON_OPERATION_NOT_ALLOWED",
+		4000: "ERROR_REASON_EXTERNAL_SERVICE_UNAVAILABLE",
+		4001: "ERROR_REASON_EXTERNAL_SERVICE_ERROR",
+		6000: "ERROR_REASON_REGISTRY_NOT_FOUND",
 	}
 	ErrorReason_value = map[string]int32{
-		"UNKNOWN_ERROR":                0,
-		"VALIDATION_ERROR":             1,
-		"NOT_FOUND":                    2,
-		"INTERNAL_SERVER_ERROR":        3,
-		"METHOD_NOT_ALLOWED":           4,
-		"REQUEST_TIMEOUT":              5,
-		"CONFLICT":                     6,
-		"TOO_MANY_REQUESTS":            7,
-		"SERVICE_UNAVAILABLE":          8,
-		"GATEWAY_TIMEOUT":              9,
-		"UNAUTHENTICATED":              1000,
-		"FORBIDDEN":                    1001,
-		"DATABASE_ERROR":               2000,
-		"RECORD_NOT_FOUND":             2001,
-		"CONSTRAINT_VIOLATION":         2002,
-		"DUPLICATE_KEY":                2003,
-		"DATABASE_CONNECTION_FAILED":   2004,
-		"INVALID_STATE":                3000,
-		"RESOURCE_EXISTS":              3001,
-		"RESOURCE_IN_USE":              3002,
-		"CANCELLED":                    3003,
-		"ABORTED":                      3004,
-		"MISSING_PARAMETER":            3005,
-		"INVALID_PARAMETER":            3006,
-		"OPERATION_NOT_ALLOWED":        3007,
-		"EXTERNAL_SERVICE_UNAVAILABLE": 4000,
-		"EXTERNAL_SERVICE_ERROR":       4001,
-		"REGISTRY_NOT_FOUND":           6000,
+		"ERROR_REASON_UNKNOWN_UNSPECIFIED":          0,
+		"ERROR_REASON_VALIDATION_ERROR":             1,
+		"ERROR_REASON_NOT_FOUND":                    2,
+		"ERROR_REASON_INTERNAL_SERVER_ERROR":        3,
+		"ERROR_REASON_METHOD_NOT_ALLOWED":           4,
+		"ERROR_REASON_REQUEST_TIMEOUT":              5,
+		"ERROR_REASON_CONFLICT":                     6,
+		"ERROR_REASON_TOO_MANY_REQUESTS":            7,
+		"ERROR_REASON_SERVICE_UNAVAILABLE":          8,
+		"ERROR_REASON_GATEWAY_TIMEOUT":              9,
+		"ERROR_REASON_UNAUTHENTICATED":              1000,
+		"ERROR_REASON_FORBIDDEN":                    1001,
+		"ERROR_REASON_DATABASE_ERROR":               2000,
+		"ERROR_REASON_RECORD_NOT_FOUND":             2001,
+		"ERROR_REASON_CONSTRAINT_VIOLATION":         2002,
+		"ERROR_REASON_DUPLICATE_KEY":                2003,
+		"ERROR_REASON_DATABASE_CONNECTION_FAILED":   2004,
+		"ERROR_REASON_INVALID_STATE":                3000,
+		"ERROR_REASON_RESOURCE_EXISTS":              3001,
+		"ERROR_REASON_RESOURCE_IN_USE":              3002,
+		"ERROR_REASON_CANCELLED":                    3003,
+		"ERROR_REASON_ABORTED":                      3004,
+		"ERROR_REASON_MISSING_PARAMETER":            3005,
+		"ERROR_REASON_INVALID_PARAMETER":            3006,
+		"ERROR_REASON_OPERATION_NOT_ALLOWED":        3007,
+		"ERROR_REASON_EXTERNAL_SERVICE_UNAVAILABLE": 4000,
+		"ERROR_REASON_EXTERNAL_SERVICE_ERROR":       4001,
+		"ERROR_REASON_REGISTRY_NOT_FOUND":           6000,
 	}
 )
 
@@ -272,7 +272,7 @@ func (x *ErrorMetadata) GetCategory() ErrorCategory {
 	if x != nil {
 		return x.Category
 	}
-	return ErrorCategory_GENERAL
+	return ErrorCategory_ERROR_CATEGORY_GENERAL_UNSPECIFIED
 }
 
 func (x *ErrorMetadata) GetMetadata() map[string]string {
@@ -292,42 +292,42 @@ const file_config_common_v1_errors_proto_rawDesc = "" +
 	"\bmetadata\x18\x02 \x03(\v29.runtime.api.config.common.v1.ErrorMetadata.MetadataEntryBC\xbaG@\x92\x02=Additional key-value pairs providing context about the error.R\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*b\n" +
-	"\rErrorCategory\x12\v\n" +
-	"\aGENERAL\x10\x00\x12\x12\n" +
-	"\x0eAUTHENTICATION\x10\x01\x12\f\n" +
-	"\bDATABASE\x10\x02\x12\f\n" +
-	"\bBUSINESS\x10\x03\x12\x14\n" +
-	"\x10EXTERNAL_SERVICE\x10\x04*\xb3\x06\n" +
-	"\vErrorReason\x12\x17\n" +
-	"\rUNKNOWN_ERROR\x10\x00\x1a\x04\xa8E\xf4\x03\x12\x1a\n" +
-	"\x10VALIDATION_ERROR\x10\x01\x1a\x04\xa8E\x90\x03\x12\x13\n" +
-	"\tNOT_FOUND\x10\x02\x1a\x04\xa8E\x94\x03\x12\x1f\n" +
-	"\x15INTERNAL_SERVER_ERROR\x10\x03\x1a\x04\xa8E\xf4\x03\x12\x1c\n" +
-	"\x12METHOD_NOT_ALLOWED\x10\x04\x1a\x04\xa8E\x95\x03\x12\x19\n" +
-	"\x0fREQUEST_TIMEOUT\x10\x05\x1a\x04\xa8E\x98\x03\x12\x12\n" +
-	"\bCONFLICT\x10\x06\x1a\x04\xa8E\x99\x03\x12\x1b\n" +
-	"\x11TOO_MANY_REQUESTS\x10\a\x1a\x04\xa8E\xad\x03\x12\x1d\n" +
-	"\x13SERVICE_UNAVAILABLE\x10\b\x1a\x04\xa8E\xf7\x03\x12\x19\n" +
-	"\x0fGATEWAY_TIMEOUT\x10\t\x1a\x04\xa8E\xf8\x03\x12\x1a\n" +
-	"\x0fUNAUTHENTICATED\x10\xe8\a\x1a\x04\xa8E\x91\x03\x12\x14\n" +
-	"\tFORBIDDEN\x10\xe9\a\x1a\x04\xa8E\x93\x03\x12\x19\n" +
-	"\x0eDATABASE_ERROR\x10\xd0\x0f\x1a\x04\xa8E\xf4\x03\x12\x1b\n" +
-	"\x10RECORD_NOT_FOUND\x10\xd1\x0f\x1a\x04\xa8E\x94\x03\x12\x1f\n" +
-	"\x14CONSTRAINT_VIOLATION\x10\xd2\x0f\x1a\x04\xa8E\x99\x03\x12\x18\n" +
-	"\rDUPLICATE_KEY\x10\xd3\x0f\x1a\x04\xa8E\x99\x03\x12%\n" +
-	"\x1aDATABASE_CONNECTION_FAILED\x10\xd4\x0f\x1a\x04\xa8E\xf7\x03\x12\x18\n" +
-	"\rINVALID_STATE\x10\xb8\x17\x1a\x04\xa8E\x90\x03\x12\x1a\n" +
-	"\x0fRESOURCE_EXISTS\x10\xb9\x17\x1a\x04\xa8E\x99\x03\x12\x1a\n" +
-	"\x0fRESOURCE_IN_USE\x10\xba\x17\x1a\x04\xa8E\x99\x03\x12\x14\n" +
-	"\tCANCELLED\x10\xbb\x17\x1a\x04\xa8E\xf3\x03\x12\x12\n" +
-	"\aABORTED\x10\xbc\x17\x1a\x04\xa8E\x99\x03\x12\x1c\n" +
-	"\x11MISSING_PARAMETER\x10\xbd\x17\x1a\x04\xa8E\x90\x03\x12\x1c\n" +
-	"\x11INVALID_PARAMETER\x10\xbe\x17\x1a\x04\xa8E\x90\x03\x12 \n" +
-	"\x15OPERATION_NOT_ALLOWED\x10\xbf\x17\x1a\x04\xa8E\x93\x03\x12'\n" +
-	"\x1cEXTERNAL_SERVICE_UNAVAILABLE\x10\xa0\x1f\x1a\x04\xa8E\xf7\x03\x12!\n" +
-	"\x16EXTERNAL_SERVICE_ERROR\x10\xa1\x1f\x1a\x04\xa8E\xf6\x03\x12\x1d\n" +
-	"\x12REGISTRY_NOT_FOUND\x10\xf0.\x1a\x04\xa8E\x94\x03\x1a\x04\xa0E\xf4\x03B\x87\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\xb9\x01\n" +
+	"\rErrorCategory\x12&\n" +
+	"\"ERROR_CATEGORY_GENERAL_UNSPECIFIED\x10\x00\x12!\n" +
+	"\x1dERROR_CATEGORY_AUTHENTICATION\x10\x01\x12\x1b\n" +
+	"\x17ERROR_CATEGORY_DATABASE\x10\x02\x12\x1b\n" +
+	"\x17ERROR_CATEGORY_BUSINESS\x10\x03\x12#\n" +
+	"\x1fERROR_CATEGORY_EXTERNAL_SERVICE\x10\x04*\xa5\t\n" +
+	"\vErrorReason\x12*\n" +
+	" ERROR_REASON_UNKNOWN_UNSPECIFIED\x10\x00\x1a\x04\xa8E\xf4\x03\x12'\n" +
+	"\x1dERROR_REASON_VALIDATION_ERROR\x10\x01\x1a\x04\xa8E\x90\x03\x12 \n" +
+	"\x16ERROR_REASON_NOT_FOUND\x10\x02\x1a\x04\xa8E\x94\x03\x12,\n" +
+	"\"ERROR_REASON_INTERNAL_SERVER_ERROR\x10\x03\x1a\x04\xa8E\xf4\x03\x12)\n" +
+	"\x1fERROR_REASON_METHOD_NOT_ALLOWED\x10\x04\x1a\x04\xa8E\x95\x03\x12&\n" +
+	"\x1cERROR_REASON_REQUEST_TIMEOUT\x10\x05\x1a\x04\xa8E\x98\x03\x12\x1f\n" +
+	"\x15ERROR_REASON_CONFLICT\x10\x06\x1a\x04\xa8E\x99\x03\x12(\n" +
+	"\x1eERROR_REASON_TOO_MANY_REQUESTS\x10\a\x1a\x04\xa8E\xad\x03\x12*\n" +
+	" ERROR_REASON_SERVICE_UNAVAILABLE\x10\b\x1a\x04\xa8E\xf7\x03\x12&\n" +
+	"\x1cERROR_REASON_GATEWAY_TIMEOUT\x10\t\x1a\x04\xa8E\xf8\x03\x12'\n" +
+	"\x1cERROR_REASON_UNAUTHENTICATED\x10\xe8\a\x1a\x04\xa8E\x91\x03\x12!\n" +
+	"\x16ERROR_REASON_FORBIDDEN\x10\xe9\a\x1a\x04\xa8E\x93\x03\x12&\n" +
+	"\x1bERROR_REASON_DATABASE_ERROR\x10\xd0\x0f\x1a\x04\xa8E\xf4\x03\x12(\n" +
+	"\x1dERROR_REASON_RECORD_NOT_FOUND\x10\xd1\x0f\x1a\x04\xa8E\x94\x03\x12,\n" +
+	"!ERROR_REASON_CONSTRAINT_VIOLATION\x10\xd2\x0f\x1a\x04\xa8E\x99\x03\x12%\n" +
+	"\x1aERROR_REASON_DUPLICATE_KEY\x10\xd3\x0f\x1a\x04\xa8E\x99\x03\x122\n" +
+	"'ERROR_REASON_DATABASE_CONNECTION_FAILED\x10\xd4\x0f\x1a\x04\xa8E\xf7\x03\x12%\n" +
+	"\x1aERROR_REASON_INVALID_STATE\x10\xb8\x17\x1a\x04\xa8E\x90\x03\x12'\n" +
+	"\x1cERROR_REASON_RESOURCE_EXISTS\x10\xb9\x17\x1a\x04\xa8E\x99\x03\x12'\n" +
+	"\x1cERROR_REASON_RESOURCE_IN_USE\x10\xba\x17\x1a\x04\xa8E\x99\x03\x12!\n" +
+	"\x16ERROR_REASON_CANCELLED\x10\xbb\x17\x1a\x04\xa8E\xf3\x03\x12\x1f\n" +
+	"\x14ERROR_REASON_ABORTED\x10\xbc\x17\x1a\x04\xa8E\x99\x03\x12)\n" +
+	"\x1eERROR_REASON_MISSING_PARAMETER\x10\xbd\x17\x1a\x04\xa8E\x90\x03\x12)\n" +
+	"\x1eERROR_REASON_INVALID_PARAMETER\x10\xbe\x17\x1a\x04\xa8E\x90\x03\x12-\n" +
+	"\"ERROR_REASON_OPERATION_NOT_ALLOWED\x10\xbf\x17\x1a\x04\xa8E\x93\x03\x124\n" +
+	")ERROR_REASON_EXTERNAL_SERVICE_UNAVAILABLE\x10\xa0\x1f\x1a\x04\xa8E\xf7\x03\x12.\n" +
+	"#ERROR_REASON_EXTERNAL_SERVICE_ERROR\x10\xa1\x1f\x1a\x04\xa8E\xf6\x03\x12*\n" +
+	"\x1fERROR_REASON_REGISTRY_NOT_FOUND\x10\xf0.\x1a\x04\xa8E\x94\x03\x1a\x04\xa0E\xf4\x03B\x87\x02\n" +
 	" com.runtime.api.config.common.v1B\vErrorsProtoP\x01ZAgithub.com/origadmin/runtime/api/gen/go/config/common/v1;commonv1\xa2\x02\x04RACC\xaa\x02\x1cRuntime.Api.Config.Common.V1\xca\x02\x1cRuntime\\Api\\Config\\Common\\V1\xe2\x02(Runtime\\Api\\Config\\Common\\V1\\GPBMetadata\xea\x02 Runtime::Api::Config::Common::V1b\x06proto3"
 
 var (

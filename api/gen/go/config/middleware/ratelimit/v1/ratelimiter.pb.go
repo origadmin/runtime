@@ -7,7 +7,6 @@
 package ratelimitv1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -267,7 +266,7 @@ var File_config_middleware_ratelimit_v1_ratelimiter_proto protoreflect.FileDescr
 
 const file_config_middleware_ratelimit_v1_ratelimiter_proto_rawDesc = "" +
 	"\n" +
-	"0config/middleware/ratelimit/v1/ratelimiter.proto\x12*runtime.api.config.middleware.ratelimit.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xd1\x06\n" +
+	"0config/middleware/ratelimit/v1/ratelimiter.proto\x12*runtime.api.config.middleware.ratelimit.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd1\x06\n" +
 	"\vRateLimiter\x12x\n" +
 	"\x04name\x18\x01 \x01(\tBd\xbaGa\x92\x02^Rate limiter name. Built-in: 'bbr', 'memory', 'redis'. Custom types use their registered name.R\x04name\x12\x16\n" +
 	"\x06period\x18\x02 \x01(\x05R\x06period\x12,\n" +

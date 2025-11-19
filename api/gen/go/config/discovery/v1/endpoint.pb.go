@@ -8,10 +8,8 @@ package discoveryv1
 
 import (
 	_ "github.com/google/gnostic/openapiv3"
-	_ "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "google.golang.org/protobuf/types/known/durationpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -160,7 +158,7 @@ var File_config_discovery_v1_endpoint_proto protoreflect.FileDescriptor
 
 const file_config_discovery_v1_endpoint_proto_rawDesc = "" +
 	"\n" +
-	"\"config/discovery/v1/endpoint.proto\x12\x1fruntime.api.config.discovery.v1\x1a#config/discovery/v1/discovery.proto\x1a%config/middleware/v1/middleware.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1egoogle/protobuf/duration.proto\"\x9f\x03\n" +
+	"\"config/discovery/v1/endpoint.proto\x12\x1fruntime.api.config.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\"\x9f\x03\n" +
 	"\bEndpoint\x12F\n" +
 	"\x04name\x18\x01 \x01(\tB2\xbaG/\x92\x02,The name of the service key in the endpoint.R\x04name\x12c\n" +
 	"\x0ediscovery_name\x18\x02 \x01(\tB;\xbaG8\x92\x025The name of the service key in the discovery service.R\x0ediscovery_name\x12W\n" +
@@ -202,7 +200,6 @@ func file_config_discovery_v1_endpoint_proto_init() {
 	if File_config_discovery_v1_endpoint_proto != nil {
 		return
 	}
-	file_config_discovery_v1_discovery_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

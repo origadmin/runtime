@@ -12,349 +12,349 @@ import (
 const _ = errors.SupportPackageIsVersion1
 
 // --- General Framework Errors (0-999) ---
-func IsUnknownError(err error) bool {
+func IsErrorReasonUnknownUnspecified(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_UNKNOWN_ERROR.String() && e.Code == 500
+	return e.Reason == ErrorReason_ERROR_REASON_UNKNOWN_UNSPECIFIED.String() && e.Code == 500
 }
 
 // --- General Framework Errors (0-999) ---
-func ErrorUnknownError(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, ErrorReason_UNKNOWN_ERROR.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonUnknownUnspecified(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_ERROR_REASON_UNKNOWN_UNSPECIFIED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsValidationError(err error) bool {
+func IsErrorReasonValidationError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_VALIDATION_ERROR.String() && e.Code == 400
+	return e.Reason == ErrorReason_ERROR_REASON_VALIDATION_ERROR.String() && e.Code == 400
 }
 
-func ErrorValidationError(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, ErrorReason_VALIDATION_ERROR.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonValidationError(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_ERROR_REASON_VALIDATION_ERROR.String(), fmt.Sprintf(format, args...))
 }
 
-func IsNotFound(err error) bool {
+func IsErrorReasonNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_NOT_FOUND.String() && e.Code == 404
+	return e.Reason == ErrorReason_ERROR_REASON_NOT_FOUND.String() && e.Code == 404
 }
 
-func ErrorNotFound(format string, args ...interface{}) *errors.Error {
-	return errors.New(404, ErrorReason_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, ErrorReason_ERROR_REASON_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
-func IsInternalServerError(err error) bool {
+func IsErrorReasonInternalServerError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_INTERNAL_SERVER_ERROR.String() && e.Code == 500
+	return e.Reason == ErrorReason_ERROR_REASON_INTERNAL_SERVER_ERROR.String() && e.Code == 500
 }
 
-func ErrorInternalServerError(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, ErrorReason_INTERNAL_SERVER_ERROR.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonInternalServerError(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_ERROR_REASON_INTERNAL_SERVER_ERROR.String(), fmt.Sprintf(format, args...))
 }
 
-func IsMethodNotAllowed(err error) bool {
+func IsErrorReasonMethodNotAllowed(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_METHOD_NOT_ALLOWED.String() && e.Code == 405
+	return e.Reason == ErrorReason_ERROR_REASON_METHOD_NOT_ALLOWED.String() && e.Code == 405
 }
 
-func ErrorMethodNotAllowed(format string, args ...interface{}) *errors.Error {
-	return errors.New(405, ErrorReason_METHOD_NOT_ALLOWED.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonMethodNotAllowed(format string, args ...interface{}) *errors.Error {
+	return errors.New(405, ErrorReason_ERROR_REASON_METHOD_NOT_ALLOWED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsRequestTimeout(err error) bool {
+func IsErrorReasonRequestTimeout(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_REQUEST_TIMEOUT.String() && e.Code == 408
+	return e.Reason == ErrorReason_ERROR_REASON_REQUEST_TIMEOUT.String() && e.Code == 408
 }
 
-func ErrorRequestTimeout(format string, args ...interface{}) *errors.Error {
-	return errors.New(408, ErrorReason_REQUEST_TIMEOUT.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonRequestTimeout(format string, args ...interface{}) *errors.Error {
+	return errors.New(408, ErrorReason_ERROR_REASON_REQUEST_TIMEOUT.String(), fmt.Sprintf(format, args...))
 }
 
-func IsConflict(err error) bool {
+func IsErrorReasonConflict(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_CONFLICT.String() && e.Code == 409
+	return e.Reason == ErrorReason_ERROR_REASON_CONFLICT.String() && e.Code == 409
 }
 
-func ErrorConflict(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, ErrorReason_CONFLICT.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonConflict(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_ERROR_REASON_CONFLICT.String(), fmt.Sprintf(format, args...))
 }
 
-func IsTooManyRequests(err error) bool {
+func IsErrorReasonTooManyRequests(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_TOO_MANY_REQUESTS.String() && e.Code == 429
+	return e.Reason == ErrorReason_ERROR_REASON_TOO_MANY_REQUESTS.String() && e.Code == 429
 }
 
-func ErrorTooManyRequests(format string, args ...interface{}) *errors.Error {
-	return errors.New(429, ErrorReason_TOO_MANY_REQUESTS.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonTooManyRequests(format string, args ...interface{}) *errors.Error {
+	return errors.New(429, ErrorReason_ERROR_REASON_TOO_MANY_REQUESTS.String(), fmt.Sprintf(format, args...))
 }
 
-func IsServiceUnavailable(err error) bool {
+func IsErrorReasonServiceUnavailable(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_SERVICE_UNAVAILABLE.String() && e.Code == 503
+	return e.Reason == ErrorReason_ERROR_REASON_SERVICE_UNAVAILABLE.String() && e.Code == 503
 }
 
-func ErrorServiceUnavailable(format string, args ...interface{}) *errors.Error {
-	return errors.New(503, ErrorReason_SERVICE_UNAVAILABLE.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonServiceUnavailable(format string, args ...interface{}) *errors.Error {
+	return errors.New(503, ErrorReason_ERROR_REASON_SERVICE_UNAVAILABLE.String(), fmt.Sprintf(format, args...))
 }
 
-func IsGatewayTimeout(err error) bool {
+func IsErrorReasonGatewayTimeout(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_GATEWAY_TIMEOUT.String() && e.Code == 504
+	return e.Reason == ErrorReason_ERROR_REASON_GATEWAY_TIMEOUT.String() && e.Code == 504
 }
 
-func ErrorGatewayTimeout(format string, args ...interface{}) *errors.Error {
-	return errors.New(504, ErrorReason_GATEWAY_TIMEOUT.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonGatewayTimeout(format string, args ...interface{}) *errors.Error {
+	return errors.New(504, ErrorReason_ERROR_REASON_GATEWAY_TIMEOUT.String(), fmt.Sprintf(format, args...))
 }
 
 // --- Common Authentication & Authorization Errors (1000-1999) ---
-func IsUnauthenticated(err error) bool {
+func IsErrorReasonUnauthenticated(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_UNAUTHENTICATED.String() && e.Code == 401
+	return e.Reason == ErrorReason_ERROR_REASON_UNAUTHENTICATED.String() && e.Code == 401
 }
 
 // --- Common Authentication & Authorization Errors (1000-1999) ---
-func ErrorUnauthenticated(format string, args ...interface{}) *errors.Error {
-	return errors.New(401, ErrorReason_UNAUTHENTICATED.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonUnauthenticated(format string, args ...interface{}) *errors.Error {
+	return errors.New(401, ErrorReason_ERROR_REASON_UNAUTHENTICATED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsForbidden(err error) bool {
+func IsErrorReasonForbidden(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_FORBIDDEN.String() && e.Code == 403
+	return e.Reason == ErrorReason_ERROR_REASON_FORBIDDEN.String() && e.Code == 403
 }
 
-func ErrorForbidden(format string, args ...interface{}) *errors.Error {
-	return errors.New(403, ErrorReason_FORBIDDEN.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonForbidden(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_ERROR_REASON_FORBIDDEN.String(), fmt.Sprintf(format, args...))
 }
 
 // --- Common Database Errors (2000-2999) ---
-func IsDatabaseError(err error) bool {
+func IsErrorReasonDatabaseError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_DATABASE_ERROR.String() && e.Code == 500
+	return e.Reason == ErrorReason_ERROR_REASON_DATABASE_ERROR.String() && e.Code == 500
 }
 
 // --- Common Database Errors (2000-2999) ---
-func ErrorDatabaseError(format string, args ...interface{}) *errors.Error {
-	return errors.New(500, ErrorReason_DATABASE_ERROR.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonDatabaseError(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_ERROR_REASON_DATABASE_ERROR.String(), fmt.Sprintf(format, args...))
 }
 
-func IsRecordNotFound(err error) bool {
+func IsErrorReasonRecordNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_RECORD_NOT_FOUND.String() && e.Code == 404
+	return e.Reason == ErrorReason_ERROR_REASON_RECORD_NOT_FOUND.String() && e.Code == 404
 }
 
-func ErrorRecordNotFound(format string, args ...interface{}) *errors.Error {
-	return errors.New(404, ErrorReason_RECORD_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonRecordNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, ErrorReason_ERROR_REASON_RECORD_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }
 
-func IsConstraintViolation(err error) bool {
+func IsErrorReasonConstraintViolation(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_CONSTRAINT_VIOLATION.String() && e.Code == 409
+	return e.Reason == ErrorReason_ERROR_REASON_CONSTRAINT_VIOLATION.String() && e.Code == 409
 }
 
-func ErrorConstraintViolation(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, ErrorReason_CONSTRAINT_VIOLATION.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonConstraintViolation(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_ERROR_REASON_CONSTRAINT_VIOLATION.String(), fmt.Sprintf(format, args...))
 }
 
-func IsDuplicateKey(err error) bool {
+func IsErrorReasonDuplicateKey(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_DUPLICATE_KEY.String() && e.Code == 409
+	return e.Reason == ErrorReason_ERROR_REASON_DUPLICATE_KEY.String() && e.Code == 409
 }
 
-func ErrorDuplicateKey(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, ErrorReason_DUPLICATE_KEY.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonDuplicateKey(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_ERROR_REASON_DUPLICATE_KEY.String(), fmt.Sprintf(format, args...))
 }
 
-func IsDatabaseConnectionFailed(err error) bool {
+func IsErrorReasonDatabaseConnectionFailed(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_DATABASE_CONNECTION_FAILED.String() && e.Code == 503
+	return e.Reason == ErrorReason_ERROR_REASON_DATABASE_CONNECTION_FAILED.String() && e.Code == 503
 }
 
-func ErrorDatabaseConnectionFailed(format string, args ...interface{}) *errors.Error {
-	return errors.New(503, ErrorReason_DATABASE_CONNECTION_FAILED.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonDatabaseConnectionFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(503, ErrorReason_ERROR_REASON_DATABASE_CONNECTION_FAILED.String(), fmt.Sprintf(format, args...))
 }
 
 // --- Common Business Logic Errors (3000-3999) ---
-func IsInvalidState(err error) bool {
+func IsErrorReasonInvalidState(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_INVALID_STATE.String() && e.Code == 400
+	return e.Reason == ErrorReason_ERROR_REASON_INVALID_STATE.String() && e.Code == 400
 }
 
 // --- Common Business Logic Errors (3000-3999) ---
-func ErrorInvalidState(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, ErrorReason_INVALID_STATE.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonInvalidState(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_ERROR_REASON_INVALID_STATE.String(), fmt.Sprintf(format, args...))
 }
 
-func IsResourceExists(err error) bool {
+func IsErrorReasonResourceExists(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_RESOURCE_EXISTS.String() && e.Code == 409
+	return e.Reason == ErrorReason_ERROR_REASON_RESOURCE_EXISTS.String() && e.Code == 409
 }
 
-func ErrorResourceExists(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, ErrorReason_RESOURCE_EXISTS.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonResourceExists(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_ERROR_REASON_RESOURCE_EXISTS.String(), fmt.Sprintf(format, args...))
 }
 
-func IsResourceInUse(err error) bool {
+func IsErrorReasonResourceInUse(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_RESOURCE_IN_USE.String() && e.Code == 409
+	return e.Reason == ErrorReason_ERROR_REASON_RESOURCE_IN_USE.String() && e.Code == 409
 }
 
-func ErrorResourceInUse(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, ErrorReason_RESOURCE_IN_USE.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonResourceInUse(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_ERROR_REASON_RESOURCE_IN_USE.String(), fmt.Sprintf(format, args...))
 }
 
-func IsCancelled(err error) bool {
+func IsErrorReasonCancelled(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_CANCELLED.String() && e.Code == 499
+	return e.Reason == ErrorReason_ERROR_REASON_CANCELLED.String() && e.Code == 499
 }
 
-func ErrorCancelled(format string, args ...interface{}) *errors.Error {
-	return errors.New(499, ErrorReason_CANCELLED.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonCancelled(format string, args ...interface{}) *errors.Error {
+	return errors.New(499, ErrorReason_ERROR_REASON_CANCELLED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsAborted(err error) bool {
+func IsErrorReasonAborted(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_ABORTED.String() && e.Code == 409
+	return e.Reason == ErrorReason_ERROR_REASON_ABORTED.String() && e.Code == 409
 }
 
-func ErrorAborted(format string, args ...interface{}) *errors.Error {
-	return errors.New(409, ErrorReason_ABORTED.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonAborted(format string, args ...interface{}) *errors.Error {
+	return errors.New(409, ErrorReason_ERROR_REASON_ABORTED.String(), fmt.Sprintf(format, args...))
 }
 
-func IsMissingParameter(err error) bool {
+func IsErrorReasonMissingParameter(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_MISSING_PARAMETER.String() && e.Code == 400
+	return e.Reason == ErrorReason_ERROR_REASON_MISSING_PARAMETER.String() && e.Code == 400
 }
 
-func ErrorMissingParameter(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, ErrorReason_MISSING_PARAMETER.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonMissingParameter(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_ERROR_REASON_MISSING_PARAMETER.String(), fmt.Sprintf(format, args...))
 }
 
-func IsInvalidParameter(err error) bool {
+func IsErrorReasonInvalidParameter(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_INVALID_PARAMETER.String() && e.Code == 400
+	return e.Reason == ErrorReason_ERROR_REASON_INVALID_PARAMETER.String() && e.Code == 400
 }
 
-func ErrorInvalidParameter(format string, args ...interface{}) *errors.Error {
-	return errors.New(400, ErrorReason_INVALID_PARAMETER.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonInvalidParameter(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_ERROR_REASON_INVALID_PARAMETER.String(), fmt.Sprintf(format, args...))
 }
 
-func IsOperationNotAllowed(err error) bool {
+func IsErrorReasonOperationNotAllowed(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_OPERATION_NOT_ALLOWED.String() && e.Code == 403
+	return e.Reason == ErrorReason_ERROR_REASON_OPERATION_NOT_ALLOWED.String() && e.Code == 403
 }
 
-func ErrorOperationNotAllowed(format string, args ...interface{}) *errors.Error {
-	return errors.New(403, ErrorReason_OPERATION_NOT_ALLOWED.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonOperationNotAllowed(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_ERROR_REASON_OPERATION_NOT_ALLOWED.String(), fmt.Sprintf(format, args...))
 }
 
 // --- Common External Service Errors (4000-4999) ---
-func IsExternalServiceUnavailable(err error) bool {
+func IsErrorReasonExternalServiceUnavailable(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_EXTERNAL_SERVICE_UNAVAILABLE.String() && e.Code == 503
+	return e.Reason == ErrorReason_ERROR_REASON_EXTERNAL_SERVICE_UNAVAILABLE.String() && e.Code == 503
 }
 
 // --- Common External Service Errors (4000-4999) ---
-func ErrorExternalServiceUnavailable(format string, args ...interface{}) *errors.Error {
-	return errors.New(503, ErrorReason_EXTERNAL_SERVICE_UNAVAILABLE.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonExternalServiceUnavailable(format string, args ...interface{}) *errors.Error {
+	return errors.New(503, ErrorReason_ERROR_REASON_EXTERNAL_SERVICE_UNAVAILABLE.String(), fmt.Sprintf(format, args...))
 }
 
-func IsExternalServiceError(err error) bool {
+func IsErrorReasonExternalServiceError(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_EXTERNAL_SERVICE_ERROR.String() && e.Code == 502
+	return e.Reason == ErrorReason_ERROR_REASON_EXTERNAL_SERVICE_ERROR.String() && e.Code == 502
 }
 
-func ErrorExternalServiceError(format string, args ...interface{}) *errors.Error {
-	return errors.New(502, ErrorReason_EXTERNAL_SERVICE_ERROR.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonExternalServiceError(format string, args ...interface{}) *errors.Error {
+	return errors.New(502, ErrorReason_ERROR_REASON_EXTERNAL_SERVICE_ERROR.String(), fmt.Sprintf(format, args...))
 }
 
 // --- Common Registry Errors (6000-6999) ---
-func IsRegistryNotFound(err error) bool {
+func IsErrorReasonRegistryNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_REGISTRY_NOT_FOUND.String() && e.Code == 404
+	return e.Reason == ErrorReason_ERROR_REASON_REGISTRY_NOT_FOUND.String() && e.Code == 404
 }
 
 // --- Common Registry Errors (6000-6999) ---
-func ErrorRegistryNotFound(format string, args ...interface{}) *errors.Error {
-	return errors.New(404, ErrorReason_REGISTRY_NOT_FOUND.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonRegistryNotFound(format string, args ...interface{}) *errors.Error {
+	return errors.New(404, ErrorReason_ERROR_REASON_REGISTRY_NOT_FOUND.String(), fmt.Sprintf(format, args...))
 }

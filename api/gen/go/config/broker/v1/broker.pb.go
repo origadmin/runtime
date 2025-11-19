@@ -7,7 +7,6 @@
 package brokerv1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
 	v1 "github.com/origadmin/runtime/api/gen/go/config/broker/kafka/v1"
 	v12 "github.com/origadmin/runtime/api/gen/go/config/broker/mqtt/v1"
@@ -255,7 +254,7 @@ var File_config_broker_v1_broker_proto protoreflect.FileDescriptor
 
 const file_config_broker_v1_broker_proto_rawDesc = "" +
 	"\n" +
-	"\x1dconfig/broker/v1/broker.proto\x12\x1cruntime.api.config.broker.v1\x1a\"config/broker/kafka/v1/kafka.proto\x1a config/broker/mqtt/v1/mqtt.proto\x1a config/broker/nats/v1/nats.proto\x1a\x1econfig/broker/nsq/v1/nsq.proto\x1a$config/broker/pulsar/v1/pulsar.proto\x1a(config/broker/rabbitmq/v1/rabbitmq.proto\x1a(config/broker/redis_mq/v1/redis_mq.proto\x1a(config/broker/rocketmq/v1/rocketmq.proto\x1a\x1econfig/broker/sqs/v1/sqs.proto\x1a\"config/broker/stomp/v1/stomp.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xb2\f\n" +
+	"\x1dconfig/broker/v1/broker.proto\x12\x1cruntime.api.config.broker.v1\x1a\"config/broker/kafka/v1/kafka.proto\x1a config/broker/mqtt/v1/mqtt.proto\x1a config/broker/nats/v1/nats.proto\x1a\x1econfig/broker/nsq/v1/nsq.proto\x1a$config/broker/pulsar/v1/pulsar.proto\x1a(config/broker/rabbitmq/v1/rabbitmq.proto\x1a(config/broker/redis_mq/v1/redis_mq.proto\x1a(config/broker/rocketmq/v1/rocketmq.proto\x1a\x1econfig/broker/sqs/v1/sqs.proto\x1a\"config/broker/stomp/v1/stomp.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xb2\f\n" +
 	"\x06Broker\x12?\n" +
 	"\x04name\x18\x01 \x01(\tB+\xbaG(\x92\x02%The name of the broker configuration.R\x04name\x12\x8d\x01\n" +
 	"\x04type\x18\x02 \x01(\tBy\xbaGv\x92\x02sThe type of the message broker. Built-in: 'kafka', 'rabbitmq', 'mqtt', etc. Custom types use their registered name.R\x04type\x12o\n" +

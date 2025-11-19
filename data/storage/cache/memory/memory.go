@@ -11,54 +11,23 @@ import (
 	"time"
 
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
+	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
 const (
-	ModuleName = "storage.cache.memory"
-	DriverName = "memory"
+	DriverName = "memory" // Name of the memory cache driver
 )
 
-// builder implements the storageiface.CacheBuilder interface.
-type builder struct{}
-
-func init() {
-	// Register the memory cache builder.
-	storageiface.RegisterCache(DriverName, &builder{})
-}
-
-// New builds a new Cache instance from the given configuration.
-func (b *builder) New(cfg *cachev1.CacheConfig) (storageiface.Cache, error) {
-	memoryCfg := cfg.GetMemory() // Assuming CacheConfig has a GetMemory() method
-	if memoryCfg == nil {
-		return nil, errors.New("memory cache configuration is nil")
-	}
-
-	cache := &Cache{
-		items:           make(map[string]CacheItem),
-		size:            int(memoryCfg.GetSize()),
-		defaultExpiry:   time.Duration(memoryCfg.GetExpiration()) * time.Millisecond,
-		cleanupInterval: time.Duration(memoryCfg.GetCleanupInterval()) * time.Millisecond,
-		stopCleanup:     make(chan struct{}),
-	}
-
-	// Start background cleanup goroutine if cleanupInterval is set
-	if cache.cleanupInterval > 0 {
-		go cache.startCleanup()
-	}
-
-	return cache
-}
-
-// CacheItem represents an item stored in the cache.
-type CacheItem struct {
+// Item represents an item stored in the cache.
+type Item struct {
 	value      string
 	expiryTime time.Time
 }
 
 // Cache is an in-memory cache implementation.
 type Cache struct {
-	items           map[string]CacheItem
+	items           map[string]Item
 	mu              sync.RWMutex
 	size            int           // Maximum number of cache entries
 	defaultExpiry   time.Duration // Default expiration time for cache items
@@ -130,7 +99,7 @@ func (c *Cache) Set(ctx context.Context, key string, value string, exp ...time.D
 		expiryTime = time.Now().Add(ttl)
 	}
 
-	c.items[key] = CacheItem{
+	c.items[key] = Item{
 		value:      value,
 		expiryTime: expiryTime,
 	}
@@ -156,7 +125,7 @@ func (c *Cache) Clear(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.items = make(map[string]CacheItem)
+	c.items = make(map[string]Item)
 	return nil
 }
 
@@ -185,4 +154,26 @@ func (c *Cache) startCleanup() {
 			return
 		}
 	}
+}
+
+func New(cfg *cachev1.CacheConfig, _ ...options.Option) (storageiface.Cache, error) {
+	memoryCfg := cfg.GetMemory() // Assuming CacheConfig has a GetMemory() method
+	if memoryCfg == nil {
+		return nil, errors.New("memory cache configuration is nil")
+	}
+
+	cache := &Cache{
+		items:           make(map[string]Item),
+		size:            int(memoryCfg.GetSize()),
+		defaultExpiry:   time.Duration(memoryCfg.GetExpiration()) * time.Millisecond,
+		cleanupInterval: time.Duration(memoryCfg.GetCleanupInterval()) * time.Millisecond,
+		stopCleanup:     make(chan struct{}),
+	}
+
+	// Start background cleanup goroutine if cleanupInterval is set
+	if cache.cleanupInterval > 0 {
+		go cache.startCleanup()
+	}
+
+	return cache, nil
 }

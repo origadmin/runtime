@@ -7,7 +7,6 @@
 package discoveryv1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -540,7 +539,7 @@ var File_config_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
 const file_config_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"#config/discovery/v1/discovery.proto\x12\x1fruntime.api.config.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xc0\t\n" +
+	"#config/discovery/v1/discovery.proto\x12\x1fruntime.api.config.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xc0\t\n" +
 	"\tDiscovery\x12J\n" +
 	"\x04name\x18\x01 \x01(\tB6\xbaG3\x92\x020The name of the discovery service configuration.R\x04name\x12\x92\x01\n" +
 	"\x04type\x18\x02 \x01(\tB~\xbaG{\x92\x02xThe type of discovery provider to use. Built-in: 'consul', 'etcd', 'nacos', etc. Custom types use their registered name.R\x04type\x12M\n" +

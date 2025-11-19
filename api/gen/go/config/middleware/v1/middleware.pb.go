@@ -7,7 +7,6 @@
 package middlewarev1
 
 import (
-	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/google/gnostic/openapiv3"
 	v16 "github.com/origadmin/runtime/api/gen/go/config/middleware/circuitbreaker/v1"
 	v15 "github.com/origadmin/runtime/api/gen/go/config/middleware/cors/v1"
@@ -367,7 +366,7 @@ var File_config_middleware_v1_middleware_proto protoreflect.FileDescriptor
 
 const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	"\n" +
-	"%config/middleware/v1/middleware.proto\x12 runtime.api.config.middleware.v1\x1a8config/middleware/circuitbreaker/v1/circuitbreaker.proto\x1a$config/middleware/cors/v1/cors.proto\x1a\"config/middleware/jwt/v1/jwt.proto\x1a*config/middleware/metrics/v1/metrics.proto\x1a0config/middleware/ratelimit/v1/ratelimiter.proto\x1a,config/middleware/selector/v1/selector.proto\x1a#config/middleware/v1/security.proto\x1a.config/middleware/validator/v1/validator.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xf7\x01\n" +
+	"%config/middleware/v1/middleware.proto\x12 runtime.api.config.middleware.v1\x1a8config/middleware/circuitbreaker/v1/circuitbreaker.proto\x1a$config/middleware/cors/v1/cors.proto\x1a\"config/middleware/jwt/v1/jwt.proto\x1a*config/middleware/metrics/v1/metrics.proto\x1a0config/middleware/ratelimit/v1/ratelimiter.proto\x1a,config/middleware/selector/v1/selector.proto\x1a#config/middleware/v1/security.proto\x1a.config/middleware/validator/v1/validator.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xf7\x01\n" +
 	"\bMetadata\x12D\n" +
 	"\bprefixes\x18\x01 \x03(\tB(\xbaG%\x92\x02\"List of prefixes for the metadata.R\bprefixes\x12l\n" +
 	"\x04data\x18\x02 \x03(\v24.runtime.api.config.middleware.v1.Metadata.DataEntryB\"\xbaG\x1f\x92\x02\x1cKey-value pairs of metadata.R\x04data\x1a7\n" +
