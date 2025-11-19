@@ -14,27 +14,27 @@ import (
 	"github.com/origadmin/runtime/log"
 )
 
-// SourceFunc is a function type that adapts a function to the SourceFactory interface.
-// This allows registering a simple function as a factory, avoiding the need for a struct.
-type SourceFunc func(*sourcev1.SourceConfig, ...options.Option) (kratosconfig.Source, error)
-
-// NewSource makes SourceFunc implement the SourceFactory interface.
-// The function itself becomes the factory method.
-func (c SourceFunc) NewSource(config *sourcev1.SourceConfig, options ...options.Option) (kratosconfig.Source, error) {
-	return c(config, options...)
+// Builder is the builder implementation for configurations. It is exported to allow
+// for creating independent instances for testing or special use cases, while most
+// users will interact with it via the package-level functions that use the default
+// global instance.
+type Builder struct {
+	factory.Registry[SourceFactory]
 }
 
-// sourceBuilder is the internal builder implementation for configurations.
-// It embeds a registry of source factories and is responsible for creating
-// a final configuration object from multiple sources.
-type sourceBuilder struct {
-	factory.Registry[SourceFactory]
+// NewBuilder creates and returns a new, independent Builder instance.
+// This is useful for testing or for scenarios that require isolated configuration
+// management without affecting the global state.
+func NewBuilder() *Builder {
+	return &Builder{
+		Registry: internalfactory.New[SourceFactory](),
+	}
 }
 
 // New creates a new configuration object that conforms to the interfaces.Config interface.
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
-func (sb *sourceBuilder) New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+func (b *Builder) New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
@@ -57,7 +57,7 @@ func (sb *sourceBuilder) New(srcs *sourcev1.Sources, opts ...options.Option) (in
 	})
 
 	for _, src := range sourceConfigs {
-		f, ok := sb.Get(src.Type)
+		f, ok := b.Get(src.Type)
 		if !ok {
 			return nil, fmt.Errorf("unknown config source type: %s", src.Type)
 		}
@@ -85,27 +85,31 @@ func (sb *sourceBuilder) New(srcs *sourcev1.Sources, opts ...options.Option) (in
 	return &adapter{kc: kc}, nil
 }
 
-// defaultSourceBuilder is the package-level internal singleton builder instance.
-var defaultSourceBuilder = &sourceBuilder{
-	Registry: internalfactory.New[SourceFactory](),
+// defaultBuilder is the package-level global singleton builder instance.
+var defaultBuilder = NewBuilder()
+
+// GetBuilder returns the default global singleton Builder instance.
+// This allows advanced users to access the default builder directly if needed.
+func GetBuilder() *Builder {
+	return defaultBuilder
 }
 
 // NewConfig is a publicly exposed package-level function for creating config instances.
-// It delegates the call to the internal defaultSourceBuilder.
+// It delegates the call to the default global builder, providing a simple API for common use cases.
 func NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
-	return defaultSourceBuilder.New(srcs, opts...)
+	return defaultBuilder.New(srcs, opts...)
 }
 
 // RegisterSourceFactory is a publicly exposed package-level function for registering a SourceFactory.
-// It delegates the call to the internal defaultSourceBuilder.
+// It delegates the call to the default global builder.
 func RegisterSourceFactory(name string, factory SourceFactory) {
-	defaultSourceBuilder.Register(name, factory)
+	defaultBuilder.Register(name, factory)
 }
 
 // GetSourceFactory is a publicly exposed package-level function for retrieving a SourceFactory.
-// It delegates the call to the internal defaultSourceBuilder.
+// It delegates the call to the default global builder.
 func GetSourceFactory(name string) (SourceFactory, bool) {
-	return defaultSourceBuilder.Get(name)
+	return defaultBuilder.Get(name)
 }
 
 // getDefaultPriorityForSourceType returns a default priority based on the source type.
