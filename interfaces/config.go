@@ -42,6 +42,7 @@ type StructuredConfig interface {
 	LoggerConfigDecoder
 	MiddlewareConfigDecoder
 	ServiceConfigDecoder
+	DecodedConfig() any
 }
 
 type AppConfigDecoder interface {

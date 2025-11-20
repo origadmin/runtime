@@ -52,6 +52,7 @@ type (
 	RedirectorHTTP             = transhttp.Redirector
 	RequestHTTP                = transhttp.Request
 	ResponseControllerHTTP     = transhttp.ResponseController
+	ResponseTransporterHTTP    = transhttp.ResponseTransporter
 	ResponseWriterHTTP         = transhttp.ResponseWriter
 	RouteInfoHTTP              = transhttp.RouteInfo
 	RouterHTTP                 = transhttp.Router
@@ -321,6 +322,10 @@ func RequestVarsDecoderHTTP(dec transhttp.DecodeRequestFunc) transhttp.ServerOpt
 
 func ResponseEncoderHTTP(en transhttp.EncodeResponseFunc) transhttp.ServerOption {
 	return transhttp.ResponseEncoder(en)
+}
+
+func ResponseWriterFromServerContextHTTP(ctx context.Context) (http.ResponseWriter, bool) {
+	return transhttp.ResponseWriterFromServerContext(ctx)
 }
 
 func SetCookieHTTP(ctx context.Context, cookie *http.Cookie) {

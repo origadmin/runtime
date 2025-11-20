@@ -8,7 +8,7 @@ import (
 // It is translated through the inline transport. Server, ensuring that any type that implements our Server interface,
 // At the same time, it also automatically meets the requirements of Kratos App for transport. Server interface.
 type Server interface {
-	transport.Server // < -- Core: Ensure full compatibility with Kratos App
+	transport.Server
 }
 
 // Client is a tagged interface that represents an instance of a client connection, such as *grpc. ClientConn。
