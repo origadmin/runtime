@@ -172,5 +172,5 @@ func NewFileSource(cfg *sourcev1.SourceConfig, opts ...options.Option) (kratosco
 
 // init registers the file source during package initialization
 func init() {
-	runtimeconfig.Register("file", NewFileSource)
+	runtimeconfig.RegisterSourceFactory("file", runtimeconfig.SourceFunc(NewFileSource))
 }

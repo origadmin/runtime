@@ -4,7 +4,6 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
-	"github.com/origadmin/runtime/config/file"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces/options"
 )
@@ -34,14 +33,27 @@ func (c SourceFunc) NewSource(config *sourcev1.SourceConfig, options ...options.
 	return c(config, options...)
 }
 
+func fileConfig(path string) *sourcev1.SourceConfig {
+	return &sourcev1.SourceConfig{
+		Type: "file",
+		File: &sourcev1.FileSource{
+			Path: path,
+		},
+	}
+}
+
 // Load loads configuration from the specified file path and scans it into the target struct.
 // It returns the Kratos config instance, which should be closed by the caller when no longer needed.
 func Load(configPath string, target interface{}) (kratosconfig.Config, error) {
-	c := kratosconfig.New(
-		kratosconfig.WithSource(
-			file.NewSource(configPath),
-		),
-	)
+	fileFactory, ok := GetSourceFactory("file")
+	if !ok {
+		return nil, runtimeerrors.WrapStructured(ErrInvalidConfigType, Module, "file source factory not registered").WithCaller()
+	}
+	fileSource, err := fileFactory.NewSource(fileConfig(configPath))
+	if err != nil {
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to create file source").WithCaller()
+	}
+	c := kratosconfig.New(kratosconfig.WithSource(fileSource))
 
 	if err := c.Load(); err != nil {
 		// Ensure config is closed on load error to prevent resource leaks

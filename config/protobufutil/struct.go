@@ -4,7 +4,7 @@
 // structures in Protobuf, such as google.protobuf.Struct and google.protobuf.Any.
 // It simplifies the process of converting these generic types into strongly-typed
 // Go structs derived from Protobuf messages.
-package customize
+package protobufutil
 
 import (
 	"fmt"
