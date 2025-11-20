@@ -7,19 +7,10 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"sync"
 	"time"
 
-	filev1 "github.com/origadmin/runtime/api/gen/go/config/data/file/v1"
-)
-
-var (
-	// objectStoreBuilders is a global registry for ObjectStore builders.
-	objectStoreBuilders = make(map[string]ObjectStoreBuilder)
-	// mu protects the global registry.
-	mu sync.RWMutex
+	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
 )
 
 // ObjectInfo describes a stored object. It serves as the standard
@@ -74,30 +65,7 @@ type ObjectStore interface {
 // and register itself using the RegisterObjectStore function.
 type ObjectStoreBuilder interface {
 	// New builds a new ObjectStore instance from the given configuration.
-	New(cfg *filev1.FilestoreConfig) (ObjectStore, error)
+	New(cfg *ossv1.ObjectStoreConfig) (ObjectStore, error)
 	// Name returns the name of the builder (e.g., "local", "s3").
 	Name() string
-}
-
-// RegisterObjectStore registers a new ObjectStoreBuilder.
-// This function is typically called from the init() function of a storage provider package.
-// If a builder with the same name is already registered, it will panic.
-func RegisterObjectStore(b ObjectStoreBuilder) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	name := b.Name()
-	if _, exists := objectStoreBuilders[name]; exists {
-		panic(fmt.Sprintf("storage: ObjectStore builder named %s already registered", name))
-	}
-	objectStoreBuilders[name] = b
-}
-
-// GetObjectStoreBuilder retrieves a registered ObjectStoreBuilder by name.
-// It returns the builder and true if found, otherwise nil and false.
-func GetObjectStoreBuilder(name string) (ObjectStoreBuilder, bool) {
-	mu.RLock()
-	defer mu.RUnlock()
-	b, ok := objectStoreBuilders[name]
-	return b, ok
 }

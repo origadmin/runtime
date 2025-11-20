@@ -17,10 +17,10 @@ import (
 
 const (
 	DriverName             = "memory" // Name of the memory cache driver
-	DefaultSize            = 100
-	DefaultCapacity        = 100
+	DefaultSize            = 1024
+	DefaultCapacity        = 1024
 	DefaultExpiration      = 0
-	DefaultCleanupInterval = 10
+	DefaultCleanupInterval = 300
 )
 
 // Item represents an item stored in the cache.
@@ -37,6 +37,7 @@ type Cache struct {
 	defaultExpiry   time.Duration // Default expiration time for cache items
 	cleanupInterval time.Duration // Interval for cleaning up expired items
 	stopCleanup     chan struct{} // Channel to stop the background cleanup goroutine
+	closeOnce       sync.Once     // Ensures stopCleanup is closed only once
 }
 
 var (
@@ -56,8 +57,7 @@ func (c *Cache) Get(ctx context.Context, key string) (string, error) {
 
 	// Check if the item has expired
 	if !item.expiryTime.IsZero() && time.Now().After(item.expiryTime) {
-		c.Delete(ctx, key) // Pass context to Delete
-		return "", ErrKeyNotFound
+		return "", ErrKeyNotFound // Item expired, let background cleanup handle deletion
 	}
 
 	return item.value, nil
@@ -123,7 +123,7 @@ func (c *Cache) Delete(ctx context.Context, key string) error {
 
 	// Deleting a non-existent key is not an error.
 	// This makes the Delete operation idempotent.
-	delete(c.items, key) //
+	delete(c.items, key)
 	return nil
 }
 
@@ -138,7 +138,9 @@ func (c *Cache) Clear(ctx context.Context) error {
 
 // Close closes the cache.
 func (c *Cache) Close(ctx context.Context) error {
-	close(c.stopCleanup)
+	c.closeOnce.Do(func() {
+		close(c.stopCleanup)
+	})
 	return nil
 }
 
@@ -176,6 +178,11 @@ func New(cfg *cachev1.CacheConfig, _ ...options.Option) (storageiface.Cache, err
 		size = DefaultSize
 	}
 
+	capacity := memoryCfg.GetCapacity()
+	if capacity == 0 {
+		capacity = DefaultCapacity
+	}
+
 	expiration := memoryCfg.GetExpiration()
 	if expiration == 0 {
 		expiration = DefaultExpiration
@@ -183,18 +190,19 @@ func New(cfg *cachev1.CacheConfig, _ ...options.Option) (storageiface.Cache, err
 
 	cleanupInterval := memoryCfg.GetCleanupInterval()
 	if cleanupInterval == 0 {
-		cleanupInterval = DefaultCleanupInterval
+		// If cleanup interval is 0, disable background cleanup
+		cleanupInterval = -1 // Use a negative value to indicate no cleanup
 	}
 
 	cache := &Cache{
-		items:           make(map[string]Item),
+		items:           make(map[string]Item, capacity),
 		size:            int(size),
 		defaultExpiry:   time.Duration(expiration) * time.Millisecond,
 		cleanupInterval: time.Duration(cleanupInterval) * time.Millisecond,
 		stopCleanup:     make(chan struct{}),
 	}
 
-	// Start background cleanup goroutine if cleanupInterval is set
+	// Start background cleanup goroutine if cleanupInterval is set and positive
 	if cache.cleanupInterval > 0 {
 		go cache.startCleanup()
 	}
