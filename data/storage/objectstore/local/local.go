@@ -5,13 +5,13 @@
 package local
 
 import (
-	"context"
 	"io"
 	"os"
 	"path/filepath"
 	"strings" // Added import
 
-	filev1 "github.com/origadmin/runtime/api/gen/go/config/data/file/v1"
+	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
+	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
@@ -30,7 +30,7 @@ func init() {
 }
 
 // New creates a new local object store.
-func (f *localFactory) New(cfg *filev1.FilestoreConfig) (storageiface.ObjectStore, error) {
+func (f *localFactory) New(cfg *ossv1.ObjectStoreConfig) (storageiface.ObjectStore, error) {
 	if cfg == nil || cfg.GetLocal() == nil {
 		return nil, runtimeerrors.NewStructured(objectstore.Module, "object store config is nil").WithCaller()
 	}

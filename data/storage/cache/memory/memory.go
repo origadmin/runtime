@@ -6,17 +6,21 @@ package memory
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"time"
 
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/toolkits/errors"
 )
 
 const (
-	DriverName = "memory" // Name of the memory cache driver
+	DriverName             = "memory" // Name of the memory cache driver
+	DefaultSize            = 100
+	DefaultCapacity        = 100
+	DefaultExpiration      = 0
+	DefaultCleanupInterval = 10
 )
 
 // Item represents an item stored in the cache.
@@ -35,6 +39,11 @@ type Cache struct {
 	stopCleanup     chan struct{} // Channel to stop the background cleanup goroutine
 }
 
+var (
+	ErrKeyNotFound           = errors.New("key not found")
+	ErrCacheSizeLimitReached = errors.New("cache size limit reached")
+)
+
 // Get retrieves the value associated with the given key.
 func (c *Cache) Get(ctx context.Context, key string) (string, error) {
 	c.mu.RLock()
@@ -42,13 +51,13 @@ func (c *Cache) Get(ctx context.Context, key string) (string, error) {
 	c.mu.RUnlock()
 
 	if !found {
-		return "", errors.New("key not found")
+		return "", ErrKeyNotFound
 	}
 
 	// Check if the item has expired
 	if !item.expiryTime.IsZero() && time.Now().After(item.expiryTime) {
 		c.Delete(ctx, key) // Pass context to Delete
-		return "", errors.New("key expired")
+		return "", ErrKeyNotFound
 	}
 
 	return item.value, nil
@@ -84,7 +93,7 @@ func (c *Cache) Set(ctx context.Context, key string, value string, exp ...time.D
 
 	// Enforce size limit
 	if c.size > 0 && len(c.items) >= c.size {
-		return errors.New("cache size limit reached")
+		return ErrCacheSizeLimitReached
 	}
 
 	var ttl time.Duration
@@ -112,11 +121,9 @@ func (c *Cache) Delete(ctx context.Context, key string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if _, found := c.items[key]; !found {
-		return errors.New("key not found")
-	}
-
-	delete(c.items, key)
+	// Deleting a non-existent key is not an error.
+	// This makes the Delete operation idempotent.
+	delete(c.items, key) //
 	return nil
 }
 
@@ -157,16 +164,33 @@ func (c *Cache) startCleanup() {
 }
 
 func New(cfg *cachev1.CacheConfig, _ ...options.Option) (storageiface.Cache, error) {
-	memoryCfg := cfg.GetMemory() // Assuming CacheConfig has a GetMemory() method
+	memoryCfg := cfg.GetMemory()
 	if memoryCfg == nil {
-		return nil, errors.New("memory cache configuration is nil")
+		// If no specific memory config is provided, create a default one to proceed.
+		memoryCfg = &cachev1.MemoryConfig{}
+	}
+
+	// Use local variables for configuration, applying defaults without modifying the input cfg.
+	size := memoryCfg.GetSize()
+	if size == 0 {
+		size = DefaultSize
+	}
+
+	expiration := memoryCfg.GetExpiration()
+	if expiration == 0 {
+		expiration = DefaultExpiration
+	}
+
+	cleanupInterval := memoryCfg.GetCleanupInterval()
+	if cleanupInterval == 0 {
+		cleanupInterval = DefaultCleanupInterval
 	}
 
 	cache := &Cache{
 		items:           make(map[string]Item),
-		size:            int(memoryCfg.GetSize()),
-		defaultExpiry:   time.Duration(memoryCfg.GetExpiration()) * time.Millisecond,
-		cleanupInterval: time.Duration(memoryCfg.GetCleanupInterval()) * time.Millisecond,
+		size:            int(size),
+		defaultExpiry:   time.Duration(expiration) * time.Millisecond,
+		cleanupInterval: time.Duration(cleanupInterval) * time.Millisecond,
 		stopCleanup:     make(chan struct{}),
 	}
 

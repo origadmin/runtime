@@ -15,11 +15,11 @@ import (
 
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
 	databasev1 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
-	filestorev1 "github.com/origadmin/runtime/api/gen/go/config/data/file/v1"
+	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/data/storage/database"
-	"github.com/origadmin/runtime/data/storage/filestore"
+	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
@@ -150,7 +150,7 @@ func NewFilestores(filestoresConfig *datav1.Filestores) (map[string]storageiface
 	}
 
 	filestoreConfigsMap := maps.FromSlice(filestoresConfig.GetConfigs(),
-		func(cfg *filestorev1.FilestoreConfig) (string, *filestorev1.FilestoreConfig) {
+		func(cfg *ossv1.ObjectStoreConfig) (string, *ossv1.ObjectStoreConfig) {
 			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
 		})
 
@@ -200,7 +200,7 @@ func NewDatabasesFromConfigs(configs map[string]*databasev1.DatabaseConfig) (map
 func NewFileStoresFromConfigs(configs map[string]*filestorev1.FilestoreConfig) (map[string]storageiface.FileStore, error) {
 	filestores := make(map[string]storageiface.FileStore)
 	for name, cfg := range configs {
-		fs, err := filestore.New(cfg)
+		fs, err := objectstore.New(cfg)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create filestore '%s': %w", name, err)
 		}
