@@ -48,9 +48,13 @@ type ObjectStore interface {
 
 	// Get retrieves an object from the store.
 	// It returns an io.ReadCloser which must be closed by the caller.
+	// If the object does not exist, implementations should return an error
+	// that can be checked with errors.Is(err, os.ErrNotExist) or a similar sentinel error.
 	Get(ctx context.Context, path string) (io.ReadCloser, error)
 
 	// Stat retrieves metadata about an object without fetching the object itself.
+	// If the object does not exist, implementations should return an error
+	// that can be checked with errors.Is(err, os.ErrNotExist) or a similar sentinel error.
 	Stat(ctx context.Context, path string) (*ObjectInfo, error)
 
 	// Delete removes an object from the store.
@@ -66,6 +70,4 @@ type ObjectStore interface {
 type ObjectStoreBuilder interface {
 	// New builds a new ObjectStore instance from the given configuration.
 	New(cfg *ossv1.ObjectStoreConfig) (ObjectStore, error)
-	// Name returns the name of the builder (e.g., "local", "s3").
-	Name() string
 }

@@ -166,6 +166,9 @@ func (c *Cache) startCleanup() {
 }
 
 func New(cfg *cachev1.CacheConfig, _ ...options.Option) (storageiface.Cache, error) {
+	if cfg == nil || cfg.GetDriver() != DriverName {
+		return nil, errors.New("invalid cache config")
+	}
 	memoryCfg := cfg.GetMemory()
 	if memoryCfg == nil {
 		// If no specific memory config is provided, create a default one to proceed.
