@@ -1,0 +1,79 @@
+package objectstore
+
+import (
+	"errors"
+	"fmt"
+	"sync"
+
+	"github.com/go-kratos/kratos/v2/log"
+
+	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
+	"github.com/origadmin/runtime/data/storage/objectstore"
+	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
+)
+
+// Provider implements interfaces.ObjectStoreProvider
+type Provider struct {
+	config             *datav1.Filestores
+	log                *log.Helper
+	opts               []options.Option
+	cachedObjectStores map[string]interfaces.ObjectStore
+	onceObjectStores   sync.Once
+}
+
+// NewProvider creates a new Provider.
+func NewProvider(logger log.Logger, opts []options.Option) *Provider {
+	helper := log.NewHelper(logger)
+	return &Provider{
+		log:                helper,
+		opts:               opts,
+		cachedObjectStores: make(map[string]interfaces.ObjectStore),
+	}
+}
+
+// SetConfig sets the object store configurations for the provider.
+func (p *Provider) SetConfig(cfg *datav1.Filestores) *Provider {
+	p.config = cfg
+	return p
+}
+
+// ObjectStores returns all the configured object stores.
+func (p *Provider) ObjectStores() (map[string]interfaces.ObjectStore, error) {
+	var allErrors error
+	p.onceObjectStores.Do(func() {
+		if p.config == nil || len(p.config.GetConfigs()) == 0 {
+			p.log.Infow("msg", "no object store configurations found")
+			return
+		}
+
+		for _, cfg := range p.config.GetConfigs() {
+			name := cfg.GetName()
+			if name == "" {
+				p.log.Warnf("object store configuration is missing a name, using driver as fallback: %s", cfg.GetDriver())
+				name = cfg.GetDriver()
+			}
+			os, err := objectstore.New(cfg, p.opts...)
+			if err != nil {
+				p.log.Errorf("failed to create object store '%s': %v", name, err)
+				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create object store '%s': %w", name, err))
+				continue
+			}
+			p.cachedObjectStores[name] = os
+		}
+	})
+	return p.cachedObjectStores, allErrors
+}
+
+// ObjectStore returns a specific object store by name.
+func (p *Provider) ObjectStore(name string) (interfaces.ObjectStore, error) {
+	s, err := p.ObjectStores()
+	if err != nil {
+		return nil, err
+	}
+	os, ok := s[name]
+	if !ok {
+		return nil, fmt.Errorf("object store '%s' not found", name)
+	}
+	return os, nil
+}

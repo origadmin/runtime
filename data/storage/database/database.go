@@ -13,6 +13,7 @@ import (
 	databasev1 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -52,7 +53,7 @@ func (d *databaseImpl) Close() error {
 
 // New creates a new database instance based on the provided configuration.
 // It uses Go's native database/sql package to open a connection.
-func New(cfg *databasev1.DatabaseConfig) (storageiface.Database, error) {
+func New(cfg *databasev1.DatabaseConfig, option ...options.Option) (storageiface.Database, error) {
 	if cfg == nil {
 		return nil, ErrDatabaseConfigNil
 	}

@@ -1,8 +1,5 @@
 package interfaces
 
-// Component is a generic runtime component.
-type Component interface{} // Minimal definition
-
 // ServerMiddleware represents a server-side middleware.
 type ServerMiddleware interface{} // Minimal definition
 

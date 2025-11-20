@@ -14,9 +14,9 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/config/data/v1;data
 // Data is the top-level configuration for all data-related components.
 message Data {
   // FileStore configurations.
-  optional Filestores filestores = 1 [
-    json_name = "filestores",
-    (gnostic.openapi.v3.property) = {description: "FileStore configurations"}
+  optional ObjectStores objectstores = 1 [
+    json_name = "objectstores",
+    (gnostic.openapi.v3.property) = {description: "ObjectStore configurations"}
   ];
 
   // Cache configurations.
@@ -45,7 +45,7 @@ message Data {
 }
 
 // FileStores is a collection of named FileStore configurations.
-message Filestores {
+message ObjectStores {
   // Default filestore name.
   optional string default = 1 [
     json_name = "default",
