@@ -70,59 +70,59 @@ func WithReason(err error, reason commonv1.ErrorReason) error {
 func FromReason(reason commonv1.ErrorReason) *kerrors.Error {
 	// The message is a generic default. It can be overridden by setting the Message field directly.
 	switch reason {
-	// --- General --- 
-	case commonv1.ErrorReason_VALIDATION_ERROR:
+	// --- General ---
+	case commonv1.ErrorReason_ERROR_REASON_VALIDATION_ERROR:
 		return kerrors.BadRequest(reason.String(), "Request validation failed")
-	case commonv1.ErrorReason_NOT_FOUND:
+	case commonv1.ErrorReason_ERROR_REASON_NOT_FOUND:
 		return kerrors.NotFound(reason.String(), "Resource not found")
-	case commonv1.ErrorReason_INTERNAL_SERVER_ERROR:
+	case commonv1.ErrorReason_ERROR_REASON_INTERNAL_SERVER_ERROR:
 		return kerrors.InternalServer(reason.String(), "Internal server error")
-	case commonv1.ErrorReason_METHOD_NOT_ALLOWED:
+	case commonv1.ErrorReason_ERROR_REASON_METHOD_NOT_ALLOWED:
 		return MethodNotAllowed(reason.String(), "Method not allowed")
-	case commonv1.ErrorReason_REQUEST_TIMEOUT:
+	case commonv1.ErrorReason_ERROR_REASON_REQUEST_TIMEOUT:
 		return RequestTimeout(reason.String(), "Request timeout")
-	case commonv1.ErrorReason_CONFLICT:
+	case commonv1.ErrorReason_ERROR_REASON_CONFLICT:
 		return kerrors.Conflict(reason.String(), "Resource conflict")
-	case commonv1.ErrorReason_TOO_MANY_REQUESTS:
+	case commonv1.ErrorReason_ERROR_REASON_TOO_MANY_REQUESTS:
 		return TooManyRequests(reason.String(), "Too many requests")
-	case commonv1.ErrorReason_SERVICE_UNAVAILABLE:
+	case commonv1.ErrorReason_ERROR_REASON_SERVICE_UNAVAILABLE:
 		return kerrors.ServiceUnavailable(reason.String(), "Service unavailable")
-	case commonv1.ErrorReason_GATEWAY_TIMEOUT:
+	case commonv1.ErrorReason_ERROR_REASON_GATEWAY_TIMEOUT:
 		return kerrors.GatewayTimeout(reason.String(), "Gateway timeout")
 
-	// --- Auth --- 
-	case commonv1.ErrorReason_UNAUTHENTICATED:
+	// --- Auth ---
+	case commonv1.ErrorReason_ERROR_REASON_UNAUTHENTICATED:
 		// TODO: These reasons should be defined and handled in the specific security/auth module
 		// commonv1.ErrorReason_INVALID_CREDENTIALS,
 		// commonv1.ErrorReason_TOKEN_EXPIRED,
 		// commonv1.ErrorReason_TOKEN_INVALID,
 		// commonv1.ErrorReason_TOKEN_MISSING:
 		return kerrors.Unauthorized(reason.String(), "Authentication error")
-	case commonv1.ErrorReason_FORBIDDEN:
+	case commonv1.ErrorReason_ERROR_REASON_FORBIDDEN:
 		return kerrors.Forbidden(reason.String(), "Permission denied")
 
-	// --- Database --- 
-	case commonv1.ErrorReason_DATABASE_ERROR:
+	// --- Database ---
+	case commonv1.ErrorReason_ERROR_REASON_DATABASE_ERROR:
 		return kerrors.InternalServer(reason.String(), "Database error")
-	case commonv1.ErrorReason_RECORD_NOT_FOUND:
+	case commonv1.ErrorReason_ERROR_REASON_RECORD_NOT_FOUND:
 		return kerrors.NotFound(reason.String(), "Record not found")
-	case commonv1.ErrorReason_CONSTRAINT_VIOLATION, commonv1.ErrorReason_DUPLICATE_KEY:
+	case commonv1.ErrorReason_ERROR_REASON_CONSTRAINT_VIOLATION, commonv1.ErrorReason_ERROR_REASON_DUPLICATE_KEY:
 		return kerrors.Conflict(reason.String(), "Database constraint violation")
-	case commonv1.ErrorReason_DATABASE_CONNECTION_FAILED:
+	case commonv1.ErrorReason_ERROR_REASON_DATABASE_CONNECTION_FAILED:
 		return kerrors.ServiceUnavailable(reason.String(), "Database connection failed")
 
-	// --- Business --- 
-	case commonv1.ErrorReason_INVALID_STATE, commonv1.ErrorReason_MISSING_PARAMETER, commonv1.ErrorReason_INVALID_PARAMETER:
+	// --- Business ---
+	case commonv1.ErrorReason_ERROR_REASON_INVALID_STATE, commonv1.ErrorReason_ERROR_REASON_MISSING_PARAMETER, commonv1.ErrorReason_ERROR_REASON_INVALID_PARAMETER:
 		return kerrors.BadRequest(reason.String(), "Invalid business parameter")
-	case commonv1.ErrorReason_RESOURCE_EXISTS, commonv1.ErrorReason_RESOURCE_IN_USE, commonv1.ErrorReason_ABORTED:
+	case commonv1.ErrorReason_ERROR_REASON_RESOURCE_EXISTS, commonv1.ErrorReason_ERROR_REASON_RESOURCE_IN_USE, commonv1.ErrorReason_ERROR_REASON_ABORTED:
 		return kerrors.Conflict(reason.String(), "Business resource conflict")
-	case commonv1.ErrorReason_CANCELLED:
+	case commonv1.ErrorReason_ERROR_REASON_CANCELLED:
 		return kerrors.ClientClosed(reason.String(), "Operation was cancelled")
-	case commonv1.ErrorReason_OPERATION_NOT_ALLOWED:
+	case commonv1.ErrorReason_ERROR_REASON_OPERATION_NOT_ALLOWED:
 		return kerrors.Forbidden(reason.String(), "Operation not allowed")
 
 	// --- Registry Errors (6000-6999) ---
-	case commonv1.ErrorReason_REGISTRY_NOT_FOUND:
+	case commonv1.ErrorReason_ERROR_REASON_REGISTRY_NOT_FOUND:
 		return kerrors.NotFound(reason.String(), "Registry entry not found")
 	// TODO: These reasons should be defined and handled in the specific registry module
 	//case commonv1.ErrorReason_INVALID_REGISTRY_CONFIG:
@@ -131,7 +131,7 @@ func FromReason(reason commonv1.ErrorReason) *kerrors.Error {
 	//	return kerrors.InternalServer(reason.String(), "Registry creation failed")
 
 	default:
-		return kerrors.InternalServer(commonv1.ErrorReason_UNKNOWN_ERROR.String(), "An unknown error occurred")
+		return kerrors.InternalServer(commonv1.ErrorReason_ERROR_REASON_UNKNOWN_UNSPECIFIED.String(), "An unknown error occurred")
 	}
 }
 
@@ -188,7 +188,7 @@ func Convert(err error) *kerrors.Error {
 	// 2. Check if the error is a Structured internal error
 	var se *Structured
 	if errors.As(err, &se) {
-		var reason commonv1.ErrorReason = commonv1.ErrorReason_UNKNOWN_ERROR // Default if no TaggedError is found
+		var reason commonv1.ErrorReason = commonv1.ErrorReason_ERROR_REASON_UNKNOWN_UNSPECIFIED // Default if no TaggedError is found
 
 		var wrappedTaggedErr *TaggedError
 		if errors.As(se.Err, &wrappedTaggedErr) {
@@ -246,7 +246,7 @@ func Convert(err error) *kerrors.Error {
 			}
 			return ke
 		}
-		ke := FromReason(commonv1.ErrorReason_EXTERNAL_SERVICE_ERROR)
+		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_EXTERNAL_SERVICE_ERROR)
 		ke.Message = fmt.Sprintf("External Kratos error: %s", existingKratosErr.Message)
 		if ke.Metadata == nil {
 			ke.Metadata = make(map[string]string)
@@ -259,21 +259,21 @@ func Convert(err error) *kerrors.Error {
 	// 4. Handle specific standard library errors (implicit mapping)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
-		ke := FromReason(commonv1.ErrorReason_RECORD_NOT_FOUND)
+		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_RECORD_NOT_FOUND)
 		return ke
 	case errors.Is(err, context.DeadlineExceeded):
-		ke := FromReason(commonv1.ErrorReason_REQUEST_TIMEOUT)
+		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_REQUEST_TIMEOUT)
 		return ke
 	case errors.Is(err, context.Canceled):
-		ke := FromReason(commonv1.ErrorReason_CANCELLED)
+		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_CANCELLED)
 		return ke
 	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
-		ke := FromReason(commonv1.ErrorReason_VALIDATION_ERROR)
+		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_VALIDATION_ERROR)
 		return ke
 	}
 
 	// 5. Default to INTERNAL_SERVER_ERROR for any other unhandled error
-	ke := FromReason(commonv1.ErrorReason_INTERNAL_SERVER_ERROR)
+	ke := FromReason(commonv1.ErrorReason_ERROR_REASON_INTERNAL_SERVER_ERROR)
 	ke.Message = fmt.Sprintf("%s", err.Error())
 	return ke
 }
