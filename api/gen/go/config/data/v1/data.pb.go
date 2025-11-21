@@ -30,7 +30,7 @@ const (
 type Data struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// FileStore configurations.
-	Filestores *Filestores `protobuf:"bytes,1,opt,name=filestores,proto3,oneof" json:"filestores,omitempty"`
+	Objectstores *ObjectStores `protobuf:"bytes,1,opt,name=objectstores,proto3,oneof" json:"objectstores,omitempty"`
 	// Cache configurations.
 	Caches *Caches `protobuf:"bytes,2,opt,name=caches,proto3,oneof" json:"caches,omitempty"`
 	// Relational Database configurations (SQL).
@@ -73,9 +73,9 @@ func (*Data) Descriptor() ([]byte, []int) {
 	return file_config_data_v1_data_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Data) GetFilestores() *Filestores {
+func (x *Data) GetObjectstores() *ObjectStores {
 	if x != nil {
-		return x.Filestores
+		return x.Objectstores
 	}
 	return nil
 }
@@ -109,7 +109,7 @@ func (x *Data) GetCustomize() *structpb.Struct {
 }
 
 // FileStores is a collection of named FileStore configurations.
-type Filestores struct {
+type ObjectStores struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Default filestore name.
 	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
@@ -121,20 +121,20 @@ type Filestores struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Filestores) Reset() {
-	*x = Filestores{}
+func (x *ObjectStores) Reset() {
+	*x = ObjectStores{}
 	mi := &file_config_data_v1_data_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Filestores) String() string {
+func (x *ObjectStores) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Filestores) ProtoMessage() {}
+func (*ObjectStores) ProtoMessage() {}
 
-func (x *Filestores) ProtoReflect() protoreflect.Message {
+func (x *ObjectStores) ProtoReflect() protoreflect.Message {
 	mi := &file_config_data_v1_data_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -146,26 +146,26 @@ func (x *Filestores) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Filestores.ProtoReflect.Descriptor instead.
-func (*Filestores) Descriptor() ([]byte, []int) {
+// Deprecated: Use ObjectStores.ProtoReflect.Descriptor instead.
+func (*ObjectStores) Descriptor() ([]byte, []int) {
 	return file_config_data_v1_data_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Filestores) GetDefault() string {
+func (x *ObjectStores) GetDefault() string {
 	if x != nil && x.Default != nil {
 		return *x.Default
 	}
 	return ""
 }
 
-func (x *Filestores) GetActive() string {
+func (x *ObjectStores) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
 }
 
-func (x *Filestores) GetConfigs() []*v1.ObjectStoreConfig {
+func (x *ObjectStores) GetConfigs() []*v1.ObjectStoreConfig {
 	if x != nil {
 		return x.Configs
 	}
@@ -368,25 +368,22 @@ var File_config_data_v1_data_proto protoreflect.FileDescriptor
 
 const file_config_data_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a$config/data/oss/v1/objectstore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x96\x05\n" +
-	"\x04Data\x12k\n" +
-	"\n" +
-	"filestores\x18\x01 \x01(\v2&.runtime.api.config.data.v1.FilestoresB\x1e\xbaG\x1b\x92\x02\x18FileStore configurationsH\x00R\n" +
-	"filestores\x88\x01\x01\x12[\n" +
+	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a$config/data/oss/v1/objectstore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xa0\x05\n" +
+	"\x04Data\x12s\n" +
+	"\fobjectstores\x18\x01 \x01(\v2(.runtime.api.config.data.v1.ObjectStoresB \xbaG\x1d\x92\x02\x1aObjectStore configurationsH\x00R\fobjectstores\x88\x01\x01\x12[\n" +
 	"\x06caches\x18\x02 \x01(\v2\".runtime.api.config.data.v1.CachesB\x1a\xbaG\x17\x92\x02\x14Cache configurationsH\x01R\x06caches\x88\x01\x01\x12x\n" +
 	"\tdatabases\x18\x03 \x01(\v2%.runtime.api.config.data.v1.DatabasesB.\xbaG+\x92\x02(Relational Database configurations (SQL)H\x02R\tdatabases\x88\x01\x01\x12\x80\x01\n" +
 	"\tdocuments\x18\x04 \x01(\v2%.runtime.api.config.data.v1.DocumentsB6\xbaG3\x92\x020Document Database configurations (e.g., MongoDB)H\x03R\tdocuments\x88\x01\x01\x12\x82\x01\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBF\xbaGC\x92\x02@Custom configuration for Data components not explicitly defined.H\x04R\tcustomize\x88\x01\x01B\r\n" +
-	"\v_filestoresB\t\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBF\xbaGC\x92\x02@Custom configuration for Data components not explicitly defined.H\x04R\tcustomize\x88\x01\x01B\x0f\n" +
+	"\r_objectstoresB\t\n" +
 	"\a_cachesB\f\n" +
 	"\n" +
 	"_databasesB\f\n" +
 	"\n" +
 	"_documentsB\f\n" +
 	"\n" +
-	"_customize\"\xa8\x02\n" +
-	"\n" +
-	"Filestores\x12;\n" +
+	"_customize\"\xaa\x02\n" +
+	"\fObjectStores\x12;\n" +
 	"\adefault\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default filestore nameH\x00R\adefault\x88\x01\x01\x12K\n" +
 	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x01R\x06active\x88\x01\x01\x12y\n" +
 	"\aconfigs\x18\x03 \x03(\v21.runtime.api.config.data.oss.v1.ObjectStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\n" +
@@ -431,7 +428,7 @@ func file_config_data_v1_data_proto_rawDescGZIP() []byte {
 var file_config_data_v1_data_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_config_data_v1_data_proto_goTypes = []any{
 	(*Data)(nil),                 // 0: runtime.api.config.data.v1.Data
-	(*Filestores)(nil),           // 1: runtime.api.config.data.v1.Filestores
+	(*ObjectStores)(nil),         // 1: runtime.api.config.data.v1.ObjectStores
 	(*Caches)(nil),               // 2: runtime.api.config.data.v1.Caches
 	(*Databases)(nil),            // 3: runtime.api.config.data.v1.Databases
 	(*Documents)(nil),            // 4: runtime.api.config.data.v1.Documents
@@ -442,12 +439,12 @@ var file_config_data_v1_data_proto_goTypes = []any{
 	(*v12.DocumentConfig)(nil),   // 9: runtime.api.config.data.database.v1.DocumentConfig
 }
 var file_config_data_v1_data_proto_depIdxs = []int32{
-	1, // 0: runtime.api.config.data.v1.Data.filestores:type_name -> runtime.api.config.data.v1.Filestores
+	1, // 0: runtime.api.config.data.v1.Data.objectstores:type_name -> runtime.api.config.data.v1.ObjectStores
 	2, // 1: runtime.api.config.data.v1.Data.caches:type_name -> runtime.api.config.data.v1.Caches
 	3, // 2: runtime.api.config.data.v1.Data.databases:type_name -> runtime.api.config.data.v1.Databases
 	4, // 3: runtime.api.config.data.v1.Data.documents:type_name -> runtime.api.config.data.v1.Documents
 	5, // 4: runtime.api.config.data.v1.Data.customize:type_name -> google.protobuf.Struct
-	6, // 5: runtime.api.config.data.v1.Filestores.configs:type_name -> runtime.api.config.data.oss.v1.ObjectStoreConfig
+	6, // 5: runtime.api.config.data.v1.ObjectStores.configs:type_name -> runtime.api.config.data.oss.v1.ObjectStoreConfig
 	7, // 6: runtime.api.config.data.v1.Caches.configs:type_name -> runtime.api.config.data.cache.v1.CacheConfig
 	8, // 7: runtime.api.config.data.v1.Databases.configs:type_name -> runtime.api.config.data.database.v1.DatabaseConfig
 	9, // 8: runtime.api.config.data.v1.Documents.configs:type_name -> runtime.api.config.data.database.v1.DocumentConfig
