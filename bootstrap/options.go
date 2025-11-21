@@ -13,34 +13,14 @@ type Option = options.Option
 // ProviderOptions holds all the configurable settings for the bootstrap provider.
 // It is populated by applying a series of Option functions.
 type ProviderOptions struct {
-	appInfo            *interfaces.AppInfo
-	componentFactories map[string]interfaces.ComponentFactory
-	config             interfaces.Config
-	configTransformer  ConfigTransformer
-	defaultPaths       map[string]string
-	directory          string
-	directly           bool
-	pathResolver       PathResolverFunc
-	prefixes           []string
-	rawOptions         []Option
-}
-
-// WithAppInfo provides application metadata to the bootstrap process.
-// This information is merged with any metadata loaded from the configuration source.
-func WithAppInfo(info *interfaces.AppInfo) Option {
-	return optionutil.Update(func(o *ProviderOptions) {
-		o.appInfo = info
-	})
-}
-
-// WithComponent registers a component factory to be used during bootstrap.
-func WithComponent(key string, factory interfaces.ComponentFactory) Option {
-	return optionutil.Update(func(o *ProviderOptions) {
-		if o.componentFactories == nil {
-			o.componentFactories = make(map[string]interfaces.ComponentFactory)
-		}
-		o.componentFactories[key] = factory
-	})
+	config            interfaces.Config
+	configTransformer ConfigTransformer
+	defaultPaths      map[string]string
+	directory         string
+	directly          bool
+	pathResolver      PathResolverFunc
+	prefixes          []string
+	rawOptions        []Option
 }
 
 // WithConfig provides a pre-initialized configuration instance.

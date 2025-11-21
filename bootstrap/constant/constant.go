@@ -24,4 +24,13 @@ const (
 
 	// ComponentClients is the key for the clients component.
 	ComponentClients = "clients"
+
+	// ComponentCaches is the key for the caches component.
+	ComponentCaches = "caches"
+
+	// ComponentDatabases is the key for the databases component.
+	ComponentDatabases = "databases"
+
+	// ComponentObjectStores is the key for the object stores component.
+	ComponentObjectStores = "object_stores"
 )

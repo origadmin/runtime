@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"fmt"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/log" // Keep for error logging during config close
 
 	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
 )
@@ -40,46 +40,23 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	if providerOpts.configTransformer != nil {
 		sc, err = providerOpts.configTransformer.Transform(cfg, sc)
 		if err != nil {
+			// Ensure config is closed on error
+			if closeErr := cfg.Close(); closeErr != nil {
+				log.Errorf("failed to close config after transform error: %v", closeErr)
+			}
 			return nil, fmt.Errorf("failed to transform config: %w", err)
 		}
 	}
 
-	// Define the core cleanup logic once.
-	cleanupFunc := func() {
-		if cfg != nil {
-			if closeErr := cfg.Close(); closeErr != nil {
-				log.Errorf("failed to close config during cleanup: %v", closeErr)
-			}
-		}
-	}
-
-	// Defer the cleanup logic. It will only run if the function returns an error.
-	defer func() {
-		if err != nil {
-			cleanupFunc()
-		}
-	}()
-
-	// 3. Merge and validate application info from config and options.
-	finalAppInfo, err := mergeAppInfo(sc, providerOpts)
+	configAppInfo, err := sc.DecodeApp()
 	if err != nil {
-		return nil, err // mergeAppInfo already wraps the error
+		log.Debugf("failed to decode app info from config, will rely on WithAppInfo option or defaults: %v", err)
 	}
-
-	// 4. Build the component container.
-	c, logger, err := buildContainer(sc, providerOpts)
-	if err != nil {
-		return nil, err // buildContainer already wraps the error
-	}
-
-	// 5. Assemble and return the final result.
+	// 4. Assemble and return the final result.
 	res = &resultImpl{
 		config:           cfg,
 		structuredConfig: sc,
-		appInfo:          finalAppInfo,
-		container:        c,
-		logger:           logger,
-		cleanup:          cleanupFunc,
+		appInfo:          configAppInfo,
 	}
 	return res, nil
 }

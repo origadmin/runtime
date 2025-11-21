@@ -23,6 +23,34 @@ type structuredConfigImpl struct {
 	paths             map[string]string
 }
 
+func (c *structuredConfigImpl) DecodeCaches() (*datav1.Caches, error) {
+	cachesConfig := new(datav1.Caches)
+	if err := c.decodeComponent(constant.ComponentCaches, cachesConfig); err != nil {
+		return nil, err
+	}
+	return cachesConfig, nil
+}
+
+func (c *structuredConfigImpl) DecodeDatabases() (*datav1.Databases, error) {
+	databasesConfig := new(datav1.Databases)
+	if err := c.decodeComponent(constant.ComponentDatabases, databasesConfig); err != nil {
+		return nil, err
+	}
+	return databasesConfig, nil
+}
+
+func (c *structuredConfigImpl) DecodeObjectStores() (*datav1.ObjectStores, error) {
+	objectStoresConfig := new(datav1.ObjectStores)
+	if err := c.decodeComponent(constant.ComponentObjectStores, objectStoresConfig); err != nil {
+		return nil, err
+	}
+	return objectStoresConfig, nil
+}
+
+func (c *structuredConfigImpl) DecodedConfig() any {
+	return c.Config
+}
+
 // Statically assert that structuredConfigImpl implements the full StructuredConfig interface.
 var _ interfaces.StructuredConfig = (*structuredConfigImpl)(nil)
 

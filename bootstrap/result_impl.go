@@ -1,48 +1,28 @@
-// Package bootstrap implements the functions, types, and interfaces for the module.
 package bootstrap
 
 import (
-	"github.com/go-kratos/kratos/v2/log"
-
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1" // Added for appv1.App
 	"github.com/origadmin/runtime/interfaces"
 )
 
-// resultImpl implements the interfaces.Result interface.
+// resultImpl implements the Result interface.
 type resultImpl struct {
-	appInfo          *interfaces.AppInfo
-	container        interfaces.Container
+	appInfo          *appv1.App // Updated type
 	config           interfaces.Config
 	structuredConfig interfaces.StructuredConfig
-	logger           log.Logger // Added logger field for configurable logging
-	cleanup          func()
+}
+
+// AppInfo returns the application information.
+func (b *resultImpl) AppInfo() *appv1.App {
+	return b.appInfo
+}
+
+// Config returns the raw configuration decoder.
+func (b *resultImpl) Config() interfaces.Config {
+	return b.config
 }
 
 // StructuredConfig returns the structured configuration decoder.
 func (b *resultImpl) StructuredConfig() interfaces.StructuredConfig {
 	return b.structuredConfig
-}
-
-// Logger returns the logger instance.
-func (b *resultImpl) Logger() log.Logger {
-	return b.logger
-}
-
-// AppInfo returns the application information.
-func (b *resultImpl) AppInfo() *interfaces.AppInfo {
-	return b.appInfo
-}
-
-// Container returns the initialized component provider.
-func (b *resultImpl) Container() interfaces.Container {
-	return b.container
-}
-
-// Config implements interfaces.Result.
-func (b *resultImpl) Config() interfaces.Config {
-	return b.config
-}
-
-// Cleanup implements interfaces.Result.
-func (b *resultImpl) Cleanup() func() {
-	return b.cleanup
 }
