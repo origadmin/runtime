@@ -1,8 +1,8 @@
 package container
 
 import (
-	"errors"
 	"fmt"
+	"sort"
 	"sync"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -26,8 +26,14 @@ type Container interface {
 	Database() (DatabaseProvider, error)
 	ObjectStore() (ObjectStoreProvider, error)
 
+	// Components returns all initialized components.
+	// The first call will trigger the initialization process.
 	Components() (map[string]interfaces.Component, error)
+	// Component returns a specific component by name.
+	// The first call will trigger the initialization process.
 	Component(name string) (interfaces.Component, error)
+	// RegisterComponent allows for dynamic, programmatic registration of components.
+	// This is the primary mechanism for factories to add created components to the container.
 	RegisterComponent(name string, comp interfaces.Component)
 }
 
@@ -40,6 +46,7 @@ type containerImpl struct {
 	// Component-related fields are now directly in the container
 	componentFactories map[string]ComponentFactory
 	cachedComponents   map[string]interfaces.Component
+	initErr            error
 	onceComponents     sync.Once
 	componentMu        sync.RWMutex
 
@@ -91,6 +98,84 @@ func NewContainer(config interfaces.StructuredConfig, componentFactories map[str
 	return impl
 }
 
+// initializeComponents is the core logic for component initialization.
+// The container acts as a coordinator, having zero knowledge of the configuration structure.
+// It sorts the registered factories by priority and then executes them.
+func (c *containerImpl) initializeComponents() {
+	logHelper := log.NewHelper(c.logger)
+
+	// 1. Create a slice of factories to be sorted.
+	factories := make([]ComponentFactory, 0, len(c.componentFactories))
+	for _, factory := range c.componentFactories {
+		factories = append(factories, factory)
+	}
+
+	// 2. Sort the factories by priority (lower first).
+	sort.Slice(factories, func(i, j int) bool {
+		return factories[i].Priority() < factories[j].Priority()
+	})
+
+	// 3. Iterate through the sorted factories and execute them.
+	// The container does not parse any configuration. It passes the root config
+	// to each factory, and the factory is responsible for finding its own config,
+	// creating components, and registering them back to the container.
+	for _, factory := range factories {
+		logHelper.Infof("executing component factory with priority %d", factory.Priority())
+
+		// The container IGNORES the returned component from NewComponent.
+		// The factory is expected to register all created components via container.RegisterComponent.
+		if _, err := factory.NewComponent(c.config, c, c.opts...); err != nil {
+			c.initErr = fmt.Errorf("error executing factory with priority %d: %w", factory.Priority(), err)
+			logHelper.Errorf("halting component initialization due to error: %v", c.initErr)
+			return // Stop on first error to prevent dependency issues.
+		}
+	}
+}
+
+// Components returns all initialized components.
+func (c *containerImpl) Components() (map[string]interfaces.Component, error) {
+	c.onceComponents.Do(c.initializeComponents)
+	if c.initErr != nil {
+		return nil, c.initErr
+	}
+
+	c.componentMu.RLock()
+	defer c.componentMu.RUnlock()
+	// Return a copy to prevent modification of the internal map
+	maps := make(map[string]interfaces.Component, len(c.cachedComponents))
+	for k, v := range c.cachedComponents {
+		maps[k] = v
+	}
+	return maps, nil
+}
+
+// Component returns a specific component by name.
+func (c *containerImpl) Component(name string) (interfaces.Component, error) {
+	c.onceComponents.Do(c.initializeComponents)
+	if c.initErr != nil {
+		return nil, c.initErr
+	}
+
+	c.componentMu.RLock()
+	defer c.componentMu.RUnlock()
+
+	comp, ok := c.cachedComponents[name]
+	if !ok {
+		return nil, fmt.Errorf("component '%s' not found", name)
+	}
+	return comp, nil
+}
+
+// RegisterComponent allows for dynamic, programmatic registration of components.
+func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component) {
+	c.componentMu.Lock()
+	defer c.componentMu.Unlock()
+	if _, exists := c.cachedComponents[name]; exists {
+		log.NewHelper(c.logger).Warnf("component with name '%s' is being overwritten", name)
+	}
+	c.cachedComponents[name] = comp
+}
+
 // Registry implements Container.
 func (c *containerImpl) Registry() (RegistryProvider, error) {
 	discoveries, err := c.config.DecodeDiscoveries()
@@ -139,103 +224,4 @@ func (c *containerImpl) ObjectStore() (ObjectStoreProvider, error) {
 	}
 	c.objectStoreProvider.SetConfig(filestores)
 	return c.objectStoreProvider, nil
-}
-
-// Components loads components from config on first call, then returns the cache.
-// This version uses a map-based configuration, which is more intuitive.
-func (c *containerImpl) Components() (map[string]interfaces.Component, error) {
-	var allErrors error
-	logHelper := log.NewHelper(c.logger)
-
-	c.onceComponents.Do(func() {
-		// Decode the 'components' key into a map where keys are component names.
-		componentConfigs := make(map[string]interfaces.StructuredConfig)
-		if err := c.config.ScanKey("components", &componentConfigs); err != nil {
-			logHelper.Errorf("failed to decode 'components' map: %v", err)
-			allErrors = errors.Join(allErrors, fmt.Errorf("failed to decode 'components' map: %w", err))
-			return
-		}
-
-		if len(componentConfigs) == 0 {
-			logHelper.Info("no component configurations found under 'components' key")
-			return
-		}
-
-		c.componentMu.Lock()
-		defer c.componentMu.Unlock()
-
-		for name, compConfig := range componentConfigs {
-			// The framework needs to know the 'type' to find the factory.
-			var typeHolder struct {
-				Type string `json:"type"`
-			}
-			if err := compConfig.Scan(&typeHolder); err != nil {
-				err = fmt.Errorf("failed to scan 'type' for component '%s': %w", name, err)
-				logHelper.Error(err)
-				allErrors = errors.Join(allErrors, err)
-				continue
-			}
-
-			if typeHolder.Type == "" {
-				err := fmt.Errorf("component '%s' is missing a 'type' field", name)
-				logHelper.Error(err)
-				allErrors = errors.Join(allErrors, err)
-				continue
-			}
-
-			factory, ok := c.componentFactories[typeHolder.Type]
-			if !ok {
-				err := fmt.Errorf("component factory for type '%s' (component '%s') not found", typeHolder.Type, name)
-				logHelper.Error(err)
-				allErrors = errors.Join(allErrors, err)
-				continue
-			}
-
-			// The factory gets its own structured config and the container instance.
-			// The factory is responsible for parsing what it needs from the config.
-			comp, err := factory.NewComponent(compConfig, c, c.opts...)
-			if err != nil {
-				err = fmt.Errorf("failed to create component '%s' with type '%s': %w", name, typeHolder.Type, err)
-				logHelper.Error(err)
-				allErrors = errors.Join(allErrors, err)
-				continue
-			}
-			c.cachedComponents[name] = comp
-		}
-	})
-
-	c.componentMu.RLock()
-	defer c.componentMu.RUnlock()
-	// Return a copy to prevent modification of the internal map
-	maps := make(map[string]interfaces.Component, len(c.cachedComponents))
-	for k, v := range c.cachedComponents {
-		maps[k] = v
-	}
-
-	return maps, allErrors
-}
-
-// Component returns a specific component by name, loading all if not already loaded.
-func (c *containerImpl) Component(name string) (interfaces.Component, error) {
-	// This ensures the lazy-loading from config is triggered if it hasn't been already.
-	if _, err := c.Components(); err != nil {
-		// A specific component might have been created successfully even if others failed.
-		// We proceed to check the cache regardless of the aggregate error.
-	}
-
-	c.componentMu.RLock()
-	defer c.componentMu.RUnlock()
-
-	comp, ok := c.cachedComponents[name]
-	if !ok {
-		return nil, fmt.Errorf("component '%s' not found", name)
-	}
-	return comp, nil
-}
-
-// RegisterComponent allows for dynamic, programmatic registration of components.
-func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component) {
-	c.componentMu.Lock()
-	defer c.componentMu.Unlock()
-	c.cachedComponents[name] = comp
 }
