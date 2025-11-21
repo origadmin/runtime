@@ -18,7 +18,7 @@ import (
 type Provider struct {
 	config                *middlewarev1.Middlewares
 	log                   *log.Helper
-	opts                  []options.Option
+	opts                  []options.Option // Now stores options passed to SetConfig
 	clientMiddlewares     map[string]kratosMiddleware.Middleware
 	serverMiddlewares     map[string]kratosMiddleware.Middleware
 	onceClientMiddlewares sync.Once
@@ -57,8 +57,10 @@ func (p *Provider) RegisterClientMiddleware(name string, middleware kratosMiddle
 	p.clientMiddlewares[name] = middleware
 }
 
-func (p *Provider) SetConfig(cfg *middlewarev1.Middlewares) *Provider {
+// SetConfig sets the middleware configurations and dynamic options for the provider.
+func (p *Provider) SetConfig(cfg *middlewarev1.Middlewares, opts ...options.Option) *Provider {
 	p.config = cfg
+	p.opts = opts // Store the dynamically passed options
 	return p
 }
 
@@ -67,6 +69,7 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 	p.onceClientMiddlewares.Do(func() {
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
+			// Pass the stored options to the client middleware creation
 			cm, ok := runtimeMiddleware.NewClientMiddleware(cfg, p.opts...)
 			if !ok {
 				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create client middleware '%s'", name))
@@ -83,6 +86,7 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 	p.onceServerMiddlewares.Do(func() {
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
+			// Pass the stored options to the server middleware creation
 			sm, ok := runtimeMiddleware.NewServerMiddleware(cfg, p.opts...)
 			if !ok {
 				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create server middleware '%s'", name))
@@ -94,12 +98,12 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 	return p.serverMiddlewares, allErrors
 }
 
-func NewProvider(logger log.Logger,
-	opts []options.Option) *Provider {
+// NewProvider creates a new Provider.
+// It no longer receives opts, as options are passed dynamically via SetConfig.
+func NewProvider(logger log.Logger) *Provider {
 	helper := log.NewHelper(logger)
 	return &Provider{
 		log:               helper,
-		opts:              opts,
 		clientMiddlewares: make(map[string]kratosMiddleware.Middleware),
 		serverMiddlewares: make(map[string]kratosMiddleware.Middleware),
 	}

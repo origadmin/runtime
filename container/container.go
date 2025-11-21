@@ -72,11 +72,11 @@ func NewContainer(config interfaces.StructuredConfig, componentFactories map[str
 			opts:                opts,
 			componentFactories:  componentFactories,
 			cachedComponents:    make(map[string]interfaces.Component),
-			middlewareProvider:  middleware.NewProvider(logger, opts),
-			cacheProvider:       cache.NewProvider(logger, opts),
-			databaseProvider:    database.NewProvider(logger, opts),
-			registryProvider:    registry.NewProvider(logger, opts),
-			objectStoreProvider: objectstore.NewProvider(logger, opts),
+			middlewareProvider:  middleware.NewProvider(logger),
+			cacheProvider:       cache.NewProvider(logger),
+			databaseProvider:    database.NewProvider(logger),
+			registryProvider:    registry.NewProvider(logger),
+			objectStoreProvider: objectstore.NewProvider(logger),
 		}
 	}
 
@@ -88,11 +88,11 @@ func NewContainer(config interfaces.StructuredConfig, componentFactories map[str
 		opts:                opts,
 		componentFactories:  componentFactories,
 		cachedComponents:    make(map[string]interfaces.Component),
-		middlewareProvider:  middleware.NewProvider(logger, opts),
-		cacheProvider:       cache.NewProvider(logger, opts),
-		databaseProvider:    database.NewProvider(logger, opts),
-		registryProvider:    registry.NewProvider(logger, opts),
-		objectStoreProvider: objectstore.NewProvider(logger, opts),
+		middlewareProvider:  middleware.NewProvider(logger),
+		cacheProvider:       cache.NewProvider(logger),
+		databaseProvider:    database.NewProvider(logger),
+		registryProvider:    registry.NewProvider(logger),
+		objectStoreProvider: objectstore.NewProvider(logger),
 	}
 
 	return impl

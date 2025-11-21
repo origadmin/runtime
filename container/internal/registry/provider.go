@@ -17,7 +17,7 @@ import (
 type Provider struct {
 	config                 *discoveryv1.Discoveries
 	logger                 *log.Helper
-	opts                   []options.Option
+	opts                   []options.Option // Now stores options passed to SetConfig
 	discoveries            map[string]registry.KDiscovery
 	registrars             map[string]registry.KRegistrar
 	onceDiscoveries        sync.Once
@@ -32,18 +32,19 @@ func (p *Provider) RegisterDiscovery(name string, discovery registry.KDiscovery)
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger, opts []options.Option) *Provider {
+// It no longer receives opts, as options are passed dynamically via SetConfig.
+func NewProvider(logger log.Logger) *Provider {
 	return &Provider{
 		logger:      log.NewHelper(logger),
-		opts:        opts,
 		discoveries: make(map[string]registry.KDiscovery),
 		registrars:  make(map[string]registry.KRegistrar),
 	}
 }
 
-// SetConfig sets the discovery configurations for the provider.
-func (p *Provider) SetConfig(cfg *discoveryv1.Discoveries) *Provider {
+// SetConfig sets the discovery configurations and dynamic options for the provider.
+func (p *Provider) SetConfig(cfg *discoveryv1.Discoveries, opts ...options.Option) *Provider {
 	p.config = cfg
+	p.opts = opts // Store the dynamically passed options
 	return p
 }
 
@@ -58,6 +59,7 @@ func (p *Provider) Discoveries() (map[string]registry.KDiscovery, error) {
 
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
+			// Pass the stored options to the discovery creation
 			d, err := registry.NewDiscovery(cfg, p.opts...)
 			if err != nil {
 				p.logger.Errorf("failed to create discovery '%s': %v", name, err)
@@ -94,6 +96,7 @@ func (p *Provider) Registrars() (map[string]registry.KRegistrar, error) {
 
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
+			// Pass the stored options to the registrar creation
 			reg, err := registry.NewRegistrar(cfg, p.opts...)
 			if err != nil {
 				p.logger.Errorf("failed to create registrar '%s': %v", name, err)

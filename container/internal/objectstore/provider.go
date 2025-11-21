@@ -17,7 +17,7 @@ import (
 type Provider struct {
 	config             *datav1.ObjectStores
 	log                *log.Helper
-	opts               []options.Option
+	opts               []options.Option // Now stores options passed to SetConfig
 	cachedObjectStores map[string]storageiface.ObjectStore
 	onceObjectStores   sync.Once
 }
@@ -28,18 +28,19 @@ func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectSto
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger, opts []options.Option) *Provider {
+// It no longer receives opts, as options are passed dynamically via SetConfig.
+func NewProvider(logger log.Logger) *Provider {
 	helper := log.NewHelper(logger)
 	return &Provider{
 		log:                helper,
-		opts:               opts,
 		cachedObjectStores: make(map[string]storageiface.ObjectStore),
 	}
 }
 
-// SetConfig sets the object store configurations for the provider.
-func (p *Provider) SetConfig(cfg *datav1.ObjectStores) *Provider {
+// SetConfig sets the object store configurations and dynamic options for the provider.
+func (p *Provider) SetConfig(cfg *datav1.ObjectStores, opts ...options.Option) *Provider {
 	p.config = cfg
+	p.opts = opts // Store the dynamically passed options
 	return p
 }
 
@@ -58,6 +59,7 @@ func (p *Provider) ObjectStores() (map[string]storageiface.ObjectStore, error) {
 				p.log.Warnf("object store configuration is missing a name, using driver as fallback: %s", cfg.GetDriver())
 				name = cfg.GetDriver()
 			}
+			// Pass the stored options to the object store creation
 			os, err := objectstore.New(cfg, p.opts...)
 			if err != nil {
 				p.log.Errorf("failed to create object store '%s': %v", name, err)

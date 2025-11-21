@@ -17,7 +17,7 @@ import (
 type Provider struct {
 	config       *datav1.Caches
 	log          *log.Helper
-	opts         []options.Option
+	opts         []options.Option // Now stores options passed to SetConfig
 	cachedCaches map[string]interfaces.Cache
 	onceCaches   sync.Once
 }
@@ -28,18 +28,19 @@ func (p *Provider) RegisterCache(name string, cache interfaces.Cache) {
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger, opts []options.Option) *Provider {
+// It no longer receives opts, as options are passed dynamically via SetConfig.
+func NewProvider(logger log.Logger) *Provider {
 	helper := log.NewHelper(logger)
 	return &Provider{
 		log:          helper,
-		opts:         opts,
 		cachedCaches: make(map[string]interfaces.Cache),
 	}
 }
 
-// SetConfig sets the cache configurations for the provider.
-func (p *Provider) SetConfig(cfg *datav1.Caches) *Provider {
+// SetConfig sets the cache configurations and dynamic options for the provider.
+func (p *Provider) SetConfig(cfg *datav1.Caches, opts ...options.Option) *Provider {
 	p.config = cfg
+	p.opts = opts // Store the dynamically passed options
 	return p
 }
 
@@ -58,6 +59,7 @@ func (p *Provider) Caches() (map[string]interfaces.Cache, error) {
 				p.log.Warnf("cache configuration is missing a name, using driver as fallback: %s", cfg.GetDriver())
 				name = cfg.GetDriver()
 			}
+			// Pass the stored options to the cache creation
 			ca, err := cache.New(cfg, p.opts...)
 			if err != nil {
 				p.log.Errorf("failed to create cache '%s': %v", name, err)

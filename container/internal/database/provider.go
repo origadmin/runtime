@@ -17,7 +17,7 @@ import (
 type Provider struct {
 	config          *datav1.Databases
 	log             *log.Helper
-	opts            []options.Option
+	opts            []options.Option // Now stores options passed to SetConfig
 	cachedDatabases map[string]interfaces.Database
 	onceDatabases   sync.Once
 }
@@ -28,18 +28,19 @@ func (p *Provider) RegisterDatabase(name string, db interfaces.Database) {
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger, opts []options.Option) *Provider {
+// It no longer receives opts, as options are passed dynamically via SetConfig.
+func NewProvider(logger log.Logger) *Provider {
 	helper := log.NewHelper(logger)
 	return &Provider{
 		log:             helper,
-		opts:            opts,
 		cachedDatabases: make(map[string]interfaces.Database),
 	}
 }
 
-// SetConfig sets the database configurations for the provider.
-func (p *Provider) SetConfig(cfg *datav1.Databases) *Provider {
+// SetConfig sets the database configurations and dynamic options for the provider.
+func (p *Provider) SetConfig(cfg *datav1.Databases, opts ...options.Option) *Provider {
 	p.config = cfg
+	p.opts = opts // Store the dynamically passed options
 	return p
 }
 
@@ -58,6 +59,7 @@ func (p *Provider) Databases() (map[string]interfaces.Database, error) {
 				p.log.Warnf("database configuration is missing a name, using driver as fallback: %s", cfg.GetDialect())
 				name = cfg.GetDialect()
 			}
+			// Pass the stored options to the database creation
 			db, err := database.New(cfg, p.opts...)
 			if err != nil {
 				p.log.Errorf("failed to create database '%s': %v", name, err)
