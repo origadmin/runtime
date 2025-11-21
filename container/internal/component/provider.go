@@ -17,9 +17,14 @@ type Provider struct {
 	config                    interfaces.StructuredConfig
 	log                       *log.Helper
 	opts                      []options.Option
-	genericComponentFactories interfaces.GenericComponentFactory // Needed for generic components
+	genericComponentFactories interfaces.GenericComponentFactory
 	cachedComponents          map[string]interfaces.Component
 	onceComponents            sync.Once
+}
+
+func (p *Provider) RegisterComponent(name string, comp interfaces.Component) {
+	//TODO implement me
+	panic("implement me")
 }
 
 // NewProvider creates a new Provider.

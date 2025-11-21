@@ -40,7 +40,7 @@ type StructuredConfig interface {
 	DataConfigDecoder
 	CacheConfigDecoder
 	DatabaseConfigDecoder
-	FileStoreConfigDecoder
+	ObjectStoreConfigDecoder
 	DiscoveriesConfigDecoder
 	LoggerConfigDecoder
 	MiddlewareConfigDecoder
@@ -94,9 +94,6 @@ type DatabaseConfigDecoder interface {
 	DecodeDatabases() (*datav1.Databases, error)
 }
 
-type FileStoreConfigDecoder interface {
-	DecodeFilestores() (*datav1.Filestores, error)
+type ObjectStoreConfigDecoder interface {
+	DecodeObjectStores() (*datav1.ObjectStores, error)
 }
-
-
-

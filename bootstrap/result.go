@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"github.com/go-kratos/kratos/v2/log"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/interfaces"
 )
 
@@ -11,9 +12,7 @@ import (
 // and a cleanup function to release resources.
 type Result interface {
 	// AppInfo returns the application information.
-	AppInfo() *interfaces.AppInfo
-	// Container returns the initialized component provider.
-	Container() interfaces.Container
+	AppInfo() *appv1.App
 	// Config returns the configuration decoder.
 	Config() interfaces.Config
 	// StructuredConfig returns the structured configuration decoder.

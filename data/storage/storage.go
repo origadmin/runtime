@@ -29,15 +29,26 @@ const (
 	Module = "storage"
 )
 
+type Provider interface {
+	Cache(name string) (storageiface.Cache, error)
+	DefaultCache() (storageiface.Cache, error)
+
+	Database(name string) (storageiface.Database, error)
+	DefaultDatabase() (storageiface.Database, error)
+
+	ObjectStore(name string) (storageiface.ObjectStore, error)
+	DefaultObjectStore() (storageiface.ObjectStore, error)
+}
+
 // providerImpl implements the storageiface.Provider interface.
 type providerImpl struct {
-	caches     map[string]storageiface.Cache
-	databases  map[string]storageiface.Database
-	filestores map[string]storageiface.ObjectStore
+	caches       map[string]storageiface.Cache
+	databases    map[string]storageiface.Database
+	objectstores map[string]storageiface.ObjectStore
 
-	defaultCache     string
-	defaultDatabase  string
-	defaultFilestore string
+	defaultCache       string
+	defaultDatabase    string
+	defaultObjectStore string
 
 	mu sync.RWMutex
 }
@@ -45,7 +56,7 @@ type providerImpl struct {
 // New creates a new storage provider instance based on the provided structured configuration.
 // This function is primarily for backward compatibility or when a custom interfaces.StructuredConfig
 // implementation is used. For most cases, NewProvider is recommended.
-func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
+func New(sc interfaces.StructuredConfig) (Provider, error) {
 	dataConfig, err := sc.DecodeData()
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode structured config: %w", err)
@@ -56,11 +67,11 @@ func New(sc interfaces.StructuredConfig) (storageiface.Provider, error) {
 // NewProvider creates a new storage provider instance based on the provided decoded DataConfig.
 // This is the recommended way to initialize a full storage provider when you have the
 // configuration already decoded.
-func NewProvider(dataConfig *datav1.Data) (storageiface.Provider, error) {
+func NewProvider(dataConfig *datav1.Data) (Provider, error) {
 	p := &providerImpl{
-		caches:     make(map[string]storageiface.Cache),
-		databases:  make(map[string]storageiface.Database),
-		filestores: make(map[string]storageiface.FileStore),
+		caches:       make(map[string]storageiface.Cache),
+		databases:    make(map[string]storageiface.Database),
+		objectstores: make(map[string]storageiface.ObjectStore),
 	}
 
 	var err error
@@ -78,7 +89,7 @@ func NewProvider(dataConfig *datav1.Data) (storageiface.Provider, error) {
 	}
 
 	// Initialize Filestores
-	p.filestores, p.defaultFilestore, err = NewFilestores(dataConfig.GetFilestores())
+	p.objectstores, p.defaultObjectStore, err = NewObjectStores(dataConfig.GetObjectstores())
 	if err != nil {
 		return nil, err
 	}
@@ -142,32 +153,32 @@ func NewDatabases(databasesConfig *datav1.Databases) (map[string]storageiface.Da
 	return databases, defaultDatabaseName, nil
 }
 
-// NewFilestores creates a map of file store instances and determines the default file store name
-// from a datav1.FileStores configuration object.
-func NewFilestores(filestoresConfig *datav1.Filestores) (map[string]storageiface.FileStore, string, error) {
-	if filestoresConfig == nil {
+// NewObjectStores creates a map of object store instances and determines the default object store name
+// from a datav1.ObjectStores configuration object.
+func NewObjectStores(objectstoresConfig *datav1.ObjectStores) (map[string]storageiface.ObjectStore, string, error) {
+	if objectstoresConfig == nil {
 		return nil, "", nil
 	}
 
-	filestoreConfigsMap := maps.FromSlice(filestoresConfig.GetConfigs(),
+	objectstoreConfigsMap := maps.FromSlice(objectstoresConfig.GetConfigs(),
 		func(cfg *ossv1.ObjectStoreConfig) (string, *ossv1.ObjectStoreConfig) {
 			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
 		})
 
-	filestores, err := NewFileStoresFromConfigs(filestoreConfigsMap)
+	objectstores, err := NewObjectStoresFromConfigs(objectstoreConfigsMap)
 	if err != nil {
 		return nil, "", err
 	}
 
-	defaultFilestoreName := cmp.Or(filestoresConfig.GetActive(), filestoresConfig.GetDefault(), interfaces.GlobalDefaultKey)
-	if _, ok := filestores[defaultFilestoreName]; !ok && len(filestores) > 0 {
-		// If default not found, but filestores exist, pick the first one
-		for name := range filestores {
-			defaultFilestoreName = name
+	defaultObjectstoreName := cmp.Or(objectstoresConfig.GetActive(), objectstoresConfig.GetDefault(), interfaces.GlobalDefaultKey)
+	if _, ok := objectstores[defaultObjectstoreName]; !ok && len(objectstores) > 0 {
+		// If default not found, but objectstores exist, pick the first one
+		for name := range objectstores {
+			defaultObjectstoreName = name
 			break
 		}
 	}
-	return filestores, defaultFilestoreName, nil
+	return objectstores, defaultObjectstoreName, nil
 }
 
 // NewCachesFromConfigs creates a map of cache instances from a map of cache configurations.
@@ -196,32 +207,32 @@ func NewDatabasesFromConfigs(configs map[string]*databasev1.DatabaseConfig) (map
 	return databases, nil
 }
 
-// NewFileStoresFromConfigs creates a map of file store instances from a map of file store configurations.
-func NewFileStoresFromConfigs(configs map[string]*filestorev1.FilestoreConfig) (map[string]storageiface.FileStore, error) {
-	filestores := make(map[string]storageiface.FileStore)
+// NewObjectStoresFromConfigs creates a map of object store instances from a map of object store configurations.
+func NewObjectStoresFromConfigs(configs map[string]*ossv1.ObjectStoreConfig) (map[string]storageiface.ObjectStore, error) {
+	objectstores := make(map[string]storageiface.ObjectStore)
 	for name, cfg := range configs {
 		fs, err := objectstore.New(cfg)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create filestore '%s': %w", name, err)
+			return nil, fmt.Errorf("failed to create objectstore '%s': %w", name, err)
 		}
-		filestores[name] = fs
+		objectstores[name] = fs
 	}
-	return filestores, nil
+	return objectstores, nil
 }
 
-// FileStore returns the configured file storage service by name.
-func (p *providerImpl) FileStore(name string) (storageiface.FileStore, error) {
+// ObjectStore returns the configured file storage service by name.
+func (p *providerImpl) ObjectStore(name string) (storageiface.ObjectStore, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	if fs, ok := p.filestores[name]; ok {
+	if fs, ok := p.objectstores[name]; ok {
 		return fs, nil
 	}
-	return nil, runtimeerrors.NewStructured(Module, "filestore %v not found", name).WithCaller()
+	return nil, runtimeerrors.NewStructured(Module, "objectstore %v not found", name).WithCaller()
 }
 
-// DefaultFileStore returns the default file storage service.
-func (p *providerImpl) DefaultFileStore() (storageiface.FileStore, error) {
-	return p.FileStore(p.defaultFilestore)
+// DefaultObjectStore returns the default object storage service.
+func (p *providerImpl) DefaultObjectStore() (storageiface.ObjectStore, error) {
+	return p.ObjectStore(p.defaultObjectStore)
 }
 
 // Cache returns the configured cache service by name.

@@ -9,17 +9,22 @@ import (
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/objectstore"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
 // Provider implements interfaces.ObjectStoreProvider
 type Provider struct {
-	config             *datav1.Filestores
+	config             *datav1.ObjectStores
 	log                *log.Helper
 	opts               []options.Option
-	cachedObjectStores map[string]interfaces.ObjectStore
+	cachedObjectStores map[string]storageiface.ObjectStore
 	onceObjectStores   sync.Once
+}
+
+func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectStore) {
+	//TODO implement me
+	panic("implement me")
 }
 
 // NewProvider creates a new Provider.
@@ -28,18 +33,18 @@ func NewProvider(logger log.Logger, opts []options.Option) *Provider {
 	return &Provider{
 		log:                helper,
 		opts:               opts,
-		cachedObjectStores: make(map[string]interfaces.ObjectStore),
+		cachedObjectStores: make(map[string]storageiface.ObjectStore),
 	}
 }
 
 // SetConfig sets the object store configurations for the provider.
-func (p *Provider) SetConfig(cfg *datav1.Filestores) *Provider {
+func (p *Provider) SetConfig(cfg *datav1.ObjectStores) *Provider {
 	p.config = cfg
 	return p
 }
 
 // ObjectStores returns all the configured object stores.
-func (p *Provider) ObjectStores() (map[string]interfaces.ObjectStore, error) {
+func (p *Provider) ObjectStores() (map[string]storageiface.ObjectStore, error) {
 	var allErrors error
 	p.onceObjectStores.Do(func() {
 		if p.config == nil || len(p.config.GetConfigs()) == 0 {
@@ -66,7 +71,7 @@ func (p *Provider) ObjectStores() (map[string]interfaces.ObjectStore, error) {
 }
 
 // ObjectStore returns a specific object store by name.
-func (p *Provider) ObjectStore(name string) (interfaces.ObjectStore, error) {
+func (p *Provider) ObjectStore(name string) (storageiface.ObjectStore, error) {
 	s, err := p.ObjectStores()
 	if err != nil {
 		return nil, err
