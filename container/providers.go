@@ -4,7 +4,6 @@ import (
 	kratosmiddleware "github.com/go-kratos/kratos/v2/middleware"
 	kratosregistry "github.com/go-kratos/kratos/v2/registry"
 
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/storage"
 )
 

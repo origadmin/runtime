@@ -20,11 +20,11 @@ import (
 // Container defines the interface for accessing various runtime components.
 // It elevates Component management to a first-class concern.
 type Container interface {
-	Registry() (RegistryProvider, error)
-	Middleware() (MiddlewareProvider, error)
-	Cache() (CacheProvider, error)
-	Database() (DatabaseProvider, error)
-	ObjectStore() (ObjectStoreProvider, error)
+	Registry(opts ...options.Option) (RegistryProvider, error)
+	Middleware(opts ...options.Option) (MiddlewareProvider, error)
+	Cache(opts ...options.Option) (CacheProvider, error)
+	Database(opts ...options.Option) (DatabaseProvider, error)
+	ObjectStore(opts ...options.Option) (ObjectStoreProvider, error)
 
 	// Components returns all initialized components.
 	// The first call will trigger the initialization process.
@@ -41,7 +41,7 @@ type Container interface {
 type containerImpl struct {
 	config interfaces.StructuredConfig
 	logger log.Logger
-	opts   []options.Option
+	opts   []options.Option // Static options from NewContainer
 
 	// Component-related fields are now directly in the container
 	componentFactories map[string]ComponentFactory
@@ -99,35 +99,24 @@ func NewContainer(config interfaces.StructuredConfig, componentFactories map[str
 }
 
 // initializeComponents is the core logic for component initialization.
-// The container acts as a coordinator, having zero knowledge of the configuration structure.
-// It sorts the registered factories by priority and then executes them.
 func (c *containerImpl) initializeComponents() {
 	logHelper := log.NewHelper(c.logger)
 
-	// 1. Create a slice of factories to be sorted.
 	factories := make([]ComponentFactory, 0, len(c.componentFactories))
 	for _, factory := range c.componentFactories {
 		factories = append(factories, factory)
 	}
 
-	// 2. Sort the factories by priority (lower first).
 	sort.Slice(factories, func(i, j int) bool {
 		return factories[i].Priority() < factories[j].Priority()
 	})
 
-	// 3. Iterate through the sorted factories and execute them.
-	// The container does not parse any configuration. It passes the root config
-	// to each factory, and the factory is responsible for finding its own config,
-	// creating components, and registering them back to the container.
 	for _, factory := range factories {
 		logHelper.Infof("executing component factory with priority %d", factory.Priority())
-
-		// The container IGNORES the returned component from NewComponent.
-		// The factory is expected to register all created components via container.RegisterComponent.
 		if _, err := factory.NewComponent(c.config, c, c.opts...); err != nil {
 			c.initErr = fmt.Errorf("error executing factory with priority %d: %w", factory.Priority(), err)
 			logHelper.Errorf("halting component initialization due to error: %v", c.initErr)
-			return // Stop on first error to prevent dependency issues.
+			return
 		}
 	}
 }
@@ -141,7 +130,6 @@ func (c *containerImpl) Components() (map[string]interfaces.Component, error) {
 
 	c.componentMu.RLock()
 	defer c.componentMu.RUnlock()
-	// Return a copy to prevent modification of the internal map
 	maps := make(map[string]interfaces.Component, len(c.cachedComponents))
 	for k, v := range c.cachedComponents {
 		maps[k] = v
@@ -177,51 +165,78 @@ func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component
 }
 
 // Registry implements Container.
-func (c *containerImpl) Registry() (RegistryProvider, error) {
+func (c *containerImpl) Registry(opts ...options.Option) (RegistryProvider, error) {
+	c.onceComponents.Do(c.initializeComponents)
+	if c.initErr != nil {
+		return nil, c.initErr
+	}
 	discoveries, err := c.config.DecodeDiscoveries()
 	if err != nil {
 		return nil, err
 	}
-	c.registryProvider.SetConfig(discoveries)
+	// Here we assume SetConfig will be adapted to handle options.
+	// For now, we merge and pass them, though the provider might not use them yet.
+	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+	c.registryProvider.SetConfig(discoveries, finalOpts...)
 	return c.registryProvider, nil
 }
 
 // Middleware implements Container.
-func (c *containerImpl) Middleware() (MiddlewareProvider, error) {
+func (c *containerImpl) Middleware(opts ...options.Option) (MiddlewareProvider, error) {
+	c.onceComponents.Do(c.initializeComponents)
+	if c.initErr != nil {
+		return nil, c.initErr
+	}
 	middlewares, err := c.config.DecodeMiddlewares()
 	if err != nil {
 		return nil, err
 	}
-	c.middlewareProvider.SetConfig(middlewares)
+	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+	c.middlewareProvider.SetConfig(middlewares, finalOpts...)
 	return c.middlewareProvider, nil
 }
 
 // Cache implements Container.
-func (c *containerImpl) Cache() (CacheProvider, error) {
+func (c *containerImpl) Cache(opts ...options.Option) (CacheProvider, error) {
+	c.onceComponents.Do(c.initializeComponents)
+	if c.initErr != nil {
+		return nil, c.initErr
+	}
 	caches, err := c.config.DecodeCaches()
 	if err != nil {
 		return nil, err
 	}
-	c.cacheProvider.SetConfig(caches)
+	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+	c.cacheProvider.SetConfig(caches, finalOpts...)
 	return c.cacheProvider, nil
 }
 
 // Database implements Container.
-func (c *containerImpl) Database() (DatabaseProvider, error) {
+func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, error) {
+	c.onceComponents.Do(c.initializeComponents)
+	if c.initErr != nil {
+		return nil, c.initErr
+	}
 	databases, err := c.config.DecodeDatabases()
 	if err != nil {
 		return nil, err
 	}
-	c.databaseProvider.SetConfig(databases)
+	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+	c.databaseProvider.SetConfig(databases, finalOpts...)
 	return c.databaseProvider, nil
 }
 
 // ObjectStore implements Container.
-func (c *containerImpl) ObjectStore() (ObjectStoreProvider, error) {
+func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider, error) {
+	c.onceComponents.Do(c.initializeComponents)
+	if c.initErr != nil {
+		return nil, c.initErr
+	}
 	filestores, err := c.config.DecodeObjectStores()
 	if err != nil {
 		return nil, err
 	}
-	c.objectStoreProvider.SetConfig(filestores)
+	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+	c.objectStoreProvider.SetConfig(filestores, finalOpts...)
 	return c.objectStoreProvider, nil
 }
