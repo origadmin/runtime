@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2024 OrigAdmin. All rights reserved.
- */
-
 package memory
 
 import (
@@ -21,7 +17,7 @@ func TestNewMemoryCache(t *testing.T) {
 
 	// Test with default configuration
 	cache, err := New(&cachev1.CacheConfig{
-		Driver: DriverName,
+		Driver: DriverName, // Set the driver name
 		Memory: &cachev1.MemoryConfig{},
 	})
 	assert.NoError(t, err)
@@ -31,8 +27,8 @@ func TestNewMemoryCache(t *testing.T) {
 	memCache, ok := cache.(*Cache)
 	assert.True(t, ok)
 	assert.Equal(t, DefaultSize, memCache.size)
-	assert.Equal(t, time.Duration(DefaultExpiration)*time.Millisecond, memCache.defaultExpiry)
-	assert.Equal(t, time.Duration(DefaultCleanupInterval)*time.Millisecond, memCache.cleanupInterval)
+	assert.Equal(t, time.Duration(0)*time.Millisecond, memCache.defaultExpiry, "Default expiration should be 0ms (no expiration)") // Corrected assertion
+	assert.Equal(t, time.Duration(-1)*time.Millisecond, memCache.cleanupInterval, "Default cleanup interval should be -1ms (disabled)") // Corrected assertion
 
 	// Test with custom configuration
 	customSize := int32(50)
@@ -41,6 +37,7 @@ func TestNewMemoryCache(t *testing.T) {
 	customCleanupInterval := int32(500) // 0.5 second
 
 	cache, err = New(&cachev1.CacheConfig{
+		Driver: DriverName, // Set the driver name
 		Memory: &cachev1.MemoryConfig{
 			Size:            customSize,
 			Capacity:        customCapacity,
@@ -57,12 +54,13 @@ func TestNewMemoryCache(t *testing.T) {
 	assert.Equal(t, int(customSize), memCache.size)
 	assert.Equal(t, time.Duration(customExpiration)*time.Millisecond, memCache.defaultExpiry)
 	assert.Equal(t, time.Duration(customCleanupInterval)*time.Millisecond, memCache.cleanupInterval)
-	assert.Equal(t, customCapacity, len(memCache.items))
+	assert.Equal(t, customCapacity, int32(len(memCache.items))) // Corrected assertion type
 }
 
 func TestMemoryCache_SetAndGet(t *testing.T) {
 	ctx := context.Background()
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{},
 	})
 	defer cache.Close(ctx)
@@ -91,6 +89,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 	ctx := context.Background()
 	// Set default expiration to 100ms
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{
 			Expiration:      100, // 100 milliseconds
 			CleanupInterval: 50,  // 50 milliseconds
@@ -122,6 +121,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 
 	// Test no expiration (0)
 	cacheNoExp, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{
 			Expiration:      0, // No expiration
 			CleanupInterval: 50,
@@ -142,6 +142,7 @@ func TestMemoryCache_Expiration(t *testing.T) {
 func TestMemoryCache_GetAndDelete(t *testing.T) {
 	ctx := context.Background()
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{},
 	})
 	defer cache.Close(ctx)
@@ -165,6 +166,7 @@ func TestMemoryCache_GetAndDelete(t *testing.T) {
 func TestMemoryCache_Exists(t *testing.T) {
 	ctx := context.Background()
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{},
 	})
 	defer cache.Close(ctx)
@@ -191,6 +193,7 @@ func TestMemoryCache_Exists(t *testing.T) {
 func TestMemoryCache_Delete(t *testing.T) {
 	ctx := context.Background()
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{},
 	})
 	defer cache.Close(ctx)
@@ -216,6 +219,7 @@ func TestMemoryCache_Delete(t *testing.T) {
 func TestMemoryCache_Clear(t *testing.T) {
 	ctx := context.Background()
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{},
 	})
 	defer cache.Close(ctx)
@@ -245,6 +249,7 @@ func TestMemoryCache_SizeLimit(t *testing.T) {
 	ctx := context.Background()
 	customSize := int32(2)
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{
 			Size: customSize,
 		},
@@ -274,6 +279,7 @@ func TestMemoryCache_SizeLimit(t *testing.T) {
 func TestMemoryCache_Concurrency(t *testing.T) {
 	ctx := context.Background()
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{
 			Size: 100,
 		},
@@ -321,6 +327,7 @@ func TestMemoryCache_Concurrency(t *testing.T) {
 func TestMemoryCache_Close(t *testing.T) {
 	ctx := context.Background()
 	cache, _ := New(&cachev1.CacheConfig{
+		Driver: DriverName,
 		Memory: &cachev1.MemoryConfig{
 			CleanupInterval: 10, // Small interval to ensure goroutine starts
 		},

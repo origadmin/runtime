@@ -6,10 +6,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	rt "github.com/origadmin/runtime"
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
 	parentconfig "github.com/origadmin/runtime/test/integration/config"
 	"github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer"
 	_ "github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer" // Import for transformer registration
@@ -32,20 +31,23 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	// The path should be relative to the test's working directory.
 	bootstrapPath := "bootstrap_transformer.yaml"
 
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"TransformerTestApp",
+		"1.0.0",
+		rt.WithAppInfoID("transformer-test-app"),
+	)
+
 	// Initialize App, which should apply the registered custom transformer.
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "transformer-test-app",
-			Name:    "TransformerTestApp",
-			Version: "1.0.0",
-		}),
-		bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{Suffix: "-transformed"}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
+		rt.WithBootstrapOptions(bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{Suffix: "-transformed"})),
 	)
 	// Use require.NoError to fail fast if the runtime fails to initialize.
 	// This prevents panics from defer calls on a nil rtInstance.
 	require.NoError(t, err, "Failed to initialize runtime from bootstrap with custom transformer")
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	// Use StructuredConfig() to get the transformed configuration
 	actualApp, err := rtInstance.StructuredConfig().DecodeApp()

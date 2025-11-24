@@ -210,15 +210,15 @@ func WithMockDataJSON(data map[string]interface{}) options.Option {
 
 // WithMockDataYAML provides mock data for MockConsulSource, marshaling values to YAML.
 func WithMockDataYAML(data map[string]interface{}) options.Option {
-	return optionutil.Update(func(m *MockConsulSource) {
-		if m.mockEntries == nil {
-			m.mockEntries = make(map[string]struct {
+	return optionutil.Update(func(o *MockConsulSource) {
+		if o.mockEntries == nil {
+			o.mockEntries = make(map[string]struct {
 				Value  interface{}
 				Format string
 			})
 		}
 		for k, v := range data {
-			m.mockEntries[k] = struct {
+			o.mockEntries[k] = struct {
 				Value  interface{}
 				Format string
 			}{
@@ -296,10 +296,4 @@ func (m *MockConsulSource) String() string {
 	return "mock-consul-source"
 }
 
-// Register the MockConsulSource with the framework's config package.
-// This init function ensures the mock source is registered when the helper package is imported.
-func init() {
-	runtimeconfig.Register("consul", &MockConsulSource{})
-}
-
-var _ runtimeconfig.SourceFactory = (*MockConsulSource)(nil)
+// var _ runtimeconfig.SourceFactory = (*MockConsulSource)(nil) // Removed this line

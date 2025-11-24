@@ -61,7 +61,7 @@ func main() {
 }
 
 // indexHandler displays the file list for a given path
-func indexHandler(fs storage.FileStore) gin.HandlerFunc {
+func indexHandler(fs *LocalStorage) gin.HandlerFunc { // Changed type to *LocalStorage
 	return func(c *gin.Context) {
 		currentPath := c.Query("path")
 		if currentPath == "" {
@@ -112,12 +112,12 @@ func indexHandler(fs storage.FileStore) gin.HandlerFunc {
 			}
 		}
 
-		c.HTML(http.StatusOK, "index.html", data)
+		c.HTML(http.StatusOK, "index.HTML", data)
 	}
 }
 
 // uploadHandler handles file uploads
-func uploadHandler(fs storage.FileStore) gin.HandlerFunc {
+func uploadHandler(fs *LocalStorage) gin.HandlerFunc { // Changed type to *LocalStorage
 	return func(c *gin.Context) {
 		currentPath := c.PostForm("currentPath") // Get current path from form
 		if currentPath == "" {
@@ -145,7 +145,7 @@ func uploadHandler(fs storage.FileStore) gin.HandlerFunc {
 		defer src.Close()
 
 		// Use fileName directly as it's already the full path from the frontend
-		if err := fs.Write(fileName, src, fileHeader.Size); err != nil {
+		if _, err := fs.Put(c.Request.Context(), fileName, src, fileHeader.Size); err != nil { // Changed to fs.Put
 			log.Printf("Failed to save file: %v", err)
 			c.Redirect(http.StatusFound, "/?path="+currentPath)
 			return
@@ -156,7 +156,7 @@ func uploadHandler(fs storage.FileStore) gin.HandlerFunc {
 }
 
 // downloadHandler handles single file downloads
-func downloadHandler(fs storage.FileStore) gin.HandlerFunc {
+func downloadHandler(fs *LocalStorage) gin.HandlerFunc { // Changed type to *LocalStorage
 	return func(c *gin.Context) {
 		fileName := c.Query("path")
 		if fileName == "" {
@@ -165,7 +165,7 @@ func downloadHandler(fs storage.FileStore) gin.HandlerFunc {
 		}
 		fileName = path.Clean(fileName) // Normalize path
 
-		file, err := fs.Read(fileName)
+		file, err := fs.Get(c.Request.Context(), fileName) // Changed to fs.Get
 		if err != nil {
 			if os.IsNotExist(err) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
@@ -189,7 +189,7 @@ func downloadHandler(fs storage.FileStore) gin.HandlerFunc {
 }
 
 // downloadZipHandler handles downloading multiple selected files as a ZIP archive
-func downloadZipHandler(fs storage.FileStore) gin.HandlerFunc {
+func downloadZipHandler(fs *LocalStorage) gin.HandlerFunc { // Changed type to *LocalStorage
 	return func(c *gin.Context) {
 		selectedFiles := c.PostFormArray("selectedFiles")
 		if len(selectedFiles) == 0 {
@@ -205,13 +205,13 @@ func downloadZipHandler(fs storage.FileStore) gin.HandlerFunc {
 
 		// Helper function to add a file to the zip; defined outside the loop for clarity.
 		addFile := func(filePath string) error {
-			file, err := fs.Read(filePath)
+			file, err := fs.Get(c.Request.Context(), filePath) // Changed to fs.Get
 			if err != nil {
 				return err
 			}
 			defer file.Close()
 
-			info, err := fs.Stat(filePath)
+			info, err := fs.Stat(c.Request.Context(), filePath) // Changed to fs.Stat
 			if err != nil {
 				return err
 			}
@@ -242,7 +242,7 @@ func downloadZipHandler(fs storage.FileStore) gin.HandlerFunc {
 }
 
 // mkdirHandler handles directory creation
-func mkdirHandler(fs storage.FileStore) gin.HandlerFunc {
+func mkdirHandler(fs *LocalStorage) gin.HandlerFunc { // Changed type to *LocalStorage
 	return func(c *gin.Context) {
 		parentPath := c.PostForm("parentPath")
 		dirName := c.PostForm("dirName")
@@ -264,7 +264,7 @@ func mkdirHandler(fs storage.FileStore) gin.HandlerFunc {
 }
 
 // deleteHandler handles file/directory deletion
-func deleteHandler(fs storage.FileStore) gin.HandlerFunc {
+func deleteHandler(fs *LocalStorage) gin.HandlerFunc { // Changed type to *LocalStorage
 	return func(c *gin.Context) {
 		targetPath := c.PostForm("path") // Assuming path is sent via form for POST
 		if targetPath == "" {
@@ -279,7 +279,7 @@ func deleteHandler(fs storage.FileStore) gin.HandlerFunc {
 			currentPath = "/"
 		}
 
-		if err := fs.Delete(targetPath); err != nil {
+		if err := fs.Delete(c.Request.Context(), targetPath); err != nil { // Changed to fs.Delete
 			log.Printf("Failed to delete %s: %v", targetPath, err)
 			// Optionally, add error message to template data
 		}
@@ -288,7 +288,7 @@ func deleteHandler(fs storage.FileStore) gin.HandlerFunc {
 }
 
 // renameHandler handles file/directory renaming
-func renameHandler(fs storage.FileStore) gin.HandlerFunc {
+func renameHandler(fs *LocalStorage) gin.HandlerFunc { // Changed type to *LocalStorage
 	return func(c *gin.Context) {
 		oldPath := c.PostForm("oldPath")
 		newFileName := c.PostForm("newPath") // User input: e.g., new_file.txt
@@ -306,7 +306,7 @@ func renameHandler(fs storage.FileStore) gin.HandlerFunc {
 		// Construct the full new path within the same directory
 		newFullPath := path.Join(oldDir, newFileName) // Use newFileName here
 
-		if err := fs.Rename(oldPath, newFullPath); err != nil {
+		if err := fs.Rename(c.Request.Context(), oldPath, newFullPath); err != nil { // Changed to fs.Rename
 			log.Printf("Failed to rename %s to %s: %v", oldPath, newFullPath, err)
 			// Optionally, add error message to template data
 		}

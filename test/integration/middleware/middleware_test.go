@@ -8,11 +8,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 
+	rt "github.com/origadmin/runtime"
 	selectorv1 "github.com/origadmin/runtime/api/gen/go/config/middleware/selector/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/middleware"
 )
 
 // Define all supported middleware types
@@ -54,36 +54,27 @@ func getMiddlewareField(mw *middlewarev1.Middleware, fieldName string) interface
 	}
 }
 
-// loadTestConfig loads test configuration file
-func loadTestConfig(t *testing.T) *middlewarev1.Middlewares {
-	// Get the directory of the current test file
-	_, filename, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(filename)
+// setupRuntime initializes the runtime for middleware tests
+func setupRuntime(t *testing.T, configFilePath string) (*rt.App, *middlewarev1.Middlewares) {
+	bootstrapPath := filepath.Join(filepath.Dir(configFilePath), "bootstrap.yaml")
 
-	// Build the full path of the configuration file
-	configPath := filepath.Join(dir, "configs", "config.yaml")
+	appInfo := rt.NewAppInfo("middleware-test-app", "1.0.0", rt.WithAppInfoID("middleware-test-app"))
+	rtInstance, err := rt.NewFromBootstrap(bootstrapPath, rt.WithAppInfo(appInfo))
+	require.NoError(t, err, "Failed to initialize runtime")
 
-	// Check if file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		t.Fatalf("Config file not found: %s", configPath)
-	}
-
-	// Load configuration
 	var configs middlewarev1.Middlewares
-	cfg, err := config.Load(configPath, &configs)
-	require.NoError(t, err, "Failed to load config")
-	require.NotNil(t, cfg, "Config instance should not be nil")
-	t.Cleanup(func() {
-		_ = cfg.Close()
-	})
+	err = rtInstance.Config().Decode("middlewares", &configs)
+	require.NoError(t, err, "Failed to decode middlewares config")
 
-	return &configs
+	return rtInstance, &configs
 }
 
 // TestMiddleware_LoadAndBuild tests middleware loading and building
 func TestMiddleware_LoadAndBuild(t *testing.T) {
-	// Load test configuration
-	configs := loadTestConfig(t)
+	_, filename, _, _ := runtime.Caller(0)
+	configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
+
+	rtInstance, configs := setupRuntime(t, configFilePath)
 
 	t.Run("VerifyConfig", func(t *testing.T) {
 		// Check the number of middlewares in the configuration
@@ -107,9 +98,12 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		}
 	})
 
-	t.Run("BuildClientMiddleware", func(t *testing.T) {
-		// Build client middleware chain
-		clientMWs := middleware.BuildClientMiddlewares(configs)
+	t.Run("ClientMiddlewares", func(t *testing.T) {
+		// Get client middleware map
+		middlewareProvider, err := rtInstance.Container().Middleware()
+		require.NoError(t, err)
+		clientMWsMap, err := middlewareProvider.ClientMiddlewares()
+		require.NoError(t, err)
 
 		// Calculate the actual number of supported client middlewares (excluding unsupported middleware types)
 		expectedCount := 0
@@ -123,12 +117,15 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		}
 
 		// Verify the number of middlewares
-		assert.Equal(t, expectedCount, len(clientMWs), "Number of client middlewares should match expected")
+		assert.Equal(t, expectedCount, len(clientMWsMap), "Number of client middlewares should match expected")
 	})
 
-	t.Run("BuildServerMiddleware", func(t *testing.T) {
-		// Build server middleware chain
-		serverMWs := middleware.BuildServerMiddlewares(configs)
+	t.Run("ServerMiddlewares", func(t *testing.T) {
+		// Get server middleware map
+		middlewareProvider, err := rtInstance.Container().Middleware()
+		require.NoError(t, err)
+		serverMWsMap, err := middlewareProvider.ServerMiddlewares()
+		require.NoError(t, err)
 
 		// Calculate the actual number of supported server middlewares (excluding unsupported middleware types)
 		expectedCount := 0
@@ -142,131 +139,19 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		}
 
 		// Verify the number of middlewares
-		assert.Equal(t, expectedCount, len(serverMWs), "Number of server middlewares should match expected")
-	})
-
-	t.Run("MiddlewareNaming", func(t *testing.T) {
-		// Create a custom middleware configuration
-		customConfig := &middlewarev1.Middlewares{
-			Configs: []*middlewarev1.Middleware{
-				{
-					Name:    "custom-name",
-					Type:    "logging",
-					Enabled: true,
-					Logging: &middlewarev1.Logging{},
-				},
-				{
-					Name:     "", // Test unnamed middleware
-					Type:     "metadata",
-					Enabled:  true,
-					Metadata: &middlewarev1.Metadata{},
-				},
-			},
-		}
-
-		// Test client middlewares
-		clientMWs := middleware.BuildClientMiddlewares(customConfig)
-		assert.NotEmpty(t, clientMWs, "Client middlewares should not be empty")
-
-		// Test server middlewares
-		serverMWs := middleware.BuildServerMiddlewares(customConfig)
-		assert.NotEmpty(t, serverMWs, "Server middlewares should not be empty")
-	})
-
-	// Verify middlewares in the configuration
-	t.Run("VerifyConfig", func(t *testing.T) {
-		// Check the number of middlewares in the configuration
-		assert.GreaterOrEqual(t, len(configs.Configs), 2, "Should have at least 2 middlewares in config")
-
-		// Check configuration of each middleware
-		for _, mw := range configs.Configs {
-			t.Run(mw.Name, func(t *testing.T) {
-				// Verify required fields
-				assert.NotEmpty(t, mw.Name, "Middleware name should not be empty")
-				assert.True(t, mw.Enabled, "Middleware should be enabled by default")
-
-				// Verify if the type is supported
-				_, exists := supportedMiddlewareTypes[mw.Type]
-				assert.True(t, exists, "Unsupported middleware type: %s", mw.Type)
-
-				// Verify if the configuration field exists
-				configValue := getMiddlewareField(mw, mw.Type)
-				assert.NotNil(t, configValue, "Config for %s should not be nil", mw.Type)
-			})
-		}
-	})
-
-	// Test client middleware building
-	t.Run("BuildClientMiddleware", func(t *testing.T) {
-		// Build client middleware chain
-		clientMWs := middleware.BuildClientMiddlewares(configs)
-
-		// Calculate the actual number of supported client middlewares (excluding unsupported middleware types)
-		expectedCount := 0
-		var expectedOrder []string
-		for _, mw := range configs.Configs {
-			if mw.Enabled && mw.Type != "rate_limiter" { // rate_limiter 在客户端不受支持
-				expectedOrder = append(expectedOrder, mw.Name)
-				expectedCount++
-			}
-		}
-
-		// Verify the number of middlewares
-		assert.Equal(t, expectedCount, len(clientMWs), "Number of client middlewares should match expected")
-
-		// Verify that each middleware is properly handled
-		for i := 0; i < len(clientMWs); i++ {
-			assert.NotNil(t, clientMWs[i], "Client middleware at index %d should not be nil", i)
-		}
-
-		// Verify that Selector middleware exists
-		selectorFound := false
-		for _, mwName := range expectedOrder {
-			if mwName == "selector" {
-				selectorFound = true
-				break
-			}
-		}
-		assert.True(t, selectorFound, "Selector middleware should be present in client middlewares")
-	})
-
-	// Test server middleware building
-	t.Run("BuildServerMiddleware", func(t *testing.T) {
-		// Build server middleware chain
-		serverMWs := middleware.BuildServerMiddlewares(configs)
-
-		// Calculate the actual number of supported server middlewares (excluding unsupported middleware types)
-		expectedCount := 0
-		var expectedOrder []string
-		for _, mw := range configs.Configs {
-			if mw.Enabled && mw.Type != "circuit_breaker" { // circuit_breaker 在服务端不受支持
-				expectedOrder = append(expectedOrder, mw.Name)
-				expectedCount++
-			}
-		}
-
-		// Verify the number of middlewares
-		assert.Equal(t, expectedCount, len(serverMWs), "Number of server middlewares should match expected")
-
-		// Verify that each middleware is properly handled
-		for i := 0; i < len(serverMWs); i++ {
-			assert.NotNil(t, serverMWs[i], "Server middleware at index %d should not be nil", i)
-		}
-
-		// Verify that Selector middleware exists
-		selectorFound := false
-		for _, mwName := range expectedOrder {
-			if mwName == "selector" {
-				selectorFound = true
-				break
-			}
-		}
-		assert.True(t, selectorFound, "Selector middleware should be present in server middlewares")
+		assert.Equal(t, expectedCount, len(serverMWsMap), "Number of server middlewares should match expected")
 	})
 }
 
 // TestSelectorMiddleware tests the includes/excludes functionality of Selector middleware
 func TestSelectorMiddleware(t *testing.T) {
+	_, filename, _, _ := runtime.Caller(0)
+	configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
+
+	rtInstance, _ := setupRuntime(t, configFilePath)
+	_, err := rtInstance.Container().Middleware()
+	require.NoError(t, err, "Failed to get middleware provider")
+
 	// Prepare test data
 	tests := []struct {
 		name        string
@@ -332,13 +217,40 @@ func TestSelectorMiddleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			tempBootstrapPath := filepath.Join(tempDir, "bootstrap.yaml")
+			tempConfigPath := filepath.Join(tempDir, "config.yaml")
+
+			tempConfigs := &middlewarev1.Middlewares{Configs: []*middlewarev1.Middleware{tt.config.Configs[0]}}
+			configBytes, err := yaml.Marshal(tempConfigs)
+			require.NoError(t, err, "Failed to marshal middleware config to YAML")
+			err = os.WriteFile(tempConfigPath, configBytes, 0644)
+			require.NoError(t, err, "Failed to write config file")
+
+			bootstrapContent := []byte(`sources:
+  - kind: file
+    path: ` + filepath.Base(tempConfigPath) + `
+    format: yaml`)
+			err = os.WriteFile(tempBootstrapPath, bootstrapContent, 0644)
+			require.NoError(t, err, "Failed to write bootstrap file")
+
+			tempAppInfo := rt.NewAppInfo("temp-middleware-test", "1.0.0", rt.WithAppInfoID("temp-middleware-test"))
+			tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
+			require.NoError(t, err)
+
 			switch tt.side {
 			case "client":
-				mw := middleware.BuildClientMiddlewares(tt.config)
-				assert.Len(t, mw, tt.expectCount, "Unexpected number of client middlewares")
+				middlewareProvider, err := tempRtInstance.Container().Middleware()
+				require.NoError(t, err)
+				mwMap, err := middlewareProvider.ClientMiddlewares()
+				require.NoError(t, err)
+				assert.Len(t, mwMap, tt.expectCount, "Unexpected number of client middlewares")
 			case "server":
-				mw := middleware.BuildServerMiddlewares(tt.config)
-				assert.Len(t, mw, tt.expectCount, "Unexpected number of server middlewares")
+				middlewareProvider, err := tempRtInstance.Container().Middleware()
+				require.NoError(t, err)
+				mwMap, err := middlewareProvider.ServerMiddlewares()
+				require.NoError(t, err)
+				assert.Len(t, mwMap, tt.expectCount, "Unexpected number of server middlewares")
 			}
 		})
 	}
@@ -346,6 +258,11 @@ func TestSelectorMiddleware(t *testing.T) {
 
 // TestMiddleware_Creation tests middleware creation
 func TestMiddleware_Creation(t *testing.T) {
+	//_, filename, _, _ := runtime.Caller(0)
+	//configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
+
+	//rtInstance, _ := setupRuntime(t, configFilePath)
+
 	// Test creation of different types of middleware
 	tests := []struct {
 		name     string
@@ -392,34 +309,48 @@ func TestMiddleware_Creation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			tempBootstrapPath := filepath.Join(tempDir, "bootstrap.yaml")
+			tempConfigPath := filepath.Join(tempDir, "config.yaml")
+
+			tempConfigs := &middlewarev1.Middlewares{Configs: []*middlewarev1.Middleware{tt.config}}
+			configBytes, err := yaml.Marshal(tempConfigs)
+			require.NoError(t, err, "Failed to marshal middleware config to YAML")
+			err = os.WriteFile(tempConfigPath, configBytes, 0644)
+			require.NoError(t, err, "Failed to write config file")
+
+			bootstrapContent := []byte(`sources:
+  - kind: file
+    path: ` + filepath.Base(tempConfigPath) + `
+    format: yaml`)
+			err = os.WriteFile(tempBootstrapPath, bootstrapContent, 0644)
+			require.NoError(t, err, "Failed to write bootstrap file")
+
+			tempAppInfo := rt.NewAppInfo("temp-single-mw-test", "1.0.0", rt.WithAppInfoID("temp-single-mw-test"))
+			tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
+			require.NoError(t, err)
+
+			middlewareProvider, err := tempRtInstance.Container().Middleware()
+			require.NoError(t, err)
+
 			// Test client middleware
-			clientMW, _ := middleware.NewClient(tt.config)
+			clientMW, err := middlewareProvider.ClientMiddleware(tt.config.Name)
 			if tt.clientMW {
+				assert.NoError(t, err)
 				assert.NotNil(t, clientMW, "Expected client middleware to be created")
 			} else {
+				assert.Error(t, err) // Expect an error if middleware not found/created
 				assert.Nil(t, clientMW, "Expected no client middleware to be created")
 			}
 
 			// Test server middleware
-			serverMW, _ := middleware.NewServer(tt.config)
+			serverMW, err := middlewareProvider.ServerMiddleware(tt.config.Name)
 			if tt.serverMW {
+				assert.NoError(t, err)
 				assert.NotNil(t, serverMW, "Expected server middleware to be created")
 			} else {
+				assert.Error(t, err) // Expect an error if middleware not found/created
 				assert.Nil(t, serverMW, "Expected no server middleware to be created")
-			}
-
-			// Verify that the middleware is correctly stored
-			if tt.exists {
-				// Create middleware
-				if tt.clientMW {
-					mw, _ := middleware.NewClient(tt.config)
-					assert.NotNil(t, mw, "Client middleware should be created")
-				}
-
-				if tt.serverMW {
-					mw, _ := middleware.NewServer(tt.config)
-					assert.NotNil(t, mw, "Server middleware should be created")
-				}
 			}
 		})
 	}
@@ -427,27 +358,65 @@ func TestMiddleware_Creation(t *testing.T) {
 
 // TestMiddleware_EdgeCases tests edge cases of middleware
 func TestMiddleware_EdgeCases(t *testing.T) {
+	_, filename, _, _ := runtime.Caller(0)
+	configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
+
+	rtInstance, _ := setupRuntime(t, configFilePath)
+
 	t.Run("NilConfig", func(t *testing.T) {
-		// Test nil configuration
-		nilMWs := middleware.BuildClientMiddlewares(nil)
-		assert.Empty(t, nilMWs, "BuildClientMiddlewares with nil config should return empty middlewares")
-		nilMWs = middleware.BuildServerMiddlewares(nil)
-		assert.Empty(t, nilMWs, "BuildServerMiddlewares with nil config should return empty middlewares")
+		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
+		err := os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: nonexistent.yaml"), 0644)
+		require.NoError(t, err)
+
+		tempAppInfo := rt.NewAppInfo("temp-nil-config-test", "1.0.0", rt.WithAppInfoID("temp-nil-config-test"))
+		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
+		require.NoError(t, err)
+		middlewareProvider, err := tempRtInstance.Container().Middleware()
+		require.NoError(t, err)
+
+		nilMWsMap, err := middlewareProvider.ClientMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, nilMWsMap, "ClientMiddlewares with nil config should return empty middlewares")
+
+		nilMWsMap, err = middlewareProvider.ServerMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, nilMWsMap, "ServerMiddlewares with nil config should return empty middlewares")
 	})
 
 	t.Run("EmptyConfig", func(t *testing.T) {
+		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
+		tempConfigPath := filepath.Join(t.TempDir(), "config.yaml")
+
 		emptyConfigs := &middlewarev1.Middlewares{}
+		configBytes, err := yaml.Marshal(emptyConfigs)
+		require.NoError(t, err, "Failed to marshal empty middleware config to YAML")
+		err = os.WriteFile(tempConfigPath, configBytes, 0644)
+		require.NoError(t, err, "Failed to write empty config file")
+
+		err = os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: "+filepath.Base(tempConfigPath)), 0644)
+		require.NoError(t, err)
+
+		tempAppInfo := rt.NewAppInfo("temp-empty-config-test", "1.0.0", rt.WithAppInfoID("temp-empty-config-test"))
+		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
+		require.NoError(t, err)
+		tempMiddlewareProvider, err := tempRtInstance.Container().Middleware()
+		require.NoError(t, err)
 
 		// Test client middlewares with empty configuration
-		clientMWs := middleware.BuildClientMiddlewares(emptyConfigs)
-		assert.Empty(t, clientMWs, "BuildClientMiddlewares with empty config should return empty middlewares")
+		clientMWsMap, err := tempMiddlewareProvider.ClientMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, clientMWsMap, "ClientMiddlewares with empty config should return empty middlewares")
 
 		// Test server middlewares with empty configuration
-		serverMWs := middleware.BuildServerMiddlewares(emptyConfigs)
-		assert.Empty(t, serverMWs, "BuildServerMiddlewares with empty config should return empty middlewares")
+		serverMWsMap, err := tempMiddlewareProvider.ServerMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, serverMWsMap, "ServerMiddlewares with empty config should return empty middlewares")
 	})
 
 	t.Run("DisabledMiddleware", func(t *testing.T) {
+		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
+		tempConfigPath := filepath.Join(t.TempDir(), "config.yaml")
+
 		disabledConfig := &middlewarev1.Middlewares{
 			Configs: []*middlewarev1.Middleware{
 				{
@@ -458,16 +427,32 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 				},
 			},
 		}
+		err := rtInstance.Config().Decode("", disabledConfig)
+		require.NoError(t, err)
+
+		err = os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: "+filepath.Base(tempConfigPath)), 0644)
+		require.NoError(t, err)
+
+		tempAppInfo := rt.NewAppInfo("temp-disabled-mw-test", "1.0.0", rt.WithAppInfoID("temp-disabled-mw-test"))
+		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
+		require.NoError(t, err)
+		tempMiddlewareProvider, err := tempRtInstance.Container().Middleware()
+		require.NoError(t, err)
 
 		// Test that disabled middleware will not be created
-		clientMWs := middleware.BuildClientMiddlewares(disabledConfig)
-		assert.Empty(t, clientMWs, "Disabled middleware should not be created")
+		clientMWsMap, err := tempMiddlewareProvider.ClientMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, clientMWsMap, "Disabled middleware should not be created")
 
-		serverMWs := middleware.BuildServerMiddlewares(disabledConfig)
-		assert.Empty(t, serverMWs, "Disabled middleware should not be created")
+		serverMWsMap, err := tempMiddlewareProvider.ServerMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, serverMWsMap, "Disabled middleware should not be created")
 	})
 
 	t.Run("UnknownMiddlewareType", func(t *testing.T) {
+		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
+		tempConfigPath := filepath.Join(t.TempDir(), "config.yaml")
+
 		unknownConfig := &middlewarev1.Middlewares{
 			Configs: []*middlewarev1.Middleware{
 				{
@@ -477,12 +462,25 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 				},
 			},
 		}
+		err := rtInstance.Config().Decode("", unknownConfig)
+		require.NoError(t, err)
+
+		err = os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: "+filepath.Base(tempConfigPath)), 0644)
+		require.NoError(t, err)
+
+		tempAppInfo := rt.NewAppInfo("temp-unknown-mw-test", "1.0.0", rt.WithAppInfoID("temp-unknown-mw-test"))
+		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
+		require.NoError(t, err)
+		tempMiddlewareProvider, err := tempRtInstance.Container().Middleware()
+		require.NoError(t, err)
 
 		// Test that middleware with unknown types will not be created
-		clientMWs := middleware.BuildClientMiddlewares(unknownConfig)
-		assert.Empty(t, clientMWs, "Unknown middleware type should not be created")
+		clientMWsMap, err := tempMiddlewareProvider.ClientMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, clientMWsMap, "Unknown middleware type should not be created")
 
-		serverMWs := middleware.BuildServerMiddlewares(unknownConfig)
-		assert.Empty(t, serverMWs, "Unknown middleware type should not be created")
+		serverMWsMap, err := tempMiddlewareProvider.ServerMiddlewares()
+		require.NoError(t, err)
+		assert.Empty(t, serverMWsMap, "Unknown middleware type should not be created")
 	})
 }

@@ -10,10 +10,8 @@ import (
 	rt "github.com/origadmin/runtime"
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
-	"github.com/origadmin/runtime/bootstrap"
 	_ "github.com/origadmin/runtime/config/envsource"
 	_ "github.com/origadmin/runtime/config/file"
-	"github.com/origadmin/runtime/interfaces"
 	parentconfig "github.com/origadmin/runtime/test/integration/config"
 )
 
@@ -92,16 +90,20 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 			defer os.Unsetenv("APP_ENV") // Clean up env var after test
 			t.Logf("Setting APP_ENV to %s for %s", tc.envVar, tc.name)
 
+			// Create AppInfo using the new functional options pattern
+			appInfo := rt.NewAppInfo(
+				"EnvTestApp",
+				"1.0.0",
+				rt.WithAppInfoID("env-test-app"),
+				rt.WithAppInfoEnv(tc.envVar), // Set the environment for AppInfo
+			)
+
 			rtInstance, err := rt.NewFromBootstrap(
 				bootstrapPath,
-				bootstrap.WithAppInfo(&interfaces.AppInfo{
-					ID:      "env-test-app",
-					Name:    "EnvTestApp",
-					Version: "1.0.0",
-				}),
+				rt.WithAppInfo(appInfo), // Pass the created AppInfo
 			)
 			require.NoError(t, err, "Failed to initialize runtime from bootstrap for %s", tc.name)
-			defer rtInstance.Cleanup()
+			// Removed defer rtInstance.Cleanup() as it's no longer available
 
 			// Decode the app and logger sections
 			actualApp, err := rtInstance.StructuredConfig().DecodeApp()

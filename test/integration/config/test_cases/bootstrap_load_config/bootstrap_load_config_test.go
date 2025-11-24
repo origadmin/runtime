@@ -8,8 +8,6 @@ import (
 
 	rt "github.com/origadmin/runtime"
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
 	parentconfig "github.com/origadmin/runtime/test/integration/config"
 	"github.com/origadmin/runtime/test/integration/config/builders"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
@@ -41,16 +39,19 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 
 	bootstrapPath := "testdata/complete_config/bootstrap.yaml"
 
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"TestCompleteConfig",
+		"1.0.0",
+		rt.WithAppInfoID("test-complete-config"),
+	)
+
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "test-complete-config",
-			Name:    "TestCompleteConfig",
-			Version: "1.0.0",
-		}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime")
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	var actualConfig testconfigs.TestConfig
 	err = rtInstance.Config().Decode("", &actualConfig)
@@ -86,16 +87,19 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 
 	bootstrapPath := "testdata/proto_integration/bootstrap.yaml"
 
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"TestProtoConfig",
+		"1.0.0",
+		rt.WithAppInfoID("test-proto-config"),
+	)
+
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "test-proto-config",
-			Name:    "TestProtoConfig",
-			Version: "1.0.0",
-		}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime")
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	var actualConfig testconfigs.TestConfig
 	err = rtInstance.Config().Decode("", &actualConfig)
@@ -137,17 +141,20 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 
 	bootstrapPath := "testdata/decoder_test/bootstrap.yaml"
 
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"TestDecoder",
+		"1.0.0",
+		rt.WithAppInfoID("test-decoder"),
+		rt.WithAppInfoEnv("test"),
+	)
+
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "test-decoder",
-			Name:    "TestDecoder",
-			Version: "1.0.0",
-			Env:     "test",
-		}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime")
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	decoder := rtInstance.Config()
 	require.NotNil(t, decoder, "ConfigDecoder should not be nil")

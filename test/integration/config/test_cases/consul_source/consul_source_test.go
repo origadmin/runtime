@@ -14,7 +14,6 @@ import (
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/test/helper"
 	parentconfig "github.com/origadmin/runtime/test/integration/config"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
@@ -59,16 +58,24 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 
 	// Initialize App. The framework should automatically use the registered MockConsulSource
 	// based on the 'type: consul' in bootstrap_consul.yaml.
+	appInfo := rt.NewAppInfo(
+		"ConsulApp",
+		"1.0.0", rt.WithAppInfoID("consul-app-id"),
+	)
+	var bootstrapOpts []bootstrap.Option
+	// Combine bootstrap options with mock data option
+	allOpts := append(bootstrapOpts, helper.WithMockDataJSON(mockData))
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:   "consul-test-app",
-			Name: "ConsulApp", Version: "1.0.0",
-		}),
-		helper.WithMockDataJSON(mockData),
+		rt.WithAppInfo(appInfo),
+		rt.WithBootstrapOptions(allOpts...),
 	)
 	assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
-	defer rtInstance.Cleanup()
+	defer func() {
+		if rtInstance != nil {
+			rtInstance.Config().Close()
+		}
+	}()
 
 	configDecoder := rtInstance.Config()
 	assert.NotNil(configDecoder, "App ConfigDecoder should not be nil")

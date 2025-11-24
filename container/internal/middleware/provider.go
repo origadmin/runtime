@@ -77,7 +77,7 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 				p.log.Warnf("client middleware '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
-			cm, ok := runtimeMiddleware.NewClientMiddleware(cfg, p.opts...)
+			cm, ok := runtimeMiddleware.NewClient(cfg, p.opts...)
 			if ok {
 				p.clientMiddlewares[name] = cm
 			} else {
@@ -128,7 +128,7 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 				p.log.Warnf("server middleware '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
-			sm, ok := runtimeMiddleware.NewServerMiddleware(cfg, p.opts...)
+			sm, ok := runtimeMiddleware.NewServer(cfg, p.opts...)
 			if ok {
 				p.serverMiddlewares[name] = sm
 			} else {

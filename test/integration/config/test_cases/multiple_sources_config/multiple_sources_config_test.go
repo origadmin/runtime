@@ -14,8 +14,6 @@ import (
 	selectorv1 "github.com/origadmin/runtime/api/gen/go/config/selector/v1"
 	grpcv1 "github.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
 	parentconfig "github.com/origadmin/runtime/test/integration/config"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 )
@@ -36,16 +34,19 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 
 	bootstrapPath := filepath.Join("testdata", "bootstrap_multiple_sources.yaml")
 
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"MultiSourceTestApp",
+		"1.0.0",
+		rt.WithAppInfoID("multi-source-test-app"),
+	)
+
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "multi-source-test-app",
-			Name:    "MultiSourceTestApp",
-			Version: "1.0.0",
-		}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime from bootstrap")
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	var actualConfig testconfigs.TestConfig
 	err = rtInstance.Config().Decode("", &actualConfig)

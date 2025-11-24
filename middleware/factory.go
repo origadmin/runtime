@@ -222,9 +222,9 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 	return middlewares
 }
 
-// NewClientMiddleware creates a single client-side middleware instance.
+// NewClient creates a single client-side middleware instance.
 // This is the public API for creating individual client-side middlewares.
-func NewClientMiddleware(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+func NewClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	middlewareType := cfg.GetType()
 	f, ok := defaultBuilder.Get(middlewareType)
 	if !ok {
@@ -234,9 +234,9 @@ func NewClientMiddleware(cfg *middlewarev1.Middleware, opts ...Option) (KMiddlew
 	return f.NewMiddlewareClient(cfg, opts...)
 }
 
-// NewServerMiddleware creates a single server-side middleware instance.
+// NewServer creates a single server-side middleware instance.
 // This is the public API for creating individual server-side middlewares.
-func NewServerMiddleware(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+func NewServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	middlewareType := cfg.GetType()
 	f, ok := defaultBuilder.Get(middlewareType)
 	if !ok {
@@ -246,15 +246,15 @@ func NewServerMiddleware(cfg *middlewarev1.Middleware, opts ...Option) (KMiddlew
 	return f.NewMiddlewareServer(cfg, opts...)
 }
 
-// NewClientMiddlewares creates a new client middleware chain using the default builder.
+// BuildClients creates a new client middleware chain using the default builder.
 // This is the public API for building client-side middlewares.
-func NewClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+func BuildClients(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	return defaultBuilder.BuildClientMiddlewares(cfg, opts...)
 }
 
-// NewServerMiddlewares creates a new server middleware chain using the default builder.
+// BuildServers creates a new server middleware chain using the default builder.
 // This is the public API for building server-side middlewares.
-func NewServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
+func BuildServers(cfg *middlewarev1.Middlewares, opts ...Option) []KMiddleware {
 	return defaultBuilder.BuildServerMiddlewares(cfg, opts...)
 }
 

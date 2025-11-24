@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time" // Import time package for ModTime
 
 	"github.com/origadmin/runtime/interfaces/storage"
 )
@@ -18,9 +19,9 @@ func NewLocalStorage(basePath string) (*LocalStorage, error) {
 	return &LocalStorage{basePath: basePath}, nil
 }
 
-// List returns a slice of FileInfo for the given directory path.
-func (fs *LocalStorage) List(path string) ([]storage.FileInfo, error) {
-	var files []storage.FileInfo
+// List returns a slice of ObjectInfo for the given directory path.
+func (fs *LocalStorage) List(path string) ([]*storage.ObjectInfo, error) { // Changed return type
+	var files []*storage.ObjectInfo // Changed type
 
 	dirPath := filepath.Join(fs.basePath, path)
 	fileInfos, err := os.ReadDir(dirPath)
@@ -34,12 +35,14 @@ func (fs *LocalStorage) List(path string) ([]storage.FileInfo, error) {
 			return nil, err
 		}
 
-		files = append(files, storage.FileInfo{
-			Name:    info.Name(),
+		// Construct storage.ObjectInfo
+		files = append(files, &storage.ObjectInfo{ // Changed type
 			Path:    filepath.Join(path, info.Name()),
-			IsDir:   info.IsDir(),
 			Size:    info.Size(),
 			ModTime: info.ModTime(),
+			Metadata: map[string]interface{}{
+				"is_dir": info.IsDir(), // Add IsDir to metadata
+			},
 		})
 	}
 
@@ -68,19 +71,20 @@ func (fs *LocalStorage) Write(path string, data io.Reader, size int64) error {
 	return err
 }
 
-// Stat returns FileInfo for the given path.
-func (fs *LocalStorage) Stat(path string) (storage.FileInfo, error) {
+// Stat returns ObjectInfo for the given path.
+func (fs *LocalStorage) Stat(path string) (*storage.ObjectInfo, error) { // Changed return type
 	info, err := os.Stat(filepath.Join(fs.basePath, path))
 	if err != nil {
-		return storage.FileInfo{}, err
+		return nil, err // Changed zero value to nil
 	}
 
-	return storage.FileInfo{
-		Name:    info.Name(),
+	return &storage.ObjectInfo{ // Changed type
 		Path:    path,
-		IsDir:   info.IsDir(),
 		Size:    info.Size(),
 		ModTime: info.ModTime(),
+		Metadata: map[string]interface{}{
+			"is_dir": info.IsDir(), // Add IsDir to metadata
+		},
 	}, nil
 }
 

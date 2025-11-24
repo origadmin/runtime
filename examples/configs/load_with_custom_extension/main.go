@@ -8,26 +8,27 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	rt "github.com/origadmin/runtime"
-	"github.com/origadmin/runtime/bootstrap"
 	conf "github.com/origadmin/runtime/examples/protos/custom_extension"
-	"github.com/origadmin/runtime/interfaces"
 )
 
 func main() {
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"Custom Extension Example",
+		"1.0.0",
+		rt.WithAppInfoID("custom-extension-example"),
+		rt.WithAppInfoEnv("development"),
+	)
+
 	// Initialize runtime with bootstrap configuration
 	rtInstance, err := rt.NewFromBootstrap(
 		"examples/configs/load_with_custom_extension/config/bootstrap.yaml",
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "custom-extension-example",
-			Name:    "Custom Extension Example",
-			Version: "1.0.0",
-			Env:     "development",
-		}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	if err != nil {
 		log.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	// Get config decoder
 	decoder := rtInstance.Config()

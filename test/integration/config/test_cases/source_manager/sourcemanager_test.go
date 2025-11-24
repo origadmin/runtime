@@ -7,10 +7,8 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rt "github.com/origadmin/runtime"
-	"github.com/origadmin/runtime/bootstrap"
 	_ "github.com/origadmin/runtime/config/envsource"
 	_ "github.com/origadmin/runtime/config/file"
-	"github.com/origadmin/runtime/interfaces"
 )
 
 // SourceManagerTestSuite defines the test suite for configuration source manager
@@ -38,21 +36,24 @@ type CustomSettings struct {
 func (s *SourceManagerTestSuite) TestConfigSourceMergingAndPriority() {
 	t := s.T()
 
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"test-app",
+		"1.0.0",
+		rt.WithAppInfoID("test-app"),
+	)
+
 	// Use a path relative to the test file itself. This is the robust way to handle test data
 	// and is independent of the current working directory.
 	bootstrapPath := filepath.Join("testdata", "merging_and_priority", "bootstrap.yaml")
 	rtInstance, err := rt.NewFromBootstrap(
 		bootstrapPath,
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "test-app",
-			Name:    "TestApp",
-			Version: "1.0.0",
-		}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	// 2. Get the configuration decoder from the runtime
 	configDecoder := rtInstance.Config()

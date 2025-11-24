@@ -9,9 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 
 	rt "github.com/origadmin/runtime"
-	"github.com/origadmin/runtime/bootstrap"
 	conf "github.com/origadmin/runtime/examples/protos/custom_extension"
-	"github.com/origadmin/runtime/interfaces"
 )
 
 // TempMiddleware is a temporary struct used only for unmarshaling the config file.
@@ -23,23 +21,24 @@ type TempMiddleware struct {
 }
 
 func main() {
-	// --- 1. Load Configuration ---
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"custom-extension-example",
+		"1.0.0",
+		rt.WithAppInfoEnv("development"),
+	)
+
 	// --- 1. Load Configuration ---
 	// We use Kratos config to load the YAML file.
 	// Initialize runtime with bootstrap configuration
 	rtInstance, err := rt.NewFromBootstrap(
 		"examples/configs/load_with_custom_extension/config/bootstrap.yaml",
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "custom-extension-example",
-			Name:    "Custom Extension Example",
-			Version: "1.0.0",
-			Env:     "development",
-		}),
+		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	if err != nil {
 		log.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	defer rtInstance.Cleanup()
+	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	// Get config decoder
 	decoder := rtInstance.Config()
