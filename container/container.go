@@ -5,9 +5,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
-
 	"github.com/origadmin/runtime/container/internal/cache"
 	"github.com/origadmin/runtime/container/internal/database"
 	"github.com/origadmin/runtime/container/internal/middleware"
@@ -16,7 +13,9 @@ import (
 	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	runtimelog "github.com/origadmin/runtime/log"
+	runtimeregistry "github.com/origadmin/runtime/registry"
 )
 
 // Container defines the interface for accessing various runtime components.
@@ -29,16 +28,21 @@ type Container interface {
 	Components(opts ...options.Option) (map[string]interfaces.Component, error)
 	Component(name string) (interfaces.Component, error)
 	RegisterComponent(name string, comp interfaces.Component)
-	Logger() log.Logger
+	Logger() runtimelog.Logger
 	AppInfo() interfaces.AppInfo
 	WithOptions(opts ...options.Option) Container
+	// Default accessors for various providers, prioritizing global options.
+	DefaultCache() (storageiface.Cache, error)
+	DefaultDatabase() (storageiface.Database, error)
+	DefaultObjectStore() (storageiface.ObjectStore, error)
+	DefaultRegistrar() (runtimeregistry.KRegistrar, error)
 }
 
 // containerImpl implements the Container interface.
 type containerImpl struct {
 	mu                  sync.RWMutex
 	config              interfaces.StructuredConfig
-	logger              log.Logger
+	logger              runtimelog.Logger
 	appInfo             interfaces.AppInfo
 	opts                []options.Option
 	componentFactories  map[string]ComponentFactory
@@ -60,28 +64,32 @@ type containerImpl struct {
 	objectStoreProvider *objectstore.Provider
 	objectStoreOnce     sync.Once
 	objectStoreErr      error
+	// Global default names from options, highest priority
+	globalDefaultCacheName       string
+	globalDefaultDatabaseName    string
+	globalDefaultObjectStoreName string
+	globalDefaultRegistrarName   string
 }
 
 // New creates a new Container instance.
 func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	co := optionutil.NewT[containerOptions](opts...)
 
-	var baseLogger log.Logger
+	var baseLogger runtimelog.Logger
 	loggerConfig, err := config.DecodeLogger()
 	if err != nil {
-		log.NewHelper(log.DefaultLogger).Warnf("failed to decode logger config, using default logger: %v", err)
+		runtimelog.NewHelper(runtimelog.DefaultLogger).Warnf("failed to decode logger config, using default logger: %v", err)
 		loggerConfig = nil
 	}
 	baseLogger = runtimelog.NewLogger(loggerConfig)
 
 	enrichedLogger := baseLogger
 	if co.appInfo != nil {
-		enrichedLogger = log.With(baseLogger,
+		// Removed kratos tracing specific fields, use runtimelog's With for general context
+		enrichedLogger = runtimelog.With(baseLogger,
 			"service.name", co.appInfo.Name(),
 			"service.version", co.appInfo.Version(),
 			"service.id", co.appInfo.ID(),
-			"trace.id", tracing.TraceID(),
-			"span.id", tracing.SpanID(),
 		)
 	}
 
@@ -97,6 +105,11 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 		databaseProvider:    database.NewProvider(enrichedLogger),
 		registryProvider:    registry.NewProvider(enrichedLogger),
 		objectStoreProvider: objectstore.NewProvider(enrichedLogger),
+		// Initialize global default names from options
+		globalDefaultCacheName:       co.defaultCacheName,
+		globalDefaultDatabaseName:    co.defaultDatabaseName,
+		globalDefaultObjectStoreName: co.defaultObjectStoreName,
+		globalDefaultRegistrarName:   co.defaultRegistrarName,
 	}
 }
 
@@ -116,6 +129,19 @@ func (c *containerImpl) WithOptions(opts ...options.Option) Container {
 	if co.appInfo != nil {
 		c.appInfo = co.appInfo
 	}
+	// Update global default names if new options provide them
+	if co.defaultCacheName != "" {
+		c.globalDefaultCacheName = co.defaultCacheName
+	}
+	if co.defaultDatabaseName != "" {
+		c.globalDefaultDatabaseName = co.defaultDatabaseName
+	}
+	if co.defaultObjectStoreName != "" {
+		c.globalDefaultObjectStoreName = co.defaultObjectStoreName
+	}
+	if co.defaultRegistrarName != "" {
+		c.globalDefaultRegistrarName = co.defaultRegistrarName
+	}
 	return c
 }
 
@@ -125,12 +151,12 @@ func (c *containerImpl) AppInfo() interfaces.AppInfo {
 	return c.appInfo
 }
 
-func (c *containerImpl) Logger() log.Logger {
+func (c *containerImpl) Logger() runtimelog.Logger {
 	return c.logger
 }
 
 func (c *containerImpl) initializeComponents(opts ...options.Option) {
-	logHelper := log.NewHelper(c.logger)
+	logHelper := runtimelog.NewHelper(c.logger)
 	factories := make([]ComponentFactory, 0, len(c.componentFactories))
 	for _, factory := range c.componentFactories {
 		factories = append(factories, factory)
@@ -183,7 +209,7 @@ func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if _, exists := c.cachedComponents[name]; exists {
-		log.NewHelper(c.logger).Warnf("component with name '%s' is being overwritten", name)
+		runtimelog.NewHelper(c.logger).Warnf("component with name '%s' is being overwritten", name)
 	}
 	c.cachedComponents[name] = comp
 }
@@ -199,6 +225,20 @@ func (c *containerImpl) Registry(opts ...options.Option) (RegistryProvider, erro
 		c.registryProvider.SetConfig(discoveries, finalOpts...)
 	})
 	return c.registryProvider, c.registryErr
+}
+
+// DefaultRegistrar returns the default registrar, prioritizing global options, then config.
+func (c *containerImpl) DefaultRegistrar() (runtimeregistry.KRegistrar, error) {
+	provider, err := c.Registry() // Ensure provider is initialized
+	if err != nil {
+		return nil, err
+	}
+
+	c.mu.RLock()
+	globalName := c.globalDefaultRegistrarName
+	c.mu.RUnlock()
+
+	return provider.DefaultRegistrar(globalName)
 }
 
 func (c *containerImpl) Middleware(opts ...options.Option) (MiddlewareProvider, error) {
@@ -227,6 +267,20 @@ func (c *containerImpl) Cache(opts ...options.Option) (CacheProvider, error) {
 	return c.cacheProvider, c.cacheErr
 }
 
+// DefaultCache returns the default cache, prioritizing global options, then config.
+func (c *containerImpl) DefaultCache() (storageiface.Cache, error) {
+	provider, err := c.Cache() // Ensure provider is initialized
+	if err != nil {
+		return nil, err
+	}
+
+	c.mu.RLock()
+	globalName := c.globalDefaultCacheName
+	c.mu.RUnlock()
+
+	return provider.DefaultCache(globalName)
+}
+
 func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, error) {
 	c.databaseOnce.Do(func() {
 		databases, err := c.config.DecodeDatabases()
@@ -240,6 +294,20 @@ func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, erro
 	return c.databaseProvider, c.databaseErr
 }
 
+// DefaultDatabase returns the default database, prioritizing global options, then config.
+func (c *containerImpl) DefaultDatabase() (storageiface.Database, error) {
+	provider, err := c.Database() // Ensure provider is initialized
+	if err != nil {
+		return nil, err
+	}
+
+	c.mu.RLock()
+	globalName := c.globalDefaultDatabaseName
+	c.mu.RUnlock()
+
+	return provider.DefaultDatabase(globalName)
+}
+
 func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider, error) {
 	c.objectStoreOnce.Do(func() {
 		filestores, err := c.config.DecodeObjectStores()
@@ -251,4 +319,18 @@ func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider
 		c.objectStoreProvider.SetConfig(filestores, finalOpts...)
 	})
 	return c.objectStoreProvider, c.objectStoreErr
+}
+
+// DefaultObjectStore returns the default object store, prioritizing global options, then config.
+func (c *containerImpl) DefaultObjectStore() (storageiface.ObjectStore, error) {
+	provider, err := c.ObjectStore() // Ensure provider is initialized
+	if err != nil {
+		return nil, err
+	}
+
+	c.mu.RLock()
+	globalName := c.globalDefaultObjectStoreName
+	c.mu.RUnlock()
+
+	return provider.DefaultObjectStore(globalName)
 }

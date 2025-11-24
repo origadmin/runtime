@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-kratos/kratos/v2/log"
 	kratosMiddleware "github.com/go-kratos/kratos/v2/middleware"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/options"
+	runtimelog "github.com/origadmin/runtime/log"
 	runtimeMiddleware "github.com/origadmin/runtime/middleware"
 )
 
@@ -20,7 +20,7 @@ import (
 type Provider struct {
 	mu                   sync.Mutex
 	config               *middlewarev1.Middlewares
-	log                  *log.Helper
+	log                  *runtimelog.Helper // Changed to runtimelog.Helper
 	opts                 []options.Option
 	clientMiddlewares    map[string]kratosMiddleware.Middleware
 	serverMiddlewares    map[string]kratosMiddleware.Middleware
@@ -29,9 +29,9 @@ type Provider struct {
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger) *Provider {
+func NewProvider(logger runtimelog.Logger) *Provider {
 	return &Provider{
-		log: log.NewHelper(logger),
+		log: runtimelog.NewHelper(logger), // Changed to runtimelog.NewHelper
 	}
 }
 

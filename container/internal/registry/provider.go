@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-kratos/kratos/v2/log"
-
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	"github.com/origadmin/runtime/interfaces/options"
+	runtimelog "github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/registry"
 )
 
@@ -19,9 +18,9 @@ import (
 type Provider struct {
 	mu                     sync.Mutex
 	config                 *discoveryv1.Discoveries
-	logger                 *log.Helper
+	logger                 *runtimelog.Helper
 	opts                   []options.Option
-	defaultRegistrar       string
+	defaultRegistrar       string // defaultRegistrar from config (active -> default -> single)
 	discoveries            map[string]registry.KDiscovery
 	registrars             map[string]registry.KRegistrar
 	discoveriesInitialized bool
@@ -29,9 +28,11 @@ type Provider struct {
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger) *Provider {
+func NewProvider(logger runtimelog.Logger) *Provider {
 	return &Provider{
-		logger: log.NewHelper(logger),
+		logger:      runtimelog.NewHelper(logger),
+		discoveries: make(map[string]registry.KDiscovery),
+		registrars:  make(map[string]registry.KRegistrar),
 	}
 }
 
@@ -47,6 +48,19 @@ func (p *Provider) SetConfig(cfg *discoveryv1.Discoveries, opts ...options.Optio
 	p.registrarsInitialized = false
 	p.discoveries = make(map[string]registry.KDiscovery)
 	p.registrars = make(map[string]registry.KRegistrar)
+
+	// Determine the provisional default registrar name based on config priority:
+	// 1. 'active' field
+	// 2. 'default' field
+	// 3. single instance fallback
+	var defaultName string
+	if cfg != nil {
+		defaultName = cmp.Or(cfg.GetActive(), cfg.GetDefault())
+		if defaultName == "" && len(cfg.GetConfigs()) == 1 {
+			defaultName = cmp.Or(cfg.GetConfigs()[0].GetName(), cfg.GetConfigs()[0].GetType())
+		}
+	}
+	p.defaultRegistrar = defaultName
 
 	return p
 }
@@ -73,7 +87,11 @@ func (p *Provider) Discoveries() (map[string]registry.KDiscovery, error) {
 	var allErrors error
 	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
-			name := cmp.Or(cfg.Name, cfg.Type)
+			name := cmp.Or(cfg.GetName(), cfg.GetType())
+			if name == "" {
+				p.logger.Warnf("discovery configuration is missing a name, using type as fallback: %s", cfg.GetType())
+				continue
+			}
 			if _, exists := p.discoveries[name]; exists {
 				p.logger.Warnf("discovery '%s' is already registered, skipping config-based creation", name)
 				continue
@@ -157,14 +175,41 @@ func (p *Provider) Registrar(name string) (registry.KRegistrar, error) {
 	return reg, nil
 }
 
-// DefaultRegistrar returns the default service registrar.
-func (p *Provider) DefaultRegistrar() (registry.KRegistrar, error) {
+// DefaultRegistrar returns the default service registrar. It performs validation and applies fallbacks.
+// The globalDefaultName is provided by the container, having the lowest priority.
+func (p *Provider) DefaultRegistrar(globalDefaultName string) (registry.KRegistrar, error) {
+	// Ensure all registrars are initialized before we try to find the default.
+	registrars, err := p.Registrars()
+	if err != nil {
+		return nil, err
+	}
+
 	p.mu.Lock()
-	name := p.defaultRegistrar
+	configDefaultName := p.defaultRegistrar // Default name determined from config (active -> default -> single)
 	p.mu.Unlock()
 
-	if name == "" {
-		return nil, errors.New("default registrar not set")
+	// Priority 1: Config-based default (active -> default -> single instance)
+	if configDefaultName != "" {
+		if registrar, ok := registrars[configDefaultName]; ok {
+			return registrar, nil
+		}
+		p.logger.Warnf("config-based default registrar '%s' not found, attempting global default or fallback", configDefaultName)
 	}
-	return p.Registrar(name)
+
+	// Priority 2: Global default name from options
+	if globalDefaultName != "" {
+		if registrar, ok := registrars[globalDefaultName]; ok {
+			return registrar, nil
+		}
+		p.logger.Warnf("global default registrar '%s' not found, attempting single instance fallback", globalDefaultName)
+	}
+
+	// Priority 3: Fallback to single instance if only one exists
+	if len(registrars) == 1 {
+		for _, registrar := range registrars {
+			return registrar, nil
+		}
+	}
+
+	return nil, errors.New("no default registrar configured or found, and multiple registrars exist")
 }

@@ -1,16 +1,16 @@
 package database
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"sync"
-
-	"github.com/go-kratos/kratos/v2/log"
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	runtimelog "github.com/origadmin/runtime/log"
 )
 
 // Provider implements storageiface.DatabaseProvider. It manages the lifecycle of database
@@ -19,17 +19,18 @@ import (
 type Provider struct {
 	mu              sync.Mutex
 	config          *datav1.Databases
-	log             *log.Helper
+	log             *runtimelog.Helper
 	opts            []options.Option
-	defaultDatabase string
+	defaultDatabase string // defaultDatabase from config (active -> default -> single)
 	databases       map[string]storageiface.Database
 	initialized     bool
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger) *Provider {
+func NewProvider(logger runtimelog.Logger) *Provider {
 	return &Provider{
-		log: log.NewHelper(logger),
+		log:       runtimelog.NewHelper(logger),
+		databases: make(map[string]storageiface.Database),
 	}
 }
 
@@ -43,6 +44,19 @@ func (p *Provider) SetConfig(cfg *datav1.Databases, opts ...options.Option) *Pro
 	p.opts = opts
 	p.initialized = false
 	p.databases = make(map[string]storageiface.Database)
+
+	// Determine the provisional default database name based on config priority:
+	// 1. 'active' field
+	// 2. 'default' field
+	// 3. single instance fallback
+	var defaultName string
+	if cfg != nil {
+		defaultName = cmp.Or(cfg.GetActive(), cfg.GetDefault())
+		if defaultName == "" && len(cfg.GetConfigs()) == 1 {
+			defaultName = cmp.Or(cfg.GetConfigs()[0].GetName(), cfg.GetConfigs()[0].GetDialect())
+		}
+	}
+	p.defaultDatabase = defaultName
 
 	return p
 }
@@ -68,10 +82,10 @@ func (p *Provider) Databases() (map[string]storageiface.Database, error) {
 	var allErrors error
 	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
-			name := cfg.GetName()
+			name := cmp.Or(cfg.GetName(), cfg.GetDialect())
 			if name == "" {
-				name = cfg.GetDialect()
-				p.log.Warnf("database configuration is missing a name, using dialect as fallback: %s", name)
+				p.log.Warnf("database configuration is missing a name, using dialect as fallback: %s", cfg.GetDialect())
+				continue
 			}
 			if _, exists := p.databases[name]; exists {
 				p.log.Warnf("database '%s' is already registered, skipping config-based creation", name)
@@ -104,14 +118,41 @@ func (p *Provider) Database(name string) (storageiface.Database, error) {
 	return db, nil
 }
 
-// DefaultDatabase returns the default database instance.
-func (p *Provider) DefaultDatabase() (storageiface.Database, error) {
+// DefaultDatabase returns the default database instance. It performs validation and applies fallbacks.
+// The globalDefaultName is provided by the container, having the lowest priority.
+func (p *Provider) DefaultDatabase(globalDefaultName string) (storageiface.Database, error) {
+	// Ensure all databases are initialized before we try to find the default.
+	databases, err := p.Databases()
+	if err != nil {
+		return nil, err
+	}
+
 	p.mu.Lock()
-	name := p.defaultDatabase
+	configDefaultName := p.defaultDatabase // Default name determined from config (active -> default -> single)
 	p.mu.Unlock()
 
-	if name == "" {
-		return nil, errors.New("default database name is not set")
+	// Priority 1: Config-based default (active -> default -> single instance)
+	if configDefaultName != "" {
+		if db, ok := databases[configDefaultName]; ok {
+			return db, nil
+		}
+		p.log.Warnf("config-based default database '%s' not found, attempting global default or fallback", configDefaultName)
 	}
-	return p.Database(name)
+
+	// Priority 2: Global default name from options
+	if globalDefaultName != "" {
+		if db, ok := databases[globalDefaultName]; ok {
+			return db, nil
+		}
+		p.log.Warnf("global default database '%s' not found, attempting single instance fallback", globalDefaultName)
+	}
+
+	// Priority 3: Fallback to single instance if only one exists
+	if len(databases) == 1 {
+		for _, db := range databases {
+			return db, nil
+		}
+	}
+
+	return nil, errors.New("no default database configured or found, and multiple databases exist")
 }

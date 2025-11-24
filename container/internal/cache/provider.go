@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/goexts/generic/cmp"
+
+	runtimelog "github.com/origadmin/runtime/log" // Corrected import alias
+
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
-	"github.com/origadmin/runtime/log"
 )
 
 // Provider implements storageiface.CacheProvider. It manages the lifecycle of cache
@@ -18,22 +21,24 @@ import (
 type Provider struct {
 	mu          sync.Mutex
 	config      *datav1.Caches
-	log         *log.Helper
+	log         *runtimelog.Helper
 	opts        []options.Option
-	defaultName string
+	defaultName string // defaultName from config (active -> default -> single)
 	caches      map[string]storageiface.Cache
 	initialized bool
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger log.Logger) *Provider {
+func NewProvider(logger runtimelog.Logger) *Provider { // Changed logger type
 	return &Provider{
-		log: log.NewHelper(logger),
+		log:    runtimelog.NewHelper(logger),
+		caches: make(map[string]storageiface.Cache),
 	}
 }
 
 // SetConfig updates the provider's configuration. This will clear any previously
 // cached instances and cause them to be recreated on the next access, using the new configuration.
+// It also provisionally determines the default instance name from the configuration.
 func (p *Provider) SetConfig(cfg *datav1.Caches, opts ...options.Option) *Provider {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -42,6 +47,19 @@ func (p *Provider) SetConfig(cfg *datav1.Caches, opts ...options.Option) *Provid
 	p.opts = opts
 	p.initialized = false
 	p.caches = make(map[string]storageiface.Cache)
+
+	// Determine the provisional default cache name based on config priority:
+	// 1. 'active' field
+	// 2. 'default' field
+	// 3. single instance fallback
+	var defaultName string
+	if cfg != nil {
+		defaultName = cmp.Or(cfg.GetActive(), cfg.GetDefault())
+		if defaultName == "" && len(cfg.GetConfigs()) == 1 {
+			defaultName = cmp.Or(cfg.GetConfigs()[0].GetName(), cfg.GetConfigs()[0].GetDriver())
+		}
+	}
+	p.defaultName = defaultName
 
 	return p
 }
@@ -67,10 +85,10 @@ func (p *Provider) Caches() (map[string]storageiface.Cache, error) {
 	var allErrors error
 	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
-			name := cfg.GetName()
+			name := cmp.Or(cfg.GetName(), cfg.GetDriver())
 			if name == "" {
-				name = cfg.GetDriver()
-				p.log.Warnf("cache configuration is missing a name, using driver as fallback: %s", name)
+				p.log.Warnf("cache configuration is missing a name, using driver as fallback: %s", cfg.GetDriver())
+				continue
 			}
 			if _, exists := p.caches[name]; exists {
 				p.log.Warnf("cache '%s' is already registered, skipping config-based creation", name)
@@ -103,14 +121,41 @@ func (p *Provider) Cache(name string) (storageiface.Cache, error) {
 	return ca, nil
 }
 
-// DefaultCache returns the default cache instance.
-func (p *Provider) DefaultCache() (storageiface.Cache, error) {
+// DefaultCache returns the default cache instance. It performs validation and applies fallbacks.
+// The globalDefaultName is provided by the container, having the lowest priority.
+func (p *Provider) DefaultCache(globalDefaultName string) (storageiface.Cache, error) {
+	// Ensure all caches are initialized before we try to find the default.
+	caches, err := p.Caches()
+	if err != nil {
+		return nil, err
+	}
+
 	p.mu.Lock()
-	name := p.defaultName
+	configDefaultName := p.defaultName // Default name determined from config (active -> default -> single)
 	p.mu.Unlock()
 
-	if name == "" {
-		return nil, errors.New("default cache name is not set")
+	// Priority 1: Config-based default (active -> default -> single instance)
+	if configDefaultName != "" {
+		if cache, ok := caches[configDefaultName]; ok {
+			return cache, nil
+		}
+		p.log.Warnf("config-based default cache '%s' not found, attempting global default or fallback", configDefaultName)
 	}
-	return p.Cache(name)
+
+	// Priority 2: Global default name from options
+	if globalDefaultName != "" {
+		if cache, ok := caches[globalDefaultName]; ok {
+			return cache, nil
+		}
+		p.log.Warnf("global default cache '%s' not found, attempting single instance fallback", globalDefaultName)
+	}
+
+	// Priority 3: Fallback to single instance if only one exists
+	if len(caches) == 1 {
+		for _, cache := range caches {
+			return cache, nil
+		}
+	}
+
+	return nil, errors.New("no default cache configured or found, and multiple caches exist")
 }
