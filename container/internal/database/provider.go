@@ -7,7 +7,9 @@ import (
 	"sync"
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
+	"github.com/origadmin/runtime/container/internal/util" // Import util package
 	"github.com/origadmin/runtime/data/storage/database"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	runtimelog "github.com/origadmin/runtime/log"
@@ -121,38 +123,41 @@ func (p *Provider) Database(name string) (storageiface.Database, error) {
 // DefaultDatabase returns the default database instance. It performs validation and applies fallbacks.
 // The globalDefaultName is provided by the container, having the lowest priority.
 func (p *Provider) DefaultDatabase(globalDefaultName string) (storageiface.Database, error) {
-	// Ensure all databases are initialized before we try to find the default.
 	databases, err := p.Databases()
 	if err != nil {
 		return nil, err
 	}
+	if len(databases) == 0 {
+		return nil, errors.New("no databases available")
+	}
 
 	p.mu.Lock()
-	configDefaultName := p.defaultDatabase // Default name determined from config (active -> default -> single)
+	configDefaultName := p.defaultDatabase
 	p.mu.Unlock()
 
-	// Priority 1: Config-based default (active -> default -> single instance)
+	var prioritizedNames []string
+
+	// Priority 1: Config-based default
 	if configDefaultName != "" {
-		if db, ok := databases[configDefaultName]; ok {
-			return db, nil
-		}
-		p.log.Warnf("config-based default database '%s' not found, attempting global default or fallback", configDefaultName)
+		prioritizedNames = append(prioritizedNames, configDefaultName)
 	}
 
-	// Priority 2: Global default name from options
+	// Priority 2: External globalDefaultName
 	if globalDefaultName != "" {
-		if db, ok := databases[globalDefaultName]; ok {
-			return db, nil
-		}
-		p.log.Warnf("global default database '%s' not found, attempting single instance fallback", globalDefaultName)
+		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
 
-	// Priority 3: Fallback to single instance if only one exists
-	if len(databases) == 1 {
-		for _, db := range databases {
-			return db, nil
-		}
+	// Priority 3: GlobalDefaultKey (as a final fallback)
+	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
+
+	// Call the utility function to determine the default component
+	name, value, err := util.DefaultComponent(databases, prioritizedNames...)
+	if err == nil {
+		p.log.Debugf("resolved default database to '%s'", name)
+		return value, nil
 	}
 
-	return nil, errors.New("no default database configured or found, and multiple databases exist")
+	// If util.DefaultComponent returned an error, handle it here.
+	// The error from util.DefaultComponent already describes why a default wasn't found.
+	return nil, fmt.Errorf("no default database found: %w", err)
 }

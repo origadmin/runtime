@@ -16,7 +16,7 @@ import (
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	filesource "github.com/origadmin/runtime/config/file"
-	"github.com/origadmin/runtime/extension/optionutil"
+	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
 )
 

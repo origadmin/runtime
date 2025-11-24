@@ -4,7 +4,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/origadmin/runtime/extension/optionutil"
+	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 )

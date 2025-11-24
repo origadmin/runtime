@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"github.com/origadmin/runtime/extension/optionutil"
+	"github.com/origadmin/runtime/extensions/optionutil"
 
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"

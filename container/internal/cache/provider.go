@@ -7,10 +7,12 @@ import (
 
 	"github.com/goexts/generic/cmp"
 
-	runtimelog "github.com/origadmin/runtime/log" // Corrected import alias
+	"github.com/origadmin/runtime/container/internal/util" // Import util package
+	runtimelog "github.com/origadmin/runtime/log"
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
@@ -29,7 +31,7 @@ type Provider struct {
 }
 
 // NewProvider creates a new Provider.
-func NewProvider(logger runtimelog.Logger) *Provider { // Changed logger type
+func NewProvider(logger runtimelog.Logger) *Provider {
 	return &Provider{
 		log:    runtimelog.NewHelper(logger),
 		caches: make(map[string]storageiface.Cache),
@@ -124,38 +126,41 @@ func (p *Provider) Cache(name string) (storageiface.Cache, error) {
 // DefaultCache returns the default cache instance. It performs validation and applies fallbacks.
 // The globalDefaultName is provided by the container, having the lowest priority.
 func (p *Provider) DefaultCache(globalDefaultName string) (storageiface.Cache, error) {
-	// Ensure all caches are initialized before we try to find the default.
 	caches, err := p.Caches()
 	if err != nil {
 		return nil, err
 	}
+	if len(caches) == 0 {
+		return nil, errors.New("no caches available")
+	}
 
 	p.mu.Lock()
-	configDefaultName := p.defaultName // Default name determined from config (active -> default -> single)
+	configDefaultName := p.defaultName
 	p.mu.Unlock()
 
-	// Priority 1: Config-based default (active -> default -> single instance)
+	var prioritizedNames []string
+
+	// Priority 1: Config-based default
 	if configDefaultName != "" {
-		if cache, ok := caches[configDefaultName]; ok {
-			return cache, nil
-		}
-		p.log.Warnf("config-based default cache '%s' not found, attempting global default or fallback", configDefaultName)
+		prioritizedNames = append(prioritizedNames, configDefaultName)
 	}
 
-	// Priority 2: Global default name from options
+	// Priority 2: External globalDefaultName
 	if globalDefaultName != "" {
-		if cache, ok := caches[globalDefaultName]; ok {
-			return cache, nil
-		}
-		p.log.Warnf("global default cache '%s' not found, attempting single instance fallback", globalDefaultName)
+		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
 
-	// Priority 3: Fallback to single instance if only one exists
-	if len(caches) == 1 {
-		for _, cache := range caches {
-			return cache, nil
-		}
+	// Priority 3: GlobalDefaultKey (as a final fallback)
+	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
+
+	// Call the utility function to determine the default component
+	name, value, err := util.DefaultComponent(caches, prioritizedNames...)
+	if err == nil {
+		p.log.Debugf("resolved default cache to '%s'", name)
+		return value, nil
 	}
 
-	return nil, errors.New("no default cache configured or found, and multiple caches exist")
+	// If util.DefaultComponent returned an error, handle it here.
+	// The error from util.DefaultComponent already describes why a default wasn't found.
+	return nil, fmt.Errorf("no default cache found: %w", err)
 }

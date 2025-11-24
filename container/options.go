@@ -1,19 +1,19 @@
 package container
 
 import (
-	"github.com/origadmin/runtime/extension/optionutil"
+	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // containerOptions holds the configurable settings for a Container.
 type containerOptions struct {
-	appInfo              interfaces.AppInfo
-	componentFactories   map[string]ComponentFactory
-	defaultCacheName     string
-	defaultDatabaseName  string
+	appInfo                interfaces.AppInfo
+	componentFactories     map[string]ComponentFactory
+	defaultCacheName       string
+	defaultDatabaseName    string
 	defaultObjectStoreName string
-	defaultRegistrarName string
+	defaultRegistrarName   string
 }
 
 // WithAppInfo sets the application's metadata for the container.

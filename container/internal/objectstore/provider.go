@@ -8,7 +8,9 @@ import (
 	"github.com/goexts/generic/cmp"
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
+	"github.com/origadmin/runtime/container/internal/util" // Import util package
 	"github.com/origadmin/runtime/data/storage/objectstore"
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 	runtimelog "github.com/origadmin/runtime/log"
@@ -123,38 +125,41 @@ func (p *Provider) ObjectStore(name string) (storageiface.ObjectStore, error) {
 // DefaultObjectStore returns the default object store instance. It performs validation and applies fallbacks.
 // The globalDefaultName is provided by the container, having the lowest priority.
 func (p *Provider) DefaultObjectStore(globalDefaultName string) (storageiface.ObjectStore, error) {
-	// Ensure all stores are initialized before we try to find the default.
 	stores, err := p.ObjectStores()
 	if err != nil {
 		return nil, err
 	}
+	if len(stores) == 0 {
+		return nil, errors.New("no object stores available")
+	}
 
 	p.mu.Lock()
-	configDefaultName := p.objectStoreName // Default name determined from config (active -> default -> single)
+	configDefaultName := p.objectStoreName
 	p.mu.Unlock()
 
-	// Priority 1: Config-based default (active -> default -> single instance)
+	var prioritizedNames []string
+
+	// Priority 1: Config-based default
 	if configDefaultName != "" {
-		if store, ok := stores[configDefaultName]; ok {
-			return store, nil
-		}
-		p.log.Warnf("config-based default object store '%s' not found, attempting global default or fallback", configDefaultName)
+		prioritizedNames = append(prioritizedNames, configDefaultName)
 	}
 
-	// Priority 2: Global default name from options
+	// Priority 2: External globalDefaultName
 	if globalDefaultName != "" {
-		if store, ok := stores[globalDefaultName]; ok {
-			return store, nil
-		}
-		p.log.Warnf("global default object store '%s' not found, attempting single instance fallback", globalDefaultName)
+		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
 
-	// Priority 3: Fallback to single instance if only one exists
-	if len(stores) == 1 {
-		for _, store := range stores {
-			return store, nil
-		}
+	// Priority 3: GlobalDefaultKey (as a final fallback)
+	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
+
+	// Call the utility function to determine the default component
+	name, value, err := util.DefaultComponent(stores, prioritizedNames...)
+	if err == nil {
+		p.log.Debugf("resolved default object store to '%s'", name)
+		return value, nil
 	}
 
-	return nil, errors.New("no default object store configured or found, and multiple object stores exist")
+	// If util.DefaultComponent returned an error, handle it here.
+	// The error from util.DefaultComponent already describes why a default wasn't found.
+	return nil, fmt.Errorf("no default object store found: %w", err)
 }

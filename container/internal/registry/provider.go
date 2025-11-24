@@ -1,12 +1,17 @@
 package registry
 
 import (
-	"cmp"
 	"errors"
 	"fmt"
 	"sync"
 
+	"github.com/goexts/generic/cmp"
+
+	"github.com/origadmin/runtime/container/internal/util"
+	"github.com/origadmin/toolkits/configutil"
+
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
+	"github.com/origadmin/runtime/interfaces" // Import interfaces package
 	"github.com/origadmin/runtime/interfaces/options"
 	runtimelog "github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/registry"
@@ -20,7 +25,7 @@ type Provider struct {
 	config                 *discoveryv1.Discoveries
 	logger                 *runtimelog.Helper
 	opts                   []options.Option
-	defaultRegistrar       string // defaultRegistrar from config (active -> default -> single)
+	defaultRegistrar       string
 	discoveries            map[string]registry.KDiscovery
 	registrars             map[string]registry.KRegistrar
 	discoveriesInitialized bool
@@ -49,18 +54,8 @@ func (p *Provider) SetConfig(cfg *discoveryv1.Discoveries, opts ...options.Optio
 	p.discoveries = make(map[string]registry.KDiscovery)
 	p.registrars = make(map[string]registry.KRegistrar)
 
-	// Determine the provisional default registrar name based on config priority:
-	// 1. 'active' field
-	// 2. 'default' field
-	// 3. single instance fallback
-	var defaultName string
-	if cfg != nil {
-		defaultName = cmp.Or(cfg.GetActive(), cfg.GetDefault())
-		if defaultName == "" && len(cfg.GetConfigs()) == 1 {
-			defaultName = cmp.Or(cfg.GetConfigs()[0].GetName(), cfg.GetConfigs()[0].GetType())
-		}
-	}
-	p.defaultRegistrar = defaultName
+	// Use the new configutil.DetermineDefaultName function to set the default registrar name.
+	p.defaultRegistrar = configutil.DetermineDefaultName(cfg)
 
 	return p
 }
@@ -175,41 +170,46 @@ func (p *Provider) Registrar(name string) (registry.KRegistrar, error) {
 	return reg, nil
 }
 
-// DefaultRegistrar returns the default service registrar. It performs validation and applies fallbacks.
-// The globalDefaultName is provided by the container, having the lowest priority.
+// DefaultRegistrar returns the default service registrar based on a clear priority order.
+// The globalDefaultName is provided by the container, and its purpose is to find a default container.
 func (p *Provider) DefaultRegistrar(globalDefaultName string) (registry.KRegistrar, error) {
-	// Ensure all registrars are initialized before we try to find the default.
+	// 1. Retrieve all registrars.
 	registrars, err := p.Registrars()
 	if err != nil {
 		return nil, err
 	}
+	if len(registrars) == 0 {
+		return nil, errors.New("no registrars available")
+	}
 
 	p.mu.Lock()
-	configDefaultName := p.defaultRegistrar // Default name determined from config (active -> default -> single)
+	internalDefaultName := p.defaultRegistrar // Config-defined default, highest priority
 	p.mu.Unlock()
 
-	// Priority 1: Config-based default (active -> default -> single instance)
-	if configDefaultName != "" {
-		if registrar, ok := registrars[configDefaultName]; ok {
-			return registrar, nil
-		}
-		p.logger.Warnf("config-based default registrar '%s' not found, attempting global default or fallback", configDefaultName)
+	var prioritizedNames []string
+
+	// Priority 1: Internal config-defined default
+	if internalDefaultName != "" {
+		prioritizedNames = append(prioritizedNames, internalDefaultName)
 	}
 
-	// Priority 2: Global default name from options
+	// Priority 2: External globalDefaultName (if provided and not empty)
 	if globalDefaultName != "" {
-		if registrar, ok := registrars[globalDefaultName]; ok {
-			return registrar, nil
-		}
-		p.logger.Warnf("global default registrar '%s' not found, attempting single instance fallback", globalDefaultName)
+		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
 
-	// Priority 3: Fallback to single instance if only one exists
-	if len(registrars) == 1 {
-		for _, registrar := range registrars {
-			return registrar, nil
-		}
+	// Priority 3: GlobalDefaultKey (as a final fallback)
+	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
+
+	// Call the utility function to determine the default component
+	name, value, err := util.DefaultComponent(registrars, prioritizedNames...)
+	if err == nil {
+		// Log the resolved default registrar name.
+		p.logger.Debugf("resolved default registrar to '%s'", name)
+		return value, nil
 	}
 
-	return nil, errors.New("no default registrar configured or found, and multiple registrars exist")
+	// If util.DefaultComponent returned an error, handle it here.
+	// The error from util.DefaultComponent already describes why a default wasn't found.
+	return nil, fmt.Errorf("no default registrar found: %w", err)
 }

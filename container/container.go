@@ -10,7 +10,7 @@ import (
 	"github.com/origadmin/runtime/container/internal/middleware"
 	"github.com/origadmin/runtime/container/internal/objectstore"
 	"github.com/origadmin/runtime/container/internal/registry"
-	"github.com/origadmin/runtime/extension/optionutil"
+	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
@@ -31,7 +31,7 @@ type Container interface {
 	Logger() runtimelog.Logger
 	AppInfo() interfaces.AppInfo
 	WithOptions(opts ...options.Option) Container
-	// Default accessors for various providers, prioritizing global options.
+
 	DefaultCache() (storageiface.Cache, error)
 	DefaultDatabase() (storageiface.Database, error)
 	DefaultObjectStore() (storageiface.ObjectStore, error)
