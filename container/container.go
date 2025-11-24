@@ -58,7 +58,7 @@ type containerImpl struct {
 // The signature is now stable and only accepts config and options.
 func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	// 1. Process options to get appInfo and other settings.
-	co := optionutil.NewT[containerOptions](opts...)
+	co := fromOptions(opts)
 
 	// 2. Create a base logger.
 	var baseLogger log.Logger

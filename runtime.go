@@ -10,7 +10,6 @@ import (
 	"github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
-	"github.com/origadmin/runtime/interfaces/storage"
 )
 
 // App defines the application's runtime environment.
@@ -131,16 +130,6 @@ func (r *App) DefaultRegistrar() (registry.Registrar, error) {
 // RegistryProvider returns the service registry provider.
 func (r *App) RegistryProvider(opts ...options.Option) (container.RegistryProvider, error) {
 	return r.container.Registry(opts...)
-}
-
-// Registrar returns a service registrar component by its configured name.
-func (r *App) Registrar(name string) (registry.Registrar, bool) {
-	return r.container.Registrar(name)
-}
-
-// Storage returns the configured storage provider.
-func (r *App) Storage() storage.Provider {
-	return r.container.StorageProvider()
 }
 
 // AppInfo returns the application's metadata.
