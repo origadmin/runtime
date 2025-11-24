@@ -7,14 +7,17 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/interfaces/storage"
 )
 
 // App defines the application's runtime environment, providing convenient access to core components.
 // It encapsulates an interfaces.Container and is the primary object that applications will interact with.
 type App struct {
-	result bootstrap.Result
+	result    bootstrap.Result
+	container container.Container
 }
 
 // New is the core constructor for a App instance.
@@ -23,7 +26,10 @@ func New(result bootstrap.Result) *App {
 	if result == nil {
 		panic("bootstrap.Result cannot be nil when creating a new App")
 	}
-	return &App{result: result}
+	return &App{
+		result:    result,
+		container: container.New(result.StructuredConfig()),
+	}
 }
 
 // NewFromBootstrap is a convenience constructor that simplifies application startup.
@@ -39,16 +45,6 @@ func NewFromBootstrap(bootstrapPath string, opts ...bootstrap.Option) (*App, err
 	return rt, nil
 }
 
-// WithAppInfo returns an Option that sets the application information.
-func WithAppInfo(info *AppInfo) bootstrap.Option {
-	return bootstrap.WithAppInfo((*interfaces.AppInfo)(info))
-}
-
-// AppInfo returns the application's configured information (ID, name, version, metadata).
-func (r *App) AppInfo() *interfaces.AppInfo {
-	return r.result.AppInfo()
-}
-
 // Config returns the configuration decoder, allowing access to raw configuration values.
 func (r *App) Config() interfaces.Config {
 	return r.result.Config()
@@ -62,14 +58,18 @@ func (r *App) StructuredConfig() interfaces.StructuredConfig {
 
 // Logger returns the configured Kratos logger.
 func (r *App) Logger() log.Logger {
-	return r.result.Logger()
+	return r.container.Logger()
 }
 
 // Container returns the underlying dependency injection container. This method is primarily for advanced use cases
 // where direct access to the container is necessary. For most common operations, prefer using the specific
 // accessor methods provided by the App (e.g., Logger(), Config(), Component()).
-func (r *App) Container() interfaces.Container {
-	return r.result.Container()
+//
+// The returned container is a new instance with the provided options applied, allowing for scoped configuration.
+// The original container remains unchanged.
+func (r *App) Container(opts ...options.Option) container.Container {
+	// Return a new container with the provided options applied
+	return r.container.WithOptions(opts...)
 }
 
 // NewApp creates a new Kratos application instance.
@@ -80,7 +80,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 		kratos.Logger(r.Logger()),
 		kratos.Server(servers...),
 	}
-	info := (*AppInfo)(r.AppInfo())
+	info := r.AppInfo()
 	opts = append(opts, info.Options()...)
 
 	if registrar := r.DefaultRegistrar(); registrar != nil {
@@ -92,36 +92,77 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 }
 
 // Component retrieves a generic, user-defined component by its registered name.
-func (r *App) Component(name string) (interface{}, bool) {
-	return r.result.Container().Component(name)
+func (r *App) Component(name string) (interface{}, error) {
+	return r.container.Component(name)
 }
 
 // DefaultRegistrar returns the default service registrar, used for service self-registration.
 // It may be nil if no default registry is configured.
-func (r *App) DefaultRegistrar() registry.Registrar {
-	return r.result.Container().DefaultRegistrar()
+func (r *App) DefaultRegistrar() (registry.Registrar, error) {
+	reg, err := r.container.Registry()
+	if err != nil {
+		return nil, err
+	}
+	return reg.DefaultRegistrar()
 }
 
-// Discovery returns a service discovery component by its configured name.
-func (r *App) Discovery(name string) (registry.Discovery, bool) {
-	return r.result.Container().Discovery(name)
+// RegistryProvider returns the service registry provider, used for service discovery.
+// It may be nil if no default registry is configured.
+func (r *App) RegistryProvider(opts ...options.Option) (container.RegistryProvider, error) {
+	return r.container.Registry(opts...)
 }
 
 // Registrar returns a service registrar component by its configured name.
 func (r *App) Registrar(name string) (registry.Registrar, bool) {
-	return r.result.Container().Registrar(name)
+	return r.container.Registrar(name)
 }
 
 // Storage returns the configured storage provider.
 func (r *App) Storage() storage.Provider {
-	return r.result.Container().StorageProvider()
+	return r.container.StorageProvider()
 }
 
-// Cleanup executes the cleanup function for all resources acquired during bootstrap.
-// This should be called via defer right after the App is created.
-func (r *App) Cleanup() {
-	// The cleanup function itself can be nil if no resources need cleaning.
-	if cleanup := r.result.Cleanup(); cleanup != nil {
-		cleanup()
+// AppInfo returns the application's metadata.
+func (r *App) AppInfo() *interfaces.AppInfo {
+	app := r.result.AppInfo()
+	if app == nil {
+		// Return a default AppInfo if not set
+		return &interfaces.AppInfo{
+			ID:        "unknown",
+			Name:      "unknown",
+			Version:   "v0.0.0",
+			Env:       "dev",
+			StartTime: time.Now(),
+			Metadata:  make(map[string]string),
+		}
 	}
+
+	// Convert protobuf AppInfo to interfaces.AppInfo
+	info := &interfaces.AppInfo{
+		ID:        app.Id,
+		Name:      app.Name,
+		Version:   app.Version,
+		Env:       app.Environment,
+		StartTime: app.StartTime.AsTime(),
+		Metadata:  app.Metadata,
+	}
+
+	return info
+}
+
+// Options returns the Kratos options based on the application's metadata.
+func (info *interfaces.AppInfo) Options() []kratos.Option {
+	opts := []kratos.Option{
+		kratos.ID(info.ID),
+		kratos.Name(info.Name),
+		kratos.Version(info.Version),
+		kratos.Metadata(info.Metadata),
+	}
+
+	// Add environment if set
+	if info.Env != "" {
+		opts = append(opts, kratos.Env(info.Env))
+	}
+
+	return opts
 }

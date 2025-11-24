@@ -39,6 +39,7 @@ type MiddlewareProvider interface {
 type CacheProvider interface {
 	Caches() (map[string]storage.Cache, error)
 	Cache(name string) (storage.Cache, error)
+	DefaultCache() (storage.Cache, error)
 	RegisterCache(name string, cache storage.Cache)
 }
 
@@ -46,6 +47,7 @@ type CacheProvider interface {
 type DatabaseProvider interface {
 	Databases() (map[string]storage.Database, error)
 	Database(name string) (storage.Database, error)
+	DefaultDatabase() (storage.Database, error)
 	RegisterDatabase(name string, db storage.Database)
 }
 
@@ -53,5 +55,6 @@ type DatabaseProvider interface {
 type ObjectStoreProvider interface {
 	ObjectStores() (map[string]storage.ObjectStore, error)
 	ObjectStore(name string) (storage.ObjectStore, error)
+	DefaultObjectStore() (storage.ObjectStore, error)
 	RegisterObjectStore(name string, store storage.ObjectStore)
 }

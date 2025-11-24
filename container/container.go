@@ -37,13 +37,14 @@ type Container interface {
 
 	// Logger returns the configured logger instance.
 	Logger() log.Logger
+	WithOptions(opts ...options.Option) Container
 }
 
 // containerImpl implements the Container interface with lazy loading and caching.
 type containerImpl struct {
 	config interfaces.StructuredConfig
 	logger log.Logger
-	opts   []options.Option // Static options from NewContainer
+	opts   []options.Option // Static options from New
 
 	// Component-related fields are now directly in the container
 	componentFactories map[string]ComponentFactory
@@ -60,9 +61,18 @@ type containerImpl struct {
 	objectStoreProvider *objectstore.Provider
 }
 
-// NewContainer creates a new Container instance with the given configuration.
-func NewContainer(config interfaces.StructuredConfig, opts ...options.Option) Container {
+func (c *containerImpl) WithOptions(opts ...options.Option) Container {
+	c.opts = opts
 	componentFactories := ComponentFactoryFromOptions(opts...)
+	// Merge component factories from options
+	for name, factory := range componentFactories {
+		c.componentFactories[name] = factory
+	}
+	return c
+}
+
+// New creates a new Container instance with the given configuration.
+func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	var logger log.Logger
 	loggerConfig, err := config.DecodeLogger()
 	if err != nil {
@@ -78,13 +88,17 @@ func NewContainer(config interfaces.StructuredConfig, opts ...options.Option) Co
 		config:              config,
 		logger:              logger,
 		opts:                opts,
-		componentFactories:  componentFactories,
+		componentFactories:  make(map[string]ComponentFactory),
 		cachedComponents:    make(map[string]interfaces.Component),
 		middlewareProvider:  middleware.NewProvider(logger),
 		cacheProvider:       cache.NewProvider(logger),
 		databaseProvider:    database.NewProvider(logger),
 		registryProvider:    registry.NewProvider(logger),
 		objectStoreProvider: objectstore.NewProvider(logger),
+	}
+
+	if len(opts) > 0 {
+		impl.WithOptions(opts...)
 	}
 
 	return impl
@@ -103,7 +117,7 @@ func (c *containerImpl) initializeComponents(opts ...options.Option) {
 		return factories[i].Priority() < factories[j].Priority()
 	})
 
-	// Merge static opts from NewContainer and dynamic opts from Components() call
+	// Merge static opts from New and dynamic opts from Components() call
 	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
 
 	for _, factory := range factories {

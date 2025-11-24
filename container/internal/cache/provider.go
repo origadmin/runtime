@@ -9,32 +9,36 @@ import (
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
+	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
-// Provider implements interfaces.CacheProvider
+// Provider implements storageiface.CacheProvider
 type Provider struct {
 	config       *datav1.Caches
 	log          *log.Helper
 	opts         []options.Option // Now stores options passed to SetConfig
-	cachedCaches map[string]interfaces.Cache
+	defaultName  string
+	cachedCaches map[string]storageiface.Cache
 	onceCaches   sync.Once
 }
 
-func (p *Provider) RegisterCache(name string, cache interfaces.Cache) {
-	//TODO implement me
-	panic("implement me")
+func (p *Provider) DefaultCache() (storageiface.Cache, error) {
+	// Check if defaultName is set
+	if p.defaultName == "" {
+		return nil, fmt.Errorf("default cache name is not set")
+	}
+
+	defaultCache, err := p.Cache(p.defaultName)
+	if err != nil {
+		return nil, err
+	}
+	return defaultCache, nil
 }
 
-// NewProvider creates a new Provider.
-// It no longer receives opts, as options are passed dynamically via SetConfig.
-func NewProvider(logger log.Logger) *Provider {
-	helper := log.NewHelper(logger)
-	return &Provider{
-		log:          helper,
-		cachedCaches: make(map[string]interfaces.Cache),
-	}
+func (p *Provider) RegisterCache(name string, cache storageiface.Cache) {
+	// Register the cache in the provider
+	p.cachedCaches[name] = cache
 }
 
 // SetConfig sets the cache configurations and dynamic options for the provider.
@@ -45,7 +49,7 @@ func (p *Provider) SetConfig(cfg *datav1.Caches, opts ...options.Option) *Provid
 }
 
 // Caches returns all the configured caches.
-func (p *Provider) Caches() (map[string]interfaces.Cache, error) {
+func (p *Provider) Caches() (map[string]storageiface.Cache, error) {
 	var allErrors error
 	p.onceCaches.Do(func() {
 		if p.config == nil || len(p.config.GetConfigs()) == 0 {
@@ -73,7 +77,7 @@ func (p *Provider) Caches() (map[string]interfaces.Cache, error) {
 }
 
 // Cache returns a specific cache by name.
-func (p *Provider) Cache(name string) (interfaces.Cache, error) {
+func (p *Provider) Cache(name string) (storageiface.Cache, error) {
 	s, err := p.Caches()
 	if err != nil {
 		return nil, err
@@ -83,4 +87,14 @@ func (p *Provider) Cache(name string) (interfaces.Cache, error) {
 		return nil, fmt.Errorf("cache '%s' not found", name)
 	}
 	return ca, nil
+}
+
+// NewProvider creates a new Provider.
+// It no longer receives opts, as options are passed dynamically via SetConfig.
+func NewProvider(logger log.Logger) *Provider {
+	helper := log.NewHelper(logger)
+	return &Provider{
+		log:          helper,
+		cachedCaches: make(map[string]storageiface.Cache),
+	}
 }

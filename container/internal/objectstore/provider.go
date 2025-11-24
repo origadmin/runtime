@@ -17,14 +17,28 @@ import (
 type Provider struct {
 	config             *datav1.ObjectStores
 	log                *log.Helper
-	opts               []options.Option // Now stores options passed to SetConfig
+	opts               []options.Option
+	objectStoreName    string
 	cachedObjectStores map[string]storageiface.ObjectStore
 	onceObjectStores   sync.Once
 }
 
+func (p *Provider) DefaultObjectStore() (storageiface.ObjectStore, error) {
+	// Check if objectStoreName is set
+	if p.objectStoreName == "" {
+		return nil, fmt.Errorf("object store name is not set")
+	}
+
+	defaultObjectStore, err := p.ObjectStore(p.objectStoreName)
+	if err != nil {
+		return nil, err
+	}
+	return defaultObjectStore, nil
+}
+
 func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectStore) {
-	//TODO implement me
-	panic("implement me")
+	// Register the object store in the provider
+	p.cachedObjectStores[name] = store
 }
 
 // NewProvider creates a new Provider.
