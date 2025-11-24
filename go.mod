@@ -7,7 +7,7 @@ require (
 	github.com/bufbuild/buf v1.59.0
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fsnotify/fsnotify v1.9.0
-	github.com/genelet/determined v1.12.3
+	github.com/genelet/determined v1.12.4
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251106012513-9262193e351a
 	github.com/go-kratos/kratos/cmd/protoc-gen-go-errors/v2 v2.0.0-20251106012513-9262193e351a
