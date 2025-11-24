@@ -19,6 +19,7 @@ import (
 )
 
 // Container defines the interface for accessing various runtime components.
+// The configuration of the container is finalized upon its creation.
 type Container interface {
 	Registry(opts ...options.Option) (RegistryProvider, error)
 	Middleware(opts ...options.Option) (MiddlewareProvider, error)
@@ -30,7 +31,6 @@ type Container interface {
 	RegisterComponent(name string, comp interfaces.Component)
 	Logger() runtimelog.Logger
 	AppInfo() interfaces.AppInfo
-	WithOptions(opts ...options.Option) Container
 
 	DefaultCache() (storageiface.Cache, error)
 	DefaultDatabase() (storageiface.Database, error)
@@ -44,7 +44,7 @@ type containerImpl struct {
 	config              interfaces.StructuredConfig
 	logger              runtimelog.Logger
 	appInfo             interfaces.AppInfo
-	opts                []options.Option
+	opts                []options.Option // Stored options from New, used for sub-provider initialization
 	componentFactories  map[string]ComponentFactory
 	cachedComponents    map[string]interfaces.Component
 	componentsErr       error
@@ -71,7 +71,7 @@ type containerImpl struct {
 	globalDefaultRegistrarName   string
 }
 
-// New creates a new Container instance.
+// New creates a new Container instance. All configuration should be passed here.
 func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	co := optionutil.NewT[containerOptions](opts...)
 
@@ -97,7 +97,7 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 		config:              config,
 		logger:              enrichedLogger,
 		appInfo:             co.appInfo,
-		opts:                opts,
+		opts:                opts, // Store the initial options for sub-provider initialization
 		componentFactories:  co.componentFactories,
 		cachedComponents:    make(map[string]interfaces.Component),
 		middlewareProvider:  middleware.NewProvider(enrichedLogger),
@@ -111,38 +111,6 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 		globalDefaultObjectStoreName: co.defaultObjectStoreName,
 		globalDefaultRegistrarName:   co.defaultRegistrarName,
 	}
-}
-
-func (c *containerImpl) WithOptions(opts ...options.Option) Container {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	c.opts = append(c.opts, opts...)
-	co := optionutil.NewT[containerOptions](c.opts...)
-
-	if c.componentFactories == nil {
-		c.componentFactories = make(map[string]ComponentFactory)
-	}
-	for name, factory := range co.componentFactories {
-		c.componentFactories[name] = factory
-	}
-	if co.appInfo != nil {
-		c.appInfo = co.appInfo
-	}
-	// Update global default names if new options provide them
-	if co.defaultCacheName != "" {
-		c.globalDefaultCacheName = co.defaultCacheName
-	}
-	if co.defaultDatabaseName != "" {
-		c.globalDefaultDatabaseName = co.defaultDatabaseName
-	}
-	if co.defaultObjectStoreName != "" {
-		c.globalDefaultObjectStoreName = co.defaultObjectStoreName
-	}
-	if co.defaultRegistrarName != "" {
-		c.globalDefaultRegistrarName = co.defaultRegistrarName
-	}
-	return c
 }
 
 func (c *containerImpl) AppInfo() interfaces.AppInfo {
@@ -165,6 +133,7 @@ func (c *containerImpl) initializeComponents(opts ...options.Option) {
 		return factories[i].Priority() < factories[j].Priority()
 	})
 
+	// Combine initial options with any specific options for Components()
 	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
 	for _, factory := range factories {
 		logHelper.Infof("executing component factory with priority %d", factory.Priority())

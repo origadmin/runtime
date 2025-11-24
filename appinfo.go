@@ -9,8 +9,7 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 )
 
-// appInfo is the concrete, unexported implementation that satisfies both
-// the AppInfo and AppInfoBuilder interfaces.
+// appInfo is the concrete, unexported implementation that satisfies the AppInfo interface.
 type appInfo struct {
 	id        string
 	name      string
@@ -20,15 +19,75 @@ type appInfo struct {
 	metadata  map[string]string
 }
 
-// NewAppInfoBuilder is the public constructor. It returns the AppInfoBuilder
-// interface, hiding the concrete implementation.
-func NewAppInfoBuilder(name, version string) interfaces.AppInfoBuilder {
-	return &appInfo{
+// AppInfoOption defines a functional option for configuring AppInfo.
+type AppInfoOption func(*appInfo)
+
+// NewAppInfo creates a new AppInfo instance using functional options.
+func NewAppInfo(name, version string, opts ...AppInfoOption) interfaces.AppInfo {
+	// Default values
+	a := &appInfo{
 		name:     name,
 		version:  version,
 		id:       uuid.New().String(), // Default ID
 		env:      "dev",               // Default Env
 		metadata: make(map[string]string),
+	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt(a)
+	}
+
+	// Set start time at build time if it hasn't been set.
+	if a.startTime.IsZero() {
+		a.startTime = time.Now()
+	}
+
+	// Return a defensive copy to ensure the returned AppInfo is immutable.
+	return &appInfo{
+		id:        a.id,
+		name:      a.name,
+		version:   a.version,
+		env:       a.env,
+		startTime: a.startTime,
+		metadata:  maps.Clone(a.metadata), // Clone metadata to ensure immutability
+	}
+}
+
+// WithAppInfoEnv sets the environment for the application.
+func WithAppInfoEnv(env string) AppInfoOption {
+	return func(a *appInfo) {
+		if env != "" {
+			a.env = env
+		}
+	}
+}
+
+// WithAppInfoID sets a custom instance ID.
+func WithAppInfoID(id string) AppInfoOption {
+	return func(a *appInfo) {
+		if id != "" {
+			a.id = id
+		}
+	}
+}
+
+// WithAppInfoStartTime sets a custom start time.
+func WithAppInfoStartTime(startTime time.Time) AppInfoOption {
+	return func(a *appInfo) {
+		if !startTime.IsZero() {
+			a.startTime = startTime
+		}
+	}
+}
+
+// WithAppInfoMetadata adds a key-value pair to the application's metadata.
+func WithAppInfoMetadata(key, value string) AppInfoOption {
+	return func(a *appInfo) {
+		if a.metadata == nil {
+			a.metadata = make(map[string]string)
+		}
+		a.metadata[key] = value
 	}
 }
 
@@ -43,54 +102,5 @@ func (a *appInfo) Metadata() map[string]string {
 	return maps.Clone(a.metadata)
 }
 
-// --- Implementation of interfaces.AppInfoBuilder ---
-
-func (a *appInfo) WithEnv(env string) interfaces.AppInfoBuilder {
-	if env != "" {
-		a.env = env
-	}
-	return a
-}
-
-func (a *appInfo) WithID(id string) interfaces.AppInfoBuilder {
-	if id != "" {
-		a.id = id
-	}
-	return a
-}
-
-func (a *appInfo) WithStartTime(startTime time.Time) interfaces.AppInfoBuilder {
-	if !startTime.IsZero() {
-		a.startTime = startTime
-	}
-	return a
-}
-
-func (a *appInfo) WithMetadata(key, value string) interfaces.AppInfoBuilder {
-	if a.metadata == nil {
-		a.metadata = make(map[string]string)
-	}
-	a.metadata[key] = value
-	return a
-}
-
-func (a *appInfo) Build() interfaces.AppInfo {
-	// Set start time at build time if it hasn't been set.
-	if a.startTime.IsZero() {
-		a.startTime = time.Now()
-	}
-	// Return a defensive copy to ensure the returned AppInfo is immutable
-	// and cannot be affected by further changes to the builder.
-	return &appInfo{
-		id:        a.id,
-		name:      a.name,
-		version:   a.version,
-		env:       a.env,
-		startTime: a.startTime,
-		metadata:  a.Metadata(),
-	}
-}
-
 // --- Compile-time checks ---
 var _ interfaces.AppInfo = (*appInfo)(nil)
-var _ interfaces.AppInfoBuilder = (*appInfo)(nil)

@@ -22,20 +22,3 @@ type AppInfo interface {
 	// Metadata returns a collection of arbitrary key-value pairs.
 	Metadata() map[string]string
 }
-
-// AppInfoBuilder defines the contract for constructing an AppInfo instance.
-// This follows the builder pattern to allow for flexible and readable creation
-// of an immutable AppInfo object.
-type AppInfoBuilder interface {
-	// WithEnv sets the environment for the application.
-	WithEnv(env string) AppInfoBuilder
-	// WithID sets a custom instance ID. If not called, a default (e.g., UUID) will be used.
-	WithID(id string) AppInfoBuilder
-	// WithStartTime sets a custom start time. If not called, the time of build will be used.
-	WithStartTime(startTime time.Time) AppInfoBuilder
-	// WithMetadata adds a key-value pair to the application's metadata.
-	// It can be called multiple times.
-	WithMetadata(key, value string) AppInfoBuilder
-	// Build finalizes the construction and returns an immutable AppInfo instance.
-	Build() AppInfo
-}

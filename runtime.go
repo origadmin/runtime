@@ -75,8 +75,9 @@ func (r *App) Logger() log.Logger {
 }
 
 // Container returns the underlying dependency injection container.
-func (r *App) Container(opts ...options.Option) container.Container {
-	return r.container.WithOptions(opts...)
+// All configuration for the container should be provided during the App's creation.
+func (r *App) Container() container.Container {
+	return r.container
 }
 
 // NewApp creates a new Kratos application instance.
@@ -120,11 +121,7 @@ func (r *App) Component(name string) (interface{}, error) {
 
 // DefaultRegistrar returns the default service registrar.
 func (r *App) DefaultRegistrar() (registry.Registrar, error) {
-	reg, err := r.container.Registry()
-	if err != nil {
-		return nil, err
-	}
-	return reg.DefaultRegistrar()
+	return r.container.DefaultRegistrar()
 }
 
 // RegistryProvider returns the service registry provider.
