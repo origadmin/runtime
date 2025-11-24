@@ -29,11 +29,7 @@ func (p *Provider) DefaultCache() (storageiface.Cache, error) {
 		return nil, fmt.Errorf("default cache name is not set")
 	}
 
-	defaultCache, err := p.Cache(p.defaultName)
-	if err != nil {
-		return nil, err
-	}
-	return defaultCache, nil
+	return p.Cache(p.defaultName)
 }
 
 func (p *Provider) RegisterCache(name string, cache storageiface.Cache) {

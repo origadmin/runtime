@@ -29,11 +29,8 @@ func (p *Provider) DefaultDatabase() (storageiface.Database, error) {
 		return nil, fmt.Errorf("default database name is not set")
 	}
 
-	defaultDatabase, err := p.Database(p.defaultDatabase)
-	if err != nil {
-		return nil, err
-	}
-	return defaultDatabase, nil
+	// Return the default database
+	return p.Database(p.defaultDatabase)
 }
 
 func (p *Provider) RegisterDatabase(name string, db storageiface.Database) {

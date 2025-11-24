@@ -15,30 +15,19 @@ import (
 
 // Provider implements interfaces.RegistryProvider
 type Provider struct {
-	config                 *discoveryv1.Discoveries
-	logger                 *log.Helper
-	opts                   []options.Option // Now stores options passed to SetConfig
-	discoveries            map[string]registry.KDiscovery
-	registrars             map[string]registry.KRegistrar
-	onceDiscoveries        sync.Once
-	onceRegistrars         sync.Once
-	onceDefaultRegistrar   sync.Once
-	cachedDefaultRegistrar registry.KRegistrar
+	config           *discoveryv1.Discoveries
+	logger           *log.Helper
+	opts             []options.Option // Now stores options passed to SetConfig
+	defaultRegistrar string
+	discoveries      map[string]registry.KDiscovery
+	registrars       map[string]registry.KRegistrar
+	onceDiscoveries  sync.Once
+	onceRegistrars   sync.Once
 }
 
 func (p *Provider) RegisterDiscovery(name string, discovery registry.KDiscovery) {
-	//TODO implement me
-	panic("implement me")
-}
-
-// NewProvider creates a new Provider.
-// It no longer receives opts, as options are passed dynamically via SetConfig.
-func NewProvider(logger log.Logger) *Provider {
-	return &Provider{
-		logger:      log.NewHelper(logger),
-		discoveries: make(map[string]registry.KDiscovery),
-		registrars:  make(map[string]registry.KRegistrar),
-	}
+	// Register the discovery in the provider
+	p.discoveries[name] = discovery
 }
 
 // SetConfig sets the discovery configurations and dynamic options for the provider.
@@ -124,36 +113,18 @@ func (p *Provider) Registrar(name string) (registry.KRegistrar, error) {
 
 // DefaultRegistrar implements interfaces.RegistryProvider.
 func (p *Provider) DefaultRegistrar() (registry.KRegistrar, error) {
-	var currentErr error
-	p.onceDefaultRegistrar.Do(func() {
-		if p.config == nil {
-			currentErr = errors.New("default registrar not configured")
-			p.logger.Infow("msg", currentErr.Error())
-			return
-		}
+	if p.defaultRegistrar == "" {
+		return nil, errors.New("default registrar not set")
+	}
+	return p.Registrar(p.defaultRegistrar)
+}
 
-		defaultRegistrarName := p.config.GetDefault()
-		if defaultRegistrarName == "" {
-			currentErr = errors.New("default registrar not configured")
-			p.logger.Infow("msg", currentErr.Error())
-			return
-		}
-
-		// Ensure registrars are loaded
-		registrars, err := p.Registrars()
-		if err != nil {
-			currentErr = errors.Join(currentErr, fmt.Errorf("failed to load registrars for default: %w", err))
-			p.logger.Errorf(currentErr.Error())
-			return
-		}
-
-		reg, ok := registrars[defaultRegistrarName]
-		if !ok {
-			currentErr = errors.Join(currentErr, fmt.Errorf("default registrar '%s' not found", defaultRegistrarName))
-			p.logger.Errorf(currentErr.Error())
-			return
-		}
-		p.cachedDefaultRegistrar = reg
-	})
-	return p.cachedDefaultRegistrar, currentErr
+// NewProvider creates a new Provider.
+// It no longer receives opts, as options are passed dynamically via SetConfig.
+func NewProvider(logger log.Logger) *Provider {
+	return &Provider{
+		logger:      log.NewHelper(logger),
+		discoveries: make(map[string]registry.KDiscovery),
+		registrars:  make(map[string]registry.KRegistrar),
+	}
 }

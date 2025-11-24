@@ -29,11 +29,7 @@ func (p *Provider) DefaultObjectStore() (storageiface.ObjectStore, error) {
 		return nil, fmt.Errorf("object store name is not set")
 	}
 
-	defaultObjectStore, err := p.ObjectStore(p.objectStoreName)
-	if err != nil {
-		return nil, err
-	}
-	return defaultObjectStore, nil
+	return p.ObjectStore(p.objectStoreName)
 }
 
 func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectStore) {
