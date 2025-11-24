@@ -13,84 +13,105 @@ import (
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
-// Provider implements interfaces.ObjectStoreProvider
+// Provider implements interfaces.ObjectStoreProvider. It manages the lifecycle of object store
+// instances, caching them after first creation and allowing for reconfiguration.
+// It is safe for concurrent use.
 type Provider struct {
-	config             *datav1.ObjectStores
-	log                *log.Helper
-	opts               []options.Option
-	objectStoreName    string
-	cachedObjectStores map[string]storageiface.ObjectStore
-	onceObjectStores   sync.Once
-}
-
-func (p *Provider) DefaultObjectStore() (storageiface.ObjectStore, error) {
-	// Check if objectStoreName is set
-	if p.objectStoreName == "" {
-		return nil, fmt.Errorf("object store name is not set")
-	}
-
-	return p.ObjectStore(p.objectStoreName)
-}
-
-func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectStore) {
-	// Register the object store in the provider
-	p.cachedObjectStores[name] = store
+	mu              sync.Mutex
+	config          *datav1.ObjectStores
+	log             *log.Helper
+	opts            []options.Option
+	objectStoreName string
+	objectStores    map[string]storageiface.ObjectStore
+	initialized     bool
 }
 
 // NewProvider creates a new Provider.
-// It no longer receives opts, as options are passed dynamically via SetConfig.
 func NewProvider(logger log.Logger) *Provider {
-	helper := log.NewHelper(logger)
 	return &Provider{
-		log:                helper,
-		cachedObjectStores: make(map[string]storageiface.ObjectStore),
+		log: log.NewHelper(logger),
 	}
 }
 
-// SetConfig sets the object store configurations and dynamic options for the provider.
+// SetConfig updates the provider's configuration. This will clear any previously
+// cached instances and cause them to be recreated on the next access, using the new configuration.
 func (p *Provider) SetConfig(cfg *datav1.ObjectStores, opts ...options.Option) *Provider {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	p.config = cfg
-	p.opts = opts // Store the dynamically passed options
+	p.opts = opts
+	p.initialized = false
+	p.objectStores = make(map[string]storageiface.ObjectStore)
+
 	return p
 }
 
-// ObjectStores returns all the configured object stores.
-func (p *Provider) ObjectStores() (map[string]storageiface.ObjectStore, error) {
-	var allErrors error
-	p.onceObjectStores.Do(func() {
-		if p.config == nil || len(p.config.GetConfigs()) == 0 {
-			p.log.Infow("msg", "no object store configurations found")
-			return
-		}
+// RegisterObjectStore allows for manual registration of an object store instance.
+func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectStore) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.objectStores[name] = store
+}
 
+// ObjectStores returns a map of all available object store instances.
+// On first call, it creates instances from the configuration and caches them.
+// Subsequent calls return the cached instances unless SetConfig has been called.
+func (p *Provider) ObjectStores() (map[string]storageiface.ObjectStore, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if p.initialized {
+		return p.objectStores, nil
+	}
+
+	var allErrors error
+	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
 			name := cfg.GetName()
 			if name == "" {
-				p.log.Warnf("object store configuration is missing a name, using driver as fallback: %s", cfg.GetDriver())
 				name = cfg.GetDriver()
+				p.log.Warnf("object store configuration is missing a name, using driver as fallback: %s", name)
 			}
-			// Pass the stored options to the object store creation
+			if _, exists := p.objectStores[name]; exists {
+				p.log.Warnf("object store '%s' is already registered, skipping config-based creation", name)
+				continue
+			}
 			os, err := objectstore.New(cfg, p.opts...)
 			if err != nil {
 				p.log.Errorf("failed to create object store '%s': %v", name, err)
 				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create object store '%s': %w", name, err))
 				continue
 			}
-			p.cachedObjectStores[name] = os
+			p.objectStores[name] = os
 		}
-	})
-	return p.cachedObjectStores, allErrors
+	}
+
+	p.initialized = true
+	return p.objectStores, allErrors
 }
 
-// ObjectStore returns a specific object store by name.
+// ObjectStore returns a single object store instance by name.
 func (p *Provider) ObjectStore(name string) (storageiface.ObjectStore, error) {
-	s, err := p.ObjectStores()
+	stores, err := p.ObjectStores()
 	if err != nil {
 		return nil, err
 	}
-	os, ok := s[name]
+	os, ok := stores[name]
 	if !ok {
 		return nil, fmt.Errorf("object store '%s' not found", name)
 	}
 	return os, nil
+}
+
+// DefaultObjectStore returns the default object store instance.
+func (p *Provider) DefaultObjectStore() (storageiface.ObjectStore, error) {
+	p.mu.Lock()
+	name := p.objectStoreName
+	p.mu.Unlock()
+
+	if name == "" {
+		return nil, errors.New("default object store name is not set")
+	}
+	return p.ObjectStore(name)
 }

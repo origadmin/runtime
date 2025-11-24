@@ -36,19 +36,15 @@ type Container interface {
 
 // containerImpl implements the Container interface.
 type containerImpl struct {
-	config  interfaces.StructuredConfig
-	logger  log.Logger
-	appInfo interfaces.AppInfo
-	opts    []options.Option
-
-	// For user-defined components
-	componentFactories map[string]ComponentFactory
-	cachedComponents   map[string]interfaces.Component
-	componentsErr      error
-	componentsOnce     sync.Once
-	componentMu        sync.RWMutex
-
-	// For built-in providers
+	mu                  sync.RWMutex
+	config              interfaces.StructuredConfig
+	logger              log.Logger
+	appInfo             interfaces.AppInfo
+	opts                []options.Option
+	componentFactories  map[string]ComponentFactory
+	cachedComponents    map[string]interfaces.Component
+	componentsErr       error
+	componentsOnce      sync.Once
 	middlewareProvider  *middleware.Provider
 	middlewareOnce      sync.Once
 	middlewareErr       error
@@ -105,8 +101,12 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 }
 
 func (c *containerImpl) WithOptions(opts ...options.Option) Container {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.opts = append(c.opts, opts...)
 	co := optionutil.NewT[containerOptions](c.opts...)
+
 	if c.componentFactories == nil {
 		c.componentFactories = make(map[string]ComponentFactory)
 	}
@@ -120,6 +120,8 @@ func (c *containerImpl) WithOptions(opts ...options.Option) Container {
 }
 
 func (c *containerImpl) AppInfo() interfaces.AppInfo {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return c.appInfo
 }
 
@@ -136,6 +138,7 @@ func (c *containerImpl) initializeComponents(opts ...options.Option) {
 	sort.Slice(factories, func(i, j int) bool {
 		return factories[i].Priority() < factories[j].Priority()
 	})
+
 	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
 	for _, factory := range factories {
 		logHelper.Infof("executing component factory with priority %d", factory.Priority())
@@ -154,8 +157,8 @@ func (c *containerImpl) Components(opts ...options.Option) (map[string]interface
 	if c.componentsErr != nil {
 		return nil, c.componentsErr
 	}
-	c.componentMu.RLock()
-	defer c.componentMu.RUnlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	maps := make(map[string]interfaces.Component, len(c.cachedComponents))
 	for k, v := range c.cachedComponents {
 		maps[k] = v
@@ -167,8 +170,8 @@ func (c *containerImpl) Component(name string) (interfaces.Component, error) {
 	if _, err := c.Components(); err != nil {
 		return nil, err
 	}
-	c.componentMu.RLock()
-	defer c.componentMu.RUnlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	comp, ok := c.cachedComponents[name]
 	if !ok {
 		return nil, fmt.Errorf("component '%s' not found", name)
@@ -177,8 +180,8 @@ func (c *containerImpl) Component(name string) (interfaces.Component, error) {
 }
 
 func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component) {
-	c.componentMu.Lock()
-	defer c.componentMu.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if _, exists := c.cachedComponents[name]; exists {
 		log.NewHelper(c.logger).Warnf("component with name '%s' is being overwritten", name)
 	}

@@ -5,92 +5,112 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-kratos/kratos/v2/log"
-
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/log"
 )
 
-// Provider implements storageiface.CacheProvider
+// Provider implements storageiface.CacheProvider. It manages the lifecycle of cache
+// instances, caching them after first creation and allowing for reconfiguration.
+// It is safe for concurrent use.
 type Provider struct {
-	config       *datav1.Caches
-	log          *log.Helper
-	opts         []options.Option
-	defaultName  string
-	cachedCaches map[string]storageiface.Cache
-	onceCaches   sync.Once
+	mu          sync.Mutex
+	config      *datav1.Caches
+	log         *log.Helper
+	opts        []options.Option
+	defaultName string
+	caches      map[string]storageiface.Cache
+	initialized bool
 }
 
-func (p *Provider) DefaultCache() (storageiface.Cache, error) {
-	// Check if defaultName is set
-	if p.defaultName == "" {
-		return nil, fmt.Errorf("default cache name is not set")
+// NewProvider creates a new Provider.
+func NewProvider(logger log.Logger) *Provider {
+	return &Provider{
+		log: log.NewHelper(logger),
 	}
-
-	return p.Cache(p.defaultName)
 }
 
-func (p *Provider) RegisterCache(name string, cache storageiface.Cache) {
-	// Register the cache in the provider
-	p.cachedCaches[name] = cache
-}
-
-// SetConfig sets the cache configurations and dynamic options for the provider.
+// SetConfig updates the provider's configuration. This will clear any previously
+// cached instances and cause them to be recreated on the next access, using the new configuration.
 func (p *Provider) SetConfig(cfg *datav1.Caches, opts ...options.Option) *Provider {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	p.config = cfg
-	p.opts = opts // Store the dynamically passed options
+	p.opts = opts
+	p.initialized = false
+	p.caches = make(map[string]storageiface.Cache)
+
 	return p
 }
 
-// Caches returns all the configured caches.
-func (p *Provider) Caches() (map[string]storageiface.Cache, error) {
-	var allErrors error
-	p.onceCaches.Do(func() {
-		if p.config == nil || len(p.config.GetConfigs()) == 0 {
-			p.log.Infow("msg", "no cache configurations found")
-			return
-		}
+// RegisterCache allows for manual registration of a cache instance.
+func (p *Provider) RegisterCache(name string, cache storageiface.Cache) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.caches[name] = cache
+}
 
+// Caches returns a map of all available cache instances.
+// On first call, it creates instances from the configuration and caches them.
+// Subsequent calls return the cached instances unless SetConfig has been called.
+func (p *Provider) Caches() (map[string]storageiface.Cache, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if p.initialized {
+		return p.caches, nil
+	}
+
+	var allErrors error
+	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
 			name := cfg.GetName()
 			if name == "" {
-				p.log.Warnf("cache configuration is missing a name, using driver as fallback: %s", cfg.GetDriver())
 				name = cfg.GetDriver()
+				p.log.Warnf("cache configuration is missing a name, using driver as fallback: %s", name)
 			}
-			// Pass the stored options to the cache creation
+			if _, exists := p.caches[name]; exists {
+				p.log.Warnf("cache '%s' is already registered, skipping config-based creation", name)
+				continue
+			}
 			ca, err := cache.New(cfg, p.opts...)
 			if err != nil {
 				p.log.Errorf("failed to create cache '%s': %v", name, err)
 				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create cache '%s': %w", name, err))
 				continue
 			}
-			p.cachedCaches[name] = ca
+			p.caches[name] = ca
 		}
-	})
-	return p.cachedCaches, allErrors
+	}
+
+	p.initialized = true
+	return p.caches, allErrors
 }
 
-// Cache returns a specific cache by name.
+// Cache returns a single cache instance by name.
 func (p *Provider) Cache(name string) (storageiface.Cache, error) {
-	s, err := p.Caches()
+	caches, err := p.Caches()
 	if err != nil {
 		return nil, err
 	}
-	ca, ok := s[name]
+	ca, ok := caches[name]
 	if !ok {
 		return nil, fmt.Errorf("cache '%s' not found", name)
 	}
 	return ca, nil
 }
 
-// NewProvider creates a new Provider.
-// It no longer receives opts, as options are passed dynamically via SetConfig.
-func NewProvider(logger log.Logger) *Provider {
-	helper := log.NewHelper(logger)
-	return &Provider{
-		log:          helper,
-		cachedCaches: make(map[string]storageiface.Cache),
+// DefaultCache returns the default cache instance.
+func (p *Provider) DefaultCache() (storageiface.Cache, error) {
+	p.mu.Lock()
+	name := p.defaultName
+	p.mu.Unlock()
+
+	if name == "" {
+		return nil, errors.New("default cache name is not set")
 	}
+	return p.Cache(name)
 }

@@ -13,85 +13,105 @@ import (
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
 
-// Provider implements storageiface.DatabaseProvider
+// Provider implements storageiface.DatabaseProvider. It manages the lifecycle of database
+// instances, caching them after first creation and allowing for reconfiguration.
+// It is safe for concurrent use.
 type Provider struct {
+	mu              sync.Mutex
 	config          *datav1.Databases
 	log             *log.Helper
 	opts            []options.Option
 	defaultDatabase string
-	cachedDatabases map[string]storageiface.Database
-	onceDatabases   sync.Once
+	databases       map[string]storageiface.Database
+	initialized     bool
 }
 
-func (p *Provider) DefaultDatabase() (storageiface.Database, error) {
-	// Check if defaultDatabase is set
-	if p.defaultDatabase == "" {
-		return nil, fmt.Errorf("default database name is not set")
+// NewProvider creates a new Provider.
+func NewProvider(logger log.Logger) *Provider {
+	return &Provider{
+		log: log.NewHelper(logger),
 	}
-
-	// Return the default database
-	return p.Database(p.defaultDatabase)
 }
 
-func (p *Provider) RegisterDatabase(name string, db storageiface.Database) {
-	// Register the database in the provider
-	p.cachedDatabases[name] = db
-}
-
-// SetConfig sets the database configurations and dynamic options for the provider.
+// SetConfig updates the provider's configuration. This will clear any previously
+// cached instances and cause them to be recreated on the next access, using the new configuration.
 func (p *Provider) SetConfig(cfg *datav1.Databases, opts ...options.Option) *Provider {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	p.config = cfg
-	p.opts = opts // Store the dynamically passed options
+	p.opts = opts
+	p.initialized = false
+	p.databases = make(map[string]storageiface.Database)
+
 	return p
 }
 
-// Databases returns all the configured databases.
-func (p *Provider) Databases() (map[string]storageiface.Database, error) {
-	var allErrors error
-	p.onceDatabases.Do(func() {
-		if p.config == nil || len(p.config.GetConfigs()) == 0 {
-			p.log.Infow("msg", "no database configurations found")
-			return
-		}
+// RegisterDatabase allows for manual registration of a database instance.
+func (p *Provider) RegisterDatabase(name string, db storageiface.Database) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.databases[name] = db
+}
 
+// Databases returns a map of all available database instances.
+// On first call, it creates instances from the configuration and caches them.
+// Subsequent calls return the cached instances unless SetConfig has been called.
+func (p *Provider) Databases() (map[string]storageiface.Database, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if p.initialized {
+		return p.databases, nil
+	}
+
+	var allErrors error
+	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
 			name := cfg.GetName()
 			if name == "" {
-				p.log.Warnf("database configuration is missing a name, using driver as fallback: %s", cfg.GetDialect())
 				name = cfg.GetDialect()
+				p.log.Warnf("database configuration is missing a name, using dialect as fallback: %s", name)
 			}
-			// Pass the stored options to the database creation
+			if _, exists := p.databases[name]; exists {
+				p.log.Warnf("database '%s' is already registered, skipping config-based creation", name)
+				continue
+			}
 			db, err := database.New(cfg, p.opts...)
 			if err != nil {
 				p.log.Errorf("failed to create database '%s': %v", name, err)
 				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create database '%s': %w", name, err))
 				continue
 			}
-			p.cachedDatabases[name] = db
+			p.databases[name] = db
 		}
-	})
-	return p.cachedDatabases, allErrors
+	}
+
+	p.initialized = true
+	return p.databases, allErrors
 }
 
-// Database returns a specific database by name.
+// Database returns a single database instance by name.
 func (p *Provider) Database(name string) (storageiface.Database, error) {
-	s, err := p.Databases()
+	databases, err := p.Databases()
 	if err != nil {
 		return nil, err
 	}
-	db, ok := s[name]
+	db, ok := databases[name]
 	if !ok {
 		return nil, fmt.Errorf("database '%s' not found", name)
 	}
 	return db, nil
 }
 
-// NewProvider creates a new Provider.
-// It no longer receives opts, as options are passed dynamically via SetConfig.
-func NewProvider(logger log.Logger) *Provider {
-	helper := log.NewHelper(logger)
-	return &Provider{
-		log:             helper,
-		cachedDatabases: make(map[string]storageiface.Database),
+// DefaultDatabase returns the default database instance.
+func (p *Provider) DefaultDatabase() (storageiface.Database, error) {
+	p.mu.Lock()
+	name := p.defaultDatabase
+	p.mu.Unlock()
+
+	if name == "" {
+		return nil, errors.New("default database name is not set")
 	}
+	return p.Database(name)
 }
