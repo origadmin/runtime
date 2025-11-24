@@ -60,7 +60,7 @@ func (p *Provider) RegisterClientMiddleware(name string, middleware kratosMiddle
 // SetConfig sets the middleware configurations and dynamic options for the provider.
 func (p *Provider) SetConfig(cfg *middlewarev1.Middlewares, opts ...options.Option) *Provider {
 	p.config = cfg
-	p.opts = opts // Store the dynamically passed options
+	p.opts = opts
 	return p
 }
 

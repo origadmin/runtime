@@ -38,29 +38,38 @@ type Container interface {
 type containerImpl struct {
 	config  interfaces.StructuredConfig
 	logger  log.Logger
-	appInfo interfaces.AppInfo // Holds the AppInfo interface
+	appInfo interfaces.AppInfo
 	opts    []options.Option
 
-	// ... (other fields remain the same)
-	componentFactories  map[string]ComponentFactory
-	cachedComponents    map[string]interfaces.Component
-	initErr             error
-	onceComponents      sync.Once
-	componentMu         sync.RWMutex
+	// For user-defined components
+	componentFactories map[string]ComponentFactory
+	cachedComponents   map[string]interfaces.Component
+	componentsErr      error
+	componentsOnce     sync.Once
+	componentMu        sync.RWMutex
+
+	// For built-in providers
 	middlewareProvider  *middleware.Provider
+	middlewareOnce      sync.Once
+	middlewareErr       error
 	cacheProvider       *cache.Provider
+	cacheOnce           sync.Once
+	cacheErr            error
 	databaseProvider    *database.Provider
+	databaseOnce        sync.Once
+	databaseErr         error
 	registryProvider    *registry.Provider
+	registryOnce        sync.Once
+	registryErr         error
 	objectStoreProvider *objectstore.Provider
+	objectStoreOnce     sync.Once
+	objectStoreErr      error
 }
 
 // New creates a new Container instance.
-// The signature is now stable and only accepts config and options.
 func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
-	// 1. Process options to get appInfo and other settings.
-	co := fromOptions(opts)
+	co := optionutil.NewT[containerOptions](opts...)
 
-	// 2. Create a base logger.
 	var baseLogger log.Logger
 	loggerConfig, err := config.DecodeLogger()
 	if err != nil {
@@ -69,7 +78,6 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	}
 	baseLogger = runtimelog.NewLogger(loggerConfig)
 
-	// 3. Enrich the logger if AppInfo is available.
 	enrichedLogger := baseLogger
 	if co.appInfo != nil {
 		enrichedLogger = log.With(baseLogger,
@@ -81,10 +89,10 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 		)
 	}
 
-	impl := &containerImpl{
+	return &containerImpl{
 		config:              config,
 		logger:              enrichedLogger,
-		appInfo:             co.appInfo, // Store the AppInfo interface
+		appInfo:             co.appInfo,
 		opts:                opts,
 		componentFactories:  co.componentFactories,
 		cachedComponents:    make(map[string]interfaces.Component),
@@ -94,13 +102,9 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 		registryProvider:    registry.NewProvider(enrichedLogger),
 		objectStoreProvider: objectstore.NewProvider(enrichedLogger),
 	}
-
-	return impl
 }
 
 func (c *containerImpl) WithOptions(opts ...options.Option) Container {
-	// This logic needs to be careful not to re-create the logger,
-	// but to apply new options. For now, it just updates factories.
 	c.opts = append(c.opts, opts...)
 	co := optionutil.NewT[containerOptions](c.opts...)
 	if c.componentFactories == nil {
@@ -109,57 +113,47 @@ func (c *containerImpl) WithOptions(opts ...options.Option) Container {
 	for name, factory := range co.componentFactories {
 		c.componentFactories[name] = factory
 	}
-	// If a new AppInfo is provided, we should update it.
 	if co.appInfo != nil {
 		c.appInfo = co.appInfo
-		// Note: The logger is not re-enriched here. This assumes AppInfo is set at creation.
-		// A more complex implementation might re-create the logger.
 	}
 	return c
 }
 
-// AppInfo returns the definitive application metadata.
 func (c *containerImpl) AppInfo() interfaces.AppInfo {
 	return c.appInfo
 }
 
-// ... (rest of the file remains the same)
-// initializeComponents, Components, Component, RegisterComponent, Logger, etc.
-// ...
+func (c *containerImpl) Logger() log.Logger {
+	return c.logger
+}
+
 func (c *containerImpl) initializeComponents(opts ...options.Option) {
 	logHelper := log.NewHelper(c.logger)
-
 	factories := make([]ComponentFactory, 0, len(c.componentFactories))
 	for _, factory := range c.componentFactories {
 		factories = append(factories, factory)
 	}
-
 	sort.Slice(factories, func(i, j int) bool {
 		return factories[i].Priority() < factories[j].Priority()
 	})
-
-	// Merge static opts from New and dynamic opts from Components() call
 	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
-
 	for _, factory := range factories {
 		logHelper.Infof("executing component factory with priority %d", factory.Priority())
 		if _, err := factory.NewComponent(c.config, c, finalOpts...); err != nil {
-			c.initErr = fmt.Errorf("error executing factory with priority %d: %w", factory.Priority(), err)
-			logHelper.Errorf("halting component initialization due to error: %v", c.initErr)
+			c.componentsErr = fmt.Errorf("error executing factory with priority %d: %w", factory.Priority(), err)
+			logHelper.Errorf("halting component initialization due to error: %v", c.componentsErr)
 			return
 		}
 	}
 }
 
-// Components returns all initialized components.
 func (c *containerImpl) Components(opts ...options.Option) (map[string]interfaces.Component, error) {
-	c.onceComponents.Do(func() {
-		c.initializeComponents(opts...) // Pass opts to the actual initialization logic
+	c.componentsOnce.Do(func() {
+		c.initializeComponents(opts...)
 	})
-	if c.initErr != nil {
-		return nil, c.initErr
+	if c.componentsErr != nil {
+		return nil, c.componentsErr
 	}
-
 	c.componentMu.RLock()
 	defer c.componentMu.RUnlock()
 	maps := make(map[string]interfaces.Component, len(c.cachedComponents))
@@ -169,16 +163,12 @@ func (c *containerImpl) Components(opts ...options.Option) (map[string]interface
 	return maps, nil
 }
 
-// Component returns a specific component by name.
 func (c *containerImpl) Component(name string) (interfaces.Component, error) {
-	// Component() call will trigger initializeComponents() if not already done
 	if _, err := c.Components(); err != nil {
 		return nil, err
 	}
-
 	c.componentMu.RLock()
 	defer c.componentMu.RUnlock()
-
 	comp, ok := c.cachedComponents[name]
 	if !ok {
 		return nil, fmt.Errorf("component '%s' not found", name)
@@ -186,7 +176,6 @@ func (c *containerImpl) Component(name string) (interfaces.Component, error) {
 	return comp, nil
 }
 
-// RegisterComponent allows for dynamic, programmatic registration of components.
 func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component) {
 	c.componentMu.Lock()
 	defer c.componentMu.Unlock()
@@ -196,92 +185,67 @@ func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component
 	c.cachedComponents[name] = comp
 }
 
-// Logger returns the configured logger instance.
-func (c *containerImpl) Logger() log.Logger {
-	return c.logger
-}
-
-// Registry implements Container.
 func (c *containerImpl) Registry(opts ...options.Option) (RegistryProvider, error) {
-	c.onceComponents.Do(func() {
-		c.initializeComponents()
+	c.registryOnce.Do(func() {
+		discoveries, err := c.config.DecodeDiscoveries()
+		if err != nil {
+			c.registryErr = err
+			return
+		}
+		finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+		c.registryProvider.SetConfig(discoveries, finalOpts...)
 	})
-	if c.initErr != nil {
-		return nil, c.initErr
-	}
-	discoveries, err := c.config.DecodeDiscoveries()
-	if err != nil {
-		return nil, err
-	}
-	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
-	c.registryProvider.SetConfig(discoveries, finalOpts...)
-	return c.registryProvider, nil
+	return c.registryProvider, c.registryErr
 }
 
-// Middleware implements Container.
 func (c *containerImpl) Middleware(opts ...options.Option) (MiddlewareProvider, error) {
-	c.onceComponents.Do(func() {
-		c.initializeComponents()
+	c.middlewareOnce.Do(func() {
+		middlewares, err := c.config.DecodeMiddlewares()
+		if err != nil {
+			c.middlewareErr = err
+			return
+		}
+		finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+		c.middlewareProvider.SetConfig(middlewares, finalOpts...)
 	})
-	if c.initErr != nil {
-		return nil, c.initErr
-	}
-	middlewares, err := c.config.DecodeMiddlewares()
-	if err != nil {
-		return nil, err
-	}
-	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
-	c.middlewareProvider.SetConfig(middlewares, finalOpts...)
-	return c.middlewareProvider, nil
+	return c.middlewareProvider, c.middlewareErr
 }
 
-// Cache implements Container.
 func (c *containerImpl) Cache(opts ...options.Option) (CacheProvider, error) {
-	c.onceComponents.Do(func() {
-		c.initializeComponents()
+	c.cacheOnce.Do(func() {
+		caches, err := c.config.DecodeCaches()
+		if err != nil {
+			c.cacheErr = err
+			return
+		}
+		finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+		c.cacheProvider.SetConfig(caches, finalOpts...)
 	})
-	if c.initErr != nil {
-		return nil, c.initErr
-	}
-	caches, err := c.config.DecodeCaches()
-	if err != nil {
-		return nil, err
-	}
-	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
-	c.cacheProvider.SetConfig(caches, finalOpts...)
-	return c.cacheProvider, nil
+	return c.cacheProvider, c.cacheErr
 }
 
-// Database implements Container.
 func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, error) {
-	c.onceComponents.Do(func() {
-		c.initializeComponents()
+	c.databaseOnce.Do(func() {
+		databases, err := c.config.DecodeDatabases()
+		if err != nil {
+			c.databaseErr = err
+			return
+		}
+		finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+		c.databaseProvider.SetConfig(databases, finalOpts...)
 	})
-	if c.initErr != nil {
-		return nil, c.initErr
-	}
-	databases, err := c.config.DecodeDatabases()
-	if err != nil {
-		return nil, err
-	}
-	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
-	c.databaseProvider.SetConfig(databases, finalOpts...)
-	return c.databaseProvider, nil
+	return c.databaseProvider, c.databaseErr
 }
 
-// ObjectStore implements Container.
 func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider, error) {
-	c.onceComponents.Do(func() {
-		c.initializeComponents()
+	c.objectStoreOnce.Do(func() {
+		filestores, err := c.config.DecodeObjectStores()
+		if err != nil {
+			c.objectStoreErr = err
+			return
+		}
+		finalOpts := append(append([]options.Option{}, c.opts...), opts...)
+		c.objectStoreProvider.SetConfig(filestores, finalOpts...)
 	})
-	if c.initErr != nil {
-		return nil, c.initErr
-	}
-	filestores, err := c.config.DecodeObjectStores()
-	if err != nil {
-		return nil, err
-	}
-	finalOpts := append(append([]options.Option{}, c.opts...), opts...)
-	c.objectStoreProvider.SetConfig(filestores, finalOpts...)
-	return c.objectStoreProvider, nil
+	return c.objectStoreProvider, c.objectStoreErr
 }

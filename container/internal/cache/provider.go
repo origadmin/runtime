@@ -17,7 +17,7 @@ import (
 type Provider struct {
 	config       *datav1.Caches
 	log          *log.Helper
-	opts         []options.Option // Now stores options passed to SetConfig
+	opts         []options.Option
 	defaultName  string
 	cachedCaches map[string]storageiface.Cache
 	onceCaches   sync.Once
