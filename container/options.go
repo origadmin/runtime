@@ -34,6 +34,6 @@ func WithComponentFactory(name string, factory ComponentFactory) Option {
 	})
 }
 
-func fromOptions(opts ...[]options.Option) *containerOptions {
+func fromOptions(opts []options.Option) *containerOptions {
 	return optionutil.NewT[containerOptions](opts...)
 }
