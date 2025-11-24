@@ -3,7 +3,7 @@ module github.com/origadmin/runtime
 go 1.24.6
 
 require (
-	buf.build/go/protovalidate v1.0.0
+	buf.build/go/protovalidate v1.0.1
 	github.com/bufbuild/buf v1.59.0
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fsnotify/fsnotify v1.9.0
