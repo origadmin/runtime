@@ -1,9 +1,9 @@
 // Copyright (c) 2024 OrigAdmin. All rights reserved.
 
-// Package protobufutil provides utility functions for working with protobuf Any messages.
+// Package protoutil provides utility functions for working with protobuf Any messages.
 // It includes methods for packing and unpacking protobuf messages into and from Any types,
 // as well as creating new instances of strongly-typed messages from Any values.
-package protobufutil
+package protoutil
 
 import (
 	"fmt"

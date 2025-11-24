@@ -27,7 +27,7 @@ import (
 type factory struct{}
 
 func init() {
-	middleware.Register(middleware.Cors, new(factory))
+	middleware.RegisterFactory(middleware.Cors, new(factory))
 }
 
 // NewMiddlewareClient implements middleware.Factory interface

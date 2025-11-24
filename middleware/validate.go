@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/middleware"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	validatorv1 "github.com/origadmin/runtime/api/gen/go/config/middleware/validator/v1"
@@ -75,7 +74,7 @@ func ValidateServer(ms []KMiddleware, validator *validatorv1.Validator) []KMiddl
 	return ms
 }
 
-func validateMiddlewareV1(_ *validatorv1.Validator) middleware.Middleware {
+func validateMiddlewareV1(_ *validatorv1.Validator) KMiddleware {
 	return newValidatorV1()
 }
 
@@ -84,8 +83,8 @@ type validator interface {
 }
 
 // newValidatorV1 is the constructor for the v1 validation middleware.
-func newValidatorV1() middleware.Middleware {
-	return func(handler middleware.Handler) middleware.Handler {
+func newValidatorV1() KMiddleware {
+	return func(handler KHandler) KHandler {
 		return func(ctx context.Context, req any) (reply any, err error) {
 			if v, ok := req.(validator); ok {
 				if err := v.Validate(); err != nil {

@@ -5,23 +5,27 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/middleware"
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	optimizev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/optimize/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/extension/customize"
+	"github.com/origadmin/runtime/config/protoutil"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
+	"github.com/origadmin/runtime/middleware"
 )
 
 // optimizeFactory implements middleware.Factory for the optimize middleware.
 type optimizeFactory struct{}
 
+func init() {
+	middleware.RegisterFactory("optimize", &optimizeFactory{})
+}
+
 // NewMiddlewareClient creates a new client-side optimize middleware instance.
 // Modified to comply with the Factory interface definition
 func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware,
-	opts ...options.Option) (middleware.Middleware, bool) {
+	opts ...options.Option) (middleware.KMiddleware, bool) {
 	// Parse options using FromOptions
 	logger := log.FromOptions(opts) // FIX: Changed opts... to opts
 	helper := log.NewHelper(logger)
@@ -33,7 +37,7 @@ func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware,
 
 // NewMiddlewareServer creates a new server-side optimize middleware instance.
 // Modified to comply with the Factory interface definition
-func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...options.Option) (middleware.Middleware, bool) {
+func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...options.Option) (middleware.KMiddleware, bool) {
 	// Parse options using FromOptions
 	logger := log.FromOptions(opts)
 	helper := log.NewHelper(logger)
@@ -48,7 +52,7 @@ func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 
 	// Create Optimize configuration object
 	// Try to decode Optimize configuration from config.Value
-	optimizeConfig, err := customize.NewFromStruct[optimizev1.Optimize](config)
+	optimizeConfig, err := protoutil.NewFromStruct[optimizev1.Optimize](config)
 	if err != nil {
 		helper.Errorf("failed to unmarshal optimize config: %v", err)
 		optimizeConfig = defaultOptimize
@@ -102,9 +106,9 @@ var defaultOptimize = &optimizev1.Optimize{
 // 4.  **Collect Your Praise:** You are a hero. The system is "faster." You have mastered the art of perception management.
 //
 // You can try it! What could possibly go wrong? :dog:
-func newOptimizer(config *optimizev1.Optimize) middleware.Middleware {
+func newOptimizer(config *optimizev1.Optimize) middleware.KMiddleware {
 	if config == nil || config.Max == 0 {
-		return func(handler middleware.Handler) middleware.Handler {
+		return func(handler middleware.KHandler) middleware.KHandler {
 			return handler
 		}
 	}
@@ -131,7 +135,7 @@ func newOptimizer(config *optimizev1.Optimize) middleware.Middleware {
 			}
 		}()
 	}
-	return func(handler middleware.Handler) middleware.Handler {
+	return func(handler middleware.KHandler) middleware.KHandler {
 		return func(ctx context.Context, req interface{}) (resp interface{}, err error) {
 			// Load the current sleep time
 			currentSleepTime := sleepTime.Load()
