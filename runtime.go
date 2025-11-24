@@ -13,45 +13,59 @@ import (
 	"github.com/origadmin/runtime/interfaces/storage"
 )
 
-// App defines the application's runtime environment, providing convenient access to core components.
-// It encapsulates an interfaces.Container and is the primary object that applications will interact with.
+// App defines the application's runtime environment.
 type App struct {
 	result    bootstrap.Result
 	container container.Container
+	appInfo   interfaces.AppInfo // Now an interface
 }
 
 // New is the core constructor for a App instance.
-// It takes a fully initialized bootstrap result, which is guaranteed to be non-nil.
-func New(result bootstrap.Result) *App {
+// It now accepts container options to allow for proper AppInfo injection.
+func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 	if result == nil {
 		panic("bootstrap.Result cannot be nil when creating a new App")
 	}
+
+	// Create the container, passing the options through.
+	ctn := container.New(result.StructuredConfig(), ctnOpts...)
+
 	return &App{
 		result:    result,
-		container: container.New(result.StructuredConfig()),
+		container: ctn,
+		appInfo:   ctn.AppInfo(), // Get the definitive AppInfo from the container.
 	}
 }
 
 // NewFromBootstrap is a convenience constructor that simplifies application startup.
-// It encapsulates the entire process of calling bootstrap.New and then runtime.New.
-// It accepts bootstrap.Option parameters directly, allowing the user to configure the bootstrap process.
-func NewFromBootstrap(bootstrapPath string, opts ...bootstrap.Option) (*App, error) {
-	bootstrapResult, err := bootstrap.New(bootstrapPath, opts...)
+func NewFromBootstrap(bootstrapPath string, opts ...Option) (*App, error) {
+	// 1. Apply runtime options to get bootstrap options and a potential AppInfo.
+	rtOpts := &appOptions{}
+	for _, o := range opts {
+		o(rtOpts)
+	}
+
+	// 2. Call bootstrap.New
+	bootstrapResult, err := bootstrap.New(bootstrapPath, rtOpts.bootstrapOpts...)
 	if err != nil {
 		return nil, err
 	}
 
-	rt := New(bootstrapResult)
+	// Note: The logic for merging AppInfo from config has been removed.
+	// The AppInfo provided via runtime.WithAppInfo is now considered definitive.
+	// If no AppInfo is provided, the container will operate without one (or with its own defaults).
+
+	// 3. Create the App instance, passing the AppInfo to the container via an option.
+	rt := New(bootstrapResult, container.WithAppInfo(rtOpts.appInfo))
 	return rt, nil
 }
 
-// Config returns the configuration decoder, allowing access to raw configuration values.
+// Config returns the configuration decoder.
 func (r *App) Config() interfaces.Config {
 	return r.result.Config()
 }
 
-// StructuredConfig returns the structured configuration decoder, which provides path-based access to configuration values.
-// This is typically used for initializing components like servers and clients that require specific configuration blocks.
+// StructuredConfig returns the structured configuration decoder.
 func (r *App) StructuredConfig() interfaces.StructuredConfig {
 	return r.result.StructuredConfig()
 }
@@ -61,29 +75,38 @@ func (r *App) Logger() log.Logger {
 	return r.container.Logger()
 }
 
-// Container returns the underlying dependency injection container. This method is primarily for advanced use cases
-// where direct access to the container is necessary. For most common operations, prefer using the specific
-// accessor methods provided by the App (e.g., Logger(), Config(), Component()).
-//
-// The returned container is a new instance with the provided options applied, allowing for scoped configuration.
-// The original container remains unchanged.
+// Container returns the underlying dependency injection container.
 func (r *App) Container(opts ...options.Option) container.Container {
-	// Return a new container with the provided options applied
 	return r.container.WithOptions(opts...)
 }
 
 // NewApp creates a new Kratos application instance.
-// It wires together the runtime's configured components (like the default registrar) with the provided transport servers.
-// It now accepts additional Kratos options for more flexible configuration.
 func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *kratos.App {
+	info := r.AppInfo()
+	if info == nil {
+		panic("AppInfo not available in runtime.App, cannot create kratos.App")
+	}
+
+	// Prepare metadata, ensuring it's not nil.
+	md := info.Metadata()
+	if md == nil {
+		md = make(map[string]string)
+	}
+	// Correctly inject the env as part of the metadata.
+	if info.Env() != "" {
+		md["env"] = info.Env()
+	}
+
 	opts := []kratos.Option{
 		kratos.Logger(r.Logger()),
 		kratos.Server(servers...),
+		kratos.ID(info.ID()),
+		kratos.Name(info.Name()),
+		kratos.Version(info.Version()),
+		kratos.Metadata(md), // Pass the enriched metadata.
 	}
-	info := r.AppInfo()
-	opts = append(opts, info.Options()...)
 
-	if registrar := r.DefaultRegistrar(); registrar != nil {
+	if registrar, _ := r.DefaultRegistrar(); registrar != nil {
 		opts = append(opts, kratos.Registrar(registrar))
 	}
 
@@ -96,8 +119,7 @@ func (r *App) Component(name string) (interface{}, error) {
 	return r.container.Component(name)
 }
 
-// DefaultRegistrar returns the default service registrar, used for service self-registration.
-// It may be nil if no default registry is configured.
+// DefaultRegistrar returns the default service registrar.
 func (r *App) DefaultRegistrar() (registry.Registrar, error) {
 	reg, err := r.container.Registry()
 	if err != nil {
@@ -106,8 +128,7 @@ func (r *App) DefaultRegistrar() (registry.Registrar, error) {
 	return reg.DefaultRegistrar()
 }
 
-// RegistryProvider returns the service registry provider, used for service discovery.
-// It may be nil if no default registry is configured.
+// RegistryProvider returns the service registry provider.
 func (r *App) RegistryProvider(opts ...options.Option) (container.RegistryProvider, error) {
 	return r.container.Registry(opts...)
 }
@@ -123,46 +144,6 @@ func (r *App) Storage() storage.Provider {
 }
 
 // AppInfo returns the application's metadata.
-func (r *App) AppInfo() *interfaces.AppInfo {
-	app := r.result.AppInfo()
-	if app == nil {
-		// Return a default AppInfo if not set
-		return &interfaces.AppInfo{
-			ID:        "unknown",
-			Name:      "unknown",
-			Version:   "v0.0.0",
-			Env:       "dev",
-			StartTime: time.Now(),
-			Metadata:  make(map[string]string),
-		}
-	}
-
-	// Convert protobuf AppInfo to interfaces.AppInfo
-	info := &interfaces.AppInfo{
-		ID:        app.Id,
-		Name:      app.Name,
-		Version:   app.Version,
-		Env:       app.Environment,
-		StartTime: app.StartTime.AsTime(),
-		Metadata:  app.Metadata,
-	}
-
-	return info
-}
-
-// Options returns the Kratos options based on the application's metadata.
-func (info *interfaces.AppInfo) Options() []kratos.Option {
-	opts := []kratos.Option{
-		kratos.ID(info.ID),
-		kratos.Name(info.Name),
-		kratos.Version(info.Version),
-		kratos.Metadata(info.Metadata),
-	}
-
-	// Add environment if set
-	if info.Env != "" {
-		opts = append(opts, kratos.Env(info.Env))
-	}
-
-	return opts
+func (r *App) AppInfo() interfaces.AppInfo {
+	return r.appInfo
 }

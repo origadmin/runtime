@@ -4,24 +4,25 @@ package service
 import (
 	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/service/transport"
 )
 
 type serviceOptions struct {
-	registrar ServerRegistrar
+	registrar transport.ServerRegistrar
 }
 
-func WithRegistrar(registrar ServerRegistrar) options.Option {
+func WithRegistrar(registrar transport.ServerRegistrar) options.Option {
 	return optionutil.Update(func(o *serviceOptions) {
 		o.registrar = registrar
 	})
 }
 
-func ServerRegistrarFromOptions(opts []options.Option) ServerRegistrar {
+func ServerRegistrarFromOptions(opts []options.Option) transport.ServerRegistrar {
 	o := optionutil.NewT[serviceOptions](opts...)
 	return o.registrar
 }
 
-func ServerRegistrarFromContext(ctx options.Context) ServerRegistrar {
+func ServerRegistrarFromContext(ctx options.Context) transport.ServerRegistrar {
 	v := optionutil.ValueCond(ctx, func(l *serviceOptions) bool { return l != nil && l.registrar != nil }, &serviceOptions{})
 	return v.registrar
 }

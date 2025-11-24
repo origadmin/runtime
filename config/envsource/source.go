@@ -85,5 +85,5 @@ func NewEnvSource(sourceCfg *sourcev1.SourceConfig, opts ...options.Option) (run
 }
 
 func init() {
-	runtimeconfig.Register("env", NewEnvSource)
+	runtimeconfig.RegisterSourceFactory("env", runtimeconfig.SourceFunc(NewEnvSource))
 }

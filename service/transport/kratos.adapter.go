@@ -3,7 +3,7 @@
 // This file is generated from kratos.go.
 
 // Package service contains generated code by adptool.
-package service
+package transport
 
 import (
 	"context"

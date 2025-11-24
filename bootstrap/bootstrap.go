@@ -9,11 +9,10 @@ import (
 )
 
 // New creates a new component provider, which is the main entry point for application startup.
-// It orchestrates the entire process of configuration loading and component initialization.
-// It now returns the Result interface.
+// It orchestrates the entire process of configuration loading.
+// It now returns the Result interface, which contains only configuration-related data.
 func New(bootstrapPath string, opts ...Option) (res Result, err error) {
-	// 1. Apply options to get access to WithAppInfo.
-	// Assuming options have been flattened as per our discussion.
+	// 1. Apply bootstrap options.
 	providerOpts := FromOptions(opts...)
 
 	// 2. Load configuration.
@@ -48,15 +47,10 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		}
 	}
 
-	configAppInfo, err := sc.DecodeApp()
-	if err != nil {
-		log.Debugf("failed to decode app info from config, will rely on WithAppInfo option or defaults: %v", err)
-	}
 	// 4. Assemble and return the final result.
 	res = &resultImpl{
 		config:           cfg,
 		structuredConfig: sc,
-		appInfo:          configAppInfo,
 	}
 	return res, nil
 }

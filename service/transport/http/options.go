@@ -12,6 +12,7 @@ import (
 	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
 	rtservice "github.com/origadmin/runtime/service"
+	"github.com/origadmin/runtime/service/transport"
 )
 
 // CorsOption defines a functional option for configuring advanced CORS settings in code.
@@ -46,7 +47,7 @@ type ServerOptions struct {
 	CorsOptions []CorsOption
 
 	// ServerRegistrar holds the service registration instance.
-	ServerRegistrar rtservice.ServerRegistrar
+	ServerRegistrar transport.ServerRegistrar
 
 	// ServerMiddlewares holds a map of named server middlewares.
 	ServerMiddlewares map[string]middleware.Middleware
@@ -75,7 +76,7 @@ func WithCorsOptions(opts ...CorsOption) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
 		o.CorsOptions = append(o.CorsOptions, opts...)
 	})
-	
+
 }
 
 // WithServerMiddlewares adds a map of named server middlewares to the options.
@@ -139,6 +140,6 @@ func WithDiscoveries(discoveries map[string]registry.Discovery) options.Option {
 		for name, d := range discoveries {
 			o.Discoveries[name] = d
 		}
-		
+
 	})
 }

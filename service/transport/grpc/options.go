@@ -10,6 +10,7 @@ import (
 	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
 	rtservice "github.com/origadmin/runtime/service"
+	"github.com/origadmin/runtime/service/transport"
 )
 
 // ServerOptions is a container for gRPC server-specific options.
@@ -18,7 +19,7 @@ type ServerOptions struct {
 	ServerOptions []kgprc.ServerOption
 
 	// ServerRegistrar holds the service registrar instance.
-	ServerRegistrar rtservice.ServerRegistrar
+	ServerRegistrar transport.ServerRegistrar
 
 	// ServerMiddlewares holds a map of named server middlewares.
 	ServerMiddlewares map[string]middleware.Middleware

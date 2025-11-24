@@ -45,6 +45,8 @@ type StructuredConfig interface {
 	LoggerConfigDecoder
 	MiddlewareConfigDecoder
 	ServiceConfigDecoder
+
+	// DecodedConfig returns the config original decoded value.
 	DecodedConfig() any
 }
 

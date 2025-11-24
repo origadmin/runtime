@@ -3,7 +3,7 @@
  */
 
 // Package service implements the functions, types, and interfaces for the module.
-package service
+package transport
 
 import (
 	"context"

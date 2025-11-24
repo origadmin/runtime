@@ -16,7 +16,6 @@ func NewServer(httpConfig *httpv1.Server, serverOpts *ServerOptions) (*transhttp
 	if err != nil {
 		return nil, err
 	}
-
 	// Create the HTTP server instance.
 	srv := transhttp.NewServer(kratosOpts...)
 	return srv, nil

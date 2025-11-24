@@ -8,6 +8,7 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/service"
+	"github.com/origadmin/runtime/service/transport"
 )
 
 // httpProtocolFactory implements the service.ProtocolFactory for HTTP.
@@ -43,7 +44,7 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	ctx := context.Background()
 	// Register the user's business logic services if a registrar is provided.
 	if serverOpts.ServerRegistrar != nil {
-		if httpRegistrar, ok := serverOpts.ServerRegistrar.(service.HTTPRegistrar); ok {
+		if httpRegistrar, ok := serverOpts.ServerRegistrar.(transport.HTTPRegistrar); ok {
 			if err := httpRegistrar.RegisterHTTP(ctx, srv); err != nil {
 				return nil, err
 			}

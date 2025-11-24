@@ -60,7 +60,7 @@ func getMiddlewares(
 }
 
 // initHttpServerOptions initialize the http server option
-func initHttpServerOptions(_ context.Context, httpConfig *httpv1.Server, serverOpts *ServerOptions) ([]transhttp.ServerOption, error) {
+func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions) ([]transhttp.ServerOption, error) {
 	// Prepare the Kratos HTTP server options.
 	var kratosOpts []transhttp.ServerOption
 

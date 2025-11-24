@@ -6,54 +6,47 @@ import (
 	"sync"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 
 	"github.com/origadmin/runtime/container/internal/cache"
 	"github.com/origadmin/runtime/container/internal/database"
 	"github.com/origadmin/runtime/container/internal/middleware"
 	"github.com/origadmin/runtime/container/internal/objectstore"
 	"github.com/origadmin/runtime/container/internal/registry"
+	"github.com/origadmin/runtime/extension/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	runtimelog "github.com/origadmin/runtime/log"
 )
 
 // Container defines the interface for accessing various runtime components.
-// It elevates Component management to a first-class concern.
 type Container interface {
 	Registry(opts ...options.Option) (RegistryProvider, error)
 	Middleware(opts ...options.Option) (MiddlewareProvider, error)
 	Cache(opts ...options.Option) (CacheProvider, error)
 	Database(opts ...options.Option) (DatabaseProvider, error)
 	ObjectStore(opts ...options.Option) (ObjectStoreProvider, error)
-	// Components returns all initialized components.
-	// The first call will trigger the initialization process.
 	Components(opts ...options.Option) (map[string]interfaces.Component, error)
-	// Component returns a specific component by name.
-	// The first call will trigger the initialization process.
 	Component(name string) (interfaces.Component, error)
-	// RegisterComponent allows for dynamic, programmatic registration of components.
-	// This is the primary mechanism for factories to add created components to the container.
 	RegisterComponent(name string, comp interfaces.Component)
-
-	// Logger returns the configured logger instance.
 	Logger() log.Logger
+	AppInfo() interfaces.AppInfo
 	WithOptions(opts ...options.Option) Container
 }
 
-// containerImpl implements the Container interface with lazy loading and caching.
+// containerImpl implements the Container interface.
 type containerImpl struct {
-	config interfaces.StructuredConfig
-	logger log.Logger
-	opts   []options.Option // Static options from New
+	config  interfaces.StructuredConfig
+	logger  log.Logger
+	appInfo interfaces.AppInfo // Holds the AppInfo interface
+	opts    []options.Option
 
-	// Component-related fields are now directly in the container
-	componentFactories map[string]ComponentFactory
-	cachedComponents   map[string]interfaces.Component
-	initErr            error
-	onceComponents     sync.Once
-	componentMu        sync.RWMutex
-
-	// Providers for other services
+	// ... (other fields remain the same)
+	componentFactories  map[string]ComponentFactory
+	cachedComponents    map[string]interfaces.Component
+	initErr             error
+	onceComponents      sync.Once
+	componentMu         sync.RWMutex
 	middlewareProvider  *middleware.Provider
 	cacheProvider       *cache.Provider
 	databaseProvider    *database.Provider
@@ -61,50 +54,78 @@ type containerImpl struct {
 	objectStoreProvider *objectstore.Provider
 }
 
-func (c *containerImpl) WithOptions(opts ...options.Option) Container {
-	c.opts = opts
-	componentFactories := ComponentFactoryFromOptions(opts...)
-	// Merge component factories from options
-	for name, factory := range componentFactories {
-		c.componentFactories[name] = factory
-	}
-	return c
-}
-
-// New creates a new Container instance with the given configuration.
+// New creates a new Container instance.
+// The signature is now stable and only accepts config and options.
 func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
-	var logger log.Logger
+	// 1. Process options to get appInfo and other settings.
+	co := optionutil.NewT[containerOptions](opts...)
+
+	// 2. Create a base logger.
+	var baseLogger log.Logger
 	loggerConfig, err := config.DecodeLogger()
 	if err != nil {
-		// Log the error using a default logger, then proceed with default logger
-		log.DefaultLogger.Log(log.LevelError, "failed to decode logger config, using default logger: %v", err)
-		// Set loggerConfig to nil so runtimelog.NewLogger returns DefaultLogger
+		log.NewHelper(log.DefaultLogger).Warnf("failed to decode logger config, using default logger: %v", err)
 		loggerConfig = nil
 	}
+	baseLogger = runtimelog.NewLogger(loggerConfig)
 
-	logger = runtimelog.NewLogger(loggerConfig)
+	// 3. Enrich the logger if AppInfo is available.
+	enrichedLogger := baseLogger
+	if co.appInfo != nil {
+		enrichedLogger = log.With(baseLogger,
+			"service.name", co.appInfo.Name(),
+			"service.version", co.appInfo.Version(),
+			"service.id", co.appInfo.ID(),
+			"trace.id", tracing.TraceID(),
+			"span.id", tracing.SpanID(),
+		)
+	}
 
 	impl := &containerImpl{
 		config:              config,
-		logger:              logger,
+		logger:              enrichedLogger,
+		appInfo:             co.appInfo, // Store the AppInfo interface
 		opts:                opts,
-		componentFactories:  make(map[string]ComponentFactory),
+		componentFactories:  co.componentFactories,
 		cachedComponents:    make(map[string]interfaces.Component),
-		middlewareProvider:  middleware.NewProvider(logger),
-		cacheProvider:       cache.NewProvider(logger),
-		databaseProvider:    database.NewProvider(logger),
-		registryProvider:    registry.NewProvider(logger),
-		objectStoreProvider: objectstore.NewProvider(logger),
-	}
-
-	if len(opts) > 0 {
-		impl.WithOptions(opts...)
+		middlewareProvider:  middleware.NewProvider(enrichedLogger),
+		cacheProvider:       cache.NewProvider(enrichedLogger),
+		databaseProvider:    database.NewProvider(enrichedLogger),
+		registryProvider:    registry.NewProvider(enrichedLogger),
+		objectStoreProvider: objectstore.NewProvider(enrichedLogger),
 	}
 
 	return impl
 }
 
-// initializeComponents is the core logic for component initialization.
+func (c *containerImpl) WithOptions(opts ...options.Option) Container {
+	// This logic needs to be careful not to re-create the logger,
+	// but to apply new options. For now, it just updates factories.
+	c.opts = append(c.opts, opts...)
+	co := optionutil.NewT[containerOptions](c.opts...)
+	if c.componentFactories == nil {
+		c.componentFactories = make(map[string]ComponentFactory)
+	}
+	for name, factory := range co.componentFactories {
+		c.componentFactories[name] = factory
+	}
+	// If a new AppInfo is provided, we should update it.
+	if co.appInfo != nil {
+		c.appInfo = co.appInfo
+		// Note: The logger is not re-enriched here. This assumes AppInfo is set at creation.
+		// A more complex implementation might re-create the logger.
+	}
+	return c
+}
+
+// AppInfo returns the definitive application metadata.
+func (c *containerImpl) AppInfo() interfaces.AppInfo {
+	return c.appInfo
+}
+
+// ... (rest of the file remains the same)
+// initializeComponents, Components, Component, RegisterComponent, Logger, etc.
+// ...
 func (c *containerImpl) initializeComponents(opts ...options.Option) {
 	logHelper := log.NewHelper(c.logger)
 
