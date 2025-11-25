@@ -16,7 +16,7 @@ import (
 )
 
 // Provider implements storageiface.DatabaseProvider. It manages the lifecycle of database
-// instances, caching them after first creation and allowing for reconfiguration.
+// instances, caching them after first creation.
 // It is safe for concurrent use.
 type Provider struct {
 	mu              sync.Mutex
@@ -28,22 +28,25 @@ type Provider struct {
 	initialized     bool
 }
 
-// NewProvider creates a new Provider.
-func NewProvider(logger runtimelog.Logger) *Provider {
-	return &Provider{
+// NewProvider creates a new Provider instance, applying functional options immediately.
+func NewProvider(logger runtimelog.Logger, opts ...options.Option) *Provider {
+	p := &Provider{
 		log:       runtimelog.NewHelper(logger),
 		databases: make(map[string]storageiface.Database),
+		opts:      opts, // Store functional options here
 	}
+	return p
 }
 
-// SetConfig updates the provider's configuration. This will clear any previously
-// cached instances and cause them to be recreated on the next access, using the new configuration.
-func (p *Provider) SetConfig(cfg *datav1.Databases, opts ...options.Option) *Provider {
+// SetConfig updates the provider's structural configuration.
+// This will clear any previously cached instances and cause them to be recreated on the next access,
+// using the new structural configuration and the functional options provided at NewProvider time.
+// It also provisionally determines the default instance name from the configuration.
+func (p *Provider) SetConfig(cfg *datav1.Databases) *Provider {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.config = cfg
-	p.opts = opts
 	p.initialized = false
 	p.databases = make(map[string]storageiface.Database)
 
@@ -72,7 +75,7 @@ func (p *Provider) RegisterDatabase(name string, db storageiface.Database) {
 
 // Databases returns a map of all available database instances.
 // On first call, it creates instances from the configuration and caches them.
-// Subsequent calls return the cached instances unless SetConfig has been called.
+// Subsequent calls return the cached instances.
 func (p *Provider) Databases() (map[string]storageiface.Database, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()

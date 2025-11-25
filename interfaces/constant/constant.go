@@ -22,7 +22,7 @@ const (
 	// ComponentCaches is the key for the cache configurations.
 	ComponentCaches ComponentKey = "caches"
 	// ComponentObjectStores is the key for the object store configurations.
-	ComponentObjectStores ComponentKey = "object_stores"
+	ComponentObjectStores ComponentKey = "objectstores"
 	// ComponentRegistries is the key for the service discovery/registry configuration.
 	ComponentRegistries ComponentKey = "discoveries"
 	// ComponentDefaultRegistry is the key for the default registry name.

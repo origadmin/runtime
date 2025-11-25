@@ -18,7 +18,7 @@ import (
 )
 
 // Provider implements interfaces.RegistryProvider. It manages the lifecycle of discovery
-// and registrar instances, caching them after first creation and allowing for reconfiguration.
+// and registrar instances, caching them after first creation.
 // It is safe for concurrent use.
 type Provider struct {
 	mu                     sync.Mutex
@@ -32,23 +32,25 @@ type Provider struct {
 	registrarsInitialized  bool
 }
 
-// NewProvider creates a new Provider.
-func NewProvider(logger runtimelog.Logger) *Provider {
-	return &Provider{
+// NewProvider creates a new Provider instance, applying functional options immediately.
+func NewProvider(logger runtimelog.Logger, opts ...options.Option) *Provider {
+	p := &Provider{
 		logger:      runtimelog.NewHelper(logger),
 		discoveries: make(map[string]registry.KDiscovery),
 		registrars:  make(map[string]registry.KRegistrar),
+		opts:        opts, // Store functional options here
 	}
+	return p
 }
 
-// SetConfig updates the provider's configuration. This will clear any previously
-// cached instances and cause them to be recreated on the next access, using the new configuration.
-func (p *Provider) SetConfig(cfg *discoveryv1.Discoveries, opts ...options.Option) *Provider {
+// SetConfig updates the provider's structural configuration.
+// This will clear any previously cached instances and cause them to be recreated on the next access,
+// using the new structural configuration and the functional options provided at NewProvider time.
+func (p *Provider) SetConfig(cfg *discoveryv1.Discoveries) *Provider {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.config = cfg
-	p.opts = opts
 	p.discoveriesInitialized = false
 	p.registrarsInitialized = false
 	p.discoveries = make(map[string]registry.KDiscovery)
@@ -70,7 +72,7 @@ func (p *Provider) RegisterDiscovery(name string, discovery registry.KDiscovery)
 
 // Discoveries returns a map of all available discovery clients.
 // On first call, it creates instances from the configuration and caches them.
-// Subsequent calls return the cached instances unless SetConfig has been called.
+// Subsequent calls return the cached instances.
 func (p *Provider) Discoveries() (map[string]registry.KDiscovery, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()

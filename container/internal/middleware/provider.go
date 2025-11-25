@@ -14,8 +14,8 @@ import (
 )
 
 // Provider implements interfaces.ClientMiddlewareProvider and interfaces.MiddlewareProvider.
-// It manages the lifecycle of middleware instances, caching them after first creation and
-// allowing for reconfiguration. It is safe for concurrent use.
+// It manages the lifecycle of middleware instances, caching them after first creation.
+// It is safe for concurrent use.
 type Provider struct {
 	mu                   sync.Mutex
 	config               *middlewarev1.Middlewares
@@ -27,23 +27,25 @@ type Provider struct {
 	serverMWsInitialized bool
 }
 
-// NewProvider creates a new Provider.
-func NewProvider(logger runtimelog.Logger) *Provider {
-	return &Provider{
+// NewProvider creates a new Provider instance, applying functional options immediately.
+func NewProvider(logger runtimelog.Logger, opts ...options.Option) *Provider {
+	p := &Provider{
 		log:               runtimelog.NewHelper(logger),
 		clientMiddlewares: make(map[string]kratosMiddleware.Middleware),
 		serverMiddlewares: make(map[string]kratosMiddleware.Middleware),
+		opts:              opts, // Store functional options here
 	}
+	return p
 }
 
-// SetConfig updates the provider's configuration. This will clear any previously
-// cached instances and cause them to be recreated on the next access, using the new configuration.
-func (p *Provider) SetConfig(cfg *middlewarev1.Middlewares, opts ...options.Option) *Provider {
+// SetConfig updates the provider's structural configuration.
+// This will clear any previously cached instances and cause them to be recreated on the next access,
+// using the new structural configuration and the functional options provided at NewProvider time.
+func (p *Provider) SetConfig(cfg *middlewarev1.Middlewares) *Provider {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.config = cfg
-	p.opts = opts
 	// Reset initialization flags to force recreation on next access.
 	p.clientMWsInitialized = false
 	p.serverMWsInitialized = false
@@ -60,7 +62,7 @@ func (p *Provider) RegisterClientMiddleware(name string, middleware kratosMiddle
 
 // ClientMiddlewares returns a map of all available client middleware instances.
 // On first call, it creates instances from the configuration and caches them.
-// Subsequent calls return the cached instances unless SetConfig has been called.
+// Subsequent calls return the cached instances.
 func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()

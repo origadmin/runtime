@@ -1,6 +1,9 @@
 package runtime
 
 import (
+	"fmt"
+	"sync"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -9,37 +12,144 @@ import (
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/constant"
 	"github.com/origadmin/runtime/interfaces/options"
 )
 
 // App defines the application's runtime environment.
 type App struct {
-	result    bootstrap.Result
-	container container.Container
-	appInfo   interfaces.AppInfo
+	result        bootstrap.Result
+	container     container.Container
+	appInfo       interfaces.AppInfo
+	mu            sync.RWMutex
+	globalOpts    []options.Option
+	componentOpts map[string][]options.Option
 }
 
 // New is the core constructor for a App instance.
-// It establishes the invariant that a valid App must have an AppInfo.
-func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
+// It returns a new App instance, but does not perform any pre-initialization of components.
+func New(result bootstrap.Result, ctnOpts ...options.Option) (*App, error) {
 	if result == nil {
 		panic("bootstrap.Result cannot be nil when creating a new App")
 	}
 
-	// Create the container, passing the options through.
 	ctn := container.New(result.StructuredConfig(), ctnOpts...)
 
-	// This is the single entry point check for AppInfo's validity.
 	appInfo := ctn.AppInfo()
 	if appInfo == nil {
 		panic("critical error: AppInfo is nil and was not provided during configuration")
 	}
 
-	return &App{
-		result:    result,
-		container: ctn,
-		appInfo:   appInfo,
+	app := &App{
+		result:        result,
+		container:     ctn,
+		appInfo:       appInfo,
+		componentOpts: make(map[string][]options.Option),
 	}
+
+	return app, nil
+}
+
+// WarmUp attempts to initialize all configured providers and generic components.
+// This method should be called after all configurations have been added to the App.
+// It returns an error if any component fails to initialize, allowing for early error detection.
+func (r *App) WarmUp() error {
+	var initErrors []error
+
+	// Known providers
+	if _, err := r.RegistryProvider(); err != nil {
+		initErrors = append(initErrors, fmt.Errorf("failed to warm up RegistryProvider: %w", err))
+	}
+	if _, err := r.DatabaseProvider(); err != nil {
+		initErrors = append(initErrors, fmt.Errorf("failed to warm up DatabaseProvider: %w", err))
+	}
+	if _, err := r.CacheProvider(); err != nil {
+		initErrors = append(initErrors, fmt.Errorf("failed to warm up CacheProvider: %w", err))
+	}
+	if _, err := r.ObjectStoreProvider(); err != nil {
+		initErrors = append(initErrors, fmt.Errorf("failed to warm up ObjectStoreProvider: %w", err))
+	}
+	if _, err := r.MiddlewareProvider(); err != nil {
+		initErrors = append(initErrors, fmt.Errorf("failed to warm up MiddlewareProvider: %w", err))
+	}
+
+	// Generic components (iterate through all configured ones)
+	r.mu.RLock()
+	configuredComponentNames := make([]string, 0, len(r.componentOpts))
+	for name := range r.componentOpts {
+		configuredComponentNames = append(configuredComponentNames, name)
+	}
+	r.mu.RUnlock()
+
+	for _, name := range configuredComponentNames {
+		// Skip known providers as they are already handled above
+		if name == string(constant.ComponentRegistries) ||
+			name == string(constant.ComponentDatabases) ||
+			name == string(constant.ComponentCaches) ||
+			name == string(constant.ComponentObjectStores) ||
+			name == string(constant.ComponentMiddlewares) {
+			continue
+		}
+		if _, err := r.Component(name); err != nil {
+			initErrors = append(initErrors, fmt.Errorf("failed to warm up generic component '%s': %w", name, err))
+		}
+	}
+
+	if len(initErrors) > 0 {
+		return fmt.Errorf("runtime app warm-up failed with %d errors: %v", len(initErrors), initErrors)
+	}
+
+	return nil
+}
+
+// AddGlobalOptions adds options that will be applied to all providers.
+func (r *App) AddGlobalOptions(opts ...options.Option) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.globalOpts = append(r.globalOpts, opts...)
+}
+
+// AddComponentOptions provides a generic way to add pre-configured options for any named component.
+func (r *App) AddComponentOptions(name string, opts ...options.Option) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.componentOpts[name] = append(r.componentOpts[name], opts...)
+}
+
+// ConfigureRegistry adds pre-configured options for the registry provider.
+func (r *App) ConfigureRegistry(opts ...options.Option) {
+	r.AddComponentOptions(string(constant.ComponentRegistries), opts...)
+}
+
+// ConfigureDatabase adds pre-configured options for the database provider.
+func (r *App) ConfigureDatabase(opts ...options.Option) {
+	r.AddComponentOptions(string(constant.ComponentDatabases), opts...)
+}
+
+// ConfigureCache adds pre-configured options for the cache provider.
+func (r *App) ConfigureCache(opts ...options.Option) {
+	r.AddComponentOptions(string(constant.ComponentCaches), opts...)
+}
+
+// ConfigureObjectStore adds pre-configured options for the object store provider.
+func (r *App) ConfigureObjectStore(opts ...options.Option) {
+	r.AddComponentOptions(string(constant.ComponentObjectStores), opts...)
+}
+
+// ConfigureMiddleware adds pre-configured options for the middleware provider.
+func (r *App) ConfigureMiddleware(opts ...options.Option) {
+	r.AddComponentOptions(string(constant.ComponentMiddlewares), opts...)
+}
+
+// getMergedOptions safely retrieves and merges global and component-specific options.
+func (r *App) getMergedOptions(name string) []options.Option {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	global := r.globalOpts
+	specific := r.componentOpts[name]
+	// The order is important: specific options should be able to override global ones if the underlying
+	// implementation processes them last. We place global options first.
+	return append(append([]options.Option{}, global...), specific...)
 }
 
 // Config returns the configuration decoder.
@@ -63,16 +173,13 @@ func (r *App) Container() container.Container {
 }
 
 // NewApp creates a new Kratos application instance.
-// It can safely assume r.appInfo is non-nil due to the check in New().
 func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *kratos.App {
 	info := r.appInfo
 
-	// Prepare metadata, ensuring it's not nil.
 	md := info.Metadata()
 	if md == nil {
 		md = make(map[string]string)
 	}
-	// Correctly inject the env as part of the metadata.
 	if info.Env() != "" {
 		md["env"] = info.Env()
 	}
@@ -83,7 +190,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 		kratos.ID(info.ID()),
 		kratos.Name(info.Name()),
 		kratos.Version(info.Version()),
-		kratos.Metadata(md), // Pass the enriched metadata.
+		kratos.Metadata(md),
 	}
 
 	if registrar, _ := r.DefaultRegistrar(); registrar != nil {
@@ -96,7 +203,8 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 
 // Component retrieves a generic, user-defined component by its registered name.
 func (r *App) Component(name string) (interface{}, error) {
-	return r.container.Component(name)
+	opts := r.getMergedOptions(name)
+	return r.container.Component(name, opts...)
 }
 
 // DefaultRegistrar returns the default service registrar.
@@ -104,9 +212,34 @@ func (r *App) DefaultRegistrar() (registry.Registrar, error) {
 	return r.container.DefaultRegistrar()
 }
 
-// RegistryProvider returns the service registry provider.
-func (r *App) RegistryProvider(opts ...options.Option) (container.RegistryProvider, error) {
+// RegistryProvider returns the service registry provider, using pre-configured options.
+func (r *App) RegistryProvider() (container.RegistryProvider, error) {
+	opts := r.getMergedOptions(string(constant.ComponentRegistries))
 	return r.container.Registry(opts...)
+}
+
+// DatabaseProvider returns the database provider, using pre-configured options.
+func (r *App) DatabaseProvider() (container.DatabaseProvider, error) {
+	opts := r.getMergedOptions(string(constant.ComponentDatabases))
+	return r.container.Database(opts...)
+}
+
+// CacheProvider returns the cache provider, using pre-configured options.
+func (r *App) CacheProvider() (container.CacheProvider, error) {
+	opts := r.getMergedOptions(string(constant.ComponentCaches))
+	return r.container.Cache(opts...)
+}
+
+// ObjectStoreProvider returns the object store provider, using pre-configured options.
+func (r *App) ObjectStoreProvider() (container.ObjectStoreProvider, error) {
+	opts := r.getMergedOptions(string(constant.ComponentObjectStores))
+	return r.container.ObjectStore(opts...)
+}
+
+// MiddlewareProvider returns the middleware provider, using pre-configured options.
+func (r *App) MiddlewareProvider() (container.MiddlewareProvider, error) {
+	opts := r.getMergedOptions(string(constant.ComponentMiddlewares))
+	return r.container.Middleware(opts...)
 }
 
 // AppInfo returns the application's metadata as an interface.

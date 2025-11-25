@@ -17,7 +17,7 @@ import (
 )
 
 // Provider implements interfaces.ObjectStoreProvider. It manages the lifecycle of object store
-// instances, caching them after first creation and allowing for reconfiguration.
+// instances, caching them after first creation.
 // It is safe for concurrent use.
 type Provider struct {
 	mu              sync.Mutex
@@ -29,23 +29,25 @@ type Provider struct {
 	initialized     bool
 }
 
-// NewProvider creates a new Provider.
-func NewProvider(logger runtimelog.Logger) *Provider { // Changed logger type
-	return &Provider{
+// NewProvider creates a new Provider instance, applying functional options immediately.
+func NewProvider(logger runtimelog.Logger, opts ...options.Option) *Provider {
+	p := &Provider{
 		log:          runtimelog.NewHelper(logger),
 		objectStores: make(map[string]storageiface.ObjectStore),
+		opts:         opts, // Store functional options here
 	}
+	return p
 }
 
-// SetConfig updates the provider's configuration. This will clear any previously
-// cached instances and cause them to be recreated on the next access, using the new configuration.
+// SetConfig updates the provider's structural configuration.
+// This will clear any previously cached instances and cause them to be recreated on the next access,
+// using the new structural configuration and the functional options provided at NewProvider time.
 // It also provisionally determines the default instance name from the configuration.
-func (p *Provider) SetConfig(cfg *datav1.ObjectStores, opts ...options.Option) *Provider {
+func (p *Provider) SetConfig(cfg *datav1.ObjectStores) *Provider {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.config = cfg
-	p.opts = opts
 	p.initialized = false
 	p.objectStores = make(map[string]storageiface.ObjectStore)
 
@@ -74,7 +76,7 @@ func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectSto
 
 // ObjectStores returns a map of all available object store instances.
 // On first call, it creates instances from the configuration and caches them.
-// Subsequent calls return the cached instances unless SetConfig has been called.
+// Subsequent calls return the cached instances.
 func (p *Provider) ObjectStores() (map[string]storageiface.ObjectStore, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
