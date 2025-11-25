@@ -70,6 +70,9 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 	}
 
 	if p.config != nil {
+		// Use the new WithClientCarrier option to pass only client middlewares
+		opts := append(p.opts, runtimeMiddleware.WithClientCarrier(p.clientMiddlewares))
+
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
 			if _, exists := p.clientMiddlewares[name]; exists {
@@ -78,7 +81,7 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			}
 			// Attempt to create a client middleware. If the factory returns ok=false,
 			// it means this config is not for a client middleware, so we just skip it.
-			if cm, ok := runtimeMiddleware.NewClient(cfg, p.opts...); ok {
+			if cm, ok := runtimeMiddleware.NewClient(cfg, opts...); ok {
 				p.clientMiddlewares[name] = cm
 			}
 		}
@@ -118,8 +121,10 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 		return p.serverMiddlewares, nil
 	}
 
-	// Removed the allErrors variable as it's no longer needed due to silent skipping of non-matching configs.
 	if p.config != nil {
+		// Use the new WithServerCarrier option to pass only server middlewares
+		opts := append(p.opts, runtimeMiddleware.WithServerCarrier(p.serverMiddlewares))
+
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
 			if _, exists := p.serverMiddlewares[name]; exists {
@@ -128,14 +133,14 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			}
 			// Attempt to create a server middleware. If the factory returns ok=false,
 			// it means this config is not for a server middleware, so we just skip it.
-			if sm, ok := runtimeMiddleware.NewServer(cfg, p.opts...); ok {
+			if sm, ok := runtimeMiddleware.NewServer(cfg, opts...); ok {
 				p.serverMiddlewares[name] = sm
 			}
 		}
 	}
 
 	p.serverMWsInitialized = true
-	return p.serverMiddlewares, nil // No error to return here anymore.
+	return p.serverMiddlewares, nil
 }
 
 // ServerMiddleware returns a single server middleware instance by name.

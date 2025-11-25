@@ -31,9 +31,30 @@ func WithMatchFunc(matchFunc selector.MatchFunc) Option {
 	})
 }
 
+// WithCarrier sets the full Carrier for the middleware options.
 func WithCarrier(carrier *Carrier) Option {
 	return optionutil.Update(func(o *Options) {
 		o.Carrier = carrier
+	})
+}
+
+// WithClientCarrier sets the client middlewares map in the Carrier.
+func WithClientCarrier(clientMiddlewares map[string]KMiddleware) Option {
+	return optionutil.Update(func(o *Options) {
+		if o.Carrier == nil {
+			o.Carrier = &Carrier{}
+		}
+		o.Carrier.Clients = clientMiddlewares
+	})
+}
+
+// WithServerCarrier sets the server middlewares map in the Carrier.
+func WithServerCarrier(serverMiddlewares map[string]KMiddleware) Option {
+	return optionutil.Update(func(o *Options) {
+		if o.Carrier == nil {
+			o.Carrier = &Carrier{}
+		}
+		o.Carrier.Servers = serverMiddlewares
 	})
 }
 
@@ -63,16 +84,16 @@ func WithSubjectFactory(factory func() string) Option {
 
 // FromOptions resolves common options from a slice of generic Option.
 func FromOptions(opts ...Option) *Options {
-	// Use optionutil to resolve the context and matchFunc
-	// We need a temporary struct to hold these, as optionutil.New works on a zero-value struct.
 	mwOpts := optionutil.NewT[Options](opts...)
 	mwOpts.Logger = log.FromOptions(opts)
 	if mwOpts.Carrier == nil {
-		// WithCond the carrier is not set, use a new Carrier instance
-		mwOpts.Carrier = &Carrier{
-			Clients: make(map[string]KMiddleware),
-			Servers: make(map[string]KMiddleware),
-		}
+		mwOpts.Carrier = &Carrier{}
+	}
+	if mwOpts.Carrier.Clients == nil {
+		mwOpts.Carrier.Clients = make(map[string]KMiddleware)
+	}
+	if mwOpts.Carrier.Servers == nil {
+		mwOpts.Carrier.Servers = make(map[string]KMiddleware)
 	}
 	mwOpts.Options = opts
 	return mwOpts
