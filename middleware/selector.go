@@ -37,7 +37,7 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 	if len(includes) > 0 {
 		names = append(names, includes...)
 	} else {
-		names = maps.Keys(mwOpts.ClientMiddlewares) // Changed from mwOpts.Carrier.Clients
+		names = maps.Keys(mwOpts.Carrier.Clients) // Changed from mwOpts.Carrier.Clients
 	}
 
 	// Apply excludes filter
@@ -59,7 +59,7 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 	// fetch middlewares by final names
 	for _, name := range names {
 		helper.Debugf("enabling client selector middleware: %s", name)
-		middleware, ok := mwOpts.ClientMiddlewares[name] // Changed from mwOpts.Carrier.Clients
+		middleware, ok := mwOpts.Carrier.Clients[name] // Changed from mwOpts.Carrier.Clients
 		if !ok {
 			helper.Warnf("unknown client selector middleware: %s", name)
 			continue
@@ -98,7 +98,7 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 	if len(includes) > 0 {
 		names = append(names, includes...)
 	} else {
-		names = maps.Keys(mwOpts.ServerMiddlewares) // Changed from mwOpts.Carrier.Servers
+		names = maps.Keys(mwOpts.Carrier.Servers) // Changed from mwOpts.Carrier.Servers
 	}
 
 	// Apply excludes filter
@@ -120,7 +120,7 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 	// fetch middlewares by final names
 	for _, name := range names {
 		helper.Debugf("enabling server selector middleware: %s", name)
-		middleware, ok := mwOpts.ServerMiddlewares[name] // Changed from mwOpts.Carrier.Servers
+		middleware, ok := mwOpts.Carrier.Servers[name] // Changed from mwOpts.Carrier.Servers
 		if !ok {
 			helper.Warnf("unknown server selector middleware: %s", name)
 			continue
