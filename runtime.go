@@ -16,11 +16,11 @@ import (
 type App struct {
 	result    bootstrap.Result
 	container container.Container
-	appInfo   *appInfo // Use the concrete struct type for internal operations.
+	appInfo   interfaces.AppInfo
 }
 
 // New is the core constructor for a App instance.
-// It now accepts container options to allow for proper AppInfo injection.
+// It establishes the invariant that a valid App must have an AppInfo.
 func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 	if result == nil {
 		panic("bootstrap.Result cannot be nil when creating a new App")
@@ -29,14 +29,10 @@ func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 	// Create the container, passing the options through.
 	ctn := container.New(result.StructuredConfig(), ctnOpts...)
 
-	// The container returns an interfaces.AppInfo, we need to type-assert it
-	// back to the concrete *appInfo for internal use. This is a safe operation
-	// within our controlled package structure.
-	appInfo, ok := ctn.AppInfo().(*appInfo)
-	if !ok && ctn.AppInfo() != nil {
-		// This should ideally not happen if the ecosystem is consistent.
-		// Handle this case, perhaps by panicking or logging a critical error.
-		panic("critical error: AppInfo from container is not of type *runtime.appInfo")
+	// This is the single entry point check for AppInfo's validity.
+	appInfo := ctn.AppInfo()
+	if appInfo == nil {
+		panic("critical error: AppInfo is nil and was not provided during configuration")
 	}
 
 	return &App{
@@ -67,11 +63,9 @@ func (r *App) Container() container.Container {
 }
 
 // NewApp creates a new Kratos application instance.
+// It can safely assume r.appInfo is non-nil due to the check in New().
 func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *kratos.App {
-	info := r.appInfo // Use the concrete struct directly.
-	if info == nil {
-		panic("AppInfo not available in runtime.App, cannot create kratos.App")
-	}
+	info := r.appInfo
 
 	// Prepare metadata, ensuring it's not nil.
 	md := info.Metadata()
@@ -115,11 +109,7 @@ func (r *App) RegistryProvider(opts ...options.Option) (container.RegistryProvid
 	return r.container.Registry(opts...)
 }
 
-// AppInfo returns the application's metadata as an interface,
-// fulfilling the public contract.
+// AppInfo returns the application's metadata as an interface.
 func (r *App) AppInfo() interfaces.AppInfo {
-	if r.appInfo == nil {
-		return nil
-	}
 	return r.appInfo
 }
