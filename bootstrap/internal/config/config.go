@@ -130,14 +130,20 @@ func NewStructured(cfg interfaces.Config, paths map[string]string) interfaces.St
 	}
 }
 
-// decodeComponent implements a simple and robust decoding logic.
-// It no longer contains any fallback logic. It trusts the `paths` map provided by the bootstrap package.
+// decodeComponent implements a robust decoding logic.
+// It first checks the `paths` map for a pre-discovered path. If not found,
+// it falls back to using the componentKey directly as the path.
+// This provides both flexibility (via the paths map) and convention-based simplicity.
 func (c *structuredConfigImpl) decodeComponent(componentKey string, value any) error {
 	path, ok := c.paths[componentKey]
 
-	// If the key is not in the paths map, or the path is explicitly empty, it's considered disabled or not configured.
-	if !ok || path == "" {
-		return nil // This is not an error.
+	// If the key is not in the paths map, fall back to using the component key itself as the path.
+	// This supports convention-over-configuration.
+	if !ok {
+		path = componentKey
+	} else if path == "" {
+		// If the path is explicitly set to empty, it's considered disabled.
+		return nil
 	}
 
 	// Attempt to decode using the provided path.

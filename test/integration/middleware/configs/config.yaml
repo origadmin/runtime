@@ -22,9 +22,9 @@ configs:
     type: rate_limiter
     enabled: true
     rate_limiter:
-      limit: 100
+      period: 100
   - name: circuit_breaker
     type: circuit_breaker
     enabled: true
     circuit_breaker:
-      timeout: 5s
+      ratio: 5s

@@ -39,20 +39,22 @@ func WithConfigTransformer(transformer ConfigTransformer) Option {
 	})
 }
 
-// WithDefaultPath sets a default path for a specific component.
-// This allows overriding the default path for a specific component.
-func WithDefaultPath(key string, value string) Option {
+// WithComponentPath sets the configuration path for a specific component.
+// This allows overriding the framework's default path.
+// Providing an empty string for the path ("") will explicitly disable the loading of that component.
+func WithComponentPath(componentKey string, path string) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		if o.defaultPaths == nil {
 			o.defaultPaths = make(map[string]string)
 		}
-		o.defaultPaths[key] = value
+		o.defaultPaths[componentKey] = path
 	})
 }
 
-// WithDefaultPaths provides a default path map for components.
+// WithComponentPaths provides a map of component keys to their configuration paths.
 // This map is merged with the framework's defaults, with these values taking precedence.
-func WithDefaultPaths(paths map[string]string) Option {
+// Paths provided here can also be an empty string ("") to disable the corresponding component.
+func WithComponentPaths(paths map[string]string) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		if o.defaultPaths == nil {
 			o.defaultPaths = make(map[string]string)

@@ -5,6 +5,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/goexts/generic/configure"
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/container"
@@ -39,10 +40,7 @@ func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 // NewFromBootstrap is a convenience constructor that simplifies application startup.
 func NewFromBootstrap(bootstrapPath string, opts ...Option) (*App, error) {
 	// 1. Apply runtime options to get bootstrap options and a potential AppInfo.
-	rtOpts := &appOptions{}
-	for _, o := range opts {
-		o(rtOpts)
-	}
+	rtOpts := configure.Apply(&appOptions{}, opts)
 
 	// 2. Call bootstrap.New
 	bootstrapResult, err := bootstrap.New(bootstrapPath, rtOpts.bootstrapOpts...)

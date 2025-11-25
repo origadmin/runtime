@@ -65,28 +65,31 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 		// Otherwise, we'll use it as the base for our default structured implementation.
 		baseConfig = providerOpts.config
 		// Case 2: Default flow - load from bootstrapPath.
-	} else {
-
-		var sources []*sourcev1.SourceConfig
-		// If not in 'directly' mode, try to load sources from the bootstrap file.
-		if !providerOpts.directly {
-			sources = loadSourcesFromBootstrapFile(bootstrapPath, providerOpts, logger)
-		}
-
-		// Fallback or 'directly' mode: use the bootstrapPath as the single source.
-		if len(sources) == 0 {
-			logger.Infof("No sources found in bootstrap file, using it directly: %s", bootstrapPath)
-			sources = append(sources, SourceWithFile(bootstrapPath))
-		}
-
-		// Create the base config from the collected and resolved sources.
+	} else if providerOpts.directly {
+		// Case 2: Direct loading mode. The bootstrapPath is the config file itself.
+		logger.Infof("Loading config directly from: %s", bootstrapPath)
+		sources := []*sourcev1.SourceConfig{SourceWithFile(bootstrapPath)}
 		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create base config: %w", err)
+			return nil, fmt.Errorf("failed to create base config for direct loading: %w", err)
+		}
+	} else {
+		// Case 3: Indirect loading mode. The bootstrapPath points to a file that defines other sources.
+		sources := loadSourcesFromBootstrapFile(bootstrapPath, providerOpts, logger)
+
+		// In indirect mode, if no sources are found in the bootstrap file, it's an error.
+		if len(sources) == 0 {
+			return nil, fmt.Errorf("no configuration sources found in bootstrap file: %s", bootstrapPath)
+		}
+
+		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create base config from bootstrap sources: %w", err)
 		}
 	}
 
-	// Step 2: Load the configuration. This is the responsibility of the bootstrap module.
+	// Load the configuration. This step is common to all successful paths.
+	logger.Info("Loading configuration...")
 	if err := baseConfig.Load(); err != nil {
 		return nil, err
 	}

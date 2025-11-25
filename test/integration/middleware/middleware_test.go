@@ -3,7 +3,6 @@ package middleware
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,36 +54,64 @@ func getMiddlewareField(mw *middlewarev1.Middleware, fieldName string) interface
 	}
 }
 
-// setupRuntime initializes the runtime for middleware tests
-func setupRuntime(t *testing.T, configFilePath string) (*rt.App, *middlewarev1.Middlewares) {
-	appInfo := rt.NewAppInfo("middleware-test-app", "1.0.0",
-		rt.WithAppInfoID("middleware-test-app"))
-	rtInstance, err := rt.NewFromBootstrap(configFilePath, rt.WithAppInfo(appInfo),
-		rt.WithBootstrapOptions(bootstrap.WithDefaultPath("middlewares", "configs")))
-	require.NoError(t, err, "Failed to initialize runtime")
+// setupRuntimeFromFile initializes a runtime instance from a given configuration file path.
+// This function is dedicated to file-based test scenarios.
+func setupRuntimeFromFile(t *testing.T, appID, configFilePath string) *rt.App {
+	t.Helper()
+	require.NotEmpty(t, configFilePath, "configFilePath cannot be empty for file-based setup")
 
-	// The config file contains a top-level 'configs' key with an array of middleware configs
-	var configs middlewarev1.Middlewares
-	err = rtInstance.Config().Decode("", &configs)
-	require.NoError(t, err, "Failed to decode middlewares config")
+	rtInstance, err := rt.NewFromBootstrap(configFilePath,
+		rt.WithAppInfo(rt.NewAppInfo(appID, "1.0.0", rt.WithAppInfoID(appID))),
+		rt.WithBootstrapOptions(
+			bootstrap.WithDirectly(),
+			bootstrap.WithComponentPath("middlewares", "configs"),
+		),
+	)
+	require.NoError(t, err, "Failed to create runtime from file: %s", configFilePath)
+	return rtInstance
+}
 
-	// Get the middleware provider to ensure it's initialized with the config
-	_, err = rtInstance.Container().Middleware()
-	require.NoError(t, err, "Failed to initialize middleware provider")
+// setupRuntimeFromObject initializes a runtime instance from an in-memory middleware configuration object.
+// It creates a temporary configuration file for the test.
+func setupRuntimeFromObject(t *testing.T, appID string, mws *middlewarev1.Middlewares) *rt.App {
+	t.Helper()
 
-	return rtInstance, &configs
+	tempDir := t.TempDir()
+	finalConfigPath := filepath.Join(tempDir, "config.yaml")
+
+	if mws == nil {
+		mws = &middlewarev1.Middlewares{}
+	}
+
+	// The config structure expects a top-level 'middlewares' key.
+	configWrapper := map[string]interface{}{
+		"middlewares": mws,
+	}
+	yamlBytes, err := yaml.Marshal(configWrapper)
+	require.NoError(t, err, "Failed to marshal in-memory config to YAML")
+	err = os.WriteFile(finalConfigPath, yamlBytes, 0644)
+	require.NoError(t, err, "Failed to write temp config file")
+
+	// Since we created the file, we now delegate to the file-based setup function.
+	// This avoids duplicating the NewFromBootstrap call.
+	return setupRuntimeFromFile(t, appID, finalConfigPath)
 }
 
 // TestMiddleware_LoadAndBuild tests middleware loading and building
 func TestMiddleware_LoadAndBuild(t *testing.T) {
-	configFilePath := filepath.Join("configs", "config.yaml")
+	configFilePath := "configs/config.yaml"
 
-	rtInstance, configs := setupRuntime(t, configFilePath)
+	// Let the runtime handle the loading from the specified config file.
+	rtInstance := setupRuntimeFromFile(t, "load-and-build-test", configFilePath)
 
+	// Get the configuration directly from the initialized runtime.
+	// This is the correct way, as it uses the framework's own decoding logic.
+	configs, err := rtInstance.StructuredConfig().DecodeMiddlewares()
+	require.NoError(t, err, "Failed to decode middlewares from structured config")
+	t.Logf("Loaded middlewares: %+v", configs)
 	t.Run("VerifyConfig", func(t *testing.T) {
-		// Check the number of middlewares in the configuration
 		assert.GreaterOrEqual(t, len(configs.Configs), 2, "Should have at least 2 middlewares in config")
-
+		t.Logf("Loaded middlewares: %+v", configs.Configs)
 		// Check configuration of each middleware
 		for _, mw := range configs.Configs {
 			t.Logf("Checking middleware: %s (type: %s, enabled: %v)", mw.Name, mw.Type, mw.Enabled)
@@ -122,15 +149,14 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 		// Calculate the expected number of client middlewares
 		expectedCount := 0
-		for _, mw := range configs.Configs {
-			if mw.Enabled && mw.Type != "rate_limiter" { // rate_limiter is not supported on client
-				t.Logf("Expecting %s middleware for client", mw.Type)
-				expectedCount++
-			} else {
-				t.Logf("Skipping %s middleware for client", mw.Type)
-			}
-		}
-		t.Logf("Loaded middlewares: %+v", configs)
+		// From config.yaml: metadata, logging, selector, rate_limiter, circuit_breaker
+		// All are enabled.
+		// 'selector' middleware itself is a middleware.
+		// 'rate_limiter' is not supported on the client side.
+		// So, we expect: metadata, logging, selector, circuit_breaker
+		expectedCount = 4
+
+		t.Logf("Loaded middlewares from runtime: %+v", configs)
 		// Log detailed information about the middlewares
 		t.Logf("Test Configuration:")
 		t.Logf("  - Expected client middlewares: %d", expectedCount)
@@ -160,14 +186,11 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 		// Calculate the actual number of supported server middlewares (excluding unsupported middleware types)
 		expectedCount := 0
-		for _, mw := range configs.Configs {
-			if mw.Enabled && mw.Type != "circuit_breaker" { // circuit_breaker 在服务端不受支持
-				t.Logf("Including %s middleware for server", mw.Type)
-				expectedCount++
-			} else {
-				t.Logf("Skipping circuit_breaker middleware for server")
-			}
-		}
+		// From config.yaml: metadata, logging, selector, rate_limiter, circuit_breaker
+		// All are enabled.
+		// 'circuit_breaker' is not supported on the server side.
+		// So, we expect: metadata, logging, selector, rate_limiter
+		expectedCount = 4
 
 		// Verify the number of middlewares
 		assert.Equal(t, expectedCount, len(serverMWsMap), "Number of server middlewares should match expected")
@@ -176,13 +199,6 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 // TestSelectorMiddleware tests the includes/excludes functionality of Selector middleware
 func TestSelectorMiddleware(t *testing.T) {
-	_, filename, _, _ := runtime.Caller(0)
-	configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
-
-	rtInstance, _ := setupRuntime(t, configFilePath)
-	_, err := rtInstance.Container().Middleware()
-	require.NoError(t, err, "Failed to get middleware provider")
-
 	// Prepare test data
 	tests := []struct {
 		name        string
@@ -248,36 +264,18 @@ func TestSelectorMiddleware(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tempDir := t.TempDir()
-			tempBootstrapPath := filepath.Join(tempDir, "bootstrap.yaml")
-			tempConfigPath := filepath.Join(tempDir, "config.yaml")
-
-			tempConfigs := &middlewarev1.Middlewares{Configs: []*middlewarev1.Middleware{tt.config.Configs[0]}}
-			configBytes, err := yaml.Marshal(tempConfigs)
-			require.NoError(t, err, "Failed to marshal middleware config to YAML")
-			err = os.WriteFile(tempConfigPath, configBytes, 0644)
-			require.NoError(t, err, "Failed to write config file")
-
-			bootstrapContent := []byte(`sources:
-  - kind: file
-    path: ` + filepath.Base(tempConfigPath) + `
-    format: yaml`)
-			err = os.WriteFile(tempBootstrapPath, bootstrapContent, 0644)
-			require.NoError(t, err, "Failed to write bootstrap file")
-
-			tempAppInfo := rt.NewAppInfo("temp-middleware-test", "1.0.0", rt.WithAppInfoID("temp-middleware-test"))
-			tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
-			require.NoError(t, err)
+			// Use the centralized setup function with the test-specific config.
+			rtInstance := setupRuntimeFromObject(t, "selector-test-app", tt.config)
 
 			switch tt.side {
 			case "client":
-				middlewareProvider, err := tempRtInstance.Container().Middleware()
+				middlewareProvider, err := rtInstance.Container().Middleware()
 				require.NoError(t, err)
 				mwMap, err := middlewareProvider.ClientMiddlewares()
 				require.NoError(t, err)
 				assert.Len(t, mwMap, tt.expectCount, "Unexpected number of client middlewares")
 			case "server":
-				middlewareProvider, err := tempRtInstance.Container().Middleware()
+				middlewareProvider, err := rtInstance.Container().Middleware()
 				require.NoError(t, err)
 				mwMap, err := middlewareProvider.ServerMiddlewares()
 				require.NoError(t, err)
@@ -289,11 +287,6 @@ func TestSelectorMiddleware(t *testing.T) {
 
 // TestMiddleware_Creation tests middleware creation
 func TestMiddleware_Creation(t *testing.T) {
-	//_, filename, _, _ := runtime.Caller(0)
-	//configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
-
-	//rtInstance, _ := setupRuntime(t, configFilePath)
-
 	// Test creation of different types of middleware
 	tests := []struct {
 		name     string
@@ -340,27 +333,10 @@ func TestMiddleware_Creation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tempDir := t.TempDir()
-			tempBootstrapPath := filepath.Join(tempDir, "bootstrap.yaml")
-			tempConfigPath := filepath.Join(tempDir, "config.yaml")
-
+			// Create a minimal middleware config for this specific test case.
 			tempConfigs := &middlewarev1.Middlewares{Configs: []*middlewarev1.Middleware{tt.config}}
-			configBytes, err := yaml.Marshal(tempConfigs)
-			require.NoError(t, err, "Failed to marshal middleware config to YAML")
-			err = os.WriteFile(tempConfigPath, configBytes, 0644)
-			require.NoError(t, err, "Failed to write config file")
-
-			bootstrapContent := []byte(`sources:
-  - kind: file
-    path: ` + filepath.Base(tempConfigPath) + `
-    format: yaml`)
-			err = os.WriteFile(tempBootstrapPath, bootstrapContent, 0644)
-			require.NoError(t, err, "Failed to write bootstrap file")
-
-			tempAppInfo := rt.NewAppInfo("temp-single-mw-test", "1.0.0", rt.WithAppInfoID("temp-single-mw-test"))
-			tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
-			require.NoError(t, err)
-
+			// Use the centralized setup function.
+			tempRtInstance := setupRuntimeFromObject(t, "creation-test-app", tempConfigs)
 			middlewareProvider, err := tempRtInstance.Container().Middleware()
 			require.NoError(t, err)
 
@@ -389,19 +365,9 @@ func TestMiddleware_Creation(t *testing.T) {
 
 // TestMiddleware_EdgeCases tests edge cases of middleware
 func TestMiddleware_EdgeCases(t *testing.T) {
-	_, filename, _, _ := runtime.Caller(0)
-	configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
-
-	rtInstance, _ := setupRuntime(t, configFilePath)
-
 	t.Run("NilConfig", func(t *testing.T) {
-		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
-		err := os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: nonexistent.yaml"), 0644)
-		require.NoError(t, err)
-
-		tempAppInfo := rt.NewAppInfo("temp-nil-config-test", "1.0.0", rt.WithAppInfoID("temp-nil-config-test"))
-		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
-		require.NoError(t, err)
+		// setupRuntime handles nil config gracefully.
+		tempRtInstance := setupRuntimeFromObject(t, "nil-config-test", nil)
 		middlewareProvider, err := tempRtInstance.Container().Middleware()
 		require.NoError(t, err)
 
@@ -415,21 +381,8 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 	})
 
 	t.Run("EmptyConfig", func(t *testing.T) {
-		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
-		tempConfigPath := filepath.Join(t.TempDir(), "config.yaml")
-
 		emptyConfigs := &middlewarev1.Middlewares{}
-		configBytes, err := yaml.Marshal(emptyConfigs)
-		require.NoError(t, err, "Failed to marshal empty middleware config to YAML")
-		err = os.WriteFile(tempConfigPath, configBytes, 0644)
-		require.NoError(t, err, "Failed to write empty config file")
-
-		err = os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: "+filepath.Base(tempConfigPath)), 0644)
-		require.NoError(t, err)
-
-		tempAppInfo := rt.NewAppInfo("temp-empty-config-test", "1.0.0", rt.WithAppInfoID("temp-empty-config-test"))
-		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
-		require.NoError(t, err)
+		tempRtInstance := setupRuntimeFromObject(t, "empty-config-test", emptyConfigs)
 		tempMiddlewareProvider, err := tempRtInstance.Container().Middleware()
 		require.NoError(t, err)
 
@@ -445,9 +398,6 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 	})
 
 	t.Run("DisabledMiddleware", func(t *testing.T) {
-		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
-		tempConfigPath := filepath.Join(t.TempDir(), "config.yaml")
-
 		disabledConfig := &middlewarev1.Middlewares{
 			Configs: []*middlewarev1.Middleware{
 				{
@@ -458,15 +408,7 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 				},
 			},
 		}
-		err := rtInstance.Config().Decode("", disabledConfig)
-		require.NoError(t, err)
-
-		err = os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: "+filepath.Base(tempConfigPath)), 0644)
-		require.NoError(t, err)
-
-		tempAppInfo := rt.NewAppInfo("temp-disabled-mw-test", "1.0.0", rt.WithAppInfoID("temp-disabled-mw-test"))
-		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
-		require.NoError(t, err)
+		tempRtInstance := setupRuntimeFromObject(t, "disabled-mw-test", disabledConfig)
 		tempMiddlewareProvider, err := tempRtInstance.Container().Middleware()
 		require.NoError(t, err)
 
@@ -481,9 +423,6 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 	})
 
 	t.Run("UnknownMiddlewareType", func(t *testing.T) {
-		tempBootstrapPath := filepath.Join(t.TempDir(), "bootstrap.yaml")
-		tempConfigPath := filepath.Join(t.TempDir(), "config.yaml")
-
 		unknownConfig := &middlewarev1.Middlewares{
 			Configs: []*middlewarev1.Middleware{
 				{
@@ -493,15 +432,7 @@ func TestMiddleware_EdgeCases(t *testing.T) {
 				},
 			},
 		}
-		err := rtInstance.Config().Decode("", unknownConfig)
-		require.NoError(t, err)
-
-		err = os.WriteFile(tempBootstrapPath, []byte("sources:\n  - kind: file\n    path: "+filepath.Base(tempConfigPath)), 0644)
-		require.NoError(t, err)
-
-		tempAppInfo := rt.NewAppInfo("temp-unknown-mw-test", "1.0.0", rt.WithAppInfoID("temp-unknown-mw-test"))
-		tempRtInstance, err := rt.NewFromBootstrap(tempBootstrapPath, rt.WithAppInfo(tempAppInfo))
-		require.NoError(t, err)
+		tempRtInstance := setupRuntimeFromObject(t, "unknown-mw-test", unknownConfig)
 		tempMiddlewareProvider, err := tempRtInstance.Container().Middleware()
 		require.NoError(t, err)
 
