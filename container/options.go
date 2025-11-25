@@ -60,3 +60,21 @@ func WithDefaultRegistrarName(name string) options.Option {
 		o.defaultRegistrarName = name
 	})
 }
+
+type containerContext struct {
+	Container Container
+}
+
+func WithContainer(container Container) options.Option {
+	return optionutil.Update(func(o *containerContext) {
+		o.Container = container
+	})
+}
+
+func FromOptions(opts []options.Option) Container {
+	l := optionutil.NewT[containerContext](opts...)
+	if l.Container != nil {
+		return l.Container
+	}
+	return nil
+}
