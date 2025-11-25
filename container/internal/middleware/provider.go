@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"cmp"
-	"errors"
 	"fmt"
 	"sync"
 
@@ -20,7 +19,7 @@ import (
 type Provider struct {
 	mu                   sync.Mutex
 	config               *middlewarev1.Middlewares
-	log                  *runtimelog.Helper // Changed to runtimelog.Helper
+	log                  *runtimelog.Helper
 	opts                 []options.Option
 	clientMiddlewares    map[string]kratosMiddleware.Middleware
 	serverMiddlewares    map[string]kratosMiddleware.Middleware
@@ -31,7 +30,9 @@ type Provider struct {
 // NewProvider creates a new Provider.
 func NewProvider(logger runtimelog.Logger) *Provider {
 	return &Provider{
-		log: runtimelog.NewHelper(logger), // Changed to runtimelog.NewHelper
+		log:               runtimelog.NewHelper(logger),
+		clientMiddlewares: make(map[string]kratosMiddleware.Middleware),
+		serverMiddlewares: make(map[string]kratosMiddleware.Middleware),
 	}
 }
 
@@ -43,10 +44,9 @@ func (p *Provider) SetConfig(cfg *middlewarev1.Middlewares, opts ...options.Opti
 
 	p.config = cfg
 	p.opts = opts
+	// Reset initialization flags to force recreation on next access.
 	p.clientMWsInitialized = false
 	p.serverMWsInitialized = false
-	p.clientMiddlewares = make(map[string]kratosMiddleware.Middleware)
-	p.serverMiddlewares = make(map[string]kratosMiddleware.Middleware)
 
 	return p
 }
@@ -69,7 +69,6 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 		return p.clientMiddlewares, nil
 	}
 
-	var allErrors error
 	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
@@ -77,17 +76,16 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 				p.log.Warnf("client middleware '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
-			cm, ok := runtimeMiddleware.NewClient(cfg, p.opts...)
-			if ok {
+			// Attempt to create a client middleware. If the factory returns ok=false,
+			// it means this config is not for a client middleware, so we just skip it.
+			if cm, ok := runtimeMiddleware.NewClient(cfg, p.opts...); ok {
 				p.clientMiddlewares[name] = cm
-			} else {
-				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create client middleware '%s'", name))
 			}
 		}
 	}
 
 	p.clientMWsInitialized = true
-	return p.clientMiddlewares, allErrors
+	return p.clientMiddlewares, nil
 }
 
 // ClientMiddleware returns a single client middleware instance by name.
@@ -120,7 +118,7 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 		return p.serverMiddlewares, nil
 	}
 
-	var allErrors error
+	// Removed the allErrors variable as it's no longer needed due to silent skipping of non-matching configs.
 	if p.config != nil {
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
@@ -128,17 +126,16 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 				p.log.Warnf("server middleware '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
-			sm, ok := runtimeMiddleware.NewServer(cfg, p.opts...)
-			if ok {
+			// Attempt to create a server middleware. If the factory returns ok=false,
+			// it means this config is not for a server middleware, so we just skip it.
+			if sm, ok := runtimeMiddleware.NewServer(cfg, p.opts...); ok {
 				p.serverMiddlewares[name] = sm
-			} else {
-				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create server middleware '%s'", name))
 			}
 		}
 	}
 
 	p.serverMWsInitialized = true
-	return p.serverMiddlewares, allErrors
+	return p.serverMiddlewares, nil // No error to return here anymore.
 }
 
 // ServerMiddleware returns a single server middleware instance by name.

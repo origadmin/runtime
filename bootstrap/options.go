@@ -39,6 +39,17 @@ func WithConfigTransformer(transformer ConfigTransformer) Option {
 	})
 }
 
+// WithDefaultPath sets a default path for a specific component.
+// This allows overriding the default path for a specific component.
+func WithDefaultPath(key string, value string) Option {
+	return optionutil.Update(func(o *ProviderOptions) {
+		if o.defaultPaths == nil {
+			o.defaultPaths = make(map[string]string)
+		}
+		o.defaultPaths[key] = value
+	})
+}
+
 // WithDefaultPaths provides a default path map for components.
 // This map is merged with the framework's defaults, with these values taking precedence.
 func WithDefaultPaths(paths map[string]string) Option {
@@ -62,9 +73,9 @@ func WithDirectory(dir string) Option {
 
 // WithDirectly sets whether to treat the bootstrapPath as a direct configuration source,
 // ignoring any `sources` defined within it.
-func WithDirectly(directly bool) Option {
+func WithDirectly() Option {
 	return optionutil.Update(func(o *ProviderOptions) {
-		o.directly = directly
+		o.directly = true
 	})
 }
 

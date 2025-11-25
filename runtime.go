@@ -32,7 +32,7 @@ func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 	return &App{
 		result:    result,
 		container: ctn,
-		appInfo:   ctn.AppInfo(), // Get the definitive AppInfo from the container.
+		appInfo:   ctn.AppInfo(),
 	}
 }
 

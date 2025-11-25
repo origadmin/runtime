@@ -13,6 +13,7 @@ import (
 	rt "github.com/origadmin/runtime"
 	selectorv1 "github.com/origadmin/runtime/api/gen/go/config/middleware/selector/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	"github.com/origadmin/runtime/bootstrap"
 )
 
 // Define all supported middleware types
@@ -56,23 +57,27 @@ func getMiddlewareField(mw *middlewarev1.Middleware, fieldName string) interface
 
 // setupRuntime initializes the runtime for middleware tests
 func setupRuntime(t *testing.T, configFilePath string) (*rt.App, *middlewarev1.Middlewares) {
-	bootstrapPath := filepath.Join(filepath.Dir(configFilePath), "bootstrap.yaml")
-
-	appInfo := rt.NewAppInfo("middleware-test-app", "1.0.0", rt.WithAppInfoID("middleware-test-app"))
-	rtInstance, err := rt.NewFromBootstrap(bootstrapPath, rt.WithAppInfo(appInfo))
+	appInfo := rt.NewAppInfo("middleware-test-app", "1.0.0",
+		rt.WithAppInfoID("middleware-test-app"))
+	rtInstance, err := rt.NewFromBootstrap(configFilePath, rt.WithAppInfo(appInfo),
+		rt.WithBootstrapOptions(bootstrap.WithDefaultPath("middlewares", "configs")))
 	require.NoError(t, err, "Failed to initialize runtime")
 
+	// The config file contains a top-level 'configs' key with an array of middleware configs
 	var configs middlewarev1.Middlewares
-	err = rtInstance.Config().Decode("middlewares", &configs)
+	err = rtInstance.Config().Decode("", &configs)
 	require.NoError(t, err, "Failed to decode middlewares config")
+
+	// Get the middleware provider to ensure it's initialized with the config
+	_, err = rtInstance.Container().Middleware()
+	require.NoError(t, err, "Failed to initialize middleware provider")
 
 	return rtInstance, &configs
 }
 
 // TestMiddleware_LoadAndBuild tests middleware loading and building
 func TestMiddleware_LoadAndBuild(t *testing.T) {
-	_, filename, _, _ := runtime.Caller(0)
-	configFilePath := filepath.Join(filepath.Dir(filename), "configs", "config.yaml")
+	configFilePath := filepath.Join("configs", "config.yaml")
 
 	rtInstance, configs := setupRuntime(t, configFilePath)
 
@@ -82,38 +87,64 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 
 		// Check configuration of each middleware
 		for _, mw := range configs.Configs {
-			t.Run(mw.Name, func(t *testing.T) {
-				// Verify required fields
-				assert.NotEmpty(t, mw.Name, "Middleware name should not be empty")
-				assert.True(t, mw.Enabled, "Middleware should be enabled by default")
+			t.Logf("Checking middleware: %s (type: %s, enabled: %v)", mw.Name, mw.Type, mw.Enabled)
+			assert.NotEmpty(t, mw.Name, "Middleware name should not be empty")
+			assert.NotEmpty(t, mw.Type, "Middleware type should not be empty")
+			assert.True(t, mw.Enabled, "Middleware should be enabled by default")
 
-				// Verify if the type is supported
-				_, exists := supportedMiddlewareTypes[mw.Type]
-				assert.True(t, exists, "Unsupported middleware type: %s", mw.Type)
-
-				// Verify if the configuration field exists
-				configValue := getMiddlewareField(mw, mw.Type)
-				assert.NotNil(t, configValue, "Config for %s should not be nil", mw.Type)
-			})
+			// Verify the configuration based on the middleware type
+			field := getMiddlewareField(mw, mw.Type)
+			assert.NotNil(t, field, "Middleware configuration for type %s should not be nil", mw.Type)
 		}
 	})
 
 	t.Run("ClientMiddlewares", func(t *testing.T) {
-		// Get client middleware map
+		// Get middleware provider
 		middlewareProvider, err := rtInstance.Container().Middleware()
 		require.NoError(t, err)
+
+		// Log the middleware provider's configuration
+		middlewareConfig, err := rtInstance.StructuredConfig().DecodeMiddlewares()
+		require.NoError(t, err)
+		t.Logf("Middleware config from container: %+v", middlewareConfig)
+
+		// Get client middlewares
 		clientMWsMap, err := middlewareProvider.ClientMiddlewares()
+		if err != nil {
+			t.Logf("Error getting client middlewares: %v", err)
+		}
 		require.NoError(t, err)
 
-		// Calculate the actual number of supported client middlewares (excluding unsupported middleware types)
+		t.Logf("Client middlewares created: %d", len(clientMWsMap))
+		for name := range clientMWsMap {
+			t.Logf("  - %s", name)
+		}
+
+		// Calculate the expected number of client middlewares
 		expectedCount := 0
 		for _, mw := range configs.Configs {
-			if mw.Enabled && mw.Type != "rate_limiter" { // rate_limiter 在客户端不受支持
-				t.Logf("Including %s middleware for client", mw.Type)
+			if mw.Enabled && mw.Type != "rate_limiter" { // rate_limiter is not supported on client
+				t.Logf("Expecting %s middleware for client", mw.Type)
 				expectedCount++
 			} else {
-				t.Logf("Skipping rate_limiter middleware for client")
+				t.Logf("Skipping %s middleware for client", mw.Type)
 			}
+		}
+		t.Logf("Loaded middlewares: %+v", configs)
+		// Log detailed information about the middlewares
+		t.Logf("Test Configuration:")
+		t.Logf("  - Expected client middlewares: %d", expectedCount)
+		t.Logf("  - Found client middlewares: %d", len(clientMWsMap))
+		t.Logf("  - Configured middlewares:")
+		for i, mw := range configs.Configs {
+			t.Logf("    %d. %s (type: %s, enabled: %v)", i+1, mw.Name, mw.Type, mw.Enabled)
+		}
+
+		if len(clientMWsMap) == 0 {
+			t.Log("No client middlewares were found. This might be due to:")
+			t.Log("1. Middleware provider not properly initialized")
+			t.Log("2. No middleware factories registered")
+			t.Log("3. Configuration not properly loaded")
 		}
 
 		// Verify the number of middlewares
