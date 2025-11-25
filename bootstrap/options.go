@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"github.com/origadmin/runtime/extensions/optionutil"
 
+	"github.com/origadmin/runtime/interfaces/constant"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 )
@@ -15,7 +16,7 @@ type Option = options.Option
 type ProviderOptions struct {
 	config            interfaces.Config
 	configTransformer ConfigTransformer
-	defaultPaths      map[string]string
+	defaultPaths      map[constant.ComponentKey]string
 	directory         string
 	directly          bool
 	pathResolver      PathResolverFunc
@@ -42,10 +43,10 @@ func WithConfigTransformer(transformer ConfigTransformer) Option {
 // WithComponentPath sets the configuration path for a specific component.
 // This allows overriding the framework's default path.
 // Providing an empty string for the path ("") will explicitly disable the loading of that component.
-func WithComponentPath(componentKey string, path string) Option {
+func WithComponentPath(componentKey constant.ComponentKey, path string) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		if o.defaultPaths == nil {
-			o.defaultPaths = make(map[string]string)
+			o.defaultPaths = make(map[constant.ComponentKey]string)
 		}
 		o.defaultPaths[componentKey] = path
 	})
@@ -54,10 +55,10 @@ func WithComponentPath(componentKey string, path string) Option {
 // WithComponentPaths provides a map of component keys to their configuration paths.
 // This map is merged with the framework's defaults, with these values taking precedence.
 // Paths provided here can also be an empty string ("") to disable the corresponding component.
-func WithComponentPaths(paths map[string]string) Option {
+func WithComponentPaths(paths map[constant.ComponentKey]string) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		if o.defaultPaths == nil {
-			o.defaultPaths = make(map[string]string)
+			o.defaultPaths = make(map[constant.ComponentKey]string)
 		}
 		for k, v := range paths {
 			o.defaultPaths[k] = v

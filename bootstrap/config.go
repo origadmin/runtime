@@ -9,27 +9,12 @@ import (
 
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
-	"github.com/origadmin/runtime/bootstrap/constant"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/envsource"
 	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/log"
 )
-
-// defaultComponentPaths provides the framework's default path map for core components.
-// It is now a private variable within the bootstrap package, ensuring that the default
-// path logic is cohesive and contained within this package.
-var defaultComponentPaths = map[string]string{
-	constant.ConfigApp:                "app",
-	constant.ComponentLogger:          "logger",
-	constant.ComponentData:            "data",
-	constant.ComponentRegistries:      "discoveries",
-	constant.ComponentDefaultRegistry: "default_registry_name",
-	constant.ComponentMiddlewares:     "middlewares",
-	constant.ComponentServers:         "servers",
-	constant.ComponentClients:         "clients",
-}
 
 // --- Options for LoadConfig ---
 
@@ -69,7 +54,7 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 		// Case 2: Direct loading mode. The bootstrapPath is the config file itself.
 		logger.Infof("Loading config directly from: %s", bootstrapPath)
 		sources := []*sourcev1.SourceConfig{SourceWithFile(bootstrapPath)}
-		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...)
+		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...) // Pass rawOptions for consistency
 		if err != nil {
 			return nil, fmt.Errorf("failed to create base config for direct loading: %w", err)
 		}
@@ -79,6 +64,7 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 
 		// In indirect mode, if no sources are found in the bootstrap file, it's an error.
 		if len(sources) == 0 {
+			logger.Warnf("No configuration sources found in bootstrap file: %s. Proceeding with empty config.", bootstrapPath)
 			return nil, fmt.Errorf("no configuration sources found in bootstrap file: %s", bootstrapPath)
 		}
 
@@ -89,7 +75,7 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 	}
 
 	// Load the configuration. This step is common to all successful paths.
-	logger.Info("Loading configuration...")
+	logger.Info("All configuration sources prepared, starting final load...")
 	if err := baseConfig.Load(); err != nil {
 		return nil, err
 	}

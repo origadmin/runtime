@@ -3,10 +3,27 @@ package bootstrap
 import (
 	"fmt"
 
-	"github.com/go-kratos/kratos/v2/log" // Keep for error logging during config close
-
 	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
+	"github.com/origadmin/runtime/interfaces/constant"
+	"github.com/origadmin/runtime/log"
 )
+
+// defaultComponentPaths provides the framework's default path map for core components.
+// It is now a private variable within the bootstrap package, ensuring that the default
+// path logic is cohesive and contained within this package.
+var defaultComponentPaths = map[constant.ComponentKey]string{
+	constant.ConfigApp:                "app",
+	constant.ComponentLogger:          "logger",
+	constant.ComponentData:            "data",
+	constant.ComponentDatabases:       "databases",
+	constant.ComponentCaches:          "caches",
+	constant.ComponentObjectStores:    "object_stores",
+	constant.ComponentRegistries:      "discoveries",
+	constant.ComponentDefaultRegistry: "default_registry_name",
+	constant.ComponentMiddlewares:     "middlewares",
+	constant.ComponentServers:         "servers",
+	constant.ComponentClients:         "clients",
+}
 
 // New creates a new component provider, which is the main entry point for application startup.
 // It orchestrates the entire process of configuration loading.
@@ -23,7 +40,7 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 
 	// --- Create StructuredConfig ---
 	// Step 1: Merge default and user-provided paths.
-	paths := make(map[string]string, len(defaultComponentPaths))
+	paths := make(map[constant.ComponentKey]string, len(defaultComponentPaths))
 	for k, v := range defaultComponentPaths {
 		paths[k] = v
 	}

@@ -11,8 +11,8 @@ import (
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	"github.com/origadmin/runtime/bootstrap/constant"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/constant"
 	"github.com/origadmin/toolkits/decode"
 )
 
@@ -20,7 +20,7 @@ import (
 // It wraps a generic interfaces.Config and provides type-safe, path-based decoding methods.
 type structuredConfigImpl struct {
 	interfaces.Config // Embed the generic config interface
-	paths             map[string]string
+	paths             map[constant.ComponentKey]string
 }
 
 func (c *structuredConfigImpl) DecodeCaches() (*datav1.Caches, error) {
@@ -53,8 +53,6 @@ func (c *structuredConfigImpl) DecodedConfig() any {
 
 // Statically assert that structuredConfigImpl implements the full StructuredConfig interface.
 var _ interfaces.StructuredConfig = (*structuredConfigImpl)(nil)
-
-// --- Reusable Converters ---
 
 var (
 	serverConverter = decode.NewConverter(
@@ -120,9 +118,9 @@ var (
 
 // NewStructured creates a new structured config implementation.
 // It takes a generic interfaces.Config and a path map to provide high-level decoding methods.
-func NewStructured(cfg interfaces.Config, paths map[string]string) interfaces.StructuredConfig {
+func NewStructured(cfg interfaces.Config, paths map[constant.ComponentKey]string) interfaces.StructuredConfig {
 	if paths == nil {
-		paths = make(map[string]string)
+		paths = make(map[constant.ComponentKey]string)
 	}
 	return &structuredConfigImpl{
 		Config: cfg,
@@ -134,13 +132,13 @@ func NewStructured(cfg interfaces.Config, paths map[string]string) interfaces.St
 // It first checks the `paths` map for a pre-discovered path. If not found,
 // it falls back to using the componentKey directly as the path.
 // This provides both flexibility (via the paths map) and convention-based simplicity.
-func (c *structuredConfigImpl) decodeComponent(componentKey string, value any) error {
+func (c *structuredConfigImpl) decodeComponent(componentKey constant.ComponentKey, value any) error {
 	path, ok := c.paths[componentKey]
 
 	// If the key is not in the paths map, fall back to using the component key itself as the path.
 	// This supports convention-over-configuration.
 	if !ok {
-		path = componentKey
+		path = string(componentKey)
 	} else if path == "" {
 		// If the path is explicitly set to empty, it's considered disabled.
 		return nil
