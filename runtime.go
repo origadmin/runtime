@@ -8,7 +8,6 @@ import (
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/container"
-	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 )
@@ -17,7 +16,7 @@ import (
 type App struct {
 	result    bootstrap.Result
 	container container.Container
-	appInfo   interfaces.AppInfo // Now an interface
+	appInfo   *appInfo // Use the concrete struct type for internal operations.
 }
 
 // New is the core constructor for a App instance.
@@ -27,43 +26,24 @@ func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 		panic("bootstrap.Result cannot be nil when creating a new App")
 	}
 
-	// Prepend the appInfo from the container options if it exists.
-	// This ensures that AppInfo provided via runtime.WithAppInfo is prioritized.
-
 	// Create the container, passing the options through.
 	ctn := container.New(result.StructuredConfig(), ctnOpts...)
+
+	// The container returns an interfaces.AppInfo, we need to type-assert it
+	// back to the concrete *appInfo for internal use. This is a safe operation
+	// within our controlled package structure.
+	appInfo, ok := ctn.AppInfo().(*appInfo)
+	if !ok && ctn.AppInfo() != nil {
+		// This should ideally not happen if the ecosystem is consistent.
+		// Handle this case, perhaps by panicking or logging a critical error.
+		panic("critical error: AppInfo from container is not of type *runtime.appInfo")
+	}
 
 	return &App{
 		result:    result,
 		container: ctn,
-		appInfo:   ctn.AppInfo(),
+		appInfo:   appInfo,
 	}
-}
-
-// NewFromBootstrap is a convenience constructor that simplifies application startup.
-func NewFromBootstrap(bootstrapPath string, opts ...Option) (*App, error) {
-	// 1. Apply runtime options to get bootstrap options and a potential AppInfo.
-	rtOpts := optionutil.NewT[appOptions](opts...)
-
-	// 2. Call bootstrap.New
-	bootstrapResult, err := bootstrap.New(bootstrapPath, rtOpts.bootstrapOpts...)
-	if err != nil {
-		return nil, err
-	}
-
-	// Note: The logic for merging AppInfo from config has been removed.
-	// The AppInfo provided via runtime.WithAppInfo is now considered definitive.
-	// If no AppInfo is provided, the container will operate without one (or with its own defaults).
-
-	// Prepare container options, starting with AppInfo.
-	ctnOpts := []options.Option{container.WithAppInfo(rtOpts.appInfo)}
-	if len(rtOpts.containerOpts) > 0 {
-		ctnOpts = append(ctnOpts, rtOpts.containerOpts...)
-	}
-
-	// 3. Create the App instance, passing the AppInfo to the container via an option.
-	rt := New(bootstrapResult, ctnOpts...)
-	return rt, nil
 }
 
 // Config returns the configuration decoder.
@@ -82,14 +62,13 @@ func (r *App) Logger() log.Logger {
 }
 
 // Container returns the underlying dependency injection container.
-// All configuration for the container should be provided during the App's creation.
 func (r *App) Container() container.Container {
 	return r.container
 }
 
 // NewApp creates a new Kratos application instance.
 func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *kratos.App {
-	info := r.AppInfo()
+	info := r.appInfo // Use the concrete struct directly.
 	if info == nil {
 		panic("AppInfo not available in runtime.App, cannot create kratos.App")
 	}
@@ -136,7 +115,11 @@ func (r *App) RegistryProvider(opts ...options.Option) (container.RegistryProvid
 	return r.container.Registry(opts...)
 }
 
-// AppInfo returns the application's metadata.
+// AppInfo returns the application's metadata as an interface,
+// fulfilling the public contract.
 func (r *App) AppInfo() interfaces.AppInfo {
+	if r.appInfo == nil {
+		return nil
+	}
 	return r.appInfo
 }
