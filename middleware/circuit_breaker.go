@@ -18,11 +18,10 @@ type circuitBreakerFactory struct {
 func (c circuitBreakerFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debugf("enabling circuit_breaker client middleware")
-	//if !cfg.GetEnabled() || cfg.GetType() != "circuit_breaker" {
-	//	return nil, false
-	//}
+	if !cfg.GetEnabled() {
+		return nil, false
+	}
+	log.NewHelper(mwOpts.Logger).Debugf("enabling circuit_breaker client middleware")
 
 	return circuitbreaker.Client(), true
 }
@@ -30,7 +29,9 @@ func (c circuitBreakerFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware,
 func (c circuitBreakerFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debugf("enabling circuit_breaker server middleware, not supported yet")
+	if !cfg.GetEnabled() {
+		return nil, false
+	}
+	log.NewHelper(mwOpts.Logger).Debugf("enabling circuit_breaker server middleware, not supported yet")
 	return nil, false
 }

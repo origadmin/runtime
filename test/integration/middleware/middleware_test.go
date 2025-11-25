@@ -64,7 +64,6 @@ func setupRuntimeFromFile(t *testing.T, appID, configFilePath string) *rt.App {
 		rt.WithAppInfo(rt.NewAppInfo(appID, "1.0.0", rt.WithAppInfoID(appID))),
 		rt.WithBootstrapOptions(
 			bootstrap.WithDirectly(),
-			bootstrap.WithComponentPath("middlewares", "configs"),
 		),
 	)
 	require.NoError(t, err, "Failed to create runtime from file: %s", configFilePath)

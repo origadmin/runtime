@@ -54,10 +54,7 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 	}
 
 	// Create a middleware carrier for context propagation
-	carrier := &Carrier{
-		Clients: make(map[string]KMiddleware),
-		Servers: make(map[string]KMiddleware),
-	}
+	clients := make(map[string]KMiddleware)
 
 	helper := log.NewHelper(logger)
 	helper.Debug("building client middlewares")
@@ -93,12 +90,12 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 		if ok {
 			middlewares = append(middlewares, m)
 			// Add the created middleware into the carrier using the middlewareName
-			carrier.Clients[middlewareName] = m
+			clients[middlewareName] = m
 		}
 	}
 	// Attach the carrier into options context
-	opts = append(opts, WithCarrier(carrier))
-
+	opts = append(opts, WithClientCarrier(clients))
+	helper.Debugf("carrier: %+v", clients)
 	// Second pass: process selector middleware configs
 	for _, ms := range selectorConfigs {
 		middlewareType := ms.GetType()
@@ -120,7 +117,7 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 		if ok {
 			middlewares = append(middlewares, m)
 			// Add the created middleware into the carrier using the middlewareName
-			carrier.Clients[middlewareName] = m
+			//clients[middlewareName] = m
 		}
 	}
 
@@ -149,10 +146,7 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 	helper.Debug("building server middlewares")
 
 	// Create a middleware carrier for context propagation
-	carrier := &Carrier{
-		Clients: make(map[string]KMiddleware),
-		Servers: make(map[string]KMiddleware),
-	}
+	servers := make(map[string]KMiddleware)
 
 	// First pass: process non-selector middlewares
 	for _, mwCfg := range cfg.GetConfigs() {
@@ -186,13 +180,13 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 		if ok {
 			middlewares = append(middlewares, ms)
 			// Add the created middleware into the carrier
-			carrier.Servers[middlewareName] = ms
+			servers[middlewareName] = ms
 		}
 	}
 
 	// Attach the carrier into options context for selector middlewares
-	opts = append(opts, WithCarrier(carrier))
-	helper.Debugf("carrier: %+v", carrier)
+	opts = append(opts, WithServerCarrier(servers))
+	helper.Debugf("carrier: %+v", servers)
 	// Second pass: process selector middlewares
 
 	for _, mwCfg := range selectorConfigs {
@@ -215,7 +209,7 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 		if ok {
 			middlewares = append(middlewares, ms)
 			// Add the created middleware into the carrier
-			carrier.Servers[middlewareName] = ms
+			//servers[middlewareName] = ms
 		}
 	}
 
