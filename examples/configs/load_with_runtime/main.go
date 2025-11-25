@@ -27,7 +27,24 @@ type ProtoConfig struct {
 	source    interfaces.StructuredConfig
 }
 
+// DecodedConfig implements the interfaces.StructuredConfig interface.
+func (d *ProtoConfig) DecodedConfig() any {
+	return d.bootstrap
+}
+
+func (d *ProtoConfig) DecodeDatabases() (*datav1.Databases, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (d *ProtoConfig) DecodeCaches() (*datav1.Caches, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (d *ProtoConfig) DecodeData() (*datav1.Data, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (d *ProtoConfig) DecodeObjectStores() (*datav1.ObjectStores, error) {
 	return nil, errors.New("not implemented")
 }
 
@@ -159,18 +176,17 @@ func main() {
 	//    Path is now relative to the CWD (runtime directory), pointing to the bootstrap.yaml.
 	rtInstance, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml
-		bootstrap.WithAppInfo(&interfaces.AppInfo{
-			ID:      "rich-config-runtime-example",
-			Name:    "RichConfigRuntimeExample",
-			Version: "1.0.0",
-			Env:     "dev",
-		}),
-		bootstrap.WithConfigTransformer(configTransformer), // Inject custom transformer
+		runtime.WithAppInfo(runtime.NewAppInfo(
+			"RichConfigRuntimeExample",
+			"1.0.0",
+			runtime.WithAppInfoID("rich-config-runtime-example"),
+			runtime.WithAppInfoEnv("dev"),
+		)),
+		runtime.WithBootstrapOptions(bootstrap.WithConfigTransformer(configTransformer)), // Inject custom transformer
 	)
 	if err != nil {
 		panic(err)
 	}
-	defer rtInstance.Cleanup()
 
 	// Get the configured logger from the runtime instance
 	appLogger := log.NewHelper(rtInstance.Logger()) // Use log.NewHelper for convenience

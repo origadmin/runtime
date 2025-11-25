@@ -152,8 +152,8 @@ func (c *containerImpl) Components(opts ...options.Option) (map[string]interface
 	if c.componentsErr != nil {
 		return nil, c.componentsErr
 	}
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	maps := make(map[string]interfaces.Component, len(c.cachedComponents))
 	for k, v := range c.cachedComponents {
 		maps[k] = v
@@ -162,6 +162,7 @@ func (c *containerImpl) Components(opts ...options.Option) (map[string]interface
 }
 
 func (c *containerImpl) Component(name string) (interfaces.Component, error) {
+	// Ensure all components are initialized before trying to access one.
 	if _, err := c.Components(); err != nil {
 		return nil, err
 	}

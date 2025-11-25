@@ -2,30 +2,34 @@ package runtime
 
 import (
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 )
 
-// appOptions holds the configurable parameters for the runtime App.
-// It is unexported to keep it as an internal detail of the Option pattern.
+// appOptions holds the configurable settings for a App.
 type appOptions struct {
-	bootstrapOpts []bootstrap.Option
-	appInfo       interfaces.AppInfo // Now an interface
+	appInfo         interfaces.AppInfo
+	bootstrapOpts   []options.Option
+	containerOpts   []options.Option
+	kratosAppOpts   []options.Option
+	structuredCfg   interfaces.StructuredConfig
+	config          interfaces.Config
+	bootstrapResult bootstrap.Result
 }
 
-// Option defines a function that configures the runtime App.
-type Option func(*appOptions)
+type Option = options.Option
 
-// WithBootstrapOptions passes bootstrap-specific options to the underlying bootstrap process.
-func WithBootstrapOptions(opts ...bootstrap.Option) Option {
-	return func(o *appOptions) {
-		o.bootstrapOpts = append(o.bootstrapOpts, opts...)
-	}
-}
-
-// WithAppInfo provides application metadata programmatically by accepting an
-// implementation of the interfaces.AppInfo interface.
+// WithAppInfo sets the application's metadata.
 func WithAppInfo(info interfaces.AppInfo) Option {
-	return func(o *appOptions) {
+	return optionutil.Update(func(o *appOptions) {
 		o.appInfo = info
-	}
+	})
+}
+
+// WithContainerOptions applies options to the underlying container.
+func WithContainerOptions(opts ...options.Option) Option {
+	return optionutil.Update(func(o *appOptions) {
+		o.containerOpts = append(o.containerOpts, opts...)
+	})
 }

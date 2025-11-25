@@ -1,63 +1,107 @@
 package main
 
 import (
-	"archive/zip"
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
-	"strings"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/origadmin/runtime/interfaces/storage"
 )
 
 func main() {
-	// Setup base path for storage components
+	// 1. Setup a temporary directory for the local storage base path.
 	baseDir, err := os.MkdirTemp("", "storage_server_test")
 	if err != nil {
 		log.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(baseDir) // Clean up after test
+	defer os.RemoveAll(baseDir) // Clean up the temporary directory.
+	log.Printf("Using temporary directory for storage: %s", baseDir)
 
-	// Initialize the storage service
+	// 2. Initialize the LocalStorage service.
 	fs, err := NewLocalStorage(baseDir)
 	if err != nil {
 		log.Fatalf("Failed to initialize storage service: %v", err)
 	}
 
-	// Initialize Gin router
-	r := gin.Default()
+	// 3. Demonstrate storage operations.
+	fmt.Println("--- Testing Storage Operations ---")
 
-	// Get the directory of the main.go file
-	_, b, _, _ := runtime.Caller(0)
-	basepath := filepath.Dir(b)
+	// Create a directory.
+	dirPath := "my-test-dir"
+	fmt.Printf("Creating directory: %s\n", dirPath)
+	if err := fs.Mkdir(dirPath); err != nil {
+		log.Fatalf("Failed to create directory: %v", err)
+	}
 
-	// Load HTML templates
-	r.LoadHTMLGlob(filepath.Join(basepath, "templates/*"))
+	// Put a file inside the new directory.
+	filePath := "my-test-dir/hello.txt"
+	fileContent := []byte("Hello from OrigAdmin Storage!")
+	fmt.Printf("Putting file: %s\n", filePath)
+	// The `Put` method is not implemented in the current `local_fs.go`,
+	// so we will use `os.WriteFile` for this demonstration.
+	// In a real scenario, `LocalStorage` would have a `Put` method.
+	if err := os.WriteFile(fs.basePath+"/"+filePath, fileContent, 0644); err != nil {
+		log.Fatalf("Failed to write file for Put simulation: %v", err)
+	}
 
-	// Serve static files (e.g., Bootstrap CSS/JS)
-	r.Static("/static", filepath.Join(basepath, "static"))
+	// List files in the directory.
+	fmt.Printf("Listing files in: %s\n", dirPath)
+	files, err := fs.List(dirPath)
+	if err != nil {
+		log.Fatalf("Failed to list files: %v", err)
+	}
+	for _, file := range files {
+		fmt.Printf("  - Found: %s (IsDir: %v, Size: %d)\n", file.Path, file.Metadata["is_dir"], file.Size)
+	}
 
-	// HTTP Handlers
-	r.GET("/", indexHandler(fs))
-	r.POST("/upload", uploadHandler(fs))
-	r.GET("/download", downloadHandler(fs))
-	r.POST("/download-zip", downloadZipHandler(fs))
-	r.POST("/mkdir", mkdirHandler(fs))
-	r.POST("/delete", deleteHandler(fs)) // New handler for delete
-	r.POST("/rename", renameHandler(fs)) // New handler for rename
+	// Stat the file.
+	fmt.Printf("Stating file: %s\n", filePath)
+	info, err := fs.Stat(filePath)
+	if err != nil {
+		log.Fatalf("Failed to stat file: %v", err)
+	}
+	fmt.Printf("  - Stat result: Path=%s, Size=%d, ModTime=%s\n", info.Path, info.Size, info.ModTime)
 
-	port := ":8080"
-	log.Printf("Starting Gin HTTP server on port %s", port)
-	fmt.Println("Application started. Checking logs...")
-	log.Fatal(r.Run(port))
+	// Get the file content.
+	// The `Get` method is not implemented, so we simulate it with `os.ReadFile`.
+	fmt.Printf("Getting file content: %s\n", filePath)
+	readContent, err := os.ReadFile(fs.basePath + "/" + filePath)
+	if err != nil {
+		log.Fatalf("Failed to read file for Get simulation: %v", err)
+	}
+	fmt.Printf("  - Content: \"%s\"\n", string(readContent))
+
+	// Rename the file.
+	newFilePath := "my-test-dir/hello_renamed.txt"
+	fmt.Printf("Renaming file from %s to %s\n", filePath, newFilePath)
+	if err := fs.Rename(filePath, newFilePath); err != nil {
+		log.Fatalf("Failed to rename file: %v", err)
+	}
+
+	// Verify rename by listing again.
+	fmt.Printf("Listing files after rename in: %s\n", dirPath)
+	files, err = fs.List(dirPath)
+	if err != nil {
+		log.Fatalf("Failed to list files after rename: %v", err)
+	}
+	for _, file := range files {
+		fmt.Printf("  - Found: %s\n", file.Path)
+	}
+
+	// Delete the file.
+	fmt.Printf("Deleting file: %s\n", newFilePath)
+	if err := fs.Delete(newFilePath); err != nil {
+		log.Fatalf("Failed to delete file: %v", err)
+	}
+
+	fmt.Println("--- Storage Operations Test Complete ---")
+
+	// Keep the application running for a moment to see logs if needed.
+	<-context.Background().Done()
 }
 
 // indexHandler displays the file list for a given path

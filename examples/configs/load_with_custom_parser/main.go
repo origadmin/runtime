@@ -14,7 +14,9 @@ import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/log"
 
 	// Import the generated Go code from the api_gateway proto definition.
@@ -34,6 +36,25 @@ type CustomSettings struct {
 	APIKey         string     `json:"api_key"`
 	RateLimit      int        `json:"rate_limit"`
 	Endpoints      []Endpoint `json:"endpoints"`
+}
+
+func (c *CustomSettings) DecodedConfig() any {
+	return c
+}
+
+func (c *CustomSettings) DecodeCaches() (*datav1.Caches, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *CustomSettings) DecodeDatabases() (*datav1.Databases, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *CustomSettings) DecodeObjectStores() (*datav1.ObjectStores, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c *CustomSettings) DecodeData() (*datav1.Data, error) {
@@ -133,34 +154,36 @@ func main() {
 	// Call DummyInit to ensure the local_registry package's init() function is executed.
 	DummyInit()
 
-	// Create AppInfo struct
-	appInfo := interfaces.AppInfo{
-		ID:        "api_gateway_custom_parser_example",
-		Name:      "ApiGatewayCustomParserExample",
-		Version:   "1.0.0",
-		Env:       "dev",
-		StartTime: time.Now(),
-		Metadata:  make(map[string]string),
-	}
-
 	// 1. Create a new App instance from the bootstrap config
 	rtInstance, err := runtime.NewFromBootstrap(
 		"examples/configs/load_with_custom_parser/config/bootstrap.yaml",
-		bootstrap.WithAppInfo(&appInfo), // Pass the AppInfo struct
-		bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)),
-		bootstrap.WithComponent("my-custom-settings", func(cfg interfaces.StructuredConfig, container interfaces.Container) (interface{}, error) {
-			cfg, ok := cfg.(*CustomSettings)
-			if ok {
-				fmt.Printf("Custom Settings: %+v\n", cfg)
-			}
-			return cfg, nil
-		}),
+		runtime.WithAppInfo(runtime.NewAppInfo(
+			"ApiGatewayCustomParserExample",
+			"1.0.0",
+			runtime.WithAppInfoID("api_gateway_custom_parser_example"),
+			runtime.WithAppInfoEnv("dev"),
+			runtime.WithAppInfoStartTime(time.Now()),
+		)),
+		runtime.WithBootstrapOptions(
+			bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)),
+		),
+		// Component factories are container options and must be wrapped.
+		runtime.WithContainerOptions(
+			container.WithComponentFactory("my--settings", container.ComponentFunc(
+				func(cfg interfaces.StructuredConfig, ctn container.Container, opts ...options.Option) (interfaces.Component, error) {
+					// The factory now returns interfaces.Component
+					customCfg, ok := cfg.(*CustomSettings)
+					if !ok {
+						return nil, fmt.Errorf("expected *CustomSettings, but got %T", cfg)
+					}
+					return customCfg, nil
+				})),
+		),
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
 	}
-	defer rtInstance.Cleanup()
-
+	
 	// Get logger from runtime
 	logger := rtInstance.Logger()
 	appLogger := log.NewHelper(logger)
@@ -168,8 +191,8 @@ func main() {
 	appLogger.Info("Application started successfully!")
 
 	// 2. Get the custom settings component
-	comp, ok := rtInstance.Component("my-custom-settings") // Updated to use the instance name
-	if !ok {
+	comp, err := rtInstance.Component("my-custom-settings") // Updated to use the instance name
+	if err != nil {
 		appLogger.Error("Custom settings component not found")
 		return
 	}

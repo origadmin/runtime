@@ -345,8 +345,8 @@ func TestMiddleware_Creation(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, clientMW, "Expected client middleware to be created")
 			} else {
-				assert.Error(t, err) // Expect an error if middleware not found/created
-				assert.Nil(t, clientMW, "Expected no client middleware to be created")
+				assert.Error(t, err, "Expected an error for non-existent client middleware")
+				assert.Nil(t, clientMW, "Expected no client middleware to be returned")
 			}
 
 			// Test server middleware
@@ -355,8 +355,8 @@ func TestMiddleware_Creation(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, serverMW, "Expected server middleware to be created")
 			} else {
-				assert.Error(t, err) // Expect an error if middleware not found/created
-				assert.Nil(t, serverMW, "Expected no server middleware to be created")
+				assert.Error(t, err, "Expected an error for non-existent server middleware")
+				assert.Nil(t, serverMW, "Expected no server middleware to be returned")
 			}
 		})
 	}

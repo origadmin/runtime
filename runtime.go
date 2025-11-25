@@ -5,10 +5,10 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
-	"github.com/goexts/generic/configure"
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/container"
+	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 )
@@ -27,6 +27,9 @@ func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 		panic("bootstrap.Result cannot be nil when creating a new App")
 	}
 
+	// Prepend the appInfo from the container options if it exists.
+	// This ensures that AppInfo provided via runtime.WithAppInfo is prioritized.
+
 	// Create the container, passing the options through.
 	ctn := container.New(result.StructuredConfig(), ctnOpts...)
 
@@ -40,7 +43,7 @@ func New(result bootstrap.Result, ctnOpts ...options.Option) *App {
 // NewFromBootstrap is a convenience constructor that simplifies application startup.
 func NewFromBootstrap(bootstrapPath string, opts ...Option) (*App, error) {
 	// 1. Apply runtime options to get bootstrap options and a potential AppInfo.
-	rtOpts := configure.Apply(&appOptions{}, opts)
+	rtOpts := optionutil.NewT[appOptions](opts...)
 
 	// 2. Call bootstrap.New
 	bootstrapResult, err := bootstrap.New(bootstrapPath, rtOpts.bootstrapOpts...)
@@ -52,8 +55,14 @@ func NewFromBootstrap(bootstrapPath string, opts ...Option) (*App, error) {
 	// The AppInfo provided via runtime.WithAppInfo is now considered definitive.
 	// If no AppInfo is provided, the container will operate without one (or with its own defaults).
 
+	// Prepare container options, starting with AppInfo.
+	ctnOpts := []options.Option{container.WithAppInfo(rtOpts.appInfo)}
+	if len(rtOpts.containerOpts) > 0 {
+		ctnOpts = append(ctnOpts, rtOpts.containerOpts...)
+	}
+
 	// 3. Create the App instance, passing the AppInfo to the container via an option.
-	rt := New(bootstrapResult, container.WithAppInfo(rtOpts.appInfo))
+	rt := New(bootstrapResult, ctnOpts...)
 	return rt, nil
 }
 

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"io"
 	"os"
 	"path/filepath"
-	"time" // Import time package for ModTime
 
 	"github.com/origadmin/runtime/interfaces/storage"
 )
@@ -47,28 +45,6 @@ func (fs *LocalStorage) List(path string) ([]*storage.ObjectInfo, error) { // Ch
 	}
 
 	return files, nil
-}
-
-// Read returns a reader for the given file path.
-func (fs *LocalStorage) Read(path string) (io.ReadCloser, error) {
-	return os.Open(filepath.Join(fs.basePath, path))
-}
-
-// Write writes data to the given file path.
-func (fs *LocalStorage) Write(path string, data io.Reader, size int64) error {
-	filePath := filepath.Join(fs.basePath, path)
-	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		return err
-	}
-
-	f, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = io.Copy(f, data)
-	return err
 }
 
 // Stat returns ObjectInfo for the given path.
