@@ -22,20 +22,31 @@ type Provider struct {
 	mu              sync.Mutex
 	config          *datav1.Databases
 	log             *runtimelog.Helper
-	opts            []options.Option
+	opts            []options.Option // This field stores options set via SetOptions
 	defaultDatabase string // defaultDatabase from config (active -> default -> single)
 	databases       map[string]storageiface.Database
 	initialized     bool
 }
 
-// NewProvider creates a new Provider instance, applying functional options immediately.
-func NewProvider(logger runtimelog.Logger, opts ...options.Option) *Provider {
+// NewProvider creates a new Provider instance. Options are set via SetOptions.
+func NewProvider(logger runtimelog.Logger) *Provider {
 	p := &Provider{
 		log:       runtimelog.NewHelper(logger),
 		databases: make(map[string]storageiface.Database),
-		opts:      opts, // Store functional options here
 	}
 	return p
+}
+
+// SetOptions sets the functional options for the provider.
+// This will clear any previously cached instances and cause them to be recreated on the next access,
+// using the new options and the structural configuration.
+func (p *Provider) SetOptions(opts ...options.Option) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.opts = opts
+	p.initialized = false
+	p.databases = make(map[string]storageiface.Database)
 }
 
 // SetConfig updates the provider's structural configuration.
@@ -96,6 +107,7 @@ func (p *Provider) Databases() (map[string]storageiface.Database, error) {
 				p.log.Warnf("database '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
+			// Pass stored options to New
 			db, err := database.New(cfg, p.opts...)
 			if err != nil {
 				p.log.Errorf("failed to create database '%s': %v", name, err)

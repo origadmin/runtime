@@ -20,22 +20,33 @@ type Provider struct {
 	mu                   sync.Mutex
 	config               *middlewarev1.Middlewares
 	log                  *runtimelog.Helper
-	opts                 []options.Option
+	opts                 []options.Option // This field stores options set via SetOptions
 	clientMiddlewares    map[string]kratosMiddleware.Middleware
 	serverMiddlewares    map[string]kratosMiddleware.Middleware
 	clientMWsInitialized bool
 	serverMWsInitialized bool
 }
 
-// NewProvider creates a new Provider instance, applying functional options immediately.
-func NewProvider(logger runtimelog.Logger, opts ...options.Option) *Provider {
+// NewProvider creates a new Provider instance. Options are set via SetOptions.
+func NewProvider(logger runtimelog.Logger) *Provider {
 	p := &Provider{
 		log:               runtimelog.NewHelper(logger),
 		clientMiddlewares: make(map[string]kratosMiddleware.Middleware),
 		serverMiddlewares: make(map[string]kratosMiddleware.Middleware),
-		opts:              opts, // Store functional options here
 	}
 	return p
+}
+
+// SetOptions sets the functional options for the provider.
+// This will clear any previously cached instances and cause them to be recreated on the next access,
+// using the new options and the structural configuration.
+func (p *Provider) SetOptions(opts ...options.Option) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.opts = opts
+	p.clientMWsInitialized = false
+	p.serverMWsInitialized = false
 }
 
 // SetConfig updates the provider's structural configuration.

@@ -24,7 +24,7 @@ type Provider struct {
 	mu                     sync.Mutex
 	config                 *discoveryv1.Discoveries
 	logger                 *runtimelog.Helper
-	opts                   []options.Option
+	opts                   []options.Option // This field stores options set via SetOptions
 	defaultRegistrar       string
 	discoveries            map[string]registry.KDiscovery
 	registrars             map[string]registry.KRegistrar
@@ -32,15 +32,28 @@ type Provider struct {
 	registrarsInitialized  bool
 }
 
-// NewProvider creates a new Provider instance, applying functional options immediately.
-func NewProvider(logger runtimelog.Logger, opts ...options.Option) *Provider {
+// NewProvider creates a new Provider instance. Options are set via SetOptions.
+func NewProvider(logger runtimelog.Logger) *Provider {
 	p := &Provider{
 		logger:      runtimelog.NewHelper(logger),
 		discoveries: make(map[string]registry.KDiscovery),
 		registrars:  make(map[string]registry.KRegistrar),
-		opts:        opts, // Store functional options here
 	}
 	return p
+}
+
+// SetOptions sets the functional options for the provider.
+// This will clear any previously cached instances and cause them to be recreated on the next access,
+// using the new options and the structural configuration.
+func (p *Provider) SetOptions(opts ...options.Option) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.opts = opts
+	p.discoveriesInitialized = false
+	p.registrarsInitialized = false
+	p.discoveries = make(map[string]registry.KDiscovery)
+	p.registrars = make(map[string]registry.KRegistrar)
 }
 
 // SetConfig updates the provider's structural configuration.
@@ -93,6 +106,7 @@ func (p *Provider) Discoveries() (map[string]registry.KDiscovery, error) {
 				p.logger.Warnf("discovery '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
+			// Pass stored options to NewDiscovery
 			d, err := registry.NewDiscovery(cfg, p.opts...)
 			if err != nil {
 				p.logger.Errorf("failed to create discovery '%s': %v", name, err)
@@ -145,6 +159,7 @@ func (p *Provider) Registrars() (map[string]registry.KRegistrar, error) {
 				p.logger.Warnf("registrar '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
+			// Pass stored options to NewRegistrar
 			reg, err := registry.NewRegistrar(cfg, p.opts...)
 			if err != nil {
 				p.logger.Errorf("failed to create registrar '%s': %v", name, err)

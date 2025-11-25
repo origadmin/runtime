@@ -1,6 +1,7 @@
 package container
 
 import (
+	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/interfaces/storage"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
@@ -15,6 +16,7 @@ type RegistryProvider interface {
 	DefaultRegistrar(globalDefaultName string) (registry.KRegistrar, error) // Modified to accept globalDefaultName
 	RegisterDiscovery(name string, discovery registry.KDiscovery)
 	RegisterRegistrar(name string, registrar registry.KRegistrar)
+	SetOptions(opts ...options.Option) // Add SetOptions method
 }
 
 type ServerMiddlewareProvider interface {
@@ -33,6 +35,7 @@ type ClientMiddlewareProvider interface {
 type MiddlewareProvider interface {
 	ServerMiddlewareProvider
 	ClientMiddlewareProvider
+	SetOptions(opts ...options.Option) // Add SetOptions method
 }
 
 // CacheProvider provides access to Cache components.
@@ -41,6 +44,7 @@ type CacheProvider interface {
 	Cache(name string) (storage.Cache, error)
 	DefaultCache(globalDefaultName string) (storage.Cache, error) // Modified to accept globalDefaultName
 	RegisterCache(name string, cache storage.Cache)
+	SetOptions(opts ...options.Option) // Add SetOptions method
 }
 
 // DatabaseProvider provides access to Database components.
@@ -49,6 +53,7 @@ type DatabaseProvider interface {
 	Database(name string) (storage.Database, error)
 	DefaultDatabase(globalDefaultName string) (storage.Database, error) // Modified to accept globalDefaultName
 	RegisterDatabase(name string, db storage.Database)
+	SetOptions(opts ...options.Option) // Add SetOptions method
 }
 
 // ObjectStoreProvider provides access to ObjectStore components.
@@ -57,4 +62,5 @@ type ObjectStoreProvider interface {
 	ObjectStore(name string) (storage.ObjectStore, error)
 	DefaultObjectStore(globalDefaultName string) (storage.ObjectStore, error) // Modified to accept globalDefaultName
 	RegisterObjectStore(name string, store storage.ObjectStore)
+	SetOptions(opts ...options.Option) // Add SetOptions method
 }
