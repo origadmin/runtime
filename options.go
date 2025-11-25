@@ -33,3 +33,10 @@ func WithContainerOptions(opts ...options.Option) Option {
 		o.containerOpts = append(o.containerOpts, opts...)
 	})
 }
+
+// WithBootstrapOptions applies options to the underlying bootstrap process.
+func WithBootstrapOptions(opts ...options.Option) Option {
+	return optionutil.Update(func(o *appOptions) {
+		o.bootstrapOpts = append(o.bootstrapOpts, opts...)
+	})
+}

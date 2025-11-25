@@ -47,6 +47,21 @@ func (fs *LocalStorage) List(path string) ([]*storage.ObjectInfo, error) { // Ch
 	return files, nil
 }
 
+// Put writes data to a file at the given path.
+func (fs *LocalStorage) Put(path string, content []byte) error {
+	fullPath := filepath.Join(fs.basePath, path)
+	if err := os.MkdirAll(filepath.Dir(fullPath), os.ModePerm); err != nil {
+		return err
+	}
+	return os.WriteFile(fullPath, content, 0644)
+}
+
+// Get reads the content of a file at the given path.
+func (fs *LocalStorage) Get(path string) ([]byte, error) {
+	fullPath := filepath.Join(fs.basePath, path)
+	return os.ReadFile(fullPath)
+}
+
 // Stat returns ObjectInfo for the given path.
 func (fs *LocalStorage) Stat(path string) (*storage.ObjectInfo, error) { // Changed return type
 	info, err := os.Stat(filepath.Join(fs.basePath, path))

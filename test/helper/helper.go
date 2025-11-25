@@ -296,4 +296,9 @@ func (m *MockConsulSource) String() string {
 	return "mock-consul-source"
 }
 
-// var _ runtimeconfig.SourceFactory = (*MockConsulSource)(nil) // Removed this line
+var _ runtimeconfig.SourceFactory = (*MockConsulSource)(nil)
+
+// Register MockConsulSource as a config source factory
+func init() {
+	runtimeconfig.RegisterSourceFactory("consul", &MockConsulSource{})
+}

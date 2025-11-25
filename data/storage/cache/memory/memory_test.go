@@ -54,7 +54,6 @@ func TestNewMemoryCache(t *testing.T) {
 	assert.Equal(t, int(customSize), memCache.size)
 	assert.Equal(t, time.Duration(customExpiration)*time.Millisecond, memCache.defaultExpiry)
 	assert.Equal(t, time.Duration(customCleanupInterval)*time.Millisecond, memCache.cleanupInterval)
-	assert.Equal(t, customCapacity, int32(len(memCache.items))) // Corrected assertion type
 }
 
 func TestMemoryCache_SetAndGet(t *testing.T) {

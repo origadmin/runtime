@@ -164,10 +164,11 @@ func main() {
 			runtime.WithAppInfoEnv("dev"),
 			runtime.WithAppInfoStartTime(time.Now()),
 		)),
+		// Use WithBootstrapOptions for bootstrap-specific configurations.
 		runtime.WithBootstrapOptions(
 			bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)),
 		),
-		// Component factories are container options and must be wrapped.
+		// Use WithContainerOptions for container-specific configurations.
 		runtime.WithContainerOptions(
 			container.WithComponentFactory("my--settings", container.ComponentFunc(
 				func(cfg interfaces.StructuredConfig, ctn container.Container, opts ...options.Option) (interfaces.Component, error) {

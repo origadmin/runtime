@@ -70,15 +70,15 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 		rt.WithAppInfo(appInfo),
 		rt.WithBootstrapOptions(allOpts...),
 	)
-	assert.NoError(err, "Failed to initialize runtime from bootstrap: %v", err)
-	defer func() {
-		if rtInstance != nil {
-			rtInstance.Config().Close()
-		}
-	}()
+	if !assert.NoError(err, "Failed to initialize runtime from bootstrap") {
+		t.FailNow() // Stop the test if initialization fails
+	}
+	defer rtInstance.Config().Close()
 
 	configDecoder := rtInstance.Config()
-	assert.NotNil(configDecoder, "App ConfigDecoder should not be nil")
+	if !assert.NotNil(configDecoder, "App ConfigDecoder should not be nil") {
+		t.FailNow()
+	}
 
 	var cfg testconfigs.TestConfig
 	err = configDecoder.Decode("app", &cfg.App)

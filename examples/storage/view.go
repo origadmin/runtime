@@ -6,7 +6,7 @@ import "github.com/origadmin/runtime/interfaces/storage"
 type TemplateData struct {
 	CurrentPath   string
 	ParentPath    string
-	Files         []storage.ObjectInfo // Changed FileInfo to ObjectInfo
+	Files         []storage.ObjectInfo
 	Message       string
 	Error         string
 	PathParts     []PathPart
