@@ -8,7 +8,6 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	"github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/transport"
 )
 
 // grpcProtocolFactory implements the service.ProtocolFactory for the gRPC protocol.
@@ -38,16 +37,9 @@ func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 	}
 
 	// 9. Register the user's business logic services if a registrar is provided.
-	ctx := context.Background()
-	if serverOpts.ServerRegistrar != nil {
-		if grpcRegistrar, ok := serverOpts.ServerRegistrar.(transport.GRPCRegistrar); ok {
-			if err := grpcRegistrar.RegisterGRPC(ctx, srv); err != nil {
-				return nil, err
-			}
-		} else {
-			if err := serverOpts.ServerRegistrar.Register(ctx, srv); err != nil {
-				return nil, err
-			}
+	if serverOpts.Registrar != nil {
+		if err := serverOpts.Registrar.RegisterGRPC(serverOpts.Context, srv); err != nil {
+			return nil, err
 		}
 	}
 

@@ -1,20 +1,24 @@
 package grpc
 
 import (
+	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/registry"
 	kgprc "github.com/go-kratos/kratos/v2/transport/grpc"
 	grpcx "google.golang.org/grpc"
 
-	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/go-kratos/kratos/v2/registry"
-
+	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/service/transport"
 )
 
 // ServerOptions is a container for gRPC server-specific options.
 type ServerOptions struct {
 	// ServerOptions allows passing native Kratos gRPC server options.
 	ServerOptions []kgprc.ServerOption
+
+	Context   context.Context
+	Registrar transport.GRPCRegistrar
 
 	// ServerMiddlewares holds a map of named server middlewares.
 	ServerMiddlewares map[string]middleware.Middleware
@@ -24,13 +28,39 @@ type ServerOptions struct {
 // It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromServerOptions(opts []options.Option) *ServerOptions {
 	// Apply gRPC server-specific options first
-	return optionutil.NewT[ServerOptions](opts...)
+	o := optionutil.NewT[ServerOptions](opts...)
+	if o.Context == nil {
+		o.Context = context.Background()
+	}
+	return o
 }
 
 // WithServerOptions appends Kratos gRPC server options.
 func WithServerOptions(opts ...kgprc.ServerOption) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
 		o.ServerOptions = append(o.ServerOptions, opts...)
+	})
+}
+
+// WithRegistrar sets the gRPC registrar to use for service registration.
+func WithRegistrar(registrar transport.GRPCRegistrar) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.Registrar = registrar
+	})
+}
+
+// WithContext sets the context.Context for the service.
+func WithContext(ctx context.Context) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.Context = ctx
+	})
+}
+
+// WithContextRegistry sets both the context.Context and ServerRegistrar for the service.
+func WithContextRegistry(ctx context.Context, registrar transport.GRPCRegistrar) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.Context = ctx
+		o.Registrar = registrar
 	})
 }
 

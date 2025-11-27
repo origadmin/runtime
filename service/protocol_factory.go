@@ -52,6 +52,14 @@ func NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Serv
 		return nil, runtimeerrors.WrapStructured(err, Module, "failed to create server for protocol %s", protocolName).WithCaller()
 	}
 
+	o := fromOptions(opts)
+	// Register the user's business logic services if a registrar is provided.
+	for _, registrar := range o.registrar {
+		if err := registrar.Register(o.ctx, server); err != nil {
+			return nil, err
+		}
+	}
+
 	return server, nil
 }
 

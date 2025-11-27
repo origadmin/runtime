@@ -9,8 +9,10 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 
+	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/service/transport"
 )
 
 // CorsOption defines a functional option for configuring advanced CORS settings in code.
@@ -44,15 +46,23 @@ type ServerOptions struct {
 	// These options will be applied *after* the base configuration from the proto file.
 	CorsOptions []CorsOption
 
+	// Registrar is the HTTP registrar to use for service registration.
+	Registrar transport.HTTPRegistrar
+
 	// ServerMiddlewares holds a map of named server middlewares.
 	ServerMiddlewares map[string]middleware.Middleware
+	Context           context.Context
 }
 
 // FromServerOptions creates a new HTTP ServerOptions struct by applying a slice of functional options.
 // It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromServerOptions(opts []options.Option) *ServerOptions {
 	// Apply HTTP server-specific options first
-	return optionutil.NewT[ServerOptions](opts...)
+	o := optionutil.NewT[ServerOptions](opts...)
+	if o.Context == nil {
+		o.Context = context.Background()
+	}
+	return o
 }
 
 // WithServerOptions appends Kratos HTTP server options.
@@ -68,7 +78,28 @@ func WithCorsOptions(opts ...CorsOption) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
 		o.CorsOptions = append(o.CorsOptions, opts...)
 	})
+}
 
+// WithRegistrar sets the HTTP registrar to use for service registration.
+func WithRegistrar(registrar transport.HTTPRegistrar) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.Registrar = registrar
+	})
+}
+
+// WithContext sets the context.Context for the service.
+func WithContext(ctx context.Context) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.Context = ctx
+	})
+}
+
+// WithContextRegistry sets both the context.Context and ServerRegistrar for the service.
+func WithContextRegistry(ctx context.Context, registrar transport.HTTPRegistrar) options.Option {
+	return optionutil.Update(func(o *ServerOptions) {
+		o.Context = ctx
+		o.Registrar = registrar
+	})
 }
 
 // WithServerMiddlewares adds a map of named server middlewares to the options.
