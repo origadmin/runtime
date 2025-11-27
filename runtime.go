@@ -60,7 +60,7 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	// 3. Create the container.
 	ctnOpts := append(r.containerOpts, container.WithAppInfo(r.appInfo))
 	r.container = container.New(res.StructuredConfig(), ctnOpts...)
-
+	r.globalOpts = append(r.globalOpts, container.WithContainer(r.container))
 	return nil
 }
 
