@@ -3,14 +3,13 @@ package bootstrap
 import (
 	"fmt"
 
+	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1" // Import bootstrapv1
 	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
 	"github.com/origadmin/runtime/interfaces/constant"
 	"github.com/origadmin/runtime/log"
 )
 
 // defaultComponentPaths provides the framework's default path map for core components.
-// It is now a private variable within the bootstrap package, ensuring that the default
-// path logic is cohesive and contained within this package.
 var defaultComponentPaths = map[constant.ComponentKey]string{
 	constant.ConfigApp:                "app",
 	constant.ComponentLogger:          "logger",
@@ -27,19 +26,26 @@ var defaultComponentPaths = map[constant.ComponentKey]string{
 
 // New creates a new component provider, which is the main entry point for application startup.
 // It orchestrates the entire process of configuration loading.
-// It now returns the Result interface, which contains only configuration-related data.
+// It now returns the Result interface, which contains configuration-related data and the raw App protobuf message.
 func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	// 1. Apply bootstrap options.
 	providerOpts := FromOptions(opts...)
 
-	// 2. Load configuration.
+	// 2. Load configuration from all sources (local and remote).
 	cfg, err := LoadConfig(bootstrapPath, providerOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err) // Early exit, no cleanup needed yet.
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// --- Create StructuredConfig ---
-	// Step 1: Merge default and user-provided paths.
+	// 3. Decode the Bootstrap message to get the App field.
+	var bootstrapCfg bootstrapv1.Bootstrap
+	if err := cfg.Decode("", &bootstrapCfg); err != nil {
+		// Log the error but continue, as App field in bootstrap config is optional.
+		log.Warnf("failed to decode bootstrap config, App field might be missing: %v", err)
+	}
+	app := bootstrapCfg.GetApp()
+
+	// 4. Create the final StructuredConfig.
 	paths := make(map[constant.ComponentKey]string, len(defaultComponentPaths))
 	for k, v := range defaultComponentPaths {
 		paths[k] = v
@@ -49,14 +55,10 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 			paths[component] = path
 		}
 	}
-
-	// Step 2: Create the base structured config implementation.
-	// Step 3: (Optional) Apply a high-level transformer if provided.
 	sc := bootstrapconfig.NewStructured(cfg, paths)
 	if providerOpts.configTransformer != nil {
 		sc, err = providerOpts.configTransformer.Transform(cfg, sc)
 		if err != nil {
-			// Ensure config is closed on error
 			if closeErr := cfg.Close(); closeErr != nil {
 				log.Errorf("failed to close config after transform error: %v", closeErr)
 			}
@@ -64,10 +66,11 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		}
 	}
 
-	// 4. Assemble and return the final result.
+	// 5. Assemble and return the final result.
 	res = &resultImpl{
 		config:           cfg,
 		structuredConfig: sc,
+		appConfig:        app,
 	}
 	return res, nil
 }

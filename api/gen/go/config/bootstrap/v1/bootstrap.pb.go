@@ -8,7 +8,8 @@ package v1
 
 import (
 	_ "github.com/google/gnostic/openapiv3"
-	v1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
+	v1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
+	v11 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -26,12 +27,16 @@ const (
 // Bootstrap defines the structure of the bootstrap configuration file.
 type Bootstrap struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// app provides application-specific information that can be defined in the bootstrap configuration.
+	// This information is typically used to establish the application's identity and environment early in the startup process.
+	App *v1.App `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`
 	// sources defines the list of configuration sources to be loaded.
-	Sources []*v1.SourceConfig `protobuf:"bytes,1,rep,name=sources,proto3" json:"sources,omitempty"`
+	// These sources are typically remote configuration services or local files.
+	Sources []*v11.SourceConfig `protobuf:"bytes,2,rep,name=sources,proto3" json:"sources,omitempty"`
 	// paths provides an optional mapping from a component name to its configuration path.
 	// The keys of this map should correspond to the predefined Component* constants
 	// in the Go bootstrap package (e.g., "logger", "registries").
-	Paths         map[string]string `protobuf:"bytes,2,rep,name=paths,proto3" json:"paths,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Paths         map[string]string `protobuf:"bytes,3,rep,name=paths,proto3" json:"paths,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -66,7 +71,14 @@ func (*Bootstrap) Descriptor() ([]byte, []int) {
 	return file_config_bootstrap_v1_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Bootstrap) GetSources() []*v1.SourceConfig {
+func (x *Bootstrap) GetApp() *v1.App {
+	if x != nil {
+		return x.App
+	}
+	return nil
+}
+
+func (x *Bootstrap) GetSources() []*v11.SourceConfig {
 	if x != nil {
 		return x.Sources
 	}
@@ -84,10 +96,11 @@ var File_config_bootstrap_v1_bootstrap_proto protoreflect.FileDescriptor
 
 const file_config_bootstrap_v1_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"#config/bootstrap/v1/bootstrap.proto\x12\x1fruntime.api.config.bootstrap.v1\x1a\x1dconfig/source/v1/source.proto\x1a$gnostic/openapi/v3/annotations.proto\"\xd5\x02\n" +
-	"\tBootstrap\x12w\n" +
-	"\asources\x18\x01 \x03(\v2*.runtime.api.config.source.v1.SourceConfigB1\xbaG.\x92\x02+List of configuration sources to be loaded.R\asources\x12\x94\x01\n" +
-	"\x05paths\x18\x02 \x03(\v25.runtime.api.config.bootstrap.v1.Bootstrap.PathsEntryBG\xbaGD\x92\x02AOptional mapping from a component name to its configuration path.R\x05paths\x1a8\n" +
+	"#config/bootstrap/v1/bootstrap.proto\x12\x1fruntime.api.config.bootstrap.v1\x1a\x1dconfig/source/v1/source.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x17config/app/v1/app.proto\"\xc5\x03\n" +
+	"\tBootstrap\x12n\n" +
+	"\x03app\x18\x01 \x01(\v2\x1e.runtime.api.config.app.v1.AppB<\xbaG9\x92\x026Application-specific information defined in bootstrap.R\x03app\x12w\n" +
+	"\asources\x18\x02 \x03(\v2*.runtime.api.config.source.v1.SourceConfigB1\xbaG.\x92\x02+List of configuration sources to be loaded.R\asources\x12\x94\x01\n" +
+	"\x05paths\x18\x03 \x03(\v25.runtime.api.config.bootstrap.v1.Bootstrap.PathsEntryBG\xbaGD\x92\x02AOptional mapping from a component name to its configuration path.R\x05paths\x1a8\n" +
 	"\n" +
 	"PathsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
@@ -108,18 +121,20 @@ func file_config_bootstrap_v1_bootstrap_proto_rawDescGZIP() []byte {
 
 var file_config_bootstrap_v1_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_config_bootstrap_v1_bootstrap_proto_goTypes = []any{
-	(*Bootstrap)(nil),       // 0: runtime.api.config.bootstrap.v1.Bootstrap
-	nil,                     // 1: runtime.api.config.bootstrap.v1.Bootstrap.PathsEntry
-	(*v1.SourceConfig)(nil), // 2: runtime.api.config.source.v1.SourceConfig
+	(*Bootstrap)(nil),        // 0: runtime.api.config.bootstrap.v1.Bootstrap
+	nil,                      // 1: runtime.api.config.bootstrap.v1.Bootstrap.PathsEntry
+	(*v1.App)(nil),           // 2: runtime.api.config.app.v1.App
+	(*v11.SourceConfig)(nil), // 3: runtime.api.config.source.v1.SourceConfig
 }
 var file_config_bootstrap_v1_bootstrap_proto_depIdxs = []int32{
-	2, // 0: runtime.api.config.bootstrap.v1.Bootstrap.sources:type_name -> runtime.api.config.source.v1.SourceConfig
-	1, // 1: runtime.api.config.bootstrap.v1.Bootstrap.paths:type_name -> runtime.api.config.bootstrap.v1.Bootstrap.PathsEntry
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	2, // 0: runtime.api.config.bootstrap.v1.Bootstrap.app:type_name -> runtime.api.config.app.v1.App
+	3, // 1: runtime.api.config.bootstrap.v1.Bootstrap.sources:type_name -> runtime.api.config.source.v1.SourceConfig
+	1, // 2: runtime.api.config.bootstrap.v1.Bootstrap.paths:type_name -> runtime.api.config.bootstrap.v1.Bootstrap.PathsEntry
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_config_bootstrap_v1_bootstrap_proto_init() }

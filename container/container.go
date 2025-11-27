@@ -68,7 +68,7 @@ type Container interface {
 type containerImpl struct {
 	config   interfaces.StructuredConfig
 	logger   runtimelog.Logger
-	appInfo  interfaces.AppInfo
+	appInfo  interfaces.AppInfo // Final AppInfo from bootstrap result
 	initOpts *containerOptions
 
 	// Concurrency-safe store for generic components and their factories.
@@ -83,7 +83,8 @@ type containerImpl struct {
 }
 
 // New creates a new, concurrency-safe Container instance.
-func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
+// It receives the final AppInfo from the bootstrap process.
+func New(config interfaces.StructuredConfig, appInfo interfaces.AppInfo, opts ...options.Option) Container {
 	initOpts := optionutil.NewT[containerOptions](opts...)
 
 	var baseLogger runtimelog.Logger
@@ -95,18 +96,18 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	baseLogger = runtimelog.NewLogger(loggerConfig)
 
 	enrichedLogger := baseLogger
-	if initOpts.appInfo != nil {
+	if appInfo != nil { // Use the passed appInfo for logger enrichment
 		enrichedLogger = runtimelog.With(baseLogger,
-			"service.name", initOpts.appInfo.Name(),
-			"service.version", initOpts.appInfo.Version(),
-			"service.id", initOpts.appInfo.ID(),
+			"service.name", appInfo.Name(),
+			"service.version", appInfo.Version(),
+			"service.id", appInfo.ID(),
 		)
 	}
 
 	c := &containerImpl{
 		config:         config,
 		logger:         enrichedLogger,
-		appInfo:        initOpts.appInfo,
+		appInfo:        appInfo, // Directly use the passed appInfo
 		initOpts:       initOpts,
 		componentStore: newComponentStore(enrichedLogger),
 	}
@@ -193,7 +194,6 @@ func (c *containerImpl) Middleware(opts ...options.Option) (MiddlewareProvider, 
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode middlewares config for MiddlewareProvider: %v", err)
 	}
-	// The middleware.Provider.Initialize method is assumed to exist after refactoring.
 	c.middlewareProvider.Initialize(middlewares, opts...)
 	return c.middlewareProvider, nil
 }
@@ -204,7 +204,6 @@ func (c *containerImpl) Cache(opts ...options.Option) (CacheProvider, error) {
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode caches config for CacheProvider: %v", err)
 	}
-	// The cache.Provider.Initialize method is assumed to exist after refactoring.
 	c.cacheProvider.Initialize(caches, opts...)
 	return c.cacheProvider, nil
 }
@@ -215,7 +214,6 @@ func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, erro
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode databases config for DatabaseProvider: %v", err)
 	}
-	// The database.Provider.Initialize method is assumed to exist after refactoring.
 	c.databaseProvider.Initialize(databases, opts...)
 	return c.databaseProvider, nil
 }
@@ -226,7 +224,6 @@ func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode object stores config for ObjectStoreProvider: %v", err)
 	}
-	// The objectstore.Provider.Initialize method is assumed to exist after refactoring.
 	c.objectStoreProvider.Initialize(filestores, opts...)
 	return c.objectStoreProvider, nil
 }

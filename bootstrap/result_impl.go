@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/interfaces"
 )
 
@@ -8,6 +9,11 @@ import (
 type resultImpl struct {
 	config           interfaces.Config
 	structuredConfig interfaces.StructuredConfig
+	appConfig        *appv1.App
+}
+
+func (b *resultImpl) App() *appv1.App {
+	return b.appConfig
 }
 
 // Config returns the raw configuration decoder.

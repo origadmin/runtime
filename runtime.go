@@ -9,7 +9,9 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1" // Import appv1
 	"github.com/origadmin/runtime/bootstrap"
+	"github.com/origadmin/runtime/bootstrap/internal/config" // For NewAppInfo
 	"github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/constant"
@@ -18,25 +20,26 @@ import (
 
 // App defines the application's runtime environment.
 type App struct {
-	result        bootstrap.Result
-	container     container.Container
-	appInfo       interfaces.AppInfo
-	mu            sync.RWMutex
-	globalOpts    []options.Option
-	componentOpts map[string][]options.Option
-	containerOpts []options.Option
+	result         bootstrap.Result
+	container      container.Container
+	appInfo        interfaces.AppInfo // Final AppInfo after bootstrap
+	mu             sync.RWMutex
+	globalOpts     []options.Option
+	componentOpts  map[string][]options.Option
+	containerOpts  []options.Option
+	initialAppInfo interfaces.AppInfo // Initial AppInfo from New()
 }
 
 // New creates a new, partially initialized App instance with essential metadata and container configurations.
 // It accepts functional options to allow for pre-configuring the container.
 // The App is not fully functional until Load is called.
 func New(name, version string, opts ...Option) (*App, error) {
-	appInfo := newAppInfo(name, version)
+	initialAppInfo := newAppInfo(name, version)
 
 	app := &App{
-		appInfo:       appInfo,
-		componentOpts: make(map[string][]options.Option),
-		containerOpts: make([]options.Option, 0),
+		initialAppInfo: initialAppInfo, // Store initial AppInfo
+		componentOpts:  make(map[string][]options.Option),
+		containerOpts:  make([]options.Option, 0),
 	}
 
 	// Apply functional options, which will populate containerOpts
@@ -50,29 +53,21 @@ func New(name, version string, opts ...Option) (*App, error) {
 // Load reads the configuration from the given path, completes the App initialization,
 // and prepares it for running.
 func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
-	// 1. Bootstrap from configuration file
+	// 1. Bootstrap from configuration file.
 	res, err := bootstrap.New(path, bootOpts...)
 	if err != nil {
 		return fmt.Errorf("failed to bootstrap configuration from '%s': %w", path, err)
 	}
 	r.result = res
 
-	// 2. Create the container
-	// Merge container options from New() with the essential AppInfo option.
-	ctnOpts := []options.Option{
-		container.WithAppInfo(r.appInfo),
-	}
-	ctnOpts = append(ctnOpts, r.containerOpts...)
+	// 2. Merge AppInfo: Code-defined values for Name and Version take precedence.
+	// Config-defined values for Env, ID, and Metadata supplement or override.
+	finalAppInfo := mergeAppInfo(r.initialAppInfo, convertProtoAppToAppInfo(res.App()))
+	r.appInfo = finalAppInfo // Store the final merged AppInfo
 
-	r.container = container.New(res.StructuredConfig(), ctnOpts...)
-
-	// 3. Finalize AppInfo from the container
-	// This might enrich the AppInfo with details from the config file.
-	finalAppInfo := r.container.AppInfo()
-	if finalAppInfo == nil {
-		return fmt.Errorf("critical error: AppInfo is nil after container initialization")
-	}
-	r.appInfo = finalAppInfo // Update app with the potentially enriched AppInfo
+	// 3. Create the container.
+	ctnOpts := r.containerOpts                                                 // Use collected container options
+	r.container = container.New(res.StructuredConfig(), r.appInfo, ctnOpts...) // Pass final AppInfo to container
 
 	return nil
 }
@@ -272,4 +267,56 @@ func (r *App) MiddlewareProvider() (container.MiddlewareProvider, error) {
 // AppInfo returns the application's metadata as an interface.
 func (r *App) AppInfo() interfaces.AppInfo {
 	return r.appInfo
+}
+
+// mergeAppInfo combines AppInfo from runtime and config, with runtime Name and Version taking precedence.
+func mergeAppInfo(runtime, config interfaces.AppInfo) interfaces.AppInfo {
+	if config == nil {
+		return runtime
+	}
+
+	// Start with the runtime AppInfo as the base.
+	finalID := runtime.ID()
+	finalEnv := runtime.Env()
+	finalMetadata := runtime.Metadata()
+
+	// If config provides values, they take precedence for these fields.
+	if config.ID() != "" {
+		finalID = config.ID()
+	}
+	if config.Env() != "" {
+		finalEnv = config.Env()
+	}
+	if config.Metadata() != nil {
+		if finalMetadata == nil {
+			finalMetadata = make(map[string]string)
+		}
+		for k, v := range config.Metadata() {
+			finalMetadata[k] = v
+		}
+	}
+
+	// Create a new AppInfo instance with the merged values.
+	// Name and Version are always taken from the runtime AppInfo.
+	return config.NewAppInfo(
+		runtime.Name(),
+		runtime.Version(),
+		finalID,
+		finalEnv,
+		finalMetadata,
+	)
+}
+
+// convertProtoAppToAppInfo converts a protobuf App message to an interfaces.AppInfo.
+func convertProtoAppToAppInfo(protoApp *appv1.App) interfaces.AppInfo {
+	if protoApp == nil {
+		return nil
+	}
+	return config.NewAppInfo(
+		protoApp.GetName(),
+		protoApp.GetVersion(),
+		protoApp.GetId(),
+		protoApp.GetEnv(),
+		protoApp.GetMetadata(),
+	)
 }
