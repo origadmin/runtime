@@ -13,19 +13,20 @@ import (
 
 func main() {
 	// Initialize runtime with bootstrap configuration
-	rtInstance, err := rt.New("Custom Extension Example",
+	rtInstance, err := rt.New(
+		"Custom Extension Example",
 		"1.0.0",
-		rt.WithID("custom-extension-example"), // Changed from rt.WithAppInfoID
-		rt.WithEnv("development"),             // Changed from rt.WithAppInfoEnv
+		rt.WithID("custom-extension-example"),
+		rt.WithEnv("development"),
 	)
-	rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
+	err = rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
 	if err != nil {
 		log.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	// Removed defer rtInstance.Cleanup() as it's no longer available
 
 	// Get config decoder
 	decoder := rtInstance.Config()
+	defer decoder.Close()
 
 	// Decode the entire config into our custom application config
 	var appConfig conf.ApplicationConfig

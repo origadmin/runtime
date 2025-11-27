@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
@@ -36,7 +35,6 @@ type Config interface {
 // StructuredConfig defines a set of type-safe, recommended methods for decoding configuration.
 // It embeds the generic Config interface to allow for decoding arbitrary values.
 type StructuredConfig interface {
-	AppConfigDecoder
 	DataConfigDecoder
 	CacheConfigDecoder
 	DatabaseConfigDecoder
@@ -50,9 +48,9 @@ type StructuredConfig interface {
 	DecodedConfig() any
 }
 
-type AppConfigDecoder interface {
-	DecodeApp() (*appv1.App, error)
-}
+//type AppConfigDecoder interface {
+//	DecodeApp() (*appv1.App, error)
+//}
 
 // LoggerConfigDecoder defines an OPTIONAL interface for providing a "fast path"
 // to decode logger configuration. Custom Config implementations can implement this

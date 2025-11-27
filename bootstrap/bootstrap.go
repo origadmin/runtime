@@ -3,7 +3,6 @@ package bootstrap
 import (
 	"fmt"
 
-	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1" // Import bootstrapv1
 	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
 	"github.com/origadmin/runtime/interfaces/constant"
 	"github.com/origadmin/runtime/log"
@@ -31,18 +30,18 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	// 1. Apply bootstrap options.
 	providerOpts := FromOptions(opts...)
 
-	// 2. Load configuration from all sources (local and remote).
+	// 2. Load bootstrap configuration
+	bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath, providerOpts.rawOptions...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load bootstrap config: %w", err)
+	}
+	log.Debugf("Load bootstrap config : %+v", &bootstrapCfg)
+	// 3. Load full configuration using the sources from bootstrap config
 	cfg, err := LoadConfig(bootstrapPath, providerOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	// 3. Decode the Bootstrap message to get the App field.
-	var bootstrapCfg bootstrapv1.Bootstrap
-	if err := cfg.Decode("", &bootstrapCfg); err != nil {
-		// Log the error but continue, as App field in bootstrap config is optional.
-		log.Warnf("failed to decode bootstrap config, App field might be missing: %v", err)
-	}
 	app := bootstrapCfg.GetApp()
 
 	// 4. Create the final StructuredConfig.

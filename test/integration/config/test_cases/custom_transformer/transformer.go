@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/interfaces"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
@@ -19,35 +17,8 @@ type TestTransformer struct {
 	cfg    *testconfigs.TestConfig
 }
 
-func (t *TestTransformer) Load() error {
-	return t.c.Load()
-}
-
-func (t *TestTransformer) Decode(key string, value any) error {
-	if err := t.c.Decode(key, value); err != nil {
-		return fmt.Errorf("failed to decode config in transformer: %w", err)
-	}
-	return nil
-}
-
-func (t *TestTransformer) Raw() any {
-	return t.c.Raw()
-}
-
-func (t *TestTransformer) Close() error {
-	return t.c.Close()
-}
-
-func (t *TestTransformer) DecodeApp() (*appv1.App, error) {
-	return t.cfg.App, nil
-}
-
-func (t *TestTransformer) DecodeLogger() (*loggerv1.Logger, error) {
-	return t.cfg.Logger, nil
-}
-
-func (t *TestTransformer) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
-	return t.cfg.Middlewares, nil
+func (t *TestTransformer) DecodedConfig() any {
+	return t.cfg
 }
 
 func (t *TestTransformer) Transform(c interfaces.Config, sc interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {

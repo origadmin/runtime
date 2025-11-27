@@ -1,3 +1,9 @@
+app:
+  id: "base-app-id"
+  name: "BaseApp"
+  version: "1.0.0"
+  env: "default"
+
 sources:
   # Load environment variables first (lowest priority)
   - type: env

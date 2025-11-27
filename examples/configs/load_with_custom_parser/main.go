@@ -154,21 +154,12 @@ func main() {
 	// Call DummyInit to ensure the local_registry package's init() function is executed.
 	DummyInit()
 
-	// 1. Create a new App instance from the bootstrap config
-	rtInstance, err := runtime.NewFromBootstrap(
-		"examples/configs/load_with_custom_parser/config/bootstrap.yaml",
-		runtime.WithAppInfo(runtime.NewAppInfo(
-			"ApiGatewayCustomParserExample",
-			"1.0.0",
-			runtime.WithAppInfoID("api_gateway_custom_parser_example"),
-			runtime.WithAppInfoEnv("dev"),
-			runtime.WithAppInfoStartTime(time.Now()),
-		)),
-		// Use WithBootstrapOptions for bootstrap-specific configurations.
-		runtime.WithBootstrapOptions(
-			bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)),
-		),
-		// Use WithContainerOptions for container-specific configurations.
+	rtInstance, err := runtime.New(
+		"ApiGatewayCustomParserExample",
+		"1.0.0",
+		runtime.WithID("api_gateway_custom_parser_example"),
+		runtime.WithEnv("dev"),
+		runtime.WithStartTime(time.Now()),
 		runtime.WithContainerOptions(
 			container.WithComponentFactory("my--settings", container.ComponentFunc(
 				func(cfg interfaces.StructuredConfig, ctn container.Container, opts ...options.Option) (interfaces.Component, error) {
@@ -182,9 +173,13 @@ func main() {
 		),
 	)
 	if err != nil {
+		return
+	}
+
+	err = rtInstance.Load("examples/configs/load_with_custom_parser/config/bootstrap.yaml", bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)))
+	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
 	}
-	
 	// Get logger from runtime
 	logger := rtInstance.Logger()
 	appLogger := log.NewHelper(logger)

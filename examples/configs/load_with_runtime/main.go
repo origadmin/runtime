@@ -174,16 +174,19 @@ func main() {
 
 	// 1. Create a new App instance from the new bootstrap config.
 	//    Path is now relative to the CWD (runtime directory), pointing to the bootstrap.yaml.
-	rtInstance, err := runtime.NewFromBootstrap(
-		"examples/configs/load_with_runtime/config/bootstrap.yaml", // Correctly load bootstrap.yaml
-		runtime.WithAppInfo(runtime.NewAppInfo(
-			"RichConfigRuntimeExample",
-			"1.0.0",
-			runtime.WithAppInfoID("rich-config-runtime-example"),
-			runtime.WithAppInfoEnv("dev"),
-		)),
-		runtime.WithBootstrapOptions(bootstrap.WithConfigTransformer(configTransformer)), // Inject custom transformer
+	rtInstance, err := runtime.New(
+		"RichConfigRuntimeExample",
+		"1.0.0",
+		runtime.WithID("rich-config-runtime-example"),
+		runtime.WithEnv("dev"),
 	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = rtInstance.Load(
+		"examples/configs/load_with_custom_extension/config/bootstrap.yaml",
+		bootstrap.WithConfigTransformer(configTransformer))
 	if err != nil {
 		panic(err)
 	}

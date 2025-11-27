@@ -1,6 +1,8 @@
 package custom_transformer_test
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,6 +12,7 @@ import (
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	parentconfig "github.com/origadmin/runtime/test/integration/config"
+	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 	"github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer"
 	_ "github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer" // Import for transformer registration
 )
@@ -39,19 +42,24 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	)
 
 	// Initialize App, which should apply the registered custom transformer.
-	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath,
+	rtInstance, err := rt.New(
+		appInfo.Name(),
+		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
-		rt.WithBootstrapOptions(bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{Suffix: "-transformed"})),
 	)
 	// Use require.NoError to fail fast if the runtime fails to initialize.
 	// This prevents panics from defer calls on a nil rtInstance.
 	require.NoError(t, err, "Failed to initialize runtime from bootstrap with custom transformer")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
+	wd, _ := os.Getwd()
+	fmt.Printf("working directory:%s\n", wd)
+	// Load the configuration from the bootstrap file with all options.
+	err = rtInstance.Load(bootstrapPath, bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{
+		Suffix: "-transformed",
+	}))
+	require.NoError(t, err, "Failed to load configuration from bootstrap with custom transformer")
 
-	// Use StructuredConfig() to get the transformed configuration
-	actualApp, err := rtInstance.StructuredConfig().DecodeApp()
-	require.NoError(t, err, "Failed to decode app config from runtime")
+	defer rtInstance.Config().Close()
 
 	// Define the expected configuration after transformation
 	expectedApp := &appv1.App{
@@ -62,9 +70,14 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 		// Metadata is not defined in the local config, so we expect the default nil or empty map.
 		Metadata: nil, // Or map[string]string{} depending on desired behavior
 	}
-
+	// Use StructuredConfig() to get the transformed configuration
+	ts, ok := rtInstance.StructuredConfig().DecodedConfig().(*testconfigs.TestConfig)
+	if !ok {
+		t.Fatalf("Failed to convert to TestTransformer")
+	}
+	require.NoError(t, err, "Failed to decode app config")
 	// Perform a detailed, field-by-field assertion.
-	parentconfig.AssertAppConfig(t, expectedApp, actualApp)
+	parentconfig.AssertAppConfig(t, rt.ConvertToAppInfo(expectedApp), rt.ConvertToAppInfo(ts.App))
 
 	t.Logf("Custom transformer applied and verified successfully!")
 }

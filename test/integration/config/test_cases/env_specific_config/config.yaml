@@ -1,9 +1,3 @@
-app:
-  id: "base-app-id"
-  name: "BaseApp"
-  version: "1.0.0"
-  env: "default"
-
 logger:
   level: "debug"
   format: "text"

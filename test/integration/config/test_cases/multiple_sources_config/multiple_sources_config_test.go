@@ -41,12 +41,17 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 		rt.WithAppInfoID("multi-source-test-app"),
 	)
 
-	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath,
+	rtInstance, err := rt.New(
+		appInfo.Name(),
+		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime from bootstrap")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
+	// Load the configuration from the bootstrap file with all options.
+	err = rtInstance.Load(bootstrapPath)
+	require.NoError(t, err, "Failed to load configuration from bootstrap")
+	defer rtInstance.Config().Close()
 
 	var actualConfig testconfigs.TestConfig
 	err = rtInstance.Config().Decode("", &actualConfig)
@@ -77,7 +82,7 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 	}
 
 	// Perform assertions using the modular assertion toolkit.
-	parentconfig.AssertAppConfig(t, expectedApp, actualConfig.App)
+	parentconfig.AssertAppConfig(t, rt.ConvertToAppInfo(expectedApp), rt.ConvertToAppInfo(actualConfig.App))
 	parentconfig.AssertLoggerConfig(t, expectedLogger, actualConfig.Logger)
 	parentconfig.AssertClientConfig(t, expectedClient, actualConfig.Client)
 

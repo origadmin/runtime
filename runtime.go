@@ -55,7 +55,7 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	// 2. Merge AppInfo: Code-defined values for Name and Version take precedence.
 	// Config-defined values for Env, ID, and Metadata supplement or override.
 	// The AppInfo from New() is merged with the AppInfo from the bootstrap config.
-	r.appInfo = mergeAppInfo(r.appInfo, res.AppConfig())
+	r.appInfo = mergeAppInfoWithConfig(r.appInfo, res.AppConfig())
 
 	// 3. Create the container.
 	ctnOpts := append(r.containerOpts, container.WithAppInfo(r.appInfo))
@@ -262,7 +262,7 @@ func (r *App) AppInfo() interfaces.AppInfo {
 }
 
 // mergeAppInfo combines AppInfo from runtime and config, with runtime Name and Version taking precedence.
-func mergeAppInfo(runtime *appInfo, config *appv1.App) *appInfo {
+func mergeAppInfo(runtime *appInfo, config interfaces.AppInfo) *appInfo {
 	if config == nil {
 		return runtime
 	}
@@ -271,14 +271,64 @@ func mergeAppInfo(runtime *appInfo, config *appv1.App) *appInfo {
 	id := runtime.ID()
 	env := runtime.Env()
 	metadata := runtime.Metadata()
-
+	name := runtime.Name()
+	version := runtime.Version()
 	// If config provides values, they take precedence for these fields.
+	if config.ID() != "" {
+		id = config.ID()
+	}
+	if config.Name() != "" {
+		name = config.Name()
+	}
+	if config.Version() != "" {
+		version = config.Version()
+	}
+	if config.Env() != "" {
+		env = config.Env()
+	}
+	if config.Metadata() != nil {
+		if metadata == nil {
+			metadata = make(map[string]string)
+		}
+		for k, v := range config.Metadata() {
+			metadata[k] = v
+		}
+	}
+
+	// Create a new AppInfo instance with the merged values.
+	// Name and Version are always taken from the runtime AppInfo.
+	return &appInfo{
+		name:      name,
+		version:   version,
+		id:        id,
+		env:       env,
+		startTime: runtime.StartTime(),
+		metadata:  metadata,
+	}
+}
+
+func mergeAppInfoWithConfig(runtime *appInfo, config *appv1.App) *appInfo {
+	if config == nil {
+		return runtime
+	}
+
+	id := runtime.ID()
 	if config.GetId() != "" {
 		id = config.GetId()
 	}
+	name := runtime.Name()
+	if config.GetName() != "" {
+		name = config.GetName()
+	}
+	version := runtime.Version()
+	if config.GetVersion() != "" {
+		version = config.GetVersion()
+	}
+	env := runtime.Env()
 	if config.GetEnv() != "" {
 		env = config.GetEnv()
 	}
+	metadata := runtime.Metadata()
 	if config.GetMetadata() != nil {
 		if metadata == nil {
 			metadata = make(map[string]string)
@@ -291,18 +341,19 @@ func mergeAppInfo(runtime *appInfo, config *appv1.App) *appInfo {
 	// Create a new AppInfo instance with the merged values.
 	// Name and Version are always taken from the runtime AppInfo.
 	return &appInfo{
-		name:     runtime.Name(),
-		version:  runtime.Version(),
-		id:       id,
-		env:      env,
-		metadata: metadata,
+		id:        id,
+		name:      name,
+		version:   version,
+		env:       env,
+		startTime: runtime.StartTime(),
+		metadata:  metadata,
 	}
 }
 
 // ConvertToAppInfo converts a protobuf App message to an interfaces.AppInfo.
 func ConvertToAppInfo(appConfig *appv1.App) interfaces.AppInfo {
 	if appConfig == nil {
-		return nil
+		return &appInfo{}
 	}
 	metadata := appConfig.Metadata
 	if metadata == nil {

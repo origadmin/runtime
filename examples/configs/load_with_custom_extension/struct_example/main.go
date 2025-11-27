@@ -16,17 +16,18 @@ func main() {
 	// --- 1. Load Configuration ---
 	// We use Kratos config to load the YAML file.
 	// Initialize runtime with bootstrap configuration
-	rtInstance, err := rt.NewFromBootstrap(
-		"examples/configs/load_with_custom_extension/config/bootstrap.yaml",
+	rtInstance, err := rt.New(
+		"custom-extension-example", "1.0.0",
 		rt.WithAppInfo(appInfo),
 	)
 	if err != nil {
 		log.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	defer rtInstance.Config().Close()
+	err = rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
 
 	// Get config decoder
 	decoder := rtInstance.Config()
+	defer decoder.Close()
 
 	// --- 2. Scan into Middleware Proto ---
 	// Kratos automatically handles unmarshaling the 'customize' YAML block

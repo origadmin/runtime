@@ -31,18 +31,22 @@ func main() {
 	// --- 1. Load Configuration ---
 	// We use Kratos config to load the YAML file.
 	// Initialize runtime with bootstrap configuration
-	rtInstance, err := rt.NewFromBootstrap(
-		"examples/configs/load_with_custom_extension/config/bootstrap.yaml",
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
+	rtInstance, err := rt.New(
+		appInfo.Name(),
+		appInfo.Version(),
+		rt.WithAppInfo(appInfo),
 	)
 	if err != nil {
 		log.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	// Removed defer rtInstance.Cleanup() as it's no longer available
+	err = rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
+	if err != nil {
+		return
+	}
 
 	// Get config decoder
 	decoder := rtInstance.Config()
-
+	defer decoder.Close()
 	// --- 2. Scan into a TEMPORARY Go struct ---
 	// We cannot scan directly into the 'Any' proto. We must use an intermediate struct.
 	var tempMw TempMiddleware

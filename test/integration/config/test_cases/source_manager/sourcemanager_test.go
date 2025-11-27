@@ -46,14 +46,19 @@ func (s *SourceManagerTestSuite) TestConfigSourceMergingAndPriority() {
 	// Use a path relative to the test file itself. This is the robust way to handle test data
 	// and is independent of the current working directory.
 	bootstrapPath := filepath.Join("testdata", "merging_and_priority", "bootstrap.yaml")
-	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath,
+	rtInstance, err := rt.New(
+		appInfo.Name(),
+		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	if err != nil {
 		t.Fatalf("Failed to initialize runtime: %v", err)
 	}
-	// Removed defer rtInstance.Cleanup() as it's no longer available
+	err = rtInstance.Load(bootstrapPath)
+	if err != nil {
+		t.Fatalf("Failed to load configuration from file: %v", err)
+	}
+	defer rtInstance.Config().Close()
 
 	// 2. Get the configuration decoder from the runtime
 	configDecoder := rtInstance.Config()

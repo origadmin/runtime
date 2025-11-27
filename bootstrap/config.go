@@ -153,7 +153,6 @@ func LoadBootstrapConfig(bootstrapPath string, opts ...Option) (*bootstrapv1.Boo
 	if err := bootConfig.Scan(&bc); err != nil {
 		return nil, err
 	}
-
 	return &bc, nil
 }
 

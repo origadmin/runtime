@@ -33,21 +33,22 @@ func main() {
 
 	// 2. Create and start App instance
 	// NewFromBootstrap encapsulates all bootstrap processes
-	rt, err := runtime.NewBuilder(
-		"./configs/bootstrap.yaml",
-		runtime.WithAppInfo(runtime.NewAppInfo(Name, Version, runtime.WithAppInfoID(ID))),
-	)
+	rt, err := runtime.New(Name, Version, runtime.WithID(ID))
 	if err != nil {
 		fmt.Println("Failed to create App:", err)
 		os.Exit(1)
 	}
+	if err := rt.Load("./configs/bootstrap.yaml"); err != nil {
+		fmt.Println("Failed to create App:", err)
+		os.Exit(1)
+	}
 	// The Cleanup method has been removed. The application manages its own lifecycle.
-
+	defer rt.Config().Close()
 	// 3. Get components from App and use them
 	logger := log.NewHelper(rt.Logger())
 	appInfo := rt.AppInfo()
 
-	logger.Infof("App %s (%s) is starting...", appInfo.Name, appInfo.Version)
+	logger.Infof("App %s (%s) is starting...", appInfo.Name(), appInfo.Version())
 
 	// Get the generated Bootstrap configuration
 	var bc conf.Bootstrap

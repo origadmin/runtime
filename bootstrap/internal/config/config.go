@@ -14,7 +14,6 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/constant"
-	"github.com/origadmin/toolkits/decode"
 )
 
 // structuredConfigImpl implements the interfaces.StructuredConfig interface.
@@ -24,115 +23,6 @@ type structuredConfigImpl struct {
 	paths             map[constant.ComponentKey]string
 	cache             sync.Map // Cache for decoded configurations
 }
-
-// DecodeCaches decodes and returns the Caches configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
-func (c *structuredConfigImpl) DecodeCaches() (*datav1.Caches, error) {
-	val, err := c.decodeComponent(constant.ComponentCaches, &datav1.Caches{})
-	if err != nil {
-		return nil, err
-	}
-	if val == nil {
-		return nil, nil
-	}
-	return val.(*datav1.Caches), nil
-}
-
-// DecodeDatabases decodes and returns the Databases configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
-func (c *structuredConfigImpl) DecodeDatabases() (*datav1.Databases, error) {
-	val, err := c.decodeComponent(constant.ComponentDatabases, &datav1.Databases{})
-	if err != nil {
-		return nil, err
-	}
-	if val == nil {
-		return nil, nil
-	}
-	return val.(*datav1.Databases), nil
-}
-
-// DecodeObjectStores decodes and returns the ObjectStores configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
-func (c *structuredConfigImpl) DecodeObjectStores() (*datav1.ObjectStores, error) {
-	val, err := c.decodeComponent(constant.ComponentObjectStores, &datav1.ObjectStores{})
-	if err != nil {
-		return nil, err
-	}
-	if val == nil {
-		return nil, nil
-	}
-	return val.(*datav1.ObjectStores), nil
-}
-
-// DecodedConfig returns the underlying generic configuration.
-func (c *structuredConfigImpl) DecodedConfig() any {
-	return c.Config
-}
-
-// Statically assert that structuredConfigImpl implements the full StructuredConfig interface.
-var _ interfaces.StructuredConfig = (*structuredConfigImpl)(nil)
-
-var (
-	serverConverter = decode.NewConverter(
-		func(name string, item *transportv1.Server) (*transportv1.Server, bool) {
-			if item.Name == "" {
-				item.Name = name
-			}
-			return item, true
-		},
-		func(items []*transportv1.Server) *transportv1.Servers {
-			if items == nil {
-				return nil
-			}
-			return &transportv1.Servers{Configs: items}
-		},
-	)
-
-	clientConverter = decode.NewConverter(
-		func(name string, item *transportv1.Client) (*transportv1.Client, bool) {
-			if item.Name == "" {
-				item.Name = name
-			}
-			return item, true
-		},
-		func(items []*transportv1.Client) *transportv1.Clients {
-			if items == nil {
-				return nil
-			}
-			return &transportv1.Clients{Configs: items}
-		},
-	)
-
-	discoveryConverter = decode.NewConverter(
-		func(name string, item *discoveryv1.Discovery) (*discoveryv1.Discovery, bool) {
-			if item.Name == "" {
-				item.Name = name
-			}
-			return item, true
-		},
-		func(items []*discoveryv1.Discovery) *discoveryv1.Discoveries {
-			if items == nil {
-				return nil
-			}
-			return &discoveryv1.Discoveries{Configs: items}
-		},
-	)
-
-	middlewareConverter = decode.NewConverter(
-		func(name string, item *middlewarev1.Middleware) (*middlewarev1.Middleware, bool) {
-			if item.Name == "" {
-				item.Name = name
-			}
-			return item, true
-		},
-		func(items []*middlewarev1.Middleware) *middlewarev1.Middlewares {
-			if items == nil {
-				return nil
-			}
-			return &middlewarev1.Middlewares{Configs: items}
-		},
-	)
-)
 
 // NewStructured creates a new structured config implementation.
 // It takes a generic interfaces.Config and a path map to provide high-level decoding methods.
@@ -147,13 +37,20 @@ func NewStructured(cfg interfaces.Config, paths map[constant.ComponentKey]string
 	}
 }
 
-// decodeComponent implements a robust decoding logic with caching.
+// DecodedConfig returns the underlying generic configuration.
+func (c *structuredConfigImpl) DecodedConfig() any {
+	return c.Config
+}
+
+// Statically assert that structuredConfigImpl implements the full StructuredConfig interface.
+var _ interfaces.StructuredConfig = (*structuredConfigImpl)(nil)
+
+// decodeAndCache implements a robust decoding logic with caching for single-type components.
 // It first checks the `paths` map for a pre-discovered path. If not found,
 // it falls back to using the componentKey directly as the path.
-// This provides both flexibility (via the paths map) and convention-based simplicity.
 // If the component is already in the cache, it returns the cached value.
 // Otherwise, it decodes the component, stores it in the cache, and then returns it.
-func (c *structuredConfigImpl) decodeComponent(componentKey constant.ComponentKey, valuePtr any) (any, error) {
+func (c *structuredConfigImpl) decodeAndCache(componentKey constant.ComponentKey, valuePtr any) (any, error) {
 	// Check cache first
 	if cachedVal, ok := c.cache.Load(componentKey); ok {
 		return cachedVal, nil
@@ -187,23 +84,9 @@ func (c *structuredConfigImpl) decodeComponent(componentKey constant.ComponentKe
 	return valuePtr, nil
 }
 
-// DecodeData decodes and returns the Data configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
-func (c *structuredConfigImpl) DecodeData() (*datav1.Data, error) {
-	val, err := c.decodeComponent(constant.ComponentData, &datav1.Data{})
-	if err != nil {
-		return nil, err
-	}
-	if val == nil {
-		return nil, nil
-	}
-	return val.(*datav1.Data), nil
-}
-
 // DecodeApp decodes and returns the App configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
 func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
-	val, err := c.decodeComponent(constant.ConfigApp, &appv1.App{})
+	val, err := c.decodeAndCache(constant.ConfigApp, &appv1.App{})
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +94,6 @@ func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
 		return nil, nil
 	}
 	appConfig := val.(*appv1.App)
-	// If the struct is still zero-valued, it means the key was not found or disabled.
 	if appConfig.Id == "" && appConfig.Name == "" {
 		return nil, nil
 	}
@@ -219,9 +101,8 @@ func (c *structuredConfigImpl) DecodeApp() (*appv1.App, error) {
 }
 
 // DecodeLogger decodes and returns the Logger configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
 func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
-	val, err := c.decodeComponent(constant.ComponentLogger, &loggerv1.Logger{})
+	val, err := c.decodeAndCache(constant.ComponentLogger, &loggerv1.Logger{})
 	if err != nil {
 		return nil, err
 	}
@@ -235,181 +116,229 @@ func (c *structuredConfigImpl) DecodeLogger() (*loggerv1.Logger, error) {
 	return loggerConfig, nil
 }
 
-// DecodeDiscoveries decodes and returns the Discoveries configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
-func (c *structuredConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
-	// Attempt to decode as map
-	var m map[string]*discoveryv1.Discovery
-	val, err := c.decodeComponent(constant.ComponentRegistries, &m)
+// DecodeData decodes and returns the Data configuration.
+func (c *structuredConfigImpl) DecodeData() (*datav1.Data, error) {
+	val, err := c.decodeAndCache(constant.ComponentData, &datav1.Data{})
 	if err != nil {
 		return nil, err
 	}
-	if val != nil {
-		if decodedMap, ok := val.(*map[string]*discoveryv1.Discovery); ok && len(*decodedMap) > 0 {
-			return discoveryConverter.FromMap(*decodedMap), nil
-		}
+	if val == nil {
+		return nil, nil
 	}
+	return val.(*datav1.Data), nil
+}
 
-	// Attempt to decode as slice
-	var ds []*discoveryv1.Discovery
-	val, err = c.decodeComponent(constant.ComponentRegistries, &ds)
+// DecodeCaches decodes and returns the Caches configuration.
+func (c *structuredConfigImpl) DecodeCaches() (*datav1.Caches, error) {
+	val, err := c.decodeAndCache(constant.ComponentCaches, &datav1.Caches{})
 	if err != nil {
 		return nil, err
 	}
-	if val != nil {
-		if decodedSlice, ok := val.(*[]*discoveryv1.Discovery); ok {
-			return discoveryConverter.FromSlice(*decodedSlice), nil
-		}
+	if val == nil {
+		return nil, nil
 	}
+	return val.(*datav1.Caches), nil
+}
 
-	// Attempt to decode as direct struct
-	var s discoveryv1.Discoveries
-	val, err = c.decodeComponent(constant.ComponentRegistries, &s)
+// DecodeDatabases decodes and returns the Databases configuration.
+func (c *structuredConfigImpl) DecodeDatabases() (*datav1.Databases, error) {
+	val, err := c.decodeAndCache(constant.ComponentDatabases, &datav1.Databases{})
 	if err != nil {
 		return nil, err
 	}
-	if val != nil {
-		if decodedStruct, ok := val.(*discoveryv1.Discoveries); ok {
-			return decodedStruct, nil
-		}
+	if val == nil {
+		return nil, nil
 	}
-	return nil, nil
+	return val.(*datav1.Databases), nil
+}
+
+// DecodeObjectStores decodes and returns the ObjectStores configuration.
+func (c *structuredConfigImpl) DecodeObjectStores() (*datav1.ObjectStores, error) {
+	val, err := c.decodeAndCache(constant.ComponentObjectStores, &datav1.ObjectStores{})
+	if err != nil {
+		return nil, err
+	}
+	if val == nil {
+		return nil, nil
+	}
+	return val.(*datav1.ObjectStores), nil
 }
 
 // DecodeDefaultDiscovery decodes and returns the default discovery name.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
 func (c *structuredConfigImpl) DecodeDefaultDiscovery() (string, error) {
 	var defaultRegistry string
-	val, err := c.decodeComponent(constant.ComponentDefaultRegistry, &defaultRegistry)
+	val, err := c.decodeAndCache(constant.ComponentDefaultRegistry, &defaultRegistry)
 	if err != nil {
 		return "", err
 	}
 	if val == nil {
 		return "", nil
 	}
-	// Dereference the pointer to string before returning
 	return *val.(*string), nil
 }
 
-// DecodeMiddlewares decodes and returns the Middlewares configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
+// multiFormatDecoder is a generic helper to decode configuration components
+// that can be represented as a map, a slice, or a direct struct.
+type multiFormatDecoder[ItemPtr any, ResultPtr any] struct {
+	c             *structuredConfigImpl
+	componentKey  constant.ComponentKey
+	sliceToResult func([]ItemPtr) ResultPtr
+	isResultEmpty func(ResultPtr) bool
+	setNameOnItem func(name string, item ItemPtr)
+}
+
+// decode executes the decoding process.
+func (d *multiFormatDecoder[ItemPtr, ResultPtr]) decode() (ResultPtr, error) {
+	var zero ResultPtr
+	// 1. Check cache for the final, converted result.
+	if cachedVal, ok := d.c.cache.Load(d.componentKey); ok {
+		if cachedVal == nil {
+			return zero, nil
+		}
+		return cachedVal.(ResultPtr), nil
+	}
+
+	path, ok := d.c.paths[d.componentKey]
+	if !ok {
+		path = string(d.componentKey)
+	} else if path == "" {
+		d.c.cache.Store(d.componentKey, nil)
+		return zero, nil
+	}
+
+	// 2. Attempt to decode as a map.
+	var m map[string]ItemPtr
+	err := d.c.Decode(path, &m)
+	if err == nil {
+		if len(m) > 0 {
+			items := make([]ItemPtr, 0, len(m))
+			for name, item := range m {
+				if d.setNameOnItem != nil {
+					d.setNameOnItem(name, item)
+				}
+				items = append(items, item)
+			}
+			result := d.sliceToResult(items)
+			d.c.cache.Store(d.componentKey, result)
+			return result, nil
+		}
+	} else if errors.Is(err, kratosconfig.ErrNotFound) {
+		d.c.cache.Store(d.componentKey, nil)
+		return zero, nil
+	}
+
+	// 3. Attempt to decode as a slice.
+	var s []ItemPtr
+	if err := d.c.Decode(path, &s); err == nil {
+		if len(s) > 0 {
+			result := d.sliceToResult(s)
+			d.c.cache.Store(d.componentKey, result)
+			return result, nil
+		}
+	}
+
+	// 4. Attempt to decode as a direct struct.
+	var direct ResultPtr
+	if err := d.c.Decode(path, &direct); err == nil {
+		if d.isResultEmpty == nil || !d.isResultEmpty(direct) {
+			d.c.cache.Store(d.componentKey, direct)
+			return direct, nil
+		}
+	}
+
+	// 5. If all attempts fail or result in empty config, cache nil.
+	d.c.cache.Store(d.componentKey, nil)
+	return zero, nil
+}
+
+// DecodeDiscoveries decodes the Discoveries configuration using the multi-format decoder.
+func (c *structuredConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
+	decoder := &multiFormatDecoder[*discoveryv1.Discovery, *discoveryv1.Discoveries]{
+		c:            c,
+		componentKey: constant.ComponentRegistries,
+		sliceToResult: func(items []*discoveryv1.Discovery) *discoveryv1.Discoveries {
+			if len(items) == 0 {
+				return nil
+			}
+			return &discoveryv1.Discoveries{Configs: items}
+		},
+		isResultEmpty: func(r *discoveryv1.Discoveries) bool {
+			return r == nil || len(r.Configs) == 0
+		},
+		setNameOnItem: func(name string, item *discoveryv1.Discovery) {
+			if item.Name == "" {
+				item.Name = name
+			}
+		},
+	}
+	return decoder.decode()
+}
+
+// DecodeMiddlewares decodes the Middlewares configuration using the multi-format decoder.
 func (c *structuredConfigImpl) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
-	// Attempt to decode as map
-	var m map[string]*middlewarev1.Middleware
-	val, err := c.decodeComponent(constant.ComponentMiddlewares, &m)
-	if err != nil {
-		return nil, err
+	decoder := &multiFormatDecoder[*middlewarev1.Middleware, *middlewarev1.Middlewares]{
+		c:            c,
+		componentKey: constant.ComponentMiddlewares,
+		sliceToResult: func(items []*middlewarev1.Middleware) *middlewarev1.Middlewares {
+			if len(items) == 0 {
+				return nil
+			}
+			return &middlewarev1.Middlewares{Configs: items}
+		},
+		isResultEmpty: func(r *middlewarev1.Middlewares) bool {
+			return r == nil || len(r.Configs) == 0
+		},
+		setNameOnItem: func(name string, item *middlewarev1.Middleware) {
+			if item.Name == "" {
+				item.Name = name
+			}
+		},
 	}
-	if val != nil {
-		if decodedMap, ok := val.(*map[string]*middlewarev1.Middleware); ok && len(*decodedMap) > 0 {
-			return middlewareConverter.FromMap(*decodedMap), nil
-		}
-	}
-
-	// Attempt to decode as slice
-	var ms []*middlewarev1.Middleware
-	val, err = c.decodeComponent(constant.ComponentMiddlewares, &ms)
-	if err != nil {
-		return nil, err
-	}
-	if val != nil {
-		if decodedSlice, ok := val.(*[]*middlewarev1.Middleware); ok {
-			return middlewareConverter.FromSlice(*decodedSlice), nil
-		}
-	}
-
-	// Attempt to decode as direct struct
-	var s middlewarev1.Middlewares
-	val, err = c.decodeComponent(constant.ComponentMiddlewares, &s)
-	if err != nil {
-		return nil, err
-	}
-	if val != nil {
-		if decodedStruct, ok := val.(*middlewarev1.Middlewares); ok {
-			return decodedStruct, nil
-		}
-	}
-	return nil, nil
+	return decoder.decode()
 }
 
-// DecodeServers decodes and returns the Servers configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
+// DecodeServers decodes the Servers configuration using the multi-format decoder.
 func (c *structuredConfigImpl) DecodeServers() (*transportv1.Servers, error) {
-	// Attempt to decode as map
-	var m map[string]*transportv1.Server
-	val, err := c.decodeComponent(constant.ComponentServers, &m)
-	if err != nil {
-		return nil, err
+	decoder := &multiFormatDecoder[*transportv1.Server, *transportv1.Servers]{
+		c:            c,
+		componentKey: constant.ComponentServers,
+		sliceToResult: func(items []*transportv1.Server) *transportv1.Servers {
+			if len(items) == 0 {
+				return nil
+			}
+			return &transportv1.Servers{Configs: items}
+		},
+		isResultEmpty: func(r *transportv1.Servers) bool {
+			return r == nil || len(r.Configs) == 0
+		},
+		setNameOnItem: func(name string, item *transportv1.Server) {
+			if item.Name == "" {
+				item.Name = name
+			}
+		},
 	}
-	if val != nil {
-		if decodedMap, ok := val.(*map[string]*transportv1.Server); ok && len(*decodedMap) > 0 {
-			return serverConverter.FromMap(*decodedMap), nil
-		}
-	}
-
-	// Attempt to decode as slice
-	var ss []*transportv1.Server
-	val, err = c.decodeComponent(constant.ComponentServers, &ss)
-	if err != nil {
-		return nil, err
-	}
-	if val != nil {
-		if decodedSlice, ok := val.(*[]*transportv1.Server); ok {
-			return serverConverter.FromSlice(*decodedSlice), nil
-		}
-	}
-
-	// Attempt to decode as direct struct
-	var s transportv1.Servers
-	val, err = c.decodeComponent(constant.ComponentServers, &s)
-	if err != nil {
-		return nil, err
-	}
-	if val != nil {
-		if decodedStruct, ok := val.(*transportv1.Servers); ok {
-			return decodedStruct, nil
-		}
-	}
-	return nil, nil
+	return decoder.decode()
 }
 
-// DecodeClients decodes and returns the Clients configuration.
-// It retrieves the configuration from the cache if available, otherwise decodes it and stores it in the cache.
+// DecodeClients decodes the Clients configuration using the multi-format decoder.
 func (c *structuredConfigImpl) DecodeClients() (*transportv1.Clients, error) {
-	// Attempt to decode as map
-	var m map[string]*transportv1.Client
-	val, err := c.decodeComponent(constant.ComponentClients, &m)
-	if err != nil {
-		return nil, err
+	decoder := &multiFormatDecoder[*transportv1.Client, *transportv1.Clients]{
+		c:            c,
+		componentKey: constant.ComponentClients,
+		sliceToResult: func(items []*transportv1.Client) *transportv1.Clients {
+			if len(items) == 0 {
+				return nil
+			}
+			return &transportv1.Clients{Configs: items}
+		},
+		isResultEmpty: func(r *transportv1.Clients) bool {
+			return r == nil || len(r.Configs) == 0
+		},
+		setNameOnItem: func(name string, item *transportv1.Client) {
+			if item.Name == "" {
+				item.Name = name
+			}
+		},
 	}
-	if val != nil {
-		if decodedMap, ok := val.(*map[string]*transportv1.Client); ok && len(*decodedMap) > 0 {
-			return clientConverter.FromMap(*decodedMap), nil
-		}
-	}
-
-	// Attempt to decode as slice
-	var cs []*transportv1.Client
-	val, err = c.decodeComponent(constant.ComponentClients, &cs)
-	if err != nil {
-		return nil, err
-	}
-	if val != nil {
-		if decodedSlice, ok := val.(*[]*transportv1.Client); ok {
-			return clientConverter.FromSlice(*decodedSlice), nil
-		}
-	}
-
-	// Attempt to decode as direct struct
-	var s transportv1.Clients
-	val, err = c.decodeComponent(constant.ComponentClients, &s)
-	if err != nil {
-		return nil, err
-	}
-	if val != nil {
-		if decodedStruct, ok := val.(*transportv1.Clients); ok {
-			return decodedStruct, nil
-		}
-	}
-	return nil, nil
+	return decoder.decode()
 }

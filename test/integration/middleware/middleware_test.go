@@ -60,13 +60,18 @@ func setupRuntimeFromFile(t *testing.T, appID, configFilePath string) *rt.App {
 	t.Helper()
 	require.NotEmpty(t, configFilePath, "configFilePath cannot be empty for file-based setup")
 
-	rtInstance, err := rt.NewFromBootstrap(configFilePath,
-		rt.WithAppInfo(rt.NewAppInfo(appID, "1.0.0", rt.WithAppInfoID(appID))),
-		rt.WithBootstrapOptions(
-			bootstrap.WithDirectly(),
-		),
+	rtInstance, err := rt.New(
+		appID,
+		"1.0.0",
+		rt.WithID(appID),
+
 	)
 	require.NoError(t, err, "Failed to create runtime from file: %s", configFilePath)
+
+	err = rtInstance.Load(configFilePath, bootstrap.WithDirectly())
+	require.NoError(t, err, "Failed to load configuration from file: %s", configFilePath)
+	defer rtInstance.Config().Close()
+
 	return rtInstance
 }
 

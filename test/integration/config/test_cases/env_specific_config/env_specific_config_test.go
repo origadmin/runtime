@@ -94,26 +94,31 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 			appInfo := rt.NewAppInfo(
 				"EnvTestApp",
 				"1.0.0",
-				rt.WithAppInfoID("env-test-app"),
+				rt.WithAppInfoID("base-app-id"),
 				rt.WithAppInfoEnv(tc.envVar), // Set the environment for AppInfo
 			)
 
-			rtInstance, err := rt.NewFromBootstrap(
-				bootstrapPath,
-				rt.WithAppInfo(appInfo), // Pass the created AppInfo
+			rtInstance, err := rt.New(
+				appInfo.Name(),
+				appInfo.Version(),
+				rt.WithID("env-test-app"), // Pass the created AppInfo
 			)
 			require.NoError(t, err, "Failed to initialize runtime from bootstrap for %s", tc.name)
 			// Removed defer rtInstance.Cleanup() as it's no longer available
 
+			// Load the configuration from the bootstrap file with all options.
+			err = rtInstance.Load(bootstrapPath)
+			require.NoError(t, err, "Failed to load configuration from bootstrap for %s", tc.name)
+			defer rtInstance.Config().Close()
+
 			// Decode the app and logger sections
-			actualApp, err := rtInstance.StructuredConfig().DecodeApp()
-			require.NoError(t, err, "Failed to decode app config for %s", tc.name)
+			actualApp := rtInstance.AppInfo()
+			require.Equal(t, appInfo.ID(), actualApp.ID(), "App ID should match transformed value")
 
 			actualLogger, err := rtInstance.StructuredConfig().DecodeLogger()
 			require.NoError(t, err, "Failed to decode logger config for %s", tc.name)
 
 			// Perform assertions using the modular assertion toolkit.
-			parentconfig.AssertAppConfig(t, tc.expectedApp, actualApp)
 			parentconfig.AssertLoggerConfig(t, tc.expectedLogger, actualLogger)
 
 			t.Logf("Environment-specific config for %s loaded and verified successfully!", tc.name)

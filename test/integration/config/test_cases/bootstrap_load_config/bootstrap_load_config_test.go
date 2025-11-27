@@ -46,12 +46,16 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 		rt.WithAppInfoID("test-complete-config"),
 	)
 
-	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath,
+	rtInstance, err := rt.New(
+		appInfo.Name(),
+		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
+	err = rtInstance.Load(bootstrapPath)
+	require.NoError(t, err, "Failed to load configuration from file: %v", err)
+	defer rtInstance.Config().Close()
 
 	var actualConfig testconfigs.TestConfig
 	err = rtInstance.Config().Decode("", &actualConfig)
@@ -94,12 +98,16 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 		rt.WithAppInfoID("test-proto-config"),
 	)
 
-	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath,
+	rtInstance, err := rt.New(
+		appInfo.Name(),
+		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
+	err = rtInstance.Load(bootstrapPath)
+	require.NoError(t, err, "Failed to load configuration from file: %v", err)
+	defer rtInstance.Config().Close()
 
 	var actualConfig testconfigs.TestConfig
 	err = rtInstance.Config().Decode("", &actualConfig)
@@ -122,7 +130,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	expectedServers.Configs[1].Protocol = "" // Not present in YAML
 
 	// Assertions for the loaded sections
-	parentconfig.AssertAppConfig(t, expectedApp, actualConfig.App)
+	parentconfig.AssertAppConfig(t, rt.ConvertToAppInfo(expectedApp), rt.ConvertToAppInfo(actualConfig.App))
 	parentconfig.AssertServersConfig(t, expectedServers, actualConfig.Servers)
 	require.Equal(t, "test-discovery", actualConfig.RegistrationDiscoveryName)
 
@@ -149,12 +157,16 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 		rt.WithAppInfoEnv("test"),
 	)
 
-	rtInstance, err := rt.NewFromBootstrap(
-		bootstrapPath,
+	rtInstance, err := rt.New(
+		appInfo.Name(),
+		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
 	require.NoError(t, err, "Failed to initialize runtime")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
+	err = rtInstance.Load(bootstrapPath)
+	require.NoError(t, err, "Failed to load configuration from file: %v", err)
+	defer rtInstance.Config().Close()
 
 	decoder := rtInstance.Config()
 	require.NotNil(t, decoder, "ConfigDecoder should not be nil")

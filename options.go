@@ -3,6 +3,7 @@ package runtime
 import (
 	"time"
 
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 )
 
@@ -129,5 +130,11 @@ func WithAppInfoMetadataMap(metadata map[string]string) AppInfoOption {
 		for k, v := range metadata {
 			a.metadata[k] = v
 		}
+	}
+}
+
+func WithAppInfo(info interfaces.AppInfo) Option {
+	return func(a *App) {
+		a.appInfo = mergeAppInfo(a.appInfo, info)
 	}
 }

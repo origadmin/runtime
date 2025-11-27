@@ -1,3 +1,9 @@
+app:
+  id: "transformer-app-id"
+  name: "OriginalApp"
+  version: "1.0.0"
+  env: "transformer-test"
+
 sources:
   - type: file
     file:
