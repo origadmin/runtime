@@ -16,9 +16,3 @@ func WithContainerOptions(opts ...options.Option) Option {
 		a.containerOpts = append(a.containerOpts, opts...)
 	}
 }
-
-func WithAppInfo(name, version string, opts ...AppInfoOption) Option {
-	return func(a *App) {
-		a.appInfo = NewAppInfo(name, version, opts...)
-	}
-}

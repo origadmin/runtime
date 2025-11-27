@@ -9,9 +9,8 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1" // Import appv1
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/bootstrap/internal/config" // For NewAppInfo
 	"github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/constant"
@@ -22,12 +21,12 @@ import (
 type App struct {
 	result         bootstrap.Result
 	container      container.Container
-	appInfo        interfaces.AppInfo // Final AppInfo after bootstrap
+	appInfo        interfaces.AppInfo
 	mu             sync.RWMutex
 	globalOpts     []options.Option
 	componentOpts  map[string][]options.Option
 	containerOpts  []options.Option
-	initialAppInfo interfaces.AppInfo // Initial AppInfo from New()
+	initialAppInfo interfaces.AppInfo
 }
 
 // New creates a new, partially initialized App instance with essential metadata and container configurations.
@@ -37,7 +36,7 @@ func New(name, version string, opts ...Option) (*App, error) {
 	initialAppInfo := newAppInfo(name, version)
 
 	app := &App{
-		initialAppInfo: initialAppInfo, // Store initial AppInfo
+		initialAppInfo: initialAppInfo,
 		componentOpts:  make(map[string][]options.Option),
 		containerOpts:  make([]options.Option, 0),
 	}
@@ -62,8 +61,8 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 
 	// 2. Merge AppInfo: Code-defined values for Name and Version take precedence.
 	// Config-defined values for Env, ID, and Metadata supplement or override.
-	finalAppInfo := mergeAppInfo(r.initialAppInfo, convertProtoAppToAppInfo(res.App()))
-	r.appInfo = finalAppInfo // Store the final merged AppInfo
+	appInfo := mergeAppInfo(r.initialAppInfo, convertToAppInfo(res.AppConfig()))
+	r.appInfo = appInfo // Store the final merged AppInfo
 
 	// 3. Create the container.
 	ctnOpts := r.containerOpts                                                 // Use collected container options
@@ -276,47 +275,52 @@ func mergeAppInfo(runtime, config interfaces.AppInfo) interfaces.AppInfo {
 	}
 
 	// Start with the runtime AppInfo as the base.
-	finalID := runtime.ID()
-	finalEnv := runtime.Env()
-	finalMetadata := runtime.Metadata()
+	id := runtime.ID()
+	env := runtime.Env()
+	metadata := runtime.Metadata()
 
 	// If config provides values, they take precedence for these fields.
 	if config.ID() != "" {
-		finalID = config.ID()
+		id = config.ID()
 	}
 	if config.Env() != "" {
-		finalEnv = config.Env()
+		env = config.Env()
 	}
 	if config.Metadata() != nil {
-		if finalMetadata == nil {
-			finalMetadata = make(map[string]string)
+		if metadata == nil {
+			metadata = make(map[string]string)
 		}
 		for k, v := range config.Metadata() {
-			finalMetadata[k] = v
+			metadata[k] = v
 		}
 	}
 
 	// Create a new AppInfo instance with the merged values.
 	// Name and Version are always taken from the runtime AppInfo.
-	return config.NewAppInfo(
-		runtime.Name(),
-		runtime.Version(),
-		finalID,
-		finalEnv,
-		finalMetadata,
-	)
+	return &appInfo{
+		name:     runtime.Name(),
+		version:  runtime.Version(),
+		id:       id,
+		env:      env,
+		metadata: metadata,
+	}
 }
 
-// convertProtoAppToAppInfo converts a protobuf App message to an interfaces.AppInfo.
-func convertProtoAppToAppInfo(protoApp *appv1.App) interfaces.AppInfo {
-	if protoApp == nil {
+// convertToAppInfo converts a protobuf App message to an interfaces.AppInfo.
+func convertToAppInfo(appConfig *appv1.App) interfaces.AppInfo {
+	if appConfig == nil {
 		return nil
 	}
-	return config.NewAppInfo(
-		protoApp.GetName(),
-		protoApp.GetVersion(),
-		protoApp.GetId(),
-		protoApp.GetEnv(),
-		protoApp.GetMetadata(),
-	)
+	metadata := appConfig.Metadata
+	if metadata == nil {
+		metadata = make(map[string]string)
+	}
+
+	return &appInfo{
+		name:     appConfig.Name,
+		version:  appConfig.Version,
+		id:       appConfig.Id,
+		env:      appConfig.Env,
+		metadata: metadata,
+	}
 }

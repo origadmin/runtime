@@ -87,6 +87,17 @@ func WithAppInfoMetadata(key, value string) AppInfoOption {
 	}
 }
 
+func WithAppInfoMetadataMap(metadata map[string]string) AppInfoOption {
+	return func(a *appInfo) {
+		if a.metadata == nil {
+			a.metadata = make(map[string]string)
+		}
+		for k, v := range metadata {
+			a.metadata[k] = v
+		}
+	}
+}
+
 // --- Implementation of interfaces.AppInfo ---
 
 func (a *appInfo) ID() string           { return a.id }
