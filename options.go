@@ -1,6 +1,8 @@
 package runtime
 
 import (
+	"github.com/goexts/generic/configure"
+
 	"github.com/origadmin/runtime/interfaces/options"
 )
 
@@ -14,5 +16,11 @@ type Option func(*App)
 func WithContainerOptions(opts ...options.Option) Option {
 	return func(a *App) {
 		a.containerOpts = append(a.containerOpts, opts...)
+	}
+}
+
+func WithAppInfoOptions(opts ...AppInfoOption) Option {
+	return func(a *App) {
+		configure.Apply(a.appInfo, opts)
 	}
 }

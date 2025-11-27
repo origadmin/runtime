@@ -68,7 +68,7 @@ type Container interface {
 type containerImpl struct {
 	config   interfaces.StructuredConfig
 	logger   runtimelog.Logger
-	appInfo  interfaces.AppInfo // Final AppInfo from bootstrap result
+	appInfo  interfaces.AppInfo
 	initOpts *containerOptions
 
 	// Concurrency-safe store for generic components and their factories.
@@ -118,6 +118,8 @@ func New(config interfaces.StructuredConfig, appInfo interfaces.AppInfo, opts ..
 	c.cacheProvider = cache.NewProvider(c.logger)
 	c.databaseProvider = database.NewProvider(c.logger)
 	c.objectStoreProvider = objectstore.NewProvider(c.logger)
+
+	//c.initOpts = append(c.initOpts, WithContainer(c))
 
 	return c
 }
