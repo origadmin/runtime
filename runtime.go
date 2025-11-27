@@ -55,12 +55,11 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	// 2. Merge AppInfo: Code-defined values for Name and Version take precedence.
 	// Config-defined values for Env, ID, and Metadata supplement or override.
 	// The AppInfo from New() is merged with the AppInfo from the bootstrap config.
-	finalAppInfo := mergeAppInfo(r.appInfo, res.AppConfig())
-	r.appInfo = finalAppInfo // Store the final merged AppInfo
+	r.appInfo = mergeAppInfo(r.appInfo, res.AppConfig())
 
 	// 3. Create the container.
-	ctnOpts := r.containerOpts
-	r.container = container.New(res.StructuredConfig(), r.appInfo, ctnOpts...)
+	ctnOpts := append(r.containerOpts, container.WithAppInfo(r.appInfo))
+	r.container = container.New(res.StructuredConfig(), ctnOpts...)
 
 	return nil
 }

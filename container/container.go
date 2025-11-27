@@ -68,8 +68,7 @@ type Container interface {
 type containerImpl struct {
 	config   interfaces.StructuredConfig
 	logger   runtimelog.Logger
-	appInfo  interfaces.AppInfo
-	initOpts *containerOptions
+	initOpts *containerOptions // initOpts now holds AppInfo
 
 	// Concurrency-safe store for generic components and their factories.
 	componentStore *componentStore
@@ -84,7 +83,7 @@ type containerImpl struct {
 
 // New creates a new, concurrency-safe Container instance.
 // It receives the final AppInfo from the bootstrap process.
-func New(config interfaces.StructuredConfig, appInfo interfaces.AppInfo, opts ...options.Option) Container {
+func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	initOpts := optionutil.NewT[containerOptions](opts...)
 
 	var baseLogger runtimelog.Logger
@@ -96,19 +95,18 @@ func New(config interfaces.StructuredConfig, appInfo interfaces.AppInfo, opts ..
 	baseLogger = runtimelog.NewLogger(loggerConfig)
 
 	enrichedLogger := baseLogger
-	if appInfo != nil { // Use the passed appInfo for logger enrichment
+	if initOpts.appInfo != nil { // Use appInfo from initOpts for logger enrichment
 		enrichedLogger = runtimelog.With(baseLogger,
-			"service.name", appInfo.Name(),
-			"service.version", appInfo.Version(),
-			"service.id", appInfo.ID(),
+			"service.name", initOpts.appInfo.Name(),
+			"service.version", initOpts.appInfo.Version(),
+			"service.id", initOpts.appInfo.ID(),
 		)
 	}
 
 	c := &containerImpl{
 		config:         config,
 		logger:         enrichedLogger,
-		appInfo:        appInfo, // Directly use the passed appInfo
-		initOpts:       initOpts,
+		initOpts:       initOpts, // initOpts now holds AppInfo
 		componentStore: newComponentStore(enrichedLogger),
 	}
 
@@ -119,14 +117,15 @@ func New(config interfaces.StructuredConfig, appInfo interfaces.AppInfo, opts ..
 	c.databaseProvider = database.NewProvider(c.logger)
 	c.objectStoreProvider = objectstore.NewProvider(c.logger)
 
-	//c.initOpts = append(c.initOpts, WithContainer(c))
-
 	return c
 }
 
 // AppInfo returns the application's metadata.
 func (c *containerImpl) AppInfo() interfaces.AppInfo {
-	return c.appInfo
+	if c.initOpts != nil {
+		return c.initOpts.appInfo
+	}
+	return nil // Or a default empty AppInfo
 }
 
 // Logger returns the container's configured logger instance.
