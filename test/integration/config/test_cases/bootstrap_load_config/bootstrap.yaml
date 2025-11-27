@@ -1,3 +1,12 @@
+app:
+  id: "test-app-id"
+  name: "TestApp"
+  version: "1.0.0"
+  env: "test"
+  metadata:
+    key1: "value1"
+    key2: "value2"
+
 sources:
   - type: file
     file:

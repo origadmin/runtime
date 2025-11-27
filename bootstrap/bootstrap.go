@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"fmt"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
 	"github.com/origadmin/runtime/interfaces/constant"
 	"github.com/origadmin/runtime/log"
@@ -30,21 +31,17 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	// 1. Apply bootstrap options.
 	providerOpts := FromOptions(opts...)
 
-	// 2. Load bootstrap configuration
-	bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath, providerOpts.rawOptions...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load bootstrap config: %w", err)
-	}
-	log.Debugf("Load bootstrap config : %+v", &bootstrapCfg)
-	// 3. Load full configuration using the sources from bootstrap config
-	cfg, err := LoadConfig(bootstrapPath, providerOpts)
+	// 2. Load full configuration using the sources from bootstrap config
+	bootstrapCfg, cfg, err := LoadConfig(bootstrapPath, providerOpts) // Now providerOpts contains preloaded sources
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
-
+	log.Debugf("Load bootstrap config : %+v", bootstrapCfg)
 	app := bootstrapCfg.GetApp()
-
-	// 4. Create the final StructuredConfig.
+	if app == nil {
+		app = &appv1.App{}
+	}
+	// 3. Create the final StructuredConfig.
 	paths := make(map[constant.ComponentKey]string, len(defaultComponentPaths))
 	for k, v := range defaultComponentPaths {
 		paths[k] = v
@@ -65,7 +62,7 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		}
 	}
 
-	// 5. Assemble and return the final result.
+	// 4. Assemble and return the final result.
 	res = &resultImpl{
 		config:           cfg,
 		structuredConfig: sc,

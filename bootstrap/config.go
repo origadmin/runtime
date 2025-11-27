@@ -1,4 +1,3 @@
-// Package bootstrap implements the functions, types, and interfaces for the module.
 package bootstrap
 
 import (
@@ -39,11 +38,12 @@ func (f ConfigTransformFunc) Transform(config interfaces.Config, sc interfaces.S
 
 // LoadConfig creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, following a clear, layered approach.
-func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces.Config, error) {
+func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrapv1.Bootstrap, interfaces.Config, error) {
 	logger := log.NewHelper(log.FromOptions(providerOpts.rawOptions))
 	// 1. Apply Options to determine the configuration flow.
 
 	var baseConfig interfaces.Config
+	var bootstrapConfig *bootstrapv1.Bootstrap
 	var err error
 	// Case 1: A fully custom interfaces.Config is provided.
 	if providerOpts.config != nil { // The user has provided a pre-configured config instance.
@@ -56,40 +56,40 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (interfaces
 		sources := []*sourcev1.SourceConfig{SourceWithFile(bootstrapPath)}
 		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...) // Pass rawOptions for consistency
 		if err != nil {
-			return nil, fmt.Errorf("failed to create base config for direct loading: %w", err)
+			return nil, nil, fmt.Errorf("failed to create base config for direct loading: %w", err)
 		}
 	} else {
 		// Case 3: Indirect loading mode. The bootstrapPath points to a file that defines other sources.
-		sources := loadSourcesFromBootstrapFile(bootstrapPath, providerOpts, logger)
+		bootstrapConfig = loadBootstrapFromFile(bootstrapPath, providerOpts, logger)
 
 		// In indirect mode, if no sources are found in the bootstrap file, it's an error.
-		if len(sources) == 0 {
+		if len(bootstrapConfig.GetSources()) == 0 {
 			logger.Warnf("No configuration sources found in bootstrap file: %s. Proceeding with empty config.", bootstrapPath)
-			return nil, fmt.Errorf("no configuration sources found in bootstrap file: %s", bootstrapPath)
+			return nil, nil, fmt.Errorf("no configuration sources found in bootstrap file: %s", bootstrapPath)
 		}
 
-		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...)
+		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: bootstrapConfig.GetSources()}, providerOpts.rawOptions...)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create base config from bootstrap sources: %w", err)
+			return nil, nil, fmt.Errorf("failed to create base config from bootstrap sources: %w", err)
 		}
 	}
 
 	// Load the configuration. This step is common to all successful paths.
 	logger.Info("All configuration sources prepared, starting final load...")
 	if err := baseConfig.Load(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return baseConfig, nil
+	return bootstrapConfig, baseConfig, nil
 }
 
 func isFileSource(source *sourcev1.SourceConfig) bool {
 	return source != nil && source.Type == "file" && source.File != nil
 }
 
-// loadSourcesFromBootstrapFile attempts to load a bootstrap configuration and resolve the paths of its sources.
+// loadBootstrapFromFile attempts to load a bootstrap configuration and resolve the paths of its sources.
 // It returns a slice of source configurations or nil if loading fails or no sources are found.
-func loadSourcesFromBootstrapFile(bootstrapPath string, providerOpts *ProviderOptions, logger *log.Helper) []*sourcev1.SourceConfig {
+func loadBootstrapFromFile(bootstrapPath string, providerOpts *ProviderOptions, logger *log.Helper) *bootstrapv1.Bootstrap {
 	bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath, providerOpts.rawOptions...)
 	if err != nil || len(bootstrapCfg.GetSources()) == 0 {
 		if err != nil {
@@ -119,7 +119,7 @@ func loadSourcesFromBootstrapFile(bootstrapPath string, providerOpts *ProviderOp
 		bootstrapCfg.Sources[i] = source
 		logger.Infof("Load bootstrap file: %s", resolvedPath)
 	}
-	return bootstrapCfg.Sources
+	return bootstrapCfg
 }
 
 func bootstrapSources(path string, prefixes ...string) kratosconfig.Option {
