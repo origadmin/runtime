@@ -13,7 +13,7 @@ type Result interface {
 	// StructuredConfig returns the structured configuration decoder,
 	// which has merged defaults and applied transformers.
 	StructuredConfig() interfaces.StructuredConfig
-	// App returns the raw protobuf App message decoded from the bootstrap configuration.
+	// AppConfig returns the raw protobuf App message decoded from the bootstrap configuration.
 	// This message contains application-specific information as defined in the configuration file.
-	App() *appv1.App
+	AppConfig() *appv1.App
 }

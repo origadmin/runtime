@@ -12,7 +12,7 @@ type resultImpl struct {
 	appConfig        *appv1.App
 }
 
-func (b *resultImpl) App() *appv1.App {
+func (b *resultImpl) AppConfig() *appv1.App {
 	return b.appConfig
 }
 
