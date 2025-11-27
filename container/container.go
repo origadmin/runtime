@@ -2,6 +2,7 @@ package container
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/origadmin/runtime/container/internal/cache"
 	"github.com/origadmin/runtime/container/internal/database"
@@ -17,59 +18,73 @@ import (
 )
 
 // Container defines the interface for accessing various runtime components.
+// It supports lazy initialization of components via factories and dependency injection.
 type Container interface {
+	// Registry returns the service registry provider.
 	Registry(opts ...options.Option) (RegistryProvider, error)
+	// Middleware returns the middleware provider.
 	Middleware(opts ...options.Option) (MiddlewareProvider, error)
+	// Cache returns the cache provider.
 	Cache(opts ...options.Option) (CacheProvider, error)
+	// Database returns the database provider.
 	Database(opts ...options.Option) (DatabaseProvider, error)
+	// ObjectStore returns the object storage provider.
 	ObjectStore(opts ...options.Option) (ObjectStoreProvider, error)
+
+	// Component retrieves a generic component by its name, using a lazy-initialization strategy.
+	// If the component is not yet created, the container will use its registered factory to create it.
+	// The provided options are only used during the creation of the component.
+	// This method is concurrency-safe.
 	Component(name string, opts ...options.Option) (interfaces.Component, error)
+
+	// RegisterComponent registers a pre-built component instance.
 	RegisterComponent(name string, comp interfaces.Component)
+
+	// RegisterFactory registers a factory for creating a component on demand.
+	RegisterFactory(name string, factory ComponentFactory)
+
+	// HasComponent checks if a component instance or factory has been registered.
+	HasComponent(name string) bool
+
+	// RegisteredComponents returns a slice of names for all registered components and factories.
+	RegisteredComponents() []string
+
+	// Logger returns the container's configured logger.
 	Logger() runtimelog.Logger
+	// AppInfo returns the application's metadata.
 	AppInfo() interfaces.AppInfo
 
+	// DefaultCache returns the default cache instance.
 	DefaultCache() (storageiface.Cache, error)
+	// DefaultDatabase returns the default database instance.
 	DefaultDatabase() (storageiface.Database, error)
+	// DefaultObjectStore returns the default object storage instance.
 	DefaultObjectStore() (storageiface.ObjectStore, error)
+	// DefaultRegistrar returns the default service registrar instance.
 	DefaultRegistrar() (runtimeregistry.KRegistrar, error)
 }
 
 // containerImpl implements the Container interface.
-// WARNING: This implementation is NOT CONCURRENCY-SAFE for operations that modify
-// or lazily initialize internal state after the New function returns.
-// Concurrent access to methods like Component, RegisterComponent, and the provider
-// accessors (Registry, Cache, etc.) without external synchronization will lead to
-// race conditions, data corruption, or unpredictable behavior.
+// It simplifies the provider access by delegating initialization safety to the providers themselves.
 type containerImpl struct {
 	config   interfaces.StructuredConfig
 	logger   runtimelog.Logger
 	appInfo  interfaces.AppInfo
-	initOpts *containerOptions // Options used during initialization.
+	initOpts *containerOptions
 
-	// Eagerly initialized concrete provider instances
+	// Concurrency-safe store for generic components and their factories.
+	componentStore *componentStore
+
+	// Built-in provider instances.
 	registryProvider    *registry.Provider
 	middlewareProvider  *middleware.Provider
 	cacheProvider       *cache.Provider
 	databaseProvider    *database.Provider
 	objectStoreProvider *objectstore.Provider
-
-	// Flags to track if structural configuration has been applied to providers
-	registryConfigured    bool
-	middlewareConfigured  bool
-	cacheConfigured       bool
-	databaseConfigured    bool
-	objectStoreConfigured bool
-
-	// Components map (still not concurrency-safe)
-	components map[string]interfaces.Component
 }
 
-// New creates a new Container instance and eagerly initializes all known provider instances.
-// Configuration and options are applied lazily upon first access to each provider.
-// This function is expected to be called once during application startup.
-// It returns an error if any provider instance fails to be created.
-// The returned Container instance is NOT concurrency-SAFE for subsequent method calls.
-func New(config interfaces.StructuredConfig, opts ...options.Option) (Container, error) {
+// New creates a new, concurrency-safe Container instance.
+func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	initOpts := optionutil.NewT[containerOptions](opts...)
 
 	var baseLogger runtimelog.Logger
@@ -90,90 +105,148 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) (Container,
 	}
 
 	c := &containerImpl{
-		config:     config,
-		logger:     enrichedLogger,
-		appInfo:    initOpts.appInfo,
-		initOpts:   initOpts,
-		components: make(map[string]interfaces.Component),
+		config:         config,
+		logger:         enrichedLogger,
+		appInfo:        initOpts.appInfo,
+		initOpts:       initOpts,
+		componentStore: newComponentStore(enrichedLogger),
 	}
 
-	// --- Eagerly create concrete provider instances (without configuration or options) ---
-
-	// Registry Provider
+	// Eagerly create provider shells, but defer configuration.
 	c.registryProvider = registry.NewProvider(c.logger)
-
-	// Middleware Provider
 	c.middlewareProvider = middleware.NewProvider(c.logger)
-
-	// Cache Provider
 	c.cacheProvider = cache.NewProvider(c.logger)
-
-	// Database Provider
 	c.databaseProvider = database.NewProvider(c.logger)
-
-	// ObjectStore Provider
 	c.objectStoreProvider = objectstore.NewProvider(c.logger)
 
-	return c, nil
+	return c
 }
 
+// AppInfo returns the application's metadata.
 func (c *containerImpl) AppInfo() interfaces.AppInfo {
 	return c.appInfo
 }
 
+// Logger returns the container's configured logger instance.
 func (c *containerImpl) Logger() runtimelog.Logger {
 	return c.logger
 }
 
-// Component retrieves a generic component by name.
-// WARNING: This method is NOT CONCURRENCY-SAFE. Concurrent calls may lead to race conditions.
+// Component retrieves a generic component by name, using a lazy-initialization strategy.
 func (c *containerImpl) Component(name string, opts ...options.Option) (interfaces.Component, error) {
-	comp, ok := c.components[name]
-	if ok {
-		// If the component implements SetOptions, apply them
-		if so, ok := comp.(interface{ SetOptions(...options.Option) }); ok {
-			so.SetOptions(opts...)
-		}
+	// 1. Check for an existing instance. If found, return it immediately.
+	// Options are ignored for already-created singleton instances.
+	if comp, ok := c.componentStore.GetInstance(name); ok {
 		return comp, nil
 	}
-	// This is a placeholder for a generic component factory mechanism.
-	// In a real scenario, you would look up a factory for 'name' and use it.
-	// For now, we'll return an error, indicating that generic components need factories.
-	return nil, fmt.Errorf("component '%s' not found and no factory is registered for it", name)
+
+	// 2. Check for a factory.
+	factory, ok := c.componentStore.GetFactory(name)
+	if !ok {
+		return nil, fmt.Errorf("component '%s' not found", name)
+	}
+
+	// 3. Create the component using the factory. Options are only used here.
+	comp, err := factory.NewComponent(c.config, c, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create component '%s' from factory: %w", name, err)
+	}
+
+	// 4. Store the new instance for future calls (singleton).
+	c.componentStore.RegisterInstance(name, comp)
+
+	return comp, nil
 }
 
-// RegisterComponent registers an already created component instance.
-// WARNING: This method is NOT CONCURRENCY-SAFE. Concurrent calls may lead to race conditions.
+// RegisterComponent registers a pre-built component instance.
 func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component) {
-	if _, loaded := c.components[name]; loaded {
-		runtimelog.NewHelper(c.logger).Warnf("component with name '%s' is being overwritten", name)
-	}
-	c.components[name] = comp
+	c.componentStore.RegisterInstance(name, comp)
 }
 
-// Registry retrieves the RegistryProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
+// RegisterFactory registers a factory for creating a component on demand.
+func (c *containerImpl) RegisterFactory(name string, factory ComponentFactory) {
+	c.componentStore.RegisterFactory(name, factory)
+}
+
+// HasComponent checks if a component instance or factory has been registered.
+func (c *containerImpl) HasComponent(name string) bool {
+	return c.componentStore.Has(name)
+}
+
+// RegisteredComponents returns a slice of names for all registered components and factories.
+func (c *containerImpl) RegisteredComponents() []string {
+	return c.componentStore.List()
+}
+
+// Registry returns the service registry provider.
 func (c *containerImpl) Registry(opts ...options.Option) (RegistryProvider, error) {
-	if !c.registryConfigured {
-		discoveries, err := c.config.DecodeDiscoveries()
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode discoveries config for RegistryProvider: %w", err)
-		}
-		c.registryProvider.SetConfig(discoveries)
-		c.registryConfigured = true
+	discoveries, err := c.config.DecodeDiscoveries()
+	if err != nil {
+		runtimelog.NewHelper(c.logger).Errorf("failed to decode discoveries config for RegistryProvider: %v", err)
 	}
-	c.registryProvider.SetOptions(opts...)
+	c.registryProvider.Initialize(discoveries, opts...)
 	return c.registryProvider, nil
 }
 
-// DefaultRegistrar retrieves the default registrar from the RegistryProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
+// Middleware returns the middleware provider.
+func (c *containerImpl) Middleware(opts ...options.Option) (MiddlewareProvider, error) {
+	middlewares, err := c.config.DecodeMiddlewares()
+	if err != nil {
+		runtimelog.NewHelper(c.logger).Errorf("failed to decode middlewares config for MiddlewareProvider: %v", err)
+	}
+	// TODO: Implement Initialize method in middleware.Provider and use it here.
+	// c.middlewareProvider.Initialize(middlewares, opts...)
+	c.middlewareProvider.SetConfig(middlewares)
+	c.middlewareProvider.SetOptions(opts...)
+	return c.middlewareProvider, nil
+}
+
+// Cache returns the cache provider.
+func (c *containerImpl) Cache(opts ...options.Option) (CacheProvider, error) {
+	caches, err := c.config.DecodeCaches()
+	if err != nil {
+		runtimelog.NewHelper(c.logger).Errorf("failed to decode caches config for CacheProvider: %v", err)
+	}
+	// TODO: Implement Initialize method in cache.Provider and use it here.
+	// c.cacheProvider.Initialize(caches, opts...)
+	c.cacheProvider.SetConfig(caches)
+	c.cacheProvider.SetOptions(opts...)
+	return c.cacheProvider, nil
+}
+
+// Database returns the database provider.
+func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, error) {
+	databases, err := c.config.DecodeDatabases()
+	if err != nil {
+		runtimelog.NewHelper(c.logger).Errorf("failed to decode databases config for DatabaseProvider: %v", err)
+	}
+	// TODO: Implement Initialize method in database.Provider and use it here.
+	// c.databaseProvider.Initialize(databases, opts...)
+	c.databaseProvider.SetConfig(databases)
+	c.databaseProvider.SetOptions(opts...)
+	return c.databaseProvider, nil
+}
+
+// ObjectStore returns the object storage provider.
+func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider, error) {
+	filestores, err := c.config.DecodeObjectStores()
+	if err != nil {
+		runtimelog.NewHelper(c.logger).Errorf("failed to decode object stores config for ObjectStoreProvider: %v", err)
+	}
+	// TODO: Implement Initialize method in objectstore.Provider and use it here.
+	// c.objectStoreProvider.Initialize(filestores, opts...)
+	c.objectStoreProvider.SetConfig(filestores)
+	c.objectStoreProvider.SetOptions(opts...)
+	return c.objectStoreProvider, nil
+}
+
+// DefaultRegistrar returns the default service registrar instance.
 func (c *containerImpl) DefaultRegistrar() (runtimeregistry.KRegistrar, error) {
-	// This call will trigger configuration and options setting for registryProvider
 	registryProvider, err := c.Registry()
 	if err != nil {
 		return nil, err
 	}
+	// Corrected call to match the interface
 	registrar, err := registryProvider.DefaultRegistrar(c.initOpts.defaultRegistrarName)
 	if err != nil {
 		return nil, fmt.Errorf("default registrar '%s' not found or failed to retrieve: %w", c.initOpts.defaultRegistrarName, err)
@@ -181,40 +254,8 @@ func (c *containerImpl) DefaultRegistrar() (runtimeregistry.KRegistrar, error) {
 	return registrar, nil
 }
 
-// Middleware retrieves the MiddlewareProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
-func (c *containerImpl) Middleware(opts ...options.Option) (MiddlewareProvider, error) {
-	if !c.middlewareConfigured {
-		middlewares, err := c.config.DecodeMiddlewares()
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode middlewares config for MiddlewareProvider: %w", err)
-		}
-		c.middlewareProvider.SetConfig(middlewares)
-		c.middlewareConfigured = true
-	}
-	c.middlewareProvider.SetOptions(opts...)
-	return c.middlewareProvider, nil
-}
-
-// Cache retrieves the CacheProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
-func (c *containerImpl) Cache(opts ...options.Option) (CacheProvider, error) {
-	if !c.cacheConfigured {
-		caches, err := c.config.DecodeCaches()
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode caches config for CacheProvider: %w", err)
-		}
-		c.cacheProvider.SetConfig(caches)
-		c.cacheConfigured = true
-	}
-	c.cacheProvider.SetOptions(opts...)
-	return c.cacheProvider, nil
-}
-
-// DefaultCache retrieves the default cache from the CacheProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
+// DefaultCache returns the default cache instance.
 func (c *containerImpl) DefaultCache() (storageiface.Cache, error) {
-	// This call will trigger configuration and options setting for cacheProvider
 	cacheProvider, err := c.Cache()
 	if err != nil {
 		return nil, err
@@ -226,25 +267,8 @@ func (c *containerImpl) DefaultCache() (storageiface.Cache, error) {
 	return cacheInstance, nil
 }
 
-// Database retrieves the DatabaseProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
-func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, error) {
-	if !c.databaseConfigured {
-		databases, err := c.config.DecodeDatabases()
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode databases config for DatabaseProvider: %w", err)
-		}
-		c.databaseProvider.SetConfig(databases)
-		c.databaseConfigured = true
-	}
-	c.databaseProvider.SetOptions(opts...)
-	return c.databaseProvider, nil
-}
-
-// DefaultDatabase retrieves the default database from the DatabaseProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
+// DefaultDatabase returns the default database instance.
 func (c *containerImpl) DefaultDatabase() (storageiface.Database, error) {
-	// This call will trigger configuration and options setting for databaseProvider
 	databaseProvider, err := c.Database()
 	if err != nil {
 		return nil, err
@@ -256,25 +280,8 @@ func (c *containerImpl) DefaultDatabase() (storageiface.Database, error) {
 	return dbInstance, nil
 }
 
-// ObjectStore retrieves the ObjectStoreProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
-func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider, error) {
-	if !c.objectStoreConfigured {
-		filestores, err := c.config.DecodeObjectStores()
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode object stores config for ObjectStoreProvider: %w", err)
-		}
-		c.objectStoreProvider.SetConfig(filestores)
-		c.objectStoreConfigured = true
-	}
-	c.objectStoreProvider.SetOptions(opts...)
-	return c.objectStoreProvider, nil
-}
-
-// DefaultObjectStore retrieves the default object store from the ObjectStoreProvider.
-// WARNING: This method is NOT CONCURRENCY-SAFE.
+// DefaultObjectStore returns the default object storage instance.
 func (c *containerImpl) DefaultObjectStore() (storageiface.ObjectStore, error) {
-	// This call will trigger configuration and options setting for objectStoreProvider
 	objectStoreProvider, err := c.ObjectStore()
 	if err != nil {
 		return nil, err

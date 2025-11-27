@@ -6,119 +6,94 @@ import (
 	"sync"
 
 	"github.com/goexts/generic/cmp"
-
-	"github.com/origadmin/runtime/container/internal/util"
-	"github.com/origadmin/toolkits/configutil"
+	"github.com/goexts/generic/maps"
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
-	"github.com/origadmin/runtime/interfaces" // Import interfaces package
+	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	runtimelog "github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/registry"
 )
 
-// Provider implements interfaces.RegistryProvider. It manages the lifecycle of discovery
-// and registrar instances, caching them after first creation.
-// It is safe for concurrent use.
+// Provider manages the lifecycle of discovery and registrar instances.
+// It uses lazy-loading with sync.Once to ensure instances are created only when needed and in a concurrency-safe manner.
 type Provider struct {
-	mu                     sync.Mutex
-	config                 *discoveryv1.Discoveries
-	logger                 *runtimelog.Helper
-	opts                   []options.Option // This field stores options set via SetOptions
-	defaultRegistrar       string
-	discoveries            map[string]registry.KDiscovery
-	registrars             map[string]registry.KRegistrar
-	discoveriesInitialized bool
-	registrarsInitialized  bool
+	mu               sync.RWMutex
+	logger           *runtimelog.Helper
+	discoveries      map[string]registry.KDiscovery
+	registrars       map[string]registry.KRegistrar
+	config           *discoveryv1.Discoveries
+	opts             []options.Option
+	discoveriesOnce  sync.Once
+	registrarsOnce   sync.Once
+	discoveriesErr   error
+	registrarsErr    error
+	defaultRegistrar string
 }
 
-// NewProvider creates a new Provider instance. Options are set via SetOptions.
+// NewProvider creates a new, uninitialized Provider instance.
 func NewProvider(logger runtimelog.Logger) *Provider {
-	p := &Provider{
+	return &Provider{
 		logger:      runtimelog.NewHelper(logger),
 		discoveries: make(map[string]registry.KDiscovery),
 		registrars:  make(map[string]registry.KRegistrar),
 	}
-	return p
 }
 
-// SetOptions sets the functional options for the provider.
-// This will clear any previously cached instances and cause them to be recreated on the next access,
-// using the new options and the structural configuration.
-func (p *Provider) SetOptions(opts ...options.Option) {
+// Initialize configures the provider with the necessary configuration and options.
+// This method is lightweight and only stores the provided values. It does not perform any instance creation.
+func (p *Provider) Initialize(cfg *discoveryv1.Discoveries, opts ...options.Option) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
-	p.opts = opts
-	p.discoveriesInitialized = false
-	p.registrarsInitialized = false
-	p.discoveries = make(map[string]registry.KDiscovery)
-	p.registrars = make(map[string]registry.KRegistrar)
-}
-
-// SetConfig updates the provider's structural configuration.
-// This will clear any previously cached instances and cause them to be recreated on the next access,
-// using the new structural configuration and the functional options provided at NewProvider time.
-func (p *Provider) SetConfig(cfg *discoveryv1.Discoveries) *Provider {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
 	p.config = cfg
-	p.discoveriesInitialized = false
-	p.registrarsInitialized = false
-	p.discoveries = make(map[string]registry.KDiscovery)
-	p.registrars = make(map[string]registry.KRegistrar)
-
-	// Use the new configutil.DetermineDefaultName function to set the default registrar name.
-	p.defaultRegistrar = configutil.DetermineDefaultName(cfg)
-
-	return p
+	p.defaultRegistrar = cmp.Or(cfg.GetActive(), cfg.GetDefault())
+	p.opts = opts
 }
 
 // RegisterDiscovery allows for manual registration of a discovery instance.
-// This instance will be available alongside any instances created from configuration.
 func (p *Provider) RegisterDiscovery(name string, discovery registry.KDiscovery) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if _, ok := p.discoveries[name]; ok {
+		p.logger.Warnf("discovery '%s' is being overwritten by manual registration", name)
+	}
 	p.discoveries[name] = discovery
 }
 
 // Discoveries returns a map of all available discovery clients.
-// On first call, it creates instances from the configuration and caches them.
-// Subsequent calls return the cached instances.
+// On the first call, it lazily creates and caches instances based on the configuration.
+// Any errors during creation are captured and returned on every subsequent call.
 func (p *Provider) Discoveries() (map[string]registry.KDiscovery, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.discoveriesOnce.Do(func() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
 
-	if p.discoveriesInitialized {
-		return p.discoveries, nil
-	}
-
-	var allErrors error
-	if p.config != nil {
+		if p.config == nil {
+			return
+		}
+		var allErrors error
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.GetName(), cfg.GetType())
 			if name == "" {
-				p.logger.Warnf("discovery configuration is missing a name, using type as fallback: %s", cfg.GetType())
 				continue
 			}
 			if _, exists := p.discoveries[name]; exists {
-				p.logger.Warnf("discovery '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
-			// Pass stored options to NewDiscovery
 			d, err := registry.NewDiscovery(cfg, p.opts...)
 			if err != nil {
 				p.logger.Errorf("failed to create discovery '%s': %v", name, err)
-				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create discovery '%s': %w", name, err))
+				allErrors = errors.Join(allErrors, err)
 				continue
 			}
 			p.discoveries[name] = d
 		}
-	}
+		p.discoveriesErr = allErrors
+	})
 
-	p.discoveriesInitialized = true
-	return p.discoveries, allErrors
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return maps.Clone(p.discoveries), p.discoveriesErr
 }
 
 // Discovery returns a single discovery client by name.
@@ -138,40 +113,45 @@ func (p *Provider) Discovery(name string) (registry.KDiscovery, error) {
 func (p *Provider) RegisterRegistrar(name string, registrar registry.KRegistrar) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if _, ok := p.registrars[name]; ok {
+		p.logger.Warnf("registrar '%s' is being overwritten by manual registration", name)
+	}
 	p.registrars[name] = registrar
 }
 
 // Registrars returns a map of all available service registrars.
-// It follows the same caching and creation logic as Discoveries.
+// It follows the same lazy-loading and caching logic as Discoveries.
 func (p *Provider) Registrars() (map[string]registry.KRegistrar, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.registrarsOnce.Do(func() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
 
-	if p.registrarsInitialized {
-		return p.registrars, nil
-	}
-
-	var allErrors error
-	if p.config != nil {
+		if p.config == nil {
+			return
+		}
+		var allErrors error
 		for _, cfg := range p.config.GetConfigs() {
-			name := cmp.Or(cfg.Name, cfg.Type)
-			if _, exists := p.registrars[name]; exists {
-				p.logger.Warnf("registrar '%s' is already registered, skipping config-based creation", name)
+			name := cmp.Or(cfg.GetName(), cfg.GetType())
+			if name == "" {
 				continue
 			}
-			// Pass stored options to NewRegistrar
+			if _, exists := p.registrars[name]; exists {
+				continue
+			}
 			reg, err := registry.NewRegistrar(cfg, p.opts...)
 			if err != nil {
 				p.logger.Errorf("failed to create registrar '%s': %v", name, err)
-				allErrors = errors.Join(allErrors, fmt.Errorf("failed to create registrar '%s': %w", name, err))
+				allErrors = errors.Join(allErrors, err)
 				continue
 			}
 			p.registrars[name] = reg
 		}
-	}
+		p.registrarsErr = allErrors
+	})
 
-	p.registrarsInitialized = true
-	return p.registrars, allErrors
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return maps.Clone(p.registrars), p.registrarsErr
 }
 
 // Registrar returns a single service registrar by name.
@@ -187,10 +167,8 @@ func (p *Provider) Registrar(name string) (registry.KRegistrar, error) {
 	return reg, nil
 }
 
-// DefaultRegistrar returns the default service registrar based on a clear priority order.
-// The globalDefaultName is provided by the container, and its purpose is to find a default container.
+// DefaultRegistrar returns the default service registrar.
 func (p *Provider) DefaultRegistrar(globalDefaultName string) (registry.KRegistrar, error) {
-	// 1. Retrieve all registrars.
 	registrars, err := p.Registrars()
 	if err != nil {
 		return nil, err
@@ -199,34 +177,29 @@ func (p *Provider) DefaultRegistrar(globalDefaultName string) (registry.KRegistr
 		return nil, errors.New("no registrars available")
 	}
 
-	p.mu.Lock()
-	internalDefaultName := p.defaultRegistrar // Config-defined default, highest priority
-	p.mu.Unlock()
+	p.mu.RLock()
+	defer p.mu.RUnlock()
 
 	var prioritizedNames []string
-
-	// Priority 1: Internal config-defined default
-	if internalDefaultName != "" {
-		prioritizedNames = append(prioritizedNames, internalDefaultName)
+	if p.defaultRegistrar != "" {
+		prioritizedNames = append(prioritizedNames, p.defaultRegistrar)
 	}
-
-	// Priority 2: External globalDefaultName (if provided and not empty)
 	if globalDefaultName != "" {
 		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
-
-	// Priority 3: GlobalDefaultKey (as a final fallback)
 	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
-
-	// Call the utility function to determine the default component
-	name, value, err := util.DefaultComponent(registrars, prioritizedNames...)
-	if err == nil {
-		// Log the resolved default registrar name.
-		p.logger.Debugf("resolved default registrar to '%s'", name)
-		return value, nil
+	defaultName, ok := maps.FirstKey(registrars, prioritizedNames...)
+	if ok {
+		p.logger.Debugf("resolved default registrar to '%s'", defaultName)
+		return registrars[defaultName], nil
 	}
 
-	// If util.DefaultComponent returned an error, handle it here.
-	// The error from util.DefaultComponent already describes why a default wasn't found.
-	return nil, fmt.Errorf("no default registrar found: %w", err)
+	if len(registrars) == 1 {
+		for name, comp := range registrars {
+			p.logger.Debugf("no specific default found, falling back to the first available registrar: '%s'", name)
+			return comp, nil
+		}
+	}
+
+	return nil, errors.New("no default registrar could be determined")
 }

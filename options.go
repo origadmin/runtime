@@ -1,22 +1,24 @@
 package runtime
 
 import (
-	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 )
 
-// appOptions holds the configurable settings for a App.
-type appOptions struct {
-	appInfo *appInfo // Use the concrete struct type for internal operations.
+// Option is a functional option for configuring the App.
+// It allows for applying configurations to the App instance at creation time.
+type Option func(*App)
 
-	// Other options
-	bootstrapOpts   []options.Option
-	containerOpts   []options.Option
-	kratosAppOpts   []options.Option
-	structuredCfg   interfaces.StructuredConfig
-	config          interfaces.Config
-	bootstrapResult bootstrap.Result
+// WithContainerOptions adds options that will be applied to the dependency injection container.
+// These options are collected during the New() phase and applied during the Load() phase
+// when the container is created.
+func WithContainerOptions(opts ...options.Option) Option {
+	return func(a *App) {
+		a.containerOpts = append(a.containerOpts, opts...)
+	}
 }
 
-type Option = options.Option
+func WithAppInfo(name, version string, opts ...AppInfoOption) Option {
+	return func(a *App) {
+		a.appInfo = NewAppInfo(name, version, opts...)
+	}
+}

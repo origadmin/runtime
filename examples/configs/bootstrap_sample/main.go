@@ -33,7 +33,7 @@ func main() {
 
 	// 2. Create and start App instance
 	// NewFromBootstrap encapsulates all bootstrap processes
-	rt, err := runtime.NewFromBootstrap(
+	rt, err := runtime.NewBuilder(
 		"./configs/bootstrap.yaml",
 		runtime.WithAppInfo(runtime.NewAppInfo(Name, Version, runtime.WithAppInfoID(ID))),
 	)

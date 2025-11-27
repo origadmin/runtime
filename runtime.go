@@ -24,30 +24,57 @@ type App struct {
 	mu            sync.RWMutex
 	globalOpts    []options.Option
 	componentOpts map[string][]options.Option
+	containerOpts []options.Option
 }
 
-// New is the core constructor for a App instance.
-// It returns a new App instance, but does not perform any pre-initialization of components.
-func New(result bootstrap.Result, ctnOpts ...options.Option) (*App, error) {
-	if result == nil {
-		panic("bootstrap.Result cannot be nil when creating a new App")
-	}
-
-	ctn := container.New(result.StructuredConfig(), ctnOpts...)
-
-	appInfo := ctn.AppInfo()
-	if appInfo == nil {
-		panic("critical error: AppInfo is nil and was not provided during configuration")
-	}
+// New creates a new, partially initialized App instance with essential metadata and container configurations.
+// It accepts functional options to allow for pre-configuring the container.
+// The App is not fully functional until Load is called.
+func New(name, version string, opts ...Option) (*App, error) {
+	appInfo := newAppInfo(name, version)
 
 	app := &App{
-		result:        result,
-		container:     ctn,
 		appInfo:       appInfo,
 		componentOpts: make(map[string][]options.Option),
+		containerOpts: make([]options.Option, 0),
+	}
+
+	// Apply functional options, which will populate containerOpts
+	for _, opt := range opts {
+		opt(app)
 	}
 
 	return app, nil
+}
+
+// Load reads the configuration from the given path, completes the App initialization,
+// and prepares it for running.
+func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
+	// 1. Bootstrap from configuration file
+	res, err := bootstrap.New(path, bootOpts...)
+	if err != nil {
+		return fmt.Errorf("failed to bootstrap configuration from '%s': %w", path, err)
+	}
+	r.result = res
+
+	// 2. Create the container
+	// Merge container options from New() with the essential AppInfo option.
+	ctnOpts := []options.Option{
+		container.WithAppInfo(r.appInfo),
+	}
+	ctnOpts = append(ctnOpts, r.containerOpts...)
+
+	r.container = container.New(res.StructuredConfig(), ctnOpts...)
+
+	// 3. Finalize AppInfo from the container
+	// This might enrich the AppInfo with details from the config file.
+	finalAppInfo := r.container.AppInfo()
+	if finalAppInfo == nil {
+		return fmt.Errorf("critical error: AppInfo is nil after container initialization")
+	}
+	r.appInfo = finalAppInfo // Update app with the potentially enriched AppInfo
+
+	return nil
 }
 
 // WarmUp attempts to initialize all configured providers and generic components.
