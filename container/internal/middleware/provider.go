@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"errors"
 	"fmt"
 	"maps"
 	"sync"
@@ -18,16 +17,17 @@ import (
 // Provider manages the lifecycle of client and server middleware instances.
 // It uses lazy-loading with sync.Once to ensure instances are created only when needed and in a concurrency-safe manner.
 type Provider struct {
-	mu                 sync.RWMutex
-	logger             *runtimelog.Helper
-	clientMiddlewares  map[string]kratosMiddleware.Middleware
-	serverMiddlewares  map[string]kratosMiddleware.Middleware
-	config             *middlewarev1.Middlewares
-	opts               []options.Option
-	clientMWsOnce      sync.Once
-	serverMWsOnce      sync.Once
-	clientMWsErr       error
-	serverMWsErr       error
+	mu                sync.RWMutex
+	logger            *runtimelog.Helper
+	orderedNames      []string
+	clientMiddlewares map[string]kratosMiddleware.Middleware
+	serverMiddlewares map[string]kratosMiddleware.Middleware
+	config            *middlewarev1.Middlewares
+	opts              []options.Option
+	clientMWsOnce     sync.Once
+	serverMWsOnce     sync.Once
+	clientMWsErr      error
+	serverMWsErr      error
 }
 
 // NewProvider creates a new, uninitialized Provider instance.
@@ -44,6 +44,14 @@ func (p *Provider) Initialize(cfg *middlewarev1.Middlewares, opts ...options.Opt
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.config = cfg
+	p.orderedNames = make([]string, 0, len(cfg.GetConfigs()))
+	for _, cfg := range cfg.GetConfigs() {
+		name := cmp.Or(cfg.Name, cfg.Type)
+		if name == "" {
+			continue
+		}
+		p.orderedNames = append(p.orderedNames, name)
+	}
 	p.opts = opts
 }
 
@@ -68,8 +76,6 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			return
 		}
 		var allErrors error
-		// Use the new WithClientCarrier option to pass only client middlewares
-		opts := append(p.opts, runtimeMiddleware.WithClientCarrier(p.clientMiddlewares))
 
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
@@ -79,6 +85,8 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			if _, exists := p.clientMiddlewares[name]; exists {
 				continue
 			}
+			// Use the new WithClientCarrier option to pass only client middlewares
+			opts := append(p.opts, runtimeMiddleware.WithClientCarrier(p.clientMiddlewares))
 			// Attempt to create a client middleware. If the factory returns ok=false,
 			// it means this config is not for a client middleware, so we just skip it.
 			if cm, ok := runtimeMiddleware.NewClient(cfg, opts...); ok {
@@ -118,6 +126,7 @@ func (p *Provider) RegisterServerMiddleware(name string, mw kratosMiddleware.Mid
 		p.logger.Warnf("server middleware '%s' is being overwritten by manual registration", name)
 	}
 	p.serverMiddlewares[name] = mw
+	p.orderedNames = append(p.orderedNames, name)
 }
 
 // ServerMiddlewares returns a map of all available server middleware instances.
@@ -131,8 +140,6 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			return
 		}
 		var allErrors error
-		// Use the new WithServerCarrier option to pass only server middlewares
-		opts := append(p.opts, runtimeMiddleware.WithServerCarrier(p.serverMiddlewares))
 
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
@@ -142,6 +149,8 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			if _, exists := p.serverMiddlewares[name]; exists {
 				continue
 			}
+			// Use the new WithServerCarrier option to pass only server middlewares
+			opts := append(p.opts, runtimeMiddleware.WithServerCarrier(p.serverMiddlewares))
 			// Attempt to create a server middleware. If the factory returns ok=false,
 			// it means this config is not for a server middleware, so we just skip it.
 			if sm, ok := runtimeMiddleware.NewServer(cfg, opts...); ok {
@@ -158,6 +167,13 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 	return maps.Clone(p.serverMiddlewares), p.serverMWsErr
+}
+
+// Names returns the ordered list of middleware names.
+func (p *Provider) Names() []string {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.orderedNames
 }
 
 // ServerMiddleware returns a single server middleware instance by name.

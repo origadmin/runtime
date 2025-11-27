@@ -20,6 +20,7 @@ type RegistryProvider interface {
 
 // ServerMiddlewareProvider provides access to server-side middleware components.
 type ServerMiddlewareProvider interface {
+	Names() []string
 	ServerMiddlewares() (map[string]middleware.KMiddleware, error)
 	ServerMiddleware(name string) (middleware.KMiddleware, error)
 	RegisterServerMiddleware(name string, mw middleware.KMiddleware)
@@ -27,6 +28,7 @@ type ServerMiddlewareProvider interface {
 
 // ClientMiddlewareProvider provides access to client-side middleware components.
 type ClientMiddlewareProvider interface {
+	Names() []string
 	ClientMiddlewares() (map[string]middleware.KMiddleware, error)
 	ClientMiddleware(name string) (middleware.KMiddleware, error)
 	RegisterClientMiddleware(name string, mw middleware.KMiddleware)
@@ -34,6 +36,7 @@ type ClientMiddlewareProvider interface {
 
 // MiddlewareProvider provides access to both server and client middleware components.
 type MiddlewareProvider interface {
+	Names() []string
 	ServerMiddlewareProvider
 	ClientMiddlewareProvider
 }
