@@ -11,8 +11,6 @@ import (
 
 	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
-	rtservice "github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/transport"
 )
 
 // CorsOption defines a functional option for configuring advanced CORS settings in code.
@@ -46,9 +44,6 @@ type ServerOptions struct {
 	// These options will be applied *after* the base configuration from the proto file.
 	CorsOptions []CorsOption
 
-	// ServerRegistrar holds the service registration instance.
-	ServerRegistrar transport.ServerRegistrar
-
 	// ServerMiddlewares holds a map of named server middlewares.
 	ServerMiddlewares map[string]middleware.Middleware
 }
@@ -57,10 +52,7 @@ type ServerOptions struct {
 // It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromServerOptions(opts []options.Option) *ServerOptions {
 	// Apply HTTP server-specific options first
-	o := optionutil.NewT[ServerOptions](opts...)
-	// Removed: o.Container = rtcontainer.FromOptions(opts)
-	o.ServerRegistrar = rtservice.ServerRegistrarFromOptions(opts)
-	return o
+	return optionutil.NewT[ServerOptions](opts...)
 }
 
 // WithServerOptions appends Kratos HTTP server options.

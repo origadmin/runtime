@@ -9,17 +9,12 @@ import (
 
 	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces/options"
-	rtservice "github.com/origadmin/runtime/service"
-	"github.com/origadmin/runtime/service/transport"
 )
 
 // ServerOptions is a container for gRPC server-specific options.
 type ServerOptions struct {
 	// ServerOptions allows passing native Kratos gRPC server options.
 	ServerOptions []kgprc.ServerOption
-
-	// ServerRegistrar holds the service registrar instance.
-	ServerRegistrar transport.ServerRegistrar
 
 	// ServerMiddlewares holds a map of named server middlewares.
 	ServerMiddlewares map[string]middleware.Middleware
@@ -29,9 +24,7 @@ type ServerOptions struct {
 // It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromServerOptions(opts []options.Option) *ServerOptions {
 	// Apply gRPC server-specific options first
-	o := optionutil.NewT[ServerOptions](opts...)
-	o.ServerRegistrar = rtservice.ServerRegistrarFromOptions(opts)
-	return o
+	return optionutil.NewT[ServerOptions](opts...)
 }
 
 // WithServerOptions appends Kratos gRPC server options.

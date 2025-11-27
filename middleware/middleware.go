@@ -24,7 +24,6 @@ const (
 	Optimize            Name = "optimize"
 	Recovery            Name = "recovery"
 	Selector            Name = "selector"
-	Security            Name = "security"
 	DeclarativeSecurity Name = "declarative_security"
 	Cors                Name = "cors"
 )
@@ -44,5 +43,3 @@ type Factory interface {
 	// NewMiddlewareServer builds a server-side middleware.
 	NewMiddlewareServer(*middlewarev1.Middleware, ...Option) (KMiddleware, bool)
 }
-
-

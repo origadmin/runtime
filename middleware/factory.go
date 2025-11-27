@@ -28,6 +28,7 @@ func init() {
 	RegisterFactory(Selector, &selectorFactory{})
 	RegisterFactory(Tracing, &tracingFactory{})
 	RegisterFactory(Validator, &validatorFactory{})
+	// RegisterFactory(Security, &securityFactory{}) // Removed: Security middleware factory registration should not be in runtime
 }
 
 // Builder is a builder for creating middleware chains.
