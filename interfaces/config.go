@@ -7,12 +7,12 @@ import (
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	runtimeerrors "github.com/origadmin/runtime/errors"
+	"github.com/origadmin/toolkits/errors"
 )
 
 // ErrNotImplemented is returned when a specific decoder method is not implemented
 // by a custom decoder. This signals the runtime to fall back to generic decoding.
-var ErrNotImplemented = runtimeerrors.NewStructured("config", "method not implemented by this decoder")
+var ErrNotImplemented = errors.New("method not implemented")
 
 // Config is the minimal contract for providing a custom configuration source.
 // Developers wishing to extend the framework with a new config system should implement this interface.
