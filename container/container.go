@@ -95,7 +95,7 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	baseLogger = runtimelog.NewLogger(loggerConfig)
 
 	enrichedLogger := baseLogger
-	if initOpts.appInfo != nil { // Use appInfo from initOpts for logger enrichment
+	if initOpts.appInfo != nil {
 		enrichedLogger = runtimelog.With(baseLogger,
 			"service.name", initOpts.appInfo.Name(),
 			"service.version", initOpts.appInfo.Version(),
@@ -106,7 +106,7 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	c := &containerImpl{
 		config:         config,
 		logger:         enrichedLogger,
-		initOpts:       initOpts, // initOpts now holds AppInfo
+		initOpts:       initOpts,
 		componentStore: newComponentStore(enrichedLogger),
 	}
 

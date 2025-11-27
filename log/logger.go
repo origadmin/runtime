@@ -11,9 +11,9 @@ import (
 	kratoslog "github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 
+	"github.com/origadmin/runtime/interfaces"
 	kslog "github.com/origadmin/slog-kratos"
 
-	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1" // Added for AppInfo
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/toolkits/slogx"
 )
@@ -99,22 +99,29 @@ func LevelOption(level string) slogx.Option {
 	case "fatal":
 		ll = slogx.LevelFatal
 	default:
-		ll = slogx.LevelInfo // Default to Info
+		ll = slogx.LevelInfo
 	}
 	return slogx.WithLevel(ll)
 }
 
 // WithDecorate decorates a kratos logger with common service information.
 // It adds fields like service ID, name, version, timestamp, caller, trace ID, and span ID.
-func WithDecorate(l kratoslog.Logger, info *appv1.App) kratoslog.Logger {
-	if info == nil {
-		info = &appv1.App{} // Use empty App to avoid nil pointer dereference
+func WithDecorate(l kratoslog.Logger, info interfaces.AppInfo) kratoslog.Logger {
+	var (
+		id      = ""
+		name    = ""
+		version = ""
+	)
+	if info != nil {
+		id = info.ID()
+		name = info.Name()
+		version = info.Version()
 	}
 	return kratoslog.With(
 		l,
-		"service.id", info.GetId(),
-		"service.name", info.GetName(),
-		"service.version", info.GetVersion(),
+		"service.id", id,
+		"service.name", name,
+		"service.version", version,
 		"ts", kratoslog.DefaultTimestamp,
 		"caller", kratoslog.DefaultCaller,
 		"trace_id", tracing.TraceID(),
