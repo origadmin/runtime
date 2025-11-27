@@ -2,7 +2,6 @@ package container
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/origadmin/runtime/container/internal/cache"
 	"github.com/origadmin/runtime/container/internal/database"
@@ -194,10 +193,8 @@ func (c *containerImpl) Middleware(opts ...options.Option) (MiddlewareProvider, 
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode middlewares config for MiddlewareProvider: %v", err)
 	}
-	// TODO: Implement Initialize method in middleware.Provider and use it here.
-	// c.middlewareProvider.Initialize(middlewares, opts...)
-	c.middlewareProvider.SetConfig(middlewares)
-	c.middlewareProvider.SetOptions(opts...)
+	// The middleware.Provider.Initialize method is assumed to exist after refactoring.
+	c.middlewareProvider.Initialize(middlewares, opts...)
 	return c.middlewareProvider, nil
 }
 
@@ -207,10 +204,8 @@ func (c *containerImpl) Cache(opts ...options.Option) (CacheProvider, error) {
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode caches config for CacheProvider: %v", err)
 	}
-	// TODO: Implement Initialize method in cache.Provider and use it here.
-	// c.cacheProvider.Initialize(caches, opts...)
-	c.cacheProvider.SetConfig(caches)
-	c.cacheProvider.SetOptions(opts...)
+	// The cache.Provider.Initialize method is assumed to exist after refactoring.
+	c.cacheProvider.Initialize(caches, opts...)
 	return c.cacheProvider, nil
 }
 
@@ -220,10 +215,8 @@ func (c *containerImpl) Database(opts ...options.Option) (DatabaseProvider, erro
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode databases config for DatabaseProvider: %v", err)
 	}
-	// TODO: Implement Initialize method in database.Provider and use it here.
-	// c.databaseProvider.Initialize(databases, opts...)
-	c.databaseProvider.SetConfig(databases)
-	c.databaseProvider.SetOptions(opts...)
+	// The database.Provider.Initialize method is assumed to exist after refactoring.
+	c.databaseProvider.Initialize(databases, opts...)
 	return c.databaseProvider, nil
 }
 
@@ -233,10 +226,8 @@ func (c *containerImpl) ObjectStore(opts ...options.Option) (ObjectStoreProvider
 	if err != nil {
 		runtimelog.NewHelper(c.logger).Errorf("failed to decode object stores config for ObjectStoreProvider: %v", err)
 	}
-	// TODO: Implement Initialize method in objectstore.Provider and use it here.
-	// c.objectStoreProvider.Initialize(filestores, opts...)
-	c.objectStoreProvider.SetConfig(filestores)
-	c.objectStoreProvider.SetOptions(opts...)
+	// The objectstore.Provider.Initialize method is assumed to exist after refactoring.
+	c.objectStoreProvider.Initialize(filestores, opts...)
 	return c.objectStoreProvider, nil
 }
 
@@ -246,7 +237,6 @@ func (c *containerImpl) DefaultRegistrar() (runtimeregistry.KRegistrar, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Corrected call to match the interface
 	registrar, err := registryProvider.DefaultRegistrar(c.initOpts.defaultRegistrarName)
 	if err != nil {
 		return nil, fmt.Errorf("default registrar '%s' not found or failed to retrieve: %w", c.initOpts.defaultRegistrarName, err)

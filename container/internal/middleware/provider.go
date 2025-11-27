@@ -1,11 +1,13 @@
 package middleware
 
 import (
-	"cmp"
+	"errors"
 	"fmt"
+	"maps"
 	"sync"
 
 	kratosMiddleware "github.com/go-kratos/kratos/v2/middleware"
+	"github.com/goexts/generic/cmp"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/interfaces/options"
@@ -13,95 +15,86 @@ import (
 	runtimeMiddleware "github.com/origadmin/runtime/middleware"
 )
 
-// Provider implements interfaces.ClientMiddlewareProvider and interfaces.MiddlewareProvider.
-// It manages the lifecycle of middleware instances, caching them after first creation.
-// It is safe for concurrent use.
+// Provider manages the lifecycle of client and server middleware instances.
+// It uses lazy-loading with sync.Once to ensure instances are created only when needed and in a concurrency-safe manner.
 type Provider struct {
-	mu                   sync.Mutex
-	config               *middlewarev1.Middlewares
-	log                  *runtimelog.Helper
-	opts                 []options.Option // This field stores options set via SetOptions
-	clientMiddlewares    map[string]kratosMiddleware.Middleware
-	serverMiddlewares    map[string]kratosMiddleware.Middleware
-	clientMWsInitialized bool
-	serverMWsInitialized bool
+	mu                 sync.RWMutex
+	logger             *runtimelog.Helper
+	clientMiddlewares  map[string]kratosMiddleware.Middleware
+	serverMiddlewares  map[string]kratosMiddleware.Middleware
+	config             *middlewarev1.Middlewares
+	opts               []options.Option
+	clientMWsOnce      sync.Once
+	serverMWsOnce      sync.Once
+	clientMWsErr       error
+	serverMWsErr       error
 }
 
-// NewProvider creates a new Provider instance. Options are set via SetOptions.
+// NewProvider creates a new, uninitialized Provider instance.
 func NewProvider(logger runtimelog.Logger) *Provider {
-	p := &Provider{
-		log:               runtimelog.NewHelper(logger),
+	return &Provider{
+		logger:            runtimelog.NewHelper(logger),
 		clientMiddlewares: make(map[string]kratosMiddleware.Middleware),
 		serverMiddlewares: make(map[string]kratosMiddleware.Middleware),
 	}
-	return p
 }
 
-// SetOptions sets the functional options for the provider.
-// This will clear any previously cached instances and cause them to be recreated on the next access,
-// using the new options and the structural configuration.
-func (p *Provider) SetOptions(opts ...options.Option) {
+// Initialize configures the provider with the necessary configuration and options.
+func (p *Provider) Initialize(cfg *middlewarev1.Middlewares, opts ...options.Option) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-
-	p.opts = opts
-	p.clientMWsInitialized = false
-	p.serverMWsInitialized = false
-}
-
-// SetConfig updates the provider's structural configuration.
-// This will clear any previously cached instances and cause them to be recreated on the next access,
-// using the new structural configuration and the functional options provided at NewProvider time.
-func (p *Provider) SetConfig(cfg *middlewarev1.Middlewares) *Provider {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
 	p.config = cfg
-	// Reset initialization flags to force recreation on next access.
-	p.clientMWsInitialized = false
-	p.serverMWsInitialized = false
-
-	return p
+	p.opts = opts
 }
 
 // RegisterClientMiddleware allows for manual registration of a client middleware instance.
-func (p *Provider) RegisterClientMiddleware(name string, middleware kratosMiddleware.Middleware) {
+func (p *Provider) RegisterClientMiddleware(name string, mw kratosMiddleware.Middleware) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.clientMiddlewares[name] = middleware
+	if _, ok := p.clientMiddlewares[name]; ok {
+		p.logger.Warnf("client middleware '%s' is being overwritten by manual registration", name)
+	}
+	p.clientMiddlewares[name] = mw
 }
 
 // ClientMiddlewares returns a map of all available client middleware instances.
-// On first call, it creates instances from the configuration and caches them.
-// Subsequent calls return the cached instances.
+// On the first call, it lazily creates and caches instances based on the configuration.
 func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.clientMWsOnce.Do(func() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
 
-	if p.clientMWsInitialized {
-		return p.clientMiddlewares, nil
-	}
-
-	if p.config != nil {
+		if p.config == nil {
+			return
+		}
+		var allErrors error
 		// Use the new WithClientCarrier option to pass only client middlewares
 		opts := append(p.opts, runtimeMiddleware.WithClientCarrier(p.clientMiddlewares))
 
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
+			if name == "" {
+				continue
+			}
 			if _, exists := p.clientMiddlewares[name]; exists {
-				p.log.Warnf("client middleware '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
 			// Attempt to create a client middleware. If the factory returns ok=false,
 			// it means this config is not for a client middleware, so we just skip it.
 			if cm, ok := runtimeMiddleware.NewClient(cfg, opts...); ok {
 				p.clientMiddlewares[name] = cm
+			} else {
+				// If NewClient returns false, it means this config was not for a client middleware.
+				// We don't treat this as an error, just skip it.
+				continue
 			}
 		}
-	}
+		p.clientMWsErr = allErrors
+	})
 
-	p.clientMWsInitialized = true
-	return p.clientMiddlewares, nil
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return maps.Clone(p.clientMiddlewares), p.clientMWsErr
 }
 
 // ClientMiddleware returns a single client middleware instance by name.
@@ -118,42 +111,53 @@ func (p *Provider) ClientMiddleware(name string) (kratosMiddleware.Middleware, e
 }
 
 // RegisterServerMiddleware allows for manual registration of a server middleware instance.
-func (p *Provider) RegisterServerMiddleware(name string, middleware kratosMiddleware.Middleware) {
+func (p *Provider) RegisterServerMiddleware(name string, mw kratosMiddleware.Middleware) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.serverMiddlewares[name] = middleware
+	if _, ok := p.serverMiddlewares[name]; ok {
+		p.logger.Warnf("server middleware '%s' is being overwritten by manual registration", name)
+	}
+	p.serverMiddlewares[name] = mw
 }
 
 // ServerMiddlewares returns a map of all available server middleware instances.
-// It follows the same caching and creation logic as ClientMiddlewares.
+// It follows the same lazy-loading and caching logic as ClientMiddlewares.
 func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.serverMWsOnce.Do(func() {
+		p.mu.Lock()
+		defer p.mu.Unlock()
 
-	if p.serverMWsInitialized {
-		return p.serverMiddlewares, nil
-	}
-
-	if p.config != nil {
+		if p.config == nil {
+			return
+		}
+		var allErrors error
 		// Use the new WithServerCarrier option to pass only server middlewares
 		opts := append(p.opts, runtimeMiddleware.WithServerCarrier(p.serverMiddlewares))
 
 		for _, cfg := range p.config.GetConfigs() {
 			name := cmp.Or(cfg.Name, cfg.Type)
+			if name == "" {
+				continue
+			}
 			if _, exists := p.serverMiddlewares[name]; exists {
-				p.log.Warnf("server middleware '%s' is already registered, skipping config-based creation", name)
 				continue
 			}
 			// Attempt to create a server middleware. If the factory returns ok=false,
 			// it means this config is not for a server middleware, so we just skip it.
 			if sm, ok := runtimeMiddleware.NewServer(cfg, opts...); ok {
 				p.serverMiddlewares[name] = sm
+			} else {
+				// If NewServer returns false, it means this config was not for a server middleware.
+				// We don't treat this as an error, just skip it.
+				continue
 			}
 		}
-	}
+		p.serverMWsErr = allErrors
+	})
 
-	p.serverMWsInitialized = true
-	return p.serverMiddlewares, nil
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return maps.Clone(p.serverMiddlewares), p.serverMWsErr
 }
 
 // ServerMiddleware returns a single server middleware instance by name.
