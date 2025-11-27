@@ -3,7 +3,6 @@ package runtime
 import (
 	"time"
 
-	"github.com/goexts/generic/configure"
 	"github.com/goexts/generic/maps"
 	"github.com/google/uuid"
 
@@ -20,82 +19,34 @@ type appInfo struct {
 	metadata  map[string]string
 }
 
-// AppInfoOption defines a functional option for configuring AppInfo.
-type AppInfoOption func(*appInfo)
-
 // newAppInfo is the internal constructor that returns a concrete *appInfo struct.
 // It is the core logic for creating and configuring an appInfo instance.
-func newAppInfo(name, version string, opts ...AppInfoOption) *appInfo {
-	// Apply functional options to modify the struct.
-	a := configure.Apply(&appInfo{
+func newAppInfo(name, version string) *appInfo {
+	a := &appInfo{
 		name:     name,
 		version:  version,
 		id:       uuid.New().String(),
 		env:      "dev",
 		metadata: make(map[string]string),
-	}, opts)
+	}
 
 	// Set start time at build time if it hasn't been set by an option.
 	if a.startTime.IsZero() {
 		a.startTime = time.Now()
 	}
 
-	return a // Return the configured concrete struct.
+	return a
 }
 
 // NewAppInfo is the public constructor that returns an interfaces.AppInfo.
 // It acts as a wrapper around the internal newAppInfo, hiding the concrete
 // implementation from the outside world.
 func NewAppInfo(name, version string, opts ...AppInfoOption) interfaces.AppInfo {
-	return newAppInfo(name, version, opts...)
-}
-
-// WithAppInfoEnv sets the environment for the application.
-func WithAppInfoEnv(env string) AppInfoOption {
-	return func(a *appInfo) {
-		if env != "" {
-			a.env = env
-		}
+	a := newAppInfo(name, version)
+	for _, opt := range opts {
+		opt(a)
 	}
-}
-
-// WithAppInfoID sets a custom instance ID.
-func WithAppInfoID(id string) AppInfoOption {
-	return func(a *appInfo) {
-		if id != "" {
-			a.id = id
-		}
-	}
-}
-
-// WithAppInfoStartTime sets a custom start time.
-func WithAppInfoStartTime(startTime time.Time) AppInfoOption {
-	return func(a *appInfo) {
-		if !startTime.IsZero() {
-			a.startTime = startTime
-		}
-	}
-}
-
-// WithAppInfoMetadata adds a key-value pair to the application's metadata.
-func WithAppInfoMetadata(key, value string) AppInfoOption {
-	return func(a *appInfo) {
-		if a.metadata == nil {
-			a.metadata = make(map[string]string)
-		}
-		a.metadata[key] = value
-	}
-}
-
-func WithAppInfoMetadataMap(metadata map[string]string) AppInfoOption {
-	return func(a *appInfo) {
-		if a.metadata == nil {
-			a.metadata = make(map[string]string)
-		}
-		for k, v := range metadata {
-			a.metadata[k] = v
-		}
-	}
+	return a
 }
 
 // --- Implementation of interfaces.AppInfo ---

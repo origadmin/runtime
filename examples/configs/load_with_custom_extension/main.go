@@ -12,19 +12,13 @@ import (
 )
 
 func main() {
-	// Create AppInfo using the new functional options pattern
-	appInfo := rt.NewAppInfo(
-		"Custom Extension Example",
-		"1.0.0",
-		rt.WithAppInfoID("custom-extension-example"),
-		rt.WithAppInfoEnv("development"),
-	)
-
 	// Initialize runtime with bootstrap configuration
-	rtInstance, err := rt.NewFromBootstrap(
-		"examples/configs/load_with_custom_extension/config/bootstrap.yaml",
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
+	rtInstance, err := rt.New("Custom Extension Example",
+		"1.0.0",
+		rt.WithID("custom-extension-example"), // Changed from rt.WithAppInfoID
+		rt.WithEnv("development"),             // Changed from rt.WithAppInfoEnv
 	)
+	rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
 	if err != nil {
 		log.Fatalf("Failed to initialize runtime: %v", err)
 	}
