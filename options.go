@@ -24,55 +24,45 @@ func WithContainerOptions(opts ...options.Option) Option {
 	}
 }
 
+// WithAppInfo merges the provided interfaces.AppInfo into the App's internal appInfo.
+func WithAppInfo(info interfaces.AppInfo) Option {
+	return func(a *App) {
+		a.appInfo.Merge(info)
+	}
+}
+
 // WithEnv sets the environment for the application.
 func WithEnv(env string) Option {
 	return func(a *App) {
-		a.appInfo.env = env
+		WithAppInfoEnv(env)(a.appInfo)
 	}
 }
 
 // WithID sets a custom instance ID.
 func WithID(id string) Option {
 	return func(a *App) {
-		a.appInfo.id = id
+		WithAppInfoID(id)(a.appInfo)
 	}
 }
 
 // WithStartTime sets a custom start time.
 func WithStartTime(startTime time.Time) Option {
 	return func(a *App) {
-		a.appInfo.startTime = startTime
+		WithAppInfoStartTime(startTime)(a.appInfo)
 	}
 }
 
 // WithMetadata adds a key-value pair to the application's metadata.
 func WithMetadata(key, value string) Option {
 	return func(a *App) {
-		if a.appInfo.metadata == nil {
-			a.appInfo.metadata = make(map[string]string)
-		}
-		a.appInfo.metadata[key] = value
+		WithAppInfoMetadata(key, value)(a.appInfo)
 	}
 }
 
 // WithMetadataMap adds a map of key-value pairs to the application's metadata.
 func WithMetadataMap(metadata map[string]string) Option {
 	return func(a *App) {
-		if a.appInfo.metadata == nil {
-			a.appInfo.metadata = make(map[string]string)
-		}
-		for k, v := range metadata {
-			a.appInfo.metadata[k] = v
-		}
-	}
-}
-
-// WithAppInfoOptions adds options that will be applied to the AppInfo.
-func WithAppInfoOptions(opts ...AppInfoOption) Option {
-	return func(a *App) {
-		for _, opt := range opts {
-			opt(a.appInfo)
-		}
+		WithAppInfoMetadataMap(metadata)(a.appInfo)
 	}
 }
 
@@ -130,11 +120,5 @@ func WithAppInfoMetadataMap(metadata map[string]string) AppInfoOption {
 		for k, v := range metadata {
 			a.metadata[k] = v
 		}
-	}
-}
-
-func WithAppInfo(info interfaces.AppInfo) Option {
-	return func(a *App) {
-		a.appInfo = mergeAppInfo(a.appInfo, info)
 	}
 }
