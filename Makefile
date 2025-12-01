@@ -55,7 +55,6 @@ PROTOC_GRPC_OUT     := --go-grpc_out=paths=source_relative
 PROTOC_HTTP_OUT     := --go-http_out=paths=source_relative
 PROTOC_ERRORS_OUT   := --go-errors_out=paths=source_relative
 PROTOC_VALIDATE_OUT := --validate_out=lang=go,paths=source_relative
-PROTOC_SECURITY_OUT := --go-security_out=paths=source_relative
 
 # A single variable for all proto plugins used in the main API generation
 PLUGINS := $(PROTOC_GO_OUT):./api/gen/go \
@@ -69,7 +68,6 @@ EXAMPLE_PLUGINS := $(PROTOC_GO_OUT):. \
 		$(PROTOC_GRPC_OUT):. \
 		$(PROTOC_HTTP_OUT):. \
 		$(PROTOC_ERRORS_OUT):. \
-		$(PROTOC_SECURITY_OUT):. \
 		$(PROTOC_VALIDATE_OUT):.
 
 # Proto file discovery and cleanup commands
