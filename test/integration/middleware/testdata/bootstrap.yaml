@@ -1,0 +1,3 @@
+sources:
+  - kind: file
+    path: ./configs/config.yaml

@@ -89,7 +89,7 @@ func NewProvider(dataConfig *datav1.Data) (Provider, error) {
 	}
 
 	// Initialize Filestores
-	p.objectstores, p.defaultObjectStore, err = NewObjectStores(dataConfig.GetObjectstores())
+	p.objectstores, p.defaultObjectStore, err = NewObjectStores(dataConfig.GetObjectStores())
 	if err != nil {
 		return nil, err
 	}

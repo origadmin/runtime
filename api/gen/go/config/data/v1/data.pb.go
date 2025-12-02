@@ -30,7 +30,7 @@ const (
 type Data struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// FileStore configurations.
-	Objectstores *ObjectStores `protobuf:"bytes,1,opt,name=objectstores,proto3,oneof" json:"objectstores,omitempty"`
+	ObjectStores *ObjectStores `protobuf:"bytes,1,opt,name=object_stores,proto3,oneof" json:"object_stores,omitempty"`
 	// Cache configurations.
 	Caches *Caches `protobuf:"bytes,2,opt,name=caches,proto3,oneof" json:"caches,omitempty"`
 	// Relational Database configurations (SQL).
@@ -73,9 +73,9 @@ func (*Data) Descriptor() ([]byte, []int) {
 	return file_config_data_v1_data_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Data) GetObjectstores() *ObjectStores {
+func (x *Data) GetObjectStores() *ObjectStores {
 	if x != nil {
-		return x.Objectstores
+		return x.ObjectStores
 	}
 	return nil
 }
@@ -368,14 +368,14 @@ var File_config_data_v1_data_proto protoreflect.FileDescriptor
 
 const file_config_data_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a$config/data/oss/v1/objectstore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xa0\x05\n" +
-	"\x04Data\x12s\n" +
-	"\fobjectstores\x18\x01 \x01(\v2(.runtime.api.config.data.v1.ObjectStoresB \xbaG\x1d\x92\x02\x1aObjectStore configurationsH\x00R\fobjectstores\x88\x01\x01\x12[\n" +
+	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a$config/data/oss/v1/objectstore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xa3\x05\n" +
+	"\x04Data\x12u\n" +
+	"\robject_stores\x18\x01 \x01(\v2(.runtime.api.config.data.v1.ObjectStoresB \xbaG\x1d\x92\x02\x1aObjectStore configurationsH\x00R\robject_stores\x88\x01\x01\x12[\n" +
 	"\x06caches\x18\x02 \x01(\v2\".runtime.api.config.data.v1.CachesB\x1a\xbaG\x17\x92\x02\x14Cache configurationsH\x01R\x06caches\x88\x01\x01\x12x\n" +
 	"\tdatabases\x18\x03 \x01(\v2%.runtime.api.config.data.v1.DatabasesB.\xbaG+\x92\x02(Relational Database configurations (SQL)H\x02R\tdatabases\x88\x01\x01\x12\x80\x01\n" +
 	"\tdocuments\x18\x04 \x01(\v2%.runtime.api.config.data.v1.DocumentsB6\xbaG3\x92\x020Document Database configurations (e.g., MongoDB)H\x03R\tdocuments\x88\x01\x01\x12\x82\x01\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBF\xbaGC\x92\x02@Custom configuration for Data components not explicitly defined.H\x04R\tcustomize\x88\x01\x01B\x0f\n" +
-	"\r_objectstoresB\t\n" +
+	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBF\xbaGC\x92\x02@Custom configuration for Data components not explicitly defined.H\x04R\tcustomize\x88\x01\x01B\x10\n" +
+	"\x0e_object_storesB\t\n" +
 	"\a_cachesB\f\n" +
 	"\n" +
 	"_databasesB\f\n" +
@@ -439,7 +439,7 @@ var file_config_data_v1_data_proto_goTypes = []any{
 	(*v12.DocumentConfig)(nil),   // 9: runtime.api.config.data.database.v1.DocumentConfig
 }
 var file_config_data_v1_data_proto_depIdxs = []int32{
-	1, // 0: runtime.api.config.data.v1.Data.objectstores:type_name -> runtime.api.config.data.v1.ObjectStores
+	1, // 0: runtime.api.config.data.v1.Data.object_stores:type_name -> runtime.api.config.data.v1.ObjectStores
 	2, // 1: runtime.api.config.data.v1.Data.caches:type_name -> runtime.api.config.data.v1.Caches
 	3, // 2: runtime.api.config.data.v1.Data.databases:type_name -> runtime.api.config.data.v1.Databases
 	4, // 3: runtime.api.config.data.v1.Data.documents:type_name -> runtime.api.config.data.v1.Documents
