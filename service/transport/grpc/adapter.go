@@ -82,12 +82,14 @@ func initGrpcServerOptions(grpcConfig *grpcv1.Server, serverOpts *ServerOptions)
 	}
 
 	// Configure middlewares.
-	mws, err := getMiddlewares(grpcConfig.GetMiddlewares(), serverOpts.ServerMiddlewares, DefaultServerMiddlewares(), "server")
-	if err != nil {
-		return nil, err
-	}
-	if len(mws) > 0 {
-		kratosOpts = append(kratosOpts, transgrpc.Middleware(mws...))
+	if len(serverOpts.ServerMiddlewares) > 0 {
+		mws, err := getMiddlewares(grpcConfig.GetMiddlewares(), serverOpts.ServerMiddlewares, DefaultServerMiddlewares(), "server")
+		if err != nil {
+			return nil, err
+		}
+		if len(mws) > 0 {
+			kratosOpts = append(kratosOpts, transgrpc.Middleware(mws...))
+		}
 	}
 
 	// Apply any external Kratos gRPC server options passed via functional options.

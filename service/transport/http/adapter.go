@@ -76,15 +76,16 @@ func initHttpServerOptions(httpConfig *httpv1.Server, serverOpts *ServerOptions)
 		}
 	}
 
-	// Configure middlewares.
-	mws, err := getMiddlewares(httpConfig.GetMiddlewares(), serverOpts.ServerMiddlewares, DefaultServerMiddlewares(), "server")
-	if err != nil {
-		return nil, err
+	if len(serverOpts.ServerMiddlewares) > 0 {
+		// Configure middlewares.
+		mws, err := getMiddlewares(httpConfig.GetMiddlewares(), serverOpts.ServerMiddlewares, DefaultServerMiddlewares(), "server")
+		if err != nil {
+			return nil, err
+		}
+		if len(mws) > 0 {
+			kratosOpts = append(kratosOpts, transhttp.Middleware(mws...))
+		}
 	}
-	if len(mws) > 0 {
-		kratosOpts = append(kratosOpts, transhttp.Middleware(mws...))
-	}
-
 	// Apply other server options from protobuf config
 	if httpConfig.Network != "" {
 		kratosOpts = append(kratosOpts, transhttp.Network(httpConfig.Network))
