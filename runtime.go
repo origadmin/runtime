@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
-	"github.com/goexts/generic/configure"
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/container"
@@ -19,7 +19,7 @@ import (
 
 // App defines the application's runtime environment.
 type App struct {
-	appInfo       *appInfo
+	appInfo       *AppInfo
 	result        bootstrap.Result
 	container     container.Container
 	mu            sync.RWMutex
@@ -28,21 +28,42 @@ type App struct {
 	containerOpts []options.Option
 }
 
-// New creates a new, partially initialized App instance with essential metadata and container configurations.
-// It accepts functional options to allow for pre-configuring the container.
-// The App is not fully functional until Load is called.
-func New(name, version string, opts ...Option) (*App, error) {
-	app := configure.Apply(&App{
-		appInfo:       newAppInfo(name, version),
+// New is the primary and most common constructor for creating a new App instance.
+// It requires the application name and version directly.
+func New(name, version string, opts ...Option) *App {
+	app := &App{
+		appInfo:       NewAppInfo(name, version),
 		componentOpts: make(map[string][]options.Option),
 		containerOpts: make([]options.Option, 0),
-	}, opts)
+	}
 
-	return app, nil
+	for _, o := range opts {
+		o(app)
+	}
+
+	return app
+}
+
+// NewWithOptions creates a new, partially initialized App instance using only functional options.
+// This constructor provides maximum flexibility. It requires that the application's name and
+// version be provided via options (e.g., by using WithAppInfo).
+func NewWithOptions(opts ...Option) *App {
+	app := &App{
+		appInfo:       NewAppInfoBuilder(),
+		componentOpts: make(map[string][]options.Option),
+		containerOpts: make([]options.Option, 0),
+	}
+
+	for _, o := range opts {
+		o(app)
+	}
+
+	return app
 }
 
 // Load reads the configuration from the given path, completes the App initialization,
-// and prepares it for running.
+// and prepares it for running. It returns an error if the final application name or
+// version is missing after merging all configurations.
 func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	// 1. Bootstrap from configuration file.
 	res, err := bootstrap.New(path, bootOpts...)
@@ -51,12 +72,18 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	}
 	r.result = res
 
-	// 2. Merge AppInfo: Values from the loaded configuration (res.AppConfig()) will override
-	//    corresponding values in the existing appInfo (r.appInfo) if provided.
-	//    StartTime is preserved from the initial appInfo.
+	// 2. Merge AppInfo: Values from the loaded configuration will override initial values.
 	r.appInfo = mergeAppInfoWithConfig(r.appInfo, res.AppConfig())
 
-	// 3. Create the container.
+	// 3. Final validation: Ensure essential app info is present after all configurations.
+	if r.appInfo.Name() == "" {
+		return errors.New("runtime: application name is missing after loading configuration")
+	}
+	if r.appInfo.Version() == "" {
+		return errors.New("runtime: application version is missing after loading configuration")
+	}
+
+	// 4. Create the container.
 	ctnOpts := append(r.containerOpts, container.WithAppInfo(r.appInfo))
 	r.container = container.New(res.StructuredConfig(), ctnOpts...)
 	r.globalOpts = append(r.globalOpts, container.WithContainer(r.container))
