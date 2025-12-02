@@ -60,12 +60,12 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 	// based on the 'type: consul' in bootstrap_consul.yaml.
 	appInfo := rt.NewAppInfo(
 		"ConsulApp",
-		"1.0.0", rt.WithAppInfoID("consul-app-id"),
-	)
+		"1.0.0",
+	).SetID("consul-app-id").SetEnv("consul-test")
 	var bootstrapOpts []bootstrap.Option
 	// Combine bootstrap options with mock data option
 	allOpts := append(bootstrapOpts, helper.WithMockDataJSON(mockData))
-	rtInstance, err := rt.New(
+	rtInstance := rt.New(
 		appInfo.Name(),
 		appInfo.Version(),
 		rt.WithAppInfo(appInfo),

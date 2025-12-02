@@ -38,18 +38,16 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 	appInfo := rt.NewAppInfo(
 		"MultiSourceTestApp",
 		"1.0.0",
-		rt.WithAppInfoID("multi-source-test-app"),
-	)
+	).SetID("multi-source-test-app")
 
-	rtInstance, err := rt.New(
+	rtInstance := rt.New(
 		appInfo.Name(),
 		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
-	require.NoError(t, err, "Failed to initialize runtime from bootstrap")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
 	// Load the configuration from the bootstrap file with all options.
-	err = rtInstance.Load(bootstrapPath)
+	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err, "Failed to load configuration from bootstrap")
 	defer rtInstance.Config().Close()
 

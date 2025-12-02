@@ -43,17 +43,15 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 	appInfo := rt.NewAppInfo(
 		"TestCompleteConfig",
 		"1.0.0",
-		rt.WithAppInfoID("test-complete-config"),
-	)
+	).SetID("test-complete-config")
 
-	rtInstance, err := rt.New(
+	rtInstance := rt.New(
 		appInfo.Name(),
 		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
-	require.NoError(t, err, "Failed to initialize runtime")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
-	err = rtInstance.Load(bootstrapPath)
+	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err, "Failed to load configuration from file: %v", err)
 	defer rtInstance.Config().Close()
 
@@ -95,17 +93,15 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	appInfo := rt.NewAppInfo(
 		"TestProtoConfig",
 		"1.0.0",
-		rt.WithAppInfoID("test-proto-config"),
-	)
+	).SetID("test-proto-config")
 
-	rtInstance, err := rt.New(
+	rtInstance := rt.New(
 		appInfo.Name(),
 		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
-	require.NoError(t, err, "Failed to initialize runtime")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
-	err = rtInstance.Load(bootstrapPath)
+	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err, "Failed to load configuration from file: %v", err)
 	defer rtInstance.Config().Close()
 
@@ -153,18 +149,15 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	appInfo := rt.NewAppInfo(
 		"TestDecoder",
 		"1.0.0",
-		rt.WithAppInfoID("test-decoder"),
-		rt.WithAppInfoEnv("test"),
-	)
+	).SetID("test-decoder").SetEnv("test")
 
-	rtInstance, err := rt.New(
+	rtInstance := rt.New(
 		appInfo.Name(),
 		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
-	require.NoError(t, err, "Failed to initialize runtime")
 	// Removed defer rtInstance.Cleanup() as it's no longer available
-	err = rtInstance.Load(bootstrapPath)
+	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err, "Failed to load configuration from file: %v", err)
 	defer rtInstance.Config().Close()
 

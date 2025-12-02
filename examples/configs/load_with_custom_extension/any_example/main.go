@@ -25,21 +25,17 @@ func main() {
 	appInfo := rt.NewAppInfo(
 		"custom-extension-example",
 		"1.0.0",
-		rt.WithAppInfoEnv("development"),
-	)
+
+	).SetEnv("development")
 
 	// --- 1. Load Configuration ---
 	// We use Kratos config to load the YAML file.
 	// Initialize runtime with bootstrap configuration
-	rtInstance, err := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
+	rtInstance := rt.NewWithOptions(
 		rt.WithAppInfo(appInfo),
 	)
-	if err != nil {
-		log.Fatalf("Failed to initialize runtime: %v", err)
-	}
-	err = rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
+
+	err := rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
 	if err != nil {
 		return
 	}

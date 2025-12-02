@@ -38,23 +38,20 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	appInfo := rt.NewAppInfo(
 		"TransformerTestApp",
 		"1.0.0",
-		rt.WithAppInfoID("transformer-test-app"),
-	)
+	).SetID("transformer-test-app")
 
 	// Initialize App, which should apply the registered custom transformer.
-	rtInstance, err := rt.New(
+	rtInstance := rt.New(
 		appInfo.Name(),
 		appInfo.Version(),
 		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
-	// Use require.NoError to fail fast if the runtime fails to initialize.
-	// This prevents panics from defer calls on a nil rtInstance.
-	require.NoError(t, err, "Failed to initialize runtime from bootstrap with custom transformer")
+
 	// Removed defer rtInstance.Cleanup() as it's no longer available
 	wd, _ := os.Getwd()
 	fmt.Printf("working directory:%s\n", wd)
 	// Load the configuration from the bootstrap file with all options.
-	err = rtInstance.Load(bootstrapPath, bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{
+	err := rtInstance.Load(bootstrapPath, bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{
 		Suffix: "-transformed",
 	}))
 	require.NoError(t, err, "Failed to load configuration from bootstrap with custom transformer")

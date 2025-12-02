@@ -33,11 +33,12 @@ func main() {
 
 	// 2. Create and start App instance
 	// NewFromBootstrap encapsulates all bootstrap processes
-	rt, err := runtime.New(Name, Version, runtime.WithID(ID))
-	if err != nil {
-		fmt.Println("Failed to create App:", err)
-		os.Exit(1)
-	}
+	rt := runtime.NewWithOptions(
+		runtime.WithAppInfo(
+			runtime.NewAppInfo(Name, Version).SetEnv("development"),
+		),
+		runtime.WithID(ID),
+	)
 	if err := rt.Load("./configs/bootstrap.yaml"); err != nil {
 		fmt.Println("Failed to create App:", err)
 		os.Exit(1)

@@ -154,7 +154,7 @@ func main() {
 	// Call DummyInit to ensure the local_registry package's init() function is executed.
 	DummyInit()
 
-	rtInstance, err := runtime.New(
+	rtInstance := runtime.New(
 		"ApiGatewayCustomParserExample",
 		"1.0.0",
 		runtime.WithID("api_gateway_custom_parser_example"),
@@ -172,11 +172,8 @@ func main() {
 				})),
 		),
 	)
-	if err != nil {
-		return
-	}
 
-	err = rtInstance.Load("examples/configs/load_with_custom_parser/config/bootstrap.yaml", bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)))
+	err := rtInstance.Load("examples/configs/load_with_custom_parser/config/bootstrap.yaml", bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)))
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
 	}

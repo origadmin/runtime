@@ -94,20 +94,18 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 			appInfo := rt.NewAppInfo(
 				"EnvTestApp",
 				"1.0.0",
-				rt.WithAppInfoID("base-app-id"),
-				rt.WithAppInfoEnv(tc.envVar), // Set the environment for AppInfo
-			)
 
-			rtInstance, err := rt.New(
+			).SetEnv(tc.envVar).SetID("base-app-id")
+
+			rtInstance := rt.New(
 				appInfo.Name(),
 				appInfo.Version(),
 				rt.WithID("env-test-app"), // Pass the created AppInfo
 			)
-			require.NoError(t, err, "Failed to initialize runtime from bootstrap for %s", tc.name)
 			// Removed defer rtInstance.Cleanup() as it's no longer available
 
 			// Load the configuration from the bootstrap file with all options.
-			err = rtInstance.Load(bootstrapPath)
+			err := rtInstance.Load(bootstrapPath)
 			require.NoError(t, err, "Failed to load configuration from bootstrap for %s", tc.name)
 			defer rtInstance.Config().Close()
 
