@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/goexts/generic/configure"
 
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/container"
@@ -31,34 +32,22 @@ type App struct {
 // New is the primary and most common constructor for creating a new App instance.
 // It requires the application name and version directly.
 func New(name, version string, opts ...Option) *App {
-	app := &App{
+	return configure.Apply(&App{
 		appInfo:       NewAppInfo(name, version),
 		componentOpts: make(map[string][]options.Option),
 		containerOpts: make([]options.Option, 0),
-	}
-
-	for _, o := range opts {
-		o(app)
-	}
-
-	return app
+	}, opts)
 }
 
 // NewWithOptions creates a new, partially initialized App instance using only functional options.
 // This constructor provides maximum flexibility. It requires that the application's name and
 // version be provided via options (e.g., by using WithAppInfo).
 func NewWithOptions(opts ...Option) *App {
-	app := &App{
+	return configure.Apply(&App{
 		appInfo:       NewAppInfoBuilder(),
 		componentOpts: make(map[string][]options.Option),
 		containerOpts: make([]options.Option, 0),
-	}
-
-	for _, o := range opts {
-		o(app)
-	}
-
-	return app
+	}, opts)
 }
 
 // Load reads the configuration from the given path, completes the App initialization,
