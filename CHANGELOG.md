@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.14](https://github.com/origadmin/runtime/compare/v0.2.13...v0.2.14) (2025-12-03)
+
+
+### Features
+
+* **runtime:** simplify App constructors using configure.Apply helper ([49adb94](https://github.com/origadmin/runtime/commit/49adb94261e76e33c1938457ecf5b351aa1fe75b))
+
 ## [0.2.13](https://github.com/origadmin/runtime/compare/v0.2.12...v0.2.13) (2025-12-01)
 
 
