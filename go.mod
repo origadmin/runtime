@@ -15,7 +15,7 @@ require (
 	github.com/go-viper/encoding/dotenv v0.1.0
 	github.com/go-viper/encoding/ini v0.1.1
 	github.com/go-viper/encoding/javaproperties v0.1.0
-	github.com/goexts/generic v0.13.0
+	github.com/goexts/generic v0.14.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/gnostic v0.7.1
 	github.com/google/go-cmp v0.7.0
@@ -25,7 +25,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/origadmin/slog-kratos v1.0.5
 	github.com/origadmin/toolkits/errors v1.1.0
-	github.com/origadmin/toolkits/slogx v1.1.0
+	github.com/origadmin/toolkits/slogx v1.2.0
 	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
