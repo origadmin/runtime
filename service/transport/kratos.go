@@ -31,6 +31,7 @@ import (
 //go:adapter:package:type:suffix HTTP
 //go:adapter:package:func *
 //go:adapter:package:func:suffix HTTP
+//go:adapter:package github.com/go-kratos/kratos/v2/transport transport
 
 const DefaultTimeout = 5 * time.Second
 

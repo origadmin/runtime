@@ -2,7 +2,7 @@
 //
 // This file is generated from kratos.go.
 
-// Package service contains generated code by adptool.
+// Package transport contains generated code by adptool.
 package transport
 
 import (
@@ -17,15 +17,25 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/selector"
+	transport "github.com/go-kratos/kratos/v2/transport"
 	transgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/encoding"
 )
 
-const SupportPackageIsVersion1 = transhttp.SupportPackageIsVersion1
+const (
+	KindGRPC                 = transport.KindGRPC
+	KindHTTP                 = transport.KindHTTP
+	SupportPackageIsVersion1 = transhttp.SupportPackageIsVersion1
+)
 
 type (
+	Endpointer                 = transport.Endpointer
+	Header                     = transport.Header
+	Kind                       = transport.Kind
+	Server                     = transport.Server
+	Transporter                = transport.Transporter
 	ClientOptionGRPC           = transgrpc.ClientOption
 	ServerGRPC                 = transgrpc.Server
 	ServerOptionGRPC           = transgrpc.ServerOption
@@ -63,6 +73,22 @@ type (
 	TransporterHTTP            = transhttp.Transporter
 	WalkRouteFuncHTTP          = transhttp.WalkRouteFunc
 )
+
+func FromClientContext(ctx context.Context) (tr transport.Transporter, ok bool) {
+	return transport.FromClientContext(ctx)
+}
+
+func FromServerContext(ctx context.Context) (tr transport.Transporter, ok bool) {
+	return transport.FromServerContext(ctx)
+}
+
+func NewClientContext(ctx context.Context, tr transport.Transporter) context.Context {
+	return transport.NewClientContext(ctx, tr)
+}
+
+func NewServerContext(ctx context.Context, tr transport.Transporter) context.Context {
+	return transport.NewServerContext(ctx, tr)
+}
 
 func AddressGRPC(addr string) transgrpc.ServerOption {
 	return transgrpc.Address(addr)
@@ -170,6 +196,10 @@ func WithPrintDiscoveryDebugLogGRPC(p bool) transgrpc.ClientOption {
 
 func WithStreamInterceptorGRPC(in ...grpc.StreamClientInterceptor) transgrpc.ClientOption {
 	return transgrpc.WithStreamInterceptor(in...)
+}
+
+func WithStreamMiddlewareGRPC(m ...middleware.Middleware) transgrpc.ClientOption {
+	return transgrpc.WithStreamMiddleware(m...)
 }
 
 func WithSubsetGRPC(size int) transgrpc.ClientOption {
