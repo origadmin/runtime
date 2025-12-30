@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.15](https://github.com/origadmin/runtime/compare/v0.2.14...v0.2.15) (2025-12-30)
+
+
+### Features
+
+* **transport:** enhance kratos adapter with transport package support and additional utility functions ([53947f2](https://github.com/origadmin/runtime/commit/53947f2eb81b7520a8c5dbad75871756fadda5d9))
+
 ## [0.2.14](https://github.com/origadmin/runtime/compare/v0.2.13...v0.2.14) (2025-12-03)
 
 
