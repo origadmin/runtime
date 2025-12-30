@@ -5,7 +5,7 @@ go 1.24.9
 require (
 	buf.build/go/protovalidate v1.0.1
 	github.com/bufbuild/buf v1.61.0
-	github.com/envoyproxy/protoc-gen-validate v1.2.1
+	github.com/envoyproxy/protoc-gen-validate v1.3.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/genelet/determined v1.12.4
 	github.com/go-kratos/kratos/cmd/kratos/v2 v2.0.0-20251201062103-6f0b3015b803
