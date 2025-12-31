@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -27,15 +28,23 @@ type App struct {
 	globalOpts    []options.Option
 	componentOpts map[string][]options.Option
 	containerOpts []options.Option
+
+	// ctx is the root context for the application lifecycle.
+	ctx context.Context
+	// cancel is the function to cancel the root context.
+	cancel context.CancelFunc
 }
 
 // New is the primary and most common constructor for creating a new App instance.
 // It requires the application name and version directly.
 func New(name, version string, opts ...Option) *App {
+	ctx, cancel := context.WithCancel(context.Background())
 	return configure.Apply(&App{
 		appInfo:       NewAppInfo(name, version),
 		componentOpts: make(map[string][]options.Option),
 		containerOpts: make([]options.Option, 0),
+		ctx:           ctx,
+		cancel:        cancel,
 	}, opts)
 }
 
@@ -43,10 +52,13 @@ func New(name, version string, opts ...Option) *App {
 // This constructor provides maximum flexibility. It requires that the application's name and
 // version be provided via options (e.g., by using WithAppInfo).
 func NewWithOptions(opts ...Option) *App {
+	ctx, cancel := context.WithCancel(context.Background())
 	return configure.Apply(&App{
 		appInfo:       NewAppInfoBuilder(),
 		componentOpts: make(map[string][]options.Option),
 		containerOpts: make([]options.Option, 0),
+		ctx:           ctx,
+		cancel:        cancel,
 	}, opts)
 }
 
@@ -182,12 +194,12 @@ func (r *App) getMergedOptions(name string) []options.Option {
 }
 
 // Config returns the configuration decoder.
-func (r *App) Config() interfaces.Config {
+func (r *App) Config() interfaces.ConfigLoader {
 	return r.result.Config()
 }
 
 // StructuredConfig returns the structured configuration decoder.
-func (r *App) StructuredConfig() interfaces.StructuredConfig {
+func (r *App) StructuredConfig() interfaces.ConfigObject {
 	return r.result.StructuredConfig()
 }
 
@@ -199,6 +211,19 @@ func (r *App) Logger() log.Logger {
 // Container returns the underlying dependency injection container.
 func (r *App) Container() container.Container {
 	return r.container
+}
+
+// Context returns the root context of the application.
+// This context is cancelled when the application stops.
+func (r *App) Context() context.Context {
+	return r.ctx
+}
+
+// Stop cancels the root context, signaling all dependent components to shut down.
+func (r *App) Stop() {
+	if r.cancel != nil {
+		r.cancel()
+	}
 }
 
 // NewApp creates a new Kratos application instance.
@@ -214,6 +239,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 	}
 
 	opts := []kratos.Option{
+		kratos.Context(r.ctx), // Inject the root context
 		kratos.Logger(r.Logger()),
 		kratos.Server(servers...),
 		kratos.ID(info.ID()),

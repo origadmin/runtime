@@ -13,7 +13,7 @@ type Option = options.Option
 // ProviderOptions holds all the configurable settings for the bootstrap provider.
 // It is populated by applying a series of Option functions.
 type ProviderOptions struct {
-	config            interfaces.Config
+	config            interfaces.ConfigLoader
 	configTransformer ConfigTransformer
 	defaultPaths      map[constant.ComponentKey]string
 	directory         string
@@ -25,14 +25,14 @@ type ProviderOptions struct {
 
 // WithConfig provides a pre-initialized configuration instance.
 // If this option is used, the bootstrap process will skip loading configuration from files.
-func WithConfig(cfg interfaces.Config) Option {
+func WithConfig(cfg interfaces.ConfigLoader) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		o.config = cfg
 	})
 }
 
 // WithConfigTransformer allows providing an object that implements the ConfigTransformer interface.
-// This provides a flexible way to customize the creation of the StructuredConfig.
+// This provides a flexible way to customize the creation of the ConfigObject.
 func WithConfigTransformer(transformer ConfigTransformer) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		o.configTransformer = transformer

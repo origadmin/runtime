@@ -22,30 +22,30 @@ import (
 // and returns the final, resolved path.
 type PathResolverFunc func(baseDir, path string) string
 
-// ConfigTransformer defines an interface for custom transformation of kratosconfig.Config to interfaces.Config.
+// ConfigTransformer defines an interface for custom transformation of kratosconfig.ConfigLoader to interfaces.ConfigLoader.
 type ConfigTransformer interface {
-	Transform(interfaces.Config, interfaces.StructuredConfig) (interfaces.StructuredConfig, error)
+	Transform(interfaces.ConfigLoader, interfaces.ConfigObject) (interfaces.ConfigObject, error)
 }
 
 // ConfigTransformFunc is a function type that implements the ConfigTransformer interface.
-type ConfigTransformFunc func(interfaces.Config, interfaces.StructuredConfig) (interfaces.StructuredConfig, error)
+type ConfigTransformFunc func(interfaces.ConfigLoader, interfaces.ConfigObject) (interfaces.ConfigObject, error)
 
 // Transform implements the ConfigTransformer interface for ConfigTransformFunc.
-func (f ConfigTransformFunc) Transform(config interfaces.Config, sc interfaces.StructuredConfig) (
-	interfaces.StructuredConfig, error) {
+func (f ConfigTransformFunc) Transform(config interfaces.ConfigLoader, sc interfaces.ConfigObject) (
+	interfaces.ConfigObject, error) {
 	return f(config, sc)
 }
 
 // LoadConfig creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, following a clear, layered approach.
-func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrapv1.Bootstrap, interfaces.Config, error) {
+func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrapv1.Bootstrap, interfaces.ConfigLoader, error) {
 	logger := log.NewHelper(log.FromOptions(providerOpts.rawOptions))
 	// 1. Apply Options to determine the configuration flow.
 
-	var baseConfig interfaces.Config
+	var baseConfig interfaces.ConfigLoader
 	var bootstrapConfig *bootstrapv1.Bootstrap
 	var err error
-	// Case 1: A fully custom interfaces.Config is provided.
+	// Case 1: A fully custom interfaces.ConfigLoader is provided.
 	if providerOpts.config != nil { // The user has provided a pre-configured config instance.
 		// Otherwise, we'll use it as the base for our default structured implementation.
 		baseConfig = providerOpts.config

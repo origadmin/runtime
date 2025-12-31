@@ -31,7 +31,7 @@ func (d *ProtoDecoder) Close() error {
 	return d.c.Close()
 }
 
-func NewProtoDecoder(c kratosconfig.Config) interfaces.Config {
+func NewProtoDecoder(c kratosconfig.Config) interfaces.ConfigLoader {
 	return &ProtoDecoder{c: c}
 }
 

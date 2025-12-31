@@ -31,10 +31,10 @@ func NewBuilder() *Builder {
 	}
 }
 
-// NewConfig creates a new configuration object that conforms to the interfaces.Config interface.
+// NewConfig creates a new configuration object that conforms to the interfaces.ConfigLoader interface.
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
-func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.ConfigLoader, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
@@ -90,7 +90,7 @@ var defaultBuilder = NewBuilder()
 
 // New is a publicly exposed package-level function for creating config instances.
 // It delegates the call to the default global builder, providing a simple API for common use cases.
-func New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.Config, error) {
+func New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.ConfigLoader, error) {
 	return defaultBuilder.NewConfig(srcs, opts...)
 }
 

@@ -20,14 +20,14 @@ import (
 	"github.com/origadmin/runtime/log" // Import the log package
 )
 
-// ProtoConfig is a custom implementation of interfaces.Config that handles Protobuf decoding.
+// ProtoConfig is a custom implementation of interfaces.ConfigLoader that handles Protobuf decoding.
 type ProtoConfig struct {
-	ifconfig  interfaces.Config // Keep for Raw() and Close()
-	bootstrap *conf.Bootstrap   // The fully decoded protobuf config
-	source    interfaces.StructuredConfig
+	ifconfig  interfaces.ConfigLoader // Keep for Raw() and Close()
+	bootstrap *conf.Bootstrap         // The fully decoded protobuf config
+	source    interfaces.ConfigObject
 }
 
-// DecodedConfig implements the interfaces.StructuredConfig interface.
+// DecodedConfig implements the interfaces.ConfigObject interface.
 func (d *ProtoConfig) DecodedConfig() any {
 	return d.bootstrap
 }
@@ -92,7 +92,7 @@ func (d *ProtoConfig) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 }
 
 // NewProtoConfig creates a new ProtoConfig instance and decodes the entire Kratos config into the Bootstrap proto.
-func NewProtoConfig(c interfaces.Config, source interfaces.StructuredConfig) (*ProtoConfig, error) {
+func NewProtoConfig(c interfaces.ConfigLoader, source interfaces.ConfigObject) (*ProtoConfig, error) {
 	var bc conf.Bootstrap
 	if err := c.Decode("", &bc); err != nil {
 		return nil, err
@@ -164,7 +164,7 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 
 func main() {
 	// Define the ConfigTransformFunc to create our custom ProtoConfig.
-	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.Config, source interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
+	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.ConfigLoader, source interfaces.ConfigObject) (interfaces.ConfigObject, error) {
 		protoCfg, err := NewProtoConfig(kc, source)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ProtoConfig: %w", err)
@@ -211,7 +211,7 @@ func main() {
 	}
 
 	// 4. Print the loaded configuration to verify
-	appLogger.Info("--- Loaded Rich Config via runtime interface ---")
+	appLogger.Info("--- Loaded Rich ConfigLoader via runtime interface ---")
 
 	// Verify logger config
 	if loggerCfg := bc.GetLogger(); loggerCfg != nil {

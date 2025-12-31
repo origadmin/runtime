@@ -11,9 +11,9 @@ import (
 
 // TestTransformer is a custom transformer for testing purposes.
 type TestTransformer struct {
-	interfaces.StructuredConfig
+	interfaces.ConfigObject
 	Suffix string
-	c      interfaces.Config
+	c      interfaces.ConfigLoader
 	cfg    *testconfigs.TestConfig
 }
 
@@ -21,7 +21,7 @@ func (t *TestTransformer) DecodedConfig() any {
 	return t.cfg
 }
 
-func (t *TestTransformer) Transform(c interfaces.Config, sc interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
+func (t *TestTransformer) Transform(c interfaces.ConfigLoader, sc interfaces.ConfigObject) (interfaces.ConfigObject, error) {
 	t.c = c
 	// Decode the current configuration into our TestConfig struct.
 	var cfg testconfigs.TestConfig
@@ -37,7 +37,7 @@ func (t *TestTransformer) Transform(c interfaces.Config, sc interfaces.Structure
 		cfg.App = &appv1.App{}
 		cfg.App.Name = "TransformedApp" + t.Suffix
 	}
-	t.StructuredConfig = sc
+	t.ConfigObject = sc
 	t.cfg = &cfg
 	return t, nil
 }

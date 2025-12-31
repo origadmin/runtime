@@ -31,7 +31,7 @@ type Endpoint struct {
 
 // CustomSettings represents the structure of our custom configuration section.
 type CustomSettings struct {
-	config         interfaces.Config
+	config         interfaces.ConfigLoader
 	FeatureEnabled bool       `json:"feature_enabled"`
 	APIKey         string     `json:"api_key"`
 	RateLimit      int        `json:"rate_limit"`
@@ -132,7 +132,7 @@ func (c *CustomSettings) DecodeMiddlewares() (*middlewarev1.Middlewares, error) 
 	return nil, errors.New("not implemented")
 }
 
-func TransformConfig(cfg interfaces.Config, source interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
+func TransformConfig(cfg interfaces.ConfigLoader, source interfaces.ConfigObject) (interfaces.ConfigObject, error) {
 	log.Infof("Loaded config: %+v", cfg)
 	//var settingMap map[string]any
 	//if err := cfg.Decode("", &settingMap); err != nil {
@@ -162,7 +162,7 @@ func main() {
 		runtime.WithStartTime(time.Now()),
 		runtime.WithContainerOptions(
 			container.WithComponentFactory("my--settings", container.ComponentFunc(
-				func(cfg interfaces.StructuredConfig, ctn container.Container, opts ...options.Option) (interfaces.Component, error) {
+				func(cfg interfaces.ConfigObject, ctn container.Container, opts ...options.Option) (interfaces.Component, error) {
 					// The factory now returns interfaces.Component
 					customCfg, ok := cfg.(*CustomSettings)
 					if !ok {

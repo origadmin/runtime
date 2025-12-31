@@ -7,8 +7,8 @@ import (
 
 // resultImpl implements the Result interface.
 type resultImpl struct {
-	config           interfaces.Config
-	structuredConfig interfaces.StructuredConfig
+	config           interfaces.ConfigLoader
+	structuredConfig interfaces.ConfigObject
 	appConfig        *appv1.App
 }
 
@@ -17,11 +17,11 @@ func (b *resultImpl) AppConfig() *appv1.App {
 }
 
 // Config returns the raw configuration decoder.
-func (b *resultImpl) Config() interfaces.Config {
+func (b *resultImpl) Config() interfaces.ConfigLoader {
 	return b.config
 }
 
 // StructuredConfig returns the structured configuration decoder.
-func (b *resultImpl) StructuredConfig() interfaces.StructuredConfig {
+func (b *resultImpl) StructuredConfig() interfaces.ConfigObject {
 	return b.structuredConfig
 }

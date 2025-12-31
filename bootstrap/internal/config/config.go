@@ -16,34 +16,34 @@ import (
 	"github.com/origadmin/runtime/interfaces/constant"
 )
 
-// structuredConfigImpl implements the interfaces.StructuredConfig interface.
-// It wraps a generic interfaces.Config and provides type-safe, path-based decoding methods.
+// structuredConfigImpl implements the interfaces.ConfigObject interface.
+// It wraps a generic interfaces.ConfigLoader and provides type-safe, path-based decoding methods.
 type structuredConfigImpl struct {
-	interfaces.Config // Embed the generic config interface
-	paths             map[constant.ComponentKey]string
-	cache             sync.Map // Cache for decoded configurations
+	interfaces.ConfigLoader // Embed the generic config interface
+	paths                   map[constant.ComponentKey]string
+	cache                   sync.Map // Cache for decoded configurations
 }
 
 // NewStructured creates a new structured config implementation.
-// It takes a generic interfaces.Config and a path map to provide high-level decoding methods.
-func NewStructured(cfg interfaces.Config, paths map[constant.ComponentKey]string) interfaces.StructuredConfig {
+// It takes a generic interfaces.ConfigLoader and a path map to provide high-level decoding methods.
+func NewStructured(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]string) interfaces.ConfigObject {
 	if paths == nil {
 		paths = make(map[constant.ComponentKey]string)
 	}
 	return &structuredConfigImpl{
-		Config: cfg,
-		paths:  paths,
-		cache:  sync.Map{}, // Initialize the cache
+		ConfigLoader: cfg,
+		paths:        paths,
+		cache:        sync.Map{}, // Initialize the cache
 	}
 }
 
 // DecodedConfig returns the underlying generic configuration.
 func (c *structuredConfigImpl) DecodedConfig() any {
-	return c.Config
+	return c.ConfigLoader
 }
 
-// Statically assert that structuredConfigImpl implements the full StructuredConfig interface.
-var _ interfaces.StructuredConfig = (*structuredConfigImpl)(nil)
+// Statically assert that structuredConfigImpl implements the full ConfigObject interface.
+var _ interfaces.ConfigObject = (*structuredConfigImpl)(nil)
 
 // decodeAndCache implements a robust decoding logic with caching for single-type components.
 // It first checks the `paths` map for a pre-discovered path. If not found,

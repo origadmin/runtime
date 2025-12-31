@@ -41,7 +41,7 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	if app == nil {
 		app = &appv1.App{}
 	}
-	// 3. Create the final StructuredConfig.
+	// 3. Create the final ConfigObject.
 	paths := make(map[constant.ComponentKey]string, len(defaultComponentPaths))
 	for k, v := range defaultComponentPaths {
 		paths[k] = v
