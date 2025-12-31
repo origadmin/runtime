@@ -32,7 +32,7 @@ func WithConfig(cfg interfaces.ConfigLoader) Option {
 }
 
 // WithConfigTransformer allows providing an object that implements the ConfigTransformer interface.
-// This provides a flexible way to customize the creation of the ConfigObject.
+// This provides a flexible way to customize the creation of the StructuredConfig.
 func WithConfigTransformer(transformer ConfigTransformer) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		o.configTransformer = transformer

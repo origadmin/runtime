@@ -54,9 +54,9 @@ type providerImpl struct {
 }
 
 // New creates a new storage provider instance based on the provided structured configuration.
-// This function is primarily for backward compatibility or when a custom interfaces.ConfigObject
+// This function is primarily for backward compatibility or when a custom interfaces.StructuredConfig
 // implementation is used. For most cases, NewProvider is recommended.
-func New(sc interfaces.ConfigObject) (Provider, error) {
+func New(sc interfaces.StructuredConfig) (Provider, error) {
 	dataConfig, err := sc.DecodeData()
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode structured config: %w", err)

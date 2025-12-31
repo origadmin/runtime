@@ -14,10 +14,10 @@ import (
 const DefaultComponentPriority = 1000
 
 // ComponentFunc is an adapter to allow the use of ordinary functions as ComponentFactory.
-type ComponentFunc func(cfg interfaces.ConfigObject, container Container, opts ...options.Option) (interfaces.Component, error)
+type ComponentFunc func(cfg interfaces.StructuredConfig, container Container, opts ...options.Option) (interfaces.Component, error)
 
 // NewComponent calls the wrapped function.
-func (c ComponentFunc) NewComponent(cfg interfaces.ConfigObject, container Container, opts ...options.Option) (interfaces.Component, error) {
+func (c ComponentFunc) NewComponent(cfg interfaces.StructuredConfig, container Container, opts ...options.Option) (interfaces.Component, error) {
 	return c(cfg, container, opts...)
 }
 
@@ -36,7 +36,7 @@ type ComponentFactory interface {
 	// NewComponent creates a new component instance.
 	// It receives a component-specific configuration and the container instance,
 	// allowing it to register other components or access other services.
-	NewComponent(cfg interfaces.ConfigObject, container Container, opts ...options.Option) (interfaces.Component, error)
+	NewComponent(cfg interfaces.StructuredConfig, container Container, opts ...options.Option) (interfaces.Component, error)
 }
 
 // componentStore is a concurrency-safe storage for component factories and instances.

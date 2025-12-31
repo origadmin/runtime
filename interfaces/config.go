@@ -32,9 +32,9 @@ type ConfigLoader interface {
 	Close() error
 }
 
-// ConfigObject defines a set of type-safe, recommended methods for decoding configuration.
+// StructuredConfig defines a set of type-safe, recommended methods for decoding configuration.
 // It embeds the generic ConfigLoader interface to allow for decoding arbitrary values.
-type ConfigObject interface {
+type StructuredConfig interface {
 	DataConfigDecoder
 	CacheConfigDecoder
 	DatabaseConfigDecoder
@@ -46,6 +46,15 @@ type ConfigObject interface {
 
 	// DecodedConfig returns the config original decoded value.
 	DecodedConfig() any
+}
+
+type ConfigObject interface {
+	GetLogger() *loggerv1.Logger
+	GetDiscoveries() *discoveryv1.Discoveries
+	GetMiddlewares() *middlewarev1.Middlewares
+	GetServers() *transportv1.Servers
+	GetClients() *transportv1.Clients
+	GetData() *datav1.Data
 }
 
 //type AppConfigDecoder interface {

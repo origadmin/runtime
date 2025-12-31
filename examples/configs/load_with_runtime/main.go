@@ -24,10 +24,10 @@ import (
 type ProtoConfig struct {
 	ifconfig  interfaces.ConfigLoader // Keep for Raw() and Close()
 	bootstrap *conf.Bootstrap         // The fully decoded protobuf config
-	source    interfaces.ConfigObject
+	source    interfaces.StructuredConfig
 }
 
-// DecodedConfig implements the interfaces.ConfigObject interface.
+// DecodedConfig implements the interfaces.StructuredConfig interface.
 func (d *ProtoConfig) DecodedConfig() any {
 	return d.bootstrap
 }
@@ -92,7 +92,7 @@ func (d *ProtoConfig) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 }
 
 // NewProtoConfig creates a new ProtoConfig instance and decodes the entire Kratos config into the Bootstrap proto.
-func NewProtoConfig(c interfaces.ConfigLoader, source interfaces.ConfigObject) (*ProtoConfig, error) {
+func NewProtoConfig(c interfaces.ConfigLoader, source interfaces.StructuredConfig) (*ProtoConfig, error) {
 	var bc conf.Bootstrap
 	if err := c.Decode("", &bc); err != nil {
 		return nil, err
@@ -164,7 +164,7 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 
 func main() {
 	// Define the ConfigTransformFunc to create our custom ProtoConfig.
-	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.ConfigLoader, source interfaces.ConfigObject) (interfaces.ConfigObject, error) {
+	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.ConfigLoader, source interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
 		protoCfg, err := NewProtoConfig(kc, source)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ProtoConfig: %w", err)

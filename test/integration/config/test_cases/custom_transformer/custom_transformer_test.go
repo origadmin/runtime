@@ -67,7 +67,7 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 		// Metadata is not defined in the local config, so we expect the default nil or empty map.
 		Metadata: nil, // Or map[string]string{} depending on desired behavior
 	}
-	// Use ConfigObject() to get the transformed configuration
+	// Use StructuredConfig() to get the transformed configuration
 	ts, ok := rtInstance.StructuredConfig().DecodedConfig().(*testconfigs.TestConfig)
 	if !ok {
 		t.Fatalf("Failed to convert to TestTransformer")

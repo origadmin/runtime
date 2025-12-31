@@ -19,7 +19,7 @@ import (
 
 // NewStructured creates a new structured config implementation.
 // Currently switched to the Eager implementation.
-func NewStructured(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]string) interfaces.ConfigObject {
+func NewStructured(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]string) interfaces.StructuredConfig {
 	if paths == nil {
 		paths = make(map[constant.ComponentKey]string)
 	}
@@ -32,7 +32,7 @@ func NewStructured(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]
 // Eager Implementation (New)
 // =============================================================================
 
-// eagerConfigImpl implements interfaces.ConfigObject with eager loading.
+// eagerConfigImpl implements interfaces.StructuredConfig with eager loading.
 // All configurations are decoded at initialization time.
 type eagerConfigImpl struct {
 	loader interfaces.ConfigLoader
@@ -142,14 +142,18 @@ func (c *eagerConfigImpl) DecodedConfig() any { return c.loader }
 
 // Getters for Eager Implementation (Always return nil error)
 
-func (c *eagerConfigImpl) DecodeApp() (*appv1.App, error)                       { return c.app, nil }
-func (c *eagerConfigImpl) DecodeLogger() (*loggerv1.Logger, error)              { return c.logger, nil }
-func (c *eagerConfigImpl) DecodeData() (*datav1.Data, error)                    { return c.data, nil }
-func (c *eagerConfigImpl) DecodeCaches() (*datav1.Caches, error)                { return c.caches, nil }
-func (c *eagerConfigImpl) DecodeDatabases() (*datav1.Databases, error)          { return c.databases, nil }
-func (c *eagerConfigImpl) DecodeObjectStores() (*datav1.ObjectStores, error)    { return c.objectStores, nil }
-func (c *eagerConfigImpl) DecodeDefaultDiscovery() (string, error)              { return c.defaultRegistry, nil }
-func (c *eagerConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, error) { return c.discoveries, nil }
+func (c *eagerConfigImpl) DecodeApp() (*appv1.App, error)              { return c.app, nil }
+func (c *eagerConfigImpl) DecodeLogger() (*loggerv1.Logger, error)     { return c.logger, nil }
+func (c *eagerConfigImpl) DecodeData() (*datav1.Data, error)           { return c.data, nil }
+func (c *eagerConfigImpl) DecodeCaches() (*datav1.Caches, error)       { return c.caches, nil }
+func (c *eagerConfigImpl) DecodeDatabases() (*datav1.Databases, error) { return c.databases, nil }
+func (c *eagerConfigImpl) DecodeObjectStores() (*datav1.ObjectStores, error) {
+	return c.objectStores, nil
+}
+func (c *eagerConfigImpl) DecodeDefaultDiscovery() (string, error)     { return c.defaultRegistry, nil }
+func (c *eagerConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
+	return c.discoveries, nil
+}
 func (c *eagerConfigImpl) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 	return c.middlewares, nil
 }
@@ -160,7 +164,7 @@ func (c *eagerConfigImpl) DecodeClients() (*transportv1.Clients, error) { return
 // Lazy Implementation (Old)
 // =============================================================================
 
-// lazyConfigImpl implements interfaces.ConfigObject with lazy loading and caching.
+// lazyConfigImpl implements interfaces.StructuredConfig with lazy loading and caching.
 type lazyConfigImpl struct {
 	interfaces.ConfigLoader
 	paths map[constant.ComponentKey]string

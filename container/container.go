@@ -66,7 +66,7 @@ type Container interface {
 // containerImpl implements the Container interface.
 // It simplifies the provider access by delegating initialization safety to the providers themselves.
 type containerImpl struct {
-	config   interfaces.ConfigObject
+	config   interfaces.StructuredConfig
 	logger   runtimelog.Logger
 	initOpts *containerOptions // initOpts now holds AppInfo
 
@@ -83,7 +83,7 @@ type containerImpl struct {
 
 // New creates a new, concurrency-safe Container instance.
 // It receives the final AppInfo from the bootstrap process.
-func New(config interfaces.ConfigObject, opts ...options.Option) Container {
+func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	initOpts := optionutil.NewT[containerOptions](opts...)
 
 	var baseLogger runtimelog.Logger

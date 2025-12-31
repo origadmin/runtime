@@ -34,6 +34,21 @@ type Bootstrap struct {
 	sizeCache     protoimpl.SizeCache
 }
 
+func (b *Bootstrap) GetDiscoveries() *discoveryv1.Discoveries {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (b *Bootstrap) GetMiddlewares() *middlewarev1.Middlewares {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (b *Bootstrap) GetClients() *transportv1.Clients {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (x *Bootstrap) Reset() {
 	*x = Bootstrap{}
 	mi := &file_examples_protos_app_v1_bootstrap_proto_msgTypes[0]

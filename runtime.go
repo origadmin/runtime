@@ -199,7 +199,7 @@ func (r *App) Config() interfaces.ConfigLoader {
 }
 
 // StructuredConfig returns the structured configuration decoder.
-func (r *App) StructuredConfig() interfaces.ConfigObject {
+func (r *App) StructuredConfig() interfaces.StructuredConfig {
 	return r.result.StructuredConfig()
 }
 
