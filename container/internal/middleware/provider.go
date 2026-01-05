@@ -71,7 +71,7 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 	p.clientMWsOnce.Do(func() {
 		p.mu.Lock()
 		defer p.mu.Unlock()
-
+		p.logger.Debugf("middleware config: %+v", p.config)
 		if p.config == nil {
 			return
 		}
@@ -135,13 +135,14 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 	p.serverMWsOnce.Do(func() {
 		p.mu.Lock()
 		defer p.mu.Unlock()
-
+		p.logger.Debugf("middleware config: %+v", p.config)
 		if p.config == nil {
 			return
 		}
 		var allErrors error
 
 		for _, cfg := range p.config.GetConfigs() {
+			p.logger.Debugf("processing middleware config: %s", cfg.Name)
 			name := cmp.Or(cfg.Name, cfg.Type)
 			if name == "" {
 				continue
@@ -155,6 +156,7 @@ func (p *Provider) ServerMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			// it means this config is not for a server middleware, so we just skip it.
 			if sm, ok := runtimeMiddleware.NewServer(cfg, opts...); ok {
 				p.serverMiddlewares[name] = sm
+				p.logger.Debugf("registered server middleware '%s'", name)
 			} else {
 				// If NewServer returns false, it means this config was not for a server middleware.
 				// We don't treat this as an error, just skip it.

@@ -24,7 +24,10 @@ func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.Middlewar
 }
 
 func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
-	log.Debug("[Middleware] ValidatorClient server middleware enabled")
+	mwOpts := FromOptions(opts...)
+	helper := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.validator"))
+	helper.Debug("enabling validator server middleware")
+
 	if !middleware.GetEnabled() {
 		return nil, false
 	}
@@ -43,18 +46,18 @@ func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middlewar
 				return m, true
 			}
 		default:
-			return validateMiddlewareV1(cfg), true
+			return newValidatorV1(helper), true
 		}
 	}
 	return nil, false
 }
 
-// Validate is a middleware validator.
 // Deprecated: use ValidateServer
 func Validate(ms []KMiddleware, validator *validatorv1.Validator) []KMiddleware {
 	switch validate.Version(validator.Version) {
 	case validate.V1:
-		return append(ms, validateMiddlewareV1(validator))
+		helper := log.NewHelper(log.DefaultLogger) // Cannot inject logger here easily
+		return append(ms, newValidatorV1(helper))
 	case validate.V2:
 		return ValidateServer(ms, validator)
 	}
@@ -74,20 +77,17 @@ func ValidateServer(ms []KMiddleware, validator *validatorv1.Validator) []KMiddl
 	return ms
 }
 
-func validateMiddlewareV1(_ *validatorv1.Validator) KMiddleware {
-	return newValidatorV1()
-}
-
 type validator interface {
 	Validate() error
 }
 
 // newValidatorV1 is the constructor for the v1 validation middleware.
-func newValidatorV1() KMiddleware {
+func newValidatorV1(logger *log.Helper) KMiddleware {
 	return func(handler KHandler) KHandler {
 		return func(ctx context.Context, req any) (reply any, err error) {
 			if v, ok := req.(validator); ok {
 				if err := v.Validate(); err != nil {
+					logger.WithContext(ctx).Debugf("[Validate] Validation failed for request: %v", err)
 					return nil, errors.BadRequest("VALIDATOR", err.Error()).WithCause(err)
 				}
 			}

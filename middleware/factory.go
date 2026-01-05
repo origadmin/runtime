@@ -28,7 +28,6 @@ func init() {
 	RegisterFactory(Selector, &selectorFactory{})
 	RegisterFactory(Tracing, &tracingFactory{})
 	RegisterFactory(Validator, &validatorFactory{})
-	// RegisterFactory(Security, &securityFactory{}) // Removed: Security middleware factory registration should not be in runtime
 }
 
 // Builder is a builder for creating middleware chains.
@@ -50,9 +49,6 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 	}
 
 	logger := opt.Logger
-	if logger == nil {
-		logger = log.DefaultLogger
-	}
 
 	// Create a middleware carrier for context propagation
 	clients := make(map[string]KMiddleware)
@@ -139,9 +135,6 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 	}
 
 	logger := opt.Logger
-	if logger == nil {
-		logger = log.DefaultLogger
-	}
 
 	helper := log.NewHelper(logger)
 	helper.Debug("building server middlewares")

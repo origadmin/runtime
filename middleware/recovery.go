@@ -16,27 +16,19 @@ type recoveryFactory struct {
 }
 
 func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
-	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debugf("enabling recovery client middleware")
+	helper := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.recovery"))
+	helper.Debug("enabling recovery client middleware")
 
-	//recoveryConfig := cfg.GetRecovery()
-	//if recoveryConfig == nil {
-	//	return nil, false
-	//}
+	// The default Kratos recovery middleware is sufficient and includes logging.
 	return recovery.Recovery(), true
 }
 
 func (r recoveryFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
-	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debugf("enabling recovery server middleware")
+	helper := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.recovery"))
+	helper.Debug("enabling recovery server middleware")
 
-	//recoveryConfig := cfg.GetRecovery()
-	//if recoveryConfig == nil {
-	//	return nil, false
-	//}
+	// The default Kratos recovery middleware is sufficient and includes logging.
 	return recovery.Recovery(), true
 }
