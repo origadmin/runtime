@@ -4,6 +4,7 @@ import (
 	"github.com/origadmin/runtime/extensions/optionutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/log"
 )
 
 // containerOptions holds the configurable settings for a Container.
@@ -14,6 +15,7 @@ type containerOptions struct {
 	defaultDatabaseName    string
 	defaultObjectStoreName string
 	defaultRegistrarName   string
+	Logger                 log.Logger
 }
 
 // WithAppInfo sets the application's metadata for the container.
@@ -59,6 +61,11 @@ func WithDefaultRegistrarName(name string) options.Option {
 	return optionutil.Update(func(o *containerOptions) {
 		o.defaultRegistrarName = name
 	})
+}
+
+// WithLogger sets the logger for the container.
+func WithLogger(logger log.Logger) options.Option {
+	return log.WithLogger(logger)
 }
 
 type containerContext struct {
