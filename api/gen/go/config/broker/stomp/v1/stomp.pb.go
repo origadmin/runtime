@@ -34,17 +34,17 @@ type StompConfig struct {
 	// Default destination for sending or subscribing.
 	Destination string `protobuf:"bytes,4,opt,name=destination,proto3" json:"destination,omitempty"`
 	// Whether to enable TLS.
-	TlsEnabled *bool `protobuf:"varint,5,opt,name=tls_enabled,json=tlsEnabled,proto3,oneof" json:"tls_enabled,omitempty"`
+	TlsEnabled *bool `protobuf:"varint,5,opt,name=tls_enabled,proto3,oneof" json:"tls_enabled,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,6,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,6,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,7,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,7,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,8,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,8,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Whether to enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,9,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,9,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	// Heartbeat interval in milliseconds.
-	HeartbeatIntervalMs *int32 `protobuf:"varint,10,opt,name=heartbeat_interval_ms,json=heartbeatIntervalMs,proto3,oneof" json:"heartbeat_interval_ms,omitempty"`
+	HeartbeatIntervalMs *int32 `protobuf:"varint,10,opt,name=heartbeat_interval_ms,proto3,oneof" json:"heartbeat_interval_ms,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -153,20 +153,19 @@ var File_config_broker_stomp_v1_stomp_proto protoreflect.FileDescriptor
 
 const file_config_broker_stomp_v1_stomp_proto_rawDesc = "" +
 	"\n" +
-	"\"config/broker/stomp/v1/stomp.proto\x12\"runtime.api.config.broker.stomp.v1\x1a$gnostic/openapi/v3/annotations.proto\"\x91\b\n" +
+	"\"config/broker/stomp/v1/stomp.proto\x12\"runtime.api.config.broker.stomp.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xa0\b\n" +
 	"\vStompConfig\x12O\n" +
 	"\aaddress\x18\x01 \x01(\tB5\xbaG2\x92\x02/STOMP broker address (e.g., \"localhost:61613\").R\aaddress\x12C\n" +
 	"\busername\x18\x02 \x01(\tB\"\xbaG\x1f\x92\x02\x1cUsername for authentication.H\x00R\busername\x88\x01\x01\x12C\n" +
 	"\bpassword\x18\x03 \x01(\tB\"\xbaG\x1f\x92\x02\x1cPassword for authentication.H\x01R\bpassword\x88\x01\x01\x12W\n" +
-	"\vdestination\x18\x04 \x01(\tB5\xbaG2\x92\x02/Default destination for sending or subscribing.R\vdestination\x12B\n" +
-	"\vtls_enabled\x18\x05 \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x02R\n" +
-	"tlsEnabled\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\x06 \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x03R\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
-	"\x13tls_client_key_file\x18\a \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x04R\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
-	"\x10tls_ca_cert_file\x18\b \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x05R\rtlsCaCertFile\x88\x01\x01\x12o\n" +
-	"\x18tls_insecure_skip_verify\x18\t \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\x06R\x15tlsInsecureSkipVerify\x88\x01\x01\x12b\n" +
+	"\vdestination\x18\x04 \x01(\tB5\xbaG2\x92\x02/Default destination for sending or subscribing.R\vdestination\x12C\n" +
+	"\vtls_enabled\x18\x05 \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x02R\vtls_enabled\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\x06 \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x03R\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
+	"\x13tls_client_key_file\x18\a \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x04R\x13tls_client_key_file\x88\x01\x01\x12W\n" +
+	"\x10tls_ca_cert_file\x18\b \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x05R\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
+	"\x18tls_insecure_skip_verify\x18\t \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\x06R\x18tls_insecure_skip_verify\x88\x01\x01\x12d\n" +
 	"\x15heartbeat_interval_ms\x18\n" +
-	" \x01(\x05B)\xbaG&\x92\x02#Heartbeat interval in milliseconds.H\aR\x13heartbeatIntervalMs\x88\x01\x01B\v\n" +
+	" \x01(\x05B)\xbaG&\x92\x02#Heartbeat interval in milliseconds.H\aR\x15heartbeat_interval_ms\x88\x01\x01B\v\n" +
 	"\t_usernameB\v\n" +
 	"\t_passwordB\x0e\n" +
 	"\f_tls_enabledB\x17\n" +

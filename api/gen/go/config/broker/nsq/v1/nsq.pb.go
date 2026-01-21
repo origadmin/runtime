@@ -26,27 +26,27 @@ const (
 type NsqConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// List of NSQD addresses (e.g., "localhost:4150").
-	NsqdAddresses []string `protobuf:"bytes,1,rep,name=nsqd_addresses,json=nsqdAddresses,proto3" json:"nsqd_addresses,omitempty"`
+	NsqdAddresses []string `protobuf:"bytes,1,rep,name=nsqd_addresses,proto3" json:"nsqd_addresses,omitempty"`
 	// List of NSQLookupD addresses (e.g., "localhost:4161").
-	NsqlookupdAddresses []string `protobuf:"bytes,2,rep,name=nsqlookupd_addresses,json=nsqlookupdAddresses,proto3" json:"nsqlookupd_addresses,omitempty"`
+	NsqlookupdAddresses []string `protobuf:"bytes,2,rep,name=nsqlookupd_addresses,proto3" json:"nsqlookupd_addresses,omitempty"`
 	// Default topic for publishing or subscribing.
 	Topic string `protobuf:"bytes,3,opt,name=topic,proto3" json:"topic,omitempty"`
 	// Channel name for consumers.
 	Channel *string `protobuf:"bytes,4,opt,name=channel,proto3,oneof" json:"channel,omitempty"`
 	// Max in flight messages for consumers.
-	MaxInFlight *int32 `protobuf:"varint,5,opt,name=max_in_flight,json=maxInFlight,proto3,oneof" json:"max_in_flight,omitempty"`
+	MaxInFlight *int32 `protobuf:"varint,5,opt,name=max_in_flight,proto3,oneof" json:"max_in_flight,omitempty"`
 	// Lookupd poll interval in seconds.
-	LookupdPollIntervalSeconds *int32 `protobuf:"varint,6,opt,name=lookupd_poll_interval_seconds,json=lookupdPollIntervalSeconds,proto3,oneof" json:"lookupd_poll_interval_seconds,omitempty"`
+	LookupdPollIntervalSeconds *int32 `protobuf:"varint,6,opt,name=lookupd_poll_interval_seconds,proto3,oneof" json:"lookupd_poll_interval_seconds,omitempty"`
 	// Whether to enable TLS.
-	TlsEnabled *bool `protobuf:"varint,7,opt,name=tls_enabled,json=tlsEnabled,proto3,oneof" json:"tls_enabled,omitempty"`
+	TlsEnabled *bool `protobuf:"varint,7,opt,name=tls_enabled,proto3,oneof" json:"tls_enabled,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Whether to enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -162,21 +162,20 @@ var File_config_broker_nsq_v1_nsq_proto protoreflect.FileDescriptor
 
 const file_config_broker_nsq_v1_nsq_proto_rawDesc = "" +
 	"\n" +
-	"\x1econfig/broker/nsq/v1/nsq.proto\x12 runtime.api.config.broker.nsq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xa6\t\n" +
-	"\tNsqConfig\x12]\n" +
-	"\x0ensqd_addresses\x18\x01 \x03(\tB6\xbaG3\x92\x020List of NSQD addresses (e.g., \"localhost:4150\").R\rnsqdAddresses\x12o\n" +
-	"\x14nsqlookupd_addresses\x18\x02 \x03(\tB<\xbaG9\x92\x026List of NSQLookupD addresses (e.g., \"localhost:4161\").R\x13nsqlookupdAddresses\x12H\n" +
+	"\x1econfig/broker/nsq/v1/nsq.proto\x12 runtime.api.config.broker.nsq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xba\t\n" +
+	"\tNsqConfig\x12^\n" +
+	"\x0ensqd_addresses\x18\x01 \x03(\tB6\xbaG3\x92\x020List of NSQD addresses (e.g., \"localhost:4150\").R\x0ensqd_addresses\x12p\n" +
+	"\x14nsqlookupd_addresses\x18\x02 \x03(\tB<\xbaG9\x92\x026List of NSQLookupD addresses (e.g., \"localhost:4161\").R\x14nsqlookupd_addresses\x12H\n" +
 	"\x05topic\x18\x03 \x01(\tB2\xbaG/\x92\x02,Default topic for publishing or subscribing.R\x05topic\x12@\n" +
-	"\achannel\x18\x04 \x01(\tB!\xbaG\x1e\x92\x02\x1bChannel name for consumers.H\x00R\achannel\x88\x01\x01\x12T\n" +
-	"\rmax_in_flight\x18\x05 \x01(\x05B+\xbaG(\x92\x02%Max in flight messages for consumers.H\x01R\vmaxInFlight\x88\x01\x01\x12o\n" +
-	"\x1dlookupd_poll_interval_seconds\x18\x06 \x01(\x05B'\xbaG$\x92\x02!Lookupd poll interval in seconds.H\x02R\x1alookupdPollIntervalSeconds\x88\x01\x01\x12B\n" +
-	"\vtls_enabled\x18\a \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x03R\n" +
-	"tlsEnabled\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x04R\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
-	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x05R\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
+	"\achannel\x18\x04 \x01(\tB!\xbaG\x1e\x92\x02\x1bChannel name for consumers.H\x00R\achannel\x88\x01\x01\x12V\n" +
+	"\rmax_in_flight\x18\x05 \x01(\x05B+\xbaG(\x92\x02%Max in flight messages for consumers.H\x01R\rmax_in_flight\x88\x01\x01\x12r\n" +
+	"\x1dlookupd_poll_interval_seconds\x18\x06 \x01(\x05B'\xbaG$\x92\x02!Lookupd poll interval in seconds.H\x02R\x1dlookupd_poll_interval_seconds\x88\x01\x01\x12C\n" +
+	"\vtls_enabled\x18\a \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x03R\vtls_enabled\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x04R\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
+	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x05R\x13tls_client_key_file\x88\x01\x01\x12W\n" +
 	"\x10tls_ca_cert_file\x18\n" +
-	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x06R\rtlsCaCertFile\x88\x01\x01\x12o\n" +
-	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\aR\x15tlsInsecureSkipVerify\x88\x01\x01B\n" +
+	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x06R\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
+	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\aR\x18tls_insecure_skip_verify\x88\x01\x01B\n" +
 	"\n" +
 	"\b_channelB\x10\n" +
 	"\x0e_max_in_flightB \n" +

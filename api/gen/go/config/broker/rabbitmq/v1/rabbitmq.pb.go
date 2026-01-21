@@ -38,27 +38,27 @@ type RabbitMQConfig struct {
 	// Password for authentication.
 	Password *string `protobuf:"bytes,6,opt,name=password,proto3,oneof" json:"password,omitempty"`
 	// Whether to enable TLS.
-	TlsEnabled *bool `protobuf:"varint,7,opt,name=tls_enabled,json=tlsEnabled,proto3,oneof" json:"tls_enabled,omitempty"`
+	TlsEnabled *bool `protobuf:"varint,7,opt,name=tls_enabled,proto3,oneof" json:"tls_enabled,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Whether to enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	// Consumer tag for consumers.
-	ConsumerTag *string `protobuf:"bytes,12,opt,name=consumer_tag,json=consumerTag,proto3,oneof" json:"consumer_tag,omitempty"`
+	ConsumerTag *string `protobuf:"bytes,12,opt,name=consumer_tag,proto3,oneof" json:"consumer_tag,omitempty"`
 	// Qos prefetch count.
-	QosPrefetchCount *int32 `protobuf:"varint,13,opt,name=qos_prefetch_count,json=qosPrefetchCount,proto3,oneof" json:"qos_prefetch_count,omitempty"`
+	QosPrefetchCount *int32 `protobuf:"varint,13,opt,name=qos_prefetch_count,proto3,oneof" json:"qos_prefetch_count,omitempty"`
 	// Qos prefetch size.
-	QosPrefetchSize *int32 `protobuf:"varint,14,opt,name=qos_prefetch_size,json=qosPrefetchSize,proto3,oneof" json:"qos_prefetch_size,omitempty"`
+	QosPrefetchSize *int32 `protobuf:"varint,14,opt,name=qos_prefetch_size,proto3,oneof" json:"qos_prefetch_size,omitempty"`
 	// Qos global.
-	QosGlobal *bool `protobuf:"varint,15,opt,name=qos_global,json=qosGlobal,proto3,oneof" json:"qos_global,omitempty"`
+	QosGlobal *bool `protobuf:"varint,15,opt,name=qos_global,proto3,oneof" json:"qos_global,omitempty"`
 	// Whether to auto-ack messages.
-	AutoAck *bool `protobuf:"varint,16,opt,name=auto_ack,json=autoAck,proto3,oneof" json:"auto_ack,omitempty"`
+	AutoAck *bool `protobuf:"varint,16,opt,name=auto_ack,proto3,oneof" json:"auto_ack,omitempty"`
 	// Whether to publish messages as persistent.
-	PersistentMessages *bool `protobuf:"varint,17,opt,name=persistent_messages,json=persistentMessages,proto3,oneof" json:"persistent_messages,omitempty"`
+	PersistentMessages *bool `protobuf:"varint,17,opt,name=persistent_messages,proto3,oneof" json:"persistent_messages,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -216,29 +216,29 @@ var File_config_broker_rabbitmq_v1_rabbitmq_proto protoreflect.FileDescriptor
 
 const file_config_broker_rabbitmq_v1_rabbitmq_proto_rawDesc = "" +
 	"\n" +
-	"(config/broker/rabbitmq/v1/rabbitmq.proto\x12%runtime.api.config.broker.rabbitmq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xd9\f\n" +
+	"(config/broker/rabbitmq/v1/rabbitmq.proto\x12%runtime.api.config.broker.rabbitmq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xee\f\n" +
 	"\x0eRabbitMQConfig\x12]\n" +
 	"\x03uri\x18\x01 \x01(\tBK\xbaGH\x92\x02ERabbitMQ connection URI (e.g., \"amqp://guest:guest@localhost:5672/\").R\x03uri\x12=\n" +
 	"\bexchange\x18\x02 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default exchange name.H\x00R\bexchange\x88\x01\x01\x124\n" +
 	"\x05queue\x18\x03 \x01(\tB\x19\xbaG\x16\x92\x02\x13Default queue name.H\x01R\x05queue\x88\x01\x01\x12<\n" +
 	"\x05vhost\x18\x04 \x01(\tB!\xbaG\x1e\x92\x02\x1bVirtual host to connect to.H\x02R\x05vhost\x88\x01\x01\x12C\n" +
 	"\busername\x18\x05 \x01(\tB\"\xbaG\x1f\x92\x02\x1cUsername for authentication.H\x03R\busername\x88\x01\x01\x12C\n" +
-	"\bpassword\x18\x06 \x01(\tB\"\xbaG\x1f\x92\x02\x1cPassword for authentication.H\x04R\bpassword\x88\x01\x01\x12B\n" +
-	"\vtls_enabled\x18\a \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x05R\n" +
-	"tlsEnabled\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x06R\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
-	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\aR\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
+	"\bpassword\x18\x06 \x01(\tB\"\xbaG\x1f\x92\x02\x1cPassword for authentication.H\x04R\bpassword\x88\x01\x01\x12C\n" +
+	"\vtls_enabled\x18\a \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x05R\vtls_enabled\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x06R\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
+	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\aR\x13tls_client_key_file\x88\x01\x01\x12W\n" +
 	"\x10tls_ca_cert_file\x18\n" +
-	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\bR\rtlsCaCertFile\x88\x01\x01\x12o\n" +
-	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\tR\x15tlsInsecureSkipVerify\x88\x01\x01\x12I\n" +
+	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\bR\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
+	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\tR\x18tls_insecure_skip_verify\x88\x01\x01\x12J\n" +
 	"\fconsumer_tag\x18\f \x01(\tB!\xbaG\x1e\x92\x02\x1bConsumer tag for consumers.H\n" +
-	"R\vconsumerTag\x88\x01\x01\x12L\n" +
-	"\x12qos_prefetch_count\x18\r \x01(\x05B\x19\xbaG\x16\x92\x02\x13Qos prefetch count.H\vR\x10qosPrefetchCount\x88\x01\x01\x12I\n" +
-	"\x11qos_prefetch_size\x18\x0e \x01(\x05B\x18\xbaG\x15\x92\x02\x12Qos prefetch size.H\fR\x0fqosPrefetchSize\x88\x01\x01\x125\n" +
+	"R\fconsumer_tag\x88\x01\x01\x12N\n" +
+	"\x12qos_prefetch_count\x18\r \x01(\x05B\x19\xbaG\x16\x92\x02\x13Qos prefetch count.H\vR\x12qos_prefetch_count\x88\x01\x01\x12K\n" +
+	"\x11qos_prefetch_size\x18\x0e \x01(\x05B\x18\xbaG\x15\x92\x02\x12Qos prefetch size.H\fR\x11qos_prefetch_size\x88\x01\x01\x126\n" +
 	"\n" +
-	"qos_global\x18\x0f \x01(\bB\x11\xbaG\x0e\x92\x02\vQos global.H\rR\tqosGlobal\x88\x01\x01\x12C\n" +
-	"\bauto_ack\x18\x10 \x01(\bB#\xbaG \x92\x02\x1dWhether to auto-ack messages.H\x0eR\aautoAck\x88\x01\x01\x12f\n" +
-	"\x13persistent_messages\x18\x11 \x01(\bB0\xbaG-\x92\x02*Whether to publish messages as persistent.H\x0fR\x12persistentMessages\x88\x01\x01B\v\n" +
+	"qos_global\x18\x0f \x01(\bB\x11\xbaG\x0e\x92\x02\vQos global.H\rR\n" +
+	"qos_global\x88\x01\x01\x12D\n" +
+	"\bauto_ack\x18\x10 \x01(\bB#\xbaG \x92\x02\x1dWhether to auto-ack messages.H\x0eR\bauto_ack\x88\x01\x01\x12g\n" +
+	"\x13persistent_messages\x18\x11 \x01(\bB0\xbaG-\x92\x02*Whether to publish messages as persistent.H\x0fR\x13persistent_messages\x88\x01\x01B\v\n" +
 	"\t_exchangeB\b\n" +
 	"\x06_queueB\b\n" +
 	"\x06_vhostB\v\n" +

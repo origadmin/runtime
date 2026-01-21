@@ -28,21 +28,21 @@ type SqsConfig struct {
 	// AWS region (e.g., "us-east-1").
 	Region string `protobuf:"bytes,1,opt,name=region,proto3" json:"region,omitempty"`
 	// AWS Access Key ID.
-	AccessKeyId *string `protobuf:"bytes,2,opt,name=access_key_id,json=accessKeyId,proto3,oneof" json:"access_key_id,omitempty"`
+	AccessKeyId *string `protobuf:"bytes,2,opt,name=access_key_id,proto3,oneof" json:"access_key_id,omitempty"`
 	// AWS Secret Access Key.
-	SecretAccessKey *string `protobuf:"bytes,3,opt,name=secret_access_key,json=secretAccessKey,proto3,oneof" json:"secret_access_key,omitempty"`
+	SecretAccessKey *string `protobuf:"bytes,3,opt,name=secret_access_key,proto3,oneof" json:"secret_access_key,omitempty"`
 	// AWS Session Token (for temporary credentials).
-	SessionToken *string `protobuf:"bytes,4,opt,name=session_token,json=sessionToken,proto3,oneof" json:"session_token,omitempty"`
+	SessionToken *string `protobuf:"bytes,4,opt,name=session_token,proto3,oneof" json:"session_token,omitempty"`
 	// SQS queue URL.
-	QueueUrl string `protobuf:"bytes,5,opt,name=queue_url,json=queueUrl,proto3" json:"queue_url,omitempty"`
+	QueueUrl string `protobuf:"bytes,5,opt,name=queue_url,proto3" json:"queue_url,omitempty"`
 	// Max number of messages to receive in one request.
-	MaxNumberOfMessages *int32 `protobuf:"varint,6,opt,name=max_number_of_messages,json=maxNumberOfMessages,proto3,oneof" json:"max_number_of_messages,omitempty"`
+	MaxNumberOfMessages *int32 `protobuf:"varint,6,opt,name=max_number_of_messages,proto3,oneof" json:"max_number_of_messages,omitempty"`
 	// How long to wait for messages (in seconds) before returning.
-	WaitTimeSeconds *int32 `protobuf:"varint,7,opt,name=wait_time_seconds,json=waitTimeSeconds,proto3,oneof" json:"wait_time_seconds,omitempty"`
+	WaitTimeSeconds *int32 `protobuf:"varint,7,opt,name=wait_time_seconds,proto3,oneof" json:"wait_time_seconds,omitempty"`
 	// Message visibility timeout in seconds.
-	VisibilityTimeoutSeconds *int32 `protobuf:"varint,8,opt,name=visibility_timeout_seconds,json=visibilityTimeoutSeconds,proto3,oneof" json:"visibility_timeout_seconds,omitempty"`
+	VisibilityTimeoutSeconds *int32 `protobuf:"varint,8,opt,name=visibility_timeout_seconds,proto3,oneof" json:"visibility_timeout_seconds,omitempty"`
 	// Whether to use long polling.
-	LongPollingEnabled *bool `protobuf:"varint,9,opt,name=long_polling_enabled,json=longPollingEnabled,proto3,oneof" json:"long_polling_enabled,omitempty"`
+	LongPollingEnabled *bool `protobuf:"varint,9,opt,name=long_polling_enabled,proto3,oneof" json:"long_polling_enabled,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -144,17 +144,17 @@ var File_config_broker_sqs_v1_sqs_proto protoreflect.FileDescriptor
 
 const file_config_broker_sqs_v1_sqs_proto_rawDesc = "" +
 	"\n" +
-	"\x1econfig/broker/sqs/v1/sqs.proto\x12 runtime.api.config.broker.sqs.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xc6\a\n" +
+	"\x1econfig/broker/sqs/v1/sqs.proto\x12 runtime.api.config.broker.sqs.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xd5\a\n" +
 	"\tSqsConfig\x12=\n" +
-	"\x06region\x18\x01 \x01(\tB%\xbaG\"\x92\x02\x1fAWS region (e.g., \"us-east-1\").R\x06region\x12A\n" +
-	"\raccess_key_id\x18\x02 \x01(\tB\x18\xbaG\x15\x92\x02\x12AWS Access Key ID.H\x00R\vaccessKeyId\x88\x01\x01\x12M\n" +
-	"\x11secret_access_key\x18\x03 \x01(\tB\x1c\xbaG\x19\x92\x02\x16AWS Secret Access Key.H\x01R\x0fsecretAccessKey\x88\x01\x01\x12^\n" +
-	"\rsession_token\x18\x04 \x01(\tB4\xbaG1\x92\x02.AWS Session Token (for temporary credentials).H\x02R\fsessionToken\x88\x01\x01\x121\n" +
-	"\tqueue_url\x18\x05 \x01(\tB\x14\xbaG\x11\x92\x02\x0eSQS queue URL.R\bqueueUrl\x12q\n" +
-	"\x16max_number_of_messages\x18\x06 \x01(\x05B7\xbaG4\x92\x021Max number of messages to receive in one request.H\x03R\x13maxNumberOfMessages\x88\x01\x01\x12s\n" +
-	"\x11wait_time_seconds\x18\a \x01(\x05BB\xbaG?\x92\x02<How long to wait for messages (in seconds) before returning.H\x04R\x0fwaitTimeSeconds\x88\x01\x01\x12o\n" +
-	"\x1avisibility_timeout_seconds\x18\b \x01(\x05B,\xbaG)\x92\x02&Message visibility timeout in seconds.H\x05R\x18visibilityTimeoutSeconds\x88\x01\x01\x12Y\n" +
-	"\x14long_polling_enabled\x18\t \x01(\bB\"\xbaG\x1f\x92\x02\x1cWhether to use long polling.H\x06R\x12longPollingEnabled\x88\x01\x01B\x10\n" +
+	"\x06region\x18\x01 \x01(\tB%\xbaG\"\x92\x02\x1fAWS region (e.g., \"us-east-1\").R\x06region\x12C\n" +
+	"\raccess_key_id\x18\x02 \x01(\tB\x18\xbaG\x15\x92\x02\x12AWS Access Key ID.H\x00R\raccess_key_id\x88\x01\x01\x12O\n" +
+	"\x11secret_access_key\x18\x03 \x01(\tB\x1c\xbaG\x19\x92\x02\x16AWS Secret Access Key.H\x01R\x11secret_access_key\x88\x01\x01\x12_\n" +
+	"\rsession_token\x18\x04 \x01(\tB4\xbaG1\x92\x02.AWS Session Token (for temporary credentials).H\x02R\rsession_token\x88\x01\x01\x122\n" +
+	"\tqueue_url\x18\x05 \x01(\tB\x14\xbaG\x11\x92\x02\x0eSQS queue URL.R\tqueue_url\x12t\n" +
+	"\x16max_number_of_messages\x18\x06 \x01(\x05B7\xbaG4\x92\x021Max number of messages to receive in one request.H\x03R\x16max_number_of_messages\x88\x01\x01\x12u\n" +
+	"\x11wait_time_seconds\x18\a \x01(\x05BB\xbaG?\x92\x02<How long to wait for messages (in seconds) before returning.H\x04R\x11wait_time_seconds\x88\x01\x01\x12q\n" +
+	"\x1avisibility_timeout_seconds\x18\b \x01(\x05B,\xbaG)\x92\x02&Message visibility timeout in seconds.H\x05R\x1avisibility_timeout_seconds\x88\x01\x01\x12[\n" +
+	"\x14long_polling_enabled\x18\t \x01(\bB\"\xbaG\x1f\x92\x02\x1cWhether to use long polling.H\x06R\x14long_polling_enabled\x88\x01\x01B\x10\n" +
 	"\x0e_access_key_idB\x14\n" +
 	"\x12_secret_access_keyB\x10\n" +
 	"\x0e_session_tokenB\x19\n" +

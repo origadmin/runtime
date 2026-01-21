@@ -28,7 +28,7 @@ type MqttConfig struct {
 	// MQTT broker address (e.g., "tcp://localhost:1883").
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	// Client ID for the MQTT client.
-	ClientId *string `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3,oneof" json:"client_id,omitempty"`
+	ClientId *string `protobuf:"bytes,2,opt,name=client_id,proto3,oneof" json:"client_id,omitempty"`
 	// Username for authentication.
 	Username *string `protobuf:"bytes,3,opt,name=username,proto3,oneof" json:"username,omitempty"`
 	// Password for authentication.
@@ -40,19 +40,19 @@ type MqttConfig struct {
 	// Whether to retain messages.
 	Retained *bool `protobuf:"varint,7,opt,name=retained,proto3,oneof" json:"retained,omitempty"`
 	// Whether to enable TLS.
-	TlsEnabled *bool `protobuf:"varint,8,opt,name=tls_enabled,json=tlsEnabled,proto3,oneof" json:"tls_enabled,omitempty"`
+	TlsEnabled *bool `protobuf:"varint,8,opt,name=tls_enabled,proto3,oneof" json:"tls_enabled,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,9,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,9,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,10,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,10,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,11,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,11,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Whether to enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,12,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,12,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	// Keep alive interval in seconds.
-	KeepAliveIntervalSeconds *int32 `protobuf:"varint,13,opt,name=keep_alive_interval_seconds,json=keepAliveIntervalSeconds,proto3,oneof" json:"keep_alive_interval_seconds,omitempty"`
+	KeepAliveIntervalSeconds *int32 `protobuf:"varint,13,opt,name=keep_alive_interval_seconds,proto3,oneof" json:"keep_alive_interval_seconds,omitempty"`
 	// Clean session flag.
-	CleanSession  *bool `protobuf:"varint,14,opt,name=clean_session,json=cleanSession,proto3,oneof" json:"clean_session,omitempty"`
+	CleanSession  *bool `protobuf:"varint,14,opt,name=clean_session,proto3,oneof" json:"clean_session,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -189,27 +189,26 @@ var File_config_broker_mqtt_v1_mqtt_proto protoreflect.FileDescriptor
 
 const file_config_broker_mqtt_v1_mqtt_proto_rawDesc = "" +
 	"\n" +
-	" config/broker/mqtt/v1/mqtt.proto\x12!runtime.api.config.broker.mqtt.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xea\n" +
+	" config/broker/mqtt/v1/mqtt.proto\x12!runtime.api.config.broker.mqtt.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xfc\n" +
 	"\n" +
 	"\n" +
 	"MqttConfig\x12S\n" +
-	"\aaddress\x18\x01 \x01(\tB9\xbaG6\x92\x023MQTT broker address (e.g., \"tcp://localhost:1883\").R\aaddress\x12F\n" +
-	"\tclient_id\x18\x02 \x01(\tB$\xbaG!\x92\x02\x1eClient ID for the MQTT client.H\x00R\bclientId\x88\x01\x01\x12C\n" +
+	"\aaddress\x18\x01 \x01(\tB9\xbaG6\x92\x023MQTT broker address (e.g., \"tcp://localhost:1883\").R\aaddress\x12G\n" +
+	"\tclient_id\x18\x02 \x01(\tB$\xbaG!\x92\x02\x1eClient ID for the MQTT client.H\x00R\tclient_id\x88\x01\x01\x12C\n" +
 	"\busername\x18\x03 \x01(\tB\"\xbaG\x1f\x92\x02\x1cUsername for authentication.H\x01R\busername\x88\x01\x01\x12C\n" +
 	"\bpassword\x18\x04 \x01(\tB\"\xbaG\x1f\x92\x02\x1cPassword for authentication.H\x02R\bpassword\x88\x01\x01\x12M\n" +
 	"\x05topic\x18\x05 \x01(\tB2\xbaG/\x92\x02,Default topic for publishing or subscribing.H\x03R\x05topic\x88\x01\x01\x12A\n" +
 	"\x03qos\x18\x06 \x01(\x05B*\xbaG'\x92\x02$QoS level for messages (0, 1, or 2).H\x04R\x03qos\x88\x01\x01\x12B\n" +
-	"\bretained\x18\a \x01(\bB!\xbaG\x1e\x92\x02\x1bWhether to retain messages.H\x05R\bretained\x88\x01\x01\x12B\n" +
-	"\vtls_enabled\x18\b \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x06R\n" +
-	"tlsEnabled\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\t \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\aR\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
+	"\bretained\x18\a \x01(\bB!\xbaG\x1e\x92\x02\x1bWhether to retain messages.H\x05R\bretained\x88\x01\x01\x12C\n" +
+	"\vtls_enabled\x18\b \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\x06R\vtls_enabled\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\t \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\aR\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
 	"\x13tls_client_key_file\x18\n" +
-	" \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\bR\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
-	"\x10tls_ca_cert_file\x18\v \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\tR\rtlsCaCertFile\x88\x01\x01\x12o\n" +
+	" \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\bR\x13tls_client_key_file\x88\x01\x01\x12W\n" +
+	"\x10tls_ca_cert_file\x18\v \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\tR\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
 	"\x18tls_insecure_skip_verify\x18\f \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\n" +
-	"R\x15tlsInsecureSkipVerify\x88\x01\x01\x12i\n" +
-	"\x1bkeep_alive_interval_seconds\x18\r \x01(\x05B%\xbaG\"\x92\x02\x1fKeep alive interval in seconds.H\vR\x18keepAliveIntervalSeconds\x88\x01\x01\x12C\n" +
-	"\rclean_session\x18\x0e \x01(\bB\x19\xbaG\x16\x92\x02\x13Clean session flag.H\fR\fcleanSession\x88\x01\x01B\f\n" +
+	"R\x18tls_insecure_skip_verify\x88\x01\x01\x12l\n" +
+	"\x1bkeep_alive_interval_seconds\x18\r \x01(\x05B%\xbaG\"\x92\x02\x1fKeep alive interval in seconds.H\vR\x1bkeep_alive_interval_seconds\x88\x01\x01\x12D\n" +
+	"\rclean_session\x18\x0e \x01(\bB\x19\xbaG\x16\x92\x02\x13Clean session flag.H\fR\rclean_session\x88\x01\x01B\f\n" +
 	"\n" +
 	"_client_idB\v\n" +
 	"\t_usernameB\v\n" +

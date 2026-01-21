@@ -30,35 +30,35 @@ type KafkaConfig struct {
 	// Default topic for producers or consumers.
 	Topic string `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
 	// Consumer group ID for Kafka consumers.
-	ConsumerGroupId *string `protobuf:"bytes,3,opt,name=consumer_group_id,json=consumerGroupId,proto3,oneof" json:"consumer_group_id,omitempty"`
+	ConsumerGroupId *string `protobuf:"bytes,3,opt,name=consumer_group_id,proto3,oneof" json:"consumer_group_id,omitempty"`
 	// Client ID for the Kafka client.
-	ClientId *string `protobuf:"bytes,4,opt,name=client_id,json=clientId,proto3,oneof" json:"client_id,omitempty"`
+	ClientId *string `protobuf:"bytes,4,opt,name=client_id,proto3,oneof" json:"client_id,omitempty"`
 	// SASL mechanism for authentication (e.g., "PLAIN", "SCRAM-SHA-256").
-	SaslMechanism *string `protobuf:"bytes,5,opt,name=sasl_mechanism,json=saslMechanism,proto3,oneof" json:"sasl_mechanism,omitempty"`
+	SaslMechanism *string `protobuf:"bytes,5,opt,name=sasl_mechanism,proto3,oneof" json:"sasl_mechanism,omitempty"`
 	// SASL username.
-	SaslUsername *string `protobuf:"bytes,6,opt,name=sasl_username,json=saslUsername,proto3,oneof" json:"sasl_username,omitempty"`
+	SaslUsername *string `protobuf:"bytes,6,opt,name=sasl_username,proto3,oneof" json:"sasl_username,omitempty"`
 	// SASL password.
-	SaslPassword *string `protobuf:"bytes,7,opt,name=sasl_password,json=saslPassword,proto3,oneof" json:"sasl_password,omitempty"`
+	SaslPassword *string `protobuf:"bytes,7,opt,name=sasl_password,proto3,oneof" json:"sasl_password,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	// Auto offset reset policy (e.g., "earliest", "latest", "none").
-	AutoOffsetReset *string `protobuf:"bytes,12,opt,name=auto_offset_reset,json=autoOffsetReset,proto3,oneof" json:"auto_offset_reset,omitempty"`
+	AutoOffsetReset *string `protobuf:"bytes,12,opt,name=auto_offset_reset,proto3,oneof" json:"auto_offset_reset,omitempty"`
 	// Max bytes per partition for fetching messages.
-	MaxBytesPerPartition *int32 `protobuf:"varint,13,opt,name=max_bytes_per_partition,json=maxBytesPerPartition,proto3,oneof" json:"max_bytes_per_partition,omitempty"`
+	MaxBytesPerPartition *int32 `protobuf:"varint,13,opt,name=max_bytes_per_partition,proto3,oneof" json:"max_bytes_per_partition,omitempty"`
 	// Max wait time in milliseconds for fetching messages.
-	MaxWaitMs *int32 `protobuf:"varint,14,opt,name=max_wait_ms,json=maxWaitMs,proto3,oneof" json:"max_wait_ms,omitempty"`
+	MaxWaitMs *int32 `protobuf:"varint,14,opt,name=max_wait_ms,proto3,oneof" json:"max_wait_ms,omitempty"`
 	// Whether to enable idempotence for producers.
-	EnableIdempotence *bool `protobuf:"varint,15,opt,name=enable_idempotence,json=enableIdempotence,proto3,oneof" json:"enable_idempotence,omitempty"`
+	EnableIdempotence *bool `protobuf:"varint,15,opt,name=enable_idempotence,proto3,oneof" json:"enable_idempotence,omitempty"`
 	// Acknowledge level for producers (e.g., "all", "1", "0").
 	Acks *string `protobuf:"bytes,16,opt,name=acks,proto3,oneof" json:"acks,omitempty"`
 	// Compression type for producers (e.g., "none", "gzip", "snappy", "lz4", "zstd").
-	CompressionType *string `protobuf:"bytes,17,opt,name=compression_type,json=compressionType,proto3,oneof" json:"compression_type,omitempty"`
+	CompressionType *string `protobuf:"bytes,17,opt,name=compression_type,proto3,oneof" json:"compression_type,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -216,27 +216,27 @@ var File_config_broker_kafka_v1_kafka_proto protoreflect.FileDescriptor
 
 const file_config_broker_kafka_v1_kafka_proto_rawDesc = "" +
 	"\n" +
-	"\"config/broker/kafka/v1/kafka.proto\x12\"runtime.api.config.broker.kafka.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xe7\r\n" +
+	"\"config/broker/kafka/v1/kafka.proto\x12\"runtime.api.config.broker.kafka.v1\x1a$gnostic/openapi/v3/annotations.proto\"\x82\x0e\n" +
 	"\vKafkaConfig\x12C\n" +
 	"\taddresses\x18\x01 \x03(\tB%\xbaG\"\x92\x02\x1fList of Kafka broker addresses.R\taddresses\x12E\n" +
-	"\x05topic\x18\x02 \x01(\tB/\xbaG,\x92\x02)Default topic for producers or consumers.R\x05topic\x12]\n" +
-	"\x11consumer_group_id\x18\x03 \x01(\tB,\xbaG)\x92\x02&Consumer group ID for Kafka consumers.H\x00R\x0fconsumerGroupId\x88\x01\x01\x12G\n" +
-	"\tclient_id\x18\x04 \x01(\tB%\xbaG\"\x92\x02\x1fClient ID for the Kafka client.H\x01R\bclientId\x88\x01\x01\x12T\n" +
-	"\x0esasl_mechanism\x18\x05 \x01(\tB(\xbaG%\x92\x02\"SASL mechanism for authentication.H\x02R\rsaslMechanism\x88\x01\x01\x12>\n" +
-	"\rsasl_username\x18\x06 \x01(\tB\x14\xbaG\x11\x92\x02\x0eSASL username.H\x03R\fsaslUsername\x88\x01\x01\x12>\n" +
-	"\rsasl_password\x18\a \x01(\tB\x14\xbaG\x11\x92\x02\x0eSASL password.H\x04R\fsaslPassword\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x05R\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
-	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x06R\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
+	"\x05topic\x18\x02 \x01(\tB/\xbaG,\x92\x02)Default topic for producers or consumers.R\x05topic\x12_\n" +
+	"\x11consumer_group_id\x18\x03 \x01(\tB,\xbaG)\x92\x02&Consumer group ID for Kafka consumers.H\x00R\x11consumer_group_id\x88\x01\x01\x12H\n" +
+	"\tclient_id\x18\x04 \x01(\tB%\xbaG\"\x92\x02\x1fClient ID for the Kafka client.H\x01R\tclient_id\x88\x01\x01\x12U\n" +
+	"\x0esasl_mechanism\x18\x05 \x01(\tB(\xbaG%\x92\x02\"SASL mechanism for authentication.H\x02R\x0esasl_mechanism\x88\x01\x01\x12?\n" +
+	"\rsasl_username\x18\x06 \x01(\tB\x14\xbaG\x11\x92\x02\x0eSASL username.H\x03R\rsasl_username\x88\x01\x01\x12?\n" +
+	"\rsasl_password\x18\a \x01(\tB\x14\xbaG\x11\x92\x02\x0eSASL password.H\x04R\rsasl_password\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x05R\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
+	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x06R\x13tls_client_key_file\x88\x01\x01\x12W\n" +
 	"\x10tls_ca_cert_file\x18\n" +
-	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\aR\rtlsCaCertFile\x88\x01\x01\x12d\n" +
-	"\x18tls_insecure_skip_verify\x18\v \x01(\bB&\xbaG#\x92\x02 Enable TLS insecure skip verify.H\bR\x15tlsInsecureSkipVerify\x88\x01\x01\x12P\n" +
-	"\x11auto_offset_reset\x18\f \x01(\tB\x1f\xbaG\x1c\x92\x02\x19Auto offset reset policy.H\tR\x0fautoOffsetReset\x88\x01\x01\x12p\n" +
+	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\aR\x10tls_ca_cert_file\x88\x01\x01\x12g\n" +
+	"\x18tls_insecure_skip_verify\x18\v \x01(\bB&\xbaG#\x92\x02 Enable TLS insecure skip verify.H\bR\x18tls_insecure_skip_verify\x88\x01\x01\x12R\n" +
+	"\x11auto_offset_reset\x18\f \x01(\tB\x1f\xbaG\x1c\x92\x02\x19Auto offset reset policy.H\tR\x11auto_offset_reset\x88\x01\x01\x12s\n" +
 	"\x17max_bytes_per_partition\x18\r \x01(\x05B4\xbaG1\x92\x02.Max bytes per partition for fetching messages.H\n" +
-	"R\x14maxBytesPerPartition\x88\x01\x01\x12_\n" +
-	"\vmax_wait_ms\x18\x0e \x01(\x05B:\xbaG7\x92\x024Max wait time in milliseconds for fetching messages.H\vR\tmaxWaitMs\x88\x01\x01\x12f\n" +
-	"\x12enable_idempotence\x18\x0f \x01(\bB2\xbaG/\x92\x02,Whether to enable idempotence for producers.H\fR\x11enableIdempotence\x88\x01\x01\x12?\n" +
-	"\x04acks\x18\x10 \x01(\tB&\xbaG#\x92\x02 Acknowledge level for producers.H\rR\x04acks\x88\x01\x01\x12U\n" +
-	"\x10compression_type\x18\x11 \x01(\tB%\xbaG\"\x92\x02\x1fCompression type for producers.H\x0eR\x0fcompressionType\x88\x01\x01B\x14\n" +
+	"R\x17max_bytes_per_partition\x88\x01\x01\x12a\n" +
+	"\vmax_wait_ms\x18\x0e \x01(\x05B:\xbaG7\x92\x024Max wait time in milliseconds for fetching messages.H\vR\vmax_wait_ms\x88\x01\x01\x12g\n" +
+	"\x12enable_idempotence\x18\x0f \x01(\bB2\xbaG/\x92\x02,Whether to enable idempotence for producers.H\fR\x12enable_idempotence\x88\x01\x01\x12?\n" +
+	"\x04acks\x18\x10 \x01(\tB&\xbaG#\x92\x02 Acknowledge level for producers.H\rR\x04acks\x88\x01\x01\x12V\n" +
+	"\x10compression_type\x18\x11 \x01(\tB%\xbaG\"\x92\x02\x1fCompression type for producers.H\x0eR\x10compression_type\x88\x01\x01B\x14\n" +
 	"\x12_consumer_group_idB\f\n" +
 	"\n" +
 	"_client_idB\x11\n" +

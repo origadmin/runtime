@@ -26,25 +26,25 @@ const (
 type RocketMQConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// List of NameServer addresses (e.g., "localhost:9876").
-	NameServerAddresses []string `protobuf:"bytes,1,rep,name=name_server_addresses,json=nameServerAddresses,proto3" json:"name_server_addresses,omitempty"`
+	NameServerAddresses []string `protobuf:"bytes,1,rep,name=name_server_addresses,proto3" json:"name_server_addresses,omitempty"`
 	// Default topic for publishing or subscribing.
 	Topic string `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
 	// Consumer group ID for consumers.
-	ConsumerGroupId *string `protobuf:"bytes,3,opt,name=consumer_group_id,json=consumerGroupId,proto3,oneof" json:"consumer_group_id,omitempty"`
+	ConsumerGroupId *string `protobuf:"bytes,3,opt,name=consumer_group_id,proto3,oneof" json:"consumer_group_id,omitempty"`
 	// Producer group ID for producers.
-	ProducerGroupId *string `protobuf:"bytes,4,opt,name=producer_group_id,json=producerGroupId,proto3,oneof" json:"producer_group_id,omitempty"`
+	ProducerGroupId *string `protobuf:"bytes,4,opt,name=producer_group_id,proto3,oneof" json:"producer_group_id,omitempty"`
 	// Access key for authentication.
-	AccessKey *string `protobuf:"bytes,5,opt,name=access_key,json=accessKey,proto3,oneof" json:"access_key,omitempty"`
+	AccessKey *string `protobuf:"bytes,5,opt,name=access_key,proto3,oneof" json:"access_key,omitempty"`
 	// Secret key for authentication.
-	SecretKey *string `protobuf:"bytes,6,opt,name=secret_key,json=secretKey,proto3,oneof" json:"secret_key,omitempty"`
+	SecretKey *string `protobuf:"bytes,6,opt,name=secret_key,proto3,oneof" json:"secret_key,omitempty"`
 	// Namespace for message isolation.
 	Namespace *string `protobuf:"bytes,7,opt,name=namespace,proto3,oneof" json:"namespace,omitempty"`
 	// Send message timeout in milliseconds.
-	SendTimeoutMs *int32 `protobuf:"varint,8,opt,name=send_timeout_ms,json=sendTimeoutMs,proto3,oneof" json:"send_timeout_ms,omitempty"`
+	SendTimeoutMs *int32 `protobuf:"varint,8,opt,name=send_timeout_ms,proto3,oneof" json:"send_timeout_ms,omitempty"`
 	// Consume message timeout in milliseconds.
-	ConsumeTimeoutMs *int32 `protobuf:"varint,9,opt,name=consume_timeout_ms,json=consumeTimeoutMs,proto3,oneof" json:"consume_timeout_ms,omitempty"`
+	ConsumeTimeoutMs *int32 `protobuf:"varint,9,opt,name=consume_timeout_ms,proto3,oneof" json:"consume_timeout_ms,omitempty"`
 	// Whether to enable TLS.
-	TlsEnabled    *bool `protobuf:"varint,10,opt,name=tls_enabled,json=tlsEnabled,proto3,oneof" json:"tls_enabled,omitempty"`
+	TlsEnabled    *bool `protobuf:"varint,10,opt,name=tls_enabled,proto3,oneof" json:"tls_enabled,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -153,22 +153,23 @@ var File_config_broker_rocketmq_v1_rocketmq_proto protoreflect.FileDescriptor
 
 const file_config_broker_rocketmq_v1_rocketmq_proto_rawDesc = "" +
 	"\n" +
-	"(config/broker/rocketmq/v1/rocketmq.proto\x12%runtime.api.config.broker.rocketmq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xf1\a\n" +
-	"\x0eRocketMQConfig\x12p\n" +
-	"\x15name_server_addresses\x18\x01 \x03(\tB<\xbaG9\x92\x026List of NameServer addresses (e.g., \"localhost:9876\").R\x13nameServerAddresses\x12H\n" +
-	"\x05topic\x18\x02 \x01(\tB2\xbaG/\x92\x02,Default topic for publishing or subscribing.R\x05topic\x12W\n" +
-	"\x11consumer_group_id\x18\x03 \x01(\tB&\xbaG#\x92\x02 Consumer group ID for consumers.H\x00R\x0fconsumerGroupId\x88\x01\x01\x12W\n" +
-	"\x11producer_group_id\x18\x04 \x01(\tB&\xbaG#\x92\x02 Producer group ID for producers.H\x01R\x0fproducerGroupId\x88\x01\x01\x12H\n" +
+	"(config/broker/rocketmq/v1/rocketmq.proto\x12%runtime.api.config.broker.rocketmq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xfe\a\n" +
+	"\x0eRocketMQConfig\x12r\n" +
+	"\x15name_server_addresses\x18\x01 \x03(\tB<\xbaG9\x92\x026List of NameServer addresses (e.g., \"localhost:9876\").R\x15name_server_addresses\x12H\n" +
+	"\x05topic\x18\x02 \x01(\tB2\xbaG/\x92\x02,Default topic for publishing or subscribing.R\x05topic\x12Y\n" +
+	"\x11consumer_group_id\x18\x03 \x01(\tB&\xbaG#\x92\x02 Consumer group ID for consumers.H\x00R\x11consumer_group_id\x88\x01\x01\x12Y\n" +
+	"\x11producer_group_id\x18\x04 \x01(\tB&\xbaG#\x92\x02 Producer group ID for producers.H\x01R\x11producer_group_id\x88\x01\x01\x12I\n" +
 	"\n" +
-	"access_key\x18\x05 \x01(\tB$\xbaG!\x92\x02\x1eAccess key for authentication.H\x02R\taccessKey\x88\x01\x01\x12H\n" +
+	"access_key\x18\x05 \x01(\tB$\xbaG!\x92\x02\x1eAccess key for authentication.H\x02R\n" +
+	"access_key\x88\x01\x01\x12I\n" +
 	"\n" +
-	"secret_key\x18\x06 \x01(\tB$\xbaG!\x92\x02\x1eSecret key for authentication.H\x03R\tsecretKey\x88\x01\x01\x12I\n" +
-	"\tnamespace\x18\a \x01(\tB&\xbaG#\x92\x02 Namespace for message isolation.H\x04R\tnamespace\x88\x01\x01\x12X\n" +
-	"\x0fsend_timeout_ms\x18\b \x01(\x05B+\xbaG(\x92\x02%Send message timeout in milliseconds.H\x05R\rsendTimeoutMs\x88\x01\x01\x12a\n" +
-	"\x12consume_timeout_ms\x18\t \x01(\x05B.\xbaG+\x92\x02(Consume message timeout in milliseconds.H\x06R\x10consumeTimeoutMs\x88\x01\x01\x12B\n" +
+	"secret_key\x18\x06 \x01(\tB$\xbaG!\x92\x02\x1eSecret key for authentication.H\x03R\n" +
+	"secret_key\x88\x01\x01\x12I\n" +
+	"\tnamespace\x18\a \x01(\tB&\xbaG#\x92\x02 Namespace for message isolation.H\x04R\tnamespace\x88\x01\x01\x12Z\n" +
+	"\x0fsend_timeout_ms\x18\b \x01(\x05B+\xbaG(\x92\x02%Send message timeout in milliseconds.H\x05R\x0fsend_timeout_ms\x88\x01\x01\x12c\n" +
+	"\x12consume_timeout_ms\x18\t \x01(\x05B.\xbaG+\x92\x02(Consume message timeout in milliseconds.H\x06R\x12consume_timeout_ms\x88\x01\x01\x12C\n" +
 	"\vtls_enabled\x18\n" +
-	" \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\aR\n" +
-	"tlsEnabled\x88\x01\x01B\x14\n" +
+	" \x01(\bB\x1c\xbaG\x19\x92\x02\x16Whether to enable TLS.H\aR\vtls_enabled\x88\x01\x01B\x14\n" +
 	"\x12_consumer_group_idB\x14\n" +
 	"\x12_producer_group_idB\r\n" +
 	"\v_access_keyB\r\n" +

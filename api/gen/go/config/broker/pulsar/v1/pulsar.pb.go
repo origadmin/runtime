@@ -26,27 +26,27 @@ const (
 type PulsarConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Pulsar broker service URL (e.g., "pulsar://localhost:6650").
-	ServiceUrl string `protobuf:"bytes,1,opt,name=service_url,json=serviceUrl,proto3" json:"service_url,omitempty"`
+	ServiceUrl string `protobuf:"bytes,1,opt,name=service_url,proto3" json:"service_url,omitempty"`
 	// Default topic for producers or consumers.
 	Topic string `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
 	// Subscription name for consumers.
-	SubscriptionName *string `protobuf:"bytes,3,opt,name=subscription_name,json=subscriptionName,proto3,oneof" json:"subscription_name,omitempty"`
+	SubscriptionName *string `protobuf:"bytes,3,opt,name=subscription_name,proto3,oneof" json:"subscription_name,omitempty"`
 	// Authentication token.
-	AuthToken *string `protobuf:"bytes,4,opt,name=auth_token,json=authToken,proto3,oneof" json:"auth_token,omitempty"`
+	AuthToken *string `protobuf:"bytes,4,opt,name=auth_token,proto3,oneof" json:"auth_token,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,5,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,5,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,6,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,6,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,7,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,7,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Whether to enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,8,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,8,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	// Operation timeout in milliseconds.
-	OperationTimeoutMs *int32 `protobuf:"varint,9,opt,name=operation_timeout_ms,json=operationTimeoutMs,proto3,oneof" json:"operation_timeout_ms,omitempty"`
+	OperationTimeoutMs *int32 `protobuf:"varint,9,opt,name=operation_timeout_ms,proto3,oneof" json:"operation_timeout_ms,omitempty"`
 	// Number of message listeners.
-	NumMessageListeners *int32 `protobuf:"varint,10,opt,name=num_message_listeners,json=numMessageListeners,proto3,oneof" json:"num_message_listeners,omitempty"`
+	NumMessageListeners *int32 `protobuf:"varint,10,opt,name=num_message_listeners,proto3,oneof" json:"num_message_listeners,omitempty"`
 	// Max pending messages.
-	MaxPendingMessages *int32 `protobuf:"varint,11,opt,name=max_pending_messages,json=maxPendingMessages,proto3,oneof" json:"max_pending_messages,omitempty"`
+	MaxPendingMessages *int32 `protobuf:"varint,11,opt,name=max_pending_messages,proto3,oneof" json:"max_pending_messages,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -162,22 +162,22 @@ var File_config_broker_pulsar_v1_pulsar_proto protoreflect.FileDescriptor
 
 const file_config_broker_pulsar_v1_pulsar_proto_rawDesc = "" +
 	"\n" +
-	"$config/broker/pulsar/v1/pulsar.proto\x12#runtime.api.config.broker.pulsar.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xbc\t\n" +
-	"\fPulsarConfig\x12c\n" +
-	"\vservice_url\x18\x01 \x01(\tBB\xbaG?\x92\x02<Pulsar broker service URL (e.g., \"pulsar://localhost:6650\").R\n" +
-	"serviceUrl\x12E\n" +
-	"\x05topic\x18\x02 \x01(\tB/\xbaG,\x92\x02)Default topic for producers or consumers.R\x05topic\x12X\n" +
-	"\x11subscription_name\x18\x03 \x01(\tB&\xbaG#\x92\x02 Subscription name for consumers.H\x00R\x10subscriptionName\x88\x01\x01\x12?\n" +
+	"$config/broker/pulsar/v1/pulsar.proto\x12#runtime.api.config.broker.pulsar.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xd1\t\n" +
+	"\fPulsarConfig\x12d\n" +
+	"\vservice_url\x18\x01 \x01(\tBB\xbaG?\x92\x02<Pulsar broker service URL (e.g., \"pulsar://localhost:6650\").R\vservice_url\x12E\n" +
+	"\x05topic\x18\x02 \x01(\tB/\xbaG,\x92\x02)Default topic for producers or consumers.R\x05topic\x12Y\n" +
+	"\x11subscription_name\x18\x03 \x01(\tB&\xbaG#\x92\x02 Subscription name for consumers.H\x00R\x11subscription_name\x88\x01\x01\x12@\n" +
 	"\n" +
-	"auth_token\x18\x04 \x01(\tB\x1b\xbaG\x18\x92\x02\x15Authentication token.H\x01R\tauthToken\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\x05 \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x02R\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
-	"\x13tls_client_key_file\x18\x06 \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x03R\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
-	"\x10tls_ca_cert_file\x18\a \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x04R\rtlsCaCertFile\x88\x01\x01\x12o\n" +
-	"\x18tls_insecure_skip_verify\x18\b \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\x05R\x15tlsInsecureSkipVerify\x88\x01\x01\x12_\n" +
-	"\x14operation_timeout_ms\x18\t \x01(\x05B(\xbaG%\x92\x02\"Operation timeout in milliseconds.H\x06R\x12operationTimeoutMs\x88\x01\x01\x12[\n" +
+	"auth_token\x18\x04 \x01(\tB\x1b\xbaG\x18\x92\x02\x15Authentication token.H\x01R\n" +
+	"auth_token\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\x05 \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x02R\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
+	"\x13tls_client_key_file\x18\x06 \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x03R\x13tls_client_key_file\x88\x01\x01\x12W\n" +
+	"\x10tls_ca_cert_file\x18\a \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x04R\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
+	"\x18tls_insecure_skip_verify\x18\b \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\x05R\x18tls_insecure_skip_verify\x88\x01\x01\x12a\n" +
+	"\x14operation_timeout_ms\x18\t \x01(\x05B(\xbaG%\x92\x02\"Operation timeout in milliseconds.H\x06R\x14operation_timeout_ms\x88\x01\x01\x12]\n" +
 	"\x15num_message_listeners\x18\n" +
-	" \x01(\x05B\"\xbaG\x1f\x92\x02\x1cNumber of message listeners.H\aR\x13numMessageListeners\x88\x01\x01\x12R\n" +
-	"\x14max_pending_messages\x18\v \x01(\x05B\x1b\xbaG\x18\x92\x02\x15Max pending messages.H\bR\x12maxPendingMessages\x88\x01\x01B\x14\n" +
+	" \x01(\x05B\"\xbaG\x1f\x92\x02\x1cNumber of message listeners.H\aR\x15num_message_listeners\x88\x01\x01\x12T\n" +
+	"\x14max_pending_messages\x18\v \x01(\x05B\x1b\xbaG\x18\x92\x02\x15Max pending messages.H\bR\x14max_pending_messages\x88\x01\x01B\x14\n" +
 	"\x12_subscription_nameB\r\n" +
 	"\v_auth_tokenB\x17\n" +
 	"\x15_tls_client_cert_fileB\x16\n" +

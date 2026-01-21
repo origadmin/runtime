@@ -32,19 +32,19 @@ type RedisMqConfig struct {
 	// Redis DB number.
 	Db *int32 `protobuf:"varint,3,opt,name=db,proto3,oneof" json:"db,omitempty"`
 	// Default channel or list key for Pub/Sub or List operations.
-	ChannelOrListKey string `protobuf:"bytes,4,opt,name=channel_or_list_key,json=channelOrListKey,proto3" json:"channel_or_list_key,omitempty"`
+	ChannelOrListKey string `protobuf:"bytes,4,opt,name=channel_or_list_key,proto3" json:"channel_or_list_key,omitempty"`
 	// Whether to use Redis Pub/Sub (true) or List (false) for messaging.
-	UsePubsub *bool `protobuf:"varint,5,opt,name=use_pubsub,json=usePubsub,proto3,oneof" json:"use_pubsub,omitempty"`
+	UsePubsub *bool `protobuf:"varint,5,opt,name=use_pubsub,proto3,oneof" json:"use_pubsub,omitempty"`
 	// Max number of messages to block for when using List as a queue.
-	ListBlockTimeoutSeconds *int32 `protobuf:"varint,6,opt,name=list_block_timeout_seconds,json=listBlockTimeoutSeconds,proto3,oneof" json:"list_block_timeout_seconds,omitempty"`
+	ListBlockTimeoutSeconds *int32 `protobuf:"varint,6,opt,name=list_block_timeout_seconds,proto3,oneof" json:"list_block_timeout_seconds,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,7,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,7,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,8,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,8,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,9,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,9,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Whether to enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,10,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,10,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -153,20 +153,21 @@ var File_config_broker_redis_mq_v1_redis_mq_proto protoreflect.FileDescriptor
 
 const file_config_broker_redis_mq_v1_redis_mq_proto_rawDesc = "" +
 	"\n" +
-	"(config/broker/redis_mq/v1/redis_mq.proto\x12%runtime.api.config.broker.redis_mq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xcd\b\n" +
+	"(config/broker/redis_mq/v1/redis_mq.proto\x12%runtime.api.config.broker.redis_mq.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xe0\b\n" +
 	"\rRedisMqConfig\x12G\n" +
 	"\aaddress\x18\x01 \x01(\tB-\xbaG*\x92\x02'Redis address (e.g., \"localhost:6379\").R\aaddress\x126\n" +
 	"\bpassword\x18\x02 \x01(\tB\x15\xbaG\x12\x92\x02\x0fRedis password.H\x00R\bpassword\x88\x01\x01\x12+\n" +
-	"\x02db\x18\x03 \x01(\x05B\x16\xbaG\x13\x92\x02\x10Redis DB number.H\x01R\x02db\x88\x01\x01\x12p\n" +
-	"\x13channel_or_list_key\x18\x04 \x01(\tBA\xbaG>\x92\x02;Default channel or list key for Pub/Sub or List operations.R\x10channelOrListKey\x12l\n" +
+	"\x02db\x18\x03 \x01(\x05B\x16\xbaG\x13\x92\x02\x10Redis DB number.H\x01R\x02db\x88\x01\x01\x12s\n" +
+	"\x13channel_or_list_key\x18\x04 \x01(\tBA\xbaG>\x92\x02;Default channel or list key for Pub/Sub or List operations.R\x13channel_or_list_key\x12m\n" +
 	"\n" +
-	"use_pubsub\x18\x05 \x01(\bBH\xbaGE\x92\x02BWhether to use Redis Pub/Sub (true) or List (false) for messaging.H\x02R\tusePubsub\x88\x01\x01\x12\x87\x01\n" +
-	"\x1alist_block_timeout_seconds\x18\x06 \x01(\x05BE\xbaGB\x92\x02?Max number of messages to block for when using List as a queue.H\x03R\x17listBlockTimeoutSeconds\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\a \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x04R\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
-	"\x13tls_client_key_file\x18\b \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x05R\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
-	"\x10tls_ca_cert_file\x18\t \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x06R\rtlsCaCertFile\x88\x01\x01\x12o\n" +
+	"use_pubsub\x18\x05 \x01(\bBH\xbaGE\x92\x02BWhether to use Redis Pub/Sub (true) or List (false) for messaging.H\x02R\n" +
+	"use_pubsub\x88\x01\x01\x12\x8a\x01\n" +
+	"\x1alist_block_timeout_seconds\x18\x06 \x01(\x05BE\xbaGB\x92\x02?Max number of messages to block for when using List as a queue.H\x03R\x1alist_block_timeout_seconds\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\a \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x04R\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
+	"\x13tls_client_key_file\x18\b \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\x05R\x13tls_client_key_file\x88\x01\x01\x12W\n" +
+	"\x10tls_ca_cert_file\x18\t \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\x06R\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
 	"\x18tls_insecure_skip_verify\x18\n" +
-	" \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\aR\x15tlsInsecureSkipVerify\x88\x01\x01B\v\n" +
+	" \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\aR\x18tls_insecure_skip_verify\x88\x01\x01B\v\n" +
 	"\t_passwordB\x05\n" +
 	"\x03_dbB\r\n" +
 	"\v_use_pubsubB\x1d\n" +

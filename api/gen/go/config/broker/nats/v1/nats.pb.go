@@ -30,27 +30,27 @@ type NatsConfig struct {
 	// Default subject for publishing or subscribing.
 	Subject *string `protobuf:"bytes,2,opt,name=subject,proto3,oneof" json:"subject,omitempty"`
 	// Queue group name for subscribers.
-	QueueGroup *string `protobuf:"bytes,3,opt,name=queue_group,json=queueGroup,proto3,oneof" json:"queue_group,omitempty"`
+	QueueGroup *string `protobuf:"bytes,3,opt,name=queue_group,proto3,oneof" json:"queue_group,omitempty"`
 	// Path to a user credentials file (.creds).
-	UserCredentialsFile *string `protobuf:"bytes,4,opt,name=user_credentials_file,json=userCredentialsFile,proto3,oneof" json:"user_credentials_file,omitempty"`
+	UserCredentialsFile *string `protobuf:"bytes,4,opt,name=user_credentials_file,proto3,oneof" json:"user_credentials_file,omitempty"`
 	// NKey seed file for authentication.
-	NkeySeedFile *string `protobuf:"bytes,5,opt,name=nkey_seed_file,json=nkeySeedFile,proto3,oneof" json:"nkey_seed_file,omitempty"`
+	NkeySeedFile *string `protobuf:"bytes,5,opt,name=nkey_seed_file,proto3,oneof" json:"nkey_seed_file,omitempty"`
 	// JWT for authentication.
 	Jwt *string `protobuf:"bytes,6,opt,name=jwt,proto3,oneof" json:"jwt,omitempty"`
 	// Authentication token.
 	Token *string `protobuf:"bytes,7,opt,name=token,proto3,oneof" json:"token,omitempty"`
 	// Path to TLS client certificate file.
-	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,json=tlsClientCertFile,proto3,oneof" json:"tls_client_cert_file,omitempty"`
+	TlsClientCertFile *string `protobuf:"bytes,8,opt,name=tls_client_cert_file,proto3,oneof" json:"tls_client_cert_file,omitempty"`
 	// Path to TLS client key file.
-	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,json=tlsClientKeyFile,proto3,oneof" json:"tls_client_key_file,omitempty"`
+	TlsClientKeyFile *string `protobuf:"bytes,9,opt,name=tls_client_key_file,proto3,oneof" json:"tls_client_key_file,omitempty"`
 	// Path to TLS CA certificate file.
-	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,json=tlsCaCertFile,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
+	TlsCaCertFile *string `protobuf:"bytes,10,opt,name=tls_ca_cert_file,proto3,oneof" json:"tls_ca_cert_file,omitempty"`
 	// Whether to enable TLS insecure skip verify.
-	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,json=tlsInsecureSkipVerify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
+	TlsInsecureSkipVerify *bool `protobuf:"varint,11,opt,name=tls_insecure_skip_verify,proto3,oneof" json:"tls_insecure_skip_verify,omitempty"`
 	// Whether to use JetStream for persistence.
-	JetstreamEnabled *bool `protobuf:"varint,12,opt,name=jetstream_enabled,json=jetstreamEnabled,proto3,oneof" json:"jetstream_enabled,omitempty"`
+	JetstreamEnabled *bool `protobuf:"varint,12,opt,name=jetstream_enabled,proto3,oneof" json:"jetstream_enabled,omitempty"`
 	// JetStream stream name.
-	JetstreamStreamName *string `protobuf:"bytes,13,opt,name=jetstream_stream_name,json=jetstreamStreamName,proto3,oneof" json:"jetstream_stream_name,omitempty"`
+	JetstreamStreamName *string `protobuf:"bytes,13,opt,name=jetstream_stream_name,proto3,oneof" json:"jetstream_stream_name,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -180,26 +180,25 @@ var File_config_broker_nats_v1_nats_proto protoreflect.FileDescriptor
 
 const file_config_broker_nats_v1_nats_proto_rawDesc = "" +
 	"\n" +
-	" config/broker/nats/v1/nats.proto\x12!runtime.api.config.broker.nats.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xdc\n" +
+	" config/broker/nats/v1/nats.proto\x12!runtime.api.config.broker.nats.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xf0\n" +
 	"\n" +
 	"\n" +
 	"NatsConfig\x12T\n" +
 	"\aaddress\x18\x01 \x01(\tB:\xbaG7\x92\x024NATS server address (e.g., \"nats://localhost:4222\").R\aaddress\x12S\n" +
-	"\asubject\x18\x02 \x01(\tB4\xbaG1\x92\x02.Default subject for publishing or subscribing.H\x00R\asubject\x88\x01\x01\x12M\n" +
-	"\vqueue_group\x18\x03 \x01(\tB'\xbaG$\x92\x02!Queue group name for subscribers.H\x01R\n" +
-	"queueGroup\x88\x01\x01\x12h\n" +
-	"\x15user_credentials_file\x18\x04 \x01(\tB/\xbaG,\x92\x02)Path to a user credentials file (.creds).H\x02R\x13userCredentialsFile\x88\x01\x01\x12S\n" +
-	"\x0enkey_seed_file\x18\x05 \x01(\tB(\xbaG%\x92\x02\"NKey seed file for authentication.H\x03R\fnkeySeedFile\x88\x01\x01\x124\n" +
+	"\asubject\x18\x02 \x01(\tB4\xbaG1\x92\x02.Default subject for publishing or subscribing.H\x00R\asubject\x88\x01\x01\x12N\n" +
+	"\vqueue_group\x18\x03 \x01(\tB'\xbaG$\x92\x02!Queue group name for subscribers.H\x01R\vqueue_group\x88\x01\x01\x12j\n" +
+	"\x15user_credentials_file\x18\x04 \x01(\tB/\xbaG,\x92\x02)Path to a user credentials file (.creds).H\x02R\x15user_credentials_file\x88\x01\x01\x12U\n" +
+	"\x0enkey_seed_file\x18\x05 \x01(\tB(\xbaG%\x92\x02\"NKey seed file for authentication.H\x03R\x0enkey_seed_file\x88\x01\x01\x124\n" +
 	"\x03jwt\x18\x06 \x01(\tB\x1d\xbaG\x1a\x92\x02\x17JWT for authentication.H\x04R\x03jwt\x88\x01\x01\x126\n" +
-	"\x05token\x18\a \x01(\tB\x1b\xbaG\x18\x92\x02\x15Authentication token.H\x05R\x05token\x88\x01\x01\x12`\n" +
-	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x06R\x11tlsClientCertFile\x88\x01\x01\x12V\n" +
-	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\aR\x10tlsClientKeyFile\x88\x01\x01\x12T\n" +
+	"\x05token\x18\a \x01(\tB\x1b\xbaG\x18\x92\x02\x15Authentication token.H\x05R\x05token\x88\x01\x01\x12c\n" +
+	"\x14tls_client_cert_file\x18\b \x01(\tB*\xbaG'\x92\x02$Path to TLS client certificate file.H\x06R\x14tls_client_cert_file\x88\x01\x01\x12Y\n" +
+	"\x13tls_client_key_file\x18\t \x01(\tB\"\xbaG\x1f\x92\x02\x1cPath to TLS client key file.H\aR\x13tls_client_key_file\x88\x01\x01\x12W\n" +
 	"\x10tls_ca_cert_file\x18\n" +
-	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\bR\rtlsCaCertFile\x88\x01\x01\x12o\n" +
-	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\tR\x15tlsInsecureSkipVerify\x88\x01\x01\x12a\n" +
+	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\bR\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
+	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\tR\x18tls_insecure_skip_verify\x88\x01\x01\x12b\n" +
 	"\x11jetstream_enabled\x18\f \x01(\bB/\xbaG,\x92\x02)Whether to use JetStream for persistence.H\n" +
-	"R\x10jetstreamEnabled\x88\x01\x01\x12U\n" +
-	"\x15jetstream_stream_name\x18\r \x01(\tB\x1c\xbaG\x19\x92\x02\x16JetStream stream name.H\vR\x13jetstreamStreamName\x88\x01\x01B\n" +
+	"R\x11jetstream_enabled\x88\x01\x01\x12W\n" +
+	"\x15jetstream_stream_name\x18\r \x01(\tB\x1c\xbaG\x19\x92\x02\x16JetStream stream name.H\vR\x15jetstream_stream_name\x88\x01\x01B\n" +
 	"\n" +
 	"\b_subjectB\x0e\n" +
 	"\f_queue_groupB\x18\n" +
