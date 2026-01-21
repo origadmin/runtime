@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.16](https://github.com/origadmin/runtime/compare/v0.2.15...v0.2.16) (2026-01-21)
+
+
+### Features
+
+* **config:** replace lazy loading with eager implementation for structured config ([f81d52c](https://github.com/origadmin/runtime/commit/f81d52cef723d00ebf67110d3c69e4830bf6204b))
+* **container:** enhance logging and simplify container implementation with helper ([6d7bebe](https://github.com/origadmin/runtime/commit/6d7bebe86c48ec8814fdef014b57faf1156993e3))
+* **middleware:** enhance logging and cleanup middleware registration logic ([681df43](https://github.com/origadmin/runtime/commit/681df43e2e17c860aab60448ee0e2c7982aaa42e))
+* **watermill:** add Watermill transport configuration ([e292e72](https://github.com/origadmin/runtime/commit/e292e72d92b2b1f61933db49a9202c4bd4dc4241))
+
 ## [0.2.15](https://github.com/origadmin/runtime/compare/v0.2.14...v0.2.15) (2025-12-30)
 
 
