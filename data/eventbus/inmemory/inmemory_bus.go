@@ -6,26 +6,26 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/origadmin/runtime/interfaces/event"
+	"github.com/origadmin/runtime/interfaces/eventbus"
 )
 
 // SimpleInMemoryEventBus is a basic, in-process event bus implementation.
 // Note: This implementation is for simple use cases and does not persist events.
 // Handlers are executed synchronously in the publisher's goroutine.
 type SimpleInMemoryEventBus struct {
-	handlers map[string][]event.EventHandler
+	handlers map[string][]eventbus.EventHandler
 	mu       sync.RWMutex
 }
 
 // NewSimpleInMemoryEventBus creates a new SimpleInMemoryEventBus.
 func NewSimpleInMemoryEventBus() *SimpleInMemoryEventBus {
 	return &SimpleInMemoryEventBus{
-		handlers: make(map[string][]event.EventHandler),
+		handlers: make(map[string][]eventbus.EventHandler),
 	}
 }
 
 // Publish executes all registered handlers for a given event.
-func (b *SimpleInMemoryEventBus) Publish(ctx context.Context, evt event.Event) error {
+func (b *SimpleInMemoryEventBus) Publish(ctx context.Context, evt eventbus.Event) error {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
@@ -48,7 +48,7 @@ func (b *SimpleInMemoryEventBus) Publish(ctx context.Context, evt event.Event) e
 }
 
 // Subscribe registers an event handler for a specific event name.
-func (b *SimpleInMemoryEventBus) Subscribe(ctx context.Context, eventName string, handler event.EventHandler) error {
+func (b *SimpleInMemoryEventBus) Subscribe(ctx context.Context, eventName string, handler eventbus.EventHandler) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.handlers[eventName] = append(b.handlers[eventName], handler)
@@ -58,7 +58,7 @@ func (b *SimpleInMemoryEventBus) Subscribe(ctx context.Context, eventName string
 // Unsubscribe removes a specific event handler for an event name.
 // Note: Unsubscribing based on function equality can be unreliable in Go.
 // A more robust implementation would require handlers to have unique IDs.
-func (b *SimpleInMemoryEventBus) Unsubscribe(ctx context.Context, eventName string, handler event.EventHandler) error {
+func (b *SimpleInMemoryEventBus) Unsubscribe(ctx context.Context, eventName string, handler eventbus.EventHandler) error {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -91,4 +91,4 @@ func (b *SimpleInMemoryEventBus) Stop(ctx context.Context) error {
 }
 
 // Ensure SimpleInMemoryEventBus implements EventBus interface.
-var _ event.EventBus = (*SimpleInMemoryEventBus)(nil)
+var _ eventbus.EventBus = (*SimpleInMemoryEventBus)(nil)

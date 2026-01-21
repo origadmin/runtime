@@ -1,4 +1,4 @@
-package event
+package eventbus
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 
 // Event is the base interface for all domain events.
 type Event interface {
-	EventName() string      // Returns the name of the event (e.g., "UserCreated")
-	EventID() string        // Returns a unique ID for this specific event instance
-	Timestamp() time.Time   // Returns the time when the event occurred
+	EventName() string    // Returns the name of the event (e.g., "UserCreated")
+	EventID() string      // Returns a unique ID for this specific event instance
+	Timestamp() time.Time // Returns the time when the event occurred
 	// 可以添加其他通用的事件元数据，如 Source, CorrelationID 等
 }
 

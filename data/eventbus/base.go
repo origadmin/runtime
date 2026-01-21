@@ -1,11 +1,11 @@
-package event
+package eventbus
 
 import (
 	"time"
 
 	"github.com/google/uuid"
 
-	"github.com/origadmin/runtime/interfaces/event"
+	"github.com/origadmin/runtime/interfaces/eventbus"
 )
 
 // BaseEvent provides common fields for events.
@@ -29,4 +29,4 @@ func (b *BaseEvent) EventID() string      { return b.id }
 func (b *BaseEvent) Timestamp() time.Time { return b.timestamp }
 
 // Ensure BaseEvent implements Event interface.
-var _ event.Event = (*BaseEvent)(nil)
+var _ eventbus.Event = (*BaseEvent)(nil)

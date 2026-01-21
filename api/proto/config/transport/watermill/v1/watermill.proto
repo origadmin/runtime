@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package runtime.api.config.transport.watermill.v1;
+
+import "config/broker/v1/broker.proto";
+
+option go_package = "github.com/origadmin/runtime/api/gen/go/config/transport/watermill/v1;watermillv1";
+
+// Watermill defines the configuration for a Watermill transport.
+// It acts as a wrapper for various underlying message brokers (Pub/Subs).
+message Watermill {
+  // broker configuration reuses the common broker definition.
+  runtime.api.config.broker.v1.Broker broker = 1;
+}

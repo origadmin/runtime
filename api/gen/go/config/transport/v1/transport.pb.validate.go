@@ -159,6 +159,39 @@ func (m *Server) validate(all bool) error {
 
 	}
 
+	if m.Watermill != nil {
+
+		if all {
+			switch v := interface{}(m.GetWatermill()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ServerValidationError{
+						field:  "Watermill",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ServerValidationError{
+						field:  "Watermill",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetWatermill()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ServerValidationError{
+					field:  "Watermill",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
 	if m.Customize != nil {
 
 		if all {
@@ -517,6 +550,39 @@ func (m *Client) validate(all bool) error {
 			if err := v.Validate(); err != nil {
 				return ClientValidationError{
 					field:  "Customize",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Watermill != nil {
+
+		if all {
+			switch v := interface{}(m.GetWatermill()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ClientValidationError{
+						field:  "Watermill",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ClientValidationError{
+						field:  "Watermill",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetWatermill()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ClientValidationError{
+					field:  "Watermill",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

@@ -4,6 +4,7 @@ package runtime.api.config.transport.v1;
 
 import "config/transport/grpc/v1/grpc.proto";
 import "config/transport/http/v1/http.proto";
+import "config/transport/watermill/v1/watermill.proto";
 import "config/transport/websocket/v1/websocket.proto";
 import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
@@ -52,12 +53,20 @@ message Server {
     (gnostic.openapi.v3.property) = {description: "WebSocket server configuration."}
   ];
 
+  // Watermill server configuration.
+  optional runtime.api.config.transport.watermill.v1.Watermill watermill = 6 [
+    json_name = "watermill",
+    (gnostic.openapi.v3.property) = {description: "Watermill server configuration."}
+  ];
+
   // customize is used for non-standard or user-defined transport protocols.
   // It allows for flexible configuration without modifying this core proto file.
   optional google.protobuf.Struct customize = 100 [
     json_name = "customize",
     (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined transport protocols configuration."}
   ];
+
+
 }
 
 // Servers defines a collection of server configurations.
@@ -102,6 +111,12 @@ message Client {
   optional google.protobuf.Struct customize = 100 [
     json_name = "customize",
     (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined transport protocols configuration."}
+  ];
+
+  // Watermill client configuration.
+  optional runtime.api.config.transport.watermill.v1.Watermill watermill = 5 [
+    json_name = "watermill",
+    (gnostic.openapi.v3.property) = {description: "Watermill client configuration."}
   ];
 }
 
