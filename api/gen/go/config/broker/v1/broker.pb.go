@@ -202,7 +202,7 @@ type Brokers struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Active        *string                `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
 	Default       *Broker                `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
-	Brokers       []*Broker              `protobuf:"bytes,3,rep,name=brokers,proto3" json:"brokers,omitempty"`
+	Configs       []*Broker              `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -251,9 +251,9 @@ func (x *Brokers) GetDefault() *Broker {
 	return nil
 }
 
-func (x *Brokers) GetBrokers() []*Broker {
+func (x *Brokers) GetConfigs() []*Broker {
 	if x != nil {
-		return x.Brokers
+		return x.Configs
 	}
 	return nil
 }
@@ -295,7 +295,7 @@ const file_config_broker_v1_broker_proto_rawDesc = "" +
 	"\aBrokers\x12O\n" +
 	"\x06active\x18\x01 \x01(\tB2\xbaG/\x92\x02,The active broker to use, overrides default.H\x00R\x06active\x88\x01\x01\x12g\n" +
 	"\adefault\x18\x02 \x01(\v2$.runtime.api.config.broker.v1.BrokerB\"\xbaG\x1f\x92\x02\x1cconfig broker configuration.H\x01R\adefault\x88\x01\x01\x12f\n" +
-	"\abrokers\x18\x03 \x03(\v2$.runtime.api.config.broker.v1.BrokerB&\xbaG#\x92\x02 A list of broker configurations.R\abrokersB\t\n" +
+	"\aconfigs\x18\x03 \x03(\v2$.runtime.api.config.broker.v1.BrokerB&\xbaG#\x92\x02 A list of broker configurations.R\aconfigsB\t\n" +
 	"\a_activeB\n" +
 	"\n" +
 	"\b_defaultB\x87\x02\n" +
@@ -342,7 +342,7 @@ var file_config_broker_v1_broker_proto_depIdxs = []int32{
 	11, // 9: runtime.api.config.broker.v1.Broker.stomp:type_name -> runtime.api.config.broker.stomp.v1.StompConfig
 	12, // 10: runtime.api.config.broker.v1.Broker.settings:type_name -> google.protobuf.Struct
 	0,  // 11: runtime.api.config.broker.v1.Brokers.default:type_name -> runtime.api.config.broker.v1.Broker
-	0,  // 12: runtime.api.config.broker.v1.Brokers.brokers:type_name -> runtime.api.config.broker.v1.Broker
+	0,  // 12: runtime.api.config.broker.v1.Brokers.configs:type_name -> runtime.api.config.broker.v1.Broker
 	13, // [13:13] is the sub-list for method output_type
 	13, // [13:13] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name

@@ -113,8 +113,8 @@ message Brokers {
     (gnostic.openapi.v3.property) = {description: "config broker configuration."}
   ];
 
-  repeated Broker brokers = 3 [
-    json_name = "brokers",
+  repeated Broker configs = 3 [
+    json_name = "configs",
     (gnostic.openapi.v3.property) = {description: "A list of broker configurations."}
   ];
 }
