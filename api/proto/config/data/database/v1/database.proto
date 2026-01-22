@@ -71,8 +71,9 @@ message DatabaseConfig {
   ];
 
   // Optional custom configuration for database types not explicitly defined.
-  optional google.protobuf.Struct customize = 100 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Custom configuration for database types not explicitly defined."}
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined settings."}
   ];
+
 }

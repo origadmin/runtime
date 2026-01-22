@@ -27,6 +27,7 @@ const (
 type Watermill struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// broker configuration reuses the common broker definition.
+	// Supported types: kafka, redis_mq, nats, etc.
 	Broker        *v1.Broker `protobuf:"bytes,1,opt,name=broker,proto3" json:"broker,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

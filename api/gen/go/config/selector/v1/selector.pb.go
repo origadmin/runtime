@@ -7,6 +7,7 @@
 package selectorv1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -36,7 +37,7 @@ type SelectorConfig struct {
 	FilterName *string `protobuf:"bytes,4,opt,name=filter_name,proto3,oneof" json:"filter_name,omitempty"`
 	// custom_config allows for custom configuration for the selector.
 	// It can be used for non-standard or user-defined selector implementations.
-	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -99,9 +100,9 @@ func (x *SelectorConfig) GetFilterName() string {
 	return ""
 }
 
-func (x *SelectorConfig) GetCustomize() *structpb.Struct {
+func (x *SelectorConfig) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -110,18 +111,17 @@ var File_config_selector_v1_selector_proto protoreflect.FileDescriptor
 
 const file_config_selector_v1_selector_proto_rawDesc = "" +
 	"\n" +
-	"!config/selector/v1/selector.proto\x12\x1eruntime.api.config.selector.v1\x1a\x1cgoogle/protobuf/struct.proto\"\x96\x02\n" +
-	"\x0eSelectorConfig\x12\x18\n" +
-	"\aversion\x18\x01 \x01(\tR\aversion\x12\x1f\n" +
-	"\bstrategy\x18\x02 \x01(\tH\x00R\bstrategy\x88\x01\x01\x12)\n" +
-	"\rbalancer_name\x18\x03 \x01(\tH\x01R\rbalancer_name\x88\x01\x01\x12%\n" +
-	"\vfilter_name\x18\x04 \x01(\tH\x02R\vfilter_name\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\x03R\tcustomize\x88\x01\x01B\v\n" +
+	"!config/selector/v1/selector.proto\x12\x1eruntime.api.config.selector.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x83\x04\n" +
+	"\x0eSelectorConfig\x12E\n" +
+	"\aversion\x18\x01 \x01(\tB+\xbaG(\x92\x02%The version of the service to filter.R\aversion\x12J\n" +
+	"\bstrategy\x18\x02 \x01(\tB)\xbaG&\x92\x02#The load balancing strategy to use.H\x00R\bstrategy\x88\x01\x01\x12V\n" +
+	"\rbalancer_name\x18\x03 \x01(\tB+\xbaG(\x92\x02%The name of the load balancer to use.H\x01R\rbalancer_name\x88\x01\x01\x12b\n" +
+	"\vfilter_name\x18\x04 \x01(\tB;\xbaG8\x92\x025The name of the filter to use for endpoint selection.H\x02R\vfilter_name\x88\x01\x01\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x03R\bsettings\x88\x01\x01B\v\n" +
 	"\t_strategyB\x10\n" +
 	"\x0e_balancer_nameB\x0e\n" +
-	"\f_filter_nameB\f\n" +
-	"\n" +
-	"_customizeB\x97\x02\n" +
+	"\f_filter_nameB\v\n" +
+	"\t_settingsB\x97\x02\n" +
 	"\"com.runtime.api.config.selector.v1B\rSelectorProtoP\x01ZEgithub.com/origadmin/runtime/api/gen/go/config/selector/v1;selectorv1\xa2\x02\x04RACS\xaa\x02\x1eRuntime.Api.Config.Selector.V1\xca\x02\x1eRuntime\\Api\\Config\\Selector\\V1\xe2\x02*Runtime\\Api\\Config\\Selector\\V1\\GPBMetadata\xea\x02\"Runtime::Api::Config::Selector::V1b\x06proto3"
 
 var (
@@ -142,7 +142,7 @@ var file_config_selector_v1_selector_proto_goTypes = []any{
 	(*structpb.Struct)(nil), // 1: google.protobuf.Struct
 }
 var file_config_selector_v1_selector_proto_depIdxs = []int32{
-	1, // 0: runtime.api.config.selector.v1.SelectorConfig.customize:type_name -> google.protobuf.Struct
+	1, // 0: runtime.api.config.selector.v1.SelectorConfig.settings:type_name -> google.protobuf.Struct
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

@@ -84,10 +84,11 @@ message TLSConfig {
   ];
 
   // Optional custom configuration for TLS settings not explicitly defined.
-  optional google.protobuf.Struct customize = 11 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Custom configuration for TLS settings not explicitly defined."}
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined settings."}
   ];
+
 }
 
 // File-based certificate configuration

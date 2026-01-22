@@ -188,14 +188,14 @@ func (m *Data) validate(all bool) error {
 
 	}
 
-	if m.Customize != nil {
+	if m.Settings != nil {
 
 		if all {
-			switch v := interface{}(m.GetCustomize()).(type) {
+			switch v := interface{}(m.GetSettings()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  "Customize",
+						field:  "Settings",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -203,16 +203,16 @@ func (m *Data) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, DataValidationError{
-						field:  "Customize",
+						field:  "Settings",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetSettings()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return DataValidationError{
-					field:  "Customize",
+					field:  "Settings",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -354,12 +354,41 @@ func (m *ObjectStores) validate(all bool) error {
 
 	}
 
-	if m.Default != nil {
-		// no validation rules for Default
-	}
-
 	if m.Active != nil {
 		// no validation rules for Active
+	}
+
+	if m.Default != nil {
+
+		if all {
+			switch v := interface{}(m.GetDefault()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ObjectStoresValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ObjectStoresValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDefault()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ObjectStoresValidationError{
+					field:  "Default",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -494,12 +523,41 @@ func (m *Caches) validate(all bool) error {
 
 	}
 
-	if m.Default != nil {
-		// no validation rules for Default
-	}
-
 	if m.Active != nil {
 		// no validation rules for Active
+	}
+
+	if m.Default != nil {
+
+		if all {
+			switch v := interface{}(m.GetDefault()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, CachesValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, CachesValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDefault()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return CachesValidationError{
+					field:  "Default",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -635,12 +693,41 @@ func (m *Databases) validate(all bool) error {
 
 	}
 
-	if m.Default != nil {
-		// no validation rules for Default
-	}
-
 	if m.Active != nil {
 		// no validation rules for Active
+	}
+
+	if m.Default != nil {
+
+		if all {
+			switch v := interface{}(m.GetDefault()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DatabasesValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DatabasesValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDefault()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DatabasesValidationError{
+					field:  "Default",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {
@@ -776,12 +863,41 @@ func (m *Documents) validate(all bool) error {
 
 	}
 
-	if m.Default != nil {
-		// no validation rules for Default
-	}
-
 	if m.Active != nil {
 		// no validation rules for Active
+	}
+
+	if m.Default != nil {
+
+		if all {
+			switch v := interface{}(m.GetDefault()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DocumentsValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DocumentsValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDefault()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DocumentsValidationError{
+					field:  "Default",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {

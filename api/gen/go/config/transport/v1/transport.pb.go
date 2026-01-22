@@ -45,9 +45,9 @@ type Server struct {
 	Websocket *v12.Server `protobuf:"bytes,5,opt,name=websocket,proto3,oneof" json:"websocket,omitempty"`
 	// Watermill server configuration.
 	Watermill *v13.Watermill `protobuf:"bytes,6,opt,name=watermill,proto3,oneof" json:"watermill,omitempty"`
-	// customize is used for non-standard or user-defined transport protocols.
+	// settings is used for non-standard or user-defined transport protocols.
 	// It allows for flexible configuration without modifying this core proto file.
-	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -124,9 +124,9 @@ func (x *Server) GetWatermill() *v13.Watermill {
 	return nil
 }
 
-func (x *Server) GetCustomize() *structpb.Struct {
+func (x *Server) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -193,8 +193,8 @@ type Client struct {
 	Grpc *v1.Client `protobuf:"bytes,3,opt,name=grpc,proto3,oneof" json:"grpc,omitempty"`
 	// HTTP client configuration.
 	Http *v11.Client `protobuf:"bytes,4,opt,name=http,proto3,oneof" json:"http,omitempty"`
-	// customize is used for non-standard or user-defined transport protocols.
-	Customize *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	// settings is used for non-standard or user-defined transport protocols.
+	Settings *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	// Watermill client configuration.
 	Watermill     *v13.Watermill `protobuf:"bytes,5,opt,name=watermill,proto3,oneof" json:"watermill,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -259,9 +259,9 @@ func (x *Client) GetHttp() *v11.Client {
 	return nil
 }
 
-func (x *Client) GetCustomize() *structpb.Struct {
+func (x *Client) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -278,12 +278,12 @@ func (x *Client) GetWatermill() *v13.Watermill {
 // and explicit way to manage multiple named client instances.
 type Clients struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// default is the name of the default client configuration to use from the `clients` list.
-	// If not set, the application can use a predefined default or infer one.
-	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// active is the name of the active client configuration to use from the `clients` list.
 	// If set, it overrides the `default` selection.
-	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Active *string `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// default is the default client configuration.
+	// If not set, the application can use a predefined default or infer one.
+	Default *Client `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// clients is a list of all available client configurations.
 	Configs       []*Client `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -320,18 +320,18 @@ func (*Clients) Descriptor() ([]byte, []int) {
 	return file_config_transport_v1_transport_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Clients) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
 func (x *Clients) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
+}
+
+func (x *Clients) GetDefault() *Client {
+	if x != nil {
+		return x.Default
+	}
+	return nil
 }
 
 func (x *Clients) GetConfigs() []*Client {
@@ -345,45 +345,43 @@ var File_config_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_config_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
-	"#config/transport/v1/transport.proto\x12\x1fruntime.api.config.transport.v1\x1a#config/transport/grpc/v1/grpc.proto\x1a#config/transport/http/v1/http.proto\x1a-config/transport/watermill/v1/watermill.proto\x1a-config/transport/websocket/v1/websocket.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd3\x06\n" +
+	"#config/transport/v1/transport.proto\x12\x1fruntime.api.config.transport.v1\x1a#config/transport/grpc/v1/grpc.proto\x1a#config/transport/http/v1/http.proto\x1a-config/transport/watermill/v1/watermill.proto\x1a-config/transport/websocket/v1/websocket.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xb6\x06\n" +
 	"\x06Server\x12I\n" +
 	"\x04name\x18\x01 \x01(\tB5\xbaG2\x92\x02/The logical name for this server configuration.R\x04name\x12o\n" +
 	"\bprotocol\x18\x02 \x01(\tBS\xbaGP\x92\x02MThe name of the transport protocol to use, e.g., \"grpc\", \"http\", \"websocket\".R\bprotocol\x12g\n" +
 	"\x04grpc\x18\x03 \x01(\v2,.runtime.api.config.transport.grpc.v1.ServerB \xbaG\x1d\x92\x02\x1agRPC server configuration.H\x00R\x04grpc\x88\x01\x01\x12g\n" +
 	"\x04http\x18\x04 \x01(\v2,.runtime.api.config.transport.http.v1.ServerB \xbaG\x1d\x92\x02\x1aHTTP server configuration.H\x01R\x04http\x88\x01\x01\x12{\n" +
 	"\twebsocket\x18\x05 \x01(\v21.runtime.api.config.transport.websocket.v1.ServerB%\xbaG\"\x92\x02\x1fWebSocket server configuration.H\x02R\twebsocket\x88\x01\x01\x12~\n" +
-	"\twatermill\x18\x06 \x01(\v24.runtime.api.config.transport.watermill.v1.WatermillB%\xbaG\"\x92\x02\x1fWatermill server configuration.H\x03R\twatermill\x88\x01\x01\x12\x81\x01\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBE\xbaGB\x92\x02?Non-standard or user-defined transport protocols configuration.H\x04R\tcustomize\x88\x01\x01B\a\n" +
+	"\twatermill\x18\x06 \x01(\v24.runtime.api.config.transport.watermill.v1.WatermillB%\xbaG\"\x92\x02\x1fWatermill server configuration.H\x03R\twatermill\x88\x01\x01\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x04R\bsettings\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
 	"\x05_httpB\f\n" +
 	"\n" +
 	"_websocketB\f\n" +
 	"\n" +
-	"_watermillB\f\n" +
-	"\n" +
-	"_customize\"L\n" +
+	"_watermillB\v\n" +
+	"\t_settings\"L\n" +
 	"\aServers\x12A\n" +
-	"\aconfigs\x18\x01 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aconfigs\"\x84\x05\n" +
+	"\aconfigs\x18\x01 \x03(\v2'.runtime.api.config.transport.v1.ServerR\aconfigs\"\xfb\x04\n" +
 	"\x06Client\x12I\n" +
 	"\x04name\x18\x01 \x01(\tB5\xbaG2\x92\x02/The logical name for this server configuration.R\x04name\x12o\n" +
 	"\bprotocol\x18\x02 \x01(\tBS\xbaGP\x92\x02MThe name of the transport protocol to use, e.g., \"grpc\", \"http\", \"websocket\".R\bprotocol\x12E\n" +
 	"\x04grpc\x18\x03 \x01(\v2,.runtime.api.config.transport.grpc.v1.ClientH\x00R\x04grpc\x88\x01\x01\x12E\n" +
-	"\x04http\x18\x04 \x01(\v2,.runtime.api.config.transport.http.v1.ClientH\x01R\x04http\x88\x01\x01\x12\x81\x01\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBE\xbaGB\x92\x02?Non-standard or user-defined transport protocols configuration.H\x02R\tcustomize\x88\x01\x01\x12~\n" +
+	"\x04http\x18\x04 \x01(\v2,.runtime.api.config.transport.http.v1.ClientH\x01R\x04http\x88\x01\x01\x12z\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB@\xbaG=\x92\x02:Non-standard or user-defined transport protocols settings.H\x02R\bsettings\x88\x01\x01\x12~\n" +
 	"\twatermill\x18\x05 \x01(\v24.runtime.api.config.transport.watermill.v1.WatermillB%\xbaG\"\x92\x02\x1fWatermill client configuration.H\x03R\twatermill\x88\x01\x01B\a\n" +
 	"\x05_grpcB\a\n" +
-	"\x05_httpB\f\n" +
+	"\x05_httpB\v\n" +
+	"\t_settingsB\f\n" +
 	"\n" +
-	"_customizeB\f\n" +
+	"_watermill\"\xc8\x01\n" +
+	"\aClients\x12\x1b\n" +
+	"\x06active\x18\x01 \x01(\tH\x00R\x06active\x88\x01\x01\x12F\n" +
+	"\adefault\x18\x02 \x01(\v2'.runtime.api.config.transport.v1.ClientH\x01R\adefault\x88\x01\x01\x12A\n" +
+	"\aconfigs\x18\x03 \x03(\v2'.runtime.api.config.transport.v1.ClientR\aconfigsB\t\n" +
+	"\a_activeB\n" +
 	"\n" +
-	"_watermill\"\x9f\x01\n" +
-	"\aClients\x12\x1d\n" +
-	"\adefault\x18\x01 \x01(\tH\x00R\adefault\x88\x01\x01\x12\x1b\n" +
-	"\x06active\x18\x02 \x01(\tH\x01R\x06active\x88\x01\x01\x12A\n" +
-	"\aconfigs\x18\x03 \x03(\v2'.runtime.api.config.transport.v1.ClientR\aconfigsB\n" +
-	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_activeB\x9f\x02\n" +
+	"\b_defaultB\x9f\x02\n" +
 	"#com.runtime.api.config.transport.v1B\x0eTransportProtoP\x01ZGgithub.com/origadmin/runtime/api/gen/go/config/transport/v1;transportv1\xa2\x02\x04RACT\xaa\x02\x1fRuntime.Api.Config.Transport.V1\xca\x02\x1fRuntime\\Api\\Config\\Transport\\V1\xe2\x02+Runtime\\Api\\Config\\Transport\\V1\\GPBMetadata\xea\x02#Runtime::Api::Config::Transport::V1b\x06proto3"
 
 var (
@@ -417,18 +415,19 @@ var file_config_transport_v1_transport_proto_depIdxs = []int32{
 	5,  // 1: runtime.api.config.transport.v1.Server.http:type_name -> runtime.api.config.transport.http.v1.Server
 	6,  // 2: runtime.api.config.transport.v1.Server.websocket:type_name -> runtime.api.config.transport.websocket.v1.Server
 	7,  // 3: runtime.api.config.transport.v1.Server.watermill:type_name -> runtime.api.config.transport.watermill.v1.Watermill
-	8,  // 4: runtime.api.config.transport.v1.Server.customize:type_name -> google.protobuf.Struct
+	8,  // 4: runtime.api.config.transport.v1.Server.settings:type_name -> google.protobuf.Struct
 	0,  // 5: runtime.api.config.transport.v1.Servers.configs:type_name -> runtime.api.config.transport.v1.Server
 	9,  // 6: runtime.api.config.transport.v1.Client.grpc:type_name -> runtime.api.config.transport.grpc.v1.Client
 	10, // 7: runtime.api.config.transport.v1.Client.http:type_name -> runtime.api.config.transport.http.v1.Client
-	8,  // 8: runtime.api.config.transport.v1.Client.customize:type_name -> google.protobuf.Struct
+	8,  // 8: runtime.api.config.transport.v1.Client.settings:type_name -> google.protobuf.Struct
 	7,  // 9: runtime.api.config.transport.v1.Client.watermill:type_name -> runtime.api.config.transport.watermill.v1.Watermill
-	2,  // 10: runtime.api.config.transport.v1.Clients.configs:type_name -> runtime.api.config.transport.v1.Client
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	2,  // 10: runtime.api.config.transport.v1.Clients.default:type_name -> runtime.api.config.transport.v1.Client
+	2,  // 11: runtime.api.config.transport.v1.Clients.configs:type_name -> runtime.api.config.transport.v1.Client
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_config_transport_v1_transport_proto_init() }

@@ -21,6 +21,7 @@ import (
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
+	"github.com/origadmin/runtime/extensions/configutil"
 	"github.com/origadmin/runtime/interfaces"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
 )
@@ -104,7 +105,13 @@ func NewCaches(cachesConfig *datav1.Caches) (map[string]storageiface.Cache, stri
 		return nil, "", nil
 	}
 
-	cacheConfigsMap := maps.FromSlice(cachesConfig.GetConfigs(),
+	normalizedDefault, normalizedConfigs, err := configutil.Normalize(cachesConfig.GetActive(), cachesConfig.GetDefault(), cachesConfig.GetConfigs())
+	if err != nil {
+		// Fallback logic if normalization fails (e.g., no configs)
+		return nil, "", err
+	}
+
+	cacheConfigsMap := maps.FromSlice(normalizedConfigs,
 		func(cfg *cachev1.CacheConfig) (string, *cachev1.CacheConfig) {
 			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
 		})
@@ -114,14 +121,11 @@ func NewCaches(cachesConfig *datav1.Caches) (map[string]storageiface.Cache, stri
 		return nil, "", err
 	}
 
-	defaultCacheName := cmp.Or(cachesConfig.GetActive(), cachesConfig.GetDefault(), interfaces.GlobalDefaultKey)
-	if _, ok := caches[defaultCacheName]; !ok && len(caches) > 0 {
-		// If default not found, but caches exist, pick the first one
-		for name := range caches {
-			defaultCacheName = name
-			break
-		}
+	defaultCacheName := ""
+	if normalizedDefault != nil {
+		defaultCacheName = normalizedDefault.GetName()
 	}
+
 	return caches, defaultCacheName, nil
 }
 
@@ -132,7 +136,12 @@ func NewDatabases(databasesConfig *datav1.Databases) (map[string]storageiface.Da
 		return nil, "", nil
 	}
 
-	databaseConfigsMap := maps.FromSlice(databasesConfig.GetConfigs(),
+	normalizedDefault, normalizedConfigs, err := configutil.Normalize(databasesConfig.GetActive(), databasesConfig.GetDefault(), databasesConfig.GetConfigs())
+	if err != nil {
+		return nil, "", err
+	}
+
+	databaseConfigsMap := maps.FromSlice(normalizedConfigs,
 		func(cfg *databasev1.DatabaseConfig) (string, *databasev1.DatabaseConfig) {
 			return cmp.Or(cfg.GetName(), cfg.GetDialect()), cfg
 		})
@@ -142,14 +151,11 @@ func NewDatabases(databasesConfig *datav1.Databases) (map[string]storageiface.Da
 		return nil, "", err
 	}
 
-	defaultDatabaseName := cmp.Or(databasesConfig.GetActive(), databasesConfig.GetDefault(), interfaces.GlobalDefaultKey)
-	if _, ok := databases[defaultDatabaseName]; !ok && len(databases) > 0 {
-		// If default not found, but databases exist, pick the first one
-		for name := range databases {
-			defaultDatabaseName = name
-			break
-		}
+	defaultDatabaseName := ""
+	if normalizedDefault != nil {
+		defaultDatabaseName = normalizedDefault.GetName()
 	}
+
 	return databases, defaultDatabaseName, nil
 }
 
@@ -160,7 +166,12 @@ func NewObjectStores(objectstoresConfig *datav1.ObjectStores) (map[string]storag
 		return nil, "", nil
 	}
 
-	objectstoreConfigsMap := maps.FromSlice(objectstoresConfig.GetConfigs(),
+	normalizedDefault, normalizedConfigs, err := configutil.Normalize(objectstoresConfig.GetActive(), objectstoresConfig.GetDefault(), objectstoresConfig.GetConfigs())
+	if err != nil {
+		return nil, "", err
+	}
+
+	objectstoreConfigsMap := maps.FromSlice(normalizedConfigs,
 		func(cfg *ossv1.ObjectStoreConfig) (string, *ossv1.ObjectStoreConfig) {
 			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
 		})
@@ -170,14 +181,11 @@ func NewObjectStores(objectstoresConfig *datav1.ObjectStores) (map[string]storag
 		return nil, "", err
 	}
 
-	defaultObjectstoreName := cmp.Or(objectstoresConfig.GetActive(), objectstoresConfig.GetDefault(), interfaces.GlobalDefaultKey)
-	if _, ok := objectstores[defaultObjectstoreName]; !ok && len(objectstores) > 0 {
-		// If default not found, but objectstores exist, pick the first one
-		for name := range objectstores {
-			defaultObjectstoreName = name
-			break
-		}
+	defaultObjectstoreName := ""
+	if normalizedDefault != nil {
+		defaultObjectstoreName = normalizedDefault.GetName()
 	}
+
 	return objectstores, defaultObjectstoreName, nil
 }
 

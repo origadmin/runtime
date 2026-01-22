@@ -37,7 +37,6 @@ servers:
 
 # Clients configuration, following the Broker Pattern.
 clients:
-  default: "user-service-client"
   active: "user-service-client"
   configs:
     - name: "user-service-client"

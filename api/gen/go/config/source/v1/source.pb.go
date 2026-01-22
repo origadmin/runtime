@@ -7,6 +7,7 @@
 package sourcev1
 
 import (
+	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -110,7 +111,7 @@ type SourceConfig struct {
 	Apollo        *ApolloSource     `protobuf:"bytes,15,opt,name=apollo,proto3,oneof" json:"apollo,omitempty"`
 	Kubernetes    *KubernetesSource `protobuf:"bytes,16,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
 	Polaris       *PolarisSource    `protobuf:"bytes,17,opt,name=polaris,proto3,oneof" json:"polaris,omitempty"`
-	Customize     *structpb.Struct  `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct  `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -229,9 +230,9 @@ func (x *SourceConfig) GetPolaris() *PolarisSource {
 	return nil
 }
 
-func (x *SourceConfig) GetCustomize() *structpb.Struct {
+func (x *SourceConfig) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -240,28 +241,28 @@ var File_config_source_v1_source_proto protoreflect.FileDescriptor
 
 const file_config_source_v1_source_proto_rawDesc = "" +
 	"\n" +
-	"\x1dconfig/source/v1/source.proto\x12\x1cruntime.api.config.source.v1\x1a$config/source/v1/apollo_source.proto\x1a$config/source/v1/consul_source.proto\x1a!config/source/v1/env_source.proto\x1a\"config/source/v1/etcd_source.proto\x1a\"config/source/v1/file_source.proto\x1a(config/source/v1/kubernetes_source.proto\x1a#config/source/v1/nacos_source.proto\x1a%config/source/v1/polaris_source.proto\x1a\x1cgoogle/protobuf/struct.proto\"}\n" +
+	"\x1dconfig/source/v1/source.proto\x12\x1cruntime.api.config.source.v1\x1a$config/source/v1/apollo_source.proto\x1a$config/source/v1/consul_source.proto\x1a!config/source/v1/env_source.proto\x1a\"config/source/v1/etcd_source.proto\x1a\"config/source/v1/file_source.proto\x1a(config/source/v1/kubernetes_source.proto\x1a#config/source/v1/nacos_source.proto\x1a%config/source/v1/polaris_source.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"}\n" +
 	"\aSources\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x12D\n" +
-	"\aconfigs\x18\x03 \x03(\v2*.runtime.api.config.source.v1.SourceConfigR\aconfigs\"\xca\x06\n" +
-	"\fSourceConfig\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12\x18\n" +
-	"\aformats\x18\x03 \x03(\tR\aformats\x12\x1a\n" +
-	"\bpriority\x18\x04 \x01(\x05R\bpriority\x12>\n" +
+	"\aconfigs\x18\x03 \x03(\v2*.runtime.api.config.source.v1.SourceConfigR\aconfigs\"\x90\v\n" +
+	"\fSourceConfig\x12?\n" +
+	"\x04name\x18\x01 \x01(\tB+\xbaG(\x92\x02%The name of the configuration source.R\x04name\x12?\n" +
+	"\x04type\x18\x02 \x01(\tB+\xbaG(\x92\x02%The type of the configuration source.R\x04type\x12Y\n" +
+	"\aformats\x18\x03 \x03(\tB?\xbaG<\x92\x029The supported file formats for this configuration source.R\aformats\x12L\n" +
+	"\bpriority\x18\x04 \x01(\x05B0\xbaG-\x92\x02*The priority of this configuration source.R\bpriority\x12t\n" +
 	"\x03env\x18\n" +
-	" \x01(\v2'.runtime.api.config.source.v1.EnvSourceH\x00R\x03env\x88\x01\x01\x12A\n" +
-	"\x04file\x18\v \x01(\v2(.runtime.api.config.source.v1.FileSourceH\x01R\x04file\x88\x01\x01\x12A\n" +
-	"\x04etcd\x18\f \x01(\v2(.runtime.api.config.source.v1.ETCDSourceH\x02R\x04etcd\x88\x01\x01\x12G\n" +
-	"\x06consul\x18\r \x01(\v2*.runtime.api.config.source.v1.ConsulSourceH\x03R\x06consul\x88\x01\x01\x12D\n" +
-	"\x05nacos\x18\x0e \x01(\v2).runtime.api.config.source.v1.NacosSourceH\x04R\x05nacos\x88\x01\x01\x12G\n" +
-	"\x06apollo\x18\x0f \x01(\v2*.runtime.api.config.source.v1.ApolloSourceH\x05R\x06apollo\x88\x01\x01\x12S\n" +
+	" \x01(\v2'.runtime.api.config.source.v1.EnvSourceB4\xbaG1\x92\x02.The environment variable configuration source.H\x00R\x03env\x88\x01\x01\x12g\n" +
+	"\x04file\x18\v \x01(\v2(.runtime.api.config.source.v1.FileSourceB$\xbaG!\x92\x02\x1eThe file configuration source.H\x01R\x04file\x88\x01\x01\x12g\n" +
+	"\x04etcd\x18\f \x01(\v2(.runtime.api.config.source.v1.ETCDSourceB$\xbaG!\x92\x02\x1eThe ETCD configuration source.H\x02R\x04etcd\x88\x01\x01\x12o\n" +
+	"\x06consul\x18\r \x01(\v2*.runtime.api.config.source.v1.ConsulSourceB&\xbaG#\x92\x02 The Consul configuration source.H\x03R\x06consul\x88\x01\x01\x12k\n" +
+	"\x05nacos\x18\x0e \x01(\v2).runtime.api.config.source.v1.NacosSourceB%\xbaG\"\x92\x02\x1fThe Nacos configuration source.H\x04R\x05nacos\x88\x01\x01\x12o\n" +
+	"\x06apollo\x18\x0f \x01(\v2*.runtime.api.config.source.v1.ApolloSourceB&\xbaG#\x92\x02 The Apollo configuration source.H\x05R\x06apollo\x88\x01\x01\x12\x7f\n" +
 	"\n" +
-	"kubernetes\x18\x10 \x01(\v2..runtime.api.config.source.v1.KubernetesSourceH\x06R\n" +
-	"kubernetes\x88\x01\x01\x12J\n" +
-	"\apolaris\x18\x11 \x01(\v2+.runtime.api.config.source.v1.PolarisSourceH\aR\apolaris\x88\x01\x01\x12:\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructH\bR\tcustomize\x88\x01\x01B\x06\n" +
+	"kubernetes\x18\x10 \x01(\v2..runtime.api.config.source.v1.KubernetesSourceB*\xbaG'\x92\x02$The Kubernetes configuration source.H\x06R\n" +
+	"kubernetes\x88\x01\x01\x12s\n" +
+	"\apolaris\x18\x11 \x01(\v2+.runtime.api.config.source.v1.PolarisSourceB'\xbaG$\x92\x02!The Polaris configuration source.H\aR\apolaris\x88\x01\x01\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\bR\bsettings\x88\x01\x01B\x06\n" +
 	"\x04_envB\a\n" +
 	"\x05_fileB\a\n" +
 	"\x05_etcdB\t\n" +
@@ -270,9 +271,8 @@ const file_config_source_v1_source_proto_rawDesc = "" +
 	"\a_apolloB\r\n" +
 	"\v_kubernetesB\n" +
 	"\n" +
-	"\b_polarisB\f\n" +
-	"\n" +
-	"_customizeB\x87\x02\n" +
+	"\b_polarisB\v\n" +
+	"\t_settingsB\x87\x02\n" +
 	" com.runtime.api.config.source.v1B\vSourceProtoP\x01ZAgithub.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1\xa2\x02\x04RACS\xaa\x02\x1cRuntime.Api.Config.Source.V1\xca\x02\x1cRuntime\\Api\\Config\\Source\\V1\xe2\x02(Runtime\\Api\\Config\\Source\\V1\\GPBMetadata\xea\x02 Runtime::Api::Config::Source::V1b\x06proto3"
 
 var (
@@ -311,7 +311,7 @@ var file_config_source_v1_source_proto_depIdxs = []int32{
 	7,  // 6: runtime.api.config.source.v1.SourceConfig.apollo:type_name -> runtime.api.config.source.v1.ApolloSource
 	8,  // 7: runtime.api.config.source.v1.SourceConfig.kubernetes:type_name -> runtime.api.config.source.v1.KubernetesSource
 	9,  // 8: runtime.api.config.source.v1.SourceConfig.polaris:type_name -> runtime.api.config.source.v1.PolarisSource
-	10, // 9: runtime.api.config.source.v1.SourceConfig.customize:type_name -> google.protobuf.Struct
+	10, // 9: runtime.api.config.source.v1.SourceConfig.settings:type_name -> google.protobuf.Struct
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name

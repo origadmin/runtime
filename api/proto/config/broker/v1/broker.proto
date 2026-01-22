@@ -86,9 +86,14 @@ message Broker {
     (gnostic.openapi.v3.property) = {description: "STOMP specific configuration."}
   ];
   // Optional customize configuration.
-  optional google.protobuf.Struct customize = 100 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Custom broker configuration."}
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Custom settings for broker configuration."}
+  ];
+
+  optional string url = 101 [
+    json_name = "url",
+    (gnostic.openapi.v3.property) = {description: "The URL of the broker."}
   ];
 
   // Add other common configurations here if applicable to all implementations,
@@ -98,13 +103,14 @@ message Broker {
 }
 
 message Brokers {
-  optional string default = 1 [
-    json_name = "default",
-    (gnostic.openapi.v3.property) = {description: "The default broker to use."}
-  ];
-  optional string active = 2 [
+  optional string active = 1 [
     json_name = "active",
     (gnostic.openapi.v3.property) = {description: "The active broker to use, overrides default."}
+  ];
+
+  optional Broker default = 2 [
+    json_name = "default",
+    (gnostic.openapi.v3.property) = {description: "config broker configuration."}
   ];
 
   repeated Broker brokers = 3 [

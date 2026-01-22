@@ -55,7 +55,7 @@ type TLSConfig struct {
 	// Default: ""
 	ServerName string `protobuf:"bytes,10,opt,name=server_name,proto3" json:"server_name,omitempty"`
 	// Optional custom configuration for TLS settings not explicitly defined.
-	Customize     *structpb.Struct `protobuf:"bytes,11,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -160,9 +160,9 @@ func (x *TLSConfig) GetServerName() string {
 	return ""
 }
 
-func (x *TLSConfig) GetCustomize() *structpb.Struct {
+func (x *TLSConfig) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -299,7 +299,7 @@ var File_config_transport_tls_v1_tls_proto protoreflect.FileDescriptor
 
 const file_config_transport_tls_v1_tls_proto_rawDesc = "" +
 	"\n" +
-	"!config/transport/tls/v1/tls.proto\x12#runtime.api.config.transport.tls.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xfc\n" +
+	"!config/transport/tls/v1/tls.proto\x12#runtime.api.config.transport.tls.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x17validate/validate.proto\"\xe2\n" +
 	"\n" +
 	"\tTLSConfig\x12J\n" +
 	"\x04name\x18\x01 \x01(\tB6\xbaG3\x92\x020Unique name for this TLS configuration instance.R\x04name\x12N\n" +
@@ -312,12 +312,11 @@ const file_config_transport_tls_v1_tls_proto_rawDesc = "" +
 	"\x0eclient_ca_file\x18\b \x01(\tBT\xbaGQ\x92\x02NPath to the client CA certificate file used for client certificate validation.R\x0eclient_ca_file\x12\x91\x01\n" +
 	"\x14insecure_skip_verify\x18\t \x01(\bB]\xbaGZ\x92\x02WIf true, skips server certificate verification. Only use in development. Default: falseR\x14insecure_skip_verify\x12\x8d\x01\n" +
 	"\vserver_name\x18\n" +
-	" \x01(\tBk\xbaGh\x92\x02eServer name for SNI (Server Name Indication), used by client to specify the hostname being contacted.R\vserver_name\x12\x7f\n" +
-	"\tcustomize\x18\v \x01(\v2\x17.google.protobuf.StructBC\xbaG@\x92\x02=Custom configuration for TLS settings not explicitly defined.H\x02R\tcustomize\x88\x01\x01B\a\n" +
+	" \x01(\tBk\xbaGh\x92\x02eServer name for SNI (Server Name Indication), used by client to specify the hostname being contacted.R\vserver_name\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x02R\bsettings\x88\x01\x01B\a\n" +
 	"\x05_fileB\x06\n" +
-	"\x04_pemB\f\n" +
-	"\n" +
-	"_customize\"\x95\x02\n" +
+	"\x04_pemB\v\n" +
+	"\t_settings\"\x95\x02\n" +
 	"\n" +
 	"FileConfig\x12S\n" +
 	"\x04cert\x18\x01 \x01(\tB?\xfaB\x04r\x02\x10\x01\xbaG5\xba\x01\x04cert\x92\x02+Path to the certificate file in PEM format.R\x04cert\x12P\n" +
@@ -351,7 +350,7 @@ var file_config_transport_tls_v1_tls_proto_goTypes = []any{
 var file_config_transport_tls_v1_tls_proto_depIdxs = []int32{
 	1, // 0: runtime.api.config.transport.tls.v1.TLSConfig.file:type_name -> runtime.api.config.transport.tls.v1.FileConfig
 	2, // 1: runtime.api.config.transport.tls.v1.TLSConfig.pem:type_name -> runtime.api.config.transport.tls.v1.PEMConfig
-	3, // 2: runtime.api.config.transport.tls.v1.TLSConfig.customize:type_name -> google.protobuf.Struct
+	3, // 2: runtime.api.config.transport.tls.v1.TLSConfig.settings:type_name -> google.protobuf.Struct
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

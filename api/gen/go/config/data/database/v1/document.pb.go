@@ -36,7 +36,7 @@ type DocumentConfig struct {
 	// Optional MongoDB configuration.
 	Mongo *MongoConfig `protobuf:"bytes,10,opt,name=mongo,proto3,oneof" json:"mongo,omitempty"`
 	// Optional custom configuration for document database types not explicitly defined.
-	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -92,9 +92,9 @@ func (x *DocumentConfig) GetMongo() *MongoConfig {
 	return nil
 }
 
-func (x *DocumentConfig) GetCustomize() *structpb.Struct {
+func (x *DocumentConfig) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -103,16 +103,15 @@ var File_config_data_database_v1_document_proto protoreflect.FileDescriptor
 
 const file_config_data_database_v1_document_proto_rawDesc = "" +
 	"\n" +
-	"&config/data/database/v1/document.proto\x12#runtime.api.config.data.database.v1\x1a#config/data/database/v1/mongo.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xf8\x03\n" +
+	"&config/data/database/v1/document.proto\x12#runtime.api.config.data.database.v1\x1a#config/data/database/v1/mongo.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd2\x03\n" +
 	"\x0eDocumentConfig\x12X\n" +
 	"\x04name\x18\x01 \x01(\tBD\xbaGA\x92\x02>Unique name for this document database configuration instance.R\x04name\x12s\n" +
 	"\x04type\x18\x02 \x01(\tB_\xbaG\\\x92\x02YThe type of document database. Built-in: 'mongo'. Custom types use their registered name.R\x04type\x12r\n" +
 	"\x05mongo\x18\n" +
-	" \x01(\v20.runtime.api.config.data.database.v1.MongoConfigB%\xbaG\"\x92\x02\x1fMongoDB specific configuration.H\x00R\x05mongo\x88\x01\x01\x12\x8a\x01\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBN\xbaGK\x92\x02HCustom configuration for document database types not explicitly defined.H\x01R\tcustomize\x88\x01\x01B\b\n" +
-	"\x06_mongoB\f\n" +
-	"\n" +
-	"_customizeB\xb7\x02\n" +
+	" \x01(\v20.runtime.api.config.data.database.v1.MongoConfigB%\xbaG\"\x92\x02\x1fMongoDB specific configuration.H\x00R\x05mongo\x88\x01\x01\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x01R\bsettings\x88\x01\x01B\b\n" +
+	"\x06_mongoB\v\n" +
+	"\t_settingsB\xb7\x02\n" +
 	"'com.runtime.api.config.data.database.v1B\rDocumentProtoP\x01ZJgithub.com/origadmin/runtime/api/gen/go/config/data/database/v1;databasev1\xa2\x02\x05RACDD\xaa\x02#Runtime.Api.Config.Data.Database.V1\xca\x02#Runtime\\Api\\Config\\Data\\Database\\V1\xe2\x02/Runtime\\Api\\Config\\Data\\Database\\V1\\GPBMetadata\xea\x02(Runtime::Api::Config::Data::Database::V1b\x06proto3"
 
 var (
@@ -135,7 +134,7 @@ var file_config_data_database_v1_document_proto_goTypes = []any{
 }
 var file_config_data_database_v1_document_proto_depIdxs = []int32{
 	1, // 0: runtime.api.config.data.database.v1.DocumentConfig.mongo:type_name -> runtime.api.config.data.database.v1.MongoConfig
-	2, // 1: runtime.api.config.data.database.v1.DocumentConfig.customize:type_name -> google.protobuf.Struct
+	2, // 1: runtime.api.config.data.database.v1.DocumentConfig.settings:type_name -> google.protobuf.Struct
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

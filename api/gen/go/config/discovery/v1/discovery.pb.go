@@ -42,7 +42,7 @@ type Discovery struct {
 	Apollo        *Apollo          `protobuf:"bytes,13,opt,name=apollo,proto3,oneof" json:"apollo,omitempty"`
 	Kubernetes    *Kubernetes      `protobuf:"bytes,14,opt,name=kubernetes,proto3,oneof" json:"kubernetes,omitempty"`
 	Polaris       *Polaris         `protobuf:"bytes,15,opt,name=polaris,proto3,oneof" json:"polaris,omitempty"`
-	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -140,19 +140,19 @@ func (x *Discovery) GetPolaris() *Polaris {
 	return nil
 }
 
-func (x *Discovery) GetCustomize() *structpb.Struct {
+func (x *Discovery) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
 
 type Discoveries struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// default is the name of the discovery service to use by default.
-	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// active specifies the name of the discovery service to use, overriding the default.
-	Active        *string      `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Active *string `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// default is the discovery service to use by default.
+	Default       *Discovery   `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	Configs       []*Discovery `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -188,18 +188,18 @@ func (*Discoveries) Descriptor() ([]byte, []int) {
 	return file_config_discovery_v1_discovery_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Discoveries) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
 func (x *Discoveries) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
+}
+
+func (x *Discoveries) GetDefault() *Discovery {
+	if x != nil {
+		return x.Default
+	}
+	return nil
 }
 
 func (x *Discoveries) GetConfigs() []*Discovery {
@@ -539,7 +539,7 @@ var File_config_discovery_v1_discovery_proto protoreflect.FileDescriptor
 
 const file_config_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
-	"#config/discovery/v1/discovery.proto\x12\x1fruntime.api.config.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xc0\t\n" +
+	"#config/discovery/v1/discovery.proto\x12\x1fruntime.api.config.discovery.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xbb\t\n" +
 	"\tDiscovery\x12J\n" +
 	"\x04name\x18\x01 \x01(\tB6\xbaG3\x92\x020The name of the discovery service configuration.R\x04name\x12\x92\x01\n" +
 	"\x04type\x18\x02 \x01(\tB~\xbaG{\x92\x02xThe type of discovery provider to use. Built-in: 'consul', 'etcd', 'nacos', etc. Custom types use their registered name.R\x04type\x12M\n" +
@@ -552,24 +552,23 @@ const file_config_discovery_v1_discovery_proto_rawDesc = "" +
 	"\n" +
 	"kubernetes\x18\x0e \x01(\v2+.runtime.api.config.discovery.v1.KubernetesB1\xbaG.\x92\x02+Kubernetes provider specific configuration.H\x04R\n" +
 	"kubernetes\x88\x01\x01\x12w\n" +
-	"\apolaris\x18\x0f \x01(\v2(.runtime.api.config.discovery.v1.PolarisB.\xbaG+\x92\x02(Polaris provider specific configuration.H\x05R\apolaris\x88\x01\x01\x12j\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB.\xbaG+\x92\x02(Custom discovery provider configuration.H\x06R\tcustomize\x88\x01\x01B\t\n" +
+	"\apolaris\x18\x0f \x01(\v2(.runtime.api.config.discovery.v1.PolarisB.\xbaG+\x92\x02(Polaris provider specific configuration.H\x05R\apolaris\x88\x01\x01\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x06R\bsettings\x88\x01\x01B\t\n" +
 	"\a_consulB\a\n" +
 	"\x05_etcdB\b\n" +
 	"\x06_nacosB\t\n" +
 	"\a_apolloB\r\n" +
 	"\v_kubernetesB\n" +
 	"\n" +
-	"\b_polarisB\f\n" +
+	"\b_polarisB\v\n" +
+	"\t_settings\"\xfe\x02\n" +
+	"\vDiscoveries\x12d\n" +
+	"\x06active\x18\x01 \x01(\tBG\xbaGD\x92\x02AThe name of the discovery service to use, overriding the default.H\x00R\x06active\x88\x01\x01\x12y\n" +
+	"\adefault\x18\x02 \x01(\v2*.runtime.api.config.discovery.v1.DiscoveryB.\xbaG+\x92\x02(The discovery service to use by default.H\x01R\adefault\x88\x01\x01\x12w\n" +
+	"\aconfigs\x18\x03 \x03(\v2*.runtime.api.config.discovery.v1.DiscoveryB1\xbaG.\x92\x02+A list of discovery service configurations.R\aconfigsB\t\n" +
+	"\a_activeB\n" +
 	"\n" +
-	"_customize\"\xde\x02\n" +
-	"\vDiscoveries\x12Y\n" +
-	"\adefault\x18\x01 \x01(\tB:\xbaG7\x92\x024The name of the discovery service to use by default.H\x00R\adefault\x88\x01\x01\x12d\n" +
-	"\x06active\x18\x02 \x01(\tBG\xbaGD\x92\x02AThe name of the discovery service to use, overriding the default.H\x01R\x06active\x88\x01\x01\x12w\n" +
-	"\aconfigs\x18\x03 \x03(\v2*.runtime.api.config.discovery.v1.DiscoveryB1\xbaG.\x92\x02+A list of discovery service configurations.R\aconfigsB\n" +
-	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_active\"\xe9\x06\n" +
+	"\b_default\"\xe9\x06\n" +
 	"\x06Consul\x12@\n" +
 	"\aaddress\x18\x01 \x01(\tB&\xbaG#\x92\x02 The address of the Consul agent.R\aaddress\x12]\n" +
 	"\x06scheme\x18\x02 \x01(\tBE\xbaGB\x92\x02?The scheme to use for connecting to Consul (e.g., http, https).R\x06scheme\x12D\n" +
@@ -628,13 +627,14 @@ var file_config_discovery_v1_discovery_proto_depIdxs = []int32{
 	5, // 3: runtime.api.config.discovery.v1.Discovery.apollo:type_name -> runtime.api.config.discovery.v1.Apollo
 	6, // 4: runtime.api.config.discovery.v1.Discovery.kubernetes:type_name -> runtime.api.config.discovery.v1.Kubernetes
 	7, // 5: runtime.api.config.discovery.v1.Discovery.polaris:type_name -> runtime.api.config.discovery.v1.Polaris
-	8, // 6: runtime.api.config.discovery.v1.Discovery.customize:type_name -> google.protobuf.Struct
-	0, // 7: runtime.api.config.discovery.v1.Discoveries.configs:type_name -> runtime.api.config.discovery.v1.Discovery
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	8, // 6: runtime.api.config.discovery.v1.Discovery.settings:type_name -> google.protobuf.Struct
+	0, // 7: runtime.api.config.discovery.v1.Discoveries.default:type_name -> runtime.api.config.discovery.v1.Discovery
+	0, // 8: runtime.api.config.discovery.v1.Discoveries.configs:type_name -> runtime.api.config.discovery.v1.Discovery
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_config_discovery_v1_discovery_proto_init() }

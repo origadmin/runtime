@@ -38,6 +38,9 @@ func TestMiddleware(t *testing.T) {
 
 // getMiddlewareField gets middleware configuration field
 func getMiddlewareField(mw *middlewarev1.Middleware, fieldName string) interface{} {
+	if mw == nil {
+		return nil
+	}
 	switch fieldName {
 	case "metadata":
 		return mw.Metadata
@@ -110,6 +113,9 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 	// Get the configuration directly from the initialized runtime.
 	// This is the correct way, as it uses the framework's own decoding logic.
 	configs, err := rtInstance.StructuredConfig().DecodeMiddlewares()
+	var source map[string]any
+	_ = rtInstance.Config().Decode("", &source)
+	t.Logf("Loaded configs: %+v", source)
 	require.NoError(t, err, "Failed to decode middlewares from structured config")
 	t.Logf("Loaded middlewares: %+v", configs)
 	t.Run("VerifyConfig", func(t *testing.T) {
@@ -117,6 +123,10 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		t.Logf("Loaded middlewares: %+v", configs.Configs)
 		// Check configuration of each middleware
 		for _, mw := range configs.Configs {
+			if mw == nil {
+				t.Error("Found nil middleware configuration in configs.Configs")
+				continue
+			}
 			t.Logf("Checking middleware: %s (type: %s, enabled: %v)", mw.Name, mw.Type, mw.Enabled)
 			assert.NotEmpty(t, mw.Name, "Middleware name should not be empty")
 			assert.NotEmpty(t, mw.Type, "Middleware type should not be empty")
@@ -166,6 +176,10 @@ func TestMiddleware_LoadAndBuild(t *testing.T) {
 		t.Logf("  - Found client middlewares: %d", len(clientMWsMap))
 		t.Logf("  - Configured middlewares:")
 		for i, mw := range configs.Configs {
+			if mw == nil {
+				t.Logf("    %d. <nil>", i+1)
+				continue
+			}
 			t.Logf("    %d. %s (type: %s, enabled: %v)", i+1, mw.Name, mw.Type, mw.Enabled)
 		}
 

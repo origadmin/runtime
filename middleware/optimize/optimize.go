@@ -44,11 +44,11 @@ func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	helper.Debugf("enabling server optimize middleware")
 
 	// Check if custom configuration is enabled
-	if !cfg.GetEnabled() || cfg.GetType() != "customize" || cfg.GetCustomize() == nil {
+	if !cfg.GetEnabled() || cfg.GetType() != "customize" || cfg.GetSettings() == nil {
 		return nil, false
 	}
 	// Get custom configuration
-	config := cfg.GetCustomize()
+	config := cfg.GetSettings()
 
 	// Create Optimize configuration object
 	// Try to decode Optimize configuration from config.Value

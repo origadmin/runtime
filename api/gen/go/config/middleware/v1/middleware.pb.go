@@ -176,7 +176,7 @@ type Middleware struct {
 	Recovery       *Recovery           `protobuf:"bytes,12,opt,name=recovery,proto3,oneof" json:"recovery,omitempty"`
 	Metadata       *Metadata           `protobuf:"bytes,13,opt,name=metadata,proto3,oneof" json:"metadata,omitempty"`
 	Security       *Security           `protobuf:"bytes,14,opt,name=security,proto3,oneof" json:"security,omitempty"`
-	Customize      *structpb.Struct    `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"` // Add other specific middleware types here as they are defined
+	Settings       *structpb.Struct    `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"` // Add other specific middleware types here as they are defined
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -309,9 +309,9 @@ func (x *Middleware) GetSecurity() *Security {
 	return nil
 }
 
-func (x *Middleware) GetCustomize() *structpb.Struct {
+func (x *Middleware) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -375,7 +375,7 @@ const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\t\n" +
 	"\aLogging\"\n" +
 	"\n" +
-	"\bRecovery\"\xef\x0e\n" +
+	"\bRecovery\"\xec\x0e\n" +
 	"\n" +
 	"Middleware\x12>\n" +
 	"\x04name\x18\x01 \x01(\tB*\xbaG'\x92\x02$The name of the middleware instance.R\x04name\x12\x93\x01\n" +
@@ -393,8 +393,8 @@ const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	"\brecovery\x18\f \x01(\v2*.runtime.api.config.middleware.v1.RecoveryB(\xbaG%\x92\x02\"Recovery middleware configuration.H\bR\brecovery\x88\x01\x01\x12}\n" +
 	"\bmetadata\x18\r \x01(\v2*.runtime.api.config.middleware.v1.MetadataB0\xbaG-\x92\x02*Metadata configuration for the middleware.H\tR\bmetadata\x88\x01\x01\x12\x81\x01\n" +
 	"\bsecurity\x18\x0e \x01(\v2*.runtime.api.config.middleware.v1.SecurityB4\xbaG1\x92\x02.Declarative security middleware configuration.H\n" +
-	"R\bsecurity\x88\x01\x01\x12b\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB&\xbaG#\x92\x02 Custom middleware configuration.H\vR\tcustomize\x88\x01\x01B\x0f\n" +
+	"R\bsecurity\x88\x01\x01\x12`\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB&\xbaG#\x92\x02 Custom middleware configuration.H\vR\bsettings\x88\x01\x01B\x0f\n" +
 	"\r_rate_limiterB\n" +
 	"\n" +
 	"\b_metricsB\f\n" +
@@ -408,9 +408,8 @@ const file_config_middleware_v1_middleware_proto_rawDesc = "" +
 	"\b_loggingB\v\n" +
 	"\t_recoveryB\v\n" +
 	"\t_metadataB\v\n" +
-	"\t_securityB\f\n" +
-	"\n" +
-	"_customize\"\x99\x01\n" +
+	"\t_securityB\v\n" +
+	"\t_settings\"\x99\x01\n" +
 	"\vMiddlewares\x12\x89\x01\n" +
 	"\aconfigs\x18\x01 \x03(\v2,.runtime.api.config.middleware.v1.MiddlewareBA\xbaG>\x92\x02;A list of middleware configurations to be applied in order.R\aconfigsB\xa7\x02\n" +
 	"$com.runtime.api.config.middleware.v1B\x0fMiddlewareProtoP\x01ZIgithub.com/origadmin/runtime/api/gen/go/config/middleware/v1;middlewarev1\xa2\x02\x04RACM\xaa\x02 Runtime.Api.Config.Middleware.V1\xca\x02 Runtime\\Api\\Config\\Middleware\\V1\xe2\x02,Runtime\\Api\\Config\\Middleware\\V1\\GPBMetadata\xea\x02$Runtime::Api::Config::Middleware::V1b\x06proto3"
@@ -458,7 +457,7 @@ var file_config_middleware_v1_middleware_proto_depIdxs = []int32{
 	2,  // 9: runtime.api.config.middleware.v1.Middleware.recovery:type_name -> runtime.api.config.middleware.v1.Recovery
 	0,  // 10: runtime.api.config.middleware.v1.Middleware.metadata:type_name -> runtime.api.config.middleware.v1.Metadata
 	13, // 11: runtime.api.config.middleware.v1.Middleware.security:type_name -> runtime.api.config.middleware.v1.Security
-	14, // 12: runtime.api.config.middleware.v1.Middleware.customize:type_name -> google.protobuf.Struct
+	14, // 12: runtime.api.config.middleware.v1.Middleware.settings:type_name -> google.protobuf.Struct
 	3,  // 13: runtime.api.config.middleware.v1.Middlewares.configs:type_name -> runtime.api.config.middleware.v1.Middleware
 	14, // [14:14] is the sub-list for method output_type
 	14, // [14:14] is the sub-list for method input_type

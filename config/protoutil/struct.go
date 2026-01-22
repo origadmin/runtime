@@ -9,7 +9,6 @@ package protoutil
 import (
 	"fmt"
 
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -36,13 +35,13 @@ func UnmarshalTo(s *structpb.Struct, dest proto.Message) error {
 	}
 
 	// Marshal the structpb.Struct into its canonical JSON representation.
-	jsonBytes, err := protojson.Marshal(s)
+	jsonBytes, err := proto.Marshal(s)
 	if err != nil {
 		return fmt.Errorf("failed to marshal struct to JSON: %w", err)
 	}
 
 	// Unmarshal the JSON bytes into the destination protobuf message.
-	if err := protojson.Unmarshal(jsonBytes, dest); err != nil {
+	if err := proto.Unmarshal(jsonBytes, dest); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON into %T: %w", dest, err)
 	}
 
@@ -75,12 +74,12 @@ func NewFromStruct[T any, PT ProtoMessagePtr[T]](s *structpb.Struct) (PT, error)
 		return newVal, nil
 	}
 
-	jsonBytes, err := protojson.Marshal(s)
+	jsonBytes, err := proto.Marshal(s)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal struct to JSON: %w", err)
 	}
 
-	if err := protojson.Unmarshal(jsonBytes, newVal); err != nil {
+	if err := proto.Unmarshal(jsonBytes, newVal); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON into %T: %w", newVal, err)
 	}
 

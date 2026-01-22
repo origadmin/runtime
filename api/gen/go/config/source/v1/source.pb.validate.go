@@ -463,14 +463,14 @@ func (m *SourceConfig) validate(all bool) error {
 
 	}
 
-	if m.Customize != nil {
+	if m.Settings != nil {
 
 		if all {
-			switch v := interface{}(m.GetCustomize()).(type) {
+			switch v := interface{}(m.GetSettings()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, SourceConfigValidationError{
-						field:  "Customize",
+						field:  "Settings",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -478,16 +478,16 @@ func (m *SourceConfig) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, SourceConfigValidationError{
-						field:  "Customize",
+						field:  "Settings",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetSettings()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return SourceConfigValidationError{
-					field:  "Customize",
+					field:  "Settings",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

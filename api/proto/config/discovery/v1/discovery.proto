@@ -55,23 +55,23 @@ message Discovery {
     json_name = "polaris",
     (gnostic.openapi.v3.property) = {description: "Polaris provider specific configuration."}
   ];
-  optional google.protobuf.Struct customize = 100 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Custom discovery provider configuration."}
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined settings."}
   ];
+
 }
 
 message Discoveries {
-  // default is the name of the discovery service to use by default.
-  optional string default = 1 [
-    json_name = "default",
-    (gnostic.openapi.v3.property) = {description: "The name of the discovery service to use by default."}
-  ];
-
   // active specifies the name of the discovery service to use, overriding the default.
-  optional string active = 2 [
+  optional string active = 1 [
     json_name = "active",
     (gnostic.openapi.v3.property) = {description: "The name of the discovery service to use, overriding the default."}
+  ];
+  // default is the discovery service to use by default.
+  optional Discovery default = 2 [
+    json_name = "default",
+    (gnostic.openapi.v3.property) = {description: "The discovery service to use by default."}
   ];
 
   repeated Discovery configs = 3 [

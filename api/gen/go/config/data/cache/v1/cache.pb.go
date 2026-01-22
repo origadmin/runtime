@@ -43,7 +43,7 @@ type CacheConfig struct {
 	// If 0 or not set, a default (e.g., 5 minutes) will be used by the implementation.
 	CleanupInterval int64 `protobuf:"varint,13,opt,name=cleanup_interval,proto3" json:"cleanup_interval,omitempty"`
 	// Optional custom configuration for cache types not explicitly defined.
-	Customize     *structpb.Struct `protobuf:"bytes,14,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -120,9 +120,9 @@ func (x *CacheConfig) GetCleanupInterval() int64 {
 	return 0
 }
 
-func (x *CacheConfig) GetCustomize() *structpb.Struct {
+func (x *CacheConfig) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -131,7 +131,7 @@ var File_config_data_cache_v1_cache_proto protoreflect.FileDescriptor
 
 const file_config_data_cache_v1_cache_proto_rawDesc = "" +
 	"\n" +
-	" config/data/cache/v1/cache.proto\x12 runtime.api.config.data.cache.v1\x1a$config/data/cache/v1/memcached.proto\x1a!config/data/cache/v1/memory.proto\x1a config/data/cache/v1/redis.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xef\x05\n" +
+	" config/data/cache/v1/cache.proto\x12 runtime.api.config.data.cache.v1\x1a$config/data/cache/v1/memcached.proto\x1a!config/data/cache/v1/memory.proto\x1a config/data/cache/v1/redis.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd6\x05\n" +
 	"\vCacheConfig\x12\x84\x01\n" +
 	"\x06driver\x18\x01 \x01(\tBl\xbaGi\x92\x02fCache driver name. Built-in: 'redis', 'memcached', 'memory'. Custom drivers use their registered name.R\x06driver\x12$\n" +
 	"\x04name\x18\x02 \x01(\tB\x10\xbaG\r\x92\x02\n" +
@@ -140,10 +140,9 @@ const file_config_data_cache_v1_cache_proto_rawDesc = "" +
 	" \x01(\v21.runtime.api.config.data.cache.v1.MemcachedConfigB#\xbaG \x92\x02\x1dmemcached cache configurationR\tmemcached\x12h\n" +
 	"\x06memory\x18\v \x01(\v2..runtime.api.config.data.cache.v1.MemoryConfigB \xbaG\x1d\x92\x02\x1amemory cache configurationR\x06memory\x12d\n" +
 	"\x05redis\x18\f \x01(\v2-.runtime.api.config.data.cache.v1.RedisConfigB\x1f\xbaG\x1c\x92\x02\x19redis cache configurationR\x05redis\x12_\n" +
-	"\x10cleanup_interval\x18\r \x01(\x03B3\xbaG0\x92\x02-Cleanup interval for memory cache in seconds.R\x10cleanup_interval\x12~\n" +
-	"\tcustomize\x18\x0e \x01(\v2\x17.google.protobuf.StructBB\xbaG?\x92\x02<Custom configuration for cache types not explicitly defined.H\x00R\tcustomize\x88\x01\x01B\f\n" +
-	"\n" +
-	"_customizeB\x9f\x02\n" +
+	"\x10cleanup_interval\x18\r \x01(\x03B3\xbaG0\x92\x02-Cleanup interval for memory cache in seconds.R\x10cleanup_interval\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x00R\bsettings\x88\x01\x01B\v\n" +
+	"\t_settingsB\x9f\x02\n" +
 	"$com.runtime.api.config.data.cache.v1B\n" +
 	"CacheProtoP\x01ZDgithub.com/origadmin/runtime/api/gen/go/config/data/cache/v1;cachev1\xa2\x02\x05RACDC\xaa\x02 Runtime.Api.Config.Data.Cache.V1\xca\x02 Runtime\\Api\\Config\\Data\\Cache\\V1\xe2\x02,Runtime\\Api\\Config\\Data\\Cache\\V1\\GPBMetadata\xea\x02%Runtime::Api::Config::Data::Cache::V1b\x06proto3"
 
@@ -171,7 +170,7 @@ var file_config_data_cache_v1_cache_proto_depIdxs = []int32{
 	1, // 0: runtime.api.config.data.cache.v1.CacheConfig.memcached:type_name -> runtime.api.config.data.cache.v1.MemcachedConfig
 	2, // 1: runtime.api.config.data.cache.v1.CacheConfig.memory:type_name -> runtime.api.config.data.cache.v1.MemoryConfig
 	3, // 2: runtime.api.config.data.cache.v1.CacheConfig.redis:type_name -> runtime.api.config.data.cache.v1.RedisConfig
-	4, // 3: runtime.api.config.data.cache.v1.CacheConfig.customize:type_name -> google.protobuf.Struct
+	4, // 3: runtime.api.config.data.cache.v1.CacheConfig.settings:type_name -> google.protobuf.Struct
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name

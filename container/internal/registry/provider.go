@@ -9,6 +9,7 @@ import (
 	"github.com/goexts/generic/maps"
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
+	"github.com/origadmin/runtime/extensions/configutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	runtimelog "github.com/origadmin/runtime/log"
@@ -46,8 +47,27 @@ func (p *Provider) Initialize(cfg *discoveryv1.Discoveries, opts ...options.Opti
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.config = cfg
-	p.defaultRegistrar = cmp.Or(cfg.GetActive(), cfg.GetDefault())
 	p.opts = opts
+	if cfg != nil {
+		// Normalize the configuration to determine the correct default and config list.
+		normalizedDefault, normalizedConfigs, err := configutil.Normalize(cfg.GetActive(), cfg.GetDefault(), cfg.GetConfigs())
+		if err != nil {
+			// Log the error and proceed with a best-effort approach.
+			p.logger.Warnf("failed to normalize registry configuration: %v. Using active name as default.", err)
+			p.defaultRegistrar = cfg.GetActive() // Fallback to original behavior
+			return
+		}
+
+		// Update the provider's state with the normalized configuration.
+		if normalizedDefault != nil {
+			p.defaultRegistrar = normalizedDefault.GetName()
+		}
+		// The provider uses p.config to create instances, so we update it.
+		// NOTE: This modifies the original config object passed to Initialize.
+		// This is acceptable as the provider takes ownership of the config.
+		p.config.Default = normalizedDefault
+		p.config.Configs = normalizedConfigs
+	}
 }
 
 // RegisterDiscovery allows for manual registration of a discovery instance.

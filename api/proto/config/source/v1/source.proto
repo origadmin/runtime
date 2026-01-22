@@ -10,6 +10,7 @@ import "config/source/v1/file_source.proto";
 import "config/source/v1/kubernetes_source.proto";
 import "config/source/v1/nacos_source.proto";
 import "config/source/v1/polaris_source.proto";
+import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1";
@@ -26,30 +27,69 @@ message Sources {
 // SourceConfig is the source file for load configuration
 message SourceConfig {
   // name specifies the configuration name
-  string name = 1 [json_name = "name"];
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "The name of the configuration source."}
+  ];
 
   // type specifies the type of the configuration source.
   // For built-in types, specify "env", "file", "etcd", "consul", "apollo", "nacos", "kubernetes", or "polaris".
   // For custom types, specify the registered name of the custom source.
   // When a custom type is used, its configuration should be placed in the 'customize' field.
-  string type = 2 [json_name = "type"];
+  string type = 2 [
+    json_name = "type",
+    (gnostic.openapi.v3.property) = {description: "The type of the configuration source."}
+  ];
 
   // set the supported file format, if not set, all formats are supported
-  repeated string formats = 3 [json_name = "formats"];
+  repeated string formats = 3 [
+    json_name = "formats",
+    (gnostic.openapi.v3.property) = {description: "The supported file formats for this configuration source."}
+  ];
 
   // priority for this configuration source.
   // Sources will be loaded in ascending order of priority (e.g., 0, 1, 2, ...),
   // with later sources (higher priority value) overriding earlier ones.
-  int32 priority = 4 [json_name = "priority"];
+  int32 priority = 4 [
+    json_name = "priority",
+    (gnostic.openapi.v3.property) = {description: "The priority of this configuration source."}
+  ];
 
   // Configuration source specific settings. Only one of these should be set based on the 'type' field.
-  optional EnvSource env = 10 [json_name = "env"];
-  optional FileSource file = 11 [json_name = "file"];
-  optional ETCDSource etcd = 12 [json_name = "etcd"];
-  optional ConsulSource consul = 13 [json_name = "consul"];
-  optional NacosSource nacos = 14 [json_name = "nacos"];
-  optional ApolloSource apollo = 15 [json_name = "apollo"];
-  optional KubernetesSource kubernetes = 16 [json_name = "kubernetes"];
-  optional PolarisSource polaris = 17 [json_name = "polaris"];
-  optional google.protobuf.Struct customize = 100 [json_name = "customize"];
+  optional EnvSource env = 10 [
+    json_name = "env",
+    (gnostic.openapi.v3.property) = {description: "The environment variable configuration source."}
+  ];
+  optional FileSource file = 11 [
+    json_name = "file",
+    (gnostic.openapi.v3.property) = {description: "The file configuration source."}
+  ];
+  optional ETCDSource etcd = 12 [
+    json_name = "etcd",
+    (gnostic.openapi.v3.property) = {description: "The ETCD configuration source."}
+  ];
+  optional ConsulSource consul = 13 [
+    json_name = "consul",
+    (gnostic.openapi.v3.property) = {description: "The Consul configuration source."}
+  ];
+  optional NacosSource nacos = 14 [
+    json_name = "nacos",
+    (gnostic.openapi.v3.property) = {description: "The Nacos configuration source."}
+  ];
+  optional ApolloSource apollo = 15 [
+    json_name = "apollo",
+    (gnostic.openapi.v3.property) = {description: "The Apollo configuration source."}
+  ];
+  optional KubernetesSource kubernetes = 16 [
+    json_name = "kubernetes",
+    (gnostic.openapi.v3.property) = {description: "The Kubernetes configuration source."}
+  ];
+  optional PolarisSource polaris = 17 [
+    json_name = "polaris",
+    (gnostic.openapi.v3.property) = {description: "The Polaris configuration source."}
+  ];
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined settings."}
+  ];
 }

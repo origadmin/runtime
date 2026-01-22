@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package runtime.api.config.selector.v1;
 
+import "gnostic/openapi/v3/annotations.proto";
 import "google/protobuf/struct.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/selector/v1;selectorv1";
@@ -10,14 +11,29 @@ option go_package = "github.com/origadmin/runtime/api/gen/go/config/selector/v1;
 message SelectorConfig {
   // version is a filter for the service version.
   // e.g., "v1.0.0"
-  string version = 1 [json_name = "version"];
+  string version = 1 [
+    json_name = "version",
+    (gnostic.openapi.v3.property) = {description: "The version of the service to filter."}
+  ];
   // strategy specifies the load balancing strategy (e.g., "round_robin", "random", "consistent_hash").
-  optional string strategy = 2 [json_name = "strategy"];
+  optional string strategy = 2 [
+    json_name = "strategy",
+    (gnostic.openapi.v3.property) = {description: "The load balancing strategy to use."}
+  ];
   // balancer_name specifies the name of the load balancer to use.
-  optional string balancer_name = 3 [json_name = "balancer_name"];
+  optional string balancer_name = 3 [
+    json_name = "balancer_name",
+    (gnostic.openapi.v3.property) = {description: "The name of the load balancer to use."}
+  ];
   // filter_name specifies the name of the filter to use for endpoint selection.
-  optional string filter_name = 4 [json_name = "filter_name"];
+  optional string filter_name = 4 [
+    json_name = "filter_name",
+    (gnostic.openapi.v3.property) = {description: "The name of the filter to use for endpoint selection."}
+  ];
   // custom_config allows for custom configuration for the selector.
   // It can be used for non-standard or user-defined selector implementations.
-  optional google.protobuf.Struct customize = 100 [json_name = "customize"];
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined settings."}
+  ];
 }

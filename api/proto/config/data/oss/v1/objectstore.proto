@@ -49,8 +49,9 @@ message ObjectStoreConfig {
   ];
 
   // Optional custom configuration for drivers not explicitly defined as 'local' or 'oss'.
-  optional google.protobuf.Struct customize = 6 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Custom configuration for drivers not explicitly defined as 'local' or 'oss'."}
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined settings."}
   ];
+
 }

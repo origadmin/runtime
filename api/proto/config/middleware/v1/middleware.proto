@@ -101,8 +101,8 @@ message Middleware {
     json_name = "security",
     (gnostic.openapi.v3.property) = {description: "Declarative security middleware configuration."}
   ];
-  optional google.protobuf.Struct customize = 100 [
-    json_name = "customize",
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
     (gnostic.openapi.v3.property) = {description: "Custom middleware configuration."}
   ];
   // Add other specific middleware types here as they are defined

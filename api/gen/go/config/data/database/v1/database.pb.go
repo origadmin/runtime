@@ -53,7 +53,7 @@ type DatabaseConfig struct {
 	// Maximum number of connections in the connection pool for reading
 	ConnectionMaxIdleTime int64 `protobuf:"varint,23,opt,name=connection_max_idle_time,proto3" json:"connection_max_idle_time,omitempty"`
 	// Optional custom configuration for database types not explicitly defined.
-	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -165,9 +165,9 @@ func (x *DatabaseConfig) GetConnectionMaxIdleTime() int64 {
 	return 0
 }
 
-func (x *DatabaseConfig) GetCustomize() *structpb.Struct {
+func (x *DatabaseConfig) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -176,7 +176,7 @@ var File_config_data_database_v1_database_proto protoreflect.FileDescriptor
 
 const file_config_data_database_v1_database_proto_rawDesc = "" +
 	"\n" +
-	"&config/data/database/v1/database.proto\x12#runtime.api.config.data.database.v1\x1a'config/data/database/v1/migration.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd9\t\n" +
+	"&config/data/database/v1/database.proto\x12#runtime.api.config.data.database.v1\x1a'config/data/database/v1/migration.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xbc\t\n" +
 	"\x0eDatabaseConfig\x12O\n" +
 	"\x04name\x18\x01 \x01(\tB;\xbaG8\x92\x025Unique name for this database configuration instance.R\x04name\x129\n" +
 	"\x05debug\x18\x02 \x01(\bB#\xbaG \x92\x02\x1dwhether to enable debug mode R\x05debug\x12\x91\x01\n" +
@@ -189,10 +189,9 @@ const file_config_data_database_v1_database_proto_rawDesc = "" +
 	"\x14max_idle_connections\x18\x14 \x01(\x05BC\xbaG@\x92\x02=The maximum number of free connections in the connection poolR\x14max_idle_connections\x12w\n" +
 	"\x14max_open_connections\x18\x15 \x01(\x05BC\xbaG@\x92\x02=The maximum number of open connections in the connection poolR\x14max_open_connections\x12u\n" +
 	"\x17connection_max_lifetime\x18\x16 \x01(\x03B;\xbaG8\x92\x025The maximum length of time a connection can be reusedR\x17connection_max_lifetime\x12\x86\x01\n" +
-	"\x18connection_max_idle_time\x18\x17 \x01(\x03BJ\xbaGG\x92\x02DThe maximum number of connections in the connection pool for readingR\x18connection_max_idle_time\x12\x81\x01\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBE\xbaGB\x92\x02?Custom configuration for database types not explicitly defined.H\x00R\tcustomize\x88\x01\x01B\f\n" +
-	"\n" +
-	"_customizeB\xb7\x02\n" +
+	"\x18connection_max_idle_time\x18\x17 \x01(\x03BJ\xbaGG\x92\x02DThe maximum number of connections in the connection pool for readingR\x18connection_max_idle_time\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x00R\bsettings\x88\x01\x01B\v\n" +
+	"\t_settingsB\xb7\x02\n" +
 	"'com.runtime.api.config.data.database.v1B\rDatabaseProtoP\x01ZJgithub.com/origadmin/runtime/api/gen/go/config/data/database/v1;databasev1\xa2\x02\x05RACDD\xaa\x02#Runtime.Api.Config.Data.Database.V1\xca\x02#Runtime\\Api\\Config\\Data\\Database\\V1\xe2\x02/Runtime\\Api\\Config\\Data\\Database\\V1\\GPBMetadata\xea\x02(Runtime::Api::Config::Data::Database::V1b\x06proto3"
 
 var (
@@ -215,7 +214,7 @@ var file_config_data_database_v1_database_proto_goTypes = []any{
 }
 var file_config_data_database_v1_database_proto_depIdxs = []int32{
 	1, // 0: runtime.api.config.data.database.v1.DatabaseConfig.migration:type_name -> runtime.api.config.data.database.v1.Migration
-	2, // 1: runtime.api.config.data.database.v1.DatabaseConfig.customize:type_name -> google.protobuf.Struct
+	2, // 1: runtime.api.config.data.database.v1.DatabaseConfig.settings:type_name -> google.protobuf.Struct
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

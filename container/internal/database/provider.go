@@ -10,6 +10,7 @@ import (
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/database"
+	"github.com/origadmin/runtime/extensions/configutil"
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/options"
 	storageiface "github.com/origadmin/runtime/interfaces/storage"
@@ -44,7 +45,24 @@ func (p *Provider) Initialize(cfg *datav1.Databases, opts ...options.Option) {
 	p.config = cfg
 	p.opts = opts
 	if cfg != nil {
-		p.defaultName = cmp.Or(cfg.GetActive(), cfg.GetDefault())
+		// Normalize the configuration to determine the correct default and config list.
+		normalizedDefault, normalizedConfigs, err := configutil.Normalize(cfg.GetActive(), cfg.GetDefault(), cfg.GetConfigs())
+		if err != nil {
+			// Log the error and proceed with a best-effort approach.
+			p.logger.Warnf("failed to normalize database configuration: %v. Using active name as default.", err)
+			p.defaultName = cfg.GetActive() // Fallback to original behavior
+			return
+		}
+
+		// Update the provider's state with the normalized configuration.
+		if normalizedDefault != nil {
+			p.defaultName = normalizedDefault.GetName()
+		}
+		// The provider uses p.config to create databases, so we update it.
+		// NOTE: This modifies the original config object passed to Initialize.
+		// This is acceptable as the provider takes ownership of the config.
+		p.config.Default = normalizedDefault
+		p.config.Configs = normalizedConfigs
 	}
 }
 

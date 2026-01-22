@@ -261,14 +261,14 @@ func (m *Discovery) validate(all bool) error {
 
 	}
 
-	if m.Customize != nil {
+	if m.Settings != nil {
 
 		if all {
-			switch v := interface{}(m.GetCustomize()).(type) {
+			switch v := interface{}(m.GetSettings()).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, DiscoveryValidationError{
-						field:  "Customize",
+						field:  "Settings",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -276,16 +276,16 @@ func (m *Discovery) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, DiscoveryValidationError{
-						field:  "Customize",
+						field:  "Settings",
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
 				}
 			}
-		} else if v, ok := interface{}(m.GetCustomize()).(interface{ Validate() error }); ok {
+		} else if v, ok := interface{}(m.GetSettings()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return DiscoveryValidationError{
-					field:  "Customize",
+					field:  "Settings",
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -427,12 +427,41 @@ func (m *Discoveries) validate(all bool) error {
 
 	}
 
-	if m.Default != nil {
-		// no validation rules for Default
-	}
-
 	if m.Active != nil {
 		// no validation rules for Active
+	}
+
+	if m.Default != nil {
+
+		if all {
+			switch v := interface{}(m.GetDefault()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DiscoveriesValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DiscoveriesValidationError{
+						field:  "Default",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetDefault()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DiscoveriesValidationError{
+					field:  "Default",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	}
 
 	if len(errors) > 0 {

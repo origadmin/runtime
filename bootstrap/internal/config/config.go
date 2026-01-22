@@ -385,6 +385,13 @@ func (c *lazyConfigImpl) DecodeClients() (*transportv1.Clients, error) {
 // =============================================================================
 
 func decodeDiscoveries(c interfaces.ConfigLoader, path string) (*discoveryv1.Discoveries, error) {
+	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
+	var result discoveryv1.Discoveries
+	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {
+		return &result, nil
+	}
+
+	// 2. Try decoding as a map (Convenience format)
 	var m map[string]*discoveryv1.Discovery
 	if err := c.Decode(path, &m); err == nil && len(m) > 0 {
 		items := make([]*discoveryv1.Discovery, 0, len(m))
@@ -397,14 +404,22 @@ func decodeDiscoveries(c interfaces.ConfigLoader, path string) (*discoveryv1.Dis
 		return &discoveryv1.Discoveries{Configs: items}, nil
 	}
 
+	// 3. Try decoding as a slice (Convenience format)
 	var s []*discoveryv1.Discovery
 	if err := c.Decode(path, &s); err == nil && len(s) > 0 {
 		return &discoveryv1.Discoveries{Configs: s}, nil
 	}
-	return nil, nil
+	return &discoveryv1.Discoveries{}, nil
 }
 
 func decodeMiddlewares(c interfaces.ConfigLoader, path string) (*middlewarev1.Middlewares, error) {
+	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
+	var result middlewarev1.Middlewares
+	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {
+		return &result, nil
+	}
+
+	// 2. Try decoding as a map (Convenience format)
 	var m map[string]*middlewarev1.Middleware
 	if err := c.Decode(path, &m); err == nil && len(m) > 0 {
 		items := make([]*middlewarev1.Middleware, 0, len(m))
@@ -417,14 +432,22 @@ func decodeMiddlewares(c interfaces.ConfigLoader, path string) (*middlewarev1.Mi
 		return &middlewarev1.Middlewares{Configs: items}, nil
 	}
 
+	// 3. Try decoding as a slice (Convenience format)
 	var s []*middlewarev1.Middleware
 	if err := c.Decode(path, &s); err == nil && len(s) > 0 {
 		return &middlewarev1.Middlewares{Configs: s}, nil
 	}
-	return nil, nil
+	return &middlewarev1.Middlewares{}, nil
 }
 
 func decodeServers(c interfaces.ConfigLoader, path string) (*transportv1.Servers, error) {
+	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
+	var result transportv1.Servers
+	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {
+		return &result, nil
+	}
+
+	// 2. Try decoding as a map (Convenience format)
 	var m map[string]*transportv1.Server
 	if err := c.Decode(path, &m); err == nil && len(m) > 0 {
 		items := make([]*transportv1.Server, 0, len(m))
@@ -437,14 +460,22 @@ func decodeServers(c interfaces.ConfigLoader, path string) (*transportv1.Servers
 		return &transportv1.Servers{Configs: items}, nil
 	}
 
+	// 3. Try decoding as a slice (Convenience format)
 	var s []*transportv1.Server
 	if err := c.Decode(path, &s); err == nil && len(s) > 0 {
 		return &transportv1.Servers{Configs: s}, nil
 	}
-	return nil, nil
+	return &transportv1.Servers{}, nil
 }
 
 func decodeClients(c interfaces.ConfigLoader, path string) (*transportv1.Clients, error) {
+	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
+	var result transportv1.Clients
+	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {
+		return &result, nil
+	}
+
+	// 2. Try decoding as a map (Convenience format)
 	var m map[string]*transportv1.Client
 	if err := c.Decode(path, &m); err == nil && len(m) > 0 {
 		items := make([]*transportv1.Client, 0, len(m))
@@ -457,11 +488,12 @@ func decodeClients(c interfaces.ConfigLoader, path string) (*transportv1.Clients
 		return &transportv1.Clients{Configs: items}, nil
 	}
 
+	// 3. Try decoding as a slice (Convenience format)
 	var s []*transportv1.Client
 	if err := c.Decode(path, &s); err == nil && len(s) > 0 {
 		return &transportv1.Clients{Configs: s}, nil
 	}
-	return nil, nil
+	return &transportv1.Clients{}, nil
 }
 
 // multiFormatDecoder is a generic helper for the Lazy implementation.

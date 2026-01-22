@@ -37,24 +37,24 @@ message Data {
     (gnostic.openapi.v3.property) = {description: "Document Database configurations (e.g., MongoDB)"}
   ];
 
-  // Optional custom configuration for Data components not explicitly defined.
-  optional google.protobuf.Struct customize = 100 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Custom configuration for Data components not explicitly defined."}
+  // Optional custom settings for Data components not explicitly defined.
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Custom settings for Data components not explicitly defined."}
   ];
 }
 
 // FileStores is a collection of named FileStore configurations.
 message ObjectStores {
-  // Default filestore name.
-  optional string default = 1 [
-    json_name = "default",
-    (gnostic.openapi.v3.property) = {description: "Default filestore name"}
-  ];
   // Active filestore name, overrides default.
-  optional string active = 2 [
+  optional string active = 1 [
     json_name = "active",
     (gnostic.openapi.v3.property) = {description: "Active filestore name, overrides default"}
+  ];
+  // Default filestore configuration.
+  optional config.data.oss.v1.ObjectStoreConfig default = 2 [
+    json_name = "default",
+    (gnostic.openapi.v3.property) = {description: "Default filestore configuration"}
   ];
   // List of named FileStore configurations.
   repeated config.data.oss.v1.ObjectStoreConfig configs = 3 [
@@ -65,15 +65,15 @@ message ObjectStores {
 
 // Caches is a collection of named Cache configurations.
 message Caches {
-  // Default cache name.
-  optional string default = 1 [
-    json_name = "default",
-    (gnostic.openapi.v3.property) = {description: "Default cache name"}
-  ];
   // Active cache name, overrides default.
-  optional string active = 2 [
+  optional string active = 1 [
     json_name = "active",
     (gnostic.openapi.v3.property) = {description: "Active cache name, overrides default"}
+  ];
+  // Default cache configuration.
+  optional config.data.cache.v1.CacheConfig default = 2 [
+    json_name = "default",
+    (gnostic.openapi.v3.property) = {description: "Default cache configuration"}
   ];
   // List of named Cache configurations.
   repeated config.data.cache.v1.CacheConfig configs = 3 [
@@ -84,15 +84,15 @@ message Caches {
 
 // Databases is a collection of named Relational Database configurations.
 message Databases {
-  // Default database name.
-  optional string default = 1 [
-    json_name = "default",
-    (gnostic.openapi.v3.property) = {description: "Default database name"}
-  ];
   // Active database name, overrides default.
-  optional string active = 2 [
+  optional string active = 1 [
     json_name = "active",
     (gnostic.openapi.v3.property) = {description: "Active database name, overrides default"}
+  ];
+  // Default database configuration.
+  optional config.data.database.v1.DatabaseConfig default = 2 [
+    json_name = "default",
+    (gnostic.openapi.v3.property) = {description: "Default database configuration"}
   ];
   // List of named Relational Database configurations.
   repeated config.data.database.v1.DatabaseConfig configs = 3 [
@@ -103,15 +103,15 @@ message Databases {
 
 // Documents is a collection of named Document Database configurations.
 message Documents {
-  // Default document database name.
-  optional string default = 1 [
-    json_name = "default",
-    (gnostic.openapi.v3.property) = {description: "Default document database name"}
-  ];
   // Active document database name, overrides default.
-  optional string active = 2 [
+  optional string active = 1 [
     json_name = "active",
     (gnostic.openapi.v3.property) = {description: "Active document database name, overrides default"}
+  ];
+  // Default document database configuration.
+  optional config.data.database.v1.DocumentConfig default = 2 [
+    json_name = "default",
+    (gnostic.openapi.v3.property) = {description: "Default document database configuration"}
   ];
   // List of named Document Database configurations.
   repeated config.data.database.v1.DocumentConfig configs = 3 [

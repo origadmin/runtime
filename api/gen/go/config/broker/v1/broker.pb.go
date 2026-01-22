@@ -64,7 +64,8 @@ type Broker struct {
 	// Optional STOMP configuration.
 	Stomp *v19.StompConfig `protobuf:"bytes,12,opt,name=stomp,proto3,oneof" json:"stomp,omitempty"`
 	// Optional customize configuration.
-	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
+	Url           *string          `protobuf:"bytes,101,opt,name=url,proto3,oneof" json:"url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -183,17 +184,24 @@ func (x *Broker) GetStomp() *v19.StompConfig {
 	return nil
 }
 
-func (x *Broker) GetCustomize() *structpb.Struct {
+func (x *Broker) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
 
+func (x *Broker) GetUrl() string {
+	if x != nil && x.Url != nil {
+		return *x.Url
+	}
+	return ""
+}
+
 type Brokers struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Default       *string                `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
-	Active        *string                `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Active        *string                `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Default       *Broker                `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	Brokers       []*Broker              `protobuf:"bytes,3,rep,name=brokers,proto3" json:"brokers,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -229,18 +237,18 @@ func (*Brokers) Descriptor() ([]byte, []int) {
 	return file_config_broker_v1_broker_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Brokers) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
 func (x *Brokers) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
+}
+
+func (x *Brokers) GetDefault() *Broker {
+	if x != nil {
+		return x.Default
+	}
+	return nil
 }
 
 func (x *Brokers) GetBrokers() []*Broker {
@@ -254,7 +262,7 @@ var File_config_broker_v1_broker_proto protoreflect.FileDescriptor
 
 const file_config_broker_v1_broker_proto_rawDesc = "" +
 	"\n" +
-	"\x1dconfig/broker/v1/broker.proto\x12\x1cruntime.api.config.broker.v1\x1a\"config/broker/kafka/v1/kafka.proto\x1a config/broker/mqtt/v1/mqtt.proto\x1a config/broker/nats/v1/nats.proto\x1a\x1econfig/broker/nsq/v1/nsq.proto\x1a$config/broker/pulsar/v1/pulsar.proto\x1a(config/broker/rabbitmq/v1/rabbitmq.proto\x1a(config/broker/redis_mq/v1/redis_mq.proto\x1a(config/broker/rocketmq/v1/rocketmq.proto\x1a\x1econfig/broker/sqs/v1/sqs.proto\x1a\"config/broker/stomp/v1/stomp.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xb2\f\n" +
+	"\x1dconfig/broker/v1/broker.proto\x12\x1cruntime.api.config.broker.v1\x1a\"config/broker/kafka/v1/kafka.proto\x1a config/broker/mqtt/v1/mqtt.proto\x1a config/broker/nats/v1/nats.proto\x1a\x1econfig/broker/nsq/v1/nsq.proto\x1a$config/broker/pulsar/v1/pulsar.proto\x1a(config/broker/rabbitmq/v1/rabbitmq.proto\x1a(config/broker/redis_mq/v1/redis_mq.proto\x1a(config/broker/rocketmq/v1/rocketmq.proto\x1a\x1econfig/broker/sqs/v1/sqs.proto\x1a\"config/broker/stomp/v1/stomp.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xf9\f\n" +
 	"\x06Broker\x12?\n" +
 	"\x04name\x18\x01 \x01(\tB+\xbaG(\x92\x02%The name of the broker configuration.R\x04name\x12\x8d\x01\n" +
 	"\x04type\x18\x02 \x01(\tBy\xbaGv\x92\x02sThe type of the message broker. Built-in: 'kafka', 'rabbitmq', 'mqtt', etc. Custom types use their registered name.R\x04type\x12o\n" +
@@ -268,9 +276,10 @@ const file_config_broker_v1_broker_proto_rawDesc = "" +
 	"\brocketmq\x18\n" +
 	" \x01(\v25.runtime.api.config.broker.rocketmq.v1.RocketMQConfigB&\xbaG#\x92\x02 RocketMQ specific configuration.H\aR\brocketmq\x88\x01\x01\x12e\n" +
 	"\x03sqs\x18\v \x01(\v2+.runtime.api.config.broker.sqs.v1.SqsConfigB!\xbaG\x1e\x92\x02\x1bSQS specific configuration.H\bR\x03sqs\x88\x01\x01\x12o\n" +
-	"\x05stomp\x18\f \x01(\v2/.runtime.api.config.broker.stomp.v1.StompConfigB#\xbaG \x92\x02\x1dSTOMP specific configuration.H\tR\x05stomp\x88\x01\x01\x12^\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructB\"\xbaG\x1f\x92\x02\x1cCustom broker configuration.H\n" +
-	"R\tcustomize\x88\x01\x01B\b\n" +
+	"\x05stomp\x18\f \x01(\v2/.runtime.api.config.broker.stomp.v1.StompConfigB#\xbaG \x92\x02\x1dSTOMP specific configuration.H\tR\x05stomp\x88\x01\x01\x12i\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB/\xbaG,\x92\x02)Custom settings for broker configuration.H\n" +
+	"R\bsettings\x88\x01\x01\x123\n" +
+	"\x03url\x18e \x01(\tB\x1c\xbaG\x19\x92\x02\x16The URL of the broker.H\vR\x03url\x88\x01\x01B\b\n" +
 	"\x06_kafkaB\v\n" +
 	"\t_rabbitmqB\a\n" +
 	"\x05_mqttB\a\n" +
@@ -280,16 +289,16 @@ const file_config_broker_v1_broker_proto_rawDesc = "" +
 	"\t_redis_mqB\v\n" +
 	"\t_rocketmqB\x06\n" +
 	"\x04_sqsB\b\n" +
-	"\x06_stompB\f\n" +
+	"\x06_stompB\v\n" +
+	"\t_settingsB\x06\n" +
+	"\x04_url\"\xc2\x02\n" +
+	"\aBrokers\x12O\n" +
+	"\x06active\x18\x01 \x01(\tB2\xbaG/\x92\x02,The active broker to use, overrides default.H\x00R\x06active\x88\x01\x01\x12g\n" +
+	"\adefault\x18\x02 \x01(\v2$.runtime.api.config.broker.v1.BrokerB\"\xbaG\x1f\x92\x02\x1cconfig broker configuration.H\x01R\adefault\x88\x01\x01\x12f\n" +
+	"\abrokers\x18\x03 \x03(\v2$.runtime.api.config.broker.v1.BrokerB&\xbaG#\x92\x02 A list of broker configurations.R\abrokersB\t\n" +
+	"\a_activeB\n" +
 	"\n" +
-	"_customize\"\x9a\x02\n" +
-	"\aBrokers\x12?\n" +
-	"\adefault\x18\x01 \x01(\tB \xbaG\x1d\x92\x02\x1aThe default broker to use.H\x00R\adefault\x88\x01\x01\x12O\n" +
-	"\x06active\x18\x02 \x01(\tB2\xbaG/\x92\x02,The active broker to use, overrides default.H\x01R\x06active\x88\x01\x01\x12f\n" +
-	"\abrokers\x18\x03 \x03(\v2$.runtime.api.config.broker.v1.BrokerB&\xbaG#\x92\x02 A list of broker configurations.R\abrokersB\n" +
-	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_activeB\x87\x02\n" +
+	"\b_defaultB\x87\x02\n" +
 	" com.runtime.api.config.broker.v1B\vBrokerProtoP\x01ZAgithub.com/origadmin/runtime/api/gen/go/config/broker/v1;brokerv1\xa2\x02\x04RACB\xaa\x02\x1cRuntime.Api.Config.Broker.V1\xca\x02\x1cRuntime\\Api\\Config\\Broker\\V1\xe2\x02(Runtime\\Api\\Config\\Broker\\V1\\GPBMetadata\xea\x02 Runtime::Api::Config::Broker::V1b\x06proto3"
 
 var (
@@ -331,13 +340,14 @@ var file_config_broker_v1_broker_proto_depIdxs = []int32{
 	9,  // 7: runtime.api.config.broker.v1.Broker.rocketmq:type_name -> runtime.api.config.broker.rocketmq.v1.RocketMQConfig
 	10, // 8: runtime.api.config.broker.v1.Broker.sqs:type_name -> runtime.api.config.broker.sqs.v1.SqsConfig
 	11, // 9: runtime.api.config.broker.v1.Broker.stomp:type_name -> runtime.api.config.broker.stomp.v1.StompConfig
-	12, // 10: runtime.api.config.broker.v1.Broker.customize:type_name -> google.protobuf.Struct
-	0,  // 11: runtime.api.config.broker.v1.Brokers.brokers:type_name -> runtime.api.config.broker.v1.Broker
-	12, // [12:12] is the sub-list for method output_type
-	12, // [12:12] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	12, // 10: runtime.api.config.broker.v1.Broker.settings:type_name -> google.protobuf.Struct
+	0,  // 11: runtime.api.config.broker.v1.Brokers.default:type_name -> runtime.api.config.broker.v1.Broker
+	0,  // 12: runtime.api.config.broker.v1.Brokers.brokers:type_name -> runtime.api.config.broker.v1.Broker
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_config_broker_v1_broker_proto_init() }

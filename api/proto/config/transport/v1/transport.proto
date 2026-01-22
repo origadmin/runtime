@@ -59,11 +59,11 @@ message Server {
     (gnostic.openapi.v3.property) = {description: "Watermill server configuration."}
   ];
 
-  // customize is used for non-standard or user-defined transport protocols.
+  // settings is used for non-standard or user-defined transport protocols.
   // It allows for flexible configuration without modifying this core proto file.
-  optional google.protobuf.Struct customize = 100 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined transport protocols configuration."}
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined settings."}
   ];
 
 
@@ -107,10 +107,10 @@ message Client {
   // HTTP client configuration.
   optional runtime.api.config.transport.http.v1.Client http = 4 [json_name = "http"];
 
-  // customize is used for non-standard or user-defined transport protocols.
-  optional google.protobuf.Struct customize = 100 [
-    json_name = "customize",
-    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined transport protocols configuration."}
+  // settings is used for non-standard or user-defined transport protocols.
+  optional google.protobuf.Struct settings = 100 [
+    json_name = "settings",
+    (gnostic.openapi.v3.property) = {description: "Non-standard or user-defined transport protocols settings."}
   ];
 
   // Watermill client configuration.
@@ -124,13 +124,12 @@ message Client {
 // This structure follows the "Broker Pattern" to avoid using maps, providing a clear
 // and explicit way to manage multiple named client instances.
 message Clients {
-  // default is the name of the default client configuration to use from the `clients` list.
-  // If not set, the application can use a predefined default or infer one.
-  optional string default = 1 [json_name = "default"];
   // active is the name of the active client configuration to use from the `clients` list.
   // If set, it overrides the `default` selection.
-  optional string active = 2 [json_name = "active"];
-
+  optional string active = 1 [json_name = "active"];
+  // default is the default client configuration.
+  // If not set, the application can use a predefined default or infer one.
+  optional Client default = 2 [json_name = "default"];
   // clients is a list of all available client configurations.
   repeated Client configs = 3 [json_name = "configs"];
 }

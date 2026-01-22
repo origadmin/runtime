@@ -44,7 +44,7 @@ type ObjectStoreConfig struct {
 	// If 0 or not set, a reasonable default (e.g., 4MB) will be used by the implementation.
 	ChunkSize int64 `protobuf:"varint,5,opt,name=chunk_size,proto3" json:"chunk_size,omitempty"`
 	// Optional custom configuration for drivers not explicitly defined as 'local' or 'oss'.
-	Customize     *structpb.Struct `protobuf:"bytes,6,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -114,9 +114,9 @@ func (x *ObjectStoreConfig) GetChunkSize() int64 {
 	return 0
 }
 
-func (x *ObjectStoreConfig) GetCustomize() *structpb.Struct {
+func (x *ObjectStoreConfig) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -125,7 +125,7 @@ var File_config_data_oss_v1_objectstore_proto protoreflect.FileDescriptor
 
 const file_config_data_oss_v1_objectstore_proto_rawDesc = "" +
 	"\n" +
-	"$config/data/oss/v1/objectstore.proto\x12\x1eruntime.api.config.data.oss.v1\x1a\"config/data/oss/v1/oss_local.proto\x1a\x1cconfig/data/oss/v1/oss.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x8a\x05\n" +
+	"$config/data/oss/v1/objectstore.proto\x12\x1eruntime.api.config.data.oss.v1\x1a\"config/data/oss/v1/oss_local.proto\x1a\x1cconfig/data/oss/v1/oss.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xe0\x04\n" +
 	"\x11ObjectStoreConfig\x12+\n" +
 	"\x04name\x18\x01 \x01(\tB\x17\xbaG\x14\x92\x02\x11object store nameR\x04name\x12{\n" +
 	"\x06driver\x18\x02 \x01(\tBc\xbaG`\x92\x02]Object store driver name. Built-in: 'local', 'oss'. Custom drivers use their registered name.R\x06driver\x12s\n" +
@@ -133,12 +133,11 @@ const file_config_data_oss_v1_objectstore_proto_rawDesc = "" +
 	"\x03oss\x18\x04 \x01(\v2).runtime.api.config.data.oss.v1.OssConfigB(\xbaG%\x92\x02\"cloud object storage configurationH\x01R\x03oss\x88\x01\x01\x129\n" +
 	"\n" +
 	"chunk_size\x18\x05 \x01(\x03B\x19\xbaG\x16\x92\x02\x13chunk size in bytesR\n" +
-	"chunk_size\x12\x8e\x01\n" +
-	"\tcustomize\x18\x06 \x01(\v2\x17.google.protobuf.StructBR\xbaGO\x92\x02LCustom configuration for drivers not explicitly defined as 'local' or 'oss'.H\x02R\tcustomize\x88\x01\x01B\b\n" +
+	"chunk_size\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x02R\bsettings\x88\x01\x01B\b\n" +
 	"\x06_localB\x06\n" +
-	"\x04_ossB\f\n" +
-	"\n" +
-	"_customizeB\x97\x02\n" +
+	"\x04_ossB\v\n" +
+	"\t_settingsB\x97\x02\n" +
 	"\"com.runtime.api.config.data.oss.v1B\x10ObjectstoreProtoP\x01Z@github.com/origadmin/runtime/api/gen/go/config/data/oss/v1;ossv1\xa2\x02\x05RACDO\xaa\x02\x1eRuntime.Api.Config.Data.Oss.V1\xca\x02\x1eRuntime\\Api\\Config\\Data\\Oss\\V1\xe2\x02*Runtime\\Api\\Config\\Data\\Oss\\V1\\GPBMetadata\xea\x02#Runtime::Api::Config::Data::Oss::V1b\x06proto3"
 
 var (
@@ -163,7 +162,7 @@ var file_config_data_oss_v1_objectstore_proto_goTypes = []any{
 var file_config_data_oss_v1_objectstore_proto_depIdxs = []int32{
 	1, // 0: runtime.api.config.data.oss.v1.ObjectStoreConfig.local:type_name -> runtime.api.config.data.oss.v1.OssLocalConfig
 	2, // 1: runtime.api.config.data.oss.v1.ObjectStoreConfig.oss:type_name -> runtime.api.config.data.oss.v1.OssConfig
-	3, // 2: runtime.api.config.data.oss.v1.ObjectStoreConfig.customize:type_name -> google.protobuf.Struct
+	3, // 2: runtime.api.config.data.oss.v1.ObjectStoreConfig.settings:type_name -> google.protobuf.Struct
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

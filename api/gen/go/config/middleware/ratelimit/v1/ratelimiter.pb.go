@@ -44,7 +44,7 @@ type RateLimiter struct {
 	Memory     *RateLimiter_Memory `protobuf:"bytes,101,opt,name=memory,proto3" json:"memory,omitempty"`
 	Redis      *RateLimiter_Redis  `protobuf:"bytes,102,opt,name=redis,proto3" json:"redis,omitempty"`
 	// Optional custom configuration for rate limiter types not explicitly defined.
-	Customize     *structpb.Struct `protobuf:"bytes,103,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -135,9 +135,9 @@ func (x *RateLimiter) GetRedis() *RateLimiter_Redis {
 	return nil
 }
 
-func (x *RateLimiter) GetCustomize() *structpb.Struct {
+func (x *RateLimiter) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -266,7 +266,7 @@ var File_config_middleware_ratelimit_v1_ratelimiter_proto protoreflect.FileDescr
 
 const file_config_middleware_ratelimit_v1_ratelimiter_proto_rawDesc = "" +
 	"\n" +
-	"0config/middleware/ratelimit/v1/ratelimiter.proto\x12*runtime.api.config.middleware.ratelimit.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xd1\x06\n" +
+	"0config/middleware/ratelimit/v1/ratelimiter.proto\x12*runtime.api.config.middleware.ratelimit.v1\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xb0\x06\n" +
 	"\vRateLimiter\x12x\n" +
 	"\x04name\x18\x01 \x01(\tBd\xbaGa\x92\x02^Rate limiter name. Built-in: 'bbr', 'memory', 'redis'. Custom types use their registered name.R\x04name\x12\x16\n" +
 	"\x06period\x18\x02 \x01(\x05R\x06period\x12,\n" +
@@ -275,8 +275,8 @@ const file_config_middleware_ratelimit_v1_ratelimiter_proto_rawDesc = "" +
 	"\x11x_ratelimit_reset\x18\x06 \x01(\x05R\x11x_ratelimit_reset\x12 \n" +
 	"\vretry_after\x18\a \x01(\x05R\vretry_after\x12V\n" +
 	"\x06memory\x18e \x01(\v2>.runtime.api.config.middleware.ratelimit.v1.RateLimiter.MemoryR\x06memory\x12S\n" +
-	"\x05redis\x18f \x01(\v2=.runtime.api.config.middleware.ratelimit.v1.RateLimiter.RedisR\x05redis\x12\x85\x01\n" +
-	"\tcustomize\x18g \x01(\v2\x17.google.protobuf.StructBI\xbaGF\x92\x02CCustom configuration for rate limiter types not explicitly defined.H\x00R\tcustomize\x88\x01\x01\x1ac\n" +
+	"\x05redis\x18f \x01(\v2=.runtime.api.config.middleware.ratelimit.v1.RateLimiter.RedisR\x05redis\x12f\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructB,\xbaG)\x92\x02&Non-standard or user-defined settings.H\x00R\bsettings\x88\x01\x01\x1ac\n" +
 	"\x05Redis\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
@@ -286,9 +286,8 @@ const file_config_middleware_ratelimit_v1_ratelimiter_proto_rawDesc = "" +
 	"\n" +
 	"expiration\x18\x01 \x01(\x03R\n" +
 	"expiration\x12*\n" +
-	"\x10cleanup_interval\x18\x02 \x01(\x03R\x10cleanup_intervalB\f\n" +
-	"\n" +
-	"_customizeB\xe5\x02\n" +
+	"\x10cleanup_interval\x18\x02 \x01(\x03R\x10cleanup_intervalB\v\n" +
+	"\t_settingsB\xe5\x02\n" +
 	".com.runtime.api.config.middleware.ratelimit.v1B\x10RatelimiterProtoP\x01ZRgithub.com/origadmin/runtime/api/gen/go/config/middleware/ratelimit/v1;ratelimitv1\xa2\x02\x05RACMR\xaa\x02*Runtime.Api.Config.Middleware.Ratelimit.V1\xca\x02*Runtime\\Api\\Config\\Middleware\\Ratelimit\\V1\xe2\x026Runtime\\Api\\Config\\Middleware\\Ratelimit\\V1\\GPBMetadata\xea\x02/Runtime::Api::Config::Middleware::Ratelimit::V1b\x06proto3"
 
 var (
@@ -313,7 +312,7 @@ var file_config_middleware_ratelimit_v1_ratelimiter_proto_goTypes = []any{
 var file_config_middleware_ratelimit_v1_ratelimiter_proto_depIdxs = []int32{
 	2, // 0: runtime.api.config.middleware.ratelimit.v1.RateLimiter.memory:type_name -> runtime.api.config.middleware.ratelimit.v1.RateLimiter.Memory
 	1, // 1: runtime.api.config.middleware.ratelimit.v1.RateLimiter.redis:type_name -> runtime.api.config.middleware.ratelimit.v1.RateLimiter.Redis
-	3, // 2: runtime.api.config.middleware.ratelimit.v1.RateLimiter.customize:type_name -> google.protobuf.Struct
+	3, // 2: runtime.api.config.middleware.ratelimit.v1.RateLimiter.settings:type_name -> google.protobuf.Struct
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name

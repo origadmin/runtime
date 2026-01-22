@@ -31,7 +31,6 @@ type EventHandler func(ctx context.Context, event Event) error
 type EventBus interface {
 	Publisher
 	Subscriber
-	// 如果事件总线是后台进程，可以添加 Start 和 Stop 方法来管理其生命周期
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
 }

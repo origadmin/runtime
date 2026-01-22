@@ -37,8 +37,8 @@ type Data struct {
 	Databases *Databases `protobuf:"bytes,3,opt,name=databases,proto3,oneof" json:"databases,omitempty"`
 	// Document Database configurations (e.g., MongoDB).
 	Documents *Documents `protobuf:"bytes,4,opt,name=documents,proto3,oneof" json:"documents,omitempty"`
-	// Optional custom configuration for Data components not explicitly defined.
-	Customize     *structpb.Struct `protobuf:"bytes,100,opt,name=customize,proto3,oneof" json:"customize,omitempty"`
+	// Optional custom settings for Data components not explicitly defined.
+	Settings      *structpb.Struct `protobuf:"bytes,100,opt,name=settings,proto3,oneof" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -101,9 +101,9 @@ func (x *Data) GetDocuments() *Documents {
 	return nil
 }
 
-func (x *Data) GetCustomize() *structpb.Struct {
+func (x *Data) GetSettings() *structpb.Struct {
 	if x != nil {
-		return x.Customize
+		return x.Settings
 	}
 	return nil
 }
@@ -111,10 +111,10 @@ func (x *Data) GetCustomize() *structpb.Struct {
 // FileStores is a collection of named FileStore configurations.
 type ObjectStores struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Default filestore name.
-	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active filestore name, overrides default.
-	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Active *string `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// Default filestore configuration.
+	Default *v1.ObjectStoreConfig `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// List of named FileStore configurations.
 	Configs       []*v1.ObjectStoreConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -151,18 +151,18 @@ func (*ObjectStores) Descriptor() ([]byte, []int) {
 	return file_config_data_v1_data_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ObjectStores) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
 func (x *ObjectStores) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
+}
+
+func (x *ObjectStores) GetDefault() *v1.ObjectStoreConfig {
+	if x != nil {
+		return x.Default
+	}
+	return nil
 }
 
 func (x *ObjectStores) GetConfigs() []*v1.ObjectStoreConfig {
@@ -175,10 +175,10 @@ func (x *ObjectStores) GetConfigs() []*v1.ObjectStoreConfig {
 // Caches is a collection of named Cache configurations.
 type Caches struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Default cache name.
-	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active cache name, overrides default.
-	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Active *string `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// Default cache configuration.
+	Default *v11.CacheConfig `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// List of named Cache configurations.
 	Configs       []*v11.CacheConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -215,18 +215,18 @@ func (*Caches) Descriptor() ([]byte, []int) {
 	return file_config_data_v1_data_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Caches) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
 func (x *Caches) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
+}
+
+func (x *Caches) GetDefault() *v11.CacheConfig {
+	if x != nil {
+		return x.Default
+	}
+	return nil
 }
 
 func (x *Caches) GetConfigs() []*v11.CacheConfig {
@@ -239,10 +239,10 @@ func (x *Caches) GetConfigs() []*v11.CacheConfig {
 // Databases is a collection of named Relational Database configurations.
 type Databases struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Default database name.
-	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active database name, overrides default.
-	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Active *string `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// Default database configuration.
+	Default *v12.DatabaseConfig `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// List of named Relational Database configurations.
 	Configs       []*v12.DatabaseConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -279,18 +279,18 @@ func (*Databases) Descriptor() ([]byte, []int) {
 	return file_config_data_v1_data_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Databases) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
 func (x *Databases) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
+}
+
+func (x *Databases) GetDefault() *v12.DatabaseConfig {
+	if x != nil {
+		return x.Default
+	}
+	return nil
 }
 
 func (x *Databases) GetConfigs() []*v12.DatabaseConfig {
@@ -303,10 +303,10 @@ func (x *Databases) GetConfigs() []*v12.DatabaseConfig {
 // Documents is a collection of named Document Database configurations.
 type Documents struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Default document database name.
-	Default *string `protobuf:"bytes,1,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// Active document database name, overrides default.
-	Active *string `protobuf:"bytes,2,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	Active *string `protobuf:"bytes,1,opt,name=active,proto3,oneof" json:"active,omitempty"`
+	// Default document database configuration.
+	Default *v12.DocumentConfig `protobuf:"bytes,2,opt,name=default,proto3,oneof" json:"default,omitempty"`
 	// List of named Document Database configurations.
 	Configs       []*v12.DocumentConfig `protobuf:"bytes,3,rep,name=configs,proto3" json:"configs,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -343,18 +343,18 @@ func (*Documents) Descriptor() ([]byte, []int) {
 	return file_config_data_v1_data_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *Documents) GetDefault() string {
-	if x != nil && x.Default != nil {
-		return *x.Default
-	}
-	return ""
-}
-
 func (x *Documents) GetActive() string {
 	if x != nil && x.Active != nil {
 		return *x.Active
 	}
 	return ""
+}
+
+func (x *Documents) GetDefault() *v12.DocumentConfig {
+	if x != nil {
+		return x.Default
+	}
+	return nil
 }
 
 func (x *Documents) GetConfigs() []*v12.DocumentConfig {
@@ -368,49 +368,48 @@ var File_config_data_v1_data_proto protoreflect.FileDescriptor
 
 const file_config_data_v1_data_proto_rawDesc = "" +
 	"\n" +
-	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a$config/data/oss/v1/objectstore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xa3\x05\n" +
+	"\x19config/data/v1/data.proto\x12\x1aruntime.api.config.data.v1\x1a config/data/cache/v1/cache.proto\x1a&config/data/database/v1/database.proto\x1a&config/data/database/v1/document.proto\x1a$config/data/oss/v1/objectstore.proto\x1a$gnostic/openapi/v3/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x9a\x05\n" +
 	"\x04Data\x12u\n" +
 	"\robject_stores\x18\x01 \x01(\v2(.runtime.api.config.data.v1.ObjectStoresB \xbaG\x1d\x92\x02\x1aObjectStore configurationsH\x00R\robject_stores\x88\x01\x01\x12[\n" +
 	"\x06caches\x18\x02 \x01(\v2\".runtime.api.config.data.v1.CachesB\x1a\xbaG\x17\x92\x02\x14Cache configurationsH\x01R\x06caches\x88\x01\x01\x12x\n" +
 	"\tdatabases\x18\x03 \x01(\v2%.runtime.api.config.data.v1.DatabasesB.\xbaG+\x92\x02(Relational Database configurations (SQL)H\x02R\tdatabases\x88\x01\x01\x12\x80\x01\n" +
-	"\tdocuments\x18\x04 \x01(\v2%.runtime.api.config.data.v1.DocumentsB6\xbaG3\x92\x020Document Database configurations (e.g., MongoDB)H\x03R\tdocuments\x88\x01\x01\x12\x82\x01\n" +
-	"\tcustomize\x18d \x01(\v2\x17.google.protobuf.StructBF\xbaGC\x92\x02@Custom configuration for Data components not explicitly defined.H\x04R\tcustomize\x88\x01\x01B\x10\n" +
+	"\tdocuments\x18\x04 \x01(\v2%.runtime.api.config.data.v1.DocumentsB6\xbaG3\x92\x020Document Database configurations (e.g., MongoDB)H\x03R\tdocuments\x88\x01\x01\x12{\n" +
+	"\bsettings\x18d \x01(\v2\x17.google.protobuf.StructBA\xbaG>\x92\x02;Custom settings for Data components not explicitly defined.H\x04R\bsettings\x88\x01\x01B\x10\n" +
 	"\x0e_object_storesB\t\n" +
 	"\a_cachesB\f\n" +
 	"\n" +
 	"_databasesB\f\n" +
 	"\n" +
-	"_documentsB\f\n" +
+	"_documentsB\v\n" +
+	"\t_settings\"\xe6\x02\n" +
+	"\fObjectStores\x12K\n" +
+	"\x06active\x18\x01 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x00R\x06active\x88\x01\x01\x12w\n" +
+	"\adefault\x18\x02 \x01(\v21.runtime.api.config.data.oss.v1.ObjectStoreConfigB%\xbaG\"\x92\x02\x1fDefault filestore configurationH\x01R\adefault\x88\x01\x01\x12y\n" +
+	"\aconfigs\x18\x03 \x03(\v21.runtime.api.config.data.oss.v1.ObjectStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\t\n" +
+	"\a_activeB\n" +
 	"\n" +
-	"_customize\"\xaa\x02\n" +
-	"\fObjectStores\x12;\n" +
-	"\adefault\x18\x01 \x01(\tB\x1c\xbaG\x19\x92\x02\x16Default filestore nameH\x00R\adefault\x88\x01\x01\x12K\n" +
-	"\x06active\x18\x02 \x01(\tB.\xbaG+\x92\x02(Active filestore name, overrides defaultH\x01R\x06active\x88\x01\x01\x12y\n" +
-	"\aconfigs\x18\x03 \x03(\v21.runtime.api.config.data.oss.v1.ObjectStoreConfigB,\xbaG)\x92\x02&List of named FileStore configurationsR\aconfigsB\n" +
+	"\b_default\"\xcc\x02\n" +
+	"\x06Caches\x12G\n" +
+	"\x06active\x18\x01 \x01(\tB*\xbaG'\x92\x02$Active cache name, overrides defaultH\x00R\x06active\x88\x01\x01\x12o\n" +
+	"\adefault\x18\x02 \x01(\v2-.runtime.api.config.data.cache.v1.CacheConfigB!\xbaG\x1e\x92\x02\x1bDefault cache configurationH\x01R\adefault\x88\x01\x01\x12q\n" +
+	"\aconfigs\x18\x03 \x03(\v2-.runtime.api.config.data.cache.v1.CacheConfigB(\xbaG%\x92\x02\"List of named Cache configurationsR\aconfigsB\t\n" +
+	"\a_activeB\n" +
 	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_active\"\x94\x02\n" +
-	"\x06Caches\x127\n" +
-	"\adefault\x18\x01 \x01(\tB\x18\xbaG\x15\x92\x02\x12Default cache nameH\x00R\adefault\x88\x01\x01\x12G\n" +
-	"\x06active\x18\x02 \x01(\tB*\xbaG'\x92\x02$Active cache name, overrides defaultH\x01R\x06active\x88\x01\x01\x12q\n" +
-	"\aconfigs\x18\x03 \x03(\v2-.runtime.api.config.data.cache.v1.CacheConfigB(\xbaG%\x92\x02\"List of named Cache configurationsR\aconfigsB\n" +
+	"\b_default\"\xf0\x02\n" +
+	"\tDatabases\x12J\n" +
+	"\x06active\x18\x01 \x01(\tB-\xbaG*\x92\x02'Active database name, overrides defaultH\x00R\x06active\x88\x01\x01\x12x\n" +
+	"\adefault\x18\x02 \x01(\v23.runtime.api.config.data.database.v1.DatabaseConfigB$\xbaG!\x92\x02\x1eDefault database configurationH\x01R\adefault\x88\x01\x01\x12\x85\x01\n" +
+	"\aconfigs\x18\x03 \x03(\v23.runtime.api.config.data.database.v1.DatabaseConfigB6\xbaG3\x92\x020List of named Relational Database configurationsR\aconfigsB\t\n" +
+	"\a_activeB\n" +
 	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_active\"\xb2\x02\n" +
-	"\tDatabases\x12:\n" +
-	"\adefault\x18\x01 \x01(\tB\x1b\xbaG\x18\x92\x02\x15Default database nameH\x00R\adefault\x88\x01\x01\x12J\n" +
-	"\x06active\x18\x02 \x01(\tB-\xbaG*\x92\x02'Active database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12\x85\x01\n" +
-	"\aconfigs\x18\x03 \x03(\v23.runtime.api.config.data.database.v1.DatabaseConfigB6\xbaG3\x92\x020List of named Relational Database configurationsR\aconfigsB\n" +
+	"\b_default\"\x81\x03\n" +
+	"\tDocuments\x12S\n" +
+	"\x06active\x18\x01 \x01(\tB6\xbaG3\x92\x020Active document database name, overrides defaultH\x00R\x06active\x88\x01\x01\x12\x81\x01\n" +
+	"\adefault\x18\x02 \x01(\v23.runtime.api.config.data.database.v1.DocumentConfigB-\xbaG*\x92\x02'Default document database configurationH\x01R\adefault\x88\x01\x01\x12\x83\x01\n" +
+	"\aconfigs\x18\x03 \x03(\v23.runtime.api.config.data.database.v1.DocumentConfigB4\xbaG1\x92\x02.List of named Document Database configurationsR\aconfigsB\t\n" +
+	"\a_activeB\n" +
 	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_active\"\xc2\x02\n" +
-	"\tDocuments\x12C\n" +
-	"\adefault\x18\x01 \x01(\tB$\xbaG!\x92\x02\x1eDefault document database nameH\x00R\adefault\x88\x01\x01\x12S\n" +
-	"\x06active\x18\x02 \x01(\tB6\xbaG3\x92\x020Active document database name, overrides defaultH\x01R\x06active\x88\x01\x01\x12\x83\x01\n" +
-	"\aconfigs\x18\x03 \x03(\v23.runtime.api.config.data.database.v1.DocumentConfigB4\xbaG1\x92\x02.List of named Document Database configurationsR\aconfigsB\n" +
-	"\n" +
-	"\b_defaultB\t\n" +
-	"\a_activeB\xf7\x01\n" +
+	"\b_defaultB\xf7\x01\n" +
 	"\x1ecom.runtime.api.config.data.v1B\tDataProtoP\x01Z=github.com/origadmin/runtime/api/gen/go/config/data/v1;datav1\xa2\x02\x04RACD\xaa\x02\x1aRuntime.Api.Config.Data.V1\xca\x02\x1aRuntime\\Api\\Config\\Data\\V1\xe2\x02&Runtime\\Api\\Config\\Data\\V1\\GPBMetadata\xea\x02\x1eRuntime::Api::Config::Data::V1b\x06proto3"
 
 var (
@@ -439,20 +438,24 @@ var file_config_data_v1_data_proto_goTypes = []any{
 	(*v12.DocumentConfig)(nil),   // 9: runtime.api.config.data.database.v1.DocumentConfig
 }
 var file_config_data_v1_data_proto_depIdxs = []int32{
-	1, // 0: runtime.api.config.data.v1.Data.object_stores:type_name -> runtime.api.config.data.v1.ObjectStores
-	2, // 1: runtime.api.config.data.v1.Data.caches:type_name -> runtime.api.config.data.v1.Caches
-	3, // 2: runtime.api.config.data.v1.Data.databases:type_name -> runtime.api.config.data.v1.Databases
-	4, // 3: runtime.api.config.data.v1.Data.documents:type_name -> runtime.api.config.data.v1.Documents
-	5, // 4: runtime.api.config.data.v1.Data.customize:type_name -> google.protobuf.Struct
-	6, // 5: runtime.api.config.data.v1.ObjectStores.configs:type_name -> runtime.api.config.data.oss.v1.ObjectStoreConfig
-	7, // 6: runtime.api.config.data.v1.Caches.configs:type_name -> runtime.api.config.data.cache.v1.CacheConfig
-	8, // 7: runtime.api.config.data.v1.Databases.configs:type_name -> runtime.api.config.data.database.v1.DatabaseConfig
-	9, // 8: runtime.api.config.data.v1.Documents.configs:type_name -> runtime.api.config.data.database.v1.DocumentConfig
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	1,  // 0: runtime.api.config.data.v1.Data.object_stores:type_name -> runtime.api.config.data.v1.ObjectStores
+	2,  // 1: runtime.api.config.data.v1.Data.caches:type_name -> runtime.api.config.data.v1.Caches
+	3,  // 2: runtime.api.config.data.v1.Data.databases:type_name -> runtime.api.config.data.v1.Databases
+	4,  // 3: runtime.api.config.data.v1.Data.documents:type_name -> runtime.api.config.data.v1.Documents
+	5,  // 4: runtime.api.config.data.v1.Data.settings:type_name -> google.protobuf.Struct
+	6,  // 5: runtime.api.config.data.v1.ObjectStores.default:type_name -> runtime.api.config.data.oss.v1.ObjectStoreConfig
+	6,  // 6: runtime.api.config.data.v1.ObjectStores.configs:type_name -> runtime.api.config.data.oss.v1.ObjectStoreConfig
+	7,  // 7: runtime.api.config.data.v1.Caches.default:type_name -> runtime.api.config.data.cache.v1.CacheConfig
+	7,  // 8: runtime.api.config.data.v1.Caches.configs:type_name -> runtime.api.config.data.cache.v1.CacheConfig
+	8,  // 9: runtime.api.config.data.v1.Databases.default:type_name -> runtime.api.config.data.database.v1.DatabaseConfig
+	8,  // 10: runtime.api.config.data.v1.Databases.configs:type_name -> runtime.api.config.data.database.v1.DatabaseConfig
+	9,  // 11: runtime.api.config.data.v1.Documents.default:type_name -> runtime.api.config.data.database.v1.DocumentConfig
+	9,  // 12: runtime.api.config.data.v1.Documents.configs:type_name -> runtime.api.config.data.database.v1.DocumentConfig
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_config_data_v1_data_proto_init() }
