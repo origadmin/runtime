@@ -39,7 +39,7 @@ func main() {
 		),
 		runtime.WithID(ID),
 	)
-	if err := rt.Load("./bootstrap.yaml"); err != nil {
+	if err := rt.Load("examples/configs/bootstrap_sample/bootstrap.yaml"); err != nil {
 		fmt.Println("Failed to create App:", err)
 		os.Exit(1)
 	}
