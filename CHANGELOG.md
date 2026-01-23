@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.17](https://github.com/origadmin/runtime/compare/v0.2.16...v0.2.17) (2026-01-23)
+
+
+### Features
+
+* **config:** rename customize to settings and add url field in broker config ([88448ff](https://github.com/origadmin/runtime/commit/88448ffa5261f5cd739f0c89e39e151dc5ef60ce))
+
 ## [0.2.16](https://github.com/origadmin/runtime/compare/v0.2.15...v0.2.16) (2026-01-21)
 
 
