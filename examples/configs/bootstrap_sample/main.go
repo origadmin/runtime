@@ -39,7 +39,7 @@ func main() {
 		),
 		runtime.WithID(ID),
 	)
-	if err := rt.Load("./configs/bootstrap.yaml"); err != nil {
+	if err := rt.Load("./bootstrap.yaml"); err != nil {
 		fmt.Println("Failed to create App:", err)
 		os.Exit(1)
 	}
@@ -98,8 +98,8 @@ func main() {
 		logger.Infof("Middlewares configured: %d", len(bc.GetMiddlewares().GetConfigs()))
 	}
 
-	if bc.GetBrokers() != nil && bc.GetBrokers().GetBrokers() != nil {
-		for _, broker := range bc.GetBrokers().GetBrokers() {
+	if bc.GetBrokers() != nil && bc.GetBrokers().GetConfigs() != nil {
+		for _, broker := range bc.GetBrokers().GetConfigs() {
 			logger.Infof("Broker Type: Kafka, Brokers: %v", broker.GetKafka())
 		}
 
