@@ -252,8 +252,8 @@ github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJw
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
 github.com/origadmin/slog-kratos v1.0.5 h1:yDLxVaN8A8MMmIny3xy65uT1wLKl3S9tVZVijn+1Vhc=
 github.com/origadmin/slog-kratos v1.0.5/go.mod h1:zuOf6B1cMjPwwMJ2or2sPbzNAdx/fMn/6MekdG30Xh4=
-github.com/origadmin/toolkits/errors v1.1.0 h1:Vh5ic7kU6e01koOuGpu3c6etbSZ7gEfesXQMpOsO2D8=
-github.com/origadmin/toolkits/errors v1.1.0/go.mod h1:YCPShNuAmn0ns0JB43iKbVdWcPA8XCTiFG+7UA2+tJw=
+github.com/origadmin/toolkits/errors v1.2.0 h1:dQzGVa9QtlptaQ3ljXz6+dbMwHMBORPdiyAF5xxErlk=
+github.com/origadmin/toolkits/errors v1.2.0/go.mod h1:YCPShNuAmn0ns0JB43iKbVdWcPA8XCTiFG+7UA2+tJw=
 github.com/origadmin/toolkits/slogx v1.1.0 h1:UEqIMxMwUiWZe4/g/0aIVA/i7FMKqh4kSj0J+PRPJi8=
 github.com/origadmin/toolkits/slogx v1.1.0/go.mod h1:rpyegD2CZypR+ctlpVz4q3KROwb3xc6mUKQQZ9ow+qI=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=

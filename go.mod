@@ -24,7 +24,7 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/joho/godotenv v1.5.1
 	github.com/origadmin/slog-kratos v1.0.5
-	github.com/origadmin/toolkits/errors v1.1.0
+	github.com/origadmin/toolkits/errors v1.2.0
 	github.com/origadmin/toolkits/slogx v1.1.0
 	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.21.0
