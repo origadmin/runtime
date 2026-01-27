@@ -239,7 +239,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 	}
 
 	opts := []kratos.Option{
-		kratos.Context(r.ctx), // Inject the root context
+		kratos.Context(r.ctx),
 		kratos.Logger(r.Logger()),
 		kratos.Server(servers...),
 		kratos.ID(info.ID()),
