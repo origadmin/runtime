@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.18](https://github.com/origadmin/runtime/compare/v0.2.17...v0.2.18) (2026-01-27)
+
+
+### Features
+
+* **security:** add security policy registry and lookup functions ([c3cb163](https://github.com/origadmin/runtime/commit/c3cb16398c36eb474ff23ee95592fd0f6a1bbd15))
+
+
+### Bug Fixes
+
+* **ci:** fix kratos undefined error ([d60ddfd](https://github.com/origadmin/runtime/commit/d60ddfd250a287936ff1fed808fad37ce9318c02))
+
 ## [0.2.17](https://github.com/origadmin/runtime/compare/v0.2.16...v0.2.17) (2026-01-23)
 
 
