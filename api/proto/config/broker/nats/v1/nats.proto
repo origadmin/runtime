@@ -6,6 +6,18 @@ import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/broker/nats/v1;natsv1";
 
+message StreamConfig {
+  string name = 1 [
+    json_name = "name",
+    (gnostic.openapi.v3.property) = {description: "Name of the stream."}
+  ];
+  repeated string subjects = 2 [
+    json_name = "subjects",
+    (gnostic.openapi.v3.property) = {description: "List of subjects associated with the stream."}
+  ];
+  // Add other stream config fields as needed, e.g., retention, max_msgs, max_bytes
+}
+
 // NatsConfig defines the configuration for a NATS message queue.
 message NatsConfig {
   // NATS server address (e.g., "nats://localhost:4222").
@@ -69,8 +81,13 @@ message NatsConfig {
     (gnostic.openapi.v3.property) = {description: "Whether to use JetStream for persistence."}
   ];
   // JetStream stream name.
-  optional string jetstream_stream_name = 13 [
-    json_name = "jetstream_stream_name",
-    (gnostic.openapi.v3.property) = {description: "JetStream stream name."}
+  optional string auto_provision = 13 [
+    json_name = "auto_provision",
+    (gnostic.openapi.v3.property) = {description: "Whether to automatically provision JetStream streams."}
+  ];
+
+  optional StreamConfig stream_config = 14 [
+    json_name = "stream_config",
+    (gnostic.openapi.v3.property) = {description: "Stream configuration for JetStream."}
   ];
 }

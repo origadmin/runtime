@@ -19,7 +19,7 @@ type metadataFactory struct {
 func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
+	logger := log.NewHelper(mwOpts.Logger)
 
 	metadataConfig := cfg.GetMetadata()
 	if metadataConfig == nil {
@@ -37,14 +37,14 @@ func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 		}
 		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
 	}
-	helper.Debugf("metadata client enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
+	logger.Debugf("metadata client enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
 	return middlewareMetadata.Client(metadataOpts...), true
 }
 
 func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
+	logger := log.NewHelper(mwOpts.Logger)
 
 	metadataConfig := cfg.GetMetadata()
 	if metadataConfig == nil {
@@ -62,6 +62,6 @@ func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 		}
 		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
 	}
-	helper.Debugf("metadata server enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
+	logger.Debugf("metadata server enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
 	return middlewareMetadata.Server(metadataOpts...), true
 }

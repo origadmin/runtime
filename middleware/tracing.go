@@ -18,25 +18,25 @@ type tracingFactory struct {
 func (t tracingFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
+	logger := log.NewHelper(mwOpts.Logger)
 
 	//if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
 	//	return nil, false
 	//}
 
-	helper.Debug("[Middleware] Tracing client middleware enabled")
+	logger.Debug("[Middleware] Tracing client middleware enabled")
 	return tracing.Client(), true
 }
 
 func (t tracingFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
+	logger := log.NewHelper(mwOpts.Logger)
 
 	//if !cfg.GetEnabled() || cfg.GetType() != "tracing" {
 	//	return nil, false
 	//}
 
-	helper.Debug("[Middleware] Tracing server middleware enabled")
+	logger.Debug("[Middleware] Tracing server middleware enabled")
 	return tracing.Server(), true
 }

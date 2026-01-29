@@ -17,6 +17,7 @@ import (
 	"github.com/origadmin/runtime/interfaces"
 	"github.com/origadmin/runtime/interfaces/constant"
 	"github.com/origadmin/runtime/interfaces/options"
+	runtimelog "github.com/origadmin/runtime/log"
 )
 
 // App defines the application's runtime environment.
@@ -87,7 +88,7 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	// 4. Create the container.
 	ctnOpts := append(r.containerOpts, container.WithAppInfo(r.appInfo))
 	r.container = container.New(res.StructuredConfig(), ctnOpts...)
-	r.globalOpts = append(r.globalOpts, container.WithContainer(r.container))
+	r.globalOpts = append(r.globalOpts, container.WithContainer(r.container), runtimelog.WithLogger(r.Logger()))
 	return nil
 }
 

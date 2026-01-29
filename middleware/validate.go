@@ -25,8 +25,8 @@ func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.Middlewar
 
 func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.validator"))
-	helper.Debug("enabling validator server middleware")
+	logger := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.validator"))
+	logger.Debug("enabling validator server middleware")
 
 	if !middleware.GetEnabled() {
 		return nil, false
@@ -46,7 +46,7 @@ func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middlewar
 				return m, true
 			}
 		default:
-			return newValidatorV1(helper), true
+			return newValidatorV1(logger), true
 		}
 	}
 	return nil, false
@@ -56,8 +56,8 @@ func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middlewar
 func Validate(ms []KMiddleware, validator *validatorv1.Validator) []KMiddleware {
 	switch validate.Version(validator.Version) {
 	case validate.V1:
-		helper := log.NewHelper(log.DefaultLogger) // Cannot inject logger here easily
-		return append(ms, newValidatorV1(helper))
+		logger := log.NewHelper(log.DefaultLogger) // Cannot inject logger here easily
+		return append(ms, newValidatorV1(logger))
 	case validate.V2:
 		return ValidateServer(ms, validator)
 	}

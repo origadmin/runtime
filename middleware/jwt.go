@@ -25,8 +25,8 @@ type jwtFactory struct{}
 
 func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debugf("enabling jwt client middleware")
+	logger := log.NewHelper(mwOpts.Logger)
+	logger.Debugf("enabling jwt client middleware")
 
 	jwtConfig := cfg.GetJwt()
 	if jwtConfig == nil {
@@ -38,8 +38,8 @@ func (f jwtFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Op
 
 func (f jwtFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debugf("enabling jwt server middleware")
+	logger := log.NewHelper(mwOpts.Logger)
+	logger.Debugf("enabling jwt server middleware")
 
 	jwtConfig := cfg.GetJwt()
 	if jwtConfig == nil {
@@ -210,12 +210,12 @@ func NewClaimsFactory(cfg *jwtv1.JWT, opts *Options) func() jwt.Claims {
 				"nbf": now.Unix(),
 				"exp": now.Add(cc.lifetime).Unix(),
 			}
-			
+
 			// Add audience if configured
 			if len(cc.audience) > 0 {
 				claims["aud"] = cc.audience
 			}
-			
+
 			return claims
 		}
 	default:

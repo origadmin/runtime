@@ -19,8 +19,8 @@ type rateLimitFactory struct {
 func (r rateLimitFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debug("[Middleware] Rate limit client middleware enabled, not supported yet")
+	logger := log.NewHelper(mwOpts.Logger)
+	logger.Debug("[Middleware] Rate limit client middleware enabled, not supported yet")
 	return nil, false
 }
 
@@ -28,8 +28,8 @@ func (r rateLimitFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts
 func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
-	helper.Debug("[Middleware] Rate limit server middleware enabled")
+	logger := log.NewHelper(mwOpts.Logger)
+	logger.Debug("[Middleware] Rate limit server middleware enabled")
 
 	ratelimitConfig := cfg.GetRateLimiter()
 	if ratelimitConfig == nil {
@@ -40,16 +40,16 @@ func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	switch ratelimitConfig.GetName() {
 	case "redis":
 		// TODO: Implement Redis rate limiter options
-		helper.Warnf("Redis rate limiter not yet implemented")
+		logger.Warnf("Redis rate limiter not yet implemented")
 	case "memory":
 		// TODO: Implement Memory rate limiter options
-		helper.Warnf("Memory rate limiter not yet implemented")
+		logger.Warnf("Memory rate limiter not yet implemented")
 	//case "bbr":
 	// default is bbr
 	// rlOpts = append(rlOpts, middlewareRateLimit.WithLimiter(bbr.NewLimiter()))
 	default:
 		// Default to BBR if no specific name is provided or recognized
-		helper.Debugf("Using default BBR rate limiter")
+		logger.Debugf("Using default BBR rate limiter")
 	}
 
 	return ratelimit.Server(rlOpts...), true

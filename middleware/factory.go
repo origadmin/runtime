@@ -48,13 +48,11 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 		return middlewares
 	}
 
-	logger := opt.Logger
-
 	// Create a middleware carrier for context propagation
 	clients := make(map[string]KMiddleware)
 
-	helper := log.NewHelper(logger)
-	helper.Debug("building client middlewares")
+	logger := log.NewHelper(opt.Logger)
+	logger.Debug("building client middlewares")
 
 	// First pass: separate regular middlewares and selector configs
 	for _, ms := range cfg.GetConfigs() {
@@ -76,11 +74,11 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 
 		f, ok := b.Get(middlewareType)
 		if !ok {
-			helper.Warnf("unknown client middleware type: %s", middlewareType)
+			logger.Warnf("unknown client middleware type: %s", middlewareType)
 			continue
 		}
 
-		helper.Infof("enabling client middleware: %s (type: %s)", middlewareName, middlewareType)
+		logger.Infof("enabling client middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create middleware
 		m, ok := f.NewMiddlewareClient(ms, opts...)
@@ -92,7 +90,7 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 	}
 	// Attach the carrier into options context
 	opts = append(opts, WithClientCarrier(clients))
-	helper.Debugf("carrier: %+v", clients)
+	logger.Debugf("carrier: %+v", clients)
 	// Second pass: process selector middleware configs
 	for _, ms := range selectorConfigs {
 		middlewareType := ms.GetType()
@@ -103,11 +101,11 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 
 		f, ok := b.Get(middlewareType)
 		if !ok {
-			helper.Warnf("unknown client middleware type: %s", middlewareType)
+			logger.Warnf("unknown client middleware type: %s", middlewareType)
 			continue
 		}
 
-		helper.Infof("enabling client middleware: %s (type: %s)", middlewareName, middlewareType)
+		logger.Infof("enabling client middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create selector middleware (can access previously created middlewares now)
 		m, ok := f.NewMiddlewareClient(ms, opts...)
@@ -134,10 +132,8 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 		return middlewares
 	}
 
-	logger := opt.Logger
-
-	helper := log.NewHelper(logger)
-	helper.Debug("building server middlewares")
+	logger := log.NewHelper(opt.Logger)
+	logger.Debug("building server middlewares")
 
 	// Create a middleware carrier for context propagation
 	servers := make(map[string]KMiddleware)
@@ -163,11 +159,11 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 
 		f, ok := b.Get(middlewareType)
 		if !ok {
-			helper.Warnf("unknown server middleware type: %s", middlewareType)
+			logger.Warnf("unknown server middleware type: %s", middlewareType)
 			continue
 		}
 
-		helper.Debugf("enabling server middleware: %s (type: %s)", middlewareName, middlewareType)
+		logger.Debugf("enabling server middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create middleware
 		ms, ok := f.NewMiddlewareServer(mwCfg, opts...)
@@ -180,7 +176,7 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 
 	// Attach the carrier into options context for selector middlewares
 	opts = append(opts, WithServerCarrier(servers))
-	helper.Debugf("carrier: %+v", servers)
+	logger.Debugf("carrier: %+v", servers)
 	// Second pass: process selector middlewares
 
 	for _, mwCfg := range selectorConfigs {
@@ -192,11 +188,11 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 
 		f, ok := b.Get(middlewareType)
 		if !ok {
-			helper.Warnf("unknown server middleware type: %s", middlewareType)
+			logger.Warnf("unknown server middleware type: %s", middlewareType)
 			continue
 		}
 
-		helper.Debugf("enabling server selector middleware: %s (type: %s)", middlewareName, middlewareType)
+		logger.Debugf("enabling server selector middleware: %s (type: %s)", middlewareName, middlewareType)
 
 		// Create selector middleware (can access previously created middlewares)
 		ms, ok := f.NewMiddlewareServer(mwCfg, opts...)
@@ -213,10 +209,12 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 // NewClient creates a single client-side middleware instance.
 // This is the public API for creating individual client-side middlewares.
 func NewClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+	opt := FromOptions(opts...)
+	logger := log.NewHelper(opt.Logger)
 	middlewareType := cfg.GetType()
 	f, ok := defaultBuilder.Get(middlewareType)
 	if !ok {
-		log.Warnf("unknown client middleware type: %s", middlewareType)
+		logger.Warnf("unknown client middleware type: %s", middlewareType)
 		return nil, false
 	}
 	return f.NewMiddlewareClient(cfg, opts...)
@@ -225,10 +223,12 @@ func NewClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool)
 // NewServer creates a single server-side middleware instance.
 // This is the public API for creating individual server-side middlewares.
 func NewServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+	opt := FromOptions(opts...)
+	logger := log.NewHelper(opt.Logger)
 	middlewareType := cfg.GetType()
 	f, ok := defaultBuilder.Get(middlewareType)
 	if !ok {
-		log.Warnf("unknown server middleware type: %s", middlewareType)
+		logger.Warnf("unknown server middleware type: %s", middlewareType)
 		return nil, false
 	}
 	return f.NewMiddlewareServer(cfg, opts...)

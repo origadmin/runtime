@@ -22,6 +22,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type StreamConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Subjects      []string               `protobuf:"bytes,2,rep,name=subjects,proto3" json:"subjects,omitempty"` // Add other stream config fields as needed, e.g., retention, max_msgs, max_bytes
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamConfig) Reset() {
+	*x = StreamConfig{}
+	mi := &file_config_broker_nats_v1_nats_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamConfig) ProtoMessage() {}
+
+func (x *StreamConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_config_broker_nats_v1_nats_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamConfig.ProtoReflect.Descriptor instead.
+func (*StreamConfig) Descriptor() ([]byte, []int) {
+	return file_config_broker_nats_v1_nats_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *StreamConfig) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *StreamConfig) GetSubjects() []string {
+	if x != nil {
+		return x.Subjects
+	}
+	return nil
+}
+
 // NatsConfig defines the configuration for a NATS message queue.
 type NatsConfig struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -50,14 +102,15 @@ type NatsConfig struct {
 	// Whether to use JetStream for persistence.
 	JetstreamEnabled *bool `protobuf:"varint,12,opt,name=jetstream_enabled,proto3,oneof" json:"jetstream_enabled,omitempty"`
 	// JetStream stream name.
-	JetstreamStreamName *string `protobuf:"bytes,13,opt,name=jetstream_stream_name,proto3,oneof" json:"jetstream_stream_name,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	AutoProvision *string       `protobuf:"bytes,13,opt,name=auto_provision,proto3,oneof" json:"auto_provision,omitempty"`
+	StreamConfig  *StreamConfig `protobuf:"bytes,14,opt,name=stream_config,proto3,oneof" json:"stream_config,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *NatsConfig) Reset() {
 	*x = NatsConfig{}
-	mi := &file_config_broker_nats_v1_nats_proto_msgTypes[0]
+	mi := &file_config_broker_nats_v1_nats_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -69,7 +122,7 @@ func (x *NatsConfig) String() string {
 func (*NatsConfig) ProtoMessage() {}
 
 func (x *NatsConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_config_broker_nats_v1_nats_proto_msgTypes[0]
+	mi := &file_config_broker_nats_v1_nats_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -82,7 +135,7 @@ func (x *NatsConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NatsConfig.ProtoReflect.Descriptor instead.
 func (*NatsConfig) Descriptor() ([]byte, []int) {
-	return file_config_broker_nats_v1_nats_proto_rawDescGZIP(), []int{0}
+	return file_config_broker_nats_v1_nats_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *NatsConfig) GetAddress() string {
@@ -169,19 +222,28 @@ func (x *NatsConfig) GetJetstreamEnabled() bool {
 	return false
 }
 
-func (x *NatsConfig) GetJetstreamStreamName() string {
-	if x != nil && x.JetstreamStreamName != nil {
-		return *x.JetstreamStreamName
+func (x *NatsConfig) GetAutoProvision() string {
+	if x != nil && x.AutoProvision != nil {
+		return *x.AutoProvision
 	}
 	return ""
+}
+
+func (x *NatsConfig) GetStreamConfig() *StreamConfig {
+	if x != nil {
+		return x.StreamConfig
+	}
+	return nil
 }
 
 var File_config_broker_nats_v1_nats_proto protoreflect.FileDescriptor
 
 const file_config_broker_nats_v1_nats_proto_rawDesc = "" +
 	"\n" +
-	" config/broker/nats/v1/nats.proto\x12!runtime.api.config.broker.nats.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xf0\n" +
-	"\n" +
+	" config/broker/nats/v1/nats.proto\x12!runtime.api.config.broker.nats.v1\x1a$gnostic/openapi/v3/annotations.proto\"\x8d\x01\n" +
+	"\fStreamConfig\x12-\n" +
+	"\x04name\x18\x01 \x01(\tB\x19\xbaG\x16\x92\x02\x13Name of the stream.R\x04name\x12N\n" +
+	"\bsubjects\x18\x02 \x03(\tB2\xbaG/\x92\x02,List of subjects associated with the stream.R\bsubjects\"\x94\f\n" +
 	"\n" +
 	"NatsConfig\x12T\n" +
 	"\aaddress\x18\x01 \x01(\tB:\xbaG7\x92\x024NATS server address (e.g., \"nats://localhost:4222\").R\aaddress\x12S\n" +
@@ -197,8 +259,9 @@ const file_config_broker_nats_v1_nats_proto_rawDesc = "" +
 	" \x01(\tB&\xbaG#\x92\x02 Path to TLS CA certificate file.H\bR\x10tls_ca_cert_file\x88\x01\x01\x12r\n" +
 	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\tR\x18tls_insecure_skip_verify\x88\x01\x01\x12b\n" +
 	"\x11jetstream_enabled\x18\f \x01(\bB/\xbaG,\x92\x02)Whether to use JetStream for persistence.H\n" +
-	"R\x11jetstream_enabled\x88\x01\x01\x12W\n" +
-	"\x15jetstream_stream_name\x18\r \x01(\tB\x1c\xbaG\x19\x92\x02\x16JetStream stream name.H\vR\x15jetstream_stream_name\x88\x01\x01B\n" +
+	"R\x11jetstream_enabled\x88\x01\x01\x12h\n" +
+	"\x0eauto_provision\x18\r \x01(\tB;\xbaG8\x92\x025Whether to automatically provision JetStream streams.H\vR\x0eauto_provision\x88\x01\x01\x12\x85\x01\n" +
+	"\rstream_config\x18\x0e \x01(\v2/.runtime.api.config.broker.nats.v1.StreamConfigB)\xbaG&\x92\x02#Stream configuration for JetStream.H\fR\rstream_config\x88\x01\x01B\n" +
 	"\n" +
 	"\b_subjectB\x0e\n" +
 	"\f_queue_groupB\x18\n" +
@@ -210,8 +273,9 @@ const file_config_broker_nats_v1_nats_proto_rawDesc = "" +
 	"\x14_tls_client_key_fileB\x13\n" +
 	"\x11_tls_ca_cert_fileB\x1b\n" +
 	"\x19_tls_insecure_skip_verifyB\x14\n" +
-	"\x12_jetstream_enabledB\x18\n" +
-	"\x16_jetstream_stream_nameB\xa3\x02\n" +
+	"\x12_jetstream_enabledB\x11\n" +
+	"\x0f_auto_provisionB\x10\n" +
+	"\x0e_stream_configB\xa3\x02\n" +
 	"%com.runtime.api.config.broker.nats.v1B\tNatsProtoP\x01ZDgithub.com/origadmin/runtime/api/gen/go/config/broker/nats/v1;natsv1\xa2\x02\x05RACBN\xaa\x02!Runtime.Api.Config.Broker.Nats.V1\xca\x02!Runtime\\Api\\Config\\Broker\\Nats\\V1\xe2\x02-Runtime\\Api\\Config\\Broker\\Nats\\V1\\GPBMetadata\xea\x02&Runtime::Api::Config::Broker::Nats::V1b\x06proto3"
 
 var (
@@ -226,16 +290,18 @@ func file_config_broker_nats_v1_nats_proto_rawDescGZIP() []byte {
 	return file_config_broker_nats_v1_nats_proto_rawDescData
 }
 
-var file_config_broker_nats_v1_nats_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_config_broker_nats_v1_nats_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_config_broker_nats_v1_nats_proto_goTypes = []any{
-	(*NatsConfig)(nil), // 0: runtime.api.config.broker.nats.v1.NatsConfig
+	(*StreamConfig)(nil), // 0: runtime.api.config.broker.nats.v1.StreamConfig
+	(*NatsConfig)(nil),   // 1: runtime.api.config.broker.nats.v1.NatsConfig
 }
 var file_config_broker_nats_v1_nats_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: runtime.api.config.broker.nats.v1.NatsConfig.stream_config:type_name -> runtime.api.config.broker.nats.v1.StreamConfig
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_config_broker_nats_v1_nats_proto_init() }
@@ -243,14 +309,14 @@ func file_config_broker_nats_v1_nats_proto_init() {
 	if File_config_broker_nats_v1_nats_proto != nil {
 		return
 	}
-	file_config_broker_nats_v1_nats_proto_msgTypes[0].OneofWrappers = []any{}
+	file_config_broker_nats_v1_nats_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_broker_nats_v1_nats_proto_rawDesc), len(file_config_broker_nats_v1_nats_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

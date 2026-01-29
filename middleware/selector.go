@@ -20,14 +20,14 @@ type selectorFactory struct {
 func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
+	logger := log.NewHelper(mwOpts.Logger)
 
 	selectorConfig := cfg.GetSelector()
 	if selectorConfig == nil {
 		return nil, false
 	}
 
-	helper.Debug("enabling client selector middleware")
+	logger.Debug("enabling client selector middleware")
 
 	var mws []KMiddleware
 
@@ -58,17 +58,17 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 
 	// fetch middlewares by final names
 	for _, name := range names {
-		helper.Debugf("enabling client selector middleware: %s", name)
+		logger.Debugf("enabling client selector middleware: %s", name)
 		middleware, ok := mwOpts.Carrier.Clients[name] // Changed from mwOpts.Carrier.Clients
 		if !ok {
-			helper.Warnf("unknown client selector middleware: %s", name)
+			logger.Warnf("unknown client selector middleware: %s", name)
 			continue
 		}
 		mws = append(mws, middleware)
 	}
 
 	if len(mws) == 0 {
-		helper.Warn("no client selector middleware enabled")
+		logger.Warn("no client selector middleware enabled")
 		return nil, false
 	}
 
@@ -81,14 +81,14 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	helper := log.NewHelper(mwOpts.Logger)
+	logger := log.NewHelper(mwOpts.Logger)
 
 	selectorConfig := cfg.GetSelector()
 	if selectorConfig == nil {
 		return nil, false
 	}
 
-	helper.Debug("enabling server selector middleware")
+	logger.Debug("enabling server selector middleware")
 
 	var mws []KMiddleware
 
@@ -119,17 +119,17 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 
 	// fetch middlewares by final names
 	for _, name := range names {
-		helper.Debugf("enabling server selector middleware: %s", name)
+		logger.Debugf("enabling server selector middleware: %s", name)
 		middleware, ok := mwOpts.Carrier.Servers[name] // Changed from mwOpts.Carrier.Servers
 		if !ok {
-			helper.Warnf("unknown server selector middleware: %s", name)
+			logger.Warnf("unknown server selector middleware: %s", name)
 			continue
 		}
 		mws = append(mws, middleware)
 	}
 
 	if len(mws) == 0 {
-		helper.Warn("no server selector middleware enabled")
+		logger.Warn("no server selector middleware enabled")
 		return nil, false
 	}
 
@@ -140,13 +140,13 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 }
 
 // SelectorServer creates a selector middleware for server-side.
-// This helper function is still available for direct use if needed to wrap specific middlewares.
+// This logger function is still available for direct use if needed to wrap specific middlewares.
 func SelectorServer(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KMiddleware) KMiddleware {
 	return selectorBuilder(cfg, selector.Server(middlewares...), matchFunc)
 }
 
 // SelectorClient creates a selector middleware for client-side.
-// This helper function is still available for direct use if needed to wrap specific middlewares.
+// This logger function is still available for direct use if needed to wrap specific middlewares.
 func SelectorClient(cfg *selectorv1.Selector, matchFunc selector.MatchFunc, middlewares ...KMiddleware) KMiddleware {
 	return selectorBuilder(cfg, selector.Client(middlewares...), matchFunc)
 }
