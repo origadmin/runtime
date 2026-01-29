@@ -81,7 +81,7 @@ message NatsConfig {
     (gnostic.openapi.v3.property) = {description: "Whether to use JetStream for persistence."}
   ];
   // JetStream stream name.
-  optional string auto_provision = 13 [
+  optional bool auto_provision = 13 [
     json_name = "auto_provision",
     (gnostic.openapi.v3.property) = {description: "Whether to automatically provision JetStream streams."}
   ];

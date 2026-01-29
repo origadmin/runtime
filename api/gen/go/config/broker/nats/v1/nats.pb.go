@@ -102,7 +102,7 @@ type NatsConfig struct {
 	// Whether to use JetStream for persistence.
 	JetstreamEnabled *bool `protobuf:"varint,12,opt,name=jetstream_enabled,proto3,oneof" json:"jetstream_enabled,omitempty"`
 	// JetStream stream name.
-	AutoProvision *string       `protobuf:"bytes,13,opt,name=auto_provision,proto3,oneof" json:"auto_provision,omitempty"`
+	AutoProvision *bool         `protobuf:"varint,13,opt,name=auto_provision,proto3,oneof" json:"auto_provision,omitempty"`
 	StreamConfig  *StreamConfig `protobuf:"bytes,14,opt,name=stream_config,proto3,oneof" json:"stream_config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -222,11 +222,11 @@ func (x *NatsConfig) GetJetstreamEnabled() bool {
 	return false
 }
 
-func (x *NatsConfig) GetAutoProvision() string {
+func (x *NatsConfig) GetAutoProvision() bool {
 	if x != nil && x.AutoProvision != nil {
 		return *x.AutoProvision
 	}
-	return ""
+	return false
 }
 
 func (x *NatsConfig) GetStreamConfig() *StreamConfig {
@@ -260,7 +260,7 @@ const file_config_broker_nats_v1_nats_proto_rawDesc = "" +
 	"\x18tls_insecure_skip_verify\x18\v \x01(\bB1\xbaG.\x92\x02+Whether to enable TLS insecure skip verify.H\tR\x18tls_insecure_skip_verify\x88\x01\x01\x12b\n" +
 	"\x11jetstream_enabled\x18\f \x01(\bB/\xbaG,\x92\x02)Whether to use JetStream for persistence.H\n" +
 	"R\x11jetstream_enabled\x88\x01\x01\x12h\n" +
-	"\x0eauto_provision\x18\r \x01(\tB;\xbaG8\x92\x025Whether to automatically provision JetStream streams.H\vR\x0eauto_provision\x88\x01\x01\x12\x85\x01\n" +
+	"\x0eauto_provision\x18\r \x01(\bB;\xbaG8\x92\x025Whether to automatically provision JetStream streams.H\vR\x0eauto_provision\x88\x01\x01\x12\x85\x01\n" +
 	"\rstream_config\x18\x0e \x01(\v2/.runtime.api.config.broker.nats.v1.StreamConfigB)\xbaG&\x92\x02#Stream configuration for JetStream.H\fR\rstream_config\x88\x01\x01B\n" +
 	"\n" +
 	"\b_subjectB\x0e\n" +
