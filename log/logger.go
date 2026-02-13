@@ -7,6 +7,7 @@ package log
 
 import (
 	"strings"
+	"sync"
 
 	kratoslog "github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
@@ -17,6 +18,43 @@ import (
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/toolkits/slogx"
 )
+
+// globalLogger is designed as a global logger in current process.
+var global = &loggerAppliance{}
+
+// loggerAppliance is the proxy of `Logger` to
+// make logger change will affect all sub-logger.
+type loggerAppliance struct {
+	lock sync.RWMutex
+	*slogx.Logger
+}
+
+var (
+	DefaultSlogLogger = slogx.New()
+)
+
+func init() {
+	global.SetLogger(DefaultSlogLogger)
+}
+
+func (a *loggerAppliance) SetLogger(in *slogx.Logger) {
+	a.lock.Lock()
+	defer a.lock.Unlock()
+	a.Logger = in
+}
+
+// SetSlogLogger should be called before any other log call.
+// And it is NOT THREAD SAFE.
+func SetSlogLogger(logger *slogx.Logger) {
+	global.SetLogger(logger)
+}
+
+// GetSlogLogger returns global logger appliance as logger in current process.
+func GetSlogLogger() *slogx.Logger {
+	global.lock.RLock()
+	defer global.lock.RUnlock()
+	return global.Logger
+}
 
 // NewLogger creates a new kratos logger based on the provided configuration.
 // It uses slog as the underlying logging library and slog-kratos as an adapter.
@@ -78,6 +116,7 @@ func NewLogger(cfg *loggerv1.Logger) Logger {
 	kratosLogger := kslog.NewLogger(kslog.WithLogger(slogLogger))
 
 	if cfg.GetDefault() {
+		SetSlogLogger(slogLogger)
 		kratoslog.SetLogger(kratosLogger)
 	}
 
