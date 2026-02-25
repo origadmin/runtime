@@ -47,22 +47,25 @@ func (w *watcher) Next() ([]*config.KeyValue, error) {
 				}
 			}
 		}
-		fi, err := os.Stat(w.f.path)
-		if err != nil {
-			return nil, err
-		}
-		path := w.f.path
-		if fi.IsDir() {
-			path = filepath.Join(w.f.path, filepath.Base(event.Name))
-		}
-		if w.f.shouldIgnore(event.Name) {
+
+		// Apply filter and ignores to the event file
+		fileName := filepath.Base(event.Name)
+		if w.f.shouldIgnore(fileName) {
 			return nil, nil
 		}
-		kv, err := w.f.loadFile(path)
-		if err != nil {
-			return nil, err
+		if w.f.filter != "" {
+			matched, err := filepath.Match(w.f.filter, fileName)
+			if err != nil {
+				return nil, err
+			}
+			if !matched {
+				return nil, nil
+			}
 		}
-		return []*config.KeyValue{kv}, nil
+
+		// Trigger reload of the entire source
+		// Kratos config expects the full list of KVs from the source on each change
+		return w.f.Load()
 	case err := <-w.fw.Errors:
 		return nil, err
 	}

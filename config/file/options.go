@@ -34,6 +34,12 @@ func WithFormatter(formatter Formatter) options.Option {
 	})
 }
 
+func WithFilter(filter string) options.Option {
+	return optionutil.Update(func(o *file) {
+		o.filter = filter
+	})
+}
+
 // FromOptions extracts file options from the provided runtime options.
 // WithCond options is nil or no file options are found, it returns the original file.
 func applyFileOptions(f *file, opts ...options.Option) *file {

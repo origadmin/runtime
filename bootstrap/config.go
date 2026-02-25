@@ -5,12 +5,13 @@ import (
 	"path/filepath"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
+	"github.com/go-kratos/kratos/v2/config/file"
 
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/envsource"
-	"github.com/origadmin/runtime/config/file"
+	filesource "github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/log"
 )
@@ -68,7 +69,12 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrap
 			return nil, nil, fmt.Errorf("no configuration sources found in bootstrap file: %s", bootstrapPath)
 		}
 
-		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: bootstrapConfig.GetSources()}, providerOpts.rawOptions...)
+		// KEY OPTIMIZATION: Automatically exclude the bootstrap metadata file from the application config.
+		// This only applies to Stage 2 (application config loading) and only in indirect mode.
+		// It ensures that directory-level loads (*.yaml) won't accidentally ingest bootstrap.yaml.
+		configOpts := append([]Option{}, providerOpts.rawOptions...)
+		configOpts = append(configOpts, filesource.WithIgnores(filepath.Base(bootstrapPath)))
+		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: bootstrapConfig.GetSources()}, configOpts...)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to create base config from bootstrap sources: %w", err)
 		}
@@ -131,11 +137,12 @@ func bootstrapSources(path string, prefixes ...string) kratosconfig.Option {
 
 // LoadBootstrapConfig loads the bootstrapv1.Bootstrap definition from a local bootstrap configuration file.
 // This function is the first step in the configuration process.
-// The temporary config used to load the sources is closed internally.
+// It reads the file directly using codecs to avoid the overhead of the full config engine and its watchers.                                                                                       │
 func LoadBootstrapConfig(bootstrapPath string, opts ...Option) (*bootstrapv1.Bootstrap, error) {
 	providerOpts := FromOptions(opts...)
+	configOpts := append([]kratosconfig.Option{bootstrapSources(bootstrapPath, providerOpts.prefixes...)})
 	// Create a temporary Kratos config instance to load the bootstrap.yaml file.
-	bootConfig := kratosconfig.New(bootstrapSources(bootstrapPath, providerOpts.prefixes...))
+	bootConfig := kratosconfig.New(configOpts...)
 
 	// Defer closing the config and handle its error
 	defer func() {

@@ -33,6 +33,7 @@ var defaultIgnores = []string{
 // file represents a file source used to load configuration from the file system
 type file struct {
 	path      string
+	filter    string
 	ignores   []string
 	formatter Formatter
 	optional  bool
@@ -76,12 +77,11 @@ func (f *file) loadFile(path string) (*kratosconfig.KeyValue, error) {
 
 // shouldIgnore determines whether a file should be ignored
 func (f *file) shouldIgnore(filename string) bool {
-	if len(f.ignores) == 0 {
-		return false
-	}
-	ext := strings.ToLower(filepath.Ext(filename))
-	for _, ignoreExt := range f.ignores {
-		if strings.HasSuffix(ext, ignoreExt) {
+	for _, pattern := range f.ignores {
+		if matched, _ := filepath.Match(pattern, filename); matched {
+			return true
+		}
+		if strings.HasSuffix(filename, pattern) {
 			return true
 		}
 	}
@@ -99,6 +99,18 @@ func (f *file) loadDir(path string) (kvs []*kratosconfig.KeyValue, err error) {
 		if file.IsDir() || strings.HasPrefix(file.Name(), ".") || f.shouldIgnore(file.Name()) {
 			continue
 		}
+
+		// Apply filter if specified
+		if f.filter != "" {
+			matched, err := filepath.Match(f.filter, file.Name())
+			if err != nil {
+				return nil, err
+			}
+			if !matched {
+				continue
+			}
+		}
+
 		kv, err := f.loadFile(filepath.Join(path, file.Name()))
 		if err != nil {
 			return nil, err
@@ -165,6 +177,12 @@ func NewFileSource(cfg *sourcev1.SourceConfig, opts ...options.Option) (kratosco
 	optional := fileSrc.GetOptional()
 	if optional {
 		opts = append(opts, WithOptional())
+	}
+	if filter := fileSrc.GetFilter(); filter != "" {
+		opts = append(opts, WithFilter(filter))
+	}
+	if ignores := fileSrc.GetIgnores(); len(ignores) > 0 {
+		opts = append(opts, WithIgnores(ignores...))
 	}
 
 	return NewSource(fileSrc.GetPath(), opts...), nil

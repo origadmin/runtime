@@ -31,6 +31,7 @@ type FileSource struct {
 	Formats       []string `protobuf:"bytes,4,rep,name=formats,proto3" json:"formats,omitempty"`
 	Reload        bool     `protobuf:"varint,6,opt,name=reload,proto3" json:"reload,omitempty"`
 	Optional      bool     `protobuf:"varint,7,opt,name=optional,proto3" json:"optional,omitempty"`
+	Filter        string   `protobuf:"bytes,8,opt,name=filter,proto3" json:"filter,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -107,11 +108,18 @@ func (x *FileSource) GetOptional() bool {
 	return false
 }
 
+func (x *FileSource) GetFilter() string {
+	if x != nil {
+		return x.Filter
+	}
+	return ""
+}
+
 var File_config_source_v1_file_source_proto protoreflect.FileDescriptor
 
 const file_config_source_v1_file_source_proto_rawDesc = "" +
 	"\n" +
-	"\"config/source/v1/file_source.proto\x12\x1cruntime.api.config.source.v1\"\xa0\x01\n" +
+	"\"config/source/v1/file_source.proto\x12\x1cruntime.api.config.source.v1\"\xb8\x01\n" +
 	"\n" +
 	"FileSource\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\x12\x16\n" +
@@ -119,7 +127,8 @@ const file_config_source_v1_file_source_proto_rawDesc = "" +
 	"\aignores\x18\x03 \x03(\tR\aignores\x12\x18\n" +
 	"\aformats\x18\x04 \x03(\tR\aformats\x12\x16\n" +
 	"\x06reload\x18\x06 \x01(\bR\x06reload\x12\x1a\n" +
-	"\boptional\x18\a \x01(\bR\boptionalB\x8b\x02\n" +
+	"\boptional\x18\a \x01(\bR\boptional\x12\x16\n" +
+	"\x06filter\x18\b \x01(\tR\x06filterB\x8b\x02\n" +
 	" com.runtime.api.config.source.v1B\x0fFileSourceProtoP\x01ZAgithub.com/origadmin/runtime/api/gen/go/config/source/v1;sourcev1\xa2\x02\x04RACS\xaa\x02\x1cRuntime.Api.Config.Source.V1\xca\x02\x1cRuntime\\Api\\Config\\Source\\V1\xe2\x02(Runtime\\Api\\Config\\Source\\V1\\GPBMetadata\xea\x02 Runtime::Api::Config::Source::V1b\x06proto3"
 
 var (

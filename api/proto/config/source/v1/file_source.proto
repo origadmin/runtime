@@ -13,4 +13,5 @@ message FileSource {
   repeated string formats = 4 [json_name = "formats"];
   bool reload = 6 [json_name = "reload"];
   bool optional = 7 [json_name = "optional"];
+  string filter = 8 [json_name = "filter"];
 }
