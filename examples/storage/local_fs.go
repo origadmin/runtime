@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts/storage"
 )
 
 // LocalStorage provides a file system implementation based on the local disk.

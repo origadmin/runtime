@@ -56,6 +56,8 @@ func (m *App) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for Project
+
 	// no validation rules for Id
 
 	// no validation rules for Name
@@ -65,6 +67,39 @@ func (m *App) validate(all bool) error {
 	// no validation rules for Env
 
 	// no validation rules for Metadata
+
+	// no validation rules for Hostname
+
+	// no validation rules for InstanceId
+
+	if all {
+		switch v := interface{}(m.GetStartTime()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AppValidationError{
+					field:  "StartTime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AppValidationError{
+					field:  "StartTime",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetStartTime()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AppValidationError{
+				field:  "StartTime",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if len(errors) > 0 {
 		return AppMultiError(errors)

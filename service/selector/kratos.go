@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package selector implements the functions, types, and interfaces for the module.
+// Package selector implements the functions, types, and contracts for the module.
 package selector
 
 //go:generate adptool .

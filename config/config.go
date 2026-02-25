@@ -5,7 +5,7 @@ import (
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // Module is the name of the module

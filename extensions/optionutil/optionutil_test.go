@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // --- Test Fixtures ---

@@ -10,6 +10,7 @@ import (
 	_ "github.com/google/gnostic/openapiv3"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -23,19 +24,26 @@ const (
 )
 
 // App defines the application's identity and metadata.
-// StartTime is intentionally excluded as it's a runtime generated value.
 type App struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Project name
+	Project string `protobuf:"bytes,1,opt,name=project,proto3" json:"project,omitempty"`
 	// Unique identifier of the application
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	// Application name
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	// Application version
-	Version string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	Version string `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
 	// Application running environment (e.g.: dev, test, prod)
-	Env string `protobuf:"bytes,4,opt,name=env,proto3" json:"env,omitempty"`
+	Env string `protobuf:"bytes,5,opt,name=env,proto3" json:"env,omitempty"`
 	// Application metadata stored as key-value pairs
-	Metadata      map[string]string `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Metadata map[string]string `protobuf:"bytes,6,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Application hostname
+	Hostname string `protobuf:"bytes,7,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	// Application instance identifier
+	InstanceId string `protobuf:"bytes,8,opt,name=instance_id,proto3" json:"instance_id,omitempty"`
+	// Application start time
+	StartTime     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=start_time,proto3" json:"start_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -68,6 +76,13 @@ func (x *App) ProtoReflect() protoreflect.Message {
 // Deprecated: Use App.ProtoReflect.Descriptor instead.
 func (*App) Descriptor() ([]byte, []int) {
 	return file_config_app_v1_app_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *App) GetProject() string {
+	if x != nil {
+		return x.Project
+	}
+	return ""
 }
 
 func (x *App) GetId() string {
@@ -105,17 +120,44 @@ func (x *App) GetMetadata() map[string]string {
 	return nil
 }
 
+func (x *App) GetHostname() string {
+	if x != nil {
+		return x.Hostname
+	}
+	return ""
+}
+
+func (x *App) GetInstanceId() string {
+	if x != nil {
+		return x.InstanceId
+	}
+	return ""
+}
+
+func (x *App) GetStartTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartTime
+	}
+	return nil
+}
+
 var File_config_app_v1_app_proto protoreflect.FileDescriptor
 
 const file_config_app_v1_app_proto_rawDesc = "" +
 	"\n" +
-	"\x17config/app/v1/app.proto\x12\x19runtime.api.config.app.v1\x1a$gnostic/openapi/v3/annotations.proto\"\xb0\x03\n" +
-	"\x03App\x12:\n" +
-	"\x02id\x18\x01 \x01(\tB*\xbaG'\x92\x02$Unique identifier of the applicationR\x02id\x12*\n" +
-	"\x04name\x18\x02 \x01(\tB\x16\xbaG\x13\x92\x02\x10Application nameR\x04name\x123\n" +
-	"\aversion\x18\x03 \x01(\tB\x19\xbaG\x16\x92\x02\x13Application versionR\aversion\x12O\n" +
-	"\x03env\x18\x04 \x01(\tB=\xbaG:\x92\x027Application running environment (e.g.: dev, test, prod)R\x03env\x12~\n" +
-	"\bmetadata\x18\x05 \x03(\v2,.runtime.api.config.app.v1.App.MetadataEntryB4\xbaG1\x92\x02.Application metadata stored as key-value pairsR\bmetadata\x1a;\n" +
+	"\x17config/app/v1/app.proto\x12\x19runtime.api.config.app.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a$gnostic/openapi/v3/annotations.proto\"\xb9\x05\n" +
+	"\x03App\x12,\n" +
+	"\aproject\x18\x01 \x01(\tB\x12\xbaG\x0f\x92\x02\fProject nameR\aproject\x12:\n" +
+	"\x02id\x18\x02 \x01(\tB*\xbaG'\x92\x02$Unique identifier of the applicationR\x02id\x12*\n" +
+	"\x04name\x18\x03 \x01(\tB\x16\xbaG\x13\x92\x02\x10Application nameR\x04name\x123\n" +
+	"\aversion\x18\x04 \x01(\tB\x19\xbaG\x16\x92\x02\x13Application versionR\aversion\x12O\n" +
+	"\x03env\x18\x05 \x01(\tB=\xbaG:\x92\x027Application running environment (e.g.: dev, test, prod)R\x03env\x12~\n" +
+	"\bmetadata\x18\x06 \x03(\v2,.runtime.api.config.app.v1.App.MetadataEntryB4\xbaG1\x92\x02.Application metadata stored as key-value pairsR\bmetadata\x126\n" +
+	"\bhostname\x18\a \x01(\tB\x1a\xbaG\x17\x92\x02\x14Application hostnameR\bhostname\x12G\n" +
+	"\vinstance_id\x18\b \x01(\tB%\xbaG\"\x92\x02\x1fApplication instance identifierR\vinstance_id\x12X\n" +
+	"\n" +
+	"start_time\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x1c\xbaG\x19\x92\x02\x16Application start timeR\n" +
+	"start_time\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\xef\x01\n" +
@@ -135,16 +177,18 @@ func file_config_app_v1_app_proto_rawDescGZIP() []byte {
 
 var file_config_app_v1_app_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_config_app_v1_app_proto_goTypes = []any{
-	(*App)(nil), // 0: runtime.api.config.app.v1.App
-	nil,         // 1: runtime.api.config.app.v1.App.MetadataEntry
+	(*App)(nil),                   // 0: runtime.api.config.app.v1.App
+	nil,                           // 1: runtime.api.config.app.v1.App.MetadataEntry
+	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
 var file_config_app_v1_app_proto_depIdxs = []int32{
 	1, // 0: runtime.api.config.app.v1.App.metadata:type_name -> runtime.api.config.app.v1.App.MetadataEntry
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2, // 1: runtime.api.config.app.v1.App.start_time:type_name -> google.protobuf.Timestamp
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_config_app_v1_app_proto_init() }

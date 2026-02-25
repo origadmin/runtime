@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package storage defines the interfaces for storage services.
+// Package storage defines the contracts for storage services.
 package storage
 
 import (

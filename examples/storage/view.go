@@ -1,6 +1,6 @@
 package main
 
-import "github.com/origadmin/runtime/interfaces/storage"
+import "github.com/origadmin/runtime/contracts/storage"
 
 // TemplateData holds data to be passed to the HTML template
 type TemplateData struct {

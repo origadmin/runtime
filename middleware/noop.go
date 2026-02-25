@@ -1,4 +1,4 @@
-// Package middleware implements the functions, types, and interfaces for the module.
+// Package middleware implements the functions, types, and contracts for the module.
 package middleware
 
 // Noop returns an empty middleware.

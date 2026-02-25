@@ -1,15 +1,19 @@
 package container
 
 import (
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
+	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/log"
 )
 
 // containerOptions holds the configurable settings for a Container.
 type containerOptions struct {
-	appInfo                interfaces.AppInfo
+	appInfo                *appv1.App
+	middlewareConfig       *middlewarev1.Middlewares
+	loggerConfig           *loggerv1.Logger
 	componentFactories     map[string]ComponentFactory
 	defaultCacheName       string
 	defaultDatabaseName    string
@@ -19,9 +23,23 @@ type containerOptions struct {
 }
 
 // WithAppInfo sets the application's metadata for the container.
-func WithAppInfo(info interfaces.AppInfo) options.Option {
+func WithAppInfo(info *appv1.App) options.Option {
 	return optionutil.Update(func(o *containerOptions) {
 		o.appInfo = info
+	})
+}
+
+// WithMiddlewareConfig sets the middleware configuration for the container.
+func WithMiddlewareConfig(cfg *middlewarev1.Middlewares) options.Option {
+	return optionutil.Update(func(o *containerOptions) {
+		o.middlewareConfig = cfg
+	})
+}
+
+// WithLoggerConfig sets the logger configuration for the container.
+func WithLoggerConfig(cfg *loggerv1.Logger) options.Option {
+	return optionutil.Update(func(o *containerOptions) {
+		o.loggerConfig = cfg
 	})
 }
 

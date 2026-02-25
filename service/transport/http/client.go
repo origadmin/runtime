@@ -10,7 +10,7 @@ import (
 )
 
 // NewClient creates a new concrete HTTP client connection based on the provided configuration.
-// It returns *transhttp.Client, not the generic interfaces.Client.
+// It returns *transhttp.Client, not the generic contracts.Client.
 func NewClient(ctx context.Context, httpConfig *httpv1.Client, clientOpts *ClientOptions) (*transhttp.Client, error) {
 	// Initialize the Kratos HTTP client options using the adapter function.
 	kratosOpts, err := initHttpClientOptions(ctx, httpConfig, clientOpts)

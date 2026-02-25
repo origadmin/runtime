@@ -10,8 +10,8 @@ import (
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	"github.com/origadmin/runtime/extensions/configutil"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
 	runtimelog "github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/registry"
 )
@@ -207,7 +207,7 @@ func (p *Provider) DefaultRegistrar(globalDefaultName string) (registry.KRegistr
 	if globalDefaultName != "" {
 		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
-	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
+	prioritizedNames = append(prioritizedNames, contracts.GlobalDefaultKey)
 	defaultName, ok := maps.FirstKey(registrars, prioritizedNames...)
 	if ok {
 		p.logger.Debugf("resolved default registrar to '%s'", defaultName)

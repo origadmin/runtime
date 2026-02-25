@@ -8,8 +8,8 @@ package objectstore
 import (
 	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/interfaces/options"
-	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts/options"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 )
 
 const (

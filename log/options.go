@@ -1,9 +1,9 @@
-// Package log implements the functions, types, and interfaces for the module.
+// Package log implements the functions, types, and contracts for the module.
 package log
 
 import (
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 type loggerContext struct {

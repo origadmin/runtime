@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 func TestFromOptions_NilOptions(t *testing.T) {

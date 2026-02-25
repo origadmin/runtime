@@ -63,10 +63,11 @@ func setupRuntimeFromFile(t *testing.T, appID, configFilePath string) *rt.App {
 	t.Helper()
 	require.NotEmpty(t, configFilePath, "configFilePath cannot be empty for file-based setup")
 
-	rtInstance := rt.NewWithOptions(
-		rt.WithAppInfo(
-			rt.NewAppInfo(appID, "1.0.0").SetEnv("development"),
-		),
+	ai := rt.NewAppInfo(appID, "1.0.0")
+	ai.Env = "development"
+
+	rtInstance := rt.NewWithAppInfo(
+		ai,
 		rt.WithID(appID),
 	)
 

@@ -1,4 +1,4 @@
-package interfaces
+package contracts
 
 import (
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"

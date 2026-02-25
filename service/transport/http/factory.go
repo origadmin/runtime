@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/service"
 )
 
@@ -19,7 +19,7 @@ func init() {
 }
 
 // NewServer creates a new HTTP server instance based on the provided configuration.
-func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error) {
+func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (contracts.Server, error) {
 	// 1. Extract the specific HTTP server config from the transport configuration.
 	httpConfig := cfg.GetHttp()
 	if httpConfig == nil {
@@ -50,7 +50,7 @@ func (f *httpProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 }
 
 // NewClient creates a new HTTP client instance based on the provided configuration.
-func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
+func (f *httpProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (contracts.Client, error) {
 	// 1. Extract the specific HTTP client config from the transport configuration.
 	httpConfig := cfg.GetHttp()
 	if httpConfig == nil {

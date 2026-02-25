@@ -12,7 +12,7 @@ import (
 
 	corsv1 "github.com/origadmin/runtime/api/gen/go/config/middleware/cors/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
 

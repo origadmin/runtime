@@ -1,7 +1,7 @@
 package query
 
 import (
-	"github.com/origadmin/runtime/interfaces/query"
+	"github.com/origadmin/runtime/contracts/query"
 )
 
 // NewPageRequest creates a new PageRequest with default values.

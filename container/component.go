@@ -3,8 +3,8 @@ package container
 import (
 	"sync"
 
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
 	runtimelog "github.com/origadmin/runtime/log"
 )
 
@@ -14,10 +14,10 @@ import (
 const DefaultComponentPriority = 1000
 
 // ComponentFunc is an adapter to allow the use of ordinary functions as ComponentFactory.
-type ComponentFunc func(cfg interfaces.StructuredConfig, container Container, opts ...options.Option) (interfaces.Component, error)
+type ComponentFunc func(cfg contracts.StructuredConfig, container Container, opts ...options.Option) (contracts.Component, error)
 
 // NewComponent calls the wrapped function.
-func (c ComponentFunc) NewComponent(cfg interfaces.StructuredConfig, container Container, opts ...options.Option) (interfaces.Component, error) {
+func (c ComponentFunc) NewComponent(cfg contracts.StructuredConfig, container Container, opts ...options.Option) (contracts.Component, error) {
 	return c(cfg, container, opts...)
 }
 
@@ -36,7 +36,7 @@ type ComponentFactory interface {
 	// NewComponent creates a new component instance.
 	// It receives a component-specific configuration and the container instance,
 	// allowing it to register other components or access other services.
-	NewComponent(cfg interfaces.StructuredConfig, container Container, opts ...options.Option) (interfaces.Component, error)
+	NewComponent(cfg contracts.StructuredConfig, container Container, opts ...options.Option) (contracts.Component, error)
 }
 
 // componentStore is a concurrency-safe storage for component factories and instances.
@@ -44,7 +44,7 @@ type ComponentFactory interface {
 type componentStore struct {
 	mu         sync.RWMutex
 	factories  map[string]ComponentFactory
-	components map[string]interfaces.Component
+	components map[string]contracts.Component
 	logger     runtimelog.Logger
 }
 
@@ -52,7 +52,7 @@ type componentStore struct {
 func newComponentStore(logger runtimelog.Logger) *componentStore {
 	return &componentStore{
 		factories:  make(map[string]ComponentFactory),
-		components: make(map[string]interfaces.Component),
+		components: make(map[string]contracts.Component),
 		logger:     logger,
 	}
 }
@@ -73,7 +73,7 @@ func (s *componentStore) RegisterFactory(name string, factory ComponentFactory) 
 }
 
 // RegisterInstance stores a pre-built component instance.
-func (s *componentStore) RegisterInstance(name string, comp interfaces.Component) {
+func (s *componentStore) RegisterInstance(name string, comp contracts.Component) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, loaded := s.factories[name]; loaded {
@@ -87,7 +87,7 @@ func (s *componentStore) RegisterInstance(name string, comp interfaces.Component
 }
 
 // GetInstance retrieves a stored component instance.
-func (s *componentStore) GetInstance(name string) (interfaces.Component, bool) {
+func (s *componentStore) GetInstance(name string) (contracts.Component, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	comp, ok := s.components[name]

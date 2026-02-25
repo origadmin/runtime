@@ -9,7 +9,7 @@ import (
 	"github.com/goexts/generic/cmp"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 	runtimelog "github.com/origadmin/runtime/log"
 	runtimeMiddleware "github.com/origadmin/runtime/middleware"
 )
@@ -92,7 +92,7 @@ func (p *Provider) ClientMiddlewares() (map[string]kratosMiddleware.Middleware, 
 			if cm, ok := runtimeMiddleware.NewClient(cfg, opts...); ok {
 				p.clientMiddlewares[name] = cm
 			} else {
-				// If NewClient returns false, it means this config was not for a client middleware.
+				// If NewPropagationClient returns false, it means this config was not for a client middleware.
 				// We don't treat this as an error, just skip it.
 				continue
 			}

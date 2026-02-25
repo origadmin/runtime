@@ -38,13 +38,10 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 	appInfo := rt.NewAppInfo(
 		"MultiSourceTestApp",
 		"1.0.0",
-	).SetID("multi-source-test-app")
-
-	rtInstance := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
+	appInfo.Id = "multi-source-test-app"
+
+	rtInstance := rt.NewWithAppInfo(appInfo)
 	// Removed defer rtInstance.Cleanup() as it's no longer available
 	// Load the configuration from the bootstrap file with all options.
 	err := rtInstance.Load(bootstrapPath)
@@ -80,7 +77,7 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 	}
 
 	// Perform assertions using the modular assertion toolkit.
-	parentconfig.AssertAppConfig(t, rt.ConvertToAppInfo(expectedApp), rt.ConvertToAppInfo(actualConfig.App))
+	parentconfig.AssertAppConfig(t, expectedApp, actualConfig.App)
 	parentconfig.AssertLoggerConfig(t, expectedLogger, actualConfig.Logger)
 	parentconfig.AssertClientConfig(t, expectedClient, actualConfig.Client)
 

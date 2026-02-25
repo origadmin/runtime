@@ -1,4 +1,4 @@
-// Package util implements the functions, types, and interfaces for the module.
+// Package util implements the functions, types, and contracts for the module.
 package util
 
 import (

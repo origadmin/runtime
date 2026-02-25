@@ -91,15 +91,12 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 			t.Logf("Setting APP_ENV to %s for %s", tc.envVar, tc.name)
 
 			// Create AppInfo using the new functional options pattern
-			appInfo := rt.NewAppInfo(
-				"EnvTestApp",
-				"1.0.0",
+			appInfo := rt.NewAppInfo("EnvTestApp", "1.0.0")
+			appInfo.Env = tc.envVar
+			appInfo.Id = "base-app-id"
 
-			).SetEnv(tc.envVar).SetID("base-app-id")
-
-			rtInstance := rt.New(
-				appInfo.Name(),
-				appInfo.Version(),
+			rtInstance := rt.NewWithAppInfo(
+				appInfo,
 				rt.WithID("env-test-app"), // Pass the created AppInfo
 			)
 			// Removed defer rtInstance.Cleanup() as it's no longer available
@@ -111,7 +108,7 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 
 			// Decode the app and logger sections
 			actualApp := rtInstance.AppInfo()
-			require.Equal(t, appInfo.ID(), actualApp.ID(), "App ID should match transformed value")
+			require.Equal(t, appInfo.GetId(), actualApp.GetId(), "App ID should match transformed value")
 
 			actualLogger, err := rtInstance.StructuredConfig().DecodeLogger()
 			require.NoError(t, err, "Failed to decode logger config for %s", tc.name)

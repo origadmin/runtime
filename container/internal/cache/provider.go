@@ -11,9 +11,9 @@ import (
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/extensions/configutil"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
-	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 	runtimelog "github.com/origadmin/runtime/log"
 )
 
@@ -144,7 +144,7 @@ func (p *Provider) DefaultCache(globalDefaultName string) (storageiface.Cache, e
 	if globalDefaultName != "" {
 		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
-	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
+	prioritizedNames = append(prioritizedNames, contracts.GlobalDefaultKey)
 
 	for _, name := range prioritizedNames {
 		if comp, ok := caches[name]; ok {

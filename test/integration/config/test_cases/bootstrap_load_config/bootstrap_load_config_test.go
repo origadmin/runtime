@@ -43,13 +43,10 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 	appInfo := rt.NewAppInfo(
 		"TestCompleteConfig",
 		"1.0.0",
-	).SetID("test-complete-config")
-
-	rtInstance := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
+	appInfo.Id = "test-complete-config"
+
+	rtInstance := rt.NewWithAppInfo(appInfo)
 	// Removed defer rtInstance.Cleanup() as it's no longer available
 	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err, "Failed to load configuration from file: %v", err)
@@ -93,13 +90,10 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	appInfo := rt.NewAppInfo(
 		"TestProtoConfig",
 		"1.0.0",
-	).SetID("test-proto-config")
-
-	rtInstance := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
+	appInfo.Id = "test-proto-config"
+
+	rtInstance := rt.NewWithAppInfo(appInfo)
 	// Removed defer rtInstance.Cleanup() as it's no longer available
 	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err, "Failed to load configuration from file: %v", err)
@@ -126,7 +120,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	expectedServers.Configs[1].Protocol = "" // Not present in YAML
 
 	// Assertions for the loaded sections
-	parentconfig.AssertAppConfig(t, rt.ConvertToAppInfo(expectedApp), rt.ConvertToAppInfo(actualConfig.App))
+	parentconfig.AssertAppConfig(t, expectedApp, actualConfig.App)
 	parentconfig.AssertServersConfig(t, expectedServers, actualConfig.Servers)
 	require.Equal(t, "test-discovery", actualConfig.RegistrationDiscoveryName)
 
@@ -149,13 +143,11 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	appInfo := rt.NewAppInfo(
 		"TestDecoder",
 		"1.0.0",
-	).SetID("test-decoder").SetEnv("test")
-
-	rtInstance := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
 	)
+	appInfo.Id = "test-decoder"
+	appInfo.Env = "test"
+
+	rtInstance := rt.NewWithAppInfo(appInfo)
 	// Removed defer rtInstance.Cleanup() as it's no longer available
 	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err, "Failed to load configuration from file: %v", err)

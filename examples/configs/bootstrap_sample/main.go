@@ -33,10 +33,10 @@ func main() {
 
 	// 2. Create and start App instance
 	// NewFromBootstrap encapsulates all bootstrap processes
-	rt := runtime.NewWithOptions(
-		runtime.WithAppInfo(
-			runtime.NewAppInfo(Name, Version).SetEnv("development"),
-		),
+	ai := runtime.NewAppInfo(Name, Version)
+	ai.Env = "development"
+	rt := runtime.NewWithAppInfo(
+		ai,
 		runtime.WithID(ID),
 	)
 	if err := rt.Load("examples/configs/bootstrap_sample/bootstrap.yaml"); err != nil {
@@ -49,7 +49,7 @@ func main() {
 	logger := log.NewHelper(rt.Logger())
 	appInfo := rt.AppInfo()
 
-	logger.Infof("App %s (%s) is starting...", appInfo.Name(), appInfo.Version())
+	logger.Infof("App %s (%s) is starting...", appInfo.GetName(), appInfo.GetVersion())
 
 	// Get the generated Bootstrap configuration
 	var bc conf.Bootstrap

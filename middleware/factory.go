@@ -2,12 +2,12 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package middleware implements the functions, types, and interfaces for the module.
+// Package middleware implements the functions, types, and contracts for the module.
 package middleware
 
 import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/interfaces/factory"
+	"github.com/origadmin/runtime/contracts/factory"
 	internalfactory "github.com/origadmin/runtime/internal/factory"
 	"github.com/origadmin/runtime/log"
 )

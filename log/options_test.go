@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // MockLogger implements the Logger interface for testing purposes.
@@ -51,7 +51,7 @@ func TestFromContext(t *testing.T) {
 	t.Run("should return the logger stored in the context", func(t *testing.T) {
 		mockLogger := &MockLogger{name: "test-logger-from-context"}
 
-		// Manually create and store loggerContext in interfaces.Context
+		// Manually create and store loggerContext in contracts.Context
 		lc := &loggerContext{Logger: mockLogger}
 		optCtx := optionutil.WithValue(optionutil.Empty(), lc)
 

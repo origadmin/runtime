@@ -1,10 +1,10 @@
-// Package factory implements the functions, types, and interfaces for the module.
+// Package factory implements the functions, types, and contracts for the module.
 package factory
 
 import (
 	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/runtime/interfaces/factory"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/factory"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // FuncBuilder is a generic builder implementation that uses a Func

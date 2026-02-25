@@ -2,36 +2,56 @@ syntax = "proto3";
 
 package runtime.api.config.app.v1;
 
+import "google/protobuf/timestamp.proto";
 import "gnostic/openapi/v3/annotations.proto";
 
 option go_package = "github.com/origadmin/runtime/api/gen/go/config/app/v1;appv1";
 
 // App defines the application's identity and metadata.
-// StartTime is intentionally excluded as it's a runtime generated value.
 message App {
+  // Project name
+  string project = 1 [
+    json_name = "project",
+    (gnostic.openapi.v3.property) = {description: "Project name"}
+  ];
   // Unique identifier of the application
-  string id = 1 [
+  string id = 2 [
     json_name = "id",
     (gnostic.openapi.v3.property) = {description: "Unique identifier of the application"}
   ];
   // Application name
-  string name = 2 [
+  string name = 3 [
     json_name = "name",
     (gnostic.openapi.v3.property) = {description: "Application name"}
   ];
   // Application version
-  string version = 3 [
+  string version = 4 [
     json_name = "version",
     (gnostic.openapi.v3.property) = {description: "Application version"}
   ];
   // Application running environment (e.g.: dev, test, prod)
-  string env = 4 [
+  string env = 5 [
     json_name = "env",
     (gnostic.openapi.v3.property) = {description: "Application running environment (e.g.: dev, test, prod)"}
   ];
   // Application metadata stored as key-value pairs
-  map<string, string> metadata = 5 [
+  map<string, string> metadata = 6 [
     json_name = "metadata",
     (gnostic.openapi.v3.property) = {description: "Application metadata stored as key-value pairs"}
+  ];
+  // Application hostname
+  string hostname = 7 [
+    json_name = "hostname",
+    (gnostic.openapi.v3.property) = {description: "Application hostname"}
+  ];
+  // Application instance identifier
+  string instance_id = 8 [
+    json_name = "instance_id",
+    (gnostic.openapi.v3.property) = {description: "Application instance identifier"}
+  ];
+  // Application start time
+  google.protobuf.Timestamp start_time = 9 [
+    json_name = "start_time",
+    (gnostic.openapi.v3.property) = {description: "Application start time"}
   ];
 }

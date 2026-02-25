@@ -7,27 +7,27 @@ import (
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	projectContext "github.com/origadmin/runtime/context"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
-// MockServer implements interfaces.Server for testing purposes.
+// MockServer implements contracts.Server for testing purposes.
 type MockServer struct{}
 
 func (m *MockServer) Start(ctx context.Context) error { return nil }
 func (m *MockServer) Stop(ctx context.Context) error  { return nil }
 
-// MockClient implements interfaces.Client for testing purposes.
+// MockClient implements contracts.Client for testing purposes.
 type MockClient struct{}
 
-// MockProtocolFactory implements interfaces.ProtocolFactory for testing purposes.
+// MockProtocolFactory implements contracts.ProtocolFactory for testing purposes.
 type MockProtocolFactory struct {
 	NewServerError error
 	NewClientError error
 }
 
 // NewServer method of MockProtocolFactory
-func (m *MockProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error) {
+func (m *MockProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (contracts.Server, error) {
 	if m.NewServerError != nil {
 		return nil, m.NewServerError
 	}
@@ -35,7 +35,7 @@ func (m *MockProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 }
 
 // NewClient method of MockProtocolFactory
-func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
+func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *transportv1.Client, opts ...options.Option) (contracts.Client, error) {
 	if m.NewClientError != nil {
 		return nil, m.NewClientError
 	}

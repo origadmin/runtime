@@ -11,7 +11,7 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/envsource"
 	"github.com/origadmin/runtime/config/file"
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -22,30 +22,30 @@ import (
 // and returns the final, resolved path.
 type PathResolverFunc func(baseDir, path string) string
 
-// ConfigTransformer defines an interface for custom transformation of kratosconfig.ConfigLoader to interfaces.ConfigLoader.
+// ConfigTransformer defines an interface for custom transformation of kratosconfig.ConfigLoader to contracts.ConfigLoader.
 type ConfigTransformer interface {
-	Transform(interfaces.ConfigLoader, interfaces.StructuredConfig) (interfaces.StructuredConfig, error)
+	Transform(contracts.ConfigLoader, contracts.StructuredConfig) (contracts.StructuredConfig, error)
 }
 
 // ConfigTransformFunc is a function type that implements the ConfigTransformer interface.
-type ConfigTransformFunc func(interfaces.ConfigLoader, interfaces.StructuredConfig) (interfaces.StructuredConfig, error)
+type ConfigTransformFunc func(contracts.ConfigLoader, contracts.StructuredConfig) (contracts.StructuredConfig, error)
 
 // Transform implements the ConfigTransformer interface for ConfigTransformFunc.
-func (f ConfigTransformFunc) Transform(config interfaces.ConfigLoader, sc interfaces.StructuredConfig) (
-	interfaces.StructuredConfig, error) {
+func (f ConfigTransformFunc) Transform(config contracts.ConfigLoader, sc contracts.StructuredConfig) (
+	contracts.StructuredConfig, error) {
 	return f(config, sc)
 }
 
 // LoadConfig creates a new configuration decoder instance.
 // It orchestrates the entire configuration decoding process, following a clear, layered approach.
-func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrapv1.Bootstrap, interfaces.ConfigLoader, error) {
+func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrapv1.Bootstrap, contracts.ConfigLoader, error) {
 	logger := log.NewHelper(log.FromOptions(providerOpts.rawOptions))
 	// 1. Apply Options to determine the configuration flow.
 
-	var baseConfig interfaces.ConfigLoader
+	var baseConfig contracts.ConfigLoader
 	var bootstrapConfig *bootstrapv1.Bootstrap
 	var err error
-	// Case 1: A fully custom interfaces.ConfigLoader is provided.
+	// Case 1: A fully custom contracts.ConfigLoader is provided.
 	if providerOpts.config != nil { // The user has provided a pre-configured config instance.
 		// Otherwise, we'll use it as the base for our default structured implementation.
 		baseConfig = providerOpts.config

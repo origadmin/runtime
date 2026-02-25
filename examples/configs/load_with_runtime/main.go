@@ -14,20 +14,20 @@ import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/contracts"
 	// Import the generated Go code from the load_with_runtime proto definition.
 	conf "github.com/origadmin/runtime/examples/protos/load_with_runtime"
 	"github.com/origadmin/runtime/log" // Import the log package
 )
 
-// ProtoConfig is a custom implementation of interfaces.ConfigLoader that handles Protobuf decoding.
+// ProtoConfig is a custom implementation of contracts.ConfigLoader that handles Protobuf decoding.
 type ProtoConfig struct {
-	ifconfig  interfaces.ConfigLoader // Keep for Raw() and Close()
-	bootstrap *conf.Bootstrap         // The fully decoded protobuf config
-	source    interfaces.StructuredConfig
+	ifconfig  contracts.ConfigLoader // Keep for Raw() and Close()
+	bootstrap *conf.Bootstrap        // The fully decoded protobuf config
+	source    contracts.StructuredConfig
 }
 
-// DecodedConfig implements the interfaces.StructuredConfig interface.
+// DecodedConfig implements the contracts.StructuredConfig interface.
 func (d *ProtoConfig) DecodedConfig() any {
 	return d.bootstrap
 }
@@ -92,7 +92,7 @@ func (d *ProtoConfig) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 }
 
 // NewProtoConfig creates a new ProtoConfig instance and decodes the entire Kratos config into the Bootstrap proto.
-func NewProtoConfig(c interfaces.ConfigLoader, source interfaces.StructuredConfig) (*ProtoConfig, error) {
+func NewProtoConfig(c contracts.ConfigLoader, source contracts.StructuredConfig) (*ProtoConfig, error) {
 	var bc conf.Bootstrap
 	if err := c.Decode("", &bc); err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func NewProtoConfig(c interfaces.ConfigLoader, source interfaces.StructuredConfi
 	}, nil
 }
 
-// DecodeLogger implements the interfaces.LoggerConfigDecoder interface.
+// DecodeLogger implements the contracts.LoggerConfigDecoder interface.
 func (d *ProtoConfig) DecodeLogger() (*loggerv1.Logger, error) {
 	// The log config is directly available in d.bootstrap
 	if d.bootstrap.GetLogger() == nil {
@@ -164,7 +164,7 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 
 func main() {
 	// Define the ConfigTransformFunc to create our custom ProtoConfig.
-	configTransformer := bootstrap.ConfigTransformFunc(func(kc interfaces.ConfigLoader, source interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
+	configTransformer := bootstrap.ConfigTransformFunc(func(kc contracts.ConfigLoader, source contracts.StructuredConfig) (contracts.StructuredConfig, error) {
 		protoCfg, err := NewProtoConfig(kc, source)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ProtoConfig: %w", err)

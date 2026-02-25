@@ -4,7 +4,7 @@ import (
 	"maps"
 	"sync"
 
-	"github.com/origadmin/runtime/interfaces/factory"
+	"github.com/origadmin/runtime/contracts/factory"
 )
 
 // registry is a thread-safe implementation of the Registry interface.

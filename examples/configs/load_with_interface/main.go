@@ -11,7 +11,7 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	// Import the generated Go code from the api_gateway proto for the ClientConfig message.
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/contracts"
 )
 
 // ProtoDecoder remains the same as it's a generic wrapper.
@@ -31,7 +31,7 @@ func (d *ProtoDecoder) Close() error {
 	return d.c.Close()
 }
 
-func NewProtoDecoder(c kratosconfig.Config) interfaces.ConfigLoader {
+func NewProtoDecoder(c kratosconfig.Config) contracts.ConfigLoader {
 	return &ProtoDecoder{c: c}
 }
 

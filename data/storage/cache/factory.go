@@ -6,8 +6,8 @@ package cache
 
 import (
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
-	"github.com/origadmin/runtime/interfaces/options"
-	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts/options"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 	internalfactory "github.com/origadmin/runtime/internal/factory"
 )
 

@@ -40,16 +40,13 @@ func (s *SourceManagerTestSuite) TestConfigSourceMergingAndPriority() {
 	appInfo := rt.NewAppInfo(
 		"test-app",
 		"1.0.0",
-	).SetID("test-app")
+	)
+	appInfo.Id = "test-app"
 
 	// Use a path relative to the test file itself. This is the robust way to handle test data
 	// and is independent of the current working directory.
 	bootstrapPath := filepath.Join("testdata", "merging_and_priority", "bootstrap.yaml")
-	rtInstance := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
-	)
+	rtInstance := rt.NewWithAppInfo(appInfo)
 
 	err := rtInstance.Load(bootstrapPath)
 	if err != nil {

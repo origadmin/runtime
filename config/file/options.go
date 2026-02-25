@@ -2,14 +2,14 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package file implements the functions, types, and interfaces for the module.
+// Package file implements the functions, types, and contracts for the module.
 package file
 
 import (
 	"github.com/go-kratos/kratos/v2/config"
 
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 type Formatter func(key string, value []byte) (*config.KeyValue, error)

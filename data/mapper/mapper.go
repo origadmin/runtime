@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	"github.com/origadmin/runtime/interfaces/mapper"
+	"github.com/origadmin/runtime/contracts/mapper"
 )
 
 // ListMapper maps a slice of source types to a slice of target types.

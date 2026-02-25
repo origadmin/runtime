@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/service"
 )
 
@@ -19,7 +19,7 @@ func init() {
 }
 
 // NewServer creates a new gRPC server instance based on the provided configuration.
-func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error) {
+func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options.Option) (contracts.Server, error) {
 	// 1. Extract the gRPC-specific configuration from the protobuf config.
 	grpcConfig := cfg.GetGrpc()
 	if grpcConfig == nil {
@@ -47,7 +47,7 @@ func (f *grpcProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 }
 
 // NewClient creates a new gRPC client instance based on the provided configuration.
-func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
+func (f *grpcProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (contracts.Client, error) {
 	// 1. Extract the gRPC-specific configuration from the protobuf config.
 	grpcConfig := cfg.GetGrpc()
 	if grpcConfig == nil {

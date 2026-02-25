@@ -14,7 +14,7 @@ import (
 	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 )
 
 const (

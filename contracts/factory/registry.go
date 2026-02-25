@@ -3,7 +3,7 @@ package factory
 import (
 	"context"
 
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // Registry defines the interface for managing factory functions.

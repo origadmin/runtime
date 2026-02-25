@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -49,6 +50,7 @@ func getMiddlewares(
 		var mws []middleware.Middleware
 		for _, name := range configuredNames {
 			m, ok := availableMws[name]
+			fmt.Printf("mw: %v, ok: %v\n", name, ok)
 			if !ok {
 				return nil, runtimeerrors.NewStructured(Module, "%s middleware '%s' not found in options", mwType, name)
 			}

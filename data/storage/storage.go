@@ -22,8 +22,8 @@ import (
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/extensions/configutil"
-	"github.com/origadmin/runtime/interfaces"
-	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 )
 
 const (
@@ -55,9 +55,9 @@ type providerImpl struct {
 }
 
 // New creates a new storage provider instance based on the provided structured configuration.
-// This function is primarily for backward compatibility or when a custom interfaces.StructuredConfig
+// This function is primarily for backward compatibility or when a custom contracts.StructuredConfig
 // implementation is used. For most cases, NewProvider is recommended.
-func New(sc interfaces.StructuredConfig) (Provider, error) {
+func New(sc contracts.StructuredConfig) (Provider, error) {
 	dataConfig, err := sc.DecodeData()
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode structured config: %w", err)

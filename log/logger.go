@@ -2,7 +2,7 @@
  * Copyright (c) 2024 OrigAdmin. All rights reserved.
  */
 
-// Package log implements the functions, types, and interfaces for the module.
+// Package log implements the functions, types, and contracts for the module.
 package log
 
 import (
@@ -12,9 +12,9 @@ import (
 	kratoslog "github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 
-	"github.com/origadmin/runtime/interfaces"
 	kslog "github.com/origadmin/slog-kratos"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/toolkits/slogx"
 )
@@ -145,16 +145,16 @@ func LevelOption(level string) slogx.Option {
 
 // WithDecorate decorates a kratos logger with common service information.
 // It adds fields like service ID, name, version, timestamp, caller, trace ID, and span ID.
-func WithDecorate(l kratoslog.Logger, info interfaces.AppInfo) kratoslog.Logger {
+func WithDecorate(l kratoslog.Logger, info *appv1.App) kratoslog.Logger {
 	var (
 		id      = ""
 		name    = ""
 		version = ""
 	)
 	if info != nil {
-		id = info.ID()
-		name = info.Name()
-		version = info.Version()
+		id = info.GetId()
+		name = info.GetName()
+		version = info.GetVersion()
 	}
 	return kratoslog.With(
 		l,

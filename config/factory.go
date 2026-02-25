@@ -7,9 +7,9 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/factory"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/factory"
+	"github.com/origadmin/runtime/contracts/options"
 	internalfactory "github.com/origadmin/runtime/internal/factory"
 	"github.com/origadmin/runtime/log"
 )
@@ -31,10 +31,10 @@ func NewBuilder() *Builder {
 	}
 }
 
-// NewConfig creates a new configuration object that conforms to the interfaces.ConfigLoader interface.
+// NewConfig creates a new configuration object that conforms to the contracts.ConfigLoader interface.
 // It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
 // to hide the underlying implementation from the rest of the framework.
-func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.ConfigLoader, error) {
+func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (contracts.ConfigLoader, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
@@ -90,7 +90,7 @@ var defaultBuilder = NewBuilder()
 
 // New is a publicly exposed package-level function for creating config instances.
 // It delegates the call to the default global builder, providing a simple API for common use cases.
-func New(srcs *sourcev1.Sources, opts ...options.Option) (interfaces.ConfigLoader, error) {
+func New(srcs *sourcev1.Sources, opts ...options.Option) (contracts.ConfigLoader, error) {
 	return defaultBuilder.NewConfig(srcs, opts...)
 }
 

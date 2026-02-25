@@ -61,18 +61,14 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 	appInfo := rt.NewAppInfo(
 		"ConsulApp",
 		"1.0.0",
-	).SetID("consul-app-id").SetEnv("consul-test")
+	)
+	appInfo.Id = "consul-app-id"
+	appInfo.Env = "consul-test"
+
 	var bootstrapOpts []bootstrap.Option
 	// Combine bootstrap options with mock data option
 	allOpts := append(bootstrapOpts, helper.WithMockDataJSON(mockData))
-	rtInstance := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
-		rt.WithAppInfo(appInfo),
-	)
-	if !assert.NoError(err, "Failed to initialize runtime from bootstrap") {
-		t.FailNow() // Stop the test if initialization fails
-	}
+	rtInstance := rt.NewWithAppInfo(appInfo)
 	err = rtInstance.Load(bootstrapPath, allOpts...)
 	if err != nil {
 		return
@@ -104,7 +100,7 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 	}
 
 	// Perform assertions using the modular assertion toolkit.
-	parentconfig.AssertAppConfig(t, rt.ConvertToAppInfo(expectedApp), rt.ConvertToAppInfo(cfg.App))
+	parentconfig.AssertAppConfig(t, expectedApp, cfg.App)
 	parentconfig.AssertLoggerConfig(t, expectedLogger, cfg.Logger)
 
 	t.Logf("Consul source config loaded and verified successfully!")

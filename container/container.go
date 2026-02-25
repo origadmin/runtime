@@ -5,15 +5,16 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/container/internal/cache"
 	"github.com/origadmin/runtime/container/internal/database"
 	"github.com/origadmin/runtime/container/internal/middleware"
 	"github.com/origadmin/runtime/container/internal/objectstore"
 	"github.com/origadmin/runtime/container/internal/registry"
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
-	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 	runtimelog "github.com/origadmin/runtime/log"
 	runtimeregistry "github.com/origadmin/runtime/registry"
 )
@@ -25,13 +26,13 @@ type Container interface {
 	Cache(opts ...options.Option) (CacheProvider, error)
 	Database(opts ...options.Option) (DatabaseProvider, error)
 	ObjectStore(opts ...options.Option) (ObjectStoreProvider, error)
-	Component(name string, opts ...options.Option) (interfaces.Component, error)
-	RegisterComponent(name string, comp interfaces.Component)
+	Component(name string, opts ...options.Option) (contracts.Component, error)
+	RegisterComponent(name string, comp contracts.Component)
 	RegisterFactory(name string, factory ComponentFactory)
 	HasComponent(name string) bool
 	RegisteredComponents() []string
 	Logger() runtimelog.Logger
-	AppInfo() interfaces.AppInfo
+	AppInfo() *appv1.App
 	DefaultCache() (storageiface.Cache, error)
 	DefaultDatabase() (storageiface.Database, error)
 	DefaultObjectStore() (storageiface.ObjectStore, error)
@@ -40,7 +41,7 @@ type Container interface {
 
 // containerImpl implements the Container interface.
 type containerImpl struct {
-	config   interfaces.StructuredConfig
+	config   contracts.StructuredConfig
 	logger   runtimelog.Logger
 	helper   *runtimelog.Helper
 	initOpts *containerOptions
@@ -55,27 +56,35 @@ type containerImpl struct {
 }
 
 // New creates a new, concurrency-safe Container instance.
-func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
+func New(config contracts.StructuredConfig, opts ...options.Option) Container {
 	initOpts := optionutil.NewT[containerOptions](opts...)
 
 	// Use the logger from options or create a new one from config.
 	baseLogger := initOpts.Logger
 	if baseLogger == nil {
-		loggerConfig, err := config.DecodeLogger()
-		if err != nil {
-			// Use default logger to report the error, then proceed with default.
-			runtimelog.NewHelper(runtimelog.DefaultLogger).Warnf("failed to decode logger config, using default logger: %v", err)
-			loggerConfig = nil
+		// Priority 1: Use loggerConfig from sniffing
+		if initOpts.loggerConfig != nil {
+			baseLogger = runtimelog.NewLogger(initOpts.loggerConfig)
+		} else if config != nil {
+			// Priority 2: Fallback to decoding from structured config (legacy)
+			loggerConfig, err := config.DecodeLogger()
+			if err != nil {
+				runtimelog.NewHelper(runtimelog.DefaultLogger).Warnf("failed to decode logger config, using default logger: %v", err)
+				loggerConfig = nil
+			}
+			baseLogger = runtimelog.NewLogger(loggerConfig)
+		} else {
+			// Priority 3: Default logger
+			baseLogger = runtimelog.DefaultLogger
 		}
-		baseLogger = runtimelog.NewLogger(loggerConfig)
 	}
 
 	enrichedLogger := baseLogger
 	if initOpts.appInfo != nil {
 		enrichedLogger = runtimelog.With(baseLogger,
-			"service.name", initOpts.appInfo.Name(),
-			"service.version", initOpts.appInfo.Version(),
-			"service.id", initOpts.appInfo.ID(),
+			"service.name", initOpts.appInfo.GetName(),
+			"service.version", initOpts.appInfo.GetVersion(),
+			"service.id", initOpts.appInfo.GetId(),
 		)
 	}
 
@@ -100,7 +109,7 @@ func New(config interfaces.StructuredConfig, opts ...options.Option) Container {
 	return c
 }
 
-func (c *containerImpl) AppInfo() interfaces.AppInfo {
+func (c *containerImpl) AppInfo() *appv1.App {
 	if c.initOpts != nil {
 		return c.initOpts.appInfo
 	}
@@ -111,7 +120,7 @@ func (c *containerImpl) Logger() runtimelog.Logger {
 	return c.logger
 }
 
-func (c *containerImpl) Component(name string, opts ...options.Option) (interfaces.Component, error) {
+func (c *containerImpl) Component(name string, opts ...options.Option) (contracts.Component, error) {
 	if comp, ok := c.componentStore.GetInstance(name); ok {
 		c.helper.Debugf("Component '%s' retrieved from cache.", name)
 		return comp, nil
@@ -134,7 +143,7 @@ func (c *containerImpl) Component(name string, opts ...options.Option) (interfac
 	return comp, nil
 }
 
-func (c *containerImpl) RegisterComponent(name string, comp interfaces.Component) {
+func (c *containerImpl) RegisterComponent(name string, comp contracts.Component) {
 	c.helper.Infof("Registering pre-built component: %s", name)
 	c.componentStore.RegisterInstance(name, comp)
 }

@@ -15,8 +15,8 @@ import (
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/container"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/log"
 
 	// Import the generated Go code from the api_gateway proto definition.
@@ -31,7 +31,7 @@ type Endpoint struct {
 
 // CustomSettings represents the structure of our custom configuration section.
 type CustomSettings struct {
-	config         interfaces.ConfigLoader
+	config         contracts.ConfigLoader
 	FeatureEnabled bool       `json:"feature_enabled"`
 	APIKey         string     `json:"api_key"`
 	RateLimit      int        `json:"rate_limit"`
@@ -132,7 +132,7 @@ func (c *CustomSettings) DecodeMiddlewares() (*middlewarev1.Middlewares, error) 
 	return nil, errors.New("not implemented")
 }
 
-func TransformConfig(cfg interfaces.ConfigLoader, source interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
+func TransformConfig(cfg contracts.ConfigLoader, source contracts.StructuredConfig) (contracts.StructuredConfig, error) {
 	log.Infof("Loaded config: %+v", cfg)
 	//var settingMap map[string]any
 	//if err := cfg.Decode("", &settingMap); err != nil {
@@ -162,8 +162,8 @@ func main() {
 		runtime.WithStartTime(time.Now()),
 		runtime.WithContainerOptions(
 			container.WithComponentFactory("my--settings", container.ComponentFunc(
-				func(cfg interfaces.StructuredConfig, ctn container.Container, opts ...options.Option) (interfaces.Component, error) {
-					// The factory now returns interfaces.Component
+				func(cfg contracts.StructuredConfig, ctn container.Container, opts ...options.Option) (contracts.Component, error) {
+					// The factory now returns contracts.Component
 					customCfg, ok := cfg.(*CustomSettings)
 					if !ok {
 						return nil, fmt.Errorf("expected *CustomSettings, but got %T", cfg)

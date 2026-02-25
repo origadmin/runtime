@@ -11,23 +11,23 @@ import (
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	"github.com/origadmin/runtime/extensions/configutil"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
-	storageiface "github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 	runtimelog "github.com/origadmin/runtime/log"
 )
 
 // Provider manages the lifecycle of object store instances.
 // It uses lazy-loading with sync.Once to ensure instances are created only when needed and in a concurrency-safe manner.
 type Provider struct {
-	mu             sync.RWMutex
-	logger         *runtimelog.Helper
-	objectStores   map[string]storageiface.ObjectStore
-	config         *datav1.ObjectStores
-	opts           []options.Option
+	mu               sync.RWMutex
+	logger           *runtimelog.Helper
+	objectStores     map[string]storageiface.ObjectStore
+	config           *datav1.ObjectStores
+	opts             []options.Option
 	objectStoresOnce sync.Once
 	objectStoresErr  error
-	defaultName    string
+	defaultName      string
 }
 
 // NewProvider creates a new, uninitialized Provider instance.
@@ -144,7 +144,7 @@ func (p *Provider) DefaultObjectStore(globalDefaultName string) (storageiface.Ob
 	if globalDefaultName != "" {
 		prioritizedNames = append(prioritizedNames, globalDefaultName)
 	}
-	prioritizedNames = append(prioritizedNames, interfaces.GlobalDefaultKey)
+	prioritizedNames = append(prioritizedNames, contracts.GlobalDefaultKey)
 
 	for _, name := range prioritizedNames {
 		if comp, ok := stores[name]; ok {

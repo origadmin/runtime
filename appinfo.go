@@ -1,176 +1,214 @@
 package runtime
 
 import (
-	"time"
+	"fmt"
+	"net"
+	"os"
+	"strings"
 
-	"github.com/goexts/generic/maps"
-	"github.com/google/uuid"
+	"github.com/goexts/generic/must"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/toolkits/identifier"
 )
 
-// AppInfo is the concrete, exported implementation that satisfies the AppInfo interface.
-type AppInfo struct {
-	id        string
-	name      string
-	version   string
-	env       string
-	startTime time.Time
-	metadata  map[string]string
-}
+const (
+	defaultProject = "origadmin"
+	defaultAppName = "Unknown Service"
+	defaultAppID   = "unknown-service"
+	defaultVersion = "1.0.0"
+	defaultEnv     = "dev"
+)
 
-// NewAppInfo is the primary constructor for creating a pre-configured AppInfo instance.
-func NewAppInfo(name, version string) *AppInfo {
-	return &AppInfo{
-		name:      name,
-		version:   version,
-		id:        uuid.New().String(),
-		env:       "dev",
-		metadata:  make(map[string]string),
-		startTime: time.Now(),
+// NewAppInfo creates a new application information instance.
+func NewAppInfo(name, version string) *appv1.App {
+	ai := &appv1.App{
+		Name:     name,
+		Version:  version,
+		Metadata: make(map[string]string),
 	}
+	AdjustAppInfo(ai)
+	return ai
 }
 
-// NewAppInfoBuilder returns a new, blank AppInfo instance,
-// serving as the entry point for chainable method configurations.
-func NewAppInfoBuilder() *AppInfo {
-	return &AppInfo{
-		id:        uuid.New().String(),
-		metadata:  make(map[string]string),
-		startTime: time.Now(),
+// NewAppInfoBuilder returns a new, blank App instance for building.
+func NewAppInfoBuilder() *appv1.App {
+	ai := &appv1.App{
+		Metadata: make(map[string]string),
 	}
+	AdjustAppInfo(ai)
+	return ai
 }
 
-// SetID sets the application ID.
-func (a *AppInfo) SetID(id string) *AppInfo {
-	a.id = id
-	return a
-}
-
-// SetName sets the application name.
-func (a *AppInfo) SetName(name string) *AppInfo {
-	a.name = name
-	return a
-}
-
-// SetVersion sets the application version.
-func (a *AppInfo) SetVersion(version string) *AppInfo {
-	a.version = version
-	return a
-}
-
-// SetNameAndVersion sets both the application name and version.
-func (a *AppInfo) SetNameAndVersion(name, version string) *AppInfo {
-	a.name = name
-	a.version = version
-	return a
-}
-
-// SetEnv sets the application environment.
-func (a *AppInfo) SetEnv(env string) *AppInfo {
-	a.env = env
-	return a
-}
-
-// SetStartTime sets the application start time.
-func (a *AppInfo) SetStartTime(startTime time.Time) *AppInfo {
-	a.startTime = startTime
-	return a
-}
-
-// AddMetadata adds a single key-value pair to the application's metadata.
-func (a *AppInfo) AddMetadata(key, value string) *AppInfo {
-	if a.metadata == nil {
-		a.metadata = make(map[string]string)
-	}
-	a.metadata[key] = value
-	return a
-}
-
-// SetMetadata completely replaces the application's metadata with the provided map.
-func (a *AppInfo) SetMetadata(metadata map[string]string) *AppInfo {
-	a.metadata = metadata
-	return a
-}
-
-// Merge combines the current AppInfo with another interfaces.AppInfo.
-// Values from the 'other' AppInfo will override the current AppInfo's values
-// if they are not empty or zero.
-func (a *AppInfo) Merge(other interfaces.AppInfo) {
-	if other == nil {
+// AdjustAppInfo adjusts the application info, setting default values.
+func AdjustAppInfo(ai *appv1.App) {
+	if ai == nil {
 		return
 	}
 
-	if other.ID() != "" {
-		a.id = other.ID()
+	if ai.Project == "" {
+		ai.Project = defaultProject
 	}
-	if other.Name() != "" {
-		a.name = other.Name()
+
+	if ai.Id == "" {
+		ai.Id = defaultAppID
 	}
-	if other.Version() != "" {
-		a.version = other.Version()
+
+	if ai.Version == "" {
+		ai.Version = defaultVersion
 	}
-	if other.Env() != "" {
-		a.env = other.Env()
+
+	if ai.Name == "" {
+		ai.Name = defaultAppName
 	}
-	if other.Metadata() != nil {
-		if a.metadata == nil {
-			a.metadata = make(map[string]string)
+
+	if ai.Env == "" {
+		ai.Env = defaultEnv
+	}
+
+	if ai.Hostname == "" {
+		ai.Hostname = ResolveHost()
+	}
+
+	if ai.Metadata == nil {
+		ai.Metadata = make(map[string]string)
+	}
+
+	if ai.InstanceId == "" {
+		ai.InstanceId = NewInstanceID(ai.Project, ai.Id, ai.Version, ai.Hostname)
+	}
+
+	if ai.StartTime == nil {
+		ai.StartTime = timestamppb.Now()
+	}
+}
+
+// NewInstanceID generates an instance ID.
+func NewInstanceID(project, appID, version, host string) string {
+	return fmt.Sprintf("%s-%s-%s@%s@%s", project, appID, version, host, must.Do(identifier.GenerateString()))
+}
+
+// ResolveHost returns the host identifier.
+func ResolveHost() string {
+	if v := os.Getenv("POD_NAME"); v != "" {
+		return v
+	}
+	if v := os.Getenv("HOSTNAME"); v != "" {
+		return v
+	}
+	if h, err := os.Hostname(); err == nil && h != "" {
+		return h
+	}
+	if ip := firstNonLoopbackIP(); ip != "" {
+		return ip
+	}
+	return "unknown-host"
+}
+
+// UpdateAppInfo merges application information from a source App into a destination App.
+// Only non-empty fields from the source will overwrite the destination fields.
+func UpdateAppInfo(dst, src *appv1.App) {
+	if dst == nil || src == nil {
+		return
+	}
+
+	if src.Project != "" {
+		dst.Project = src.Project
+	}
+	if src.Id != "" {
+		dst.Id = src.Id
+	}
+	if src.Name != "" {
+		dst.Name = src.Name
+	}
+	if src.Version != "" {
+		dst.Version = src.Version
+	}
+	if src.Env != "" {
+		dst.Env = src.Env
+	}
+	if src.Hostname != "" {
+		dst.Hostname = src.Hostname
+	}
+	if src.InstanceId != "" {
+		dst.InstanceId = src.InstanceId
+	}
+	if src.Metadata != nil {
+		if dst.Metadata == nil {
+			dst.Metadata = make(map[string]string)
 		}
-		for k, v := range other.Metadata() {
-			a.metadata[k] = v
+		for k, v := range src.Metadata {
+			dst.Metadata[k] = v
 		}
 	}
-	// startTime is not merged as it represents the application's actual start time,
-	// which should not be overridden by configuration.
-}
-
-// --- Implementation of interfaces.AppInfo ---
-
-func (a *AppInfo) ID() string           { return a.id }
-func (a *AppInfo) Name() string         { return a.name }
-func (a *AppInfo) Version() string      { return a.version }
-func (a *AppInfo) Env() string          { return a.env }
-func (a *AppInfo) StartTime() time.Time { return a.startTime }
-
-// Metadata returns a defensive copy of the metadata map to ensure immutability.
-func (a *AppInfo) Metadata() map[string]string {
-	return maps.Clone(a.metadata)
-}
-
-// mergeAppInfoWithConfig merges application information from a protobuf configuration
-// into an existing AppInfo instance. Values from the configuration will override
-// existing AppInfo values if they are not empty. A new AppInfo instance is returned.
-func mergeAppInfoWithConfig(currentAppInfo *AppInfo, config *appv1.App) *AppInfo {
-	if config == nil {
-		return currentAppInfo
+	if src.StartTime != nil {
+		dst.StartTime = src.StartTime
 	}
 
-	// Create a temporary AppInfo from the config
-	configAppInfo := ConvertToAppInfo(config)
-	currentAppInfo.Merge(configAppInfo) // Use the new Merge method
-	return currentAppInfo
+	// Always ensure the final state is valid
+	AdjustAppInfo(dst)
 }
 
-// ConvertToAppInfo converts a protobuf App message to an interfaces.AppInfo.
-func ConvertToAppInfo(appConfig *appv1.App) interfaces.AppInfo {
-	if appConfig == nil {
-		return &AppInfo{}
+// CloneAppInfo clones the application info.
+func CloneAppInfo(src *appv1.App) *appv1.App {
+	if src == nil {
+		return nil
 	}
-	metadata := appConfig.Metadata
-	if metadata == nil {
-		metadata = make(map[string]string)
-	}
-
-	return &AppInfo{
-		name:     appConfig.GetName(),
-		version:  appConfig.GetVersion(),
-		id:       appConfig.GetId(),
-		env:      appConfig.GetEnv(),
-		metadata: metadata,
-	}
+	return proto.Clone(src).(*appv1.App)
 }
 
-// --- Compile-time checks ---
-var _ interfaces.AppInfo = (*AppInfo)(nil)
+// firstNonLoopbackIP returns the first non-loopback IPv4 address.
+func firstNonLoopbackIP() string {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return ""
+	}
+	for _, iface := range ifaces {
+		if (iface.Flags&net.FlagUp) == 0 || (iface.Flags&net.FlagLoopback) != 0 {
+			continue
+		}
+		if isContainerLikeInterface(iface.Name) {
+			continue
+		}
+		addrs, _ := iface.Addrs()
+		for _, a := range addrs {
+			var ip net.IP
+			switch v := a.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip = ip.To4()
+			if ip == nil {
+				continue
+			}
+			if ip[0] == 169 && ip[1] == 254 {
+				continue
+			}
+			if ip[0] == 172 && ip[1] == 17 {
+				continue
+			}
+			return ip.String()
+		}
+	}
+	return ""
+}
+
+// isContainerLikeInterface checks if the interface name is container-like.
+func isContainerLikeInterface(name string) bool {
+	n := strings.ToLower(name)
+	return n == "docker0" ||
+		strings.HasPrefix(n, "veth") ||
+		strings.HasPrefix(n, "br-") ||
+		strings.HasPrefix(n, "cni0") ||
+		strings.HasPrefix(n, "flannel") ||
+		strings.HasPrefix(n, "weave") ||
+		strings.HasPrefix(n, "virbr") ||
+		strings.HasPrefix(n, "cbr0")
+}

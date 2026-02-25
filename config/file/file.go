@@ -11,7 +11,7 @@ import (
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 var _ kratosconfig.Source = (*file)(nil)

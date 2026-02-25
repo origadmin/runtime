@@ -23,13 +23,13 @@ import (
 
 // --- Adapter Layer ---
 
-// adapter implements the basic interfaces.kc by wrapping a kratos.kc instance.
+// adapter implements the basic contracts.kc by wrapping a kratos.kc instance.
 // Its sole responsibility is to adapt the Kratos config to our internal interface.
 type adapter struct {
 	kc kratosconfig.Config
 }
 
-// Load implements the interfaces.kc interface.
+// Load implements the contracts.kc interface.
 func (a *adapter) Load() error {
 	if a.kc == nil {
 		return nil
@@ -37,7 +37,7 @@ func (a *adapter) Load() error {
 	return a.kc.Load()
 }
 
-// Decode implements the interfaces.kc interface.
+// Decode implements the contracts.kc interface.
 func (a *adapter) Decode(key string, value any) error {
 	if key == "" {
 		return a.kc.Scan(value)
@@ -45,12 +45,12 @@ func (a *adapter) Decode(key string, value any) error {
 	return a.kc.Value(key).Scan(value)
 }
 
-// Raw implements the interfaces.kc interface.
+// Raw implements the contracts.kc interface.
 func (a *adapter) Raw() any {
 	return a.kc
 }
 
-// Close implements the interfaces.kc interface.
+// Close implements the contracts.kc interface.
 func (a *adapter) Close() error {
 	return a.kc.Close()
 }

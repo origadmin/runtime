@@ -9,7 +9,7 @@ import (
 )
 
 // NewServer creates a new concrete HTTP server instance based on the provided configuration.
-// It returns *transhttp.Server, not the generic interfaces.Server.
+// It returns *transhttp.Server, not the generic contracts.Server.
 func NewServer(httpConfig *httpv1.Server, serverOpts *ServerOptions) (*transhttp.Server, error) {
 	// Initialize the Kratos HTTP server options using the adapter function.
 	kratosOpts, err := initHttpServerOptions(httpConfig, serverOpts)

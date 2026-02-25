@@ -5,8 +5,8 @@ import (
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/options"
 	internalfactory "github.com/origadmin/runtime/internal/factory"
 )
 
@@ -18,8 +18,8 @@ const (
 
 // ProtocolFactory defines the factory standard for creating a specific protocol service instance。
 type ProtocolFactory interface {
-	NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error)
-	NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error)
+	NewServer(cfg *transportv1.Server, opts ...options.Option) (contracts.Server, error)
+	NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (contracts.Client, error)
 }
 
 // defaultFactory is the default, package-level instance of the protocol registry.
@@ -33,7 +33,7 @@ func RegisterProtocol(name string, f ProtocolFactory) {
 
 // NewServer creates a new server instance based on the provided configuration and options.
 // It automatically looks up the appropriate protocol factory from the default registry.
-func NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Server, error) {
+func NewServer(cfg *transportv1.Server, opts ...options.Option) (contracts.Server, error) {
 	if cfg == nil {
 		return nil, runtimeerrors.NewStructured(Module, "server configuration is nil").WithCaller()
 	}
@@ -65,7 +65,7 @@ func NewServer(cfg *transportv1.Server, opts ...options.Option) (interfaces.Serv
 
 // NewClient creates a new client instance based on the provided configuration and options.
 // It automatically looks up the appropriate protocol factory from the default registry.
-func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (interfaces.Client, error) {
+func NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (contracts.Client, error) {
 	if cfg == nil {
 		return nil, runtimeerrors.NewStructured(Module, "client configuration is nil").WithCaller()
 	}

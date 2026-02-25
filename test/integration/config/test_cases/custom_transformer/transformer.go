@@ -5,15 +5,15 @@ import (
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/interfaces"
+	"github.com/origadmin/runtime/contracts"
 	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
 )
 
 // TestTransformer is a custom transformer for testing purposes.
 type TestTransformer struct {
-	interfaces.StructuredConfig
+	contracts.StructuredConfig
 	Suffix string
-	c      interfaces.ConfigLoader
+	c      contracts.ConfigLoader
 	cfg    *testconfigs.TestConfig
 }
 
@@ -21,7 +21,7 @@ func (t *TestTransformer) DecodedConfig() any {
 	return t.cfg
 }
 
-func (t *TestTransformer) Transform(c interfaces.ConfigLoader, sc interfaces.StructuredConfig) (interfaces.StructuredConfig, error) {
+func (t *TestTransformer) Transform(c contracts.ConfigLoader, sc contracts.StructuredConfig) (contracts.StructuredConfig, error) {
 	t.c = c
 	// Decode the current configuration into our TestConfig struct.
 	var cfg testconfigs.TestConfig

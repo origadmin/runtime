@@ -13,13 +13,13 @@ import (
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/constant"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/constant"
 )
 
 // NewStructured creates a new structured config implementation.
 // Currently switched to the Eager implementation.
-func NewStructured(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]string) interfaces.StructuredConfig {
+func NewStructured(cfg contracts.ConfigLoader, paths map[constant.ComponentKey]string) contracts.StructuredConfig {
 	if paths == nil {
 		paths = make(map[constant.ComponentKey]string)
 	}
@@ -32,10 +32,10 @@ func NewStructured(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]
 // Eager Implementation (New)
 // =============================================================================
 
-// eagerConfigImpl implements interfaces.StructuredConfig with eager loading.
+// eagerConfigImpl implements contracts.StructuredConfig with eager loading.
 // All configurations are decoded at initialization time.
 type eagerConfigImpl struct {
-	loader interfaces.ConfigLoader
+	loader contracts.ConfigLoader
 
 	app             *appv1.App
 	data            *datav1.Data
@@ -50,7 +50,7 @@ type eagerConfigImpl struct {
 	clients         *transportv1.Clients
 }
 
-func newEagerConfig(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]string) *eagerConfigImpl {
+func newEagerConfig(cfg contracts.ConfigLoader, paths map[constant.ComponentKey]string) *eagerConfigImpl {
 	impl := &eagerConfigImpl{
 		loader: cfg,
 	}
@@ -107,7 +107,7 @@ func newEagerConfig(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey
 	decodeStruct(constant.ComponentDefaultRegistry, &impl.defaultRegistry)
 
 	// 2. Decode Complex Components
-	decodeMulti := func(key constant.ComponentKey, decodeFunc func(interfaces.ConfigLoader, string) (any, error)) any {
+	decodeMulti := func(key constant.ComponentKey, decodeFunc func(contracts.ConfigLoader, string) (any, error)) any {
 		path, enabled := getPath(key)
 		if !enabled {
 			return nil
@@ -119,19 +119,19 @@ func newEagerConfig(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey
 		return res
 	}
 
-	impl.discoveries = decodeMulti(constant.ComponentRegistries, func(l interfaces.ConfigLoader, p string) (any, error) {
+	impl.discoveries = decodeMulti(constant.ComponentRegistries, func(l contracts.ConfigLoader, p string) (any, error) {
 		return decodeDiscoveries(l, p)
 	}).(*discoveryv1.Discoveries)
 
-	impl.middlewares = decodeMulti(constant.ComponentMiddlewares, func(l interfaces.ConfigLoader, p string) (any, error) {
+	impl.middlewares = decodeMulti(constant.ComponentMiddlewares, func(l contracts.ConfigLoader, p string) (any, error) {
 		return decodeMiddlewares(l, p)
 	}).(*middlewarev1.Middlewares)
 
-	impl.servers = decodeMulti(constant.ComponentServers, func(l interfaces.ConfigLoader, p string) (any, error) {
+	impl.servers = decodeMulti(constant.ComponentServers, func(l contracts.ConfigLoader, p string) (any, error) {
 		return decodeServers(l, p)
 	}).(*transportv1.Servers)
 
-	impl.clients = decodeMulti(constant.ComponentClients, func(l interfaces.ConfigLoader, p string) (any, error) {
+	impl.clients = decodeMulti(constant.ComponentClients, func(l contracts.ConfigLoader, p string) (any, error) {
 		return decodeClients(l, p)
 	}).(*transportv1.Clients)
 
@@ -150,7 +150,7 @@ func (c *eagerConfigImpl) DecodeDatabases() (*datav1.Databases, error) { return 
 func (c *eagerConfigImpl) DecodeObjectStores() (*datav1.ObjectStores, error) {
 	return c.objectStores, nil
 }
-func (c *eagerConfigImpl) DecodeDefaultDiscovery() (string, error)     { return c.defaultRegistry, nil }
+func (c *eagerConfigImpl) DecodeDefaultDiscovery() (string, error) { return c.defaultRegistry, nil }
 func (c *eagerConfigImpl) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
 	return c.discoveries, nil
 }
@@ -164,14 +164,14 @@ func (c *eagerConfigImpl) DecodeClients() (*transportv1.Clients, error) { return
 // Lazy Implementation (Old)
 // =============================================================================
 
-// lazyConfigImpl implements interfaces.StructuredConfig with lazy loading and caching.
+// lazyConfigImpl implements contracts.StructuredConfig with lazy loading and caching.
 type lazyConfigImpl struct {
-	interfaces.ConfigLoader
+	contracts.ConfigLoader
 	paths map[constant.ComponentKey]string
 	cache sync.Map
 }
 
-func newLazyConfig(cfg interfaces.ConfigLoader, paths map[constant.ComponentKey]string) *lazyConfigImpl {
+func newLazyConfig(cfg contracts.ConfigLoader, paths map[constant.ComponentKey]string) *lazyConfigImpl {
 	return &lazyConfigImpl{
 		ConfigLoader: cfg,
 		paths:        paths,
@@ -384,7 +384,7 @@ func (c *lazyConfigImpl) DecodeClients() (*transportv1.Clients, error) {
 // Shared Helpers (Used by both implementations)
 // =============================================================================
 
-func decodeDiscoveries(c interfaces.ConfigLoader, path string) (*discoveryv1.Discoveries, error) {
+func decodeDiscoveries(c contracts.ConfigLoader, path string) (*discoveryv1.Discoveries, error) {
 	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
 	var result discoveryv1.Discoveries
 	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {
@@ -412,7 +412,7 @@ func decodeDiscoveries(c interfaces.ConfigLoader, path string) (*discoveryv1.Dis
 	return &discoveryv1.Discoveries{}, nil
 }
 
-func decodeMiddlewares(c interfaces.ConfigLoader, path string) (*middlewarev1.Middlewares, error) {
+func decodeMiddlewares(c contracts.ConfigLoader, path string) (*middlewarev1.Middlewares, error) {
 	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
 	var result middlewarev1.Middlewares
 	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {
@@ -440,7 +440,7 @@ func decodeMiddlewares(c interfaces.ConfigLoader, path string) (*middlewarev1.Mi
 	return &middlewarev1.Middlewares{}, nil
 }
 
-func decodeServers(c interfaces.ConfigLoader, path string) (*transportv1.Servers, error) {
+func decodeServers(c contracts.ConfigLoader, path string) (*transportv1.Servers, error) {
 	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
 	var result transportv1.Servers
 	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {
@@ -468,7 +468,7 @@ func decodeServers(c interfaces.ConfigLoader, path string) (*transportv1.Servers
 	return &transportv1.Servers{}, nil
 }
 
-func decodeClients(c interfaces.ConfigLoader, path string) (*transportv1.Clients, error) {
+func decodeClients(c contracts.ConfigLoader, path string) (*transportv1.Clients, error) {
 	// 1. Try decoding directly into the struct (Standard Protobuf mapping)
 	var result transportv1.Clients
 	if err := c.Decode(path, &result); err == nil && len(result.Configs) > 0 {

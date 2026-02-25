@@ -38,14 +38,11 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	appInfo := rt.NewAppInfo(
 		"TransformerTestApp",
 		"1.0.0",
-	).SetID("transformer-test-app")
+	)
+	appInfo.Id = "transformer-test-app"
 
 	// Initialize App, which should apply the registered custom transformer.
-	rtInstance := rt.New(
-		appInfo.Name(),
-		appInfo.Version(),
-		rt.WithAppInfo(appInfo), // Pass the created AppInfo
-	)
+	rtInstance := rt.NewWithAppInfo(appInfo)
 
 	// Removed defer rtInstance.Cleanup() as it's no longer available
 	wd, _ := os.Getwd()
@@ -74,7 +71,7 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	}
 	require.NoError(t, err, "Failed to decode app config")
 	// Perform a detailed, field-by-field assertion.
-	parentconfig.AssertAppConfig(t, rt.ConvertToAppInfo(expectedApp), rt.ConvertToAppInfo(ts.App))
+	parentconfig.AssertAppConfig(t, expectedApp, ts.App)
 
 	t.Logf("Custom transformer applied and verified successfully!")
 }

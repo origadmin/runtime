@@ -4,7 +4,7 @@ import (
 	"context" // 导入标准库的 context，因为 runtime/context 可能是它的别名或封装
 
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 type serviceOptions struct {

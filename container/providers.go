@@ -1,7 +1,7 @@
 package container
 
 import (
-	"github.com/origadmin/runtime/interfaces/storage"
+	"github.com/origadmin/runtime/contracts/storage"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
 )

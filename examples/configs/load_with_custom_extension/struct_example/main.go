@@ -11,14 +11,13 @@ import (
 
 func main() {
 	// Use the new functional options pattern for AppInfo creation
-	appInfo := rt.NewAppInfo("custom-extension-example", "1.0.0").SetEnv("development")
+	appInfo := rt.NewAppInfo("custom-extension-example", "1.0.0")
+	appInfo.Env = "development"
 
 	// --- 1. Load Configuration ---
 	// We use Kratos config to load the YAML file.
 	// Initialize runtime with bootstrap configuration
-	rtInstance := rt.NewWithOptions(
-		rt.WithAppInfo(appInfo),
-	)
+	rtInstance := rt.NewWithAppInfo(appInfo)
 	err := rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
 
 	// Get config decoder

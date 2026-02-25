@@ -3,7 +3,9 @@ package runtime
 import (
 	"time"
 
-	"github.com/origadmin/runtime/interfaces/options"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // Option is a functional option for configuring the App.
@@ -19,19 +21,11 @@ func WithContainerOptions(opts ...options.Option) Option {
 	}
 }
 
-// WithAppInfo sets the App's AppInfo using a concrete *AppInfo instance.
-// This option has priority over the name and version parameters in New().
-func WithAppInfo(info *AppInfo) Option {
-	return func(a *App) {
-		a.appInfo = info
-	}
-}
-
 // WithEnv sets the environment for the application.
 func WithEnv(env string) Option {
 	return func(a *App) {
 		// This option will be applied after the appInfo is initialized.
-		a.appInfo.SetEnv(env)
+		a.appInfo.Env = env
 	}
 }
 
@@ -39,7 +33,7 @@ func WithEnv(env string) Option {
 func WithID(id string) Option {
 	return func(a *App) {
 		// This option will be applied after the appInfo is initialized.
-		a.appInfo.SetID(id)
+		a.appInfo.Id = id
 	}
 }
 
@@ -47,7 +41,7 @@ func WithID(id string) Option {
 func WithStartTime(startTime time.Time) Option {
 	return func(a *App) {
 		// This option will be applied after the appInfo is initialized.
-		a.appInfo.SetStartTime(startTime)
+		a.appInfo.StartTime = timestamppb.New(startTime)
 	}
 }
 
@@ -55,7 +49,10 @@ func WithStartTime(startTime time.Time) Option {
 func WithMetadata(key, value string) Option {
 	return func(a *App) {
 		// This option will be applied after the appInfo is initialized.
-		a.appInfo.AddMetadata(key, value)
+		if a.appInfo.Metadata == nil {
+			a.appInfo.Metadata = make(map[string]string)
+		}
+		a.appInfo.Metadata[key] = value
 	}
 }
 
@@ -63,6 +60,6 @@ func WithMetadata(key, value string) Option {
 func WithMetadataMap(metadata map[string]string) Option {
 	return func(a *App) {
 		// This option will be applied after the appInfo is initialized.
-		a.appInfo.SetMetadata(metadata)
+		a.appInfo.Metadata = metadata
 	}
 }

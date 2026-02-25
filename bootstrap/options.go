@@ -2,9 +2,9 @@ package bootstrap
 
 import (
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces"
-	"github.com/origadmin/runtime/interfaces/constant"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts"
+	"github.com/origadmin/runtime/contracts/constant"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // Option defines the function signature for configuration options used in the bootstrap process.
@@ -13,7 +13,7 @@ type Option = options.Option
 // ProviderOptions holds all the configurable settings for the bootstrap provider.
 // It is populated by applying a series of Option functions.
 type ProviderOptions struct {
-	config            interfaces.ConfigLoader
+	config            contracts.ConfigLoader
 	configTransformer ConfigTransformer
 	defaultPaths      map[constant.ComponentKey]string
 	directory         string
@@ -25,7 +25,7 @@ type ProviderOptions struct {
 
 // WithConfig provides a pre-initialized configuration instance.
 // If this option is used, the bootstrap process will skip loading configuration from files.
-func WithConfig(cfg interfaces.ConfigLoader) Option {
+func WithConfig(cfg contracts.ConfigLoader) Option {
 	return optionutil.Update(func(o *ProviderOptions) {
 		o.config = cfg
 	})

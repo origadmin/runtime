@@ -2,7 +2,7 @@
 package optionutil
 
 import (
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // =============================

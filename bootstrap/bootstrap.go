@@ -5,7 +5,7 @@ import (
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
-	"github.com/origadmin/runtime/interfaces/constant"
+	"github.com/origadmin/runtime/contracts/constant"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -67,6 +67,7 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		config:           cfg,
 		structuredConfig: sc,
 		appConfig:        app,
+		rawConfig:        bootstrapCfg,
 	}
 	return res, nil
 }

@@ -10,7 +10,7 @@ import (
 	optimizev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/optimize/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/config/protoutil"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
 )
@@ -28,8 +28,8 @@ func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware,
 	opts ...options.Option) (middleware.KMiddleware, bool) {
 	// Parse options using FromOptions
 	logger := log.FromOptions(opts) // FIX: Changed opts... to opts
-	logger := log.NewHelper(logger)
-	logger.Debugf("enabling client optimize middleware")
+	helper := log.NewHelper(logger)
+	helper.Debugf("enabling client optimize middleware")
 
 	// Get optimize configuration
 	return nil, false
@@ -40,8 +40,8 @@ func (f *optimizeFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware,
 func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...options.Option) (middleware.KMiddleware, bool) {
 	// Parse options using FromOptions
 	logger := log.FromOptions(opts)
-	logger := log.NewHelper(logger)
-	logger.Debugf("enabling server optimize middleware")
+	helper := log.NewHelper(logger)
+	helper.Debugf("enabling server optimize middleware")
 
 	// Check if custom configuration is enabled
 	if !cfg.GetEnabled() || cfg.GetType() != "customize" || cfg.GetSettings() == nil {
@@ -54,7 +54,7 @@ func (f *optimizeFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 	// Try to decode Optimize configuration from config.Value
 	optimizeConfig, err := protoutil.NewFromStruct[optimizev1.Optimize](config)
 	if err != nil {
-		logger.Errorf("failed to unmarshal optimize config: %v", err)
+		helper.Errorf("failed to unmarshal optimize config: %v", err)
 		optimizeConfig = defaultOptimize
 	}
 

@@ -17,7 +17,7 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	filesource "github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/extensions/optionutil"
-	"github.com/origadmin/runtime/interfaces/options"
+	"github.com/origadmin/runtime/contracts/options"
 )
 
 // LoadYAMLConfig loads a YAML configuration file and converts it to a JSON format byte array.
