@@ -1,9 +1,13 @@
 package runtime
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"sort"
 	"sync"
+	"time"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
@@ -330,4 +334,49 @@ func (r *App) MiddlewareProvider() (container.MiddlewareProvider, error) {
 // AppInfo returns the application's metadata as a proto message.
 func (r *App) AppInfo() *appv1.App {
 	return r.appInfo
+}
+
+func (r *App) ShowAppInfo() {
+	ai := r.AppInfo()
+	if ai == nil {
+		return
+	}
+	ts := time.Now().Format(time.RFC3339)
+	host, _ := os.Hostname()
+	pid := os.Getpid()
+
+	if os.Getenv("APPINFO_FORMAT") == "json" {
+		out := map[string]interface{}{
+			"timestamp":   ts,
+			"host":        host,
+			"pid":         pid,
+			"name":        ai.Name,
+			"version":     ai.Version,
+			"app_id":      ai.Id,
+			"instance_id": ai.InstanceId,
+			"metadata":    ai.Metadata,
+		}
+		if b, err := json.Marshal(out); err == nil {
+			fmt.Println(string(b))
+		} else {
+			fmt.Printf("Application info marshal error: %v\n", err)
+		}
+		return
+	}
+
+	fmt.Printf("[%s] %s (pid:%d@%s)\n", ts, ai.Name, pid, host)
+	fmt.Printf("  Version: %s\n", ai.Version)
+	fmt.Printf("  AppId: %s\n", ai.Id)
+	fmt.Printf("  InstanceId: %s\n", ai.InstanceId)
+	if len(ai.Metadata) > 0 {
+		fmt.Println("  Metadata:")
+		keys := make([]string, 0, len(ai.Metadata))
+		for k := range ai.Metadata {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			fmt.Printf("    %s=%s\n", k, ai.Metadata[k])
+		}
+	}
 }

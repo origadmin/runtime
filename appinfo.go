@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/goexts/generic/must"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -52,7 +53,7 @@ func AdjustAppInfo(ai *appv1.App) {
 	}
 
 	if ai.Id == "" {
-		ai.Id = must.Do(identifier.GenerateString())
+		ai.Id = uuid.New().String()
 	}
 
 	if ai.Version == "" {

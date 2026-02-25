@@ -1,10 +1,10 @@
 package metadata
 
-type Meta interface {
+type Metadata interface {
 	Append(key string, values ...string)
 	Values(key string) []string
 	Get(key string) string
 	Set(key string, value string)
-	Clone() Meta
+	Clone() Metadata
 	GetAll() map[string][]string
 }
