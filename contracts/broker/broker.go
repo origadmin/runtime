@@ -7,9 +7,9 @@ import (
 
 // Message is a generic message structure.
 type Message interface {
-	ID() string
-	Metadata() map[string]string
-	Payload() []byte
+	GetId() string
+	GetMetadata() map[string]string
+	GetPayload() []byte
 }
 
 // Publisher defines the interface for publishing messages.
