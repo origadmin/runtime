@@ -93,19 +93,19 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	r.result = res
 
 	// 2. Sniff and Merge Configurations from user-defined Bootstrap
-	rawCfg := res.RawConfig()
-	if rawCfg != nil {
+	bootstrap := res.Bootstrap()
+	if bootstrap != nil {
 		// Merge App metadata
-		if p, ok := rawCfg.(AppConfig); ok {
+		if p, ok := bootstrap.(AppConfig); ok {
 			UpdateAppInfo(r.appInfo, p.GetApp())
 		}
 
 		// Sniff and apply other standard config segments
-		if p, ok := rawCfg.(MiddlewareConfig); ok {
+		if p, ok := bootstrap.(MiddlewareConfig); ok {
 			r.containerOpts = append(r.containerOpts, container.WithMiddlewareConfig(p.GetMiddlewares()))
 		}
 
-		if p, ok := rawCfg.(LoggerConfig); ok {
+		if p, ok := bootstrap.(LoggerConfig); ok {
 			r.containerOpts = append(r.containerOpts, container.WithLoggerConfig(p.GetLogger()))
 		}
 	}

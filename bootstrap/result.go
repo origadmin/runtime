@@ -16,7 +16,7 @@ type Result interface {
 	// AppConfig returns the raw protobuf App message decoded from the bootstrap configuration.
 	// This message contains application-specific information as defined in the configuration file.
 	AppConfig() *appv1.App
-	// RawConfig returns the original bootstrap configuration object as an any type.
+	// Bootstrap returns the original bootstrap configuration object as an any type.
 	// This allows the runtime to perform interface sniffing on user-defined configurations.
-	RawConfig() any
+	Bootstrap() any
 }

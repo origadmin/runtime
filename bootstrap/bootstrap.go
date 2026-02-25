@@ -32,14 +32,14 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	providerOpts := FromOptions(opts...)
 
 	// 2. Load full configuration using the sources from bootstrap config
-	bootstrapCfg, cfg, err := LoadConfig(bootstrapPath, providerOpts) // Now providerOpts contains preloaded sources
+	bootstrap, cfg, err := LoadConfig(bootstrapPath, providerOpts) // Now providerOpts contains preloaded sources
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
-	log.Debugf("Load bootstrap config : %+v", bootstrapCfg)
-	app := bootstrapCfg.GetApp()
-	if app == nil {
-		app = &appv1.App{}
+	log.Debugf("Load bootstrap config : %+v", bootstrap)
+	appConfig := bootstrap.GetApp()
+	if appConfig == nil {
+		appConfig = &appv1.App{}
 	}
 	// 3. Create the final StructuredConfig.
 	paths := make(map[constant.ComponentKey]string, len(defaultComponentPaths))
@@ -66,8 +66,8 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	res = &resultImpl{
 		config:           cfg,
 		structuredConfig: sc,
-		appConfig:        app,
-		rawConfig:        bootstrapCfg,
+		appConfig:        appConfig,
+		bootstrap:        bootstrap,
 	}
 	return res, nil
 }

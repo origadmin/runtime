@@ -10,7 +10,7 @@ type resultImpl struct {
 	config           contracts.ConfigLoader
 	structuredConfig contracts.StructuredConfig
 	appConfig        *appv1.App
-	rawConfig        any
+	bootstrap        any
 }
 
 func (b *resultImpl) AppConfig() *appv1.App {
@@ -27,7 +27,7 @@ func (b *resultImpl) StructuredConfig() contracts.StructuredConfig {
 	return b.structuredConfig
 }
 
-// RawConfig returns the original bootstrap configuration object.
-func (b *resultImpl) RawConfig() any {
-	return b.rawConfig
+// Bootstrap returns the original bootstrap configuration object.
+func (b *resultImpl) Bootstrap() any {
+	return b.bootstrap
 }
