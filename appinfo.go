@@ -17,7 +17,6 @@ import (
 const (
 	defaultProject = "origadmin"
 	defaultAppName = "Unknown Service"
-	defaultAppID   = "unknown-service"
 	defaultVersion = "1.0.0"
 	defaultEnv     = "dev"
 )
@@ -53,7 +52,7 @@ func AdjustAppInfo(ai *appv1.App) {
 	}
 
 	if ai.Id == "" {
-		ai.Id = defaultAppID
+		ai.Id = must.Do(identifier.GenerateString())
 	}
 
 	if ai.Version == "" {
