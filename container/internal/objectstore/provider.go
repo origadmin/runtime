@@ -6,28 +6,22 @@ import (
 	"maps"
 	"sync"
 
-	"github.com/goexts/generic/cmp"
-
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
-	"github.com/origadmin/runtime/data/storage/objectstore"
-	"github.com/origadmin/runtime/extensions/configutil"
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
+	"github.com/origadmin/runtime/extensions/configutil"
 	runtimelog "github.com/origadmin/runtime/log"
 )
 
 // Provider manages the lifecycle of object store instances.
-// It uses lazy-loading with sync.Once to ensure instances are created only when needed and in a concurrency-safe manner.
 type Provider struct {
-	mu               sync.RWMutex
-	logger           *runtimelog.Helper
-	objectStores     map[string]storageiface.ObjectStore
-	config           *datav1.ObjectStores
-	opts             []options.Option
-	objectStoresOnce sync.Once
-	objectStoresErr  error
-	defaultName      string
+	mu           sync.RWMutex
+	logger       *runtimelog.Helper
+	objectStores map[string]storageiface.ObjectStore
+	config       *datav1.ObjectStores
+	opts         []options.Option
+	defaultName  string
 }
 
 // NewProvider creates a new, uninitialized Provider instance.
@@ -77,38 +71,11 @@ func (p *Provider) RegisterObjectStore(name string, store storageiface.ObjectSto
 }
 
 // ObjectStores returns a map of all available object store instances.
-// On the first call, it lazily creates and caches instances based on the configuration.
+// It only returns instances that have been manually registered.
 func (p *Provider) ObjectStores() (map[string]storageiface.ObjectStore, error) {
-	p.objectStoresOnce.Do(func() {
-		p.mu.Lock()
-		defer p.mu.Unlock()
-
-		if p.config == nil {
-			return
-		}
-		var allErrors error
-		for _, cfg := range p.config.GetConfigs() {
-			name := cmp.Or(cfg.GetName(), cfg.GetDriver())
-			if name == "" {
-				continue
-			}
-			if _, exists := p.objectStores[name]; exists {
-				continue
-			}
-			os, err := objectstore.New(cfg, p.opts...)
-			if err != nil {
-				p.logger.Errorf("failed to create object store '%s': %v", name, err)
-				allErrors = errors.Join(allErrors, err)
-				continue
-			}
-			p.objectStores[name] = os
-		}
-		p.objectStoresErr = allErrors
-	})
-
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	return maps.Clone(p.objectStores), p.objectStoresErr
+	return maps.Clone(p.objectStores), nil
 }
 
 // ObjectStore returns a single object store instance by name.
