@@ -21,7 +21,7 @@ import (
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/extensions/configutil"
+	"github.com/origadmin/runtime/kernel/configutil"
 	"github.com/origadmin/runtime/contracts"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
 )

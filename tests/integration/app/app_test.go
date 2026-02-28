@@ -7,7 +7,7 @@ import (
 	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/file"
 
-	configs "github.com/origadmin/runtime/test/integration/app/proto"
+	configs "github.com/origadmin/runtime/tests/integration/app/proto"
 )
 
 // TestAppBootstrap demonstrates the advantages of defining a unified structure in the application-specific bootstrap.proto

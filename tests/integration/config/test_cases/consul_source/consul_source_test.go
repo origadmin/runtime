@@ -14,11 +14,11 @@ import (
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/test/helper"
-	parentconfig "github.com/origadmin/runtime/test/integration/config"
-	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	"github.com/origadmin/runtime/tests/helper"
+	parentconfig "github.com/origadmin/runtime/tests/integration/config"
+	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
 
-	_ "github.com/origadmin/runtime/test/helper" // Import helper to ensure init() registers MockConsulSource
+	_ "github.com/origadmin/runtime/tests/helper" // Import helper to ensure init() registers MockConsulSource
 )
 
 // ConsulSourceTestSuite tests the Consul configuration source integration.

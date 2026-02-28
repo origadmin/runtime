@@ -2,7 +2,7 @@
 package log
 
 import (
-	"github.com/origadmin/runtime/extensions/optionutil"
+	"github.com/origadmin/runtime/kernel/optionutil"
 	"github.com/origadmin/runtime/contracts/options"
 )
 

@@ -8,9 +8,9 @@ import (
 
 	rt "github.com/origadmin/runtime"
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	parentconfig "github.com/origadmin/runtime/test/integration/config"
-	"github.com/origadmin/runtime/test/integration/config/builders"
-	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	parentconfig "github.com/origadmin/runtime/tests/integration/config"
+	"github.com/origadmin/runtime/tests/integration/config/builders"
+	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
 )
 
 // TestCustomSettings represents the structure for custom configuration section in tests

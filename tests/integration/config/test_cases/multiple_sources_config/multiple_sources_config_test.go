@@ -14,8 +14,8 @@ import (
 	selectorv1 "github.com/origadmin/runtime/api/gen/go/config/selector/v1"
 	grpcv1 "github.com/origadmin/runtime/api/gen/go/config/transport/grpc/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	parentconfig "github.com/origadmin/runtime/test/integration/config"
-	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	parentconfig "github.com/origadmin/runtime/tests/integration/config"
+	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
 )
 
 // MultipleSourcesConfigTestSuite tests the coordination of multiple configuration sources.

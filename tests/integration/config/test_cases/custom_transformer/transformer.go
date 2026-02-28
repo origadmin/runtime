@@ -6,7 +6,7 @@ import (
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/contracts"
-	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
 )
 
 // TestTransformer is a custom transformer for testing purposes.

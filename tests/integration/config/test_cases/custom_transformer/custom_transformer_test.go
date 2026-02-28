@@ -11,10 +11,10 @@ import (
 	rt "github.com/origadmin/runtime"
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	parentconfig "github.com/origadmin/runtime/test/integration/config"
-	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
-	"github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer"
-	_ "github.com/origadmin/runtime/test/integration/config/test_cases/custom_transformer" // Import for transformer registration
+	parentconfig "github.com/origadmin/runtime/tests/integration/config"
+	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
+	"github.com/origadmin/runtime/tests/integration/config/test_cases/custom_transformer"
+	_ "github.com/origadmin/runtime/tests/integration/config/test_cases/custom_transformer" // Import for transformer registration
 )
 
 // CustomTransformerTestSuite tests the integration of custom configuration transformers.

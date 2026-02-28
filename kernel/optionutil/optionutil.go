@@ -2,6 +2,7 @@
 package optionutil
 
 import (
+	"github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/contracts/options"
 )
 
@@ -51,6 +52,18 @@ func (o *emptyContext) With(key any, value any) options.Context {
 	return o.with(key, value)
 }
 
+type ctxValue struct {
+	ctx context.Context
+}
+
+func (c *ctxValue) Value(key any) any {
+	return c.ctx.Value(key)
+}
+
+func (c *ctxValue) With(key any, value any) options.Context {
+	return &ctxValue{ctx: context.WithValue(c.ctx, key, value)}
+}
+
 // =============================
 // Constructors
 // =============================
@@ -63,6 +76,13 @@ func Empty() options.Context {
 // Default creates a default options.Context instance.
 func Default() options.Context {
 	return &emptyContext{}
+}
+
+// Context creates an options.Context instance with context.Context
+func Context(ctx context.Context) options.Context {
+	return &ctxValue{
+		ctx: ctx,
+	}
 }
 
 // =============================

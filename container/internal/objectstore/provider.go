@@ -10,7 +10,7 @@ import (
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
-	"github.com/origadmin/runtime/extensions/configutil"
+	"github.com/origadmin/runtime/kernel/configutil"
 	runtimelog "github.com/origadmin/runtime/log"
 )
 

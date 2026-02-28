@@ -8,7 +8,7 @@ package middleware
 import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/contracts/factory"
-	internalfactory "github.com/origadmin/runtime/internal/factory"
+	internalfactory "github.com/origadmin/runtime/kernel/factoryutil"
 	"github.com/origadmin/runtime/log"
 )
 

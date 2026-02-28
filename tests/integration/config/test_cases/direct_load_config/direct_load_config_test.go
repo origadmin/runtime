@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/origadmin/runtime/test/helper"
-	parentconfig "github.com/origadmin/runtime/test/integration/config"
-	"github.com/origadmin/runtime/test/integration/config/builders"
-	testconfigs "github.com/origadmin/runtime/test/integration/config/proto"
+	"github.com/origadmin/runtime/tests/helper"
+	parentconfig "github.com/origadmin/runtime/tests/integration/config"
+	"github.com/origadmin/runtime/tests/integration/config/builders"
+	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
 )
 
 var defaultConfig *testconfigs.TestConfig

@@ -12,7 +12,7 @@ import (
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	_ "github.com/origadmin/runtime/config/envsource"
 	_ "github.com/origadmin/runtime/config/file"
-	parentconfig "github.com/origadmin/runtime/test/integration/config"
+	parentconfig "github.com/origadmin/runtime/tests/integration/config"
 )
 
 // EnvSpecificConfigTestSuite tests environment-specific configuration loading.

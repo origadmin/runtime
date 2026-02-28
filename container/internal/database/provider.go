@@ -10,7 +10,7 @@ import (
 
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	"github.com/origadmin/runtime/data/storage/database"
-	"github.com/origadmin/runtime/extensions/configutil"
+	"github.com/origadmin/runtime/kernel/configutil"
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"

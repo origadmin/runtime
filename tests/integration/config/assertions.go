@@ -14,7 +14,7 @@ import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	tracev1 "github.com/origadmin/runtime/api/gen/go/config/trace/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	configproto "github.com/origadmin/runtime/test/integration/config/proto"
+	configproto "github.com/origadmin/runtime/tests/integration/config/proto"
 )
 
 // isNilConcreteValue checks if an interface holds a nil concrete value.
