@@ -57,10 +57,6 @@ type ConfigObject interface {
 	GetData() *datav1.Data
 }
 
-//type AppConfigDecoder interface {
-//	DecodeApp() (*appv1.App, error)
-//}
-
 // LoggerConfigDecoder defines an OPTIONAL interface for providing a "fast path"
 // to decode logger configuration. Custom ConfigLoader implementations can implement this
 // interface to provide an optimized decoding path.

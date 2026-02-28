@@ -66,8 +66,8 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	res = &resultImpl{
 		config:           cfg,
 		structuredConfig: sc,
-		appConfig:        appConfig,
 		bootstrap:        bootstrap,
+		businessConfig:   sc.DecodedConfig(),
 	}
 	return res, nil
 }

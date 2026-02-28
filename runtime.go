@@ -92,25 +92,29 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	}
 	r.result = res
 
-	// 2. Sniff and Merge Configurations from user-defined Bootstrap
-	bootstrap := res.Bootstrap()
-	if bootstrap != nil {
-		// Merge App metadata
-		if p, ok := bootstrap.(AppConfig); ok {
+	// 2. [Source Phase] Merge App metadata from bootstrap source
+	boot := res.Bootstrap()
+	if boot != nil {
+		UpdateAppInfo(r.appInfo, boot.GetApp())
+	}
+
+	// 3. [Binding Phase] Sniff and Merge from Decoded Business Config (if any)
+	biz := res.Config()
+	if biz != nil {
+		// Sniff App metadata again (business config can override bootstrap metadata)
+		if p, ok := biz.(AppConfig); ok {
 			UpdateAppInfo(r.appInfo, p.GetApp())
 		}
-
-		// Sniff and apply other standard config segments
-		if p, ok := bootstrap.(MiddlewareConfig); ok {
+		// Sniff and apply standard config segments
+		if p, ok := biz.(MiddlewareConfig); ok {
 			r.containerOpts = append(r.containerOpts, container.WithMiddlewareConfig(p.GetMiddlewares()))
 		}
-
-		if p, ok := bootstrap.(LoggerConfig); ok {
+		if p, ok := biz.(LoggerConfig); ok {
 			r.containerOpts = append(r.containerOpts, container.WithLoggerConfig(p.GetLogger()))
 		}
 	}
 
-	// 3. Final validation: Ensure essential app info is present after all configurations.
+	// 4. Final validation: Ensure essential app info is present after all configurations.
 	if r.appInfo.GetName() == "" {
 		return errors.New("runtime: application name is missing after loading configuration")
 	}
@@ -118,7 +122,7 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 		return errors.New("runtime: application version is missing after loading configuration")
 	}
 
-	// 4. Create the container with updated app info.
+	// 5. Create the container with updated app info.
 	ctnOpts := append(r.containerOpts, container.WithAppInfo(r.appInfo))
 	r.container = container.New(res.StructuredConfig(), ctnOpts...)
 	r.globalOpts = append(r.globalOpts, container.WithContainer(r.container), runtimelog.WithLogger(r.Logger()))
@@ -229,7 +233,7 @@ func (r *App) getMergedOptions(name string) []options.Option {
 
 // Config returns the configuration decoder.
 func (r *App) Config() contracts.ConfigLoader {
-	return r.result.Config()
+	return r.result.Loader()
 }
 
 // StructuredConfig returns the structured configuration decoder.

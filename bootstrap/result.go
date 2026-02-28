@@ -1,22 +1,25 @@
 package bootstrap
 
 import (
-	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
+	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
 	"github.com/origadmin/runtime/contracts"
 )
 
-// Result defines the interface for the raw data produced by the bootstrap process.
-// It provides access to the loaded configuration and the raw application protobuf message.
+// Result defines the unified contract for the bootstrap engine output.
 type Result interface {
-	// Config returns the raw configuration decoder.
-	Config() contracts.ConfigLoader
-	// StructuredConfig returns the structured configuration decoder,
-	// which has merged defaults and applied transformers.
+	// Bootstrap [Source Phase] Returns the strong-typed bootstrap metadata (sources, service info, etc.)
+	Bootstrap() *bootstrapv1.Bootstrap
+
+	// Config [Binding Phase] Returns the final decoded business configuration (any type).
+	Config() any
+
+	// Loader returns the underlying configuration loader hub.
+	Loader() contracts.ConfigLoader
+
+	// ConfigPath returns the physical path of the loaded configuration file.
+	ConfigPath() string
+
+	// StructuredConfig returns the legacy structured configuration decoder.
+	// This is kept for backward compatibility with Container and App initialization.
 	StructuredConfig() contracts.StructuredConfig
-	// AppConfig returns the raw protobuf App message decoded from the bootstrap configuration.
-	// This message contains application-specific information as defined in the configuration file.
-	AppConfig() *appv1.App
-	// Bootstrap returns the original bootstrap configuration object as an any type.
-	// This allows the runtime to perform interface sniffing on user-defined configurations.
-	Bootstrap() any
 }
