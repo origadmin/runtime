@@ -7,10 +7,10 @@ package registry
 
 import (
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
-	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/contracts/factory"
+	"github.com/origadmin/runtime/contracts/builder"
 	"github.com/origadmin/runtime/contracts/options"
-	internalfactory "github.com/origadmin/runtime/kernel/factoryutil"
+	runtimeerrors "github.com/origadmin/runtime/errors"
+	internalfactory "github.com/origadmin/runtime/kernel/builderutil"
 )
 
 const Module = "registry"
@@ -35,7 +35,7 @@ func init() {
 
 // factoryImpl is the concrete implementation of the factory registry.
 type factoryImpl struct {
-	factory.Registry[Factory]
+	builder.Registry[Factory]
 }
 
 // newFactory creates a new factoryImpl.

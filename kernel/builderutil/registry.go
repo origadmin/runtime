@@ -1,10 +1,10 @@
-package factory
+package builderutil
 
 import (
 	"maps"
 	"sync"
 
-	"github.com/origadmin/runtime/contracts/factory"
+	"github.com/origadmin/runtime/contracts/builder"
 )
 
 // registry is a thread-safe implementation of the Registry interface.
@@ -48,7 +48,7 @@ func (f *registry[F]) Reset() {
 
 // New creates and returns a new instance of the registry.
 // This is the entry point for creating a registry for factory functions.
-func New[F any]() factory.Registry[F] {
+func New[F any]() builder.Registry[F] {
 	return &registry[F]{
 		factories: make(map[string]F),
 	}

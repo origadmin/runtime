@@ -7,8 +7,8 @@ package middleware
 
 import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/contracts/factory"
-	internalfactory "github.com/origadmin/runtime/kernel/factoryutil"
+	"github.com/origadmin/runtime/contracts/builder"
+	internalfactory "github.com/origadmin/runtime/kernel/builderutil"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -32,7 +32,7 @@ func init() {
 
 // Builder is a builder for creating middleware chains.
 type Builder struct {
-	factory.Registry[Factory]
+	builder.Registry[Factory]
 }
 
 // BuildClientMiddlewares builds the client middleware chain

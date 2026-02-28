@@ -8,9 +8,9 @@ import (
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	"github.com/origadmin/runtime/contracts"
-	"github.com/origadmin/runtime/contracts/factory"
+	"github.com/origadmin/runtime/contracts/builder"
 	"github.com/origadmin/runtime/contracts/options"
-	internalfactory "github.com/origadmin/runtime/kernel/factoryutil"
+	internalfactory "github.com/origadmin/runtime/kernel/builderutil"
 	"github.com/origadmin/runtime/log"
 )
 
@@ -19,7 +19,7 @@ import (
 // users will interact with it via the package-level functions that use the default
 // global instance.
 type Builder struct {
-	factory.Registry[SourceFactory]
+	builder.Registry[SourceFactory]
 }
 
 // NewBuilder creates and returns a new, independent Builder instance.

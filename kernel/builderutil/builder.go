@@ -1,9 +1,9 @@
-// Package factory implements the functions, types, and contracts for the module.
-package factory
+// Package builderutil implements the functions, types, and contracts for the module.
+package builderutil
 
 import (
 	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/runtime/contracts/factory"
+	"github.com/origadmin/runtime/contracts/builder"
 	"github.com/origadmin/runtime/contracts/options"
 )
 
@@ -11,22 +11,22 @@ import (
 type FuncBuilder[T any, C any] struct {
 	config C
 	opts   []options.Option
-	fn     factory.Func[T, C]
+	fn     builder.Func[T, C]
 }
 
 // NewFuncBuilder creates a new FuncBuilder with the given Func
-func NewFuncBuilder[T any, C any](fn factory.Func[T, C]) *FuncBuilder[T, C] {
+func NewFuncBuilder[T any, C any](fn builder.Func[T, C]) *FuncBuilder[T, C] {
 	return &FuncBuilder[T, C]{fn: fn}
 }
 
 // WithConfig implements Builder.WithConfig
-func (b *FuncBuilder[T, C]) WithConfig(config C) factory.Builder[T, C] {
+func (b *FuncBuilder[T, C]) WithConfig(config C) builder.Builder[T, C] {
 	b.config = config
 	return b
 }
 
 // WithOptions implements Builder.WithOptions
-func (b *FuncBuilder[T, C]) WithOptions(opts ...options.Option) factory.Builder[T, C] {
+func (b *FuncBuilder[T, C]) WithOptions(opts ...options.Option) builder.Builder[T, C] {
 	b.opts = append(b.opts, opts...)
 	return b
 }
@@ -41,11 +41,11 @@ type ContextFuncBuilder[T any, C any] struct {
 	ctx    context.Context
 	config C
 	opts   []options.Option
-	fn     factory.ContextFunc[T, C]
+	fn     builder.ContextFunc[T, C]
 }
 
 // NewContextFuncBuilder creates a new ContextFuncBuilder with the given ContextFunc
-func NewContextFuncBuilder[T any, C any](fn factory.ContextFunc[T, C]) *ContextFuncBuilder[T, C] {
+func NewContextFuncBuilder[T any, C any](fn builder.ContextFunc[T, C]) *ContextFuncBuilder[T, C] {
 	return &ContextFuncBuilder[T, C]{
 		ctx: context.Background(),
 		fn:  fn,
@@ -53,7 +53,7 @@ func NewContextFuncBuilder[T any, C any](fn factory.ContextFunc[T, C]) *ContextF
 }
 
 // WithConfig implements Builder.WithConfig for ContextFuncBuilder
-func (b *ContextFuncBuilder[T, C]) WithConfig(config C) factory.Builder[T, C] {
+func (b *ContextFuncBuilder[T, C]) WithConfig(config C) builder.Builder[T, C] {
 	b.config = config
 	return b
 }
@@ -65,7 +65,7 @@ func (b *ContextFuncBuilder[T, C]) WithContext(ctx context.Context) *ContextFunc
 }
 
 // WithOptions implements Builder.WithOptions for ContextFuncBuilder
-func (b *ContextFuncBuilder[T, C]) WithOptions(opts ...options.Option) factory.Builder[T, C] {
+func (b *ContextFuncBuilder[T, C]) WithOptions(opts ...options.Option) builder.Builder[T, C] {
 	b.opts = append(b.opts, opts...)
 	return b
 }
