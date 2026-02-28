@@ -8,7 +8,7 @@ import (
 
 // resultImpl implements the Result interface for the bootstrap engine.
 type resultImpl struct {
-	config           contracts.ConfigLoader
+	config           config.KConfig
 	structuredConfig contracts.StructuredConfig
 	bootstrap        *bootstrapv1.Bootstrap
 	businessConfig   any
@@ -27,14 +27,7 @@ func (b *resultImpl) Config() any {
 
 // Loader returns the enhanced Kratos configuration hub.
 func (b *resultImpl) Loader() config.KConfig {
-	if b.config == nil {
-		return nil
-	}
-	// Return the raw Kratos config instance
-	if kc, ok := b.config.Raw().(config.KConfig); ok {
-		return kc
-	}
-	return nil
+	return b.config
 }
 
 // ConfigPath returns the physical configuration path.

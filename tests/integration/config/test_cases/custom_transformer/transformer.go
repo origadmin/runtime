@@ -1,54 +1,30 @@
 package custom_transformer
 
 import (
-	"fmt"
-
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	"github.com/origadmin/runtime/bootstrap"
-	"github.com/origadmin/runtime/contracts"
-	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
+	"github.com/origadmin/runtime/config"
 )
 
-// TestTransformer is a custom transformer for testing purposes.
-type TestTransformer struct {
-	contracts.StructuredConfig
-	Suffix string
-	c      contracts.ConfigLoader
-	cfg    *testconfigs.TestConfig
+type TestConfig struct {
+	App *appv1.App `json:"app"`
 }
 
-func (t *TestTransformer) DecodedConfig() any {
-	return t.cfg
+func (c *TestConfig) GetApp() *appv1.App {
+	return c.App
 }
 
-func (t *TestTransformer) Transform(c contracts.ConfigLoader) (any, error) {
-	t.c = c
-	// Decode the current configuration into our TestConfig struct.
-	var cfg testconfigs.TestConfig
-	if err := c.Decode("", &cfg); err != nil {
-		return nil, fmt.Errorf("failed to scan config in transformer: %w", err)
+type TestTransformer struct{}
+
+func (t *TestTransformer) Transform(c config.KConfig) (any, error) {
+	var cfg TestConfig
+	if err := c.Scan(&cfg); err != nil {
+		return nil, err
 	}
-
-	// Perform the transformation: append suffix to App.Name.
-	if cfg.App != nil {
-		cfg.App.Name = cfg.App.Name + t.Suffix
-	} else {
-		// If App is nil, create it and set the name.
-		cfg.App = &appv1.App{}
-		cfg.App.Name = "TransformedApp" + t.Suffix
-	}
-	t.cfg = &cfg
-	return t.cfg, nil
+	return &cfg, nil
 }
 
-// String returns the name of the transformer.
-func (t *TestTransformer) String() string {
-	return "test-transformer"
-}
+var _ ConfigTransformer = (*TestTransformer)(nil)
 
-// NewTestTransformer creates a new TestTransformer.
-func NewTestTransformer(suffix string) *TestTransformer {
-	return &TestTransformer{Suffix: suffix}
+type ConfigTransformer interface {
+	Transform(config.KConfig) (any, error)
 }
-
-var _ bootstrap.ConfigTransformer = (*TestTransformer)(nil)

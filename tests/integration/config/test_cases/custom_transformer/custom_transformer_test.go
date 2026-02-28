@@ -10,7 +10,6 @@ import (
 	"github.com/origadmin/runtime/bootstrap"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	_ "github.com/origadmin/runtime/config/file"
-	"github.com/origadmin/runtime/contracts"
 )
 
 type CustomTransformerTestSuite struct {
@@ -28,14 +27,14 @@ type TransformedConfig struct {
 func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	t := s.T()
 
-	transformer := bootstrap.ConfigTransformFunc(func(cfg contracts.ConfigLoader) (any, error) {
+	transformer := bootstrap.ConfigTransformFunc(func(cfg runtimeconfig.KConfig) (any, error) {
 		var raw struct {
 			App struct {
 				Name string `json:"name"`
 			} `json:"app"`
 		}
 		// Directly cast to runtimeconfig.KConfig
-		if err := cfg.Raw().(runtimeconfig.KConfig).Scan(&raw); err != nil {
+		if err := cfg.Scan(&raw); err != nil {
 			return nil, err
 		}
 		return &TransformedConfig{AppName: raw.App.Name + "-transformed"}, nil

@@ -12,65 +12,52 @@ import (
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/envsource"
 	filesource "github.com/origadmin/runtime/config/file"
-	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/log"
 )
 
 // --- Options for LoadConfig ---
 
 // PathResolverFunc defines the signature for a function that resolves a configuration path.
-// It takes the base directory (of the bootstrap file) and the path from the config source
-// and returns the final, resolved path.
 type PathResolverFunc func(baseDir, path string) string
 
-// ConfigTransformer defines an interface for custom transformation of ConfigLoader to a business configuration object.
+// ConfigTransformer defines an interface for custom transformation of KConfig to a business configuration object.
 type ConfigTransformer interface {
-	Transform(contracts.ConfigLoader) (any, error)
+	Transform(runtimeconfig.KConfig) (any, error)
 }
 
 // ConfigTransformFunc is a function type that implements the ConfigTransformer interface.
-type ConfigTransformFunc func(contracts.ConfigLoader) (any, error)
+type ConfigTransformFunc func(runtimeconfig.KConfig) (any, error)
 
 // Transform implements the ConfigTransformer interface for ConfigTransformFunc.
-func (f ConfigTransformFunc) Transform(config contracts.ConfigLoader) (any, error) {
+func (f ConfigTransformFunc) Transform(config runtimeconfig.KConfig) (any, error) {
 	return f(config)
 }
 
 // LoadConfig creates a new configuration decoder instance.
-// It orchestrates the entire configuration decoding process, following a clear, layered approach.
-func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrapv1.Bootstrap, contracts.ConfigLoader, error) {
+func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrapv1.Bootstrap, runtimeconfig.KConfig, error) {
 	logger := log.NewHelper(log.FromOptions(providerOpts.rawOptions))
-	// 1. Apply Options to determine the configuration flow.
 
-	var baseConfig contracts.ConfigLoader
+	var baseConfig runtimeconfig.KConfig
 	var bootstrapConfig *bootstrapv1.Bootstrap
 	var err error
-	// Case 1: A fully custom contracts.ConfigLoader is provided.
-	if providerOpts.config != nil { // The user has provided a pre-configured config instance.
-		// Otherwise, we'll use it as the base for our default structured implementation.
+	// Case 1: A pre-configured KConfig is provided.
+	if providerOpts.config != nil {
 		baseConfig = providerOpts.config
 		// Case 2: Default flow - load from bootstrapPath.
 	} else if providerOpts.directly {
-		// Case 2: Direct loading mode. The bootstrapPath is the config file itself.
 		logger.Infof("Loading config directly from: %s", bootstrapPath)
 		sources := []*sourcev1.SourceConfig{SourceWithFile(bootstrapPath)}
-		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...) // Pass rawOptions for consistency
+		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.rawOptions...)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to create base config for direct loading: %w", err)
 		}
 	} else {
-		// Case 3: Indirect loading mode. The bootstrapPath points to a file that defines other sources.
 		bootstrapConfig = loadBootstrapFromFile(bootstrapPath, providerOpts, logger)
 
-		// In indirect mode, if no sources are found in the bootstrap file, it's an error.
-		if len(bootstrapConfig.GetSources()) == 0 {
-			logger.Warnf("No configuration sources found in bootstrap file: %s. Proceeding with empty config.", bootstrapPath)
+		if bootstrapConfig == nil || len(bootstrapConfig.GetSources()) == 0 {
 			return nil, nil, fmt.Errorf("no configuration sources found in bootstrap file: %s", bootstrapPath)
 		}
 
-		// KEY OPTIMIZATION: Automatically exclude the bootstrap metadata file from the application config.
-		// This only applies to Stage 2 (application config loading) and only in indirect mode.
-		// It ensures that directory-level loads (*.yaml) won't accidentally ingest bootstrap.yaml.
 		configOpts := append([]Option{}, providerOpts.rawOptions...)
 		configOpts = append(configOpts, filesource.WithIgnores(filepath.Base(bootstrapPath)))
 		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: bootstrapConfig.GetSources()}, configOpts...)
@@ -79,7 +66,6 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrap
 		}
 	}
 
-	// Load the configuration. This step is common to all successful paths.
 	logger.Info("All configuration sources prepared, starting final load...")
 	if err := baseConfig.Load(); err != nil {
 		return nil, nil, err
@@ -92,8 +78,6 @@ func isFileSource(source *sourcev1.SourceConfig) bool {
 	return source != nil && source.Type == "file" && source.File != nil
 }
 
-// loadBootstrapFromFile attempts to load a bootstrap configuration and resolve the paths of its sources.
-// It returns a slice of source configurations or nil if loading fails or no sources are found.
 func loadBootstrapFromFile(bootstrapPath string, providerOpts *ProviderOptions, logger *log.Helper) *bootstrapv1.Bootstrap {
 	bootstrapCfg, err := LoadBootstrapConfig(bootstrapPath, providerOpts.rawOptions...)
 	if err != nil || len(bootstrapCfg.GetSources()) == 0 {
@@ -103,8 +87,7 @@ func loadBootstrapFromFile(bootstrapPath string, providerOpts *ProviderOptions, 
 		return nil
 	}
 
-	// Successfully loaded sources, now resolve their paths.
-	bootstrapDir := filepath.Dir(bootstrapPath) // Base for relative paths
+	bootstrapDir := filepath.Dir(bootstrapPath)
 	for i, source := range bootstrapCfg.Sources {
 		if !isFileSource(source) {
 			continue
@@ -112,11 +95,9 @@ func loadBootstrapFromFile(bootstrapPath string, providerOpts *ProviderOptions, 
 		path := source.File.Path
 		resolvedPath := path
 
-		// Use custom path resolver if provided, otherwise use default logic.
 		if providerOpts.pathResolver != nil {
 			resolvedPath = providerOpts.pathResolver(bootstrapDir, path)
 		} else if !filepath.IsAbs(path) {
-			// Default logic: It's a relative path, join it with the bootstrap file's directory.
 			resolvedPath = filepath.Join(bootstrapDir, path)
 		}
 
@@ -134,23 +115,17 @@ func bootstrapSources(path string, prefixes ...string) kratosconfig.Option {
 	)
 }
 
-// LoadBootstrapConfig loads the bootstrapv1.Bootstrap definition from a local bootstrap configuration file.
-// This function is the first step in the configuration process.
-// It reads the file directly using codecs to avoid the overhead of the full config engine and its watchers.                                                                                       │
 func LoadBootstrapConfig(bootstrapPath string, opts ...Option) (*bootstrapv1.Bootstrap, error) {
 	providerOpts := FromOptions(opts...)
 	configOpts := append([]kratosconfig.Option{bootstrapSources(bootstrapPath, providerOpts.prefixes...)})
-	// Create a temporary Kratos config instance to load the bootstrap.yaml file.
 	bootConfig := kratosconfig.New(configOpts...)
 
-	// Defer closing the config and handle its error
 	defer func() {
 		if err := bootConfig.Close(); err != nil {
 			log.Errorf("failed to close temporary bootstrap config: %v", err)
 		}
 	}()
 
-	// Load the config to read the bootstrap file.
 	if err := bootConfig.Load(); err != nil {
 		return nil, err
 	}

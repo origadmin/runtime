@@ -56,11 +56,11 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 
 	// Priority 2: Automatic decoding into target struct
 	if providerOpts.configTarget != nil {
-		if err := cfg.Decode("", providerOpts.configTarget); err != nil {
+		if err := cfg.Scan(providerOpts.configTarget); err != nil {
 			if closeErr := cfg.Close(); closeErr != nil {
 				log.Errorf("failed to close config after decode error: %v", closeErr)
 			}
-			return nil, fmt.Errorf("failed to decode config into target: %w", err)
+			return nil, fmt.Errorf("failed to scan config into target: %w", err)
 		}
 		businessConfig = providerOpts.configTarget
 	}
@@ -82,6 +82,7 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		structuredConfig: sc,
 		bootstrap:        bootstrap,
 		businessConfig:   businessConfig,
+		configPath:       bootstrapPath,
 	}
 	return res, nil
 }

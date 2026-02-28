@@ -7,7 +7,6 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
-	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/builder"
 	"github.com/origadmin/runtime/contracts/options"
 	internalfactory "github.com/origadmin/runtime/helpers/builderutil"
@@ -23,18 +22,14 @@ type Builder struct {
 }
 
 // NewBuilder creates and returns a new, independent Builder instance.
-// This is useful for testing or for scenarios that require isolated configuration
-// management without affecting the global state.
 func NewBuilder() *Builder {
 	return &Builder{
 		Registry: internalfactory.New[SourceFactory](),
 	}
 }
 
-// NewConfig creates a new configuration object that conforms to the contracts.ConfigLoader interface.
-// It builds a Kratos config from sources, loads it, and immediately wraps it in an adapter
-// to hide the underlying implementation from the rest of the framework.
-func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (contracts.ConfigLoader, error) {
+// NewConfig creates a new configuration object that conforms to the KConfig interface.
+func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (KConfig, error) {
 	logger := log.NewHelper(log.FromOptions(opts))
 	fromOptions := FromOptions(opts...)
 	var sources []kratosconfig.Source
@@ -50,8 +45,6 @@ func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (con
 	}
 
 	// Sort the sources by priority before creating them.
-	// Sources with lower priority values are loaded first.
-	// Sources with higher priority values are loaded later, thus overriding earlier ones.
 	sort.SliceStable(sourceConfigs, func(i, j int) bool {
 		return sourceConfigs[i].GetPriority() < sourceConfigs[j].GetPriority()
 	})
@@ -65,7 +58,6 @@ func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (con
 		if err != nil {
 			return nil, err
 		}
-		// Defensively check if the factory returned a nil source, which would cause a panic later.
 		if source == nil {
 			return nil, fmt.Errorf("config source factory for type '%s' returned a nil source", src.Type)
 		}
@@ -78,44 +70,39 @@ func (b *Builder) NewConfig(srcs *sourcev1.Sources, opts ...options.Option) (con
 	}
 	fromOptions.ConfigOptions = append(fromOptions.ConfigOptions, kratosconfig.WithSource(sources...))
 
-	// Create the underlying Kratos config
+	// Create the underlying Kratos config directly
 	kc := kratosconfig.New(fromOptions.ConfigOptions...)
 
-	// Wrap it in our adapter and return the interface
-	return &adapter{kc: kc}, nil
+	return kc, nil
 }
 
 // defaultBuilder is the package-level global singleton builder instance.
 var defaultBuilder = NewBuilder()
 
 // New is a publicly exposed package-level function for creating config instances.
-// It delegates the call to the default global builder, providing a simple API for common use cases.
-func New(srcs *sourcev1.Sources, opts ...options.Option) (contracts.ConfigLoader, error) {
+func New(srcs *sourcev1.Sources, opts ...options.Option) (KConfig, error) {
 	return defaultBuilder.NewConfig(srcs, opts...)
 }
 
 // RegisterSourceFactory is a publicly exposed package-level function for registering a SourceFactory.
-// It delegates the call to the default global builder.
 func RegisterSourceFactory(name string, factory SourceFactory) {
 	defaultBuilder.Register(name, factory)
 }
 
 // GetSourceFactory is a publicly exposed package-level function for retrieving a SourceFactory.
-// It delegates the call to the default global builder.
 func GetSourceFactory(name string) (SourceFactory, bool) {
 	return defaultBuilder.Get(name)
 }
 
 // getDefaultPriorityForSourceType returns a default priority based on the source type.
-// Higher values mean higher priority (overrides lower priority configs).
 func getDefaultPriorityForSourceType(sourceType string) int32 {
 	switch SourceType(sourceType) {
 	case SourceTypeEnv:
-		return 900 // Environment variables (highest common override)
+		return 900 // Environment variables
 	case SourceTypeFile:
 		return 600 // Main application config file
 	default:
-		return 100 // Lowest default priority for unknown or base types
+		return 100 // Lowest default priority
 	}
 }
 
