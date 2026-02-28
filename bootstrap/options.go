@@ -15,12 +15,21 @@ type Option = options.Option
 type ProviderOptions struct {
 	config            contracts.ConfigLoader
 	configTransformer ConfigTransformer
+	configTarget      any
 	defaultPaths      map[constant.ComponentKey]string
 	directory         string
 	directly          bool
 	pathResolver      PathResolverFunc
 	prefixes          []string
 	rawOptions        []Option
+}
+
+// WithConfigTarget sets the target struct for the business configuration.
+// If set, the bootstrap engine will automatically decode the loaded configuration into this target.
+func WithConfigTarget(target any) Option {
+	return optionutil.Update(func(o *ProviderOptions) {
+		o.configTarget = target
+	})
 }
 
 // WithConfig provides a pre-initialized configuration instance.

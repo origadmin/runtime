@@ -53,6 +53,19 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	}
 	sc := bootstrapconfig.NewStructured(cfg, paths)
 	var businessConfig any = sc.DecodedConfig()
+
+	// Priority 2: Automatic decoding into target struct
+	if providerOpts.configTarget != nil {
+		if err := cfg.Decode("", providerOpts.configTarget); err != nil {
+			if closeErr := cfg.Close(); closeErr != nil {
+				log.Errorf("failed to close config after decode error: %v", closeErr)
+			}
+			return nil, fmt.Errorf("failed to decode config into target: %w", err)
+		}
+		businessConfig = providerOpts.configTarget
+	}
+
+	// Priority 1: Custom transformation logic (overrides target)
 	if providerOpts.configTransformer != nil {
 		businessConfig, err = providerOpts.configTransformer.Transform(cfg)
 		if err != nil {
