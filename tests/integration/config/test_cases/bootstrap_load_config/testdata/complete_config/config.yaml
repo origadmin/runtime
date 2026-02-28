@@ -1,6 +1,6 @@
 app:
   id: "test-app-id"
-  name: "TestApp"
+  name: "CompleteApp"
   version: "1.0.0"
   env: "test"
   metadata:

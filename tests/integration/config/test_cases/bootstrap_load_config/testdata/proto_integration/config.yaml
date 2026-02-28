@@ -1,9 +1,11 @@
 app:
   id: "test-app-id"
-  name: "TestApp"
+  name: "ProtoConfigApp"
   version: "1.0.0"
-
-registration_discovery_name: "test-discovery"
+  env: "test"
+  metadata:
+    key1: "value1"
+    key2: "value2"
 
 servers:
   configs:
@@ -17,3 +19,29 @@ servers:
         addr: ":8000"
         network: "tcp"
         timeout: "2s"
+
+client:
+  grpc:
+    endpoint: "discovery:///user-service"
+    timeout: "3s"
+    selector:
+      version: "v1.0.0"
+
+
+logger:
+  level: "info"
+  format: "json"
+  stdout: true
+
+trace:
+  name: "jaeger"
+  endpoint: "http://jaeger:14268/api/traces"
+
+middlewares:
+  configs:
+    - cors:
+        allowed_methods: [ "GET", "POST" ]
+        allowed_origins: [ "*" ]
+      enabled: true
+      name: "cors-middleware"
+      type: "cors"

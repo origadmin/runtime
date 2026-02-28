@@ -18,6 +18,7 @@ import (
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/log"
+	runtimeconfig "github.com/origadmin/runtime/config"
 
 	// Import the generated Go code from the api_gateway proto definition.
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
@@ -81,23 +82,23 @@ func (c *CustomSettings) Load() error {
 func (c *CustomSettings) Decode(key string, value any) error {
 	switch key {
 	case "feature_enabled":
-		if value, ok := value.(*bool); ok {
-			*value = c.FeatureEnabled
+		if v, ok := value.(*bool); ok {
+			*v = c.FeatureEnabled
 			return nil
 		}
 	case "api_key":
-		if value, ok := value.(*string); ok {
-			*value = c.APIKey
+		if v, ok := value.(*string); ok {
+			*v = c.APIKey
 			return nil
 		}
 	case "rate_limit":
-		if value, ok := value.(*int); ok {
-			*value = c.RateLimit
+		if v, ok := value.(*int); ok {
+			*v = c.RateLimit
 			return nil
 		}
 	case "endpoints":
-		if value, ok := value.(*[]Endpoint); ok {
-			*value = c.Endpoints
+		if v, ok := value.(*[]Endpoint); ok {
+			*v = c.Endpoints
 			return nil
 		}
 	}
@@ -124,12 +125,14 @@ func (c *CustomSettings) DecodeMiddlewares() (*middlewarev1.Middlewares, error) 
 	return nil, errors.New("not implemented")
 }
 
+// TransformConfig matches the new ConfigTransformFunc signature
 func TransformConfig(cfg contracts.ConfigLoader) (any, error) {
 	log.Infof("Loaded config: %+v", cfg)
 	var settings CustomSettings
 	settings.config = cfg
-	if err := cfg.Decode("components.my-custom-settings", &settings); err != nil {
-		log.Errorf("Failed to decode config: %v", err)
+	// Correctly use Raw and Scan with the defined runtimeconfig alias
+	if err := cfg.Raw().(runtimeconfig.KConfig).Value("components.my-custom-settings").Scan(&settings); err != nil {
+		log.Errorf("Failed to scan config: %v", err)
 		return nil, err
 	}
 	return &settings, nil
@@ -156,8 +159,11 @@ func main() {
 		),
 	)
 
+	// Explicitly cast to ConfigTransformFunc to satisfy the compiler
+	transformer := bootstrap.ConfigTransformFunc(TransformConfig)
+
 	err := rtInstance.Load("examples/configs/load_with_custom_parser/config/bootstrap.yaml",
-		bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)))
+		bootstrap.WithConfigTransformer(transformer))
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
 	}
@@ -190,12 +196,13 @@ func main() {
 	config := rtInstance.Config()
 
 	var bc conf.Bootstrap
-	if err := config.Decode("servers", &bc.Servers); err != nil {
-		appLogger.Errorf("Failed to decode servers config: %v", err)
+	// Use Value().Scan() instead of Decode
+	if err := config.Value("servers").Scan(&bc.Servers); err != nil {
+		appLogger.Errorf("Failed to scan servers config: %v", err)
 		return
 	}
-	if err := config.Decode("clients", &bc.Clients); err != nil {
-		appLogger.Errorf("Failed to decode clients config: %v", err)
+	if err := config.Value("clients").Scan(&bc.Clients); err != nil {
+		appLogger.Errorf("Failed to scan clients config: %v", err)
 		return
 	}
 

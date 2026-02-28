@@ -4,95 +4,38 @@ import (
 	"fmt"
 	"log"
 
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/structpb"
-
 	rt "github.com/origadmin/runtime"
 	conf "github.com/origadmin/runtime/examples/protos/custom_extension"
 )
 
 func main() {
-	// Initialize runtime with bootstrap configuration
-	rtInstance := rt.New(
-		"Custom Extension Example",
+	// Create AppInfo using the new functional options pattern
+	appInfo := rt.NewAppInfo(
+		"custom-extension-example",
 		"1.0.0",
-		rt.WithID("custom-extension-example"),
-		rt.WithEnv("development"),
 	)
+	appInfo.Env = "development"
+
+	// --- 1. Load Configuration ---
+	rtInstance := rt.NewWithAppInfo(appInfo)
+
 	err := rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
 	if err != nil {
-		log.Fatalf("Failed to initialize runtime: %v", err)
+		return
 	}
 
-	// Get config decoder
+	// Get config decoder (KConfig)
 	decoder := rtInstance.Config()
 	defer decoder.Close()
 
-	// Decode the entire config into our custom application config
-	var appConfig conf.ApplicationConfig
-	if err := decoder.Decode("", &appConfig); err != nil {
-		log.Fatalf("Failed to decode configuration: %v", err)
+	// --- 2. Directly scan into the CustomAuthConfig proto ---
+	var authCfg conf.CustomAuthConfig
+	// Use Kratos native API: Value("customize").Scan() instead of Decode
+	if err := decoder.Value("customize").Scan(&authCfg); err != nil {
+		log.Fatalf("Failed to scan config into CustomAuthConfig struct: %v", err)
 	}
 
-	// Process extensions
-	if appConfig.CustomizeConfig != nil {
-		fmt.Printf("Processing extension: %s\n", appConfig.GetCustomizeConfig())
-
-		// Example of how to unmarshal Any to a specific type
-		customCfg, err := getCustomConfig(appConfig.GetCustomizeConfig())
-		if err != nil {
-			log.Printf("Failed to get custom config: %v", err)
-			return
-		}
-
-		printCustomConfig(customCfg)
-	} else {
-		log.Println("No customize configuration found")
-	}
-
-	// Direct custom config (if not using extensions map)
-	//if appConfig.Custom != nil {
-	//	printCustomConfig(appConfig.Custom)
-	//}
-}
-
-func getCustomConfig(customize *structpb.Struct) (*conf.CustomConfig, error) {
-	if customize == nil {
-		return nil, fmt.Errorf("customize config is nil")
-	}
-
-	// Debug: Print the raw data
-	fmt.Printf("Raw config data: %+v\n", customize)
-
-	// Convert the data to JSON bytes
-	jsonBytes, err := protojson.Marshal(customize)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal config data: %w", err)
-	}
-	fmt.Printf("JSON bytes: %s\n", string(jsonBytes))
-
-	// Unmarshal to CustomConfig
-	var cfg conf.CustomConfig
-	if err := protojson.Unmarshal(jsonBytes, &cfg); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal to CustomConfig: %w", err)
-	}
-
-	return &cfg, nil
-}
-
-func printCustomConfig(cfg *conf.CustomConfig) {
-	fmt.Printf("\nCustom Configuration:\n")
-	fmt.Printf("Custom Field: %s\n", cfg.GetCustomField())
-	fmt.Printf("Custom Number: %d\n", cfg.GetCustomNumber())
-
-	fmt.Println("\nItems:")
-	for i, item := range cfg.GetItems() {
-		fmt.Printf("  %d: %s\n", i+1, item)
-	}
-
-	if nested := cfg.GetNested(); nested != nil {
-		fmt.Printf("\nNested Config:\n")
-		fmt.Printf("  Enabled: %v\n", nested.GetEnabled())
-		fmt.Printf("  Name: %s\n", nested.GetName())
-	}
+	fmt.Println("✅ Successfully loaded config into CustomAuthConfig.")
+	fmt.Printf("   Policy: %s\n", authCfg.Policy)
+	fmt.Printf("   Required Scope: %s\n", authCfg.RequiredScope)
 }

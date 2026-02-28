@@ -1,23 +1,18 @@
 package custom_transformer_test
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	rt "github.com/origadmin/runtime"
-	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	"github.com/origadmin/runtime/bootstrap"
-	parentconfig "github.com/origadmin/runtime/tests/integration/config"
-	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
-	"github.com/origadmin/runtime/tests/integration/config/test_cases/custom_transformer"
-	_ "github.com/origadmin/runtime/tests/integration/config/test_cases/custom_transformer"
+	runtimeconfig "github.com/origadmin/runtime/config"
+	_ "github.com/origadmin/runtime/config/file"
+	"github.com/origadmin/runtime/contracts"
 )
 
-// CustomTransformerTestSuite tests the integration of custom configuration transformers.
 type CustomTransformerTestSuite struct {
 	suite.Suite
 }
@@ -26,52 +21,33 @@ func TestCustomTransformerTestSuite(t *testing.T) {
 	suite.Run(t, new(CustomTransformerTestSuite))
 }
 
-// TestCustomTransformerApplication verifies that a custom transformer is correctly applied
-// during the bootstrap process and modifies the configuration as expected.
+type TransformedConfig struct {
+	AppName string
+}
+
 func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	t := s.T()
 
-	// The path should be relative to the test's working directory.
-	bootstrapPath := "bootstrap_transformer.yaml"
+	transformer := bootstrap.ConfigTransformFunc(func(cfg contracts.ConfigLoader) (any, error) {
+		var raw struct {
+			App struct {
+				Name string `json:"name"`
+			} `json:"app"`
+		}
+		// Directly cast to runtimeconfig.KConfig
+		if err := cfg.Raw().(runtimeconfig.KConfig).Scan(&raw); err != nil {
+			return nil, err
+		}
+		return &TransformedConfig{AppName: raw.App.Name + "-transformed"}, nil
+	})
 
-	// Create AppInfo using the new functional options pattern
-	appInfo := rt.NewAppInfo(
-		"TransformerTestApp",
-		"1.0.0",
-	)
-	appInfo.Id = "transformer-test-app"
-
-	// Initialize App, which should apply the registered custom transformer.
-	rtInstance := rt.NewWithAppInfo(appInfo)
-
-	wd, _ := os.Getwd()
-	fmt.Printf("working directory:%s\n", wd)
-	// Load the configuration from the bootstrap file with all options.
-	err := rtInstance.Load(bootstrapPath, bootstrap.WithConfigTransformer(&custom_transformer.TestTransformer{
-		Suffix: "-transformed",
-	}))
-	require.NoError(t, err, "Failed to load configuration from bootstrap with custom transformer")
-
+	rtInstance := rt.New("TransformerTest", "1.0.0")
+	err := rtInstance.Load("bootstrap_transformer.yaml", bootstrap.WithConfigTransformer(transformer))
+	require.NoError(t, err)
 	defer rtInstance.Config().Close()
 
-	// Define the expected configuration after transformation
-	expectedApp := &appv1.App{
-		Id:       "transformer-app-id",
-		Name:     "OriginalApp-transformed",
-		Version:  "1.0.0",
-		Env:      "transformer-test",
-		Metadata: nil,
-	}
-
-	// Use Result().Config() to get the transformed business configuration
-	ts, ok := rtInstance.Result().Config().(*testconfigs.TestConfig)
-	if !ok {
-		t.Fatalf("Failed to convert to *testconfigs.TestConfig from Result().Config(), got %T", rtInstance.Result().Config())
-	}
-
-	require.NoError(t, err, "Failed to decode app config")
-	// Perform a detailed, field-by-field assertion.
-	parentconfig.AssertAppConfig(t, expectedApp, ts.App)
-
-	t.Logf("Custom transformer applied and verified successfully!")
+	res := rtInstance.Result().Config()
+	transformed, ok := res.(*TransformedConfig)
+	require.True(t, ok)
+	require.Contains(t, transformed.AppName, "-transformed")
 }

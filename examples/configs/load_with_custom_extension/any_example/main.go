@@ -30,8 +30,6 @@ func main() {
 	appInfo.Env = "development"
 
 	// --- 1. Load Configuration ---
-	// We use Kratos config to load the YAML file.
-	// Initialize runtime with bootstrap configuration
 	rtInstance := rt.NewWithAppInfo(appInfo)
 
 	err := rtInstance.Load("examples/configs/load_with_custom_extension/config/bootstrap.yaml")
@@ -39,13 +37,14 @@ func main() {
 		return
 	}
 
-	// Get config decoder
+	// Get config decoder (KConfig)
 	decoder := rtInstance.Config()
 	defer decoder.Close()
+
 	// --- 2. Scan into a TEMPORARY Go struct ---
-	// We cannot scan directly into the 'Any' proto. We must use an intermediate struct.
 	var tempMw TempMiddleware
-	if err := decoder.Decode("", &tempMw); err != nil {
+	// Use Kratos Scan instead of Decode
+	if err := decoder.Scan(&tempMw); err != nil {
 		log.Fatalf("Failed to scan config into temporary struct: %v", err)
 	}
 
@@ -54,15 +53,15 @@ func main() {
 	fmt.Printf("   Raw Customize Map: %v\n", tempMw.Customize)
 
 	var authCfgDirect conf.CustomAuthConfig
-	if err := decoder.Decode("customize", &authCfgDirect); err != nil {
-		log.Fatalf("Failed to decode customize config: %v", err)
+	// Use Value().Scan() instead of Decode
+	if err := decoder.Value("customize").Scan(&authCfgDirect); err != nil {
+		log.Fatalf("Failed to scan customize config: %v", err)
 	}
 	fmt.Printf("   Direct Customize Config.")
 	fmt.Printf("   Policy: %s\n", authCfgDirect.Policy)
 	fmt.Printf("   Required Scope: %s\n", authCfgDirect.RequiredScope)
 
 	// --- 3. Manually Convert the Map to the Target Proto ---
-	// This is a multi-step process: map -> JSON bytes -> target proto.
 	var authCfg conf.CustomAuthConfig
 	jsonBytes, err := json.Marshal(tempMw.Customize)
 	if err != nil {
@@ -75,7 +74,6 @@ func main() {
 	fmt.Println("\n✅ Manually converted map to strongly-typed CustomAuthConfig.")
 	fmt.Printf("   Policy: %s\n", authCfg.Policy)
 
-	// --- 4. Pack the Typed Proto into an 'Any' ---
 	anyValue, err := anypb.New(&authCfg)
 	if err != nil {
 		log.Fatalf("Failed to pack CustomAuthConfig into Any: %v", err)
@@ -83,7 +81,6 @@ func main() {
 
 	fmt.Println("\n✅ Packed the strongly-typed config into a google.protobuf.Any.")
 
-	// --- 5. Construct the Final Middleware Proto ---
 	finalMw := &conf.MiddlewareAny{
 		Name:      tempMw.Name,
 		Type:      tempMw.Type,

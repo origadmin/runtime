@@ -43,7 +43,7 @@ func main() {
 		fmt.Println("Failed to create App:", err)
 		os.Exit(1)
 	}
-	// The Cleanup method has been removed. The application manages its own lifecycle.
+
 	defer rt.Config().Close()
 	// 3. Get components from App and use them
 	logger := log.NewHelper(rt.Logger())
@@ -51,10 +51,10 @@ func main() {
 
 	logger.Infof("App %s (%s) is starting...", appInfo.GetName(), appInfo.GetVersion())
 
-	// Get the generated Bootstrap configuration
+	// Use Kratos native Scan instead of Decode
 	var bc conf.Bootstrap
-	if err := rt.Config().Decode("", &bc); err != nil {
-		log.Fatalf("Failed to decode bootstrap config: %v", err)
+	if err := rt.Config().Scan(&bc); err != nil {
+		log.Fatalf("Failed to scan bootstrap config: %v", err)
 	}
 
 	// Print some information from the configuration to demonstrate successful loading
@@ -84,11 +84,6 @@ func main() {
 		}
 	}
 
-	// The proto file for the Security component doesn't exist, so GetSecurity() will return nil
-	// if bc.GetSecurity() != nil && len(bc.GetSecurity().GetAuthenticators()) > 0 {
-	// 	logger.Infof("Security Authenticator Type: %s", bc.GetSecurity().GetAuthenticators()[0].GetType())
-	// }
-
 	if bc.GetDiscoveries() != nil && len(bc.GetDiscoveries().GetConfigs()) > 0 {
 		logger.Infof("Discovery Type: %s, Address: %s", bc.GetDiscoveries().GetConfigs()[0].GetType(),
 			bc.GetDiscoveries().GetConfigs()[0].GetConsul().GetAddress())
@@ -105,8 +100,6 @@ func main() {
 
 	}
 
-	// 4. Here you can create and run the Kratos App based on the configuration in bc
-	// But to keep the example minimal and focused on config loading, we only demonstrate config loading
 	logger.Info("Bootstrap config loaded and runtime initialized successfully.")
 	logger.Info("Application will exit after cleanup.")
 }

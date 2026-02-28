@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
+	"github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/contracts"
 )
 
@@ -24,9 +25,16 @@ func (b *resultImpl) Config() any {
 	return b.businessConfig
 }
 
-// Loader returns the raw configuration hub.
-func (b *resultImpl) Loader() contracts.ConfigLoader {
-	return b.config
+// Loader returns the enhanced Kratos configuration hub.
+func (b *resultImpl) Loader() config.KConfig {
+	if b.config == nil {
+		return nil
+	}
+	// Return the raw Kratos config instance
+	if kc, ok := b.config.Raw().(config.KConfig); ok {
+		return kc
+	}
+	return nil
 }
 
 // ConfigPath returns the physical configuration path.
