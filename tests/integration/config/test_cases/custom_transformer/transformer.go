@@ -21,7 +21,7 @@ func (t *TestTransformer) DecodedConfig() any {
 	return t.cfg
 }
 
-func (t *TestTransformer) Transform(c contracts.ConfigLoader, sc contracts.StructuredConfig) (contracts.StructuredConfig, error) {
+func (t *TestTransformer) Transform(c contracts.ConfigLoader) (any, error) {
 	t.c = c
 	// Decode the current configuration into our TestConfig struct.
 	var cfg testconfigs.TestConfig
@@ -37,9 +37,8 @@ func (t *TestTransformer) Transform(c contracts.ConfigLoader, sc contracts.Struc
 		cfg.App = &appv1.App{}
 		cfg.App.Name = "TransformedApp" + t.Suffix
 	}
-	t.StructuredConfig = sc
 	t.cfg = &cfg
-	return t, nil
+	return t.cfg, nil
 }
 
 // String returns the name of the transformer.

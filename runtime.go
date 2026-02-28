@@ -251,6 +251,11 @@ func (r *App) Container() container.Container {
 	return r.container
 }
 
+// Result returns the bootstrap result.
+func (r *App) Result() bootstrap.Result {
+	return r.result
+}
+
 // Context returns the root context of the application.
 // This context is cancelled when the application stops.
 func (r *App) Context() context.Context {

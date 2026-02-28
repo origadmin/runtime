@@ -23,18 +23,17 @@ import (
 // and returns the final, resolved path.
 type PathResolverFunc func(baseDir, path string) string
 
-// ConfigTransformer defines an interface for custom transformation of kratosconfig.ConfigLoader to contracts.ConfigLoader.
+// ConfigTransformer defines an interface for custom transformation of ConfigLoader to a business configuration object.
 type ConfigTransformer interface {
-	Transform(contracts.ConfigLoader, contracts.StructuredConfig) (contracts.StructuredConfig, error)
+	Transform(contracts.ConfigLoader) (any, error)
 }
 
 // ConfigTransformFunc is a function type that implements the ConfigTransformer interface.
-type ConfigTransformFunc func(contracts.ConfigLoader, contracts.StructuredConfig) (contracts.StructuredConfig, error)
+type ConfigTransformFunc func(contracts.ConfigLoader) (any, error)
 
 // Transform implements the ConfigTransformer interface for ConfigTransformFunc.
-func (f ConfigTransformFunc) Transform(config contracts.ConfigLoader, sc contracts.StructuredConfig) (
-	contracts.StructuredConfig, error) {
-	return f(config, sc)
+func (f ConfigTransformFunc) Transform(config contracts.ConfigLoader) (any, error) {
+	return f(config)
 }
 
 // LoadConfig creates a new configuration decoder instance.

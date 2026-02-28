@@ -52,8 +52,9 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		}
 	}
 	sc := bootstrapconfig.NewStructured(cfg, paths)
+	var businessConfig any = sc.DecodedConfig()
 	if providerOpts.configTransformer != nil {
-		sc, err = providerOpts.configTransformer.Transform(cfg, sc)
+		businessConfig, err = providerOpts.configTransformer.Transform(cfg)
 		if err != nil {
 			if closeErr := cfg.Close(); closeErr != nil {
 				log.Errorf("failed to close config after transform error: %v", closeErr)
@@ -67,7 +68,7 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 		config:           cfg,
 		structuredConfig: sc,
 		bootstrap:        bootstrap,
-		businessConfig:   sc.DecodedConfig(),
+		businessConfig:   businessConfig,
 	}
 	return res, nil
 }

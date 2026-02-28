@@ -43,43 +43,35 @@ func (c *CustomSettings) DecodedConfig() any {
 }
 
 func (c *CustomSettings) DecodeCaches() (*datav1.Caches, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("not implemented")
 }
 
 func (c *CustomSettings) DecodeDatabases() (*datav1.Databases, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("not implemented")
 }
 
 func (c *CustomSettings) DecodeObjectStores() (*datav1.ObjectStores, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("not implemented")
 }
 
 func (c *CustomSettings) DecodeData() (*datav1.Data, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("not implemented")
 }
 
 func (c *CustomSettings) DecodeDefaultDiscovery() (string, error) {
-	//TODO implement me
-	panic("implement me")
+	return "", errors.New("not implemented")
 }
 
 func (c *CustomSettings) DecodeDiscoveries() (*discoveryv1.Discoveries, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("not implemented")
 }
 
 func (c *CustomSettings) DecodeServers() (*transportv1.Servers, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("not implemented")
 }
 
 func (c *CustomSettings) DecodeClients() (*transportv1.Clients, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("not implemented")
 }
 
 func (c *CustomSettings) Load() error {
@@ -132,16 +124,9 @@ func (c *CustomSettings) DecodeMiddlewares() (*middlewarev1.Middlewares, error) 
 	return nil, errors.New("not implemented")
 }
 
-func TransformConfig(cfg contracts.ConfigLoader, source contracts.StructuredConfig) (contracts.StructuredConfig, error) {
+func TransformConfig(cfg contracts.ConfigLoader) (any, error) {
 	log.Infof("Loaded config: %+v", cfg)
-	//var settingMap map[string]any
-	//if err := cfg.Decode("", &settingMap); err != nil {
-	//	log.Errorf("Failed to decode config: %v", err)
-	//	return nil, err
-	//}
-	//log.Infof("Decoded config: %v", settingMap)
 	var settings CustomSettings
-	//log.Infof("Decoded config: %v", settingMap)
 	settings.config = cfg
 	if err := cfg.Decode("components.my-custom-settings", &settings); err != nil {
 		log.Errorf("Failed to decode config: %v", err)
@@ -151,7 +136,6 @@ func TransformConfig(cfg contracts.ConfigLoader, source contracts.StructuredConf
 }
 
 func main() {
-	// Call DummyInit to ensure the local_registry package's init() function is executed.
 	DummyInit()
 
 	rtInstance := runtime.New(
@@ -163,7 +147,6 @@ func main() {
 		runtime.WithContainerOptions(
 			container.WithComponentFactory("my--settings", container.ComponentFunc(
 				func(cfg contracts.StructuredConfig, ctn container.Container, opts ...options.Option) (contracts.Component, error) {
-					// The factory now returns contracts.Component
 					customCfg, ok := cfg.(*CustomSettings)
 					if !ok {
 						return nil, fmt.Errorf("expected *CustomSettings, but got %T", cfg)
@@ -173,31 +156,29 @@ func main() {
 		),
 	)
 
-	err := rtInstance.Load("examples/configs/load_with_custom_parser/config/bootstrap.yaml", bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)))
+	err := rtInstance.Load("examples/configs/load_with_custom_parser/config/bootstrap.yaml",
+		bootstrap.WithConfigTransformer(bootstrap.ConfigTransformFunc(TransformConfig)))
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize runtime: %w", err))
 	}
-	// Get logger from runtime
+
 	logger := rtInstance.Logger()
 	appLogger := log.NewHelper(logger)
 	log.SetLogger(logger)
 	appLogger.Info("Application started successfully!")
 
-	// 2. Get the custom settings component
-	comp, err := rtInstance.Component("my-custom-settings") // Updated to use the instance name
+	comp, err := rtInstance.Component("my-custom-settings")
 	if err != nil {
 		appLogger.Error("Custom settings component not found")
 		return
 	}
 
-	// Type assert to our custom settings type
 	customSettings, ok := comp.(*CustomSettings)
 	if !ok {
 		appLogger.Error("Failed to type assert custom settings component")
 		return
 	}
 
-	// Log the custom settings
 	appLogger.Infof("Custom Settings: %+v", customSettings)
 	appLogger.Infof("Feature Enabled: %t", customSettings.FeatureEnabled)
 	appLogger.Infof("API Key: %s", customSettings.APIKey)
@@ -206,39 +187,33 @@ func main() {
 		appLogger.Infof("Endpoint %d: Name=%s, Path=%s", i, ep.Name, ep.Path)
 	}
 
-	// 3. Get the config interface to decode other configurations
 	config := rtInstance.Config()
 
-	// Decode servers and clients directly using config.Decode
 	var bc conf.Bootstrap
-	if err := config.Decode("servers", &bc.Servers); err != nil { // Direct decode
+	if err := config.Decode("servers", &bc.Servers); err != nil {
 		appLogger.Errorf("Failed to decode servers config: %v", err)
 		return
 	}
-	if err := config.Decode("clients", &bc.Clients); err != nil { // Direct decode
+	if err := config.Decode("clients", &bc.Clients); err != nil {
 		appLogger.Errorf("Failed to decode clients config: %v", err)
 		return
 	}
 
-	// Log the server configuration
 	if len(bc.Servers) > 0 && bc.Servers[0].GetHttp() != nil {
 		appLogger.Infof("Server HTTP Addr: %s", bc.Servers[0].GetHttp().GetAddr())
 	} else {
 		appLogger.Info("No HTTP server configuration found.")
 	}
 
-	// Log client configurations
 	for name, client := range bc.Clients {
 		if client.GetClient() != nil {
 			appLogger.Infof("Client '%s' Endpoint: %s", name, client.GetClient())
 		}
 	}
 
-	// Keep the application running
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Wait for interrupt signal
 	<-ctx.Done()
 	appLogger.Info("Application finished.")
 }

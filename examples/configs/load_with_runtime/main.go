@@ -92,14 +92,13 @@ func (d *ProtoConfig) DecodeMiddlewares() (*middlewarev1.Middlewares, error) {
 }
 
 // NewProtoConfig creates a new ProtoConfig instance and decodes the entire Kratos config into the Bootstrap proto.
-func NewProtoConfig(c contracts.ConfigLoader, source contracts.StructuredConfig) (*ProtoConfig, error) {
+func NewProtoConfig(c contracts.ConfigLoader) (*ProtoConfig, error) {
 	var bc conf.Bootstrap
 	if err := c.Decode("", &bc); err != nil {
 		return nil, err
 	}
 	return &ProtoConfig{
 		ifconfig:  c,
-		source:    source,
 		bootstrap: &bc,
 	}, nil
 }
@@ -164,8 +163,8 @@ func (d *ProtoConfig) DecodeEndpoints() (map[string]*discoveryv1.Endpoint, error
 
 func main() {
 	// Define the ConfigTransformFunc to create our custom ProtoConfig.
-	configTransformer := bootstrap.ConfigTransformFunc(func(kc contracts.ConfigLoader, source contracts.StructuredConfig) (contracts.StructuredConfig, error) {
-		protoCfg, err := NewProtoConfig(kc, source)
+	configTransformer := bootstrap.ConfigTransformFunc(func(kc contracts.ConfigLoader) (any, error) {
+		protoCfg, err := NewProtoConfig(kc)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ProtoConfig: %w", err)
 		}

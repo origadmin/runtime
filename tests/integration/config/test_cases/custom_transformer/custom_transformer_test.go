@@ -14,7 +14,7 @@ import (
 	parentconfig "github.com/origadmin/runtime/tests/integration/config"
 	testconfigs "github.com/origadmin/runtime/tests/integration/config/proto"
 	"github.com/origadmin/runtime/tests/integration/config/test_cases/custom_transformer"
-	_ "github.com/origadmin/runtime/tests/integration/config/test_cases/custom_transformer" // Import for transformer registration
+	_ "github.com/origadmin/runtime/tests/integration/config/test_cases/custom_transformer"
 )
 
 // CustomTransformerTestSuite tests the integration of custom configuration transformers.
@@ -44,7 +44,6 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	// Initialize App, which should apply the registered custom transformer.
 	rtInstance := rt.NewWithAppInfo(appInfo)
 
-	// Removed defer rtInstance.Cleanup() as it's no longer available
 	wd, _ := os.Getwd()
 	fmt.Printf("working directory:%s\n", wd)
 	// Load the configuration from the bootstrap file with all options.
@@ -57,18 +56,19 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 
 	// Define the expected configuration after transformation
 	expectedApp := &appv1.App{
-		Id:      "transformer-app-id",
-		Name:    "OriginalApp-transformed",
-		Version: "1.0.0",
-		Env:     "transformer-test",
-		// Metadata is not defined in the local config, so we expect the default nil or empty map.
-		Metadata: nil, // Or map[string]string{} depending on desired behavior
+		Id:       "transformer-app-id",
+		Name:     "OriginalApp-transformed",
+		Version:  "1.0.0",
+		Env:      "transformer-test",
+		Metadata: nil,
 	}
-	// Use StructuredConfig() to get the transformed configuration
-	ts, ok := rtInstance.StructuredConfig().DecodedConfig().(*testconfigs.TestConfig)
+
+	// Use Result().Config() to get the transformed business configuration
+	ts, ok := rtInstance.Result().Config().(*testconfigs.TestConfig)
 	if !ok {
-		t.Fatalf("Failed to convert to TestTransformer")
+		t.Fatalf("Failed to convert to *testconfigs.TestConfig from Result().Config(), got %T", rtInstance.Result().Config())
 	}
+
 	require.NoError(t, err, "Failed to decode app config")
 	// Perform a detailed, field-by-field assertion.
 	parentconfig.AssertAppConfig(t, expectedApp, ts.App)
