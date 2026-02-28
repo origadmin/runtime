@@ -10,7 +10,7 @@ import (
 	"github.com/origadmin/runtime/contracts/builder"
 	"github.com/origadmin/runtime/contracts/options"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	internalfactory "github.com/origadmin/runtime/kernel/builderutil"
+	internalfactory "github.com/origadmin/runtime/helpers/builderutil"
 )
 
 const Module = "registry"

@@ -7,7 +7,7 @@ package objectstore
 import (
 	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1" // Changed import
 	storageiface "github.com/origadmin/runtime/contracts/storage"
-	internalfactory "github.com/origadmin/runtime/kernel/builderutil"
+	internalfactory "github.com/origadmin/runtime/helpers/builderutil"
 )
 
 const Module = "storage.objectstore"

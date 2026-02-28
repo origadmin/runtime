@@ -5,7 +5,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/origadmin/runtime/contracts/options"
-	"github.com/origadmin/runtime/kernel/optionutil"
+	"github.com/origadmin/runtime/helpers/optionutil"
 	"github.com/origadmin/runtime/log"
 )
 
