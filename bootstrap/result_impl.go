@@ -3,16 +3,14 @@ package bootstrap
 import (
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
 	"github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/contracts"
 )
 
 // resultImpl implements the Result interface for the bootstrap engine.
 type resultImpl struct {
-	config           config.KConfig
-	structuredConfig contracts.StructuredConfig
-	bootstrap        *bootstrapv1.Bootstrap
-	businessConfig   any
-	configPath       string
+	config         config.KConfig
+	bootstrap      *bootstrapv1.Bootstrap
+	businessConfig any
+	configPath     string
 }
 
 // Bootstrap returns the strong-typed bootstrap metadata.
@@ -33,9 +31,4 @@ func (b *resultImpl) Loader() config.KConfig {
 // ConfigPath returns the physical configuration path.
 func (b *resultImpl) ConfigPath() string {
 	return b.configPath
-}
-
-// StructuredConfig returns the legacy structured configuration decoder.
-func (b *resultImpl) StructuredConfig() contracts.StructuredConfig {
-	return b.structuredConfig
 }

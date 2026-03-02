@@ -4,25 +4,9 @@ import (
 	"fmt"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	bootstrapconfig "github.com/origadmin/runtime/bootstrap/internal/config"
-	"github.com/origadmin/runtime/contracts/constant"
+	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
 	"github.com/origadmin/runtime/log"
 )
-
-// defaultComponentPaths provides the framework's default path map for core components.
-var defaultComponentPaths = map[constant.ComponentKey]string{
-	constant.ConfigApp:                "app",
-	constant.ComponentLogger:          "logger",
-	constant.ComponentData:            "data",
-	constant.ComponentDatabases:       "databases",
-	constant.ComponentCaches:          "caches",
-	constant.ComponentObjectStores:    "object_stores",
-	constant.ComponentRegistries:      "discoveries",
-	constant.ComponentDefaultRegistry: "default_registry_name",
-	constant.ComponentMiddlewares:     "middlewares",
-	constant.ComponentServers:         "servers",
-	constant.ComponentClients:         "clients",
-}
 
 // New creates a new component provider, which is the main entry point for application startup.
 // It orchestrates the entire process of configuration loading.
@@ -32,27 +16,22 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	providerOpts := FromOptions(opts...)
 
 	// 2. Load full configuration using the sources from bootstrap config
-	bootstrap, cfg, err := LoadConfig(bootstrapPath, providerOpts) // Now providerOpts contains preloaded sources
+	bootstrap, cfg, err := LoadConfig(bootstrapPath, providerOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 	log.Debugf("Load bootstrap config : %+v", bootstrap)
-	appConfig := bootstrap.GetApp()
-	if appConfig == nil {
-		appConfig = &appv1.App{}
+
+	// Ensure app info exists
+	if bootstrap == nil {
+		bootstrap = &bootstrapv1.Bootstrap{}
 	}
-	// 3. Create the final StructuredConfig.
-	paths := make(map[constant.ComponentKey]string, len(defaultComponentPaths))
-	for k, v := range defaultComponentPaths {
-		paths[k] = v
+	if bootstrap.App == nil {
+		bootstrap.App = &appv1.App{}
 	}
-	if providerOpts.defaultPaths != nil {
-		for component, path := range providerOpts.defaultPaths {
-			paths[component] = path
-		}
-	}
-	sc := bootstrapconfig.NewStructured(cfg, paths)
-	var businessConfig any = sc.DecodedConfig()
+
+	// 3. Determine business config
+	var businessConfig any
 
 	// Priority 2: Automatic decoding into target struct
 	if providerOpts.configTarget != nil {
@@ -78,11 +57,10 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 
 	// 4. Assemble and return the final result.
 	res = &resultImpl{
-		config:           cfg,
-		structuredConfig: sc,
-		bootstrap:        bootstrap,
-		businessConfig:   businessConfig,
-		configPath:       bootstrapPath,
+		config:         cfg,
+		bootstrap:      bootstrap,
+		businessConfig: businessConfig,
+		configPath:     bootstrapPath,
 	}
 	return res, nil
 }

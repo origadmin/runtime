@@ -22,7 +22,6 @@ import (
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/helpers/configutil"
-	"github.com/origadmin/runtime/contracts"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
 )
 
@@ -54,20 +53,7 @@ type providerImpl struct {
 	mu sync.RWMutex
 }
 
-// New creates a new storage provider instance based on the provided structured configuration.
-// This function is primarily for backward compatibility or when a custom contracts.StructuredConfig
-// implementation is used. For most cases, NewProvider is recommended.
-func New(sc contracts.StructuredConfig) (Provider, error) {
-	dataConfig, err := sc.DecodeData()
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode structured config: %w", err)
-	}
-	return NewProvider(dataConfig)
-}
-
 // NewProvider creates a new storage provider instance based on the provided decoded DataConfig.
-// This is the recommended way to initialize a full storage provider when you have the
-// configuration already decoded.
 func NewProvider(dataConfig *datav1.Data) (Provider, error) {
 	p := &providerImpl{
 		caches:       make(map[string]storageiface.Cache),

@@ -20,5 +20,5 @@ func ProvideLogger(rt *App) log.Logger {
 // from the App interface. It is intended to be used by the application's
 // own Wire injector.
 func ProvideDefaultRegistrar(rt *App) (registry.Registrar, error) {
-	return rt.Container().DefaultRegistrar()
+	return rt.DefaultRegistrar()
 }

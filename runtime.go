@@ -16,39 +16,41 @@ import (
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	"github.com/origadmin/runtime/bootstrap"
 	runtimeconfig "github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/container"
 	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/runtime/contracts"
-	"github.com/origadmin/runtime/contracts/constant"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/engine"
 	runtimelog "github.com/origadmin/runtime/log"
 )
 
-// Standard configuration sources for interface sniffing.
+// Standard configuration interfaces
 type (
 	AppConfig        interface{ GetApp() *appv1.App }
 	LoggerConfig     interface{ GetLogger() *loggerv1.Logger }
 	MiddlewareConfig interface {
 		GetMiddlewares() *middlewarev1.Middlewares
 	}
+	DataConfig     interface{ GetData() *datav1.Data }
+	RegistryConfig interface {
+		GetDiscoveries() *discoveryv1.Discoveries
+	}
 )
 
-// App defines the application's runtime environment.
+// App defines the application's runtime environment powered by engine.
 type App struct {
-	appInfo       *appv1.App
-	result        bootstrap.Result
-	container     container.Container
-	mu            sync.RWMutex
-	globalOpts    []options.Option
-	componentOpts map[string][]options.Option
-	containerOpts []options.Option
-	ctx           context.Context
-	cancel        context.CancelFunc
+	appInfo    *appv1.App
+	result     bootstrap.Result
+	engine     engine.Registry
+	mu         sync.RWMutex
+	globalOpts []options.Option
+	ctx        context.Context
+	cancel     context.CancelFunc
 }
 
-// New creates a new App instance with default metadata.
+// New creates a new App instance.
 func New(name, version string, opts ...Option) *App {
 	return NewWithAppInfo(NewAppInfo(name, version), opts...)
 }
@@ -59,33 +61,82 @@ func NewWithAppInfo(info *appv1.App, opts ...Option) *App {
 	if info == nil {
 		info = NewAppInfoBuilder()
 	}
-	return configure.Apply(&App{
-		appInfo:       info,
-		componentOpts: make(map[string][]options.Option),
-		containerOpts: make([]options.Option, 0),
-		ctx:           ctx,
-		cancel:        cancel,
-	}, opts)
+	reg := engine.NewContainer(nil)
+	app := &App{
+		appInfo: info,
+		engine:  reg,
+		ctx:     ctx,
+		cancel:  cancel,
+	}
+	app.registerCoreFactories()
+	return configure.Apply(app, opts)
 }
 
-// Load loads and merges configuration metadata according to the defined structure.
+func (r *App) registerCoreFactories() {
+	// Logger (Infrastructure)
+	r.engine.Register(engine.CategoryInfrastructure, func(root any) (*engine.ModuleConfig, error) {
+		if p, ok := root.(LoggerConfig); ok && p.GetLogger() != nil {
+			l := p.GetLogger()
+			return &engine.ModuleConfig{Entries: []engine.ConfigEntry{{Name: "logger", Value: l}}, Active: "logger"}, nil
+		}
+		return nil, nil
+	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
+		var cfg loggerv1.Logger
+		if err := engine.BindConfig(h, &cfg); err != nil {
+			return runtimelog.DefaultLogger, nil
+		}
+		return runtimelog.NewLogger(&cfg), nil
+	}, engine.WithPriority(engine.PriorityInfrastructure))
+
+	// Registry (Registry)
+	r.engine.Register(engine.CategoryRegistry, func(root any) (*engine.ModuleConfig, error) {
+		if p, ok := root.(RegistryConfig); ok && p.GetDiscoveries() != nil {
+			raw := p.GetDiscoveries()
+			var entries []engine.ConfigEntry
+			for _, c := range raw.Configs {
+				entries = append(entries, engine.ConfigEntry{Name: c.Name, Value: c})
+			}
+			return &engine.ModuleConfig{Entries: entries, Active: raw.GetActive()}, nil
+		}
+		return nil, nil
+	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
+		return nil, errors.New("registry provider not implemented")
+	}, engine.WithPriority(engine.PriorityRegistry))
+
+	// Middleware (Stack)
+	r.engine.Register(engine.CategoryMiddleware, func(root any) (*engine.ModuleConfig, error) {
+		if p, ok := root.(MiddlewareConfig); ok && p.GetMiddlewares() != nil {
+			raw := p.GetMiddlewares()
+			var entries []engine.ConfigEntry
+			for _, c := range raw.Configs {
+				entries = append(entries, engine.ConfigEntry{Name: c.Name, Value: c})
+			}
+			return &engine.ModuleConfig{Entries: entries}, nil
+		}
+		return nil, nil
+	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
+		return nil, errors.New("middleware provider not implemented")
+	}, engine.WithPriority(engine.PriorityServerStack), engine.WithScope(engine.ServerScope))
+}
+
+// Load loads and merges configuration metadata.
 func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	res, err := bootstrap.New(path, bootOpts...)
 	if err != nil {
 		return fmt.Errorf("bootstrap failed: %w", err)
 	}
 	r.result = res
+	r.engine.BindRoot(res.Config())
 
 	// --- Metadata Refresh Flow ---
 
-	// 1. [Infrastructure Layer] Initial metadata from framework bootstrap source.
-	// This captures the base 'app' node defined in bootstrap.yaml.
+	// 1. Initial metadata from framework bootstrap source.
 	if boot := res.Bootstrap(); boot != nil && boot.GetApp() != nil {
 		UpdateAppInfo(r.appInfo, boot.GetApp())
 	}
 
-	// 2. [Content Layer] Refresh metadata from Loader.
-	// This ensures environment-specific overrides (e.g., config_dev.yaml) are captured.
+	// 2. Refresh metadata from Loader (raw KConfig).
+	// This captures environment-specific overrides (e.g., config_dev.yaml).
 	if loader := res.Loader(); loader != nil {
 		var meta struct {
 			App *appv1.App `json:"app" yaml:"app"`
@@ -95,111 +146,37 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 		}
 	}
 
-	// 3. [Binding Layer] Sniff from explicitly bound business configuration objects.
-	// This has the highest priority and overrides all previous values.
-	biz := res.Config()
-	if biz != nil {
+	// 3. Sniff from business configuration object.
+	if biz := res.Config(); biz != nil {
 		if p, ok := biz.(AppConfig); ok && p.GetApp() != nil {
 			UpdateAppInfo(r.appInfo, p.GetApp())
 		}
-		if p, ok := biz.(MiddlewareConfig); ok && p.GetMiddlewares() != nil {
-			r.containerOpts = append(r.containerOpts, container.WithMiddlewareConfig(p.GetMiddlewares()))
-		}
-		if p, ok := biz.(LoggerConfig); ok && p.GetLogger() != nil {
-			r.containerOpts = append(r.containerOpts, container.WithLoggerConfig(p.GetLogger()))
-		}
 	}
 
-	// 4. Validate core application metadata.
 	if r.appInfo.GetName() == "" || r.appInfo.GetVersion() == "" {
 		return errors.New("runtime: application metadata missing after load")
 	}
 
-	// 5. Initialize the container.
-	ctnOpts := append(r.containerOpts, container.WithAppInfo(r.appInfo))
-	r.container = container.New(res.StructuredConfig(), ctnOpts...)
-	r.globalOpts = append(r.globalOpts, container.WithContainer(r.container), runtimelog.WithLogger(r.Logger()))
 	return nil
 }
 
-// WarmUp initializes all registered components in the container.
+// WarmUp initializes standard components.
 func (r *App) WarmUp() error {
-	var initErrors []error
-	if _, err := r.RegistryProvider(); err != nil {
-		initErrors = append(initErrors, err)
-	}
-	if _, err := r.DatabaseProvider(); err != nil {
-		initErrors = append(initErrors, err)
-	}
-	if _, err := r.CacheProvider(); err != nil {
-		initErrors = append(initErrors, err)
-	}
-	if _, err := r.ObjectStoreProvider(); err != nil {
-		initErrors = append(initErrors, err)
-	}
-	if _, err := r.MiddlewareProvider(); err != nil {
-		initErrors = append(initErrors, err)
-	}
-	r.mu.RLock()
-	for name := range r.componentOpts {
-		if name == string(constant.ComponentRegistries) || name == string(constant.ComponentDatabases) || name == string(constant.ComponentCaches) || name == string(constant.ComponentObjectStores) || name == string(constant.ComponentMiddlewares) {
-			continue
-		}
-		if _, err := r.Component(name); err != nil {
-			initErrors = append(initErrors, err)
-		}
-	}
-	r.mu.RUnlock()
-	if len(initErrors) > 0 {
-		return fmt.Errorf("warm-up failed: %v", initErrors)
-	}
-	return nil
+	return r.engine.Init(r.ctx)
 }
 
-// AddGlobalOptions adds functional options to all components.
-func (r *App) AddGlobalOptions(opts ...options.Option) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.globalOpts = append(r.globalOpts, opts...)
+// Getters
+func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
+func (r *App) BusinessConfig() any           { return r.result.Config() }
+func (r *App) Logger() log.Logger {
+	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(engine.CategoryInfrastructure), "logger")
+	if err != nil {
+		return runtimelog.DefaultLogger
+	}
+	return l
 }
-
-// AddComponentOptions adds functional options to a specific component.
-func (r *App) AddComponentOptions(name string, opts ...options.Option) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.componentOpts[name] = append(r.componentOpts[name], opts...)
-}
-
-// Convenience methods for component configuration.
-func (r *App) ConfigureRegistry(opts ...options.Option) {
-	r.AddComponentOptions(string(constant.ComponentRegistries), opts...)
-}
-func (r *App) ConfigureDatabase(opts ...options.Option) {
-	r.AddComponentOptions(string(constant.ComponentDatabases), opts...)
-}
-func (r *App) ConfigureCache(opts ...options.Option) {
-	r.AddComponentOptions(string(constant.ComponentCaches), opts...)
-}
-func (r *App) ConfigureObjectStore(opts ...options.Option) {
-	r.AddComponentOptions(string(constant.ComponentObjectStores), opts...)
-}
-func (r *App) ConfigureMiddleware(opts ...options.Option) {
-	r.AddComponentOptions(string(constant.ComponentMiddlewares), opts...)
-}
-
-func (r *App) getMergedOptions(name string) []options.Option {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return append(append([]options.Option{}, r.globalOpts...), r.componentOpts[name]...)
-}
-
-// Getters for internal state.
-func (r *App) Config() runtimeconfig.KConfig                { return r.result.Loader() }
-func (r *App) StructuredConfig() contracts.StructuredConfig { return r.result.StructuredConfig() }
-func (r *App) Logger() log.Logger                           { return r.container.Logger() }
-func (r *App) Container() container.Container               { return r.container }
-func (r *App) Result() bootstrap.Result                     { return r.result }
-func (r *App) Context() context.Context                     { return r.ctx }
+func (r *App) Result() bootstrap.Result { return r.result }
+func (r *App) Context() context.Context { return r.ctx }
 
 // Stop cancels the root context to shut down the application.
 func (r *App) Stop() {
@@ -234,33 +211,14 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 	return kratos.New(opts...)
 }
 
-// Component retrieval methods.
-func (r *App) Component(name string) (interface{}, error) {
-	return r.container.Component(name, r.getMergedOptions(name)...)
-}
-func (r *App) DefaultRegistrar() (registry.Registrar, error) { return r.container.DefaultRegistrar() }
-func (r *App) RegistryProvider() (container.RegistryProvider, error) {
-	return r.container.Registry(r.getMergedOptions(string(constant.ComponentRegistries))...)
-}
-func (r *App) DatabaseProvider() (container.DatabaseProvider, error) {
-	return r.container.Database(r.getMergedOptions(string(constant.ComponentDatabases))...)
-}
-func (r *App) CacheProvider() (container.CacheProvider, error) {
-	return r.container.Cache(r.getMergedOptions(string(constant.ComponentCaches))...)
-}
-func (r *App) ObjectStoreProvider() (container.ObjectStoreProvider, error) {
-	return r.container.ObjectStore(r.getMergedOptions(string(constant.ComponentObjectStores))...)
-}
-func (r *App) MiddlewareProvider() (container.MiddlewareProvider, error) {
-	return r.container.Middleware(r.getMergedOptions(string(constant.ComponentMiddlewares))...)
+func (r *App) DefaultRegistrar() (registry.Registrar, error) {
+	return engine.Cast[registry.Registrar](r.ctx, r.engine.In(engine.CategoryRegistry), "")
 }
 
-// AppInfo returns the current application metadata.
 func (r *App) AppInfo() *appv1.App { return r.appInfo }
 
-// ShowAppInfo prints application metadata to stdout.
 func (r *App) ShowAppInfo() {
-	ai := r.AppInfo()
+	ai := r.appInfo
 	if ai == nil {
 		return
 	}
