@@ -17,12 +17,12 @@ import (
 	databasev1 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
 	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/helpers/configutil"
-	storageiface "github.com/origadmin/runtime/contracts/storage"
 )
 
 const (

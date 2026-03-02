@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("Failed to scan app config: %v", err)
 	}
 
-	fmt.Printf("✅ Successfully loaded config via runtime App.\n")
+	fmt.Printf("�?Successfully loaded config via runtime App.\n")
 	fmt.Printf("   App Name: %s\n", appCfg.Name)
 	fmt.Printf("   App Version: %s\n", appCfg.Version)
 }

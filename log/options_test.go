@@ -6,8 +6,8 @@ import (
 	kratoslog "github.com/go-kratos/kratos/v2/log"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/origadmin/runtime/helpers/optionutil"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
 // MockLogger implements the Logger interface for testing purposes.

@@ -13,7 +13,7 @@ import (
 type BaseSQLRepository[T any, K comparable] struct {
 	DB        *sql.DB
 	TableName string
-	// 可以添加其他通用字段，如 logger, metrics 等
+	// 可以添加其他通用字段，如 logger, metrics
 }
 
 // NewBaseSQLRepository creates a new BaseSQLRepository.

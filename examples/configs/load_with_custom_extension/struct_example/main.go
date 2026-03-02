@@ -24,7 +24,7 @@ func main() {
 		log.Fatalf("Failed to scan config: %v", err)
 	}
 
-	fmt.Println("✅ Successfully loaded config into MiddlewareStruct.")
+	fmt.Println("�?Successfully loaded config into MiddlewareStruct.")
 	fmt.Printf("   Name: %s\n   Type: %s\n", mw.Name, mw.Type)
 
 	if mw.Customize != nil {

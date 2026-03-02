@@ -4,8 +4,8 @@ import (
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
 
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
-	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/contracts/options"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
 // Module is the name of the module

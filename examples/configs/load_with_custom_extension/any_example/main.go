@@ -25,7 +25,6 @@ func main() {
 	appInfo := rt.NewAppInfo(
 		"custom-extension-example",
 		"1.0.0",
-
 	)
 	appInfo.Env = "development"
 
@@ -48,7 +47,7 @@ func main() {
 		log.Fatalf("Failed to scan config into temporary struct: %v", err)
 	}
 
-	fmt.Println("✅ Successfully loaded config into a temporary Go struct.")
+	fmt.Println("�?Successfully loaded config into a temporary Go struct.")
 	fmt.Printf("   Middleware Name: %s\n", tempMw.Name)
 	fmt.Printf("   Raw Customize Map: %v\n", tempMw.Customize)
 
@@ -71,7 +70,7 @@ func main() {
 		log.Fatalf("Failed to unmarshal JSON to CustomAuthConfig: %v", err)
 	}
 
-	fmt.Println("\n✅ Manually converted map to strongly-typed CustomAuthConfig.")
+	fmt.Println("\n�?Manually converted map to strongly-typed CustomAuthConfig.")
 	fmt.Printf("   Policy: %s\n", authCfg.Policy)
 
 	anyValue, err := anypb.New(&authCfg)
@@ -79,7 +78,7 @@ func main() {
 		log.Fatalf("Failed to pack CustomAuthConfig into Any: %v", err)
 	}
 
-	fmt.Println("\n✅ Packed the strongly-typed config into a google.protobuf.Any.")
+	fmt.Println("\n�?Packed the strongly-typed config into a google.protobuf.Any.")
 
 	finalMw := &conf.MiddlewareAny{
 		Name:      tempMw.Name,

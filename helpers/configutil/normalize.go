@@ -21,18 +21,18 @@ type Identifiable interface {
 // default item and a new list of configuration items.
 //
 // Normalization Logic:
-// 1. Builds a map of all provided configurations for efficient lookup.
-// 2. If a `defaultItem` is provided but is not present in the `configs` slice (by name), it is added.
-// 3. If the `configs` slice is empty after the above step, an error is returned.
-// 4. Determines the definitive default item based on the following priority:
-//    a. The item specified by `activeName`, if provided and exists. (Highest Priority)
-//    b. The initially provided `defaultItem`, if provided.
-//    c. The first item in the `configs` slice. (Fallback)
-// 5. Ensures that the returned default item is always the instance from the `configs` slice (object identity consistency).
+//  1. Builds a map of all provided configurations for efficient lookup.
+//  2. If a `defaultItem` is provided but is not present in the `configs` slice (by name), it is added.
+//  3. If the `configs` slice is empty after the above step, an error is returned.
+//  4. Determines the definitive default item based on the following priority:
+//     a. The item specified by `activeName`, if provided and exists. (Highest Priority)
+//     b. The initially provided `defaultItem`, if provided.
+//     c. The first item in the `configs` slice. (Fallback)
+//  5. Ensures that the returned default item is always the instance from the `configs` slice (object identity consistency).
 //
 // Type Parameters:
 //   - T: The type of the configuration item, which must implement the Identifiable interface.
-//        T must be comparable (pointers satisfy this).
+//     T must be comparable (pointers satisfy this).
 //
 // Parameters:
 //   - activeName: The name of the configuration item that should be active. Can be an empty string.

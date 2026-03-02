@@ -19,7 +19,7 @@ type ModuleConfig struct {
 	Active  string
 }
 
-// Extractor is a pure data retrieval function. 
+// Extractor is a pure data retrieval function.
 // It does NOT need to perceive Scope.
 type Extractor func(root any) (*ModuleConfig, error)
 

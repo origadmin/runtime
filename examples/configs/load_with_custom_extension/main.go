@@ -35,7 +35,7 @@ func main() {
 		log.Fatalf("Failed to scan config into CustomAuthConfig struct: %v", err)
 	}
 
-	fmt.Println("✅ Successfully loaded config into CustomAuthConfig.")
+	fmt.Println("�?Successfully loaded config into CustomAuthConfig.")
 	fmt.Printf("   Policy: %s\n", authCfg.Policy)
 	fmt.Printf("   Required Scope: %s\n", authCfg.RequiredScope)
 }

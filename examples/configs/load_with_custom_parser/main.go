@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 
-	"github.com/origadmin/runtime/bootstrap"
 	"github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/engine/bootstrap"
 )
 
 type CustomConfig struct {

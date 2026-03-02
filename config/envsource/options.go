@@ -6,8 +6,8 @@
 package envsource
 
 import (
-	"github.com/origadmin/runtime/helpers/optionutil"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
 // Option defines a function type that is used to configure the source

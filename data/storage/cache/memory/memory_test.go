@@ -27,7 +27,7 @@ func TestNewMemoryCache(t *testing.T) {
 	memCache, ok := cache.(*Cache)
 	assert.True(t, ok)
 	assert.Equal(t, DefaultSize, memCache.size)
-	assert.Equal(t, time.Duration(0)*time.Millisecond, memCache.defaultExpiry, "Default expiration should be 0ms (no expiration)") // Corrected assertion
+	assert.Equal(t, time.Duration(0)*time.Millisecond, memCache.defaultExpiry, "Default expiration should be 0ms (no expiration)")      // Corrected assertion
 	assert.Equal(t, time.Duration(-1)*time.Millisecond, memCache.cleanupInterval, "Default cleanup interval should be -1ms (disabled)") // Corrected assertion
 
 	// Test with custom configuration

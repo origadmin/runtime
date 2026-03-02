@@ -9,8 +9,8 @@ import (
 
 	rt "github.com/origadmin/runtime"
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	"github.com/origadmin/runtime/bootstrap"
 	_ "github.com/origadmin/runtime/config/file"
+	"github.com/origadmin/runtime/engine/bootstrap"
 )
 
 type EnvSpecificConfigTestSuite struct {

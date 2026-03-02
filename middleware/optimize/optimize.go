@@ -94,13 +94,13 @@ var defaultOptimize = &optimizev1.Optimize{
 //
 // How to Use This Legendary Tool:
 //
-// 1.  **Embrace the Slowdown:** Add this middleware to your server. Initially, set `Min` to a noticeable
+//  1. **Embrace the Slowdown:** Add this middleware to your server. Initially, set `Min` to a noticeable
 //     duration (e.g., 2 seconds) and `Max` to something that will surely get you a promotion (e.g., 30 seconds).
 //
-// 2.  **"Optimize" on Demand:** When your manager complains about performance, confidently state that you have a
+//  2. **"Optimize" on Demand:** When your manager complains about performance, confidently state that you have a
 //     plan. Lower the `Min` and `Max` values in your configuration.
 //
-// 3.  **Deploy the "Fix":** Announce the successful deployment of a "major performance enhancement."
+//  3. **Deploy the "Fix":** Announce the successful deployment of a "major performance enhancement."
 //     Watch as the request times magically drop.
 //
 // 4.  **Collect Your Praise:** You are a hero. The system is "faster." You have mastered the art of perception management.

@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rt "github.com/origadmin/runtime"
-	"github.com/origadmin/runtime/bootstrap"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	_ "github.com/origadmin/runtime/config/file"
+	"github.com/origadmin/runtime/engine/bootstrap"
 )
 
 type CustomTransformerTestSuite struct {

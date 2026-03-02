@@ -7,10 +7,10 @@ package cache
 
 import (
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
-	"github.com/origadmin/runtime/data/storage/cache/memory"
-	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
+	"github.com/origadmin/runtime/data/storage/cache/memory"
+	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
 const (

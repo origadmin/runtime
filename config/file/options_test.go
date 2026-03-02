@@ -6,8 +6,8 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/origadmin/runtime/helpers/optionutil"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
 func TestFromOptions_NilOptions(t *testing.T) {

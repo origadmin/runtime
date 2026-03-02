@@ -155,11 +155,12 @@ func CloneProtoMessage(t *testing.T, src proto.Message) proto.Message {
 }
 
 // expandFlatKeys expands dot-delimited keys with numeric indices into nested maps and slices.
-// Example: {
-//   "a.b.0.c": 1,
-//   "a.b.1.c": 2,
-//   "x.y": "z"
-// } => {"a":{"b":[{"c":1},{"c":2}]}, "x":{"y":"z"}}
+//
+//	Example: {
+//	  "a.b.0.c": 1,
+//	  "a.b.1.c": 2,
+//	  "x.y": "z"
+//	} => {"a":{"b":[{"c":1},{"c":2}]}, "x":{"y":"z"}}
 func expandFlatKeys(flat map[string]any) map[string]any {
 	root := map[string]any{}
 	for key, val := range flat {

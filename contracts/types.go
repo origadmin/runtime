@@ -20,7 +20,6 @@ type Server interface {
 	transport.Server
 }
 
-// Client is a tagged interface that represents an instance of a client connection, such as *grpc. ClientConn。
-// Since clients with different protocols (e.g. gRPC, HTTP) do not have a unified interface,
+// Client is a tagged interface that represents an instance of a client connection, such as *grpc. ClientConn�?// Since clients with different protocols (e.g. gRPC, HTTP) do not have a unified interface,
 // We use an empty interface to provide flexibility, and the caller needs to make type assertions.
 type Client interface{}

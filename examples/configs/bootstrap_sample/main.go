@@ -8,13 +8,10 @@ import (
 
 	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/log"
-
 	// Import all contrib packages that need self-registration
 	//_ "github.com/origadmin/contrib/config/env"   // Register env config source
 	//_ "github.com/origadmin/contrib/config/file"  // Register file config source
 	//_ "github.com/origadmin/contrib/registry/consul" // Register consul registry (if used in config)
-
-	// 导入生成的配置
 	conf "github.com/origadmin/runtime/examples/protos/bootstrap_sample"
 )
 

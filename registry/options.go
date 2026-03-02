@@ -1,8 +1,8 @@
 package registry
 
 import (
-	"github.com/origadmin/runtime/helpers/optionutil"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
 // options is a container for registry-related options.

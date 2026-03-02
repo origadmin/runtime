@@ -16,8 +16,8 @@ import (
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	filesource "github.com/origadmin/runtime/config/file"
-	"github.com/origadmin/runtime/helpers/optionutil"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
 // LoadYAMLConfig loads a YAML configuration file and converts it to a JSON format byte array.

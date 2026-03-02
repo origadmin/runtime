@@ -2,8 +2,8 @@
 package log
 
 import (
-	"github.com/origadmin/runtime/helpers/optionutil"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
 type loggerContext struct {

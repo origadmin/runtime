@@ -12,9 +12,9 @@ import (
 
 	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
 	"github.com/origadmin/runtime/context"
+	storageiface "github.com/origadmin/runtime/contracts/storage"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	storageiface "github.com/origadmin/runtime/contracts/storage"
 )
 
 const (

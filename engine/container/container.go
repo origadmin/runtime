@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/origadmin/runtime/contracts/options"
-	enginecontext "github.com/origadmin/runtime/engine/context"
+	"github.com/origadmin/runtime/engine/metadata"
 	"github.com/origadmin/runtime/engine/protocol"
 )
 
@@ -22,18 +22,18 @@ const (
 
 type Handle interface {
 	Get(ctx context.Context, name string) (any, error)
-	In(category enginecontext.Category, opts ...RegisterOption) Handle
+	In(category metadata.Category, opts ...RegisterOption) Handle
 	BindConfig(target any) error
 	Config() any
-	Scope() enginecontext.Scope
-	Category() enginecontext.Category
+	Scope() metadata.Scope
+	Category() metadata.Category
 }
 
 type Provider func(ctx context.Context, h Handle, opts ...options.Option) (any, error)
 
 type Registry interface {
 	Handle
-	Register(c enginecontext.Category, e protocol.Extractor, p Provider, opts ...RegisterOption)
+	Register(c metadata.Category, e protocol.Extractor, p Provider, opts ...RegisterOption)
 	BindRoot(root any)
 	Init(ctx context.Context) error
 }
@@ -41,11 +41,11 @@ type Registry interface {
 type RegisterOption func(*regOpts)
 
 type regOpts struct {
-	scope    enginecontext.Scope
+	scope    metadata.Scope
 	priority int
 }
 
-func WithScope(s enginecontext.Scope) RegisterOption {
+func WithScope(s metadata.Scope) RegisterOption {
 	return func(o *regOpts) {
 		o.scope = s
 	}
@@ -58,14 +58,14 @@ func WithPriority(p int) RegisterOption {
 }
 
 type instanceKey struct {
-	category enginecontext.Category
-	scope    enginecontext.Scope
+	category metadata.Category
+	scope    metadata.Scope
 	name     string
 }
 
 type moduleKey struct {
-	category enginecontext.Category
-	scope    enginecontext.Scope
+	category metadata.Category
+	scope    metadata.Scope
 }
 
 type componentMeta struct {
@@ -110,11 +110,11 @@ func (c *containerImpl) Config() any {
 	return c.rootConfig
 }
 
-func (c *containerImpl) Scope() enginecontext.Scope       { return enginecontext.GlobalScope }
-func (c *containerImpl) Category() enginecontext.Category { return "" }
+func (c *containerImpl) Scope() metadata.Scope       { return metadata.GlobalScope }
+func (c *containerImpl) Category() metadata.Category { return "" }
 
-func (c *containerImpl) In(cat enginecontext.Category, opts ...RegisterOption) Handle {
-	o := &regOpts{scope: enginecontext.GlobalScope}
+func (c *containerImpl) In(cat metadata.Category, opts ...RegisterOption) Handle {
+	o := &regOpts{scope: metadata.GlobalScope}
 	for _, opt := range opts {
 		opt(o)
 	}
@@ -126,17 +126,17 @@ func (c *containerImpl) In(cat enginecontext.Category, opts ...RegisterOption) H
 }
 
 func (c *containerImpl) Get(ctx context.Context, name string) (any, error) {
-	return nil, fmt.Errorf("engine: must use In(category) before Get()")
+	return nil, fmt.Errorf("engine: must use In(category) before Get() at registry level")
 }
 
 func (c *containerImpl) BindConfig(target any) error {
 	return fmt.Errorf("engine: BindConfig must be called from Provider handle")
 }
 
-func (c *containerImpl) Register(cat enginecontext.Category, e protocol.Extractor, p Provider, opts ...RegisterOption) {
+func (c *containerImpl) Register(cat metadata.Category, e protocol.Extractor, p Provider, opts ...RegisterOption) {
 	o := &regOpts{
-		scope:    enginecontext.GlobalScope,
-		priority: enginecontext.PriorityInfrastructure,
+		scope:    metadata.GlobalScope,
+		priority: metadata.PriorityInfrastructure,
 	}
 	for _, opt := range opts {
 		opt(o)
@@ -176,9 +176,7 @@ func (c *containerImpl) Init(ctx context.Context) error {
 	return nil
 }
 
-// Internal Logic
-
-func (c *containerImpl) getInternal(ctx context.Context, cat enginecontext.Category, scope enginecontext.Scope, name string) (any, error) {
+func (c *containerImpl) getInternal(ctx context.Context, cat metadata.Category, scope metadata.Scope, name string) (any, error) {
 	c.mu.RLock()
 	mKey := moduleKey{category: cat, scope: scope}
 	actualName := name
@@ -191,8 +189,8 @@ func (c *containerImpl) getInternal(ctx context.Context, cat enginecontext.Categ
 
 	if !exists || (actualName == "" && name == "") {
 		if err := c.bindCategory(cat, scope, mKey); err != nil {
-			if scope != enginecontext.GlobalScope {
-				return c.getInternal(ctx, cat, enginecontext.GlobalScope, name)
+			if scope != metadata.GlobalScope {
+				return c.getInternal(ctx, cat, metadata.GlobalScope, name)
 			}
 			return nil, err
 		}
@@ -204,8 +202,8 @@ func (c *containerImpl) getInternal(ctx context.Context, cat enginecontext.Categ
 		meta, exists = c.pool[key]
 		c.mu.RUnlock()
 		if !exists {
-			if scope != enginecontext.GlobalScope {
-				return c.getInternal(ctx, cat, enginecontext.GlobalScope, name)
+			if scope != metadata.GlobalScope {
+				return c.getInternal(ctx, cat, metadata.GlobalScope, name)
 			}
 			return nil, fmt.Errorf("engine: component %s/%s not found", cat, name)
 		}
@@ -229,7 +227,7 @@ func (c *containerImpl) getInternal(ctx context.Context, cat enginecontext.Categ
 	c.mu.RLock()
 	provider, ok := c.providers[mKey]
 	if !ok {
-		provider, ok = c.providers[moduleKey{category: cat, scope: enginecontext.GlobalScope}]
+		provider, ok = c.providers[moduleKey{category: cat, scope: metadata.GlobalScope}]
 	}
 	c.mu.RUnlock()
 
@@ -259,15 +257,15 @@ func (c *containerImpl) getInternal(ctx context.Context, cat enginecontext.Categ
 	return inst, nil
 }
 
-func (c *containerImpl) bindCategory(cat enginecontext.Category, targetScope enginecontext.Scope, regKey moduleKey) error {
+func (c *containerImpl) bindCategory(cat metadata.Category, targetScope metadata.Scope, regKey moduleKey) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	mKey := moduleKey{category: cat, scope: targetScope}
 	extractor, ok := c.extractors[regKey]
 	if !ok {
-		if regKey.scope != enginecontext.GlobalScope {
-			extractor, ok = c.extractors[moduleKey{category: cat, scope: enginecontext.GlobalScope}]
+		if regKey.scope != metadata.GlobalScope {
+			extractor, ok = c.extractors[moduleKey{category: cat, scope: metadata.GlobalScope}]
 		}
 	}
 	if !ok {
@@ -304,17 +302,17 @@ func (c *containerImpl) bindCategory(cat enginecontext.Category, targetScope eng
 
 type scopedHandle struct {
 	container *containerImpl
-	scope     enginecontext.Scope
-	category  enginecontext.Category
+	scope     metadata.Scope
+	category  metadata.Category
 	name      string
 	config    any
 }
 
-func (h *scopedHandle) Scope() enginecontext.Scope       { return h.scope }
-func (h *scopedHandle) Category() enginecontext.Category { return h.category }
-func (h *scopedHandle) Config() any                      { return h.config }
+func (h *scopedHandle) Scope() metadata.Scope       { return h.scope }
+func (h *scopedHandle) Category() metadata.Category { return h.category }
+func (h *scopedHandle) Config() any                 { return h.config }
 
-func (h *scopedHandle) In(cat enginecontext.Category, opts ...RegisterOption) Handle {
+func (h *scopedHandle) In(cat metadata.Category, opts ...RegisterOption) Handle {
 	o := &regOpts{scope: h.scope}
 	for _, opt := range opts {
 		opt(o)

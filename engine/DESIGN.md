@@ -1,75 +1,43 @@
-# Runtime Engine Design (v30 - 2026-03-02)
+# Runtime Engine Design (v31 - 2026-03-02)
 
-## 1. Core Philosophy: Interface-Driven Chained Container
-The Runtime Engine serves as the core component manager for `runtime.App`. It bridges the gap between global business configurations and functional module factories (Registry, Middleware, Database, etc.) using a zero-reflection, order-sensitive, and scope-aware architecture.
+## 1. Core Philosophy: The Unified Starter and Bridge
+The Runtime Engine is the unified entry point for both **Bootstrapping** (configuration loading) and **Bridging** (component instantiation). It manages the entire lifecycle from the first byte of config to the last initialized service.
 
-## 2. Key Principles
+## 2. Updated Project Structure
 
-### 2.1 Interface-Based Config Sniffing
-To remain decoupled from specific business configuration structures (e.g., `*conf.Config`), the engine relies on **interface assertions** during the extraction phase. 
-- **Extractor Logic**: Instead of casting to a concrete struct, the `Extractor` asserts the root configuration against standard interfaces like `RegistryConfigGetter` or `MiddlewareConfigGetter`.
-- **Decoupling**: This allows the business layer to define its own configuration layout while the engine remains generic.
+To avoid naming conflicts and improve logical grouping:
+- `runtime/engine/metadata`: (Formerly `context`) Defines `Category`, `Scope`, and `Priority` constants.
+- `runtime/engine/bootstrap`: (Migrated) Handles configuration loading and result encapsulation.
+- `runtime/engine/container`: The IoC engine that performs dependency resolution.
+- `runtime/engine/protocol`: Interfaces for config blocks and extractors.
 
-### 2.2 Navigation-Based Handle
-The `Handle` interface uses a "filesystem-like" navigation pattern:
-- **Category-First**: Users navigate into a category context using `h.In(Category)`.
-- **Scope-Optional**: Environment isolation (Server/Client) is an optional modifier via `WithScope`.
-- **Chained Retrieval**: `h.In(Category).Get(ctx, name)` provides a clean, semantic way to access dependencies.
+## 3. The Bootstrap Integration
 
-### 2.3 Ordered Block Protocol
-Engine strictly follows the ordering defined in the configuration (especially critical for Middleware chains):
-- **Normalization**: Handled by `configutil` logic (`Active -> Default -> Ordered Configs`).
-- **Sequential Init**: The `Init` phase iterates through categories by **Priority** and through instances by their original sequence.
+The Bootstrapping phase is now an integral part of the Engine's lifecycle:
+1. **Load**: `engine/bootstrap` reads YAML/Env and parses the global business object.
+2. **Bind**: The loaded object is automatically bound to the `engine/container`.
+3. **Dispatch**: Categories are initialized based on their `Priority`.
 
-## 3. Architecture Layers
+## 4. Meta-Definitions (metadata package)
 
-### 3.1 Registry Interface (Behavior Definition)
-```go
-type Registry interface {
-    Handle
-    // Register defines the factory behavior and extraction logic for a category.
-    Register(c Category, e Extractor, p Provider, opts ...RegisterOption)
-    // BindRoot injects the global business configuration object.
-    BindRoot(root any)
-    // Init performs sorted, sequential initialization of all registered components.
-    Init(ctx context.Context) error
-}
-```
+### 4.1 Scope & Category
+- **Scope**: `Global`, `Server`, `Client`.
+- **Category**: `Registry`, `Middleware`, `Database`, etc.
 
-### 3.2 Handle Interface (Context Provider)
-```go
-type Handle interface {
-    // Get retrieves a component in the current Category context. "" means Default.
-    Get(ctx context.Context, name string) (any, error)
-    // In switches navigation to a different category/scope.
-    In(category Category, opts ...RegisterOption) Handle
-    // BindConfig performs high-performance type-safe assignment of current config.
-    BindConfig(target any) error
-}
-```
+### 4.2 Priority
+Standardized execution order (100 - 500+).
 
-### 3.3 Protocol Definitions
-- **Extractor**: `func(root any) (*ModuleConfig, error)` - Extracts structured data using interface sniffing.
-- **ModuleConfig**: Standardized container for `[]ConfigEntry` and an `Active` winner.
+## 5. Interface Protocol (No Changes to Logic)
+Registry and Handle remain the primary interfaces, utilizing `metadata` types.
 
-## 4. Execution Flow: The Lifecycle
-
-1.  **Creation**: `App` initializes `NewContainer(nil)`.
-2.  **Registration**: Core factories are registered with **Standard Priorities** (100-500).
-3.  **Loading**: Configuration is loaded; `BindRoot(bizConfig)` is called.
-4.  **Warm-Up**: `Init(ctx)` triggers:
-    -   Sort categories by Priority.
-    -   Call `Extractor` for each category (Interface Sniffing).
-    -   Sequentially instantiate each `ConfigEntry` using `Provider`.
-5.  **Runtime**: Components are retrieved via `Cast[T](ctx, h.In(Category), name)`.
-
-## 5. Directory Structure
+## 6. Directory Layout
 
 ```
 runtime/engine/
-├── context/      # Static Category, Scope, and Priority constants.
-├── container/    # Core IoC, state machine, and navigation implementation.
-├── protocol/     # Interface-based configuration block protocols.
-├── helpers.go    # Type-safe generic helpers (Cast, GetDefault, BindConfig).
-└── DESIGN.md     # This authoritative design document.
+├── metadata/     # Category, Scope, Priority constants (No naming conflict with Go context)
+├── bootstrap/    # Config loading and result implementation
+├── container/    # IoC, State Machine, Navigation
+├── protocol/     # ConfigBlock and Extractor interfaces
+├── helpers.go    # Casting and retrieval helpers
+└── engine.go     # Unified public API
 ```

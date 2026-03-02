@@ -10,8 +10,8 @@ import (
 	// Import the transportv1 package which contains the Server message definition.
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
 	// Import the generated Go code from the api_gateway proto for the ClientConfig message.
-	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 	"github.com/origadmin/runtime/contracts"
+	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 )
 
 // ProtoDecoder remains the same as it's a generic wrapper.

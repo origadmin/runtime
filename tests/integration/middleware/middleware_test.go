@@ -8,8 +8,8 @@ import (
 
 	rt "github.com/origadmin/runtime"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/bootstrap"
 	_ "github.com/origadmin/runtime/config/file"
+	"github.com/origadmin/runtime/engine/bootstrap"
 )
 
 type MiddlewareTestSuite struct {
