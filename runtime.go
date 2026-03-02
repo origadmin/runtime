@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -14,36 +15,21 @@ import (
 	"github.com/goexts/generic/configure"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	"github.com/origadmin/runtime/engine/bootstrap"
 	runtimeconfig "github.com/origadmin/runtime/config"
-	"github.com/origadmin/runtime/context"
+	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
-	"github.com/origadmin/runtime/engine/bootstrap"
+	"github.com/origadmin/runtime/engine/metadata"
 	runtimelog "github.com/origadmin/runtime/log"
-)
-
-// Standard configuration interfaces
-type (
-	AppConfig        interface{ GetApp() *appv1.App }
-	LoggerConfig     interface{ GetLogger() *loggerv1.Logger }
-	MiddlewareConfig interface {
-		GetMiddlewares() *middlewarev1.Middlewares
-	}
-	DataConfig     interface{ GetData() *datav1.Data }
-	RegistryConfig interface {
-		GetDiscoveries() *discoveryv1.Discoveries
-	}
 )
 
 // App defines the application's runtime environment powered by engine.
 type App struct {
 	appInfo    *appv1.App
 	result     bootstrap.Result
-	engine     engine.Registry
+	engine     component.Registry
 	mu         sync.RWMutex
 	globalOpts []options.Option
 	ctx        context.Context
@@ -61,62 +47,66 @@ func NewWithAppInfo(info *appv1.App, opts ...Option) *App {
 	if info == nil {
 		info = NewAppInfoBuilder()
 	}
+
+	// Create engine registry at startup
 	reg := engine.NewContainer(nil)
+
 	app := &App{
 		appInfo: info,
 		engine:  reg,
 		ctx:     ctx,
 		cancel:  cancel,
 	}
-	app.registerCoreFactories()
-	return configure.Apply(app, opts)
+
+	// Apply user options FIRST (allows user to register their own factories)
+	app = configure.Apply(app, opts)
+
+	// Apply framework DEFAULTS last (will not overwrite user registrations)
+	app.registerDefaultFactories()
+
+	return app
 }
 
-func (r *App) registerCoreFactories() {
+// WithRegistry sets a callback to configure the internal engine registry.
+func WithRegistry(fn func(component.Registry)) Option {
+	return func(a *App) {
+		fn(a.engine)
+	}
+}
+
+func (r *App) registerDefaultFactories() {
 	// Logger (Infrastructure)
-	r.engine.Register(engine.CategoryInfrastructure, func(root any) (*engine.ModuleConfig, error) {
-		if p, ok := root.(LoggerConfig); ok && p.GetLogger() != nil {
+	r.engine.DefaultRegister(metadata.CategoryInfrastructure, func(root any) (*component.ModuleConfig, error) {
+		if p, ok := root.(component.LoggerConfigGetter); ok && p.GetLogger() != nil {
 			l := p.GetLogger()
-			return &engine.ModuleConfig{Entries: []engine.ConfigEntry{{Name: "logger", Value: l}}, Active: "logger"}, nil
+			return &component.ModuleConfig{
+				Entries: []component.ConfigEntry{{Name: "logger", Value: l}},
+				Active:  "logger",
+			}, nil
 		}
 		return nil, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
+	}, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		var cfg loggerv1.Logger
 		if err := engine.BindConfig(h, &cfg); err != nil {
 			return runtimelog.DefaultLogger, nil
 		}
 		return runtimelog.NewLogger(&cfg), nil
-	}, engine.WithPriority(engine.PriorityInfrastructure))
+	}, engine.WithPriority(metadata.PriorityInfrastructure))
 
 	// Registry (Registry)
-	r.engine.Register(engine.CategoryRegistry, func(root any) (*engine.ModuleConfig, error) {
-		if p, ok := root.(RegistryConfig); ok && p.GetDiscoveries() != nil {
+	r.engine.DefaultRegister(metadata.CategoryRegistry, func(root any) (*component.ModuleConfig, error) {
+		if p, ok := root.(component.RegistryConfigGetter); ok && p.GetDiscoveries() != nil {
 			raw := p.GetDiscoveries()
-			var entries []engine.ConfigEntry
+			var entries []component.ConfigEntry
 			for _, c := range raw.Configs {
-				entries = append(entries, engine.ConfigEntry{Name: c.Name, Value: c})
+				entries = append(entries, component.ConfigEntry{Name: c.Name, Value: c})
 			}
-			return &engine.ModuleConfig{Entries: entries, Active: raw.GetActive()}, nil
+			return &component.ModuleConfig{Entries: entries, Active: raw.GetActive()}, nil
 		}
 		return nil, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
-		return nil, errors.New("registry provider not implemented")
-	}, engine.WithPriority(engine.PriorityRegistry))
-
-	// Middleware (Stack)
-	r.engine.Register(engine.CategoryMiddleware, func(root any) (*engine.ModuleConfig, error) {
-		if p, ok := root.(MiddlewareConfig); ok && p.GetMiddlewares() != nil {
-			raw := p.GetMiddlewares()
-			var entries []engine.ConfigEntry
-			for _, c := range raw.Configs {
-				entries = append(entries, engine.ConfigEntry{Name: c.Name, Value: c})
-			}
-			return &engine.ModuleConfig{Entries: entries}, nil
-		}
-		return nil, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
-		return nil, errors.New("middleware provider not implemented")
-	}, engine.WithPriority(engine.PriorityServerStack), engine.WithScope(engine.ServerScope))
+	}, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		return nil, errors.New("registry provider not fully implemented")
+	}, engine.WithPriority(metadata.PriorityRegistry))
 }
 
 // Load loads and merges configuration metadata.
@@ -128,15 +118,10 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	r.result = res
 	r.engine.BindRoot(res.Config())
 
-	// --- Metadata Refresh Flow ---
-
-	// 1. Initial metadata from framework bootstrap source.
+	// Refresh app info
 	if boot := res.Bootstrap(); boot != nil && boot.GetApp() != nil {
 		UpdateAppInfo(r.appInfo, boot.GetApp())
 	}
-
-	// 2. Refresh metadata from Loader (raw KConfig).
-	// This captures environment-specific overrides (e.g., config_dev.yaml).
 	if loader := res.Loader(); loader != nil {
 		var meta struct {
 			App *appv1.App `json:"app" yaml:"app"`
@@ -145,10 +130,8 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 			UpdateAppInfo(r.appInfo, meta.App)
 		}
 	}
-
-	// 3. Sniff from business configuration object.
 	if biz := res.Config(); biz != nil {
-		if p, ok := biz.(AppConfig); ok && p.GetApp() != nil {
+		if p, ok := biz.(component.AppConfigGetter); ok && p.GetApp() != nil {
 			UpdateAppInfo(r.appInfo, p.GetApp())
 		}
 	}
@@ -160,7 +143,6 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	return nil
 }
 
-// WarmUp initializes standard components.
 func (r *App) WarmUp() error {
 	return r.engine.Init(r.ctx)
 }
@@ -169,23 +151,22 @@ func (r *App) WarmUp() error {
 func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
 func (r *App) BusinessConfig() any           { return r.result.Config() }
 func (r *App) Logger() log.Logger {
-	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(engine.CategoryInfrastructure), "logger")
+	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(metadata.CategoryInfrastructure), "logger")
 	if err != nil {
 		return runtimelog.DefaultLogger
 	}
 	return l
 }
-func (r *App) Result() bootstrap.Result { return r.result }
-func (r *App) Context() context.Context { return r.ctx }
+func (r *App) Result() bootstrap.Result      { return r.result }
+func (r *App) Container() component.Registry { return r.engine }
+func (r *App) Context() context.Context      { return r.ctx }
 
-// Stop cancels the root context to shut down the application.
 func (r *App) Stop() {
 	if r.cancel != nil {
 		r.cancel()
 	}
 }
 
-// NewApp creates a native Kratos application instance.
 func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *kratos.App {
 	info := r.appInfo
 	md := info.GetMetadata()
@@ -212,7 +193,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 }
 
 func (r *App) DefaultRegistrar() (registry.Registrar, error) {
-	return engine.Cast[registry.Registrar](r.ctx, r.engine.In(engine.CategoryRegistry), "")
+	return engine.Cast[registry.Registrar](r.ctx, r.engine.In(metadata.CategoryRegistry), "")
 }
 
 func (r *App) AppInfo() *appv1.App { return r.appInfo }

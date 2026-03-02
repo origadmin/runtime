@@ -7,9 +7,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine/metadata"
-	"github.com/origadmin/runtime/engine/protocol"
 )
 
 type Status int
@@ -20,41 +19,23 @@ const (
 	StatusReady
 )
 
-type Handle interface {
-	Get(ctx context.Context, name string) (any, error)
-	In(category metadata.Category, opts ...RegisterOption) Handle
-	BindConfig(target any) error
-	Config() any
-	Scope() metadata.Scope
-	Category() metadata.Category
-}
-
-type Provider func(ctx context.Context, h Handle, opts ...options.Option) (any, error)
-
-type Registry interface {
-	Handle
-	Register(c metadata.Category, e protocol.Extractor, p Provider, opts ...RegisterOption)
-	BindRoot(root any)
-	Init(ctx context.Context) error
-}
-
-type RegisterOption func(*regOpts)
-
 type regOpts struct {
 	scope    metadata.Scope
 	priority int
 }
 
-func WithScope(s metadata.Scope) RegisterOption {
-	return func(o *regOpts) {
-		o.scope = s
-	}
-}
+func (o *regOpts) SetScope(s metadata.Scope) { o.scope = s }
+func (o *regOpts) SetPriority(p int)         { o.priority = p }
 
-func WithPriority(p int) RegisterOption {
-	return func(o *regOpts) {
-		o.priority = p
-	}
+type containerImpl struct {
+	mu         sync.RWMutex
+	rootConfig any
+	providers  map[moduleKey]component.Provider
+	extractors map[moduleKey]component.Extractor
+	priorities map[moduleKey]int
+	pool       map[instanceKey]*componentMeta
+	poolOrder  map[moduleKey][]string
+	defaults   map[moduleKey]string
 }
 
 type instanceKey struct {
@@ -75,22 +56,11 @@ type componentMeta struct {
 	instance any
 }
 
-type containerImpl struct {
-	mu         sync.RWMutex
-	rootConfig any
-	providers  map[moduleKey]Provider
-	extractors map[moduleKey]protocol.Extractor
-	priorities map[moduleKey]int
-	pool       map[instanceKey]*componentMeta
-	poolOrder  map[moduleKey][]string
-	defaults   map[moduleKey]string
-}
-
-func NewContainer(root any) Registry {
+func NewContainer(root any) component.Registry {
 	return &containerImpl{
 		rootConfig: root,
-		providers:  make(map[moduleKey]Provider),
-		extractors: make(map[moduleKey]protocol.Extractor),
+		providers:  make(map[moduleKey]component.Provider),
+		extractors: make(map[moduleKey]component.Extractor),
 		priorities: make(map[moduleKey]int),
 		pool:       make(map[instanceKey]*componentMeta),
 		poolOrder:  make(map[moduleKey][]string),
@@ -113,7 +83,7 @@ func (c *containerImpl) Config() any {
 func (c *containerImpl) Scope() metadata.Scope       { return metadata.GlobalScope }
 func (c *containerImpl) Category() metadata.Category { return "" }
 
-func (c *containerImpl) In(cat metadata.Category, opts ...RegisterOption) Handle {
+func (c *containerImpl) In(cat metadata.Category, opts ...component.RegisterOption) component.Handle {
 	o := &regOpts{scope: metadata.GlobalScope}
 	for _, opt := range opts {
 		opt(o)
@@ -126,14 +96,14 @@ func (c *containerImpl) In(cat metadata.Category, opts ...RegisterOption) Handle
 }
 
 func (c *containerImpl) Get(ctx context.Context, name string) (any, error) {
-	return nil, fmt.Errorf("engine: must use In(category) before Get() at registry level")
+	return nil, fmt.Errorf("engine: must use In(category) before Get()")
 }
 
 func (c *containerImpl) BindConfig(target any) error {
 	return fmt.Errorf("engine: BindConfig must be called from Provider handle")
 }
 
-func (c *containerImpl) Register(cat metadata.Category, e protocol.Extractor, p Provider, opts ...RegisterOption) {
+func (c *containerImpl) Register(cat metadata.Category, e component.Extractor, p component.Provider, opts ...component.RegisterOption) {
 	o := &regOpts{
 		scope:    metadata.GlobalScope,
 		priority: metadata.PriorityInfrastructure,
@@ -144,6 +114,25 @@ func (c *containerImpl) Register(cat metadata.Category, e protocol.Extractor, p 
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	mKey := moduleKey{category: cat, scope: o.scope}
+	c.providers[mKey] = p
+	c.extractors[mKey] = e
+	c.priorities[mKey] = o.priority
+}
+
+func (c *containerImpl) DefaultRegister(cat metadata.Category, e component.Extractor, p component.Provider, opts ...component.RegisterOption) {
+	o := &regOpts{
+		scope:    metadata.GlobalScope,
+		priority: metadata.PriorityInfrastructure,
+	}
+	for _, opt := range opts {
+		opt(o)
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	mKey := moduleKey{category: cat, scope: o.scope}
+	if _, exists := c.providers[mKey]; exists {
+		return
+	}
 	c.providers[mKey] = p
 	c.extractors[mKey] = e
 	c.priorities[mKey] = o.priority
@@ -269,7 +258,7 @@ func (c *containerImpl) bindCategory(cat metadata.Category, targetScope metadata
 		}
 	}
 	if !ok {
-		return fmt.Errorf("engine: no extractor registered for %s", cat)
+		return fmt.Errorf("no extractor")
 	}
 
 	if c.rootConfig == nil {
@@ -312,7 +301,7 @@ func (h *scopedHandle) Scope() metadata.Scope       { return h.scope }
 func (h *scopedHandle) Category() metadata.Category { return h.category }
 func (h *scopedHandle) Config() any                 { return h.config }
 
-func (h *scopedHandle) In(cat metadata.Category, opts ...RegisterOption) Handle {
+func (h *scopedHandle) In(cat metadata.Category, opts ...component.RegisterOption) component.Handle {
 	o := &regOpts{scope: h.scope}
 	for _, opt := range opts {
 		opt(o)
