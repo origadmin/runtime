@@ -1,0 +1,9 @@
+# config.yaml
+app:
+  id: "target-test-id"
+  name: "TargetApp"
+  version: "2.0.0"
+
+logger:
+  level: "debug"
+  stdout: true

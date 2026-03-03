@@ -1,0 +1,11 @@
+# bootstrap.yaml
+app:
+  name: "ConfigTargetTestApp"
+  version: "1.0.0"
+  env: "test"
+
+sources:
+  - type: "file"
+    priority: 600
+    file:
+      path: "config.yaml"
