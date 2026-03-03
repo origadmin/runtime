@@ -58,4 +58,11 @@ type Registry interface {
 	Init(ctx context.Context, root any) error
 }
 
-type RegisterOption func(any)
+// RegistrationOptions defines the concrete type for engine registration configuration.
+type RegistrationOptions struct {
+	Scope    metadata.Scope
+	Priority int
+}
+
+// RegisterOption is a functional option for RegistrationOptions.
+type RegisterOption func(*RegistrationOptions)

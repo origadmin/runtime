@@ -19,14 +19,6 @@ const (
 	StatusReady
 )
 
-type regOpts struct {
-	scope    metadata.Scope
-	priority int
-}
-
-func (o *regOpts) SetScope(s metadata.Scope) { o.scope = s }
-func (o *regOpts) SetPriority(p int)         { o.priority = p }
-
 type instanceKey struct {
 	category metadata.Category
 	scope    metadata.Scope
@@ -102,13 +94,13 @@ func (c *containerImpl) Scope() metadata.Scope       { return metadata.GlobalSco
 func (c *containerImpl) Category() metadata.Category { return "" }
 
 func (c *containerImpl) In(cat metadata.Category, opts ...component.RegisterOption) component.Handle {
-	o := &regOpts{scope: metadata.GlobalScope}
+	o := &component.RegistrationOptions{Scope: metadata.GlobalScope}
 	for _, opt := range opts {
 		opt(o)
 	}
 	return &scopedHandle{
 		container: c,
-		scope:     o.scope,
+		scope:     o.Scope,
 		category:  cat,
 	}
 }
@@ -122,29 +114,29 @@ func (c *containerImpl) BindConfig(target any) error {
 }
 
 func (c *containerImpl) Register(cat metadata.Category, e component.Extractor, p component.Provider, opts ...component.RegisterOption) {
-	o := &regOpts{
-		scope:    metadata.GlobalScope,
-		priority: metadata.PriorityInfrastructure,
+	o := &component.RegistrationOptions{
+		Scope:    metadata.GlobalScope,
+		Priority: metadata.PriorityInfrastructure,
 	}
 	for _, opt := range opts {
 		opt(o)
 	}
 	c.regMu.Lock()
 	defer c.regMu.Unlock()
-	mKey := moduleKey{category: cat, scope: o.scope}
+	mKey := moduleKey{category: cat, scope: o.Scope}
 	c.providers[mKey] = p
 	c.extractors[mKey] = e
-	c.priorities[mKey] = o.priority
+	c.priorities[mKey] = o.Priority
 }
 
 func (c *containerImpl) Has(cat metadata.Category, opts ...component.RegisterOption) bool {
-	o := &regOpts{scope: metadata.GlobalScope}
+	o := &component.RegistrationOptions{Scope: metadata.GlobalScope}
 	for _, opt := range opts {
 		opt(o)
 	}
 	c.regMu.RLock()
 	defer c.regMu.RUnlock()
-	mKey := moduleKey{category: cat, scope: o.scope}
+	mKey := moduleKey{category: cat, scope: o.Scope}
 	_, exists := c.providers[mKey]
 	return exists
 }
@@ -330,13 +322,13 @@ func (h *scopedHandle) Category() metadata.Category { return h.category }
 func (h *scopedHandle) Config() any                 { return h.config }
 
 func (h *scopedHandle) In(cat metadata.Category, opts ...component.RegisterOption) component.Handle {
-	o := &regOpts{scope: h.scope}
+	o := &component.RegistrationOptions{Scope: h.scope}
 	for _, opt := range opts {
 		opt(o)
 	}
 	return &scopedHandle{
 		container: h.container,
-		scope:     o.scope,
+		scope:     o.Scope,
 		category:  cat,
 	}
 }

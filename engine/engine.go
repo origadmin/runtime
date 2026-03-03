@@ -13,10 +13,11 @@ type (
 	Provider = component.Provider
 	Registry = component.Registry
 
-	Extractor      = component.Extractor
-	ModuleConfig   = component.ModuleConfig
-	ConfigEntry    = component.ConfigEntry
-	RegisterOption = component.RegisterOption
+	Extractor           = component.Extractor
+	ModuleConfig        = component.ModuleConfig
+	ConfigEntry         = component.ConfigEntry
+	RegistrationOptions = component.RegistrationOptions
+	RegisterOption      = component.RegisterOption
 )
 
 const (
@@ -60,18 +61,14 @@ func In(h Handle, cat Category, opts ...RegisterOption) Handle {
 
 // WithScope is a functional option to specify the scope during registration.
 func WithScope(s Scope) RegisterOption {
-	return func(o any) {
-		if opt, ok := o.(interface{ SetScope(Scope) }); ok {
-			opt.SetScope(s)
-		}
+	return func(o *RegistrationOptions) {
+		o.Scope = s
 	}
 }
 
 // WithPriority is a functional option to specify the initialization priority.
 func WithPriority(p int) RegisterOption {
-	return func(o any) {
-		if opt, ok := o.(interface{ SetPriority(int) }); ok {
-			opt.SetPriority(p)
-		}
+	return func(o *RegistrationOptions) {
+		o.Priority = p
 	}
 }
