@@ -32,7 +32,9 @@ func FieldValueByType[T any](obj any) (T, error) {
 
 		// If the field type matches the desired type, return the field value.
 		if fieldType == t {
-			return field.Interface().(T), nil
+			if val, ok := field.Interface().(T); ok {
+				return val, nil
+			}
 		}
 
 		// If the field is a struct, recursively search for the desired type within it.

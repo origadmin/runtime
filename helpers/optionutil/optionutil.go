@@ -138,8 +138,7 @@ func appendValues[T any](ctx options.Context, key Key[[]T], values ...T) options
 	}
 
 	existing := slice(ctx, key)
-	newSlice := append(existing, values...)
-	return withValue(ctx, key, newSlice)
+	return withValue(ctx, key, append(existing, values...))
 }
 
 // --- Implicit Key --- //

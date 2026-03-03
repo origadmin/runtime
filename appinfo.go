@@ -156,7 +156,11 @@ func CloneAppInfo(src *appv1.App) *appv1.App {
 	if src == nil {
 		return nil
 	}
-	return proto.Clone(src).(*appv1.App)
+	cloned := proto.Clone(src)
+	if app, ok := cloned.(*appv1.App); ok {
+		return app
+	}
+	return nil
 }
 
 // firstNonLoopbackIP returns the first non-loopback IPv4 address.

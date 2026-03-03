@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/go-kratos/kratos/v2"
@@ -18,7 +17,6 @@ import (
 	"github.com/origadmin/runtime/engine/bootstrap"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	enginecontext "github.com/origadmin/runtime/engine/context"
 	"github.com/origadmin/runtime/engine/metadata"
@@ -35,13 +33,11 @@ type (
 
 // App defines the application's runtime environment powered by engine.
 type App struct {
-	appInfo    *appv1.App
-	result     bootstrap.Result
-	engine     component.Registry
-	mu         sync.RWMutex
-	globalOpts []options.Option
-	ctx        context.Context
-	cancel     context.CancelFunc
+	appInfo *appv1.App
+	result  bootstrap.Result
+	engine  component.Registry
+	ctx     context.Context
+	cancel  context.CancelFunc
 }
 
 // New creates a new App instance.

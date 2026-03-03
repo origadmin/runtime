@@ -57,13 +57,13 @@ func Load(configPath string, target interface{}) (kratosconfig.Config, error) {
 
 	if err := c.Load(); err != nil {
 		// Ensure config is closed on load error to prevent resource leaks
-		c.Close()
+		_ = c.Close()
 		return nil, runtimeerrors.WrapStructured(err, Module, "failed to load config from %s", configPath).WithCaller()
 	}
 
 	if err := c.Scan(target); err != nil {
 		// Ensure config is closed on scan error
-		c.Close()
+		_ = c.Close()
 		return nil, runtimeerrors.WrapStructured(err, Module, "failed to scan config into target").WithCaller()
 	}
 

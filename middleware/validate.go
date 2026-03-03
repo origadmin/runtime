@@ -32,8 +32,7 @@ func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middlewar
 		return nil, false
 	}
 	cfg := middleware.GetValidator()
-	switch middleware.GetType() {
-	case string(Validator):
+	if middleware.GetType() == string(Validator) {
 		switch validate.Version(cfg.GetVersion()) {
 		case validate.V2:
 			opts := []validate.Option{

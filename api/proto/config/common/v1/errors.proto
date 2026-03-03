@@ -78,7 +78,7 @@ enum ErrorReason {
   ERROR_REASON_INVALID_STATE = 3000 [(errors.code) = 400];
   ERROR_REASON_RESOURCE_EXISTS = 3001 [(errors.code) = 409];
   ERROR_REASON_RESOURCE_IN_USE = 3002 [(errors.code) = 409];
-  ERROR_REASON_CANCELLED = 3003 [(errors.code) = 499];
+  ERROR_REASON_CANCELED = 3003 [(errors.code) = 499];
   ERROR_REASON_ABORTED = 3004 [(errors.code) = 409];
   ERROR_REASON_MISSING_PARAMETER = 3005 [(errors.code) = 400];
   ERROR_REASON_INVALID_PARAMETER = 3006 [(errors.code) = 400];

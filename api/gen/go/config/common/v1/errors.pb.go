@@ -123,7 +123,7 @@ const (
 	ErrorReason_ERROR_REASON_INVALID_STATE         ErrorReason = 3000
 	ErrorReason_ERROR_REASON_RESOURCE_EXISTS       ErrorReason = 3001
 	ErrorReason_ERROR_REASON_RESOURCE_IN_USE       ErrorReason = 3002
-	ErrorReason_ERROR_REASON_CANCELLED             ErrorReason = 3003
+	ErrorReason_ERROR_REASON_CANCELED              ErrorReason = 3003
 	ErrorReason_ERROR_REASON_ABORTED               ErrorReason = 3004
 	ErrorReason_ERROR_REASON_MISSING_PARAMETER     ErrorReason = 3005
 	ErrorReason_ERROR_REASON_INVALID_PARAMETER     ErrorReason = 3006
@@ -158,7 +158,7 @@ var (
 		3000: "ERROR_REASON_INVALID_STATE",
 		3001: "ERROR_REASON_RESOURCE_EXISTS",
 		3002: "ERROR_REASON_RESOURCE_IN_USE",
-		3003: "ERROR_REASON_CANCELLED",
+		3003: "ERROR_REASON_CANCELED",
 		3004: "ERROR_REASON_ABORTED",
 		3005: "ERROR_REASON_MISSING_PARAMETER",
 		3006: "ERROR_REASON_INVALID_PARAMETER",
@@ -188,7 +188,7 @@ var (
 		"ERROR_REASON_INVALID_STATE":                3000,
 		"ERROR_REASON_RESOURCE_EXISTS":              3001,
 		"ERROR_REASON_RESOURCE_IN_USE":              3002,
-		"ERROR_REASON_CANCELLED":                    3003,
+		"ERROR_REASON_CANCELED":                     3003,
 		"ERROR_REASON_ABORTED":                      3004,
 		"ERROR_REASON_MISSING_PARAMETER":            3005,
 		"ERROR_REASON_INVALID_PARAMETER":            3006,
@@ -298,7 +298,7 @@ const file_config_common_v1_errors_proto_rawDesc = "" +
 	"\x1dERROR_CATEGORY_AUTHENTICATION\x10\x01\x12\x1b\n" +
 	"\x17ERROR_CATEGORY_DATABASE\x10\x02\x12\x1b\n" +
 	"\x17ERROR_CATEGORY_BUSINESS\x10\x03\x12#\n" +
-	"\x1fERROR_CATEGORY_EXTERNAL_SERVICE\x10\x04*\xa5\t\n" +
+	"\x1fERROR_CATEGORY_EXTERNAL_SERVICE\x10\x04*\xa4\t\n" +
 	"\vErrorReason\x12*\n" +
 	" ERROR_REASON_UNKNOWN_UNSPECIFIED\x10\x00\x1a\x04\xa8E\xf4\x03\x12'\n" +
 	"\x1dERROR_REASON_VALIDATION_ERROR\x10\x01\x1a\x04\xa8E\x90\x03\x12 \n" +
@@ -319,8 +319,8 @@ const file_config_common_v1_errors_proto_rawDesc = "" +
 	"'ERROR_REASON_DATABASE_CONNECTION_FAILED\x10\xd4\x0f\x1a\x04\xa8E\xf7\x03\x12%\n" +
 	"\x1aERROR_REASON_INVALID_STATE\x10\xb8\x17\x1a\x04\xa8E\x90\x03\x12'\n" +
 	"\x1cERROR_REASON_RESOURCE_EXISTS\x10\xb9\x17\x1a\x04\xa8E\x99\x03\x12'\n" +
-	"\x1cERROR_REASON_RESOURCE_IN_USE\x10\xba\x17\x1a\x04\xa8E\x99\x03\x12!\n" +
-	"\x16ERROR_REASON_CANCELLED\x10\xbb\x17\x1a\x04\xa8E\xf3\x03\x12\x1f\n" +
+	"\x1cERROR_REASON_RESOURCE_IN_USE\x10\xba\x17\x1a\x04\xa8E\x99\x03\x12 \n" +
+	"\x15ERROR_REASON_CANCELED\x10\xbb\x17\x1a\x04\xa8E\xf3\x03\x12\x1f\n" +
 	"\x14ERROR_REASON_ABORTED\x10\xbc\x17\x1a\x04\xa8E\x99\x03\x12)\n" +
 	"\x1eERROR_REASON_MISSING_PARAMETER\x10\xbd\x17\x1a\x04\xa8E\x90\x03\x12)\n" +
 	"\x1eERROR_REASON_INVALID_PARAMETER\x10\xbe\x17\x1a\x04\xa8E\x90\x03\x12-\n" +

@@ -90,7 +90,11 @@ endif
 #                           LIFECYCLE TARGETS
 # ============================================================================ #
 
-.PHONY: all init deps update update-tools protos example-protos test-protos generate test clean clean-api-gen clean-example-protos clean-test-protos buf-push install-protoc
+.PHONY: all init deps update update-tools protos example-protos test-protos generate test lint clean clean-api-gen clean-example-protos clean-test-protos buf-push install-protoc
+
+lint: ## 🔍 Run golangci-lint
+	@echo "Running golangci-lint..."
+	@golangci-lint run ./...
 
 install-protoc: ## ⬇️ Install protoc compiler
 ifeq ($(GOHOSTOS), windows)
@@ -139,6 +143,7 @@ init: install-protoc ## 🔧 Install tools from tools.go, ensuring reproducible 
 	@go install github.com/google/wire/cmd/wire
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 deps: ## 📦 Export and install all third-party protobuf dependencies
 	@echo "Updating buf dependencies..."
@@ -167,6 +172,7 @@ update-tools: ## ⚠️  Update all Go tools in tools.go to latest. High-risk, u
 	@go get -u github.com/google/wire/cmd/wire
 	@go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	@go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+	@go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 	@go mod tidy
 
 protos: config-protos test-protos example-protos ## 🧬 Generate all protos

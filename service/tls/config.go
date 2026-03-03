@@ -31,7 +31,7 @@ var cipherSuiteMap = map[string]uint16{
 	"TLS_RSA_WITH_AES_128_CBC_SHA":    tls.TLS_RSA_WITH_AES_128_CBC_SHA,
 	"TLS_RSA_WITH_AES_256_CBC_SHA":    tls.TLS_RSA_WITH_AES_256_CBC_SHA,
 	"TLS_RSA_WITH_AES_128_CBC_SHA256": tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
-	//"TLS_RSA_WITH_AES_256_CBC_SHA256":         tls.TLS_RSA_WITH_AES_256_CBC_SHA256,
+	// "TLS_RSA_WITH_AES_256_CBC_SHA256":         tls.TLS_RSA_WITH_AES_256_CBC_SHA256,
 	"TLS_RSA_WITH_AES_128_GCM_SHA256":         tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
 	"TLS_RSA_WITH_AES_256_GCM_SHA384":         tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
 	"TLS_ECDHE_ECDSA_WITH_RC4_128_SHA":        tls.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
@@ -42,9 +42,9 @@ var cipherSuiteMap = map[string]uint16{
 	"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA":      tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
 	"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA":      tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
 	"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256": tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-	//"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
+	// "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
 	"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256": tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-	//"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384":   tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
+	// "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384":   tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
 	"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256": tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 	"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384": tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 	"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256":   tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
@@ -73,7 +73,8 @@ func NewServerTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 
 	var err error
 	var tlsCfg *tls.Config
-	if cfg.GetFile() != nil {
+	switch {
+	case cfg.GetFile() != nil:
 		file := cfg.GetFile()
 		if tlsCfg, err = NewServerTLSConfigFromFile(
 			file.GetKey(),
@@ -83,7 +84,7 @@ func NewServerTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 		); err != nil {
 			return nil, err
 		}
-	} else if cfg.GetPem() != nil {
+	case cfg.GetPem() != nil:
 		pemConfig := cfg.GetPem()
 		if tlsCfg, err = NewServerTLSConfigFromPem(
 			pemConfig.GetKey(),
@@ -93,7 +94,7 @@ func NewServerTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 		); err != nil {
 			return nil, err
 		}
-	} else {
+	default:
 		// If no file or PEM config, create a default TLS config
 		tlsCfg = configure.Apply(&tls.Config{}, options)
 	}
@@ -195,7 +196,8 @@ func NewClientTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 
 	var err error
 	var tlsCfg *tls.Config
-	if cfg.GetFile() != nil {
+	switch {
+	case cfg.GetFile() != nil:
 		file := cfg.GetFile()
 		if tlsCfg, err = NewClientTLSConfigFromFile(
 			file.GetKey(),
@@ -205,7 +207,7 @@ func NewClientTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 		); err != nil {
 			return nil, err
 		}
-	} else if cfg.GetPem() != nil {
+	case cfg.GetPem() != nil:
 		pemConfig := cfg.GetPem()
 		if tlsCfg, err = NewClientTLSConfigFromPem(
 			pemConfig.GetKey(),
@@ -215,7 +217,7 @@ func NewClientTLSConfig(cfg *tlsv1.TLSConfig, options ...Option) (*tls.Config, e
 		); err != nil {
 			return nil, err
 		}
-	} else {
+	default:
 		// If no file or PEM config, create a default TLS config
 		tlsCfg = configure.Apply(&tls.Config{}, options)
 	}

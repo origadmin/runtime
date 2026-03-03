@@ -56,7 +56,9 @@ func (f *file) loadFile(path string) (*kratosconfig.KeyValue, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	data, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err

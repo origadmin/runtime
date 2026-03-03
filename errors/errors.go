@@ -116,8 +116,8 @@ func FromReason(reason commonv1.ErrorReason) *kerrors.Error {
 		return kerrors.BadRequest(reason.String(), "Invalid business parameter")
 	case commonv1.ErrorReason_ERROR_REASON_RESOURCE_EXISTS, commonv1.ErrorReason_ERROR_REASON_RESOURCE_IN_USE, commonv1.ErrorReason_ERROR_REASON_ABORTED:
 		return kerrors.Conflict(reason.String(), "Business resource conflict")
-	case commonv1.ErrorReason_ERROR_REASON_CANCELLED:
-		return kerrors.ClientClosed(reason.String(), "Operation was cancelled")
+	case commonv1.ErrorReason_ERROR_REASON_CANCELED:
+		return kerrors.ClientClosed(reason.String(), "Operation was canceled")
 	case commonv1.ErrorReason_ERROR_REASON_OPERATION_NOT_ALLOWED:
 		return kerrors.Forbidden(reason.String(), "Operation not allowed")
 
@@ -181,14 +181,14 @@ func Convert(err error) *kerrors.Error {
 	var taggedErr *TaggedError
 	if errors.As(err, &taggedErr) {
 		ke := FromReason(taggedErr.Reason)
-		ke.Message = fmt.Sprintf("%s", taggedErr.Error())
+		ke.Message = taggedErr.Error()
 		return ke
 	}
 
 	// 2. Check if the error is a Structured internal error
 	var se *Structured
 	if errors.As(err, &se) {
-		var reason commonv1.ErrorReason = commonv1.ErrorReason_ERROR_REASON_UNKNOWN_UNSPECIFIED // Default if no TaggedError is found
+		reason := commonv1.ErrorReason_ERROR_REASON_UNKNOWN_UNSPECIFIED // Default if no TaggedError is found
 
 		var wrappedTaggedErr *TaggedError
 		if errors.As(se.Err, &wrappedTaggedErr) {
@@ -237,7 +237,7 @@ func Convert(err error) *kerrors.Error {
 		parsedReason, ok := commonv1.ErrorReason_value[existingKratosErr.Reason]
 		if ok {
 			ke := FromReason(commonv1.ErrorReason(parsedReason))
-			ke.Message = fmt.Sprintf("%s", existingKratosErr.Message)
+			ke.Message = existingKratosErr.Message
 			if ke.Metadata == nil {
 				ke.Metadata = make(map[string]string)
 			}
@@ -265,7 +265,7 @@ func Convert(err error) *kerrors.Error {
 		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_REQUEST_TIMEOUT)
 		return ke
 	case errors.Is(err, context.Canceled):
-		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_CANCELLED)
+		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_CANCELED)
 		return ke
 	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
 		ke := FromReason(commonv1.ErrorReason_ERROR_REASON_VALIDATION_ERROR)
@@ -274,7 +274,7 @@ func Convert(err error) *kerrors.Error {
 
 	// 5. Default to INTERNAL_SERVER_ERROR for any other unhandled error
 	ke := FromReason(commonv1.ErrorReason_ERROR_REASON_INTERNAL_SERVER_ERROR)
-	ke.Message = fmt.Sprintf("%s", err.Error())
+	ke.Message = err.Error()
 	return ke
 }
 
@@ -285,7 +285,7 @@ func NewErrorEncoder() transhttp.EncodeErrorFunc {
 			return
 		}
 
-		var convertedErr *kerrors.Error = Convert(err) // Use a new variable name to avoid any confusion
+		convertedErr := Convert(err) // Use a new variable name to avoid any confusion
 
 		if tr, ok := transport.FromServerContext(r.Context()); ok {
 			fields := []interface{}{

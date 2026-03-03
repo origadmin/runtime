@@ -259,16 +259,16 @@ func ErrorErrorReasonResourceInUse(format string, args ...interface{}) *errors.E
 	return errors.New(409, ErrorReason_ERROR_REASON_RESOURCE_IN_USE.String(), fmt.Sprintf(format, args...))
 }
 
-func IsErrorReasonCancelled(err error) bool {
+func IsErrorReasonCanceled(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_ERROR_REASON_CANCELLED.String() && e.Code == 499
+	return e.Reason == ErrorReason_ERROR_REASON_CANCELED.String() && e.Code == 499
 }
 
-func ErrorErrorReasonCancelled(format string, args ...interface{}) *errors.Error {
-	return errors.New(499, ErrorReason_ERROR_REASON_CANCELLED.String(), fmt.Sprintf(format, args...))
+func ErrorErrorReasonCanceled(format string, args ...interface{}) *errors.Error {
+	return errors.New(499, ErrorReason_ERROR_REASON_CANCELED.String(), fmt.Sprintf(format, args...))
 }
 
 func IsErrorReasonAborted(err error) bool {

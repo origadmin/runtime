@@ -54,7 +54,9 @@ func main() {
 	if err := c.Load(); err != nil {
 		panic(err)
 	}
-	defer c.Close()
+	defer func() {
+		_ = c.Close()
+	}()
 
 	// Create a new decoder.
 	decoder := NewProtoDecoder(c)
@@ -84,7 +86,7 @@ func main() {
 		panic(fmt.Errorf("failed to decode raw clients config: %w", err))
 	}
 
-	var clients map[string]*conf.ClientConfig = make(map[string]*conf.ClientConfig)
+	clients := make(map[string]*conf.ClientConfig)
 	for name, rawClient := range rawClients {
 		fmt.Printf("DEBUG: rawClient for '%s': %+v\n", name, rawClient) // Added debug print for rawClient
 		jsonClient, err := json.Marshal(rawClient)

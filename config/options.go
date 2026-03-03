@@ -10,7 +10,7 @@ import (
 // Options holds the configuration for the config module.
 type Options struct {
 	ConfigOptions []KOption
-	//EnvPrefixes   []string
+	// EnvPrefixes   []string
 	Sources []KSource
 }
 
@@ -24,7 +24,7 @@ func WithConfigOption(opts ...config.Option) options.Option {
 // WithEnvPrefixes appends environment variable prefixes to the Options.
 func WithEnvPrefixes(prefixes ...string) options.Option {
 	return optionutil.Update(func(c *Options) {
-		//c.EnvPrefixes = append(c.EnvPrefixes, prefixes...)
+		// c.EnvPrefixes = append(c.EnvPrefixes, prefixes...)
 	})
 }
 
