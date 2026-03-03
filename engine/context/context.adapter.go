@@ -2,8 +2,8 @@
 //
 // This file is generated from context.go.
 
-// Package enginecontext contains generated code by adptool.
-package enginecontext
+// Package context contains generated code by adptool.
+package context
 
 import (
 	context "context"
