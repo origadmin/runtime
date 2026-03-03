@@ -25,7 +25,7 @@ This directory contains integration tests for middleware configuration and insta
 To run the tests, execute the following command from the project root directory:
 
 ```bash
-go test ./runtime/test/integration/middleware/... -v
+go test ./runtime/tests/integration/middleware/... -v
 ```
 
 ## Middleware Configuration

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v5.28.3
-// source: test/integration/app/proto/bootstrap.proto
+// source: tests/integration/app/proto/bootstrap.proto
 
 package configs
 
@@ -44,7 +44,7 @@ type Bootstrap struct {
 
 func (x *Bootstrap) Reset() {
 	*x = Bootstrap{}
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[0]
+	mi := &file_tests_integration_app_proto_bootstrap_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -56,7 +56,7 @@ func (x *Bootstrap) String() string {
 func (*Bootstrap) ProtoMessage() {}
 
 func (x *Bootstrap) ProtoReflect() protoreflect.Message {
-	mi := &file_test_integration_app_proto_bootstrap_proto_msgTypes[0]
+	mi := &file_tests_integration_app_proto_bootstrap_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -69,7 +69,7 @@ func (x *Bootstrap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bootstrap.ProtoReflect.Descriptor instead.
 func (*Bootstrap) Descriptor() ([]byte, []int) {
-	return file_test_integration_app_proto_bootstrap_proto_rawDescGZIP(), []int{0}
+	return file_tests_integration_app_proto_bootstrap_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Bootstrap) GetDiscoveries() map[string]*v1.Discovery {
@@ -107,11 +107,11 @@ func (x *Bootstrap) GetMiddlewares() *v12.Middlewares {
 	return nil
 }
 
-var File_test_integration_app_proto_bootstrap_proto protoreflect.FileDescriptor
+var File_tests_integration_app_proto_bootstrap_proto protoreflect.FileDescriptor
 
-const file_test_integration_app_proto_bootstrap_proto_rawDesc = "" +
+const file_tests_integration_app_proto_bootstrap_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/app/proto/bootstrap.proto\x12\x18runtime.test.app.configs\x1a#config/discovery/v1/discovery.proto\x1a%config/middleware/v1/middleware.proto\x1a#config/transport/v1/transport.proto\"\xf8\x03\n" +
+	"+tests/integration/app/proto/bootstrap.proto\x12\x18runtime.test.app.configs\x1a#config/discovery/v1/discovery.proto\x1a%config/middleware/v1/middleware.proto\x1a#config/transport/v1/transport.proto\"\xf8\x03\n" +
 	"\tBootstrap\x12V\n" +
 	"\vdiscoveries\x18\x01 \x03(\v24.runtime.test.app.configs.Bootstrap.DiscoveriesEntryR\vdiscoveries\x12>\n" +
 	"\x1bregistration_discovery_name\x18\x02 \x01(\tR\x19registrationDiscoveryName\x12A\n" +
@@ -122,22 +122,22 @@ const file_test_integration_app_proto_bootstrap_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
 	"\x05value\x18\x02 \x01(\v2*.runtime.api.config.discovery.v1.DiscoveryR\x05value:\x028\x01B\n" +
 	"\n" +
-	"\b_clientsBCZAgithub.com/origadmin/framework/test/integration/app/proto;configsb\x06proto3"
+	"\b_clientsBDZBgithub.com/origadmin/framework/tests/integration/app/proto;configsb\x06proto3"
 
 var (
-	file_test_integration_app_proto_bootstrap_proto_rawDescOnce sync.Once
-	file_test_integration_app_proto_bootstrap_proto_rawDescData []byte
+	file_tests_integration_app_proto_bootstrap_proto_rawDescOnce sync.Once
+	file_tests_integration_app_proto_bootstrap_proto_rawDescData []byte
 )
 
-func file_test_integration_app_proto_bootstrap_proto_rawDescGZIP() []byte {
-	file_test_integration_app_proto_bootstrap_proto_rawDescOnce.Do(func() {
-		file_test_integration_app_proto_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_test_integration_app_proto_bootstrap_proto_rawDesc), len(file_test_integration_app_proto_bootstrap_proto_rawDesc)))
+func file_tests_integration_app_proto_bootstrap_proto_rawDescGZIP() []byte {
+	file_tests_integration_app_proto_bootstrap_proto_rawDescOnce.Do(func() {
+		file_tests_integration_app_proto_bootstrap_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_tests_integration_app_proto_bootstrap_proto_rawDesc), len(file_tests_integration_app_proto_bootstrap_proto_rawDesc)))
 	})
-	return file_test_integration_app_proto_bootstrap_proto_rawDescData
+	return file_tests_integration_app_proto_bootstrap_proto_rawDescData
 }
 
-var file_test_integration_app_proto_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_test_integration_app_proto_bootstrap_proto_goTypes = []any{
+var file_tests_integration_app_proto_bootstrap_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_tests_integration_app_proto_bootstrap_proto_goTypes = []any{
 	(*Bootstrap)(nil),       // 0: runtime.test.app.configs.Bootstrap
 	nil,                     // 1: runtime.test.app.configs.Bootstrap.DiscoveriesEntry
 	(*v11.Server)(nil),      // 2: runtime.api.config.transport.v1.Server
@@ -145,7 +145,7 @@ var file_test_integration_app_proto_bootstrap_proto_goTypes = []any{
 	(*v12.Middlewares)(nil), // 4: runtime.api.config.middleware.v1.Middlewares
 	(*v1.Discovery)(nil),    // 5: runtime.api.config.discovery.v1.Discovery
 }
-var file_test_integration_app_proto_bootstrap_proto_depIdxs = []int32{
+var file_tests_integration_app_proto_bootstrap_proto_depIdxs = []int32{
 	1, // 0: runtime.test.app.configs.Bootstrap.discoveries:type_name -> runtime.test.app.configs.Bootstrap.DiscoveriesEntry
 	2, // 1: runtime.test.app.configs.Bootstrap.servers:type_name -> runtime.api.config.transport.v1.Server
 	3, // 2: runtime.test.app.configs.Bootstrap.clients:type_name -> runtime.api.config.transport.v1.Clients
@@ -158,27 +158,27 @@ var file_test_integration_app_proto_bootstrap_proto_depIdxs = []int32{
 	0, // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_test_integration_app_proto_bootstrap_proto_init() }
-func file_test_integration_app_proto_bootstrap_proto_init() {
-	if File_test_integration_app_proto_bootstrap_proto != nil {
+func init() { file_tests_integration_app_proto_bootstrap_proto_init() }
+func file_tests_integration_app_proto_bootstrap_proto_init() {
+	if File_tests_integration_app_proto_bootstrap_proto != nil {
 		return
 	}
-	file_test_integration_app_proto_bootstrap_proto_msgTypes[0].OneofWrappers = []any{}
+	file_tests_integration_app_proto_bootstrap_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_test_integration_app_proto_bootstrap_proto_rawDesc), len(file_test_integration_app_proto_bootstrap_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_tests_integration_app_proto_bootstrap_proto_rawDesc), len(file_tests_integration_app_proto_bootstrap_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_test_integration_app_proto_bootstrap_proto_goTypes,
-		DependencyIndexes: file_test_integration_app_proto_bootstrap_proto_depIdxs,
-		MessageInfos:      file_test_integration_app_proto_bootstrap_proto_msgTypes,
+		GoTypes:           file_tests_integration_app_proto_bootstrap_proto_goTypes,
+		DependencyIndexes: file_tests_integration_app_proto_bootstrap_proto_depIdxs,
+		MessageInfos:      file_tests_integration_app_proto_bootstrap_proto_msgTypes,
 	}.Build()
-	File_test_integration_app_proto_bootstrap_proto = out.File
-	file_test_integration_app_proto_bootstrap_proto_goTypes = nil
-	file_test_integration_app_proto_bootstrap_proto_depIdxs = nil
+	File_tests_integration_app_proto_bootstrap_proto = out.File
+	file_tests_integration_app_proto_bootstrap_proto_goTypes = nil
+	file_tests_integration_app_proto_bootstrap_proto_depIdxs = nil
 }

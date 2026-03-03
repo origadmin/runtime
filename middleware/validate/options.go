@@ -5,7 +5,12 @@
 // Package validate implements the functions, types, and contracts for the module.
 package validate
 
-import "context"
+import (
+	"context"
+
+	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/helpers/optionutil"
+)
 
 type Options struct {
 	version          Version
@@ -13,7 +18,7 @@ type Options struct {
 	callback         OnValidationErrCallback
 	validatorOptions []ProtoValidatorOption
 }
-type Option = func(*Options)
+type Option = options.Option
 
 // OnValidationErrCallback is a function that will be invoked on validation error(s).
 // It returns true if the error is handled and should be ignored, false otherwise.
@@ -21,23 +26,23 @@ type OnValidationErrCallback func(ctx context.Context, err error) bool
 
 // WithOnValidationErrCallback registers function that will be invoked on validation error(s).
 func WithOnValidationErrCallback(onValidationErrCallback OnValidationErrCallback) Option {
-	return func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.callback = onValidationErrCallback
-	}
+	})
 }
 
 // WithFailFast tells v1Validator to immediately stop doing further validation after first validation error.
 // This option is ignored if message is only supporting v1Validator.v1ValidatorLegacy interface.
 func WithFailFast(failFast bool) Option {
-	return func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.failFast = failFast
-	}
+	})
 }
 
 // WithV2ProtoValidatorOption registers options for Validator with version 2.
 func WithV2ProtoValidatorOption(opts ...ProtoValidatorOption) Option {
-	return func(o *Options) {
+	return optionutil.Update(func(o *Options) {
 		o.version = V2
 		o.validatorOptions = opts
-	}
+	})
 }

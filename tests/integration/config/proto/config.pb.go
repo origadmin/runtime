@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v5.28.3
-// source: test/integration/config/proto/config.proto
+// source: tests/integration/config/proto/config.proto
 
 package configs
 
@@ -60,7 +60,7 @@ type TestConfig struct {
 
 func (x *TestConfig) Reset() {
 	*x = TestConfig{}
-	mi := &file_test_integration_config_proto_config_proto_msgTypes[0]
+	mi := &file_tests_integration_config_proto_config_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -72,7 +72,7 @@ func (x *TestConfig) String() string {
 func (*TestConfig) ProtoMessage() {}
 
 func (x *TestConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_test_integration_config_proto_config_proto_msgTypes[0]
+	mi := &file_tests_integration_config_proto_config_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -85,7 +85,7 @@ func (x *TestConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestConfig.ProtoReflect.Descriptor instead.
 func (*TestConfig) Descriptor() ([]byte, []int) {
-	return file_test_integration_config_proto_config_proto_rawDescGZIP(), []int{0}
+	return file_tests_integration_config_proto_config_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *TestConfig) GetApp() *v1.App {
@@ -200,11 +200,11 @@ func (x *TestConfig) GetCustomize() *structpb.Struct {
 	return nil
 }
 
-var File_test_integration_config_proto_config_proto protoreflect.FileDescriptor
+var File_tests_integration_config_proto_config_proto protoreflect.FileDescriptor
 
-const file_test_integration_config_proto_config_proto_rawDesc = "" +
+const file_tests_integration_config_proto_config_proto_rawDesc = "" +
 	"\n" +
-	"*test/integration/config/proto/config.proto\x12\x1bruntime.test.config.configs\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a\x19config/task/v1/task.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x9d\b\n" +
+	"+tests/integration/config/proto/config.proto\x12\x1bruntime.test.config.configs\x1a\x17config/app/v1/app.proto\x1a\x1econfig/config/v1/gateway.proto\x1a\x19config/data/v1/data.proto\x1a#config/discovery/v1/discovery.proto\x1a\x1dconfig/logger/v1/logger.proto\x1a%config/middleware/v1/middleware.proto\x1a\x19config/task/v1/task.proto\x1a\x1bconfig/trace/v1/trace.proto\x1a#config/transport/v1/transport.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x9d\b\n" +
 	"\n" +
 	"TestConfig\x120\n" +
 	"\x03app\x18\x01 \x01(\v2\x1e.runtime.api.config.app.v1.AppR\x03app\x12B\n" +
@@ -225,22 +225,22 @@ const file_test_integration_config_proto_config_proto_rawDesc = "" +
 	"\agateway\x18\r \x01(\v2%.runtime.api.config.config.v1.GatewayR\agateway\x124\n" +
 	"\x04data\x18\x0e \x01(\v2 .runtime.api.config.data.v1.DataR\x04data\x124\n" +
 	"\x04task\x18\x0f \x01(\v2 .runtime.api.config.task.v1.TaskR\x04task\x125\n" +
-	"\tcustomize\x18\x14 \x01(\v2\x17.google.protobuf.StructR\tcustomizeBDZBgithub.com/origadmin/runtime/test/integration/config/proto;configsb\x06proto3"
+	"\tcustomize\x18\x14 \x01(\v2\x17.google.protobuf.StructR\tcustomizeBEZCgithub.com/origadmin/runtime/tests/integration/config/proto;configsb\x06proto3"
 
 var (
-	file_test_integration_config_proto_config_proto_rawDescOnce sync.Once
-	file_test_integration_config_proto_config_proto_rawDescData []byte
+	file_tests_integration_config_proto_config_proto_rawDescOnce sync.Once
+	file_tests_integration_config_proto_config_proto_rawDescData []byte
 )
 
-func file_test_integration_config_proto_config_proto_rawDescGZIP() []byte {
-	file_test_integration_config_proto_config_proto_rawDescOnce.Do(func() {
-		file_test_integration_config_proto_config_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_test_integration_config_proto_config_proto_rawDesc), len(file_test_integration_config_proto_config_proto_rawDesc)))
+func file_tests_integration_config_proto_config_proto_rawDescGZIP() []byte {
+	file_tests_integration_config_proto_config_proto_rawDescOnce.Do(func() {
+		file_tests_integration_config_proto_config_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_tests_integration_config_proto_config_proto_rawDesc), len(file_tests_integration_config_proto_config_proto_rawDesc)))
 	})
-	return file_test_integration_config_proto_config_proto_rawDescData
+	return file_tests_integration_config_proto_config_proto_rawDescData
 }
 
-var file_test_integration_config_proto_config_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_test_integration_config_proto_config_proto_goTypes = []any{
+var file_tests_integration_config_proto_config_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_tests_integration_config_proto_config_proto_goTypes = []any{
 	(*TestConfig)(nil),      // 0: runtime.test.config.configs.TestConfig
 	(*v1.App)(nil),          // 1: runtime.api.config.app.v1.App
 	(*v11.Servers)(nil),     // 2: runtime.api.config.transport.v1.Servers
@@ -258,7 +258,7 @@ var file_test_integration_config_proto_config_proto_goTypes = []any{
 	(*v18.Task)(nil),        // 14: runtime.api.config.task.v1.Task
 	(*structpb.Struct)(nil), // 15: google.protobuf.Struct
 }
-var file_test_integration_config_proto_config_proto_depIdxs = []int32{
+var file_tests_integration_config_proto_config_proto_depIdxs = []int32{
 	1,  // 0: runtime.test.config.configs.TestConfig.app:type_name -> runtime.api.config.app.v1.App
 	2,  // 1: runtime.test.config.configs.TestConfig.servers:type_name -> runtime.api.config.transport.v1.Servers
 	3,  // 2: runtime.test.config.configs.TestConfig.clients:type_name -> runtime.api.config.transport.v1.Clients
@@ -281,26 +281,26 @@ var file_test_integration_config_proto_config_proto_depIdxs = []int32{
 	0,  // [0:15] is the sub-list for field type_name
 }
 
-func init() { file_test_integration_config_proto_config_proto_init() }
-func file_test_integration_config_proto_config_proto_init() {
-	if File_test_integration_config_proto_config_proto != nil {
+func init() { file_tests_integration_config_proto_config_proto_init() }
+func file_tests_integration_config_proto_config_proto_init() {
+	if File_tests_integration_config_proto_config_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_test_integration_config_proto_config_proto_rawDesc), len(file_test_integration_config_proto_config_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_tests_integration_config_proto_config_proto_rawDesc), len(file_tests_integration_config_proto_config_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_test_integration_config_proto_config_proto_goTypes,
-		DependencyIndexes: file_test_integration_config_proto_config_proto_depIdxs,
-		MessageInfos:      file_test_integration_config_proto_config_proto_msgTypes,
+		GoTypes:           file_tests_integration_config_proto_config_proto_goTypes,
+		DependencyIndexes: file_tests_integration_config_proto_config_proto_depIdxs,
+		MessageInfos:      file_tests_integration_config_proto_config_proto_msgTypes,
 	}.Build()
-	File_test_integration_config_proto_config_proto = out.File
-	file_test_integration_config_proto_config_proto_goTypes = nil
-	file_test_integration_config_proto_config_proto_depIdxs = nil
+	File_tests_integration_config_proto_config_proto = out.File
+	file_tests_integration_config_proto_config_proto_goTypes = nil
+	file_tests_integration_config_proto_config_proto_depIdxs = nil
 }

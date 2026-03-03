@@ -11,7 +11,7 @@ import (
 	"buf.build/go/protovalidate"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/origadmin/runtime/context"
+	"context"
 	"github.com/origadmin/runtime/log"
 )
 

@@ -27,17 +27,6 @@ type regOpts struct {
 func (o *regOpts) SetScope(s metadata.Scope) { o.scope = s }
 func (o *regOpts) SetPriority(p int)         { o.priority = p }
 
-type containerImpl struct {
-	mu         sync.RWMutex
-	rootConfig any
-	providers  map[moduleKey]component.Provider
-	extractors map[moduleKey]component.Extractor
-	priorities map[moduleKey]int
-	pool       map[instanceKey]*componentMeta
-	poolOrder  map[moduleKey][]string
-	defaults   map[moduleKey]string
-}
-
 type instanceKey struct {
 	category metadata.Category
 	scope    metadata.Scope
@@ -56,22 +45,51 @@ type componentMeta struct {
 	instance any
 }
 
-func NewContainer(root any) component.Registry {
+type moduleState struct {
+	mu          sync.RWMutex
+	bound       bool
+	order       []string
+	defaultName string
+	instances   map[string]*componentMeta
+}
+
+type containerImpl struct {
+	regMu      sync.RWMutex
+	providers  map[moduleKey]component.Provider
+	extractors map[moduleKey]component.Extractor
+	priorities map[moduleKey]int
+
+	stateMu sync.RWMutex
+	states  map[moduleKey]*moduleState
+
+	mu         sync.RWMutex
+	rootConfig any
+}
+
+func NewContainer() component.Registry {
 	return &containerImpl{
-		rootConfig: root,
 		providers:  make(map[moduleKey]component.Provider),
 		extractors: make(map[moduleKey]component.Extractor),
 		priorities: make(map[moduleKey]int),
-		pool:       make(map[instanceKey]*componentMeta),
-		poolOrder:  make(map[moduleKey][]string),
-		defaults:   make(map[moduleKey]string),
+		states:     make(map[moduleKey]*moduleState),
 	}
 }
 
-func (c *containerImpl) BindRoot(root any) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.rootConfig = root
+func (c *containerImpl) getModuleState(mKey moduleKey) *moduleState {
+	c.stateMu.RLock()
+	s, ok := c.states[mKey]
+	c.stateMu.RUnlock()
+	if ok {
+		return s
+	}
+	c.stateMu.Lock()
+	defer c.stateMu.Unlock()
+	if s, ok = c.states[mKey]; ok {
+		return s
+	}
+	s = &moduleState{instances: make(map[string]*componentMeta)}
+	c.states[mKey] = s
+	return s
 }
 
 func (c *containerImpl) Config() any {
@@ -111,35 +129,35 @@ func (c *containerImpl) Register(cat metadata.Category, e component.Extractor, p
 	for _, opt := range opts {
 		opt(o)
 	}
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.regMu.Lock()
+	defer c.regMu.Unlock()
 	mKey := moduleKey{category: cat, scope: o.scope}
 	c.providers[mKey] = p
 	c.extractors[mKey] = e
 	c.priorities[mKey] = o.priority
 }
 
-func (c *containerImpl) DefaultRegister(cat metadata.Category, e component.Extractor, p component.Provider, opts ...component.RegisterOption) {
-	o := &regOpts{
-		scope:    metadata.GlobalScope,
-		priority: metadata.PriorityInfrastructure,
-	}
+func (c *containerImpl) Has(cat metadata.Category, opts ...component.RegisterOption) bool {
+	o := &regOpts{scope: metadata.GlobalScope}
 	for _, opt := range opts {
 		opt(o)
 	}
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.regMu.RLock()
+	defer c.regMu.RUnlock()
 	mKey := moduleKey{category: cat, scope: o.scope}
-	if _, exists := c.providers[mKey]; exists {
-		return
-	}
-	c.providers[mKey] = p
-	c.extractors[mKey] = e
-	c.priorities[mKey] = o.priority
+	_, exists := c.providers[mKey]
+	return exists
 }
 
-func (c *containerImpl) Init(ctx context.Context) error {
-	c.mu.RLock()
+func (c *containerImpl) Init(ctx context.Context, root any) error {
+	if root == nil {
+		return fmt.Errorf("engine: cannot init with nil root config")
+	}
+	c.mu.Lock()
+	c.rootConfig = root
+	c.mu.Unlock()
+
+	c.regMu.RLock()
 	var keys []moduleKey
 	for k := range c.providers {
 		keys = append(keys, k)
@@ -147,15 +165,16 @@ func (c *containerImpl) Init(ctx context.Context) error {
 	sort.Slice(keys, func(i, j int) bool {
 		return c.priorities[keys[i]] < c.priorities[keys[j]]
 	})
-	c.mu.RUnlock()
+	c.regMu.RUnlock()
 
 	for _, k := range keys {
 		if err := c.bindCategory(k.category, k.scope, k); err != nil {
 			return fmt.Errorf("engine: failed to bind %s in scope %s: %w", k.category, k.scope, err)
 		}
-		c.mu.RLock()
-		order := c.poolOrder[k]
-		c.mu.RUnlock()
+		s := c.getModuleState(k)
+		s.mu.RLock()
+		order := s.order
+		s.mu.RUnlock()
 		for _, name := range order {
 			if _, err := c.getInternal(ctx, k.category, k.scope, name); err != nil {
 				return fmt.Errorf("engine: failed to init %s/%s: %w", k.category, name, err)
@@ -166,30 +185,31 @@ func (c *containerImpl) Init(ctx context.Context) error {
 }
 
 func (c *containerImpl) getInternal(ctx context.Context, cat metadata.Category, scope metadata.Scope, name string) (any, error) {
-	c.mu.RLock()
 	mKey := moduleKey{category: cat, scope: scope}
+	s := c.getModuleState(mKey)
+
+	s.mu.RLock()
 	actualName := name
 	if actualName == "" {
-		actualName = c.defaults[mKey]
+		actualName = s.defaultName
 	}
-	key := instanceKey{category: cat, scope: scope, name: actualName}
-	meta, exists := c.pool[key]
-	c.mu.RUnlock()
+	meta, exists := s.instances[actualName]
+	isBound := s.bound
+	s.mu.RUnlock()
 
-	if !exists || (actualName == "" && name == "") {
+	if !isBound || (!exists && name != "") || (actualName == "" && name == "") {
 		if err := c.bindCategory(cat, scope, mKey); err != nil {
 			if scope != metadata.GlobalScope {
 				return c.getInternal(ctx, cat, metadata.GlobalScope, name)
 			}
 			return nil, err
 		}
-		c.mu.RLock()
+		s.mu.RLock()
 		if actualName == "" {
-			actualName = c.defaults[mKey]
+			actualName = s.defaultName
 		}
-		key = instanceKey{category: cat, scope: scope, name: actualName}
-		meta, exists = c.pool[key]
-		c.mu.RUnlock()
+		meta, exists = s.instances[actualName]
+		s.mu.RUnlock()
 		if !exists {
 			if scope != metadata.GlobalScope {
 				return c.getInternal(ctx, cat, metadata.GlobalScope, name)
@@ -213,12 +233,12 @@ func (c *containerImpl) getInternal(ctx context.Context, cat metadata.Category, 
 	}
 
 	meta.status = StatusResolving
-	c.mu.RLock()
+	c.regMu.RLock()
 	provider, ok := c.providers[mKey]
 	if !ok {
 		provider, ok = c.providers[moduleKey{category: cat, scope: metadata.GlobalScope}]
 	}
-	c.mu.RUnlock()
+	c.regMu.RUnlock()
 
 	if !ok {
 		return nil, fmt.Errorf("engine: no provider for %s", cat)
@@ -247,44 +267,52 @@ func (c *containerImpl) getInternal(ctx context.Context, cat metadata.Category, 
 }
 
 func (c *containerImpl) bindCategory(cat metadata.Category, targetScope metadata.Scope, regKey moduleKey) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	mKey := moduleKey{category: cat, scope: targetScope}
+	s := c.getModuleState(mKey)
+
+	s.mu.Lock()
+	if s.bound {
+		s.mu.Unlock()
+		return nil
+	}
+	defer s.mu.Unlock()
+
+	c.regMu.RLock()
 	extractor, ok := c.extractors[regKey]
 	if !ok {
 		if regKey.scope != metadata.GlobalScope {
 			extractor, ok = c.extractors[moduleKey{category: cat, scope: metadata.GlobalScope}]
 		}
 	}
+	c.regMu.RUnlock()
+
 	if !ok {
 		return fmt.Errorf("no extractor")
 	}
 
-	if c.rootConfig == nil {
-		return fmt.Errorf("engine: root config is nil, cannot bind %s", cat)
+	root := c.Config()
+	if root == nil {
+		return fmt.Errorf("engine: root config is nil")
 	}
 
-	mc, err := extractor(c.rootConfig)
+	mc, err := extractor(root)
 	if err != nil || mc == nil {
 		return err
 	}
 
-	var order []string
 	for _, entry := range mc.Entries {
-		key := instanceKey{category: cat, scope: targetScope, name: entry.Name}
-		if _, exists := c.pool[key]; !exists {
-			c.pool[key] = &componentMeta{config: entry.Value, status: StatusNone}
+		if _, exists := s.instances[entry.Name]; !exists {
+			s.instances[entry.Name] = &componentMeta{config: entry.Value, status: StatusNone}
 		}
-		order = append(order, entry.Name)
+		s.order = append(s.order, entry.Name)
 	}
-	c.poolOrder[mKey] = order
 
 	if mc.Active != "" {
-		c.defaults[mKey] = mc.Active
-	} else if len(mc.Entries) > 0 && c.defaults[mKey] == "" {
-		c.defaults[mKey] = mc.Entries[0].Name
+		s.defaultName = mc.Active
+	} else if len(mc.Entries) > 0 && s.defaultName == "" {
+		s.defaultName = mc.Entries[0].Name
 	}
+	s.bound = true
 
 	return nil
 }

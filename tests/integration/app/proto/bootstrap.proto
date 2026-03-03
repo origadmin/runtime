@@ -9,7 +9,7 @@ import "config/middleware/v1/middleware.proto"; // Added middleware import
 // Removed unused import: import "config/transport/http/v1/http.proto";
 import "config/transport/v1/transport.proto";
 
-option go_package = "github.com/origadmin/framework/test/integration/app/proto;configs";
+option go_package = "github.com/origadmin/framework/tests/integration/app/proto;configs";
 
 // 1. Construct the top-level Bootstrap "blueprint"
 //    This is the final application, composed entirely of the assembled components above.

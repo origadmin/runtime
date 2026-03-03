@@ -15,14 +15,22 @@ import (
 	"github.com/goexts/generic/configure"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/runtime/engine/bootstrap"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
+	enginecontext "github.com/origadmin/runtime/engine/context"
 	"github.com/origadmin/runtime/engine/metadata"
-	runtimelog "github.com/origadmin/runtime/log"
+)
+
+// Standard configuration interfaces (Contract Re-export)
+type (
+	AppConfig        = component.AppConfig
+	LoggerConfig     = component.LoggerConfig
+	MiddlewareConfig = component.MiddlewareConfig
+	DataConfig       = component.DataConfig
+	RegistryConfig   = component.RegistryConfig
 )
 
 // App defines the application's runtime environment powered by engine.
@@ -49,7 +57,7 @@ func NewWithAppInfo(info *appv1.App, opts ...Option) *App {
 	}
 
 	// Create engine registry at startup
-	reg := engine.NewContainer(nil)
+	reg := engine.NewContainer()
 
 	app := &App{
 		appInfo: info,
@@ -58,10 +66,10 @@ func NewWithAppInfo(info *appv1.App, opts ...Option) *App {
 		cancel:  cancel,
 	}
 
-	// Apply user options FIRST (allows user to register their own factories)
+	// Apply options
 	app = configure.Apply(app, opts)
 
-	// Apply framework DEFAULTS last (will not overwrite user registrations)
+	// Apply framework DEFAULTS last
 	app.registerDefaultFactories()
 
 	return app
@@ -75,48 +83,30 @@ func WithRegistry(fn func(component.Registry)) Option {
 }
 
 func (r *App) registerDefaultFactories() {
-	// Logger (Infrastructure)
-	r.engine.DefaultRegister(metadata.CategoryInfrastructure, func(root any) (*component.ModuleConfig, error) {
-		if p, ok := root.(component.LoggerConfigGetter); ok && p.GetLogger() != nil {
-			l := p.GetLogger()
-			return &component.ModuleConfig{
-				Entries: []component.ConfigEntry{{Name: "logger", Value: l}},
-				Active:  "logger",
-			}, nil
-		}
-		return nil, nil
-	}, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-		var cfg loggerv1.Logger
-		if err := engine.BindConfig(h, &cfg); err != nil {
-			return runtimelog.DefaultLogger, nil
-		}
-		return runtimelog.NewLogger(&cfg), nil
-	}, engine.WithPriority(metadata.PriorityInfrastructure))
+	// Logger Default
+	if !r.engine.Has(metadata.CategoryLogger) {
+		r.engine.Register(metadata.CategoryLogger,
+			DefaultLoggerExtractor,
+			DefaultLoggerProvider,
+			engine.WithPriority(metadata.PriorityInfrastructure))
+	}
 
-	// Registry (Registry)
-	r.engine.DefaultRegister(metadata.CategoryRegistry, func(root any) (*component.ModuleConfig, error) {
-		if p, ok := root.(component.RegistryConfigGetter); ok && p.GetDiscoveries() != nil {
-			raw := p.GetDiscoveries()
-			var entries []component.ConfigEntry
-			for _, c := range raw.Configs {
-				entries = append(entries, component.ConfigEntry{Name: c.Name, Value: c})
-			}
-			return &component.ModuleConfig{Entries: entries, Active: raw.GetActive()}, nil
-		}
-		return nil, nil
-	}, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-		return nil, errors.New("registry provider not fully implemented")
-	}, engine.WithPriority(metadata.PriorityRegistry))
+	// Registry Default
+	if !r.engine.Has(metadata.CategoryRegistry) {
+		r.engine.Register(metadata.CategoryRegistry,
+			DefaultRegistryExtractor,
+			DefaultRegistryProvider,
+			engine.WithPriority(metadata.PriorityRegistry))
+	}
 }
 
-// Load loads and merges configuration metadata.
+// Load loads configuration into Result.
 func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	res, err := bootstrap.New(path, bootOpts...)
 	if err != nil {
 		return fmt.Errorf("bootstrap failed: %w", err)
 	}
 	r.result = res
-	r.engine.BindRoot(res.Config())
 
 	// Refresh app info
 	if boot := res.Bootstrap(); boot != nil && boot.GetApp() != nil {
@@ -131,7 +121,7 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 		}
 	}
 	if biz := res.Config(); biz != nil {
-		if p, ok := biz.(component.AppConfigGetter); ok && p.GetApp() != nil {
+		if p, ok := biz.(component.AppConfig); ok && p.GetApp() != nil {
 			UpdateAppInfo(r.appInfo, p.GetApp())
 		}
 	}
@@ -143,23 +133,40 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	return nil
 }
 
+// WarmUp activates the engine with the loaded configuration.
 func (r *App) WarmUp() error {
-	return r.engine.Init(r.ctx)
+	if r.result == nil || r.result.Config() == nil {
+		return errors.New("runtime: cannot warm-up without loaded configuration")
+	}
+	return r.engine.Init(r.ctx, r.result.Config())
 }
 
 // Getters
 func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
 func (r *App) BusinessConfig() any           { return r.result.Config() }
 func (r *App) Logger() log.Logger {
-	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(metadata.CategoryInfrastructure), "logger")
+	// Navigate via CategoryLogger
+	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(metadata.CategoryLogger), "logger")
 	if err != nil {
-		return runtimelog.DefaultLogger
+		return log.DefaultLogger
 	}
 	return l
 }
 func (r *App) Result() bootstrap.Result      { return r.result }
 func (r *App) Container() component.Registry { return r.engine }
-func (r *App) Context() context.Context      { return r.ctx }
+
+// Context returns the app context.
+func (r *App) Context() context.Context { return r.ctx }
+
+// NewContext creates a new context from the app context.
+func (r *App) NewContext(ctx context.Context) context.Context {
+	return enginecontext.NewContext(ctx)
+}
+
+// NewTrace creates a new context with the given trace ID.
+func (r *App) NewTrace(ctx context.Context, traceID string) context.Context {
+	return enginecontext.NewTrace(ctx, traceID)
+}
 
 func (r *App) Stop() {
 	if r.cancel != nil {

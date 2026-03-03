@@ -11,9 +11,9 @@ import (
 	"buf.build/go/protovalidate"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
-	"github.com/goexts/generic/configure"
 
-	"github.com/origadmin/runtime/context"
+	"context"
+	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
 type Validator interface {
@@ -22,10 +22,11 @@ type Validator interface {
 
 // Server is a validator middleware.
 func Server(ss ...Option) (middleware.Middleware, error) {
-	cfg := configure.Apply(&Options{
+	cfg := &Options{
 		version:  V1,
 		failFast: true,
-	}, ss)
+	}
+	optionutil.Apply(cfg, ss...)
 	v, err := buildValidator(cfg)
 	if v == nil {
 		return nil, err

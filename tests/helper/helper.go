@@ -1,174 +1,50 @@
 package helper
 
 import (
-	"encoding/json" // Add json import
+	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
-	"runtime"
 	"testing"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	"google.golang.org/protobuf/proto"
+	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
-	filesource "github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/helpers/optionutil"
 )
 
-// LoadYAMLConfig loads a YAML configuration file and converts it to a JSON format byte array.
-func LoadYAMLConfig(filename string) ([]byte, error) {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return nil, err
+// LoadConfigFromFile loads configuration from a file and scans into target.
+func LoadConfigFromFile(t *testing.T, path string, target any) (runtimeconfig.KConfig, error) {
+	c := kratosconfig.New(
+		kratosconfig.WithSource(
+			file.NewSource(path),
+		),
+	)
+	err := c.Load()
+	require.NoError(t, err)
+	if target != nil {
+		err = c.Scan(target)
+		require.NoError(t, err)
 	}
-	configPath := filepath.Join(currentDir, filename)
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		return nil, err
-	}
-
-	var configMap map[string]interface{}
-	if err := yaml.Unmarshal(data, &configMap); err != nil {
-		return nil, err
-	}
-
-	// Fix: Marshal to JSON as per the function comment.
-	return json.Marshal(configMap)
+	return c, nil
 }
 
-// LoadMiddleware loads and parses a middleware configuration file using the framework's config.
-func LoadMiddleware(t *testing.T, configPath string) (*middlewarev1.Middlewares, error) {
-	t.Helper()
-
-	source := filesource.NewSource(configPath)
-	c := runtimeconfig.NewKConfig(runtimeconfig.WithKSource(source))
-	if err := c.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-	defer c.Close()
-
-	var middlewares middlewarev1.Middlewares
-	if err := c.Scan(&middlewares); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal middleware config: %w", err)
-	}
-
-	return &middlewares, nil
-}
-
-// SetupIntegrationTest sets up the environment for integration tests.
-// It changes the working directory to the runtime module's root, allowing
-// tests to use consistent relative paths for configuration files.
-// It returns a cleanup function that restores the original working directory.
-func SetupIntegrationTest(t *testing.T) func() {
-	t.Helper()
-
-	// Get the directory of the test file that called this helper.
-	_, filename, _, ok := runtime.Caller(1)
-	if !ok {
-		t.Fatalf("Failed to get caller info for test setup")
-	}
-
-	// Assuming the caller is in .../test/integration/config, we go up 3 levels to the runtime root.
-	runtimeRoot := filepath.Join(filepath.Dir(filename), "..", "..", "..")
-
-	// Save the original working directory.
-	originalCwd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Failed to get original working directory: %v", err)
-	}
-
-	// Change to the runtime module root.
-	if err := os.Chdir(runtimeRoot); err != nil {
-		t.Fatalf("Failed to change working directory to runtime root: %v", err)
-	}
-
-	// Return a cleanup function to restore the original directory.
-	return func() {
-		if err := os.Chdir(originalCwd); err != nil {
-			t.Errorf("Failed to restore original working directory: %v", err)
-		}
-	}
-}
-
-// LoadConfigFromFile loads a configuration from the specified file path into a proto.Message
-// using the framework's config package.
-func LoadConfigFromFile(t *testing.T, configPath string, v proto.Message) {
-	t.Helper()
-	source := filesource.NewSource(configPath)
-	c := runtimeconfig.NewKConfig(runtimeconfig.WithKSource(source))
-	if err := c.Load(); err != nil {
-		t.Fatalf("Failed to load config from %s: %v", configPath, err)
-	}
-	defer c.Close()
-
-	if err := c.Scan(v); err != nil {
-		t.Fatalf("Failed to scan config from %s into struct: %v", configPath, err)
-	}
-}
-
-// mockWatcher implements frameworkConfig.Watcher for testing purposes.
-type mockWatcher struct {
-	data map[string]string
-}
-
-func (mw *mockWatcher) Next() ([]*kratosconfig.KeyValue, error) {
-	kvs := make([]*runtimeconfig.KKeyValue, 0, len(mw.data))
-	for k, v := range mw.data {
-		kvs = append(kvs, &runtimeconfig.KKeyValue{
-			Key:    k,
-			Value:  []byte(v),
-			Format: "yaml", // Assuming YAML format for simplicity in mock
-		})
-	}
-	return kvs, nil
-}
-
-// Stop is a no-op for the mock watcher.
-func (mw *mockWatcher) Stop() error {
-	return nil
-}
-
-// MockConsulSource is a mock implementation of runtimeconfig.Source for Consul.
+// MockConsulSource is a mock implementation of a config source for testing purposes.
 type MockConsulSource struct {
 	config *sourcev1.SourceConfig
 	// mockEntries stores the data for each key, along with its intended format.
 	mockEntries map[string]struct {
-		Value  interface{} // Can be string, map[string]interface{}, etc.
-		Format string      // "string", "json", "yaml"
-	}
-}
-
-// WithMockData provides mock data for MockConsulSource.
-// It expects string values, which will be treated as YAML content.
-// This function maintains backward compatibility with the original signature.
-func WithMockData(data map[string]string) func(*MockConsulSource) {
-	return func(m *MockConsulSource) {
-		if m.mockEntries == nil {
-			m.mockEntries = make(map[string]struct {
-				Value  interface{}
-				Format string
-			})
-		}
-		for k, v := range data {
-			m.mockEntries[k] = struct {
-				Value  interface{}
-				Format string
-			}{
-				Value:  v,
-				Format: "yaml", // Original behavior was to treat these as YAML strings
-			}
-		}
+		Value  interface{}
+		Format string
 	}
 }
 
 // WithMockDataString provides mock data for MockConsulSource, allowing specification of the format for string values.
-func WithMockDataString(data map[string]string, format string) func(*MockConsulSource) {
-	return func(m *MockConsulSource) {
+func WithMockDataString(data map[string]string, format string) options.Option {
+	return optionutil.Update(func(m *MockConsulSource) {
 		if m.mockEntries == nil {
 			m.mockEntries = make(map[string]struct {
 				Value  interface{}
@@ -184,7 +60,7 @@ func WithMockDataString(data map[string]string, format string) func(*MockConsulS
 				Format: format,
 			}
 		}
-	}
+	})
 }
 
 // WithMockDataJSON provides mock data for MockConsulSource, marshaling values to JSON.

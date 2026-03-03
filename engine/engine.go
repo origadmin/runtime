@@ -25,6 +25,7 @@ const (
 	ClientScope = metadata.ClientScope
 
 	CategoryInfrastructure = metadata.CategoryInfrastructure
+	CategoryLogger         = metadata.CategoryLogger
 	CategoryRegistry       = metadata.CategoryRegistry
 	CategoryClient         = metadata.CategoryClient
 	CategoryServer         = metadata.CategoryServer
@@ -47,9 +48,9 @@ const (
 	PriorityServerStack    = metadata.PriorityServerStack
 )
 
-// NewContainer creates a new engine container with the root business config.
-func NewContainer(root any) Registry {
-	return container.NewContainer(root)
+// NewContainer creates a new engine container.
+func NewContainer() Registry {
+	return container.NewContainer()
 }
 
 // In is a helper to get a scoped handle from a registry.

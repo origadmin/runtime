@@ -2,7 +2,7 @@
 package service
 
 import (
-	"github.com/origadmin/runtime/context"
+	"context"
 )
 
 // ServerRegistrar defines the single, universal entry point for service registration.

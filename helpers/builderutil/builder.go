@@ -1,76 +1,88 @@
-// Package builderutil implements the functions, types, and contracts for the module.
 package builderutil
 
 import (
-	"github.com/origadmin/runtime/context"
-	"github.com/origadmin/runtime/contracts/builder"
-	"github.com/origadmin/runtime/contracts/options"
+	"context"
+	"fmt"
+	"sync"
 )
 
-// FuncBuilder is a generic builder implementation that uses a Func
-type FuncBuilder[T any, C any] struct {
-	config C
-	opts   []options.Option
-	fn     builder.Func[T, C]
-}
+type (
+	Registry[T any] interface {
+		Register(name string, f T)
+		Get(name string) (T, bool)
+		Names() []string
+		RegisteredFactories() map[string]T
+		Reset()
+	}
 
-// NewFuncBuilder creates a new FuncBuilder with the given Func
-func NewFuncBuilder[T any, C any](fn builder.Func[T, C]) *FuncBuilder[T, C] {
-	return &FuncBuilder[T, C]{fn: fn}
-}
+	registry[T any] struct {
+		mu        sync.RWMutex
+		factories map[string]T
+	}
+)
 
-// WithConfig implements Builder.WithConfig
-func (b *FuncBuilder[T, C]) WithConfig(config C) builder.Builder[T, C] {
-	b.config = config
-	return b
-}
-
-// WithOptions implements Builder.WithOptions
-func (b *FuncBuilder[T, C]) WithOptions(opts ...options.Option) builder.Builder[T, C] {
-	b.opts = append(b.opts, opts...)
-	return b
-}
-
-// Build implements Builder.Build
-func (b *FuncBuilder[T, C]) Build() (T, error) {
-	return b.fn(b.config, b.opts...)
-}
-
-// ContextFuncBuilder is a generic builder implementation that uses a ContextFunc
-type ContextFuncBuilder[T any, C any] struct {
-	ctx    context.Context
-	config C
-	opts   []options.Option
-	fn     builder.ContextFunc[T, C]
-}
-
-// NewContextFuncBuilder creates a new ContextFuncBuilder with the given ContextFunc
-func NewContextFuncBuilder[T any, C any](fn builder.ContextFunc[T, C]) *ContextFuncBuilder[T, C] {
-	return &ContextFuncBuilder[T, C]{
-		ctx: context.Background(),
-		fn:  fn,
+func New[T any]() Registry[T] {
+	return &registry[T]{
+		factories: make(map[string]T),
 	}
 }
 
-// WithConfig implements Builder.WithConfig for ContextFuncBuilder
-func (b *ContextFuncBuilder[T, C]) WithConfig(config C) builder.Builder[T, C] {
-	b.config = config
-	return b
+func (r *registry[T]) Register(name string, f T) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.factories[name] = f
 }
 
-// WithContext sets the context for the ContextFuncBuilder
-func (b *ContextFuncBuilder[T, C]) WithContext(ctx context.Context) *ContextFuncBuilder[T, C] {
-	b.ctx = ctx
-	return b
+func (r *registry[T]) Get(name string) (T, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	f, ok := r.factories[name]
+	return f, ok
 }
 
-// WithOptions implements Builder.WithOptions for ContextFuncBuilder
-func (b *ContextFuncBuilder[T, C]) WithOptions(opts ...options.Option) builder.Builder[T, C] {
-	b.opts = append(b.opts, opts...)
-	return b
+func (r *registry[T]) Names() []string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	names := make([]string, 0, len(r.factories))
+	for name := range r.factories {
+		names = append(names, name)
+	}
+	return names
 }
 
-// Build implements Builder.Build for ContextFuncBuilder
-func (b *ContextFuncBuilder[T, C]) Build() (T, error) {
-	return b.fn(b.ctx, b.config, b.opts...)
+func (r *registry[T]) RegisteredFactories() map[string]T {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	res := make(map[string]T, len(r.factories))
+	for k, v := range r.factories {
+		res[k] = v
+	}
+	return res
+}
+
+func (r *registry[T]) Reset() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.factories = make(map[string]T)
+}
+
+func Get[T any](ctx context.Context, r Registry[T], name string) (T, error) {
+	f, ok := r.Get(name)
+	if !ok {
+		var zero T
+		return zero, fmt.Errorf("factory %s not found", name)
+	}
+	return f, nil
+}
+
+func MustGet[T any](ctx context.Context, r Registry[T], name string) T {
+	f, err := Get(ctx, r, name)
+	if err != nil {
+		panic(err)
+	}
+	return f
+}
+
+func Names[T any](ctx context.Context, r Registry[T]) []string {
+	return r.Names()
 }

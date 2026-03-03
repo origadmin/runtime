@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	projectContext "github.com/origadmin/runtime/context"
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/options"
 )
@@ -20,7 +19,7 @@ func (m *MockServer) Stop(ctx context.Context) error  { return nil }
 // MockClient implements contracts.Client for testing purposes.
 type MockClient struct{}
 
-// MockProtocolFactory implements contracts.ProtocolFactory for testing purposes.
+// MockProtocolFactory implements ProtocolFactory for testing purposes.
 type MockProtocolFactory struct {
 	NewServerError error
 	NewClientError error
@@ -35,12 +34,13 @@ func (m *MockProtocolFactory) NewServer(cfg *transportv1.Server, opts ...options
 }
 
 // NewClient method of MockProtocolFactory
-func (m *MockProtocolFactory) NewClient(ctx projectContext.Context, cfg *transportv1.Client, opts ...options.Option) (contracts.Client, error) {
+func (m *MockProtocolFactory) NewClient(ctx context.Context, cfg *transportv1.Client, opts ...options.Option) (contracts.Client, error) {
 	if m.NewClientError != nil {
 		return nil, m.NewClientError
 	}
 	return &MockClient{}, nil
 }
+
 
 // Helper to reset the registry for isolated tests
 func resetProtocolRegistry() {
@@ -58,7 +58,7 @@ func TestRegisterAndGetProtocol(t *testing.T) {
 		t.Errorf("Expected protocol 'mock_protocol' to be registered, but it was not found.")
 	}
 
-	if factory != aFactory {
+	if f, ok := factory.(*MockProtocolFactory); !ok || f != aFactory {
 		t.Errorf("Expected retrieved factory to be the same as the registered one, got %v, want %v", factory, aFactory)
 	}
 

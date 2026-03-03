@@ -25,7 +25,7 @@ func (s *MiddlewareTestSuite) TestLoadAndBuild() {
 
 	// 1. Initialize and load the runtime App
 	rtInstance := rt.New("MiddlewareTest", "1.0.0")
-	err := rtInstance.Load("configs/config.yaml", bootstrap.WithDirectly())
+	err := rtInstance.Load("configs/config.yaml", bootstrap.WithDirectly(true))
 	require.NoError(t, err)
 	defer rtInstance.Config().Close()
 

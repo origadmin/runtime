@@ -37,7 +37,7 @@ func (s selectorFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 	if len(includes) > 0 {
 		names = append(names, includes...)
 	} else {
-		names = maps.Keys(mwOpts.Carrier.Clients) // Changed from mwOpts.Carrier.Clients
+		names = maps.Keys(mwOpts.Carrier.Clients)
 	}
 
 	// Apply excludes filter
@@ -98,7 +98,9 @@ func (s selectorFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 	if len(includes) > 0 {
 		names = append(names, includes...)
 	} else {
-		names = maps.Keys(mwOpts.Carrier.Servers) // Changed from mwOpts.Carrier.Servers
+		for n := range mwOpts.Carrier.Servers {
+			names = append(names, n)
+		}
 	}
 
 	// Apply excludes filter

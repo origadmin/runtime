@@ -28,12 +28,12 @@ const (
 )
 
 // Bootstrap is the top-level configuration for an API Gateway
-// This configuration initializes an API Gateway service that can provide multiple server contracts
+// This configuration initializes an API Gateway service that can provide multiple server interfaces
 // and call multiple downstream microservices
 type Bootstrap struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Server configuration list
-	// Gateways typically expose multiple server contracts, for example:
+	// Gateways typically expose multiple server interfaces, for example:
 	// - HTTP RESTful API for external access
 	// - gRPC interface
 	// - - WebSocket service

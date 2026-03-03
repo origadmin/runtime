@@ -14,7 +14,7 @@ import "config/transport/v1/transport.proto";
 import "google/protobuf/struct.proto";
 // Removed import for runtime/websocket/v1/websocket.proto
 
-option go_package = "github.com/origadmin/runtime/test/integration/config/proto;configs";
+option go_package = "github.com/origadmin/runtime/tests/integration/config/proto;configs";
 
 // TestConfig is the unified configuration structure for all integration tests.
 message TestConfig {

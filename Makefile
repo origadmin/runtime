@@ -73,16 +73,16 @@ EXAMPLE_PLUGINS := $(PROTOC_GO_OUT):. \
 # Proto file discovery and cleanup commands
 ifeq ($(GOHOSTOS), windows)
     API_PROTO_FILES           := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./api/proto -Filter *.proto | Resolve-Path -Relative) -join ' '"))
-    TEST_PROTO_DIRS           := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./test/integration -Directory -Filter proto | Resolve-Path -Relative) -join ' '"))
-    EXAMPLE_PROTO_FILES       := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./examples/protos -Filter *.proto | Resolve-Path -Relative) -join ' '"))
-    CLEAN_EXAMPLE_PROTOS_CMD  := Get-ChildItem -Recurse ./examples/protos -Filter *.pb.go | Remove-Item -Force
-    CLEAN_TEST_PROTOS_CMD     := Get-ChildItem -Recurse ./test/integration -Filter *.pb.go | Remove-Item -Force
+    TEST_PROTO_DIRS           := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./tests/integration -Directory -Filter proto -ErrorAction SilentlyContinue | Resolve-Path -Relative) -join ' '"))
+    EXAMPLE_PROTO_FILES       := $(subst \,/, $(shell powershell -Command "(Get-ChildItem -Recurse ./examples/protos -Filter *.proto -ErrorAction SilentlyContinue | Resolve-Path -Relative) -join ' '"))
+    CLEAN_EXAMPLE_PROTOS_CMD  := Get-ChildItem -Recurse ./examples/protos -Filter *.pb.go -ErrorAction SilentlyContinue | Remove-Item -Force
+    CLEAN_TEST_PROTOS_CMD     := Get-ChildItem -Recurse ./tests/integration -Filter *.pb.go -ErrorAction SilentlyContinue | Remove-Item -Force
 else
     API_PROTO_FILES           := $(shell find ./api/proto -name '*.proto')
-    TEST_PROTO_DIRS           := $(shell find ./test/integration -maxdepth 2 -type d -name "proto")
+    TEST_PROTO_DIRS           := $(shell find ./tests/integration -maxdepth 2 -type d -name "proto")
     EXAMPLE_PROTO_FILES       := $(shell find ./examples/protos -name '*.proto')
     CLEAN_EXAMPLE_PROTOS_CMD  := find ./examples/protos -name '*.pb.go' -delete
-    CLEAN_TEST_PROTOS_CMD     := find ./test/integration -name '*.pb.go' -delete
+    CLEAN_TEST_PROTOS_CMD     := find ./tests/integration -name '*.pb.go' -delete
 endif
 
 
