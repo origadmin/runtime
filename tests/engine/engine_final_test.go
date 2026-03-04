@@ -26,14 +26,14 @@ func TestCustomRegistryOverriding(t *testing.T) {
 	reg.Register(runtime.CategoryLogger, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		t.Log("Creating custom logger from manual registration")
 		return &customLogger{}, nil
-	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{{Name: "logger", Value: nil}},
 			Active:  "logger",
 		}, nil
 	}), engine.WithPriority(100))
 
-	// 3. Directly load configuration into the container (Injecting, not loading from file)
+	// 3. Directly load configuration into the container (Injecting)
 	if err := reg.Load(ctx, struct{}{}); err != nil {
 		t.Fatalf("Container Load failed: %v", err)
 	}

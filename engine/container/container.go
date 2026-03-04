@@ -39,10 +39,10 @@ type moduleState struct {
 }
 
 type providerEntry struct {
-	scopes    map[component.Scope]bool
-	provider  component.Provider
-	extractor component.Extractor
-	priority  component.Priority
+	scopes   map[component.Scope]bool
+	provider component.Provider
+	resolver component.Resolver
+	priority component.Priority
 }
 
 type containerImpl struct {
@@ -52,14 +52,22 @@ type containerImpl struct {
 	stateMu sync.RWMutex
 	states  map[moduleKey]*moduleState
 
-	mu sync.RWMutex
+	mu             sync.RWMutex
+	globalResolver component.Resolver
 }
 
+// NewContainer returns a clean, parameterless container instance.
 func NewContainer() component.Registry {
 	return &containerImpl{
 		registry: make(map[component.Category][]*providerEntry),
 		states:   make(map[moduleKey]*moduleState),
 	}
+}
+
+func (c *containerImpl) SetResolver(res component.Resolver) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.globalResolver = res
 }
 
 func (c *containerImpl) getModuleState(mKey moduleKey) *moduleState {
@@ -138,17 +146,11 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 		opt(o)
 	}
 
-	for _, s := range o.Scopes {
-		if component.IsReserved(string(s)) && s != component.GlobalScope {
-			panic(fmt.Sprintf("engine: scope name '%s' is reserved", s))
-		}
-	}
-
 	entry := &providerEntry{
-		scopes:    make(map[component.Scope]bool),
-		provider:  p,
-		extractor: o.Extractor,
-		priority:  o.Priority,
+		scopes:   make(map[component.Scope]bool),
+		provider: p,
+		resolver: o.Resolver,
+		priority: o.Priority,
 	}
 	for _, s := range o.Scopes {
 		entry.scopes[s] = true
@@ -193,11 +195,16 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 	for _, cat := range targets {
 		for _, scope := range standardScopes {
 			entry, found := c.findProvider(cat, scope)
-			if !found || entry.extractor == nil {
+			if !found {
 				continue
 			}
 
-			if err := c.bindWithSource(cat, scope, entry, source, o.Name); err != nil {
+			res := o.Resolver
+			if res == nil {
+				res = c.globalResolver
+			}
+
+			if err := c.bindWithSource(cat, scope, entry, source, res, o.Name); err != nil {
 				continue
 			}
 		}
@@ -205,13 +212,22 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 	return nil
 }
 
-func (c *containerImpl) bindWithSource(cat component.Category, scope component.Scope, entry *providerEntry, source any, filterName string) error {
+func (c *containerImpl) bindWithSource(cat component.Category, scope component.Scope, entry *providerEntry, source any, resolver component.Resolver, filterName string) error {
 	mKey := moduleKey{category: cat, scope: scope}
 	s := c.getModuleState(mKey)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	mc, err := entry.extractor(source)
+	var mc *component.ModuleConfig
+	var err error
+
+	// Priority: Local Resolver (formerly Extractor) > Load Option Resolver > Container Global Resolver
+	if entry.resolver != nil {
+		mc, err = entry.resolver(source, cat)
+	} else if resolver != nil {
+		mc, err = resolver(source, cat)
+	}
+
 	if err != nil || mc == nil {
 		return err
 	}

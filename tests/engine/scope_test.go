@@ -30,7 +30,7 @@ func TestScopeIsolationAndMatching(t *testing.T) {
 			}
 			return "GlobalProp", nil
 		},
-		engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 			return &component.ModuleConfig{
 				Entries: []component.ConfigEntry{{Name: "propagation", Value: nil}},
 			}, nil
@@ -61,7 +61,7 @@ func TestScopeIsolationAndMatching(t *testing.T) {
 		func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 			return "GlobalOverride", nil
 		},
-		engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 			return &component.ModuleConfig{
 				Entries: []component.ConfigEntry{{Name: "override", Value: nil}},
 			}, nil

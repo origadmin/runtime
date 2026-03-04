@@ -27,7 +27,7 @@ func TestBackendMigrationSimulation(t *testing.T) {
 	// 1. Registry (Infrastructure)
 	reg.Register("infrastructure", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		return "MockRegistry", nil
-	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{{Name: "default", Value: nil}},
 		}, nil
@@ -36,22 +36,20 @@ func TestBackendMigrationSimulation(t *testing.T) {
 	// 2. Middleware
 	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		cfg := h.Config().(*backendConfig)
-		// Access other dependencies from the same container
 		regInst, err := h.In("infrastructure").Get(ctx, "")
 		if err != nil {
 			return nil, err
 		}
 
 		return &BackendMiddleware{Name: cfg.Name, Registry: regInst}, nil
-	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{{Name: "authn", Value: &backendConfig{Name: "authn-mw"}}},
 		}, nil
 	}), engine.WithPriority(500), engine.WithScopes("server"))
 
-	// 3. Load config
-	root := "dummy_root"
-	if err := reg.Load(ctx, root); err != nil {
+	// 3. Load configuration
+	if err := reg.Load(ctx, "dummy_root"); err != nil {
 		t.Fatalf("Load failed: %v", err)
 	}
 

@@ -18,11 +18,9 @@ type (
 )
 
 type mockAuthn struct{}
-
 func (m *mockAuthn) Authenticate() bool { return true }
 
 type mockSkipper struct{}
-
 func (m *mockSkipper) Skip() bool { return true }
 
 type mockMiddleware struct {
@@ -39,14 +37,14 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 	// 1. Register Infrastructure (Authn)
 	reg.Register("infrastructure", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		return &mockAuthn{}, nil
-	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "jwt", Value: nil}}}, nil
 	}))
 
 	// 2. Register Skipper
 	reg.Register("skipper", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		return &mockSkipper{}, nil
-	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "default", Value: nil}}}, nil
 	}))
 
@@ -62,7 +60,7 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 			return nil, err
 		}
 		return &mockMiddleware{name: "authz-mw", auth: auth, skip: skip}, nil
-	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "authz-mw", Value: nil}}}, nil
 	}), engine.WithPriority(500), engine.WithScopes("server"))
 

@@ -23,13 +23,13 @@ type Category string
 type Priority int
 
 const (
-	// GlobalScope is the default fallback scope for the system.
+	// GlobalScope is the default system fallback scope.
 	GlobalScope Scope = "_global"
-	// ReservedPrefix is the prefix used for system-reserved identifiers.
+	// ReservedPrefix defines identifiers owned by the system.
 	ReservedPrefix = "_"
 )
 
-// IsReserved checks if the given identifier belongs to the system-reserved namespace.
+// IsReserved checks if the metadata string is system-reserved.
 func IsReserved(s string) bool {
 	return len(s) > 0 && s[0] == '_'
 }
@@ -72,24 +72,34 @@ type ModuleConfig struct {
 	Active  string
 }
 
-type Extractor func(root any) (*ModuleConfig, error)
+// Resolver is the unified type for configuration resolution.
+type Resolver func(source any, cat Category) (*ModuleConfig, error)
+
+// Registration carries the metadata for a component capability.
+type Registration struct {
+	Category Category
+	Provider Provider
+	Options  []RegisterOption
+}
 
 type Registry interface {
 	Handle
 	// Register declares a component capability.
 	Register(c Category, p Provider, opts ...RegisterOption)
-	// Has checks if a component category is registered.
+	// Has checks if a category is registered.
 	Has(c Category, opts ...RegisterOption) bool
-	// Load injects a configuration source and triggers binding.
+	// Load injects a configuration source and triggers component binding.
 	Load(ctx context.Context, source any, opts ...LoadOption) error
+	// SetResolver updates the global resolution strategy.
+	SetResolver(res Resolver)
 }
 
 // --- Option Definitions ---
 
 type RegistrationOptions struct {
-	Extractor Extractor
-	Scopes    []Scope
-	Priority  Priority
+	Resolver Resolver
+	Scopes   []Scope
+	Priority Priority
 }
 
 type RegisterOption func(*RegistrationOptions)
@@ -103,6 +113,7 @@ type InOption func(*InOptions)
 type LoadOptions struct {
 	Category Category
 	Name     string
+	Resolver Resolver
 }
 
 type LoadOption func(*LoadOptions)

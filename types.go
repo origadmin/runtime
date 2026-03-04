@@ -15,6 +15,11 @@ type Category = component.Category
 type Scope = component.Scope
 type Priority = component.Priority
 
+const (
+	// GlobalScope is the default fallback scope for the system.
+	GlobalScope = component.GlobalScope
+)
+
 // --- Category Conventions ---
 
 const (
@@ -36,7 +41,6 @@ const (
 // --- Scope Conventions ---
 
 const (
-	GlobalScope       = component.GlobalScope
 	ServerScope Scope = "server"
 	ClientScope Scope = "client"
 )
@@ -74,7 +78,7 @@ func WithPriority(p Priority) RegisterOption {
 	return engine.WithPriority(p)
 }
 
-// WithExtractor specifies a local config extractor.
-func WithExtractor(e component.Extractor) RegisterOption {
-	return engine.WithExtractor(e)
+// WithResolver specifies a local config resolver for a component.
+func WithResolver(res component.Resolver) RegisterOption {
+	return engine.WithResolverOption(res)
 }
