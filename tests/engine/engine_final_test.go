@@ -9,7 +9,6 @@ import (
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
-	"github.com/origadmin/runtime/engine/metadata"
 )
 
 type customLogger struct {
@@ -19,29 +18,31 @@ type customLogger struct {
 func TestCustomRegistryOverriding(t *testing.T) {
 	ctx := context.Background()
 
-	// 1. Initialize App with a custom Registry config option
-	app := runtime.New("test-app", "1.0.0", runtime.WithRegistry(func(reg component.Registry) {
-		reg.Register(metadata.CategoryLogger, func(root any) (*component.ModuleConfig, error) {
-			return &component.ModuleConfig{
-				Entries: []component.ConfigEntry{{Name: "logger", Value: nil}},
-				Active:  "logger",
-			}, nil
-		}, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-			t.Log("Creating custom logger from user registration")
-			return &customLogger{}, nil
-		}, engine.WithPriority(metadata.PriorityInfrastructure))
-	}))
+	// 1. Create App instance
+	app := runtime.New("test-app", "1.0.0")
+	reg := app.Container()
 
-	// 2. Explicit Activation via WarmUp
-	if err := app.Container().Init(ctx, struct{}{}); err != nil {
-		t.Fatalf("Init failed: %v", err)
+	// 2. Register Custom Logger (Simulating init() behavior)
+	reg.Register(runtime.CategoryLogger, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		t.Log("Creating custom logger from manual registration")
+		return &customLogger{}, nil
+	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{
+			Entries: []component.ConfigEntry{{Name: "logger", Value: nil}},
+			Active:  "logger",
+		}, nil
+	}), engine.WithPriority(100))
+
+	// 3. Directly load configuration into the container (Injecting, not loading from file)
+	if err := reg.Load(ctx, struct{}{}); err != nil {
+		t.Fatalf("Container Load failed: %v", err)
 	}
 
-	// 3. Verify
+	// 4. Verify Override
 	l := app.Logger()
 	if _, ok := l.(*customLogger); !ok {
-		t.Fatalf("Expected customLogger, got %T.", l)
+		t.Fatalf("Expected customLogger, got %T. User-registered factory should take precedence.", l)
 	}
 
-	t.Log("Successfully verified that user-registered factory takes precedence over DefaultRegister.")
+	t.Log("Successfully verified that manual/init registration takes precedence.")
 }

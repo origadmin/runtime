@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/origadmin/runtime/engine/container"
-	"github.com/origadmin/runtime/engine/metadata"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
@@ -21,56 +20,58 @@ func TestScopeIsolationAndMatching(t *testing.T) {
 	ctx := context.Background()
 
 	// 1. Unified Registration (Universal)
-	// Visible to all because no Scopes are specified.
 	reg.Register("middleware",
-		func(root any) (*component.ModuleConfig, error) {
-			return &component.ModuleConfig{
-				Entries: []component.ConfigEntry{{Name: "propagation", Value: nil}},
-			}, nil
-		},
 		func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-			if h.Scope() == metadata.ServerScope {
+			if h.Scope() == "server" {
 				return &ServerMiddleware{Name: "ServerProp"}, nil
 			}
-			if h.Scope() == metadata.ClientScope {
+			if h.Scope() == "client" {
 				return &ClientMiddleware{Name: "ClientProp"}, nil
 			}
 			return "GlobalProp", nil
-		})
+		},
+		engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+			return &component.ModuleConfig{
+				Entries: []component.ConfigEntry{{Name: "propagation", Value: nil}},
+			}, nil
+		}))
 
-	// Initialize the container
-	_ = reg.Init(ctx, "dummy_config")
+	// 2. Load configuration into container
+	_ = reg.Load(ctx, "dummy_config")
 
-	// 2. Retrieval from Server Scope
-	hServer := reg.In("middleware", engine.WithScope(metadata.ServerScope))
+	// 3. Retrieval from Server Perspective
+	hServer := reg.In("middleware", engine.WithInScope("server"))
 	instServer, err := hServer.Get(ctx, "propagation")
 	assert.NoError(t, err)
 	assert.IsType(t, &ServerMiddleware{}, instServer)
 	assert.Equal(t, "ServerProp", instServer.(*ServerMiddleware).Name)
 
-	// 3. Retrieval from Client Scope
-	hClient := reg.In("middleware", engine.WithScope(metadata.ClientScope))
+	// 4. Retrieval from Client Perspective
+	hClient := reg.In("middleware", engine.WithInScope("client"))
 	instClient, err := hClient.Get(ctx, "propagation")
 	assert.NoError(t, err)
 	assert.IsType(t, &ClientMiddleware{}, instClient)
 	assert.Equal(t, "ClientProp", instClient.(*ClientMiddleware).Name)
 
-	// 4. Verification of Physical Isolation
+	// 5. Verification of Physical Isolation
 	assert.NotEqual(t, instServer, instClient)
 
-	// 5. Explicit Override & Fallback
+	// 6. Explicit Override & Fallback to _global
 	reg.Register("middleware",
-		func(root any) (*component.ModuleConfig, error) {
-			return &component.ModuleConfig{
-				Entries: []component.ConfigEntry{{Name: "override", Value: nil}},
-			}, nil
-		},
 		func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 			return "GlobalOverride", nil
 		},
-		engine.WithScopes(metadata.GlobalScope))
+		engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+			return &component.ModuleConfig{
+				Entries: []component.ConfigEntry{{Name: "override", Value: nil}},
+			}, nil
+		}),
+		engine.WithScopes(component.GlobalScope))
 
-	hScoped := reg.In("middleware", engine.WithScope(metadata.ServerScope))
+	// Re-load to trigger binding
+	_ = reg.Load(ctx, "dummy_config")
+
+	hScoped := reg.In("middleware", engine.WithInScope("server"))
 	instOverride, err := hScoped.Get(ctx, "override")
 	assert.NoError(t, err)
 	assert.Equal(t, "GlobalOverride", instOverride)

@@ -4,94 +4,66 @@ import (
 	"context"
 	"testing"
 
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
-	"github.com/origadmin/runtime/engine/metadata"
+	"github.com/origadmin/runtime/engine/container"
 )
 
-// --- 1. Simulate Backend's Strong-Typed Config ---
-
-type BackendConfig struct {
-	Middlewares *middlewarev1.Middlewares
-	Discovery   *discoveryv1.Discovery
-}
-
-// --- 2. Simulating Middleware Implementation ---
-
+// Mock Backend Types
 type BackendMiddleware struct {
 	Name     string
-	Type     string
-	Registry string
+	Registry any
+}
+
+type backendConfig struct {
+	Name string
 }
 
 func TestBackendMigrationSimulation(t *testing.T) {
+	reg := container.NewContainer()
 	ctx := context.Background()
 
-	// Step 1: Initialize Root Config
-	root := &BackendConfig{
-		Middlewares: &middlewarev1.Middlewares{
-			Configs: []*middlewarev1.Middleware{
-				{Name: "authn", Type: "jwt", Enabled: true},
-				{Name: "authz", Type: "casbin", Enabled: true},
-			},
-		},
-		Discovery: &discoveryv1.Discovery{
-			Name: "consul",
-			Type: "consul",
-		},
-	}
-
-	// Step 2: Initialize Container
-	reg := engine.NewContainer()
-
-	// Step 3: Register Registry Factory
-	reg.Register(metadata.CategoryRegistry, func(r any) (*engine.ModuleConfig, error) {
-		raw := r.(*BackendConfig).Discovery
-		return &engine.ModuleConfig{
-			Entries: []engine.ConfigEntry{{Name: raw.Name, Value: raw}},
-			Active:  raw.Name,
+	// 1. Registry (Infrastructure)
+	reg.Register("infrastructure", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		return "MockRegistry", nil
+	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{
+			Entries: []component.ConfigEntry{{Name: "default", Value: nil}},
 		}, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
-		var cfg discoveryv1.Discovery
-		engine.BindConfig(h, &cfg)
-		return cfg.Name, nil
-	}, engine.WithPriority(metadata.PriorityRegistry))
+	}), engine.WithPriority(100))
 
-	// Step 4: Register Middleware Factory
-	reg.Register(metadata.CategoryMiddleware, func(r any) (*engine.ModuleConfig, error) {
-		raw := r.(*BackendConfig).Middlewares
-		var entries []engine.ConfigEntry
-		for _, c := range raw.Configs {
-			entries = append(entries, engine.ConfigEntry{Name: c.Name, Value: c})
-		}
-		return &engine.ModuleConfig{Entries: entries}, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
-		var cfg middlewarev1.Middleware
-		engine.BindConfig(h, &cfg)
-
-		regInst, err := engine.GetDefault[string](ctx, h.In(metadata.CategoryRegistry))
+	// 2. Middleware
+	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		cfg := h.Config().(*backendConfig)
+		// Access other dependencies from the same container
+		regInst, err := h.In("infrastructure").Get(ctx, "")
 		if err != nil {
 			return nil, err
 		}
 
 		return &BackendMiddleware{Name: cfg.Name, Registry: regInst}, nil
-	}, engine.WithPriority(metadata.PriorityServerStack), engine.WithScopes(metadata.ServerScope))
+	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{
+			Entries: []component.ConfigEntry{{Name: "authn", Value: &backendConfig{Name: "authn-mw"}}},
+		}, nil
+	}), engine.WithPriority(500), engine.WithScopes("server"))
 
-	// Step 5: Activate and Verify
-	if err := reg.Init(ctx, root); err != nil {
-		t.Fatalf("Init failed: %v", err)
+	// 3. Load config
+	root := "dummy_root"
+	if err := reg.Load(ctx, root); err != nil {
+		t.Fatalf("Load failed: %v", err)
 	}
 
-	mwH := reg.In(metadata.CategoryMiddleware, engine.WithScope(metadata.ServerScope))
-
+	// 4. Verify
+	mwH := reg.In("middleware", engine.WithInScope("server"))
 	m1, err := engine.Cast[*BackendMiddleware](ctx, mwH, "authn")
 	if err != nil {
 		t.Fatalf("Failed to create authn: %v", err)
 	}
-	if m1.Name != "authn" {
-		t.Errorf("Expected authn, got %s", m1.Name)
+
+	if m1.Name != "authn-mw" || m1.Registry != "MockRegistry" {
+		t.Errorf("Unexpected results: %+v", m1)
 	}
 
 	t.Log("Backend migration simulation successful.")

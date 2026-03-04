@@ -14,8 +14,25 @@ import (
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/contracts/options"
-	"github.com/origadmin/runtime/engine/metadata"
 )
+
+// --- Engine Metadata Types ---
+
+type Scope string
+type Category string
+type Priority int
+
+const (
+	// GlobalScope is the default fallback scope for the system.
+	GlobalScope Scope = "_global"
+	// ReservedPrefix is the prefix used for system-reserved identifiers.
+	ReservedPrefix = "_"
+)
+
+// IsReserved checks if the given identifier belongs to the system-reserved namespace.
+func IsReserved(s string) bool {
+	return len(s) > 0 && s[0] == '_'
+}
 
 // --- Configuration Sniffing Contracts ---
 
@@ -36,11 +53,11 @@ type (
 type Handle interface {
 	Get(ctx context.Context, name string) (any, error)
 	Iter(ctx context.Context) iter.Seq2[string, any]
-	In(category metadata.Category, opts ...InOption) Handle
+	In(category Category, opts ...InOption) Handle
 	BindConfig(target any) error
 	Config() any
-	Scope() metadata.Scope
-	Category() metadata.Category
+	Scope() Scope
+	Category() Category
 }
 
 type Provider func(ctx context.Context, h Handle, opts ...options.Option) (any, error)
@@ -59,20 +76,33 @@ type Extractor func(root any) (*ModuleConfig, error)
 
 type Registry interface {
 	Handle
-	Register(c metadata.Category, e Extractor, p Provider, opts ...RegisterOption)
-	Has(c metadata.Category, opts ...RegisterOption) bool
-	Init(ctx context.Context, root any) error
+	// Register declares a component capability.
+	Register(c Category, p Provider, opts ...RegisterOption)
+	// Has checks if a component category is registered.
+	Has(c Category, opts ...RegisterOption) bool
+	// Load injects a configuration source and triggers binding.
+	Load(ctx context.Context, source any, opts ...LoadOption) error
 }
 
+// --- Option Definitions ---
+
 type RegistrationOptions struct {
-	Scopes   []metadata.Scope
-	Priority int
+	Extractor Extractor
+	Scopes    []Scope
+	Priority  Priority
 }
 
 type RegisterOption func(*RegistrationOptions)
 
 type InOptions struct {
-	Scope metadata.Scope
+	Scope Scope
 }
 
 type InOption func(*InOptions)
+
+type LoadOptions struct {
+	Category Category
+	Name     string
+}
+
+type LoadOption func(*LoadOptions)

@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/engine/metadata"
 )
 
 type Status int
@@ -20,8 +19,8 @@ const (
 )
 
 type moduleKey struct {
-	category metadata.Category
-	scope    metadata.Scope
+	category component.Category
+	scope    component.Scope
 }
 
 type componentMeta struct {
@@ -40,26 +39,25 @@ type moduleState struct {
 }
 
 type providerEntry struct {
-	scopes    map[metadata.Scope]bool
+	scopes    map[component.Scope]bool
 	provider  component.Provider
 	extractor component.Extractor
-	priority  int
+	priority  component.Priority
 }
 
 type containerImpl struct {
 	regMu    sync.RWMutex
-	registry map[metadata.Category][]*providerEntry
+	registry map[component.Category][]*providerEntry
 
 	stateMu sync.RWMutex
 	states  map[moduleKey]*moduleState
 
-	mu         sync.RWMutex
-	rootConfig any
+	mu sync.RWMutex
 }
 
 func NewContainer() component.Registry {
 	return &containerImpl{
-		registry: make(map[metadata.Category][]*providerEntry),
+		registry: make(map[component.Category][]*providerEntry),
 		states:   make(map[moduleKey]*moduleState),
 	}
 }
@@ -81,7 +79,7 @@ func (c *containerImpl) getModuleState(mKey moduleKey) *moduleState {
 	return s
 }
 
-func (c *containerImpl) findProvider(cat metadata.Category, scope metadata.Scope) (*providerEntry, bool) {
+func (c *containerImpl) findProvider(cat component.Category, scope component.Scope) (*providerEntry, bool) {
 	c.regMu.RLock()
 	defer c.regMu.RUnlock()
 	entries, ok := c.registry[cat]
@@ -100,17 +98,12 @@ func (c *containerImpl) findProvider(cat metadata.Category, scope metadata.Scope
 	return fallback, fallback != nil
 }
 
-func (c *containerImpl) Config() any {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.rootConfig
-}
+func (c *containerImpl) Config() any                  { return nil }
+func (c *containerImpl) Scope() component.Scope       { return component.GlobalScope }
+func (c *containerImpl) Category() component.Category { return "" }
 
-func (c *containerImpl) Scope() metadata.Scope       { return metadata.GlobalScope }
-func (c *containerImpl) Category() metadata.Category { return "" }
-
-func (c *containerImpl) In(cat metadata.Category, opts ...component.InOption) component.Handle {
-	o := &component.InOptions{Scope: metadata.GlobalScope}
+func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Handle {
+	o := &component.InOptions{Scope: component.GlobalScope}
 	for _, opt := range opts {
 		opt(o)
 	}
@@ -133,33 +126,45 @@ func (c *containerImpl) BindConfig(target any) error {
 	return fmt.Errorf("engine: BindConfig must be called from Provider handle")
 }
 
-func (c *containerImpl) Register(cat metadata.Category, e component.Extractor, p component.Provider, opts ...component.RegisterOption) {
+func (c *containerImpl) Register(cat component.Category, p component.Provider, opts ...component.RegisterOption) {
+	if component.IsReserved(string(cat)) {
+		panic(fmt.Sprintf("engine: category name '%s' is reserved", cat))
+	}
+
 	o := &component.RegistrationOptions{
-		Priority: metadata.PriorityInfrastructure,
+		Priority: 100,
 	}
 	for _, opt := range opts {
 		opt(o)
 	}
+
+	for _, s := range o.Scopes {
+		if component.IsReserved(string(s)) && s != component.GlobalScope {
+			panic(fmt.Sprintf("engine: scope name '%s' is reserved", s))
+		}
+	}
+
 	entry := &providerEntry{
-		scopes:    make(map[metadata.Scope]bool),
+		scopes:    make(map[component.Scope]bool),
 		provider:  p,
-		extractor: e,
+		extractor: o.Extractor,
 		priority:  o.Priority,
 	}
 	for _, s := range o.Scopes {
 		entry.scopes[s] = true
 	}
+
 	c.regMu.Lock()
 	defer c.regMu.Unlock()
 	c.registry[cat] = append(c.registry[cat], entry)
 }
 
-func (c *containerImpl) Has(cat metadata.Category, opts ...component.RegisterOption) bool {
+func (c *containerImpl) Has(cat component.Category, opts ...component.RegisterOption) bool {
 	o := &component.RegistrationOptions{}
 	for _, opt := range opts {
 		opt(o)
 	}
-	scope := metadata.GlobalScope
+	scope := component.GlobalScope
 	if len(o.Scopes) > 0 {
 		scope = o.Scopes[0]
 	}
@@ -167,35 +172,70 @@ func (c *containerImpl) Has(cat metadata.Category, opts ...component.RegisterOpt
 	return found
 }
 
-func (c *containerImpl) Init(ctx context.Context, root any) error {
-	if root == nil {
-		return fmt.Errorf("engine: cannot init with nil root config")
+func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.LoadOption) error {
+	o := &component.LoadOptions{}
+	for _, opt := range opts {
+		opt(o)
 	}
-	c.mu.Lock()
-	c.rootConfig = root
-	c.mu.Unlock()
 
 	c.regMu.RLock()
-	var cats []metadata.Category
-	for cat := range c.registry {
-		cats = append(cats, cat)
+	var targets []component.Category
+	if o.Category != "" {
+		targets = append(targets, o.Category)
+	} else {
+		for cat := range c.registry {
+			targets = append(targets, cat)
+		}
 	}
 	c.regMu.RUnlock()
 
-	standardScopes := []metadata.Scope{metadata.GlobalScope, metadata.ServerScope, metadata.ClientScope}
-	for _, cat := range cats {
+	standardScopes := []component.Scope{component.GlobalScope, "server", "client"}
+	for _, cat := range targets {
 		for _, scope := range standardScopes {
-			if _, found := c.findProvider(cat, scope); found {
-				if _, err := c.getInternal(ctx, cat, scope, ""); err != nil {
-					continue
-				}
+			entry, found := c.findProvider(cat, scope)
+			if !found || entry.extractor == nil {
+				continue
+			}
+
+			if err := c.bindWithSource(cat, scope, entry, source, o.Name); err != nil {
+				continue
 			}
 		}
 	}
 	return nil
 }
 
-func (c *containerImpl) getInternal(ctx context.Context, cat metadata.Category, scope metadata.Scope, name string) (any, error) {
+func (c *containerImpl) bindWithSource(cat component.Category, scope component.Scope, entry *providerEntry, source any, filterName string) error {
+	mKey := moduleKey{category: cat, scope: scope}
+	s := c.getModuleState(mKey)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	mc, err := entry.extractor(source)
+	if err != nil || mc == nil {
+		return err
+	}
+
+	for _, cfgEntry := range mc.Entries {
+		if filterName != "" && cfgEntry.Name != filterName {
+			continue
+		}
+		if _, exists := s.instances[cfgEntry.Name]; !exists {
+			s.instances[cfgEntry.Name] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
+			s.order = append(s.order, cfgEntry.Name)
+		}
+	}
+
+	if mc.Active != "" && (filterName == "" || mc.Active == filterName) {
+		s.defaultName = mc.Active
+	} else if len(mc.Entries) > 0 && s.defaultName == "" {
+		s.defaultName = mc.Entries[0].Name
+	}
+	s.bound = true
+	return nil
+}
+
+func (c *containerImpl) getInternal(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {
 	mKey := moduleKey{category: cat, scope: scope}
 	s := c.getModuleState(mKey)
 	s.mu.RLock()
@@ -210,27 +250,13 @@ func (c *containerImpl) getInternal(ctx context.Context, cat metadata.Category, 
 		return c.resolveMeta(ctx, cat, scope, actualName, meta)
 	}
 
-	if entry, found := c.findProvider(cat, scope); found {
-		if err := c.bindWithEntry(cat, scope, entry); err == nil {
-			s.mu.RLock()
-			if actualName == "" {
-				actualName = s.defaultName
-			}
-			meta, exists = s.instances[actualName]
-			s.mu.RUnlock()
-			if exists {
-				return c.resolveMeta(ctx, cat, scope, actualName, meta)
-			}
-		}
-	}
-
-	if scope != metadata.GlobalScope {
-		return c.getInternal(ctx, cat, metadata.GlobalScope, name)
+	if scope != component.GlobalScope {
+		return c.getInternal(ctx, cat, component.GlobalScope, name)
 	}
 	return nil, fmt.Errorf("engine: component %s/%s not found", cat, name)
 }
 
-func (c *containerImpl) resolveMeta(ctx context.Context, cat metadata.Category, scope metadata.Scope, actualName string, meta *componentMeta) (any, error) {
+func (c *containerImpl) resolveMeta(ctx context.Context, cat component.Category, scope component.Scope, actualName string, meta *componentMeta) (any, error) {
 	if meta.status == StatusReady {
 		return meta.instance, nil
 	}
@@ -246,7 +272,7 @@ func (c *containerImpl) resolveMeta(ctx context.Context, cat metadata.Category, 
 	entry, found := c.findProvider(cat, scope)
 	if !found {
 		meta.status = StatusNone
-		return nil, fmt.Errorf("engine: no provider for %s", cat)
+		return nil, fmt.Errorf("engine: no provider for %s during resolution", cat)
 	}
 	h := &scopedHandle{
 		container: c,
@@ -267,47 +293,19 @@ func (c *containerImpl) resolveMeta(ctx context.Context, cat metadata.Category, 
 	return inst, nil
 }
 
-func (c *containerImpl) bindWithEntry(cat metadata.Category, scope metadata.Scope, entry *providerEntry) error {
-	mKey := moduleKey{category: cat, scope: scope}
-	s := c.getModuleState(mKey)
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	root := c.Config()
-	if root == nil {
-		return fmt.Errorf("engine: root config is nil")
-	}
-	mc, err := entry.extractor(root)
-	if err != nil || mc == nil {
-		return err
-	}
-	for _, cfgEntry := range mc.Entries {
-		if _, exists := s.instances[cfgEntry.Name]; !exists {
-			s.instances[cfgEntry.Name] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
-			s.order = append(s.order, cfgEntry.Name)
-		}
-	}
-	if mc.Active != "" {
-		s.defaultName = mc.Active
-	} else if len(mc.Entries) > 0 && s.defaultName == "" {
-		s.defaultName = mc.Entries[0].Name
-	}
-	s.bound = true
-	return nil
-}
-
 type scopedHandle struct {
 	container *containerImpl
-	scope     metadata.Scope
-	category  metadata.Category
+	scope     component.Scope
+	category  component.Category
 	name      string
 	config    any
 }
 
-func (h *scopedHandle) Scope() metadata.Scope       { return h.scope }
-func (h *scopedHandle) Category() metadata.Category { return h.category }
-func (h *scopedHandle) Config() any                 { return h.config }
+func (h *scopedHandle) Scope() component.Scope       { return h.scope }
+func (h *scopedHandle) Category() component.Category { return h.category }
+func (h *scopedHandle) Config() any                  { return h.config }
 
-func (h *scopedHandle) In(cat metadata.Category, opts ...component.InOption) component.Handle {
+func (h *scopedHandle) In(cat component.Category, opts ...component.InOption) component.Handle {
 	o := &component.InOptions{Scope: h.scope}
 	for _, opt := range opts {
 		opt(o)
@@ -334,20 +332,14 @@ func (h *scopedHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
 		uniqueNames := make(map[string]bool)
 		mKey := moduleKey{category: h.category, scope: h.scope}
 		s := h.container.getModuleState(mKey)
-		if entry, found := h.container.findProvider(h.category, h.scope); found {
-			_ = h.container.bindWithEntry(h.category, h.scope, entry)
-		}
 		s.mu.RLock()
 		for _, n := range s.order {
 			uniqueNames[n] = true
 		}
 		s.mu.RUnlock()
-		if h.scope != metadata.GlobalScope {
-			gKey := moduleKey{category: h.category, scope: metadata.GlobalScope}
+		if h.scope != component.GlobalScope {
+			gKey := moduleKey{category: h.category, scope: component.GlobalScope}
 			gs := h.container.getModuleState(gKey)
-			if entry, found := h.container.findProvider(h.category, metadata.GlobalScope); found {
-				_ = h.container.bindWithEntry(h.category, metadata.GlobalScope, entry)
-			}
 			gs.mu.RLock()
 			for _, n := range gs.order {
 				uniqueNames[n] = true
@@ -371,6 +363,9 @@ func (h *scopedHandle) BindConfig(target any) error {
 		return fmt.Errorf("engine: BindConfig target must be a non-nil pointer")
 	}
 	vSrc := reflect.ValueOf(h.config)
+	if h.config == nil {
+		return fmt.Errorf("engine: config is nil")
+	}
 	if vSrc.Kind() == reflect.Ptr {
 		vSrc = vSrc.Elem()
 	}

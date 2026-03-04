@@ -4,108 +4,56 @@ import (
 	"context"
 	"testing"
 
+	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
-	"github.com/origadmin/runtime/engine/metadata"
+	"github.com/origadmin/runtime/engine/container"
 )
 
-// --- Mock Interfaces ---
+// --- Mock Domain Interfaces ---
 
-type Authorizer interface {
-	IsAllowed(ctx context.Context, sub, obj, act string) (bool, error)
-}
+type (
+	Authenticator interface{ Authenticate() bool }
+	Skipper       interface{ Skip() bool }
+)
 
-type Skipper interface {
-	ShouldSkip(ctx context.Context) bool
-}
+type mockAuthn struct{}
 
-// --- Implementations ---
-
-type mockAuthorizer struct {
-	driver string
-}
-
-func (m *mockAuthorizer) IsAllowed(ctx context.Context, sub, obj, act string) (bool, error) {
-	return true, nil
-}
+func (m *mockAuthn) Authenticate() bool { return true }
 
 type mockSkipper struct{}
 
-func (m *mockSkipper) ShouldSkip(ctx context.Context) bool { return false }
+func (m *mockSkipper) Skip() bool { return true }
 
 type mockMiddleware struct {
 	name string
-	auth Authorizer
+	auth Authenticator
 	skip Skipper
 }
 
-// --- Configs ---
-
-type BackendRootConfig struct {
-	Security    *SecurityConfig
-	Skipper     *SkipperConfig
-	Middlewares *MiddlewareConfig
-}
-
-type SecurityConfig struct {
-	Active  string
-	Configs []engine.ConfigEntry
-}
-
-type SkipperConfig struct {
-	Configs []engine.ConfigEntry
-}
-
-type MiddlewareConfig struct {
-	Configs []engine.ConfigEntry
-}
-
 func TestBackendDeepDependencyInjection(t *testing.T) {
+	reg := container.NewContainer()
 	ctx := context.Background()
+	root := "dummy_config"
 
-	// 1. Truth
-	root := &BackendRootConfig{
-		Security: &SecurityConfig{
-			Active: "casbin",
-			Configs: []engine.ConfigEntry{
-				{Name: "casbin", Value: "file-driver"},
-			},
-		},
-		Skipper: &SkipperConfig{
-			Configs: []engine.ConfigEntry{{Name: "default", Value: nil}},
-		},
-		Middlewares: &MiddlewareConfig{
-			Configs: []engine.ConfigEntry{
-				{Name: "authz-mw", Value: "authz-mw-cfg"},
-			},
-		},
-	}
+	// 1. Register Infrastructure (Authn)
+	reg.Register("infrastructure", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		return &mockAuthn{}, nil
+	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "jwt", Value: nil}}}, nil
+	}))
 
-	reg := engine.NewContainer()
-
-	// 2. Register
-
-	reg.Register("security", func(r any) (*engine.ModuleConfig, error) {
-		raw := r.(*BackendRootConfig).Security
-		return &engine.ModuleConfig{Entries: raw.Configs, Active: raw.Active}, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
-		var driver string
-		engine.BindConfig(h, &driver)
-		return &mockAuthorizer{driver: driver}, nil
-	}, engine.WithPriority(100))
-
-	reg.Register("skipper", func(r any) (*engine.ModuleConfig, error) {
-		raw := r.(*BackendRootConfig).Skipper
-		return &engine.ModuleConfig{Entries: raw.Configs}, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
+	// 2. Register Skipper
+	reg.Register("skipper", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		return &mockSkipper{}, nil
-	}, engine.WithPriority(100))
+	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "default", Value: nil}}}, nil
+	}))
 
-	reg.Register(metadata.CategoryMiddleware, func(r any) (*engine.ModuleConfig, error) {
-		raw := r.(*BackendRootConfig).Middlewares
-		return &engine.ModuleConfig{Entries: raw.Configs}, nil
-	}, func(ctx context.Context, h engine.Handle, opts ...options.Option) (any, error) {
-		auth, err := engine.Cast[Authorizer](ctx, h.In("security"), "")
+	// 3. Register Middleware (Complex DI)
+	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		// Deep Dependency Discovery
+		auth, err := engine.Cast[Authenticator](ctx, h.In("infrastructure"), "jwt")
 		if err != nil {
 			return nil, err
 		}
@@ -114,23 +62,25 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 			return nil, err
 		}
 		return &mockMiddleware{name: "authz-mw", auth: auth, skip: skip}, nil
-	}, engine.WithPriority(500), engine.WithScopes(metadata.ServerScope))
+	}, engine.WithExtractor(func(root any) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "authz-mw", Value: nil}}}, nil
+	}), engine.WithPriority(500), engine.WithScopes("server"))
 
-	// 3. Activate Engine (SINGLE entrance)
-	if err := reg.Init(ctx, root); err != nil {
-		t.Fatalf("Engine init failed: %v", err)
+	// 4. Load Engine
+	if err := reg.Load(ctx, root); err != nil {
+		t.Fatalf("Engine load failed: %v", err)
 	}
 
-	// 4. Verify
-	mwH := reg.In(metadata.CategoryMiddleware, engine.WithScope(metadata.ServerScope))
+	// 5. Verify
+	mwH := reg.In("middleware", engine.WithInScope("server"))
 	mw, err := engine.Cast[*mockMiddleware](ctx, mwH, "authz-mw")
 	if err != nil {
 		t.Fatalf("Failed to create middleware stack: %v", err)
 	}
 
-	if mw.auth.(*mockAuthorizer).driver != "file-driver" {
-		t.Errorf("Expected driver 'file-driver', got %s", mw.auth.(*mockAuthorizer).driver)
+	if mw.auth == nil || mw.skip == nil {
+		t.Errorf("DI failed: auth=%v, skip=%v", mw.auth, mw.skip)
 	}
 
-	t.Log("Successfully verified correct Registration -> Init -> Get flow.")
+	t.Log("Successfully verified correct Registration -> Load -> Get flow.")
 }

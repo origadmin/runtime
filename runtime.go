@@ -14,12 +14,11 @@ import (
 	"github.com/goexts/generic/configure"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	"github.com/origadmin/runtime/engine/bootstrap"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
+	"github.com/origadmin/runtime/engine/bootstrap"
 	enginecontext "github.com/origadmin/runtime/engine/context"
-	"github.com/origadmin/runtime/engine/metadata"
 )
 
 // Standard configuration interfaces (Contract Re-export)
@@ -80,19 +79,17 @@ func WithRegistry(fn func(component.Registry)) Option {
 
 func (r *App) registerDefaultFactories() {
 	// Logger Default
-	if !r.engine.Has(metadata.CategoryLogger) {
-		r.engine.Register(metadata.CategoryLogger,
-			DefaultLoggerExtractor,
+	if !r.engine.Has(CategoryLogger) {
+		r.engine.Register(CategoryLogger,
 			DefaultLoggerProvider,
-			engine.WithPriority(metadata.PriorityInfrastructure))
+			engine.WithPriority(PriorityInfrastructure))
 	}
 
 	// Registry Default
-	if !r.engine.Has(metadata.CategoryRegistry) {
-		r.engine.Register(metadata.CategoryRegistry,
-			DefaultRegistryExtractor,
+	if !r.engine.Has(CategoryRegistry) {
+		r.engine.Register(CategoryRegistry,
 			DefaultRegistryProvider,
-			engine.WithPriority(metadata.PriorityRegistry))
+			engine.WithPriority(PriorityRegistry))
 	}
 }
 
@@ -134,7 +131,7 @@ func (r *App) WarmUp() error {
 	if r.result == nil || r.result.Config() == nil {
 		return errors.New("runtime: cannot warm-up without loaded configuration")
 	}
-	return r.engine.Init(r.ctx, r.result.Config())
+	return r.engine.Load(r.ctx, r.result.Config())
 }
 
 // Getters
@@ -142,7 +139,7 @@ func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
 func (r *App) BusinessConfig() any           { return r.result.Config() }
 func (r *App) Logger() log.Logger {
 	// Navigate via CategoryLogger
-	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(metadata.CategoryLogger), "logger")
+	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(CategoryLogger), "logger")
 	if err != nil {
 		return log.DefaultLogger
 	}
@@ -196,7 +193,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 }
 
 func (r *App) DefaultRegistrar() (registry.Registrar, error) {
-	return engine.Cast[registry.Registrar](r.ctx, r.engine.In(metadata.CategoryRegistry), "")
+	return engine.Cast[registry.Registrar](r.ctx, r.engine.In(CategoryRegistry), "")
 }
 
 func (r *App) AppInfo() *appv1.App { return r.appInfo }

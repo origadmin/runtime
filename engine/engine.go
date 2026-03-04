@@ -3,12 +3,12 @@ package engine
 import (
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine/container"
-	"github.com/origadmin/runtime/engine/metadata"
 )
 
 type (
-	Category = metadata.Category
-	Scope    = metadata.Scope
+	Category = component.Category
+	Scope    = component.Scope
+	Priority = component.Priority
 	Handle   = component.Handle
 	Provider = component.Provider
 	Registry = component.Registry
@@ -20,35 +20,12 @@ type (
 	RegisterOption      = component.RegisterOption
 	InOptions           = component.InOptions
 	InOption            = component.InOption
+	LoadOptions         = component.LoadOptions
+	LoadOption          = component.LoadOption
 )
 
 const (
-	GlobalScope = metadata.GlobalScope
-	ServerScope = metadata.ServerScope
-	ClientScope = metadata.ClientScope
-
-	CategoryInfrastructure = metadata.CategoryInfrastructure
-	CategoryLogger         = metadata.CategoryLogger
-	CategoryRegistry       = metadata.CategoryRegistry
-	CategoryClient         = metadata.CategoryClient
-	CategoryServer         = metadata.CategoryServer
-	CategoryMiddleware     = metadata.CategoryMiddleware
-	CategoryDatabase       = metadata.CategoryDatabase
-	CategoryCache          = metadata.CategoryCache
-	CategoryObjectStore    = metadata.CategoryObjectStore
-	CategoryQueue          = metadata.CategoryQueue
-	CategoryTask           = metadata.CategoryTask
-	CategoryMail           = metadata.CategoryMail
-	CategoryStorage        = metadata.CategoryStorage
-)
-
-// Standard Priorities
-const (
-	PriorityInfrastructure = metadata.PriorityInfrastructure
-	PriorityRegistry       = metadata.PriorityRegistry
-	PriorityStorage        = metadata.PriorityStorage
-	PriorityClientStack    = metadata.PriorityClientStack
-	PriorityServerStack    = metadata.PriorityServerStack
+	GlobalScope = component.GlobalScope
 )
 
 // NewContainer creates a new engine container.
@@ -56,28 +33,55 @@ func NewContainer() Registry {
 	return container.NewContainer()
 }
 
-// In is a helper to get a scoped handle from a registry.
-func In(h Handle, cat Category, opts ...InOption) Handle {
-	return h.In(cat, opts...)
-}
+// --- Registration Options ---
 
-// WithScope specifies the exact perspective during In().
-func WithScope(s Scope) InOption {
-	return func(o *InOptions) {
-		o.Scope = s
+// WithScope specifies visibility for a single scope during registration.
+func WithScope(s Scope) RegisterOption {
+	return func(o *RegistrationOptions) {
+		o.Scopes = append(o.Scopes, s)
 	}
 }
 
-// WithScopes specifies multiple visibilities during registration.
+// WithScopes specifies visibility for multiple scopes during registration.
 func WithScopes(ss ...Scope) RegisterOption {
 	return func(o *RegistrationOptions) {
 		o.Scopes = append(o.Scopes, ss...)
 	}
 }
 
-// WithPriority is a functional option to specify the initialization priority.
-func WithPriority(p int) RegisterOption {
+// WithPriority specifies initialization priority.
+func WithPriority(p Priority) RegisterOption {
 	return func(o *RegistrationOptions) {
 		o.Priority = p
+	}
+}
+
+// WithExtractor specifies a local config extractor.
+func WithExtractor(e Extractor) RegisterOption {
+	return func(o *RegistrationOptions) {
+		o.Extractor = e
+	}
+}
+
+// --- Perspective Options (In) ---
+
+// WithInScope specifies the exact perspective for a handle.
+func WithInScope(s Scope) InOption {
+	return func(o *InOptions) {
+		o.Scope = s
+	}
+}
+
+// --- Load Options ---
+
+func ForCategory(cat Category) LoadOption {
+	return func(o *LoadOptions) {
+		o.Category = cat
+	}
+}
+
+func ForName(name string) LoadOption {
+	return func(o *LoadOptions) {
+		o.Name = name
 	}
 }

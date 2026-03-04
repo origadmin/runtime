@@ -7,23 +7,74 @@ package runtime
 import (
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
-	"github.com/origadmin/runtime/engine/metadata"
 )
+
+// --- Engine Metadata Types Aliases ---
+
+type Category = component.Category
+type Scope = component.Scope
+type Priority = component.Priority
+
+// --- Category Conventions ---
+
+const (
+	CategoryInfrastructure Category = "infrastructure"
+	CategoryLogger         Category = "logger"
+	CategoryRegistry       Category = "registry"
+	CategoryClient         Category = "client"
+	CategoryServer         Category = "server"
+	CategoryMiddleware     Category = "middleware"
+	CategoryDatabase       Category = "database"
+	CategoryCache          Category = "cache"
+	CategoryObjectStore    Category = "objectstore"
+	CategoryQueue          Category = "queue"
+	CategoryTask           Category = "task"
+	CategoryMail           Category = "mail"
+	CategoryStorage        Category = "storage"
+)
+
+// --- Scope Conventions ---
+
+const (
+	GlobalScope       = component.GlobalScope
+	ServerScope Scope = "server"
+	ClientScope Scope = "client"
+)
+
+// --- Priority Conventions ---
+
+const (
+	PriorityInfrastructure Priority = 100
+	PriorityRegistry       Priority = 200
+	PriorityStorage        Priority = 300
+	PriorityClientStack    Priority = 400
+	PriorityServerStack    Priority = 500
+)
+
+// --- Functional Option Type Aliases ---
 
 type RegisterOption = component.RegisterOption
 type InOption = component.InOption
+type LoadOption = component.LoadOption
 
-// WithScope specifies the exact perspective during In().
-func WithScope(s metadata.Scope) InOption {
-	return engine.WithScope(s)
+// --- Functional Option Helpers ---
+
+// WithScope specifies the perspective during handle creation (In).
+func WithScope(s Scope) InOption {
+	return engine.WithInScope(s)
 }
 
-// WithScopes specifies multiple visibilities during registration.
-func WithScopes(ss ...metadata.Scope) RegisterOption {
+// WithScopes specifies the visibilities during registration (Register).
+func WithScopes(ss ...Scope) RegisterOption {
 	return engine.WithScopes(ss...)
 }
 
-// WithPriority is a functional option to specify the initialization priority.
-func WithPriority(p int) RegisterOption {
+// WithPriority specifies the initialization priority.
+func WithPriority(p Priority) RegisterOption {
 	return engine.WithPriority(p)
+}
+
+// WithExtractor specifies a local config extractor.
+func WithExtractor(e component.Extractor) RegisterOption {
+	return engine.WithExtractor(e)
 }
