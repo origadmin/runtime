@@ -14,6 +14,7 @@ import (
 type Category = component.Category
 type Scope = component.Scope
 type Priority = component.Priority
+type Provider = component.Provider
 
 const (
 	// GlobalScope is the default fallback scope for the system.
@@ -54,6 +55,14 @@ const (
 	PriorityClientStack    Priority = 400
 	PriorityServerStack    Priority = 500
 )
+
+// --- Global Registration (init phase) ---
+
+// Register registers a component capability to the global pool.
+// Typically used in init() functions of component packages.
+func Register(cat Category, p Provider, opts ...RegisterOption) {
+	engine.Register(cat, p, opts...)
+}
 
 // --- Functional Option Type Aliases ---
 

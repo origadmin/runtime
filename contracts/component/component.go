@@ -25,6 +25,8 @@ type Priority int
 const (
 	// GlobalScope is the default system fallback scope.
 	GlobalScope Scope = "_global"
+	// DefaultName is the system key for the active/default instance.
+	DefaultName = "_default"
 	// ReservedPrefix defines identifiers owned by the system.
 	ReservedPrefix = "_"
 )

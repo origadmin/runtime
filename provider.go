@@ -14,21 +14,32 @@ import (
 	"github.com/origadmin/runtime/contracts/options"
 )
 
-// --- Default Resolvers (Config Mapping) ---
+// --- Default Global Resolver (The Dispatcher) ---
 
-// DefaultConfigResolver is a no-op resolver for the root config.
-var DefaultConfigResolver component.Resolver = func(source any, _ component.Category) (*component.ModuleConfig, error) {
-	return nil, nil
+// DefaultGlobalResolver is the primary config dispatcher for the framework.
+var DefaultGlobalResolver component.Resolver = func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	// Centralized dispatching based on category.
+	// This reduces redundant assertions across multiple extractors.
+	switch cat {
+	case CategoryLogger:
+		return resolveLogger(source)
+	case CategoryRegistry:
+		return resolveRegistry(source)
+	default:
+		// Unknown categories are ignored by the default resolver.
+		// They can still be handled by local resolvers (WithResolver option).
+		return nil, nil
+	}
 }
 
-// DefaultLoggerResolver resolves logger configurations.
-var DefaultLoggerResolver component.Resolver = func(source any, _ component.Category) (*component.ModuleConfig, error) {
+// resolveLogger handles extraction for Logger components.
+func resolveLogger(source any) (*component.ModuleConfig, error) {
 	if c, ok := source.(component.LoggerConfig); ok {
 		logger := c.GetLogger()
 		if logger == nil {
 			return nil, nil
 		}
-		// Based on loggerv1 definition, if no dynamic entries exist, we treat it as a single default instance.
+		// Treating the single logger segment as the default instance.
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{{Name: "default", Value: logger}},
 		}, nil
@@ -36,8 +47,8 @@ var DefaultLoggerResolver component.Resolver = func(source any, _ component.Cate
 	return nil, nil
 }
 
-// DefaultRegistryResolver resolves registry discoveries.
-var DefaultRegistryResolver component.Resolver = func(source any, _ component.Category) (*component.ModuleConfig, error) {
+// resolveRegistry handles extraction for Registry/Discovery components.
+func resolveRegistry(source any) (*component.ModuleConfig, error) {
 	if c, ok := source.(component.RegistryConfig); ok {
 		discoveries := c.GetDiscoveries()
 		if discoveries == nil {

@@ -56,7 +56,6 @@ type containerImpl struct {
 	globalResolver component.Resolver
 }
 
-// NewContainer returns a clean, parameterless container instance.
 func NewContainer() component.Registry {
 	return &containerImpl{
 		registry: make(map[component.Category][]*providerEntry),
@@ -221,7 +220,6 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 	var mc *component.ModuleConfig
 	var err error
 
-	// Priority: Local Resolver (formerly Extractor) > Load Option Resolver > Container Global Resolver
 	if entry.resolver != nil {
 		mc, err = entry.resolver(source, cat)
 	} else if resolver != nil {
@@ -242,11 +240,21 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 		}
 	}
 
+	// Update defaultName mapping
 	if mc.Active != "" && (filterName == "" || mc.Active == filterName) {
 		s.defaultName = mc.Active
 	} else if len(mc.Entries) > 0 && s.defaultName == "" {
 		s.defaultName = mc.Entries[0].Name
 	}
+
+	// Logic: default -> _default
+	// Every category must have a _default instance that points to the active/default one.
+	if s.defaultName != "" {
+		if meta, ok := s.instances[s.defaultName]; ok {
+			s.instances[component.DefaultName] = meta
+		}
+	}
+
 	s.bound = true
 	return nil
 }
@@ -255,10 +263,13 @@ func (c *containerImpl) getInternal(ctx context.Context, cat component.Category,
 	mKey := moduleKey{category: cat, scope: scope}
 	s := c.getModuleState(mKey)
 	s.mu.RLock()
+
+	// Rule: Empty string or explicit component.DefaultName maps to _default
 	actualName := name
 	if actualName == "" {
-		actualName = s.defaultName
+		actualName = component.DefaultName
 	}
+
 	meta, exists := s.instances[actualName]
 	s.mu.RUnlock()
 
@@ -363,6 +374,10 @@ func (h *scopedHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
 			gs.mu.RUnlock()
 		}
 		for name := range uniqueNames {
+			// Skip the reserved default alias during iteration to avoid double-counting
+			if component.IsReserved(name) {
+				continue
+			}
 			inst, err := h.Get(ctx, name)
 			if err == nil && inst != nil {
 				if !yield(name, inst) {
