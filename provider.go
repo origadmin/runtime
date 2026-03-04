@@ -85,7 +85,8 @@ func resolveGeneric(source any, cat component.Category) (*component.ModuleConfig
 		}
 	}
 
-	return nil, nil
+	// Fallback: Check if the source itself is a container or item for this category
+	return resolveFromSource(source)
 }
 
 // resolveFromSource attempts to convert a generic source into a ModuleConfig.
@@ -95,6 +96,8 @@ func resolveFromSource(val any) (*component.ModuleConfig, error) {
 	}
 
 	v := reflect.ValueOf(val)
+	// originalV is used for method calls which might be on pointer receivers
+	originalV := v
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -108,6 +111,9 @@ func resolveFromSource(val any) (*component.ModuleConfig, error) {
 	// 1. Get Active string
 	if a, ok := val.(interface{ GetActive() string }); ok {
 		res.Active = a.GetActive()
+	} else if activeMethod := originalV.MethodByName("GetActive"); activeMethod.IsValid() {
+		results := activeMethod.Call(nil)
+		res.Active = results[0].String()
 	} else if activeField := v.FieldByName("Active"); activeField.IsValid() {
 		if activeField.Kind() == reflect.Ptr && !activeField.IsNil() {
 			res.Active = activeField.Elem().String()
@@ -118,7 +124,7 @@ func resolveFromSource(val any) (*component.ModuleConfig, error) {
 
 	// 2. Get Default object
 	var defaultItem any
-	if defaultMethod := v.MethodByName("GetDefault"); defaultMethod.IsValid() {
+	if defaultMethod := originalV.MethodByName("GetDefault"); defaultMethod.IsValid() {
 		results := defaultMethod.Call(nil)
 		if len(results) > 0 && !results[0].IsNil() {
 			defaultItem = results[0].Interface()
@@ -133,11 +139,12 @@ func resolveFromSource(val any) (*component.ModuleConfig, error) {
 
 	// 3. Get Configs slice
 	var configs []any
-	if configsMethod := v.MethodByName("GetConfigs"); configsMethod.IsValid() {
+	if configsMethod := originalV.MethodByName("GetConfigs"); configsMethod.IsValid() {
 		results := configsMethod.Call(nil)
 		if len(results) > 0 && results[0].Kind() == reflect.Slice {
-			for i := 0; i < results[0].Len(); i++ {
-				configs = append(configs, results[0].Index(i).Interface())
+			resVals := results[0]
+			for i := 0; i < resVals.Len(); i++ {
+				configs = append(configs, resVals.Index(i).Interface())
 			}
 		}
 	} else if configsField := v.FieldByName("Configs"); configsField.IsValid() && configsField.Kind() == reflect.Slice {
@@ -154,8 +161,17 @@ func resolveFromSource(val any) (*component.ModuleConfig, error) {
 		}
 	}
 
-	// 4. Special Case: No Default but only ONE config exists
-	if defaultItem == nil && len(configs) == 1 {
+	// 4. Special Case: No Default and No Configs found?
+	// Check if the source ITSELF is a config item (has a name/type).
+	if defaultItem == nil && len(configs) == 0 {
+		selfName := extractName(val)
+		if selfName != "" {
+			// Treat source as a single item container
+			uniqueEntries[selfName] = val
+			uniqueEntries["default"] = val
+		}
+	} else if defaultItem == nil && len(configs) == 1 {
+		// Single config in list promotion
 		uniqueEntries["default"] = configs[0]
 	}
 
@@ -230,38 +246,15 @@ func resolveLogger(source any) (*component.ModuleConfig, error) {
 
 // resolveRegistry handles extraction for Registry/Discovery components.
 func resolveRegistry(source any) (*component.ModuleConfig, error) {
+	// 1. Try parent-wrapped mode (RegistryConfig -> Discoveries)
 	if c, ok := source.(component.RegistryConfig); ok {
-		discoveries := c.GetDiscoveries()
-		if discoveries == nil {
-			return &component.ModuleConfig{}, nil
+		if d := c.GetDiscoveries(); d != nil {
+			return resolveFromSource(d)
 		}
-		res := &component.ModuleConfig{Active: discoveries.GetActive()}
-		uniqueEntries := make(map[string]any)
-
-		if d := discoveries.GetDefault(); d != nil {
-			uniqueEntries["default"] = d
-			if name := extractName(d); name != "" {
-				uniqueEntries[name] = d
-			}
-		}
-
-		configs := discoveries.GetConfigs()
-		for _, entry := range configs {
-			if name := extractName(entry); name != "" {
-				uniqueEntries[name] = entry
-			}
-		}
-
-		if uniqueEntries["default"] == nil && len(configs) == 1 {
-			uniqueEntries["default"] = configs[0]
-		}
-
-		for name, val := range uniqueEntries {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: val})
-		}
-		if res.Active == "" && uniqueEntries["default"] != nil {
-			res.Active = "default"
-		}
+	}
+	// 2. Try direct container or single item mode
+	res, err := resolveFromSource(source)
+	if err == nil && res != nil && len(res.Entries) > 0 {
 		return res, nil
 	}
 	return resolveGeneric(source, CategoryRegistry)
@@ -269,32 +262,15 @@ func resolveRegistry(source any) (*component.ModuleConfig, error) {
 
 // resolveMiddleware handles extraction for Middleware components.
 func resolveMiddleware(source any) (*component.ModuleConfig, error) {
+	// 1. Try parent-wrapped mode (MiddlewareConfig -> Middlewares)
 	if c, ok := source.(component.MiddlewareConfig); ok {
-		mws := c.GetMiddlewares()
-		if mws == nil {
-			return &component.ModuleConfig{}, nil
+		if m := c.GetMiddlewares(); m != nil {
+			return resolveFromSource(m)
 		}
-		res := &component.ModuleConfig{}
-		uniqueEntries := make(map[string]any)
-
-		configs := mws.GetConfigs()
-		for _, entry := range configs {
-			if name := extractName(entry); name != "" {
-				uniqueEntries[name] = entry
-			}
-		}
-
-		// Protocol: If only one config exists and no default, promote it to "default"
-		if len(configs) == 1 {
-			uniqueEntries["default"] = configs[0]
-		}
-
-		for name, val := range uniqueEntries {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: val})
-		}
-		if res.Active == "" && uniqueEntries["default"] != nil {
-			res.Active = "default"
-		}
+	}
+	// 2. Try direct container or single item mode
+	res, err := resolveFromSource(source)
+	if err == nil && res != nil && len(res.Entries) > 0 {
 		return res, nil
 	}
 	return resolveGeneric(source, CategoryMiddleware)
@@ -302,39 +278,17 @@ func resolveMiddleware(source any) (*component.ModuleConfig, error) {
 
 // resolveDatabase handles extraction for Database components.
 func resolveDatabase(source any) (*component.ModuleConfig, error) {
+	// 1. Try parent-wrapped mode (DataConfig -> Databases)
 	if c, ok := source.(component.DataConfig); ok {
-		data := c.GetData()
-		if data == nil || data.GetDatabases() == nil {
-			return &component.ModuleConfig{}, nil
-		}
-		dbs := data.GetDatabases()
-		res := &component.ModuleConfig{Active: dbs.GetActive()}
-		uniqueEntries := make(map[string]any)
-
-		if d := dbs.GetDefault(); d != nil {
-			uniqueEntries["default"] = d
-			if name := extractName(d); name != "" {
-				uniqueEntries[name] = d
+		if data := c.GetData(); data != nil {
+			if dbs := data.GetDatabases(); dbs != nil {
+				return resolveFromSource(dbs)
 			}
 		}
-
-		configs := dbs.GetConfigs()
-		for _, entry := range configs {
-			if name := extractName(entry); name != "" {
-				uniqueEntries[name] = entry
-			}
-		}
-
-		if uniqueEntries["default"] == nil && len(configs) == 1 {
-			uniqueEntries["default"] = configs[0]
-		}
-
-		for name, val := range uniqueEntries {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: val})
-		}
-		if res.Active == "" && uniqueEntries["default"] != nil {
-			res.Active = "default"
-		}
+	}
+	// 2. Try direct container or single item mode
+	res, err := resolveFromSource(source)
+	if err == nil && res != nil && len(res.Entries) > 0 {
 		return res, nil
 	}
 	return resolveGeneric(source, CategoryDatabase)
@@ -342,39 +296,17 @@ func resolveDatabase(source any) (*component.ModuleConfig, error) {
 
 // resolveCache handles extraction for Cache components.
 func resolveCache(source any) (*component.ModuleConfig, error) {
+	// 1. Try parent-wrapped mode (DataConfig -> Caches)
 	if c, ok := source.(component.DataConfig); ok {
-		data := c.GetData()
-		if data == nil || data.GetCaches() == nil {
-			return &component.ModuleConfig{}, nil
-		}
-		caches := data.GetCaches()
-		res := &component.ModuleConfig{Active: caches.GetActive()}
-		uniqueEntries := make(map[string]any)
-
-		if d := caches.GetDefault(); d != nil {
-			uniqueEntries["default"] = d
-			if name := extractName(d); name != "" {
-				uniqueEntries[name] = d
+		if data := c.GetData(); data != nil {
+			if caches := data.GetCaches(); caches != nil {
+				return resolveFromSource(caches)
 			}
 		}
-
-		configs := caches.GetConfigs()
-		for _, entry := range configs {
-			if name := extractName(entry); name != "" {
-				uniqueEntries[name] = entry
-			}
-		}
-
-		if uniqueEntries["default"] == nil && len(configs) == 1 {
-			uniqueEntries["default"] = configs[0]
-		}
-
-		for name, val := range uniqueEntries {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: val})
-		}
-		if res.Active == "" && uniqueEntries["default"] != nil {
-			res.Active = "default"
-		}
+	}
+	// 2. Try direct container or single item mode
+	res, err := resolveFromSource(source)
+	if err == nil && res != nil && len(res.Entries) > 0 {
 		return res, nil
 	}
 	return resolveGeneric(source, CategoryCache)
@@ -382,39 +314,17 @@ func resolveCache(source any) (*component.ModuleConfig, error) {
 
 // resolveObjectStore handles extraction for ObjectStore components.
 func resolveObjectStore(source any) (*component.ModuleConfig, error) {
+	// 1. Try parent-wrapped mode (DataConfig -> ObjectStores)
 	if c, ok := source.(component.DataConfig); ok {
-		data := c.GetData()
-		if data == nil || data.GetObjectStores() == nil {
-			return &component.ModuleConfig{}, nil
-		}
-		oss := data.GetObjectStores()
-		res := &component.ModuleConfig{Active: oss.GetActive()}
-		uniqueEntries := make(map[string]any)
-
-		if d := oss.GetDefault(); d != nil {
-			uniqueEntries["default"] = d
-			if name := extractName(d); name != "" {
-				uniqueEntries[name] = d
+		if data := c.GetData(); data != nil {
+			if oss := data.GetObjectStores(); oss != nil {
+				return resolveFromSource(oss)
 			}
 		}
-
-		configs := oss.GetConfigs()
-		for _, entry := range configs {
-			if name := extractName(entry); name != "" {
-				uniqueEntries[name] = entry
-			}
-		}
-
-		if uniqueEntries["default"] == nil && len(configs) == 1 {
-			uniqueEntries["default"] = configs[0]
-		}
-
-		for name, val := range uniqueEntries {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: val})
-		}
-		if res.Active == "" && uniqueEntries["default"] != nil {
-			res.Active = "default"
-		}
+	}
+	// 2. Try direct container or single item mode
+	res, err := resolveFromSource(source)
+	if err == nil && res != nil && len(res.Entries) > 0 {
 		return res, nil
 	}
 	return resolveGeneric(source, CategoryObjectStore)

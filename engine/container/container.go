@@ -241,7 +241,20 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 			continue
 		}
 		if _, exists := s.instances[cfgEntry.Name]; !exists {
-			s.instances[cfgEntry.Name] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
+			// Check if another instance already uses the same config object
+			var existingMeta *componentMeta
+			for _, meta := range s.instances {
+				if meta.config == cfgEntry.Value {
+					existingMeta = meta
+					break
+				}
+			}
+
+			if existingMeta != nil {
+				s.instances[cfgEntry.Name] = existingMeta
+			} else {
+				s.instances[cfgEntry.Name] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
+			}
 			s.order = append(s.order, cfgEntry.Name)
 		}
 	}
@@ -300,7 +313,8 @@ func (c *containerImpl) defaultResolver(source any, cat component.Category) (*co
 		}
 	}
 
-	return nil, nil
+	// Fallback: Check if the source itself is a container or item for this category
+	return c.resolveFromSource(source)
 }
 
 func (c *containerImpl) resolveFromSource(val any) (*component.ModuleConfig, error) {
@@ -309,6 +323,8 @@ func (c *containerImpl) resolveFromSource(val any) (*component.ModuleConfig, err
 	}
 
 	v := reflect.ValueOf(val)
+	// originalV is used for method calls which might be on pointer receivers
+	originalV := v
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -317,10 +333,14 @@ func (c *containerImpl) resolveFromSource(val any) (*component.ModuleConfig, err
 	}
 
 	res := &component.ModuleConfig{}
+	uniqueEntries := make(map[string]any)
 
-	// 1. Get Active string (using interface assertion if possible)
+	// 1. Get Active string
 	if a, ok := val.(interface{ GetActive() string }); ok {
 		res.Active = a.GetActive()
+	} else if activeMethod := originalV.MethodByName("GetActive"); activeMethod.IsValid() {
+		results := activeMethod.Call(nil)
+		res.Active = results[0].String()
 	} else if activeField := v.FieldByName("Active"); activeField.IsValid() {
 		if activeField.Kind() == reflect.Ptr && !activeField.IsNil() {
 			res.Active = activeField.Elem().String()
@@ -330,42 +350,69 @@ func (c *containerImpl) resolveFromSource(val any) (*component.ModuleConfig, err
 	}
 
 	// 2. Get Default object
-	if defaultMethod := v.MethodByName("GetDefault"); defaultMethod.IsValid() {
+	var defaultItem any
+	if defaultMethod := originalV.MethodByName("GetDefault"); defaultMethod.IsValid() {
 		results := defaultMethod.Call(nil)
 		if len(results) > 0 && !results[0].IsNil() {
-			item := results[0].Interface()
-			res.Entries = append(res.Entries, component.ConfigEntry{
-				Name:  "default",
-				Value: item,
-			})
-			// If no active name is set, "default" is the primary candidate
-			if res.Active == "" {
-				res.Active = "default"
+			defaultItem = results[0].Interface()
+			uniqueEntries["default"] = defaultItem
+			// Also add by its own name
+			name := c.extractName(defaultItem)
+			if name != "" {
+				uniqueEntries[name] = defaultItem
 			}
 		}
 	}
 
 	// 3. Get Configs slice
-	if configsMethod := v.MethodByName("GetConfigs"); configsMethod.IsValid() {
+	var configs []any
+	if configsMethod := originalV.MethodByName("GetConfigs"); configsMethod.IsValid() {
 		results := configsMethod.Call(nil)
-		configs := results[0]
-		if configs.Kind() == reflect.Slice {
-			for i := 0; i < configs.Len(); i++ {
-				item := configs.Index(i).Interface()
-				res.Entries = append(res.Entries, component.ConfigEntry{
-					Name:  c.extractName(item),
-					Value: item,
-				})
+		if len(results) > 0 && results[0].Kind() == reflect.Slice {
+			resVals := results[0]
+			for i := 0; i < resVals.Len(); i++ {
+				configs = append(configs, resVals.Index(i).Interface())
 			}
 		}
 	} else if configsField := v.FieldByName("Configs"); configsField.IsValid() && configsField.Kind() == reflect.Slice {
 		for i := 0; i < configsField.Len(); i++ {
-			item := configsField.Index(i).Interface()
-			res.Entries = append(res.Entries, component.ConfigEntry{
-				Name:  c.extractName(item),
-				Value: item,
-			})
+			configs = append(configs, configsField.Index(i).Interface())
 		}
+	}
+
+	// Add all configs to unique map
+	for _, item := range configs {
+		name := c.extractName(item)
+		if name != "" {
+			uniqueEntries[name] = item
+		}
+	}
+
+	// 4. Special Case: No Default and No Configs found?
+	// Check if the source ITSELF is a config item (has a name/type).
+	if defaultItem == nil && len(configs) == 0 {
+		selfName := c.extractName(val)
+		if selfName != "" {
+			// Treat source as a single item container
+			uniqueEntries[selfName] = val
+			uniqueEntries["default"] = val
+		}
+	} else if defaultItem == nil && len(configs) == 1 {
+		// Single config in list promotion
+		uniqueEntries["default"] = configs[0]
+	}
+
+	// Convert map to entries
+	for name, item := range uniqueEntries {
+		res.Entries = append(res.Entries, component.ConfigEntry{
+			Name:  name,
+			Value: item,
+		})
+	}
+
+	// 5. Final Active check
+	if res.Active == "" && uniqueEntries["default"] != nil {
+		res.Active = "default"
 	}
 
 	return res, nil
