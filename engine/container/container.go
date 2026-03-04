@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iter"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/origadmin/runtime/contracts/component"
@@ -226,6 +227,11 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 		mc, err = resolver(source, cat)
 	}
 
+	// Fallback to internal default resolver if no config found yet
+	if err == nil && mc == nil {
+		mc, err = c.defaultResolver(source, cat)
+	}
+
 	if err != nil || mc == nil {
 		return err
 	}
@@ -257,6 +263,149 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 
 	s.bound = true
 	return nil
+}
+
+func (c *containerImpl) defaultResolver(source any, cat component.Category) (*component.ModuleConfig, error) {
+	if source == nil {
+		return nil, nil
+	}
+	v := reflect.ValueOf(source)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return nil, nil
+	}
+
+	// Try standard naming conventions: Get<Category>s, Get<Category>, etc.
+	name := string(cat)
+	titleName := strings.ToUpper(name[:1]) + name[1:]
+	methodNames := []string{
+		"Get" + titleName + "s",
+		"Get" + titleName,
+	}
+
+	for _, methodName := range methodNames {
+		method := v.MethodByName(methodName)
+		if !method.IsValid() {
+			// Try on the pointer if it was a struct value
+			if v.CanAddr() {
+				method = v.Addr().MethodByName(methodName)
+			}
+		}
+
+		if method.IsValid() && method.Type().NumIn() == 0 && method.Type().NumOut() == 1 {
+			results := method.Call(nil)
+			return c.resolveFromSource(results[0].Interface())
+		}
+	}
+
+	return nil, nil
+}
+
+func (c *containerImpl) resolveFromSource(val any) (*component.ModuleConfig, error) {
+	if val == nil {
+		return nil, nil
+	}
+
+	v := reflect.ValueOf(val)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return nil, nil
+	}
+
+	res := &component.ModuleConfig{}
+
+	// 1. Get Active string (using interface assertion if possible)
+	if a, ok := val.(interface{ GetActive() string }); ok {
+		res.Active = a.GetActive()
+	} else if activeField := v.FieldByName("Active"); activeField.IsValid() {
+		if activeField.Kind() == reflect.Ptr && !activeField.IsNil() {
+			res.Active = activeField.Elem().String()
+		} else if activeField.Kind() == reflect.String {
+			res.Active = activeField.String()
+		}
+	}
+
+	// 2. Get Default object
+	if defaultMethod := v.MethodByName("GetDefault"); defaultMethod.IsValid() {
+		results := defaultMethod.Call(nil)
+		if len(results) > 0 && !results[0].IsNil() {
+			item := results[0].Interface()
+			res.Entries = append(res.Entries, component.ConfigEntry{
+				Name:  "default",
+				Value: item,
+			})
+			// If no active name is set, "default" is the primary candidate
+			if res.Active == "" {
+				res.Active = "default"
+			}
+		}
+	}
+
+	// 3. Get Configs slice
+	if configsMethod := v.MethodByName("GetConfigs"); configsMethod.IsValid() {
+		results := configsMethod.Call(nil)
+		configs := results[0]
+		if configs.Kind() == reflect.Slice {
+			for i := 0; i < configs.Len(); i++ {
+				item := configs.Index(i).Interface()
+				res.Entries = append(res.Entries, component.ConfigEntry{
+					Name:  c.extractName(item),
+					Value: item,
+				})
+			}
+		}
+	} else if configsField := v.FieldByName("Configs"); configsField.IsValid() && configsField.Kind() == reflect.Slice {
+		for i := 0; i < configsField.Len(); i++ {
+			item := configsField.Index(i).Interface()
+			res.Entries = append(res.Entries, component.ConfigEntry{
+				Name:  c.extractName(item),
+				Value: item,
+			})
+		}
+	}
+
+	return res, nil
+}
+
+func (c *containerImpl) extractName(item any) string {
+	if item == nil {
+		return ""
+	}
+
+	// 1. Try instance name (GetName)
+	if n, ok := item.(interface{ GetName() string }); ok {
+		if name := n.GetName(); name != "" {
+			return name
+		}
+	}
+
+	// 2. Try implementation identifiers (Dialect, Type, Driver)
+	if d, ok := item.(interface{ GetDialect() string }); ok {
+		if name := d.GetDialect(); name != "" {
+			return name
+		}
+	}
+	if t, ok := item.(interface{ GetType() string }); ok {
+		if name := t.GetType(); name != "" {
+			return name
+		}
+	}
+	if d, ok := item.(interface{ GetDriver() string }); ok {
+		if name := d.GetDriver(); name != "" {
+			return name
+		}
+	}
+
+	// 3. Fallback to type name
+	t := reflect.TypeOf(item)
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t.Name()
 }
 
 func (c *containerImpl) getInternal(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {

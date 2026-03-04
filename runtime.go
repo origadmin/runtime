@@ -52,7 +52,7 @@ func NewWithAppInfo(info *appv1.App, opts ...Option) *App {
 	}
 
 	// Create engine registry at startup
-	reg := engine.NewContainer()
+	reg := engine.NewContainer(engine.WithResolver(DefaultGlobalResolver))
 
 	app := &App{
 		appInfo: info,
