@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"iter"
 )
 
 // Cast gets a component from the current handle context and type-asserts it.
@@ -36,6 +37,35 @@ func GetMiddleware[T any](ctx context.Context, h Handle, name string) (T, error)
 
 func GetDatabase[T any](ctx context.Context, h Handle, name string) (T, error) {
 	return Cast[T](ctx, h, name)
+}
+
+// Get retrieves a component by name from the current handle context and type-asserts it.
+func Get[T any](ctx context.Context, h Handle, name string) (T, error) {
+	return Cast[T](ctx, h, name)
+}
+
+// All retrieves all instances from the current handle and converts them to the desired type.
+func All[T any](ctx context.Context, h Handle) (map[string]T, error) {
+	res := make(map[string]T)
+	for name, inst := range h.Iter(ctx) {
+		if typed, ok := inst.(T); ok {
+			res[name] = typed
+		}
+	}
+	return res, nil
+}
+
+// Iter returns an iterator that yields all instances of the desired type from the current handle.
+func Iter[T any](ctx context.Context, h Handle) iter.Seq2[string, T] {
+	return func(yield func(string, T) bool) {
+		for name, inst := range h.Iter(ctx) {
+			if typed, ok := inst.(T); ok {
+				if !yield(name, typed) {
+					return
+				}
+			}
+		}
+	}
 }
 
 // BindConfig is a generic helper to populate a target pointer using type assertion.

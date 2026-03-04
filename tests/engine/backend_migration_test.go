@@ -77,7 +77,7 @@ func TestBackendMigrationSimulation(t *testing.T) {
 		}
 
 		return &BackendMiddleware{Name: cfg.Name, Registry: regInst}, nil
-	}, engine.WithPriority(metadata.PriorityServerStack), engine.WithScope(metadata.ServerScope))
+	}, engine.WithPriority(metadata.PriorityServerStack), engine.WithScopes(metadata.ServerScope))
 
 	// Step 5: Activate and Verify
 	if err := reg.Init(ctx, root); err != nil {

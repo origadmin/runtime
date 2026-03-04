@@ -1,7 +1,12 @@
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
 package component
 
 import (
 	"context"
+	"iter"
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
@@ -30,7 +35,8 @@ type (
 
 type Handle interface {
 	Get(ctx context.Context, name string) (any, error)
-	In(category metadata.Category, opts ...RegisterOption) Handle
+	Iter(ctx context.Context) iter.Seq2[string, any]
+	In(category metadata.Category, opts ...InOption) Handle
 	BindConfig(target any) error
 	Config() any
 	Scope() metadata.Scope
@@ -58,11 +64,15 @@ type Registry interface {
 	Init(ctx context.Context, root any) error
 }
 
-// RegistrationOptions defines the concrete type for engine registration configuration.
 type RegistrationOptions struct {
-	Scope    metadata.Scope
+	Scopes   []metadata.Scope
 	Priority int
 }
 
-// RegisterOption is a functional option for RegistrationOptions.
 type RegisterOption func(*RegistrationOptions)
+
+type InOptions struct {
+	Scope metadata.Scope
+}
+
+type InOption func(*InOptions)

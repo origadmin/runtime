@@ -18,6 +18,8 @@ type (
 	ConfigEntry         = component.ConfigEntry
 	RegistrationOptions = component.RegistrationOptions
 	RegisterOption      = component.RegisterOption
+	InOptions           = component.InOptions
+	InOption            = component.InOption
 )
 
 const (
@@ -55,14 +57,21 @@ func NewContainer() Registry {
 }
 
 // In is a helper to get a scoped handle from a registry.
-func In(h Handle, cat Category, opts ...RegisterOption) Handle {
+func In(h Handle, cat Category, opts ...InOption) Handle {
 	return h.In(cat, opts...)
 }
 
-// WithScope is a functional option to specify the scope during registration.
-func WithScope(s Scope) RegisterOption {
-	return func(o *RegistrationOptions) {
+// WithScope specifies the exact perspective during In().
+func WithScope(s Scope) InOption {
+	return func(o *InOptions) {
 		o.Scope = s
+	}
+}
+
+// WithScopes specifies multiple visibilities during registration.
+func WithScopes(ss ...Scope) RegisterOption {
+	return func(o *RegistrationOptions) {
+		o.Scopes = append(o.Scopes, ss...)
 	}
 }
 

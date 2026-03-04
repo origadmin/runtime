@@ -114,7 +114,7 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 			return nil, err
 		}
 		return &mockMiddleware{name: "authz-mw", auth: auth, skip: skip}, nil
-	}, engine.WithPriority(500), engine.WithScope(metadata.ServerScope))
+	}, engine.WithPriority(500), engine.WithScopes(metadata.ServerScope))
 
 	// 3. Activate Engine (SINGLE entrance)
 	if err := reg.Init(ctx, root); err != nil {

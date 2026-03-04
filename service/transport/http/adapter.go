@@ -43,14 +43,11 @@ func getMiddlewares(
 	mwType string, // "server" or "client" for error messages
 ) ([]middleware.Middleware, error) {
 	if len(configuredNames) > 0 {
-		if len(availableMws) == 0 {
-			return nil, runtimeerrors.NewStructured(Module, "application container is required for %s middlewares but not found in options", mwType)
-		}
 		var mws []middleware.Middleware
 		for _, name := range configuredNames {
 			m, ok := availableMws[name]
 			if !ok {
-				return nil, runtimeerrors.NewStructured(Module, "%s middleware '%s' not found in options", mwType, name)
+				return nil, runtimeerrors.NewStructured(Module, "%s middleware '%s' not found in provided options", mwType, name)
 			}
 			mws = append(mws, m)
 		}

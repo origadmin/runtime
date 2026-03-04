@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"net/http"
 
 	transhttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/rs/cors"
@@ -16,24 +15,12 @@ import (
 )
 
 // CorsOption defines a functional option for configuring advanced CORS settings in code.
-// It allows developers to override or enhance the base configuration provided by the proto file.
 type CorsOption func(*cors.Options)
 
-// WithAllowOriginFunc sets the `AllowOriginFunc` on the underlying `cors.Options`.
-// This provides dynamic, request-based control over allowed origins, which cannot be defined in a static proto file.
-// Example: `WithAllowOriginFunc(func(origin string) bool { return origin == "https://example.com" })`
+// WithAllowOriginFunc sets the AllowOriginFunc.
 func WithAllowOriginFunc(f func(origin string) bool) CorsOption {
 	return func(o *cors.Options) {
 		o.AllowOriginFunc = f
-	}
-}
-
-// WithAllowOriginVaryRequestFunc sets the `AllowOriginVaryRequestFunc` on the underlying `cors.Options`.
-// This allows dynamic origin control based on the full http.Request.
-// Example: `WithAllowOriginVaryRequestFunc(func(r *http.Request, origin string) (bool, []string) { return r.Header.Get("X-Custom") == "true", nil })`
-func WithAllowOriginVaryRequestFunc(f func(r *http.Request, origin string) (bool, []string)) CorsOption {
-	return func(o *cors.Options) {
-		o.AllowOriginVaryRequestFunc = f
 	}
 }
 
@@ -42,11 +29,10 @@ type ServerOptions struct {
 	// ServerOptions allows passing native Kratos HTTP server options.
 	ServerOptions []transhttp.ServerOption
 
-	// CorsOptions allows applying advanced, code-based configurations to the CORS handler.
-	// These options will be applied *after* the base configuration from the proto file.
+	// CorsOptions allows applying advanced, code-based configurations.
 	CorsOptions []CorsOption
 
-	// Registrar is the HTTP registrar to use for service registration.
+	// Registrar is the HTTP registrar to use.
 	Registrar transport.HTTPRegistrar
 
 	// ServerMiddlewares holds a map of named server middlewares.
@@ -54,10 +40,8 @@ type ServerOptions struct {
 	Context           context.Context
 }
 
-// FromServerOptions creates a new HTTP ServerOptions struct by applying a slice of functional options.
-// It also initializes and includes the common service-level options, ensuring they are applied only once.
+// FromServerOptions creates a new HTTP ServerOptions struct.
 func FromServerOptions(opts []options.Option) *ServerOptions {
-	// Apply HTTP server-specific options first
 	o := optionutil.NewT[ServerOptions](opts...)
 	if o.Context == nil {
 		o.Context = context.Background()
@@ -72,45 +56,10 @@ func WithServerOptions(opts ...transhttp.ServerOption) options.Option {
 	})
 }
 
-// WithCorsOptions appends advanced, code-based CORS configurations.
-// These will be applied on top of the CORS settings from the proto configuration.
-func WithCorsOptions(opts ...CorsOption) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
-		o.CorsOptions = append(o.CorsOptions, opts...)
-	})
-}
-
-// WithRegistrar sets the HTTP registrar to use for service registration.
+// WithRegistrar sets the HTTP registrar.
 func WithRegistrar(registrar transport.HTTPRegistrar) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
 		o.Registrar = registrar
-	})
-}
-
-// WithContext sets the context.Context for the service.
-func WithContext(ctx context.Context) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
-		o.Context = ctx
-	})
-}
-
-// WithContextRegistry sets both the context.Context and ServerRegistrar for the service.
-func WithContextRegistry(ctx context.Context, registrar transport.HTTPRegistrar) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
-		o.Context = ctx
-		o.Registrar = registrar
-	})
-}
-
-// WithServerMiddlewares adds a map of named server middlewares to the options.
-func WithServerMiddlewares(mws map[string]middleware.Middleware) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
-		if o.ServerMiddlewares == nil {
-			o.ServerMiddlewares = make(map[string]middleware.Middleware)
-		}
-		for name, mw := range mws {
-			o.ServerMiddlewares[name] = mw
-		}
 	})
 }
 
@@ -126,12 +75,9 @@ type ClientOptions struct {
 	Discoveries map[string]registry.Discovery
 }
 
-// FromClientOptions creates a new HTTP ClientOptions struct by applying a slice of functional options.
-// It also initializes and includes the common service-level options, ensuring they are applied only once.
+// FromClientOptions creates a new HTTP ClientOptions struct.
 func FromClientOptions(opts []options.Option) *ClientOptions {
-	// Apply HTTP client-specific options first
 	o := optionutil.NewT[ClientOptions](opts...)
-	// Removed: o.Container = rtcontainer.FromOptions(opts)
 	return o
 }
 
@@ -142,7 +88,7 @@ func WithClientOptions(opts ...transhttp.ClientOption) options.Option {
 	})
 }
 
-// WithClientMiddlewares adds a map of named client middlewares to the options.
+// WithClientMiddlewares adds a map of named client middlewares.
 func WithClientMiddlewares(mws map[string]middleware.Middleware) options.Option {
 	return optionutil.Update(func(o *ClientOptions) {
 		if o.ClientMiddlewares == nil {
@@ -154,7 +100,7 @@ func WithClientMiddlewares(mws map[string]middleware.Middleware) options.Option 
 	})
 }
 
-// WithDiscoveries adds a map of named service discovery clients to the options.
+// WithDiscoveries adds a map of named service discovery clients.
 func WithDiscoveries(discoveries map[string]registry.Discovery) options.Option {
 	return optionutil.Update(func(o *ClientOptions) {
 		if o.Discoveries == nil {
@@ -163,6 +109,5 @@ func WithDiscoveries(discoveries map[string]registry.Discovery) options.Option {
 		for name, d := range discoveries {
 			o.Discoveries[name] = d
 		}
-
 	})
 }

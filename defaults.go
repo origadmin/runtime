@@ -1,52 +1,47 @@
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
 package runtime
 
 import (
 	"context"
-	"errors"
 
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
-	"github.com/origadmin/runtime/log"
 )
 
 var (
-	// DefaultLoggerExtractor extracts logger config from the root.
+	// DefaultConfigExtractor extracts the configuration from the config sources.
+	DefaultConfigExtractor component.Extractor = func(root any) (*component.ModuleConfig, error) {
+		return nil, nil
+	}
+
+	// DefaultLoggerExtractor extracts the logger configuration from the config sources.
 	DefaultLoggerExtractor component.Extractor = func(root any) (*component.ModuleConfig, error) {
-		if p, ok := root.(component.LoggerConfig); ok && p.GetLogger() != nil {
-			l := p.GetLogger()
-			return &component.ModuleConfig{
-				Entries: []component.ConfigEntry{{Name: "logger", Value: l}},
-				Active:  "logger",
-			}, nil
-		}
 		return nil, nil
 	}
 
-	// DefaultLoggerProvider creates a logger instance.
-	DefaultLoggerProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-		var cfg loggerv1.Logger
-		if err := h.BindConfig(&cfg); err != nil {
-			return log.DefaultLogger, nil
-		}
-		return log.NewLogger(&cfg), nil
-	}
-
-	// DefaultRegistryExtractor extracts registry config from the root.
+	// DefaultRegistryExtractor extracts the registry configuration from the config sources.
 	DefaultRegistryExtractor component.Extractor = func(root any) (*component.ModuleConfig, error) {
-		if p, ok := root.(component.RegistryConfig); ok && p.GetDiscoveries() != nil {
-			raw := p.GetDiscoveries()
-			var entries []component.ConfigEntry
-			for _, c := range raw.Configs {
-				entries = append(entries, component.ConfigEntry{Name: c.Name, Value: c})
+		if c, ok := root.(component.RegistryConfig); ok {
+			discoveries := c.GetDiscoveries()
+			if discoveries == nil {
+				return nil, nil
 			}
-			return &component.ModuleConfig{Entries: entries, Active: raw.GetActive()}, nil
+			res := &component.ModuleConfig{Active: discoveries.GetActive()}
+			for _, entry := range discoveries.GetConfigs() {
+				name := entry.GetName()
+				if name == "" {
+					name = entry.GetType()
+				}
+				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
+			}
+			return res, nil
 		}
 		return nil, nil
 	}
 
-	// DefaultRegistryProvider is a placeholder for registry factory.
-	DefaultRegistryProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-		return nil, errors.New("registry provider not fully implemented")
-	}
+	DefaultLoggerProvider   component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) { return nil, nil }
+	DefaultRegistryProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) { return nil, nil }
 )

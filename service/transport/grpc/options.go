@@ -26,9 +26,7 @@ type ServerOptions struct {
 }
 
 // FromServerOptions creates a new gRPC ServerOptions struct by applying a slice of functional options.
-// It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromServerOptions(opts []options.Option) *ServerOptions {
-	// Apply gRPC server-specific options first
 	o := optionutil.NewT[ServerOptions](opts...)
 	if o.Context == nil {
 		o.Context = context.Background()
@@ -57,14 +55,6 @@ func WithContext(ctx context.Context) options.Option {
 	})
 }
 
-// WithContextRegistry sets both the context.Context and ServerRegistrar for the service.
-func WithContextRegistry(ctx context.Context, registrar transport.GRPCRegistrar) options.Option {
-	return optionutil.Update(func(o *ServerOptions) {
-		o.Context = ctx
-		o.Registrar = registrar
-	})
-}
-
 // WithServerMiddlewares adds a map of named server middlewares to the options.
 func WithServerMiddlewares(mws map[string]middleware.Middleware) options.Option {
 	return optionutil.Update(func(o *ServerOptions) {
@@ -90,9 +80,7 @@ type ClientOptions struct {
 }
 
 // FromClientOptions creates a new gRPC ClientOptions struct by applying a slice of functional options.
-// It also initializes and includes the common service-level options, ensuring they are applied only once.
 func FromClientOptions(opts []options.Option) *ClientOptions {
-	// Apply gRPC client-specific options first
 	o := optionutil.NewT[ClientOptions](opts...)
 	return o
 }
