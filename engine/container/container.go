@@ -192,27 +192,27 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 		}
 
 		if _, exists := s.instances[cfgEntry.Name]; !exists {
-			var targetMeta *componentMeta
-			for _, meta := range s.instances {
-				if meta.config == cfgEntry.Value {
-					targetMeta = meta
-					break
-				}
-			}
-
-			if targetMeta == nil {
-				targetMeta = &componentMeta{config: cfgEntry.Value, status: StatusNone}
-			}
-
-			s.instances[cfgEntry.Name] = targetMeta
+			s.instances[cfgEntry.Name] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
 			s.order = append(s.order, cfgEntry.Name)
 		}
 	}
 
 	if mc.Active != "" && (filterName == "" || mc.Active == filterName) {
 		s.defaultName = mc.Active
-	} else if len(mc.Entries) > 0 && s.defaultName == "" {
-		s.defaultName = mc.Entries[0].Name
+	} else if s.defaultName == "" {
+		// 1. Look for explicit "default" entry
+		foundDefault := false
+		for _, e := range mc.Entries {
+			if e.Name == "default" {
+				s.defaultName = "default"
+				foundDefault = true
+				break
+			}
+		}
+		// 2. Only promote if unique
+		if !foundDefault && len(mc.Entries) == 1 {
+			s.defaultName = mc.Entries[0].Name
+		}
 	}
 
 	if s.defaultName != "" {
@@ -239,7 +239,7 @@ func (c *containerImpl) getModuleState(key moduleKey) *moduleState {
 }
 
 func (c *containerImpl) Get(ctx context.Context, name string) (any, error) {
-	return c.getInternal(ctx, "", component.GlobalScope, name)
+	return c.instantiate(ctx, "", component.GlobalScope, name)
 }
 
 func (c *containerImpl) Iter(ctx context.Context) iter.Seq2[string, any] {
@@ -252,7 +252,7 @@ func (c *containerImpl) Iter(ctx context.Context) iter.Seq2[string, any] {
 		s.mu.RUnlock()
 
 		for _, name := range order {
-			inst, err := c.getInternal(ctx, "", component.GlobalScope, name)
+			inst, err := c.instantiate(ctx, "", component.GlobalScope, name)
 			if err == nil {
 				if !yield(name, inst) {
 					return
@@ -274,11 +274,11 @@ func (c *containerImpl) Config() any                  { return nil }
 func (c *containerImpl) Scope() component.Scope       { return component.GlobalScope }
 func (c *containerImpl) Category() component.Category { return "" }
 
-func (c *containerImpl) getInternal(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {
-	return c.instantiate(ctx, cat, scope, name)
-}
-
 func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {
+	if name == "" {
+		name = component.DefaultName
+	}
+
 	mKey := moduleKey{category: cat, scope: scope}
 
 	c.mu.RLock()
@@ -286,10 +286,6 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	c.mu.RUnlock()
 	if !exists {
 		return nil, fmt.Errorf("engine: scope %s not initialized for category %s", scope, cat)
-	}
-
-	if name == "" {
-		name = component.DefaultName
 	}
 
 	s.mu.RLock()
@@ -347,7 +343,7 @@ type handleAdapter struct {
 }
 
 func (h *handleAdapter) Get(ctx context.Context, name string) (any, error) {
-	return h.c.getInternal(ctx, h.category, h.scope, name)
+	return h.c.instantiate(ctx, h.category, h.scope, name)
 }
 
 func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
@@ -360,7 +356,7 @@ func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
 		s.mu.RUnlock()
 
 		for _, name := range order {
-			inst, err := h.c.getInternal(ctx, h.category, h.scope, name)
+			inst, err := h.c.instantiate(ctx, h.category, h.scope, name)
 			if err == nil {
 				if !yield(name, inst) {
 					return

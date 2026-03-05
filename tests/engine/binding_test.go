@@ -167,4 +167,51 @@ func TestEngine_ConfigurationBindingProtocol(t *testing.T) {
 			t.Error("secondary DSN mismatch")
 		}
 	})
+
+	t.Run("DefaultRouting_MultipleShouldNoDefault", func(t *testing.T) {
+		reg := newReg()
+		data := &MockData{
+			Databases: []*MockDBConfig{
+				{Name: "first", DSN: "mysql://first"},
+				{Name: "second", DSN: "mysql://second"},
+			},
+		}
+		if err := reg.Load(ctx, data); err != nil {
+			t.Fatalf("Load failed: %v", err)
+		}
+
+		// _default should NOT exist because there are multiple items and no active/default specified
+		_, err := engine.GetDefault[*MockDBConfig](ctx, reg.In("database"))
+		if err == nil {
+			t.Error("Expected error when getting default from multiple items, but got nil")
+		}
+	})
+
+	t.Run("DefaultRouting_ActiveOverride", func(t *testing.T) {
+		reg := newReg()
+		data := &MockData{
+			Active: "second",
+			Databases: []*MockDBConfig{
+				{Name: "first", DSN: "mysql://first"},
+				{Name: "second", DSN: "mysql://second"},
+			},
+		}
+		if err := reg.Load(ctx, data); err != nil {
+			t.Fatalf("Load failed: %v", err)
+		}
+
+		// _default should point to "second"
+		dbD, err := engine.GetDefault[*MockDBConfig](ctx, reg.In("database"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		dbS, err := engine.Get[*MockDBConfig](ctx, reg.In("database"), "second")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if dbD != dbS {
+			t.Errorf("default (%p) should point to active instance (%p)", dbD, dbS)
+		}
+	})
 }
