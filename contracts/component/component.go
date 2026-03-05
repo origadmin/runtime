@@ -25,10 +25,31 @@ type Priority int
 const (
 	// GlobalScope is the default system fallback scope.
 	GlobalScope Scope = "_global"
+	// ServerScope is the standard scope for server-side components.
+	ServerScope Scope = "server"
+	// ClientScope is the standard scope for client-side components.
+	ClientScope Scope = "client"
+
 	// DefaultName is the system key for the active/default instance.
 	DefaultName = "_default"
 	// ReservedPrefix defines identifiers owned by the system.
 	ReservedPrefix = "_"
+)
+
+const (
+	// Category constants for standard components.
+	CategoryLogger      Category = "logger"
+	CategoryRegistry    Category = "registry"
+	CategoryClient      Category = "client"
+	CategoryServer      Category = "server"
+	CategoryMiddleware  Category = "middleware"
+	CategoryDatabase    Category = "database"
+	CategoryCache       Category = "cache"
+	CategoryObjectStore Category = "objectstore"
+	CategoryQueue       Category = "queue"
+	CategoryTask        Category = "task"
+	CategoryMail        Category = "mail"
+	CategoryStorage     Category = "storage"
 )
 
 // IsReserved checks if the metadata string is system-reserved.
@@ -105,12 +126,14 @@ type RegistrationOptions struct {
 	Resolver Resolver
 	Scopes   []Scope
 	Priority Priority
+	Tags     []string
 }
 
 type RegisterOption func(*RegistrationOptions)
 
 type InOptions struct {
 	Scope Scope
+	Tags  []string
 }
 
 type InOption func(*InOptions)
@@ -120,6 +143,7 @@ type LoadOptions struct {
 	Scope    Scope
 	Name     string
 	Resolver Resolver
+	Tags     []string
 }
 
 type LoadOption func(*LoadOptions)

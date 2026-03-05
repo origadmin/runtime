@@ -8,16 +8,33 @@ import (
 	"context"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/registry"
 
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/data/storage/cache"
+	"github.com/origadmin/runtime/data/storage/database"
+	"github.com/origadmin/runtime/data/storage/objectstore"
+	"github.com/origadmin/runtime/middleware"
 )
+
+func init() {
+	// Register Default Providers to Global Pool
+	Register(CategoryDatabase, database.DefaultProvider)
+	Register(CategoryCache, cache.DefaultProvider)
+	Register(CategoryObjectStore, objectstore.DefaultProvider)
+
+	// Scoped Middleware Providers
+	Register(CategoryMiddleware, middleware.ServerProvider, WithScopes(ServerScope))
+	Register(CategoryMiddleware, middleware.ClientProvider, WithScopes(ClientScope))
+
+	// Note: Registry DefaultProvider is registered by its own package side-effect 
+	// or manually when needed to avoid circular dependencies if required.
+	// For now, we rely on the component constants.
+}
 
 // --- Default Resolvers Map ---
 
 // DefaultResolvers provides standard configuration extraction logic for common categories.
-// It uses interface assertions for high performance and avoids reflection.
 var DefaultResolvers = map[component.Category]component.Resolver{
 	CategoryLogger:      resolveLogger,
 	CategoryRegistry:    resolveRegistry,
@@ -50,8 +67,6 @@ func resolveRegistry(source any, _ component.Category) (*component.ModuleConfig,
 			return nil, nil
 		}
 		res := &component.ModuleConfig{Active: discoveries.GetActive()}
-
-		// Handle Default
 		if d := discoveries.GetDefault(); d != nil {
 			name := extractName(d)
 			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
@@ -62,22 +77,11 @@ func resolveRegistry(source any, _ component.Category) (*component.ModuleConfig,
 				res.Active = "default"
 			}
 		}
-
-		// Handle Configs
-		configs := discoveries.GetConfigs()
-		for _, entry := range configs {
-			name := extractName(entry)
-			if name != "" {
+		for _, entry := range discoveries.GetConfigs() {
+			if name := extractName(entry); name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
 			}
 		}
-
-		// Protocol: Single item promotion
-		if len(res.Entries) == 0 && len(configs) == 1 {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: configs[0]})
-			res.Active = "default"
-		}
-
 		return res, nil
 	}
 	return nil, nil
@@ -90,15 +94,13 @@ func resolveMiddleware(source any, _ component.Category) (*component.ModuleConfi
 			return nil, nil
 		}
 		res := &component.ModuleConfig{}
-		configs := mws.GetConfigs()
-		for _, entry := range configs {
-			name := extractName(entry)
-			if name != "" {
+		for _, entry := range mws.GetConfigs() {
+			if name := extractName(entry); name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
 			}
 		}
 		if len(res.Entries) == 1 {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: configs[0]})
+			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: res.Entries[0].Value})
 			res.Active = "default"
 		}
 		return res, nil
@@ -114,7 +116,6 @@ func resolveDatabase(source any, _ component.Category) (*component.ModuleConfig,
 		}
 		dbs := data.GetDatabases()
 		res := &component.ModuleConfig{Active: dbs.GetActive()}
-
 		if d := dbs.GetDefault(); d != nil {
 			name := extractName(d)
 			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
@@ -125,18 +126,10 @@ func resolveDatabase(source any, _ component.Category) (*component.ModuleConfig,
 				res.Active = "default"
 			}
 		}
-
-		configs := dbs.GetConfigs()
-		for _, entry := range configs {
-			name := extractName(entry)
-			if name != "" {
+		for _, entry := range dbs.GetConfigs() {
+			if name := extractName(entry); name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
 			}
-		}
-
-		if len(res.Entries) == 0 && len(configs) == 1 {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: configs[0]})
-			res.Active = "default"
 		}
 		return res, nil
 	}
@@ -151,7 +144,6 @@ func resolveCache(source any, _ component.Category) (*component.ModuleConfig, er
 		}
 		caches := data.GetCaches()
 		res := &component.ModuleConfig{Active: caches.GetActive()}
-
 		if d := caches.GetDefault(); d != nil {
 			name := extractName(d)
 			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
@@ -162,18 +154,10 @@ func resolveCache(source any, _ component.Category) (*component.ModuleConfig, er
 				res.Active = "default"
 			}
 		}
-
-		configs := caches.GetConfigs()
-		for _, entry := range configs {
-			name := extractName(entry)
-			if name != "" {
+		for _, entry := range caches.GetConfigs() {
+			if name := extractName(entry); name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
 			}
-		}
-
-		if len(res.Entries) == 0 && len(configs) == 1 {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: configs[0]})
-			res.Active = "default"
 		}
 		return res, nil
 	}
@@ -188,7 +172,6 @@ func resolveObjectStore(source any, _ component.Category) (*component.ModuleConf
 		}
 		oss := data.GetObjectStores()
 		res := &component.ModuleConfig{Active: oss.GetActive()}
-
 		if d := oss.GetDefault(); d != nil {
 			name := extractName(d)
 			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
@@ -199,25 +182,16 @@ func resolveObjectStore(source any, _ component.Category) (*component.ModuleConf
 				res.Active = "default"
 			}
 		}
-
-		configs := oss.GetConfigs()
-		for _, entry := range configs {
-			name := extractName(entry)
-			if name != "" {
+		for _, entry := range oss.GetConfigs() {
+			if name := extractName(entry); name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
 			}
-		}
-
-		if len(res.Entries) == 0 && len(configs) == 1 {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: configs[0]})
-			res.Active = "default"
 		}
 		return res, nil
 	}
 	return nil, nil
 }
 
-// extractName uses interface assertions to find an appropriate identifier for a config item.
 func extractName(item any) string {
 	if item == nil {
 		return ""
@@ -247,24 +221,10 @@ func extractName(item any) string {
 
 // --- Default Providers (Component Factory) ---
 
-// DefaultLoggerProvider creates a default logger instance.
 var DefaultLoggerProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 	return log.DefaultLogger, nil
 }
 
-// DefaultRegistryProvider creates a default registry instance.
 var DefaultRegistryProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 	return nil, nil
-}
-
-// --- Wire Providers ---
-
-// ProvideLogger is a Wire provider function that extracts the logger from the App.
-func ProvideLogger(rt *App) log.Logger {
-	return rt.Logger()
-}
-
-// ProvideDefaultRegistrar is a Wire provider function that extracts the registrar from the App.
-func ProvideDefaultRegistrar(rt *App) (registry.Registrar, error) {
-	return rt.DefaultRegistrar()
 }

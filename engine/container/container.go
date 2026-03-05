@@ -45,6 +45,27 @@ type providerEntry struct {
 	resolver component.Resolver
 	scopes   []component.Scope
 	priority component.Priority
+	tags     []string
+}
+
+// matchTags checks if the entry satisfies all requested tags.
+func (e *providerEntry) matchTags(requested []string) bool {
+	if len(requested) == 0 {
+		return true // No filter, match all
+	}
+	for _, req := range requested {
+		found := false
+		for _, tag := range e.tags {
+			if tag == req {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 // Option defines the internal option for container initialization.
@@ -65,7 +86,7 @@ func WithCategoryResolvers(res map[component.Category]component.Resolver) Option
 type containerImpl struct {
 	mu                sync.RWMutex
 	modules           map[moduleKey]*moduleState
-	providers         map[component.Category]*providerEntry
+	providers         map[component.Category][]*providerEntry
 	categoryResolvers map[component.Category]component.Resolver
 	isLoaded          bool
 }
@@ -74,24 +95,38 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	// FIX: Restore lifecycle protection
 	if c.isLoaded {
 		panic(fmt.Sprintf("engine: cannot register category %s after Load() has been called", cat))
 	}
 
-	cfg := &component.RegistrationOptions{
-		Priority: 0,
-		Scopes:   nil,
-	}
+	cfg := &component.RegistrationOptions{}
 	for _, opt := range opts {
 		opt(cfg)
 	}
 
-	c.providers[cat] = &providerEntry{
+	entry := &providerEntry{
 		provider: p,
 		resolver: cfg.Resolver,
 		scopes:   cfg.Scopes,
 		priority: cfg.Priority,
+		tags:     cfg.Tags,
 	}
+
+	entries := c.providers[cat]
+	inserted := false
+	for i, e := range entries {
+		// FIX: Use >= to allow newer registrations with the same priority to take precedence
+		if entry.priority >= e.priority {
+			entries = append(entries[:i], append([]*providerEntry{entry}, entries[i:]...)...)
+			inserted = true
+			break
+		}
+	}
+	if !inserted {
+		entries = append(entries, entry)
+	}
+	c.providers[cat] = entries
 }
 
 func (c *containerImpl) Has(cat component.Category, opts ...component.RegisterOption) bool {
@@ -125,21 +160,28 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 	c.mu.RUnlock()
 
 	for _, cat := range cats {
-		entry := c.getProviderEntry(cat)
-		if entry == nil {
+		entries := c.getProviderEntries(cat)
+		if len(entries) == 0 {
 			continue
 		}
 
-		registeredScopes := entry.scopes
-		if len(registeredScopes) == 0 {
-			registeredScopes = []component.Scope{component.GlobalScope}
+		primaryEntry := entries[0]
+		registeredScopes := make(map[component.Scope]bool)
+		for _, entry := range entries {
+			if len(entry.scopes) == 0 {
+				registeredScopes[component.GlobalScope] = true
+			} else {
+				for _, s := range entry.scopes {
+					registeredScopes[s] = true
+				}
+			}
 		}
 
-		for _, s := range registeredScopes {
+		for s := range registeredScopes {
 			if loadOpts.Scope != "" && s != loadOpts.Scope {
 				continue
 			}
-			if err := c.bindWithSource(cat, s, entry, source, loadOpts.Resolver, loadOpts.Name); err != nil {
+			if err := c.bindWithSource(cat, s, primaryEntry, source, loadOpts.Resolver, loadOpts.Name); err != nil {
 				return err
 			}
 		}
@@ -147,7 +189,7 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 	return nil
 }
 
-func (c *containerImpl) getProviderEntry(cat component.Category) *providerEntry {
+func (c *containerImpl) getProviderEntries(cat component.Category) []*providerEntry {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.providers[cat]
@@ -200,7 +242,6 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 	if mc.Active != "" && (filterName == "" || mc.Active == filterName) {
 		s.defaultName = mc.Active
 	} else if s.defaultName == "" {
-		// 1. Look for explicit "default" entry
 		foundDefault := false
 		for _, e := range mc.Entries {
 			if e.Name == "default" {
@@ -209,7 +250,6 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 				break
 			}
 		}
-		// 2. Only promote if unique
 		if !foundDefault && len(mc.Entries) == 1 {
 			s.defaultName = mc.Entries[0].Name
 		}
@@ -239,12 +279,16 @@ func (c *containerImpl) getModuleState(key moduleKey) *moduleState {
 }
 
 func (c *containerImpl) Get(ctx context.Context, name string) (any, error) {
-	return c.instantiate(ctx, "", component.GlobalScope, name)
+	return c.instantiate(ctx, "", component.GlobalScope, name, nil)
 }
 
 func (c *containerImpl) Iter(ctx context.Context) iter.Seq2[string, any] {
+	return c.iterInternal(ctx, "", component.GlobalScope, nil)
+}
+
+func (c *containerImpl) iterInternal(ctx context.Context, cat component.Category, scope component.Scope, tags []string) iter.Seq2[string, any] {
 	return func(yield func(string, any) bool) {
-		mKey := moduleKey{category: "", scope: component.GlobalScope}
+		mKey := moduleKey{category: cat, scope: scope}
 		s := c.getModuleState(mKey)
 		s.mu.RLock()
 		order := make([]string, len(s.order))
@@ -252,7 +296,7 @@ func (c *containerImpl) Iter(ctx context.Context) iter.Seq2[string, any] {
 		s.mu.RUnlock()
 
 		for _, name := range order {
-			inst, err := c.instantiate(ctx, "", component.GlobalScope, name)
+			inst, err := c.instantiate(ctx, cat, scope, name, tags)
 			if err == nil {
 				if !yield(name, inst) {
 					return
@@ -267,14 +311,14 @@ func (c *containerImpl) In(cat component.Category, opts ...component.InOption) c
 	for _, opt := range opts {
 		opt(inOpts)
 	}
-	return &handleAdapter{c: c, category: cat, scope: inOpts.Scope}
+	return &handleAdapter{c: c, category: cat, scope: inOpts.Scope, tags: inOpts.Tags}
 }
 
 func (c *containerImpl) Config() any                  { return nil }
 func (c *containerImpl) Scope() component.Scope       { return component.GlobalScope }
 func (c *containerImpl) Category() component.Category { return "" }
 
-func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {
+func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error) {
 	if name == "" {
 		name = component.DefaultName
 	}
@@ -314,24 +358,54 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 
 	meta.status = StatusInstantiating
 	c.mu.RLock()
-	entry := c.providers[cat]
+	entries := c.providers[cat]
 	c.mu.RUnlock()
-	if entry == nil {
+	if len(entries) == 0 {
 		meta.status = StatusError
 		return nil, fmt.Errorf("engine: no provider for %s", cat)
 	}
 
-	h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta}
-	inst, err := entry.provider(ctx, h)
-	if err != nil {
-		meta.status = StatusError
-		meta.err = err
-		return nil, err
+	var lastErr error
+	for _, entry := range entries {
+		// 1. Match Scope
+		scopeMatch := false
+		if len(entry.scopes) == 0 {
+			scopeMatch = true
+		} else {
+			for _, s := range entry.scopes {
+				if s == scope || s == component.GlobalScope {
+					scopeMatch = true
+					break
+				}
+			}
+		}
+		if !scopeMatch {
+			continue
+		}
+
+		// 2. Match Tags
+		if !entry.matchTags(tags) {
+			continue
+		}
+
+		h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta, tags: tags}
+		inst, err := entry.provider(ctx, h)
+		if err == nil && inst != nil {
+			meta.inst = inst
+			meta.status = StatusReady
+			return inst, nil
+		}
+		if err != nil {
+			lastErr = err
+		}
 	}
 
-	meta.inst = inst
-	meta.status = StatusReady
-	return inst, nil
+	meta.status = StatusError
+	if lastErr != nil {
+		meta.err = lastErr
+		return nil, lastErr
+	}
+	return nil, fmt.Errorf("engine: no compatible provider found for %s/%s in scope %s with tags %v", cat, name, scope, tags)
 }
 
 type handleAdapter struct {
@@ -340,30 +414,15 @@ type handleAdapter struct {
 	scope    component.Scope
 	name     string
 	meta     *componentMeta
+	tags     []string
 }
 
 func (h *handleAdapter) Get(ctx context.Context, name string) (any, error) {
-	return h.c.instantiate(ctx, h.category, h.scope, name)
+	return h.c.instantiate(ctx, h.category, h.scope, name, h.tags)
 }
 
 func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
-	return func(yield func(string, any) bool) {
-		mKey := moduleKey{category: h.category, scope: h.scope}
-		s := h.c.getModuleState(mKey)
-		s.mu.RLock()
-		order := make([]string, len(s.order))
-		copy(order, s.order)
-		s.mu.RUnlock()
-
-		for _, name := range order {
-			inst, err := h.c.instantiate(ctx, h.category, h.scope, name)
-			if err == nil {
-				if !yield(name, inst) {
-					return
-				}
-			}
-		}
-	}
+	return h.c.iterInternal(ctx, h.category, h.scope, h.tags)
 }
 
 func (h *handleAdapter) In(cat component.Category, opts ...component.InOption) component.Handle {
@@ -383,7 +442,7 @@ func (h *handleAdapter) Category() component.Category { return h.category }
 func NewContainer(opts ...Option) component.Registry {
 	c := &containerImpl{
 		modules:           make(map[moduleKey]*moduleState),
-		providers:         make(map[component.Category]*providerEntry),
+		providers:         make(map[component.Category][]*providerEntry),
 		categoryResolvers: make(map[component.Category]component.Resolver),
 	}
 	for _, opt := range opts {

@@ -118,6 +118,12 @@ func WithPriority(p Priority) RegisterOption {
 	}
 }
 
+func WithTags(tags ...string) RegisterOption {
+	return func(o *RegistrationOptions) {
+		o.Tags = append(o.Tags, tags...)
+	}
+}
+
 // WithResolverOption specifies a local configuration resolver for a component.
 func WithResolverOption(res Resolver) RegisterOption {
 	return func(o *RegistrationOptions) {
@@ -130,6 +136,12 @@ func WithResolverOption(res Resolver) RegisterOption {
 func WithInScope(s Scope) InOption {
 	return func(o *InOptions) {
 		o.Scope = s
+	}
+}
+
+func WithInTags(tags ...string) InOption {
+	return func(o *InOptions) {
+		o.Tags = append(o.Tags, tags...)
 	}
 }
 

@@ -25,25 +25,25 @@ const (
 
 const (
 	CategoryInfrastructure Category = "infrastructure"
-	CategoryLogger         Category = "logger"
-	CategoryRegistry       Category = "registry"
-	CategoryClient         Category = "client"
-	CategoryServer         Category = "server"
-	CategoryMiddleware     Category = "middleware"
-	CategoryDatabase       Category = "database"
-	CategoryCache          Category = "cache"
-	CategoryObjectStore    Category = "objectstore"
-	CategoryQueue          Category = "queue"
-	CategoryTask           Category = "task"
-	CategoryMail           Category = "mail"
-	CategoryStorage        Category = "storage"
+	CategoryLogger                  = component.CategoryLogger
+	CategoryRegistry                = component.CategoryRegistry
+	CategoryClient                  = component.CategoryClient
+	CategoryServer                  = component.CategoryServer
+	CategoryMiddleware              = component.CategoryMiddleware
+	CategoryDatabase                = component.CategoryDatabase
+	CategoryCache                   = component.CategoryCache
+	CategoryObjectStore             = component.CategoryObjectStore
+	CategoryQueue                   = component.CategoryQueue
+	CategoryTask                    = component.CategoryTask
+	CategoryMail                    = component.CategoryMail
+	CategoryStorage                 = component.CategoryStorage
 )
 
 // --- Scope Conventions ---
 
 const (
-	ServerScope Scope = "server"
-	ClientScope Scope = "client"
+	ServerScope = component.ServerScope
+	ClientScope = component.ClientScope
 )
 
 // --- Priority Conventions ---
@@ -85,6 +85,16 @@ func WithScopes(ss ...Scope) RegisterOption {
 // WithPriority specifies the initialization priority.
 func WithPriority(p Priority) RegisterOption {
 	return engine.WithPriority(p)
+}
+
+// WithTags specifies the tags for a component.
+func WithTags(tags ...string) RegisterOption {
+	return engine.WithTags(tags...)
+}
+
+// WithInTags specifies the tags for perspective switching.
+func WithInTags(tags ...string) InOption {
+	return engine.WithInTags(tags...)
 }
 
 // WithResolver specifies a local config resolver for a component.

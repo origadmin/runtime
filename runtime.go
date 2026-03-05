@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
 
@@ -19,6 +18,7 @@ import (
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/bootstrap"
 	enginecontext "github.com/origadmin/runtime/engine/context"
+	"github.com/origadmin/runtime/registry"
 )
 
 // Standard configuration interfaces (Contract Re-export)
@@ -138,8 +138,8 @@ func (r *App) WarmUp() error {
 func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
 func (r *App) BusinessConfig() any           { return r.result.Config() }
 func (r *App) Logger() log.Logger {
-	// Navigate via CategoryLogger
-	l, err := engine.Get[log.Logger](r.ctx, r.engine.In(CategoryLogger), "logger")
+	// Navigate via CategoryLogger using GetDefault to support user overrides
+	l, err := engine.GetDefault[log.Logger](r.ctx, r.engine.In(CategoryLogger))
 	if err != nil {
 		return log.DefaultLogger
 	}
@@ -192,8 +192,8 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 	return kratos.New(opts...)
 }
 
-func (r *App) DefaultRegistrar() (registry.Registrar, error) {
-	return engine.Get[registry.Registrar](r.ctx, r.engine.In(CategoryRegistry), "")
+func (r *App) DefaultRegistrar() (registry.KRegistrar, error) {
+	return engine.Get[registry.KRegistrar](r.ctx, r.engine.In(CategoryRegistry), "")
 }
 
 func (r *App) AppInfo() *appv1.App { return r.appInfo }
@@ -207,4 +207,16 @@ func (r *App) ShowAppInfo() {
 	host, _ := os.Hostname()
 	pid := os.Getpid()
 	fmt.Printf("[%s] %s (pid:%d@%s)\n  Version: %s\n  AppId: %s\n  InstanceId: %s\n", ts, ai.Name, pid, host, ai.Version, ai.Id, ai.InstanceId)
+}
+
+// --- Wire Providers ---
+
+// ProvideLogger is a Wire provider function that extracts the logger from the App.
+func ProvideLogger(rt *App) log.Logger {
+	return rt.Logger()
+}
+
+// ProvideDefaultRegistrar is a Wire provider function that extracts the registrar from the App.
+func ProvideDefaultRegistrar(rt *App) (registry.KRegistrar, error) {
+	return rt.DefaultRegistrar()
 }

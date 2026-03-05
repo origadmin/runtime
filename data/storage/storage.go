@@ -7,28 +7,19 @@
 package storage
 
 import (
-	"cmp"
-	"fmt"
-	"sync"
+	"context"
 
-	"github.com/goexts/generic/maps"
-
-	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
-	databasev1 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
-	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
-	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
+	"github.com/origadmin/runtime/contracts/component"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
-	"github.com/origadmin/runtime/data/storage/cache"
-	"github.com/origadmin/runtime/data/storage/database"
-	"github.com/origadmin/runtime/data/storage/objectstore"
-	runtimeerrors "github.com/origadmin/runtime/errors"
-	"github.com/origadmin/runtime/helpers/configutil"
+	"github.com/origadmin/runtime/engine"
 )
 
 const (
 	Module = "storage"
 )
 
+// Provider defines the interface for a storage service provider.
+// It acts as a bridge to the runtime engine's component container.
 type Provider interface {
 	Cache(name string) (storageiface.Cache, error)
 	DefaultCache() (storageiface.Cache, error)
@@ -40,221 +31,45 @@ type Provider interface {
 	DefaultObjectStore() (storageiface.ObjectStore, error)
 }
 
-// providerImpl implements the storageiface.Provider interface.
+// providerImpl implements the Provider interface by delegating to the engine handle.
 type providerImpl struct {
-	caches       map[string]storageiface.Cache
-	databases    map[string]storageiface.Database
-	objectstores map[string]storageiface.ObjectStore
-
-	defaultCache       string
-	defaultDatabase    string
-	defaultObjectStore string
-
-	mu sync.RWMutex
+	handle component.Handle
 }
 
-// NewProvider creates a new storage provider instance based on the provided decoded DataConfig.
-func NewProvider(dataConfig *datav1.Data) (Provider, error) {
-	p := &providerImpl{
-		caches:       make(map[string]storageiface.Cache),
-		databases:    make(map[string]storageiface.Database),
-		objectstores: make(map[string]storageiface.ObjectStore),
-	}
-
-	var err error
-
-	// Initialize Caches
-	p.caches, p.defaultCache, err = NewCaches(dataConfig.GetCaches())
-	if err != nil {
-		return nil, err
-	}
-
-	// Initialize Databases
-	p.databases, p.defaultDatabase, err = NewDatabases(dataConfig.GetDatabases())
-	if err != nil {
-		return nil, err
-	}
-
-	// Initialize Filestores
-	//p.objectstores, p.defaultObjectStore, err = NewObjectStores(dataConfig.GetObjectStores())
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	return p, nil
-}
-
-// NewCaches creates a map of cache instances and determines the default cache name
-// from a datav1.Caches configuration object.
-func NewCaches(cachesConfig *datav1.Caches) (map[string]storageiface.Cache, string, error) {
-	if cachesConfig == nil {
-		return nil, "", nil
-	}
-
-	normalizedDefault, normalizedConfigs, err := configutil.Normalize(cachesConfig.GetActive(), cachesConfig.GetDefault(), cachesConfig.GetConfigs())
-	if err != nil {
-		// Fallback logic if normalization fails (e.g., no configs)
-		return nil, "", err
-	}
-
-	cacheConfigsMap := maps.FromSlice(normalizedConfigs,
-		func(cfg *cachev1.CacheConfig) (string, *cachev1.CacheConfig) {
-			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
-		})
-
-	caches, err := NewCachesFromConfigs(cacheConfigsMap)
-	if err != nil {
-		return nil, "", err
-	}
-
-	defaultCacheName := ""
-	if normalizedDefault != nil {
-		defaultCacheName = normalizedDefault.GetName()
-	}
-
-	return caches, defaultCacheName, nil
-}
-
-// NewDatabases creates a map of database instances and determines the default database name
-// from a datav1.Databases configuration object.
-func NewDatabases(databasesConfig *datav1.Databases) (map[string]storageiface.Database, string, error) {
-	if databasesConfig == nil {
-		return nil, "", nil
-	}
-
-	normalizedDefault, normalizedConfigs, err := configutil.Normalize(databasesConfig.GetActive(), databasesConfig.GetDefault(), databasesConfig.GetConfigs())
-	if err != nil {
-		return nil, "", err
-	}
-
-	databaseConfigsMap := maps.FromSlice(normalizedConfigs,
-		func(cfg *databasev1.DatabaseConfig) (string, *databasev1.DatabaseConfig) {
-			return cmp.Or(cfg.GetName(), cfg.GetDialect()), cfg
-		})
-
-	databases, err := NewDatabasesFromConfigs(databaseConfigsMap)
-	if err != nil {
-		return nil, "", err
-	}
-
-	defaultDatabaseName := ""
-	if normalizedDefault != nil {
-		defaultDatabaseName = normalizedDefault.GetName()
-	}
-
-	return databases, defaultDatabaseName, nil
-}
-
-// NewObjectStores creates a map of object store instances and determines the default object store name
-// from a datav1.ObjectStores configuration object.
-func NewObjectStores(objectstoresConfig *datav1.ObjectStores) (map[string]storageiface.ObjectStore, string, error) {
-	if objectstoresConfig == nil {
-		return nil, "", nil
-	}
-
-	normalizedDefault, normalizedConfigs, err := configutil.Normalize(objectstoresConfig.GetActive(), objectstoresConfig.GetDefault(), objectstoresConfig.GetConfigs())
-	if err != nil {
-		return nil, "", err
-	}
-
-	objectstoreConfigsMap := maps.FromSlice(normalizedConfigs,
-		func(cfg *ossv1.ObjectStoreConfig) (string, *ossv1.ObjectStoreConfig) {
-			return cmp.Or(cfg.GetName(), cfg.GetDriver()), cfg
-		})
-
-	objectstores, err := NewObjectStoresFromConfigs(objectstoreConfigsMap)
-	if err != nil {
-		return nil, "", err
-	}
-
-	defaultObjectstoreName := ""
-	if normalizedDefault != nil {
-		defaultObjectstoreName = normalizedDefault.GetName()
-	}
-
-	return objectstores, defaultObjectstoreName, nil
-}
-
-// NewCachesFromConfigs creates a map of cache instances from a map of cache configurations.
-func NewCachesFromConfigs(configs map[string]*cachev1.CacheConfig) (map[string]storageiface.Cache, error) {
-	caches := make(map[string]storageiface.Cache)
-	for name, cfg := range configs {
-		c, err := cache.New(cfg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create cache '%s': %w", name, err)
-		}
-		caches[name] = c
-	}
-	return caches, nil
-}
-
-// NewDatabasesFromConfigs creates a map of database instances from a map of database configurations.
-func NewDatabasesFromConfigs(configs map[string]*databasev1.DatabaseConfig) (map[string]storageiface.Database, error) {
-	databases := make(map[string]storageiface.Database)
-	for name, cfg := range configs {
-		db, err := database.New(cfg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create database '%s': %w", name, err)
-		}
-		databases[name] = db
-	}
-	return databases, nil
-}
-
-// NewObjectStoresFromConfigs creates a map of object store instances from a map of object store configurations.
-func NewObjectStoresFromConfigs(configs map[string]*ossv1.ObjectStoreConfig) (map[string]storageiface.ObjectStore, error) {
-	objectstores := make(map[string]storageiface.ObjectStore)
-	for name, cfg := range configs {
-		fs, err := objectstore.New(cfg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create objectstore '%s': %w", name, err)
-		}
-		objectstores[name] = fs
-	}
-	return objectstores, nil
-}
-
-// ObjectStore returns the configured file storage service by name.
-func (p *providerImpl) ObjectStore(name string) (storageiface.ObjectStore, error) {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	if fs, ok := p.objectstores[name]; ok {
-		return fs, nil
-	}
-	return nil, runtimeerrors.NewStructured(Module, "objectstore %v not found", name).WithCaller()
-}
-
-// DefaultObjectStore returns the default object storage service.
-func (p *providerImpl) DefaultObjectStore() (storageiface.ObjectStore, error) {
-	return p.ObjectStore(p.defaultObjectStore)
-}
-
-// Cache returns the configured cache service by name.
+// Cache retrieves a cache instance by name from the engine.
 func (p *providerImpl) Cache(name string) (storageiface.Cache, error) {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	if c, ok := p.caches[name]; ok {
-		return c, nil
-	}
-	return nil, runtimeerrors.NewStructured(Module, "cache %v not found", name).WithCaller()
+	return engine.Get[storageiface.Cache](context.Background(), p.handle.In(component.CategoryCache), name)
 }
 
-// DefaultCache returns the default cache service.
+// DefaultCache retrieves the default cache instance from the engine.
 func (p *providerImpl) DefaultCache() (storageiface.Cache, error) {
-	return p.Cache(p.defaultCache)
+	return engine.GetDefault[storageiface.Cache](context.Background(), p.handle.In(component.CategoryCache))
 }
 
-// Database returns the configured database service by name.
+// Database retrieves a database instance by name from the engine.
 func (p *providerImpl) Database(name string) (storageiface.Database, error) {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	if db, ok := p.databases[name]; ok {
-		return db, nil
-	}
-	return nil, runtimeerrors.NewStructured(Module, "database %v not found", name).WithCaller()
+	return engine.Get[storageiface.Database](context.Background(), p.handle.In(component.CategoryDatabase), name)
 }
 
-// DefaultDatabase returns the default database service.
+// DefaultDatabase retrieves the default database instance from the engine.
 func (p *providerImpl) DefaultDatabase() (storageiface.Database, error) {
-	return p.Database(p.defaultDatabase)
+	return engine.GetDefault[storageiface.Database](context.Background(), p.handle.In(component.CategoryDatabase))
+}
+
+// ObjectStore retrieves an object store instance by name from the engine.
+func (p *providerImpl) ObjectStore(name string) (storageiface.ObjectStore, error) {
+	return engine.Get[storageiface.ObjectStore](context.Background(), p.handle.In(component.CategoryObjectStore), name)
+}
+
+// DefaultObjectStore retrieves the default object store instance from the engine.
+func (p *providerImpl) DefaultObjectStore() (storageiface.ObjectStore, error) {
+	return engine.GetDefault[storageiface.ObjectStore](context.Background(), p.handle.In(component.CategoryObjectStore))
+}
+
+// NewProvider creates a new storage provider instance.
+// In the engine-driven architecture, it simply wraps the root component handle.
+func NewProvider(handle component.Handle) Provider {
+	return &providerImpl{
+		handle: handle,
+	}
 }
