@@ -38,10 +38,62 @@ func TestEngine_ConfigurationBindingProtocol(t *testing.T) {
 
 	// Helper to create a pre-registered registry
 	newReg := func() component.Registry {
-		reg := container.NewContainer()
+		resolvers := map[component.Category]component.Resolver{
+			"database": func(source any, cat component.Category) (*component.ModuleConfig, error) {
+				if d, ok := source.(*MockData); ok {
+					res := &component.ModuleConfig{Active: d.Active}
+					if d.Default != nil {
+						res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d.Default})
+						name := d.Default.Name
+						if name == "" {
+							name = d.Default.Dialect
+						}
+						if name != "" {
+							res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: d.Default})
+						}
+						if res.Active == "" {
+							res.Active = "default"
+						}
+					}
+					for _, db := range d.Databases {
+						name := db.Name
+						if name == "" {
+							name = db.Dialect
+						}
+						res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: db})
+					}
+					return res, nil
+				}
+				if db, ok := source.(*MockDBConfig); ok {
+					name := db.Name
+					if name == "" {
+						name = db.Dialect
+					}
+					return &component.ModuleConfig{
+						Entries: []component.ConfigEntry{
+							{Name: "default", Value: db},
+							{Name: name, Value: db},
+						},
+						Active: "default",
+					}, nil
+				}
+				return nil, nil
+			},
+		}
+		reg := container.NewContainer(container.WithCategoryResolvers(resolvers))
 		reg.Register("database", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-			cfg := &MockDBConfig{}
-			if err := h.BindConfig(cfg); err != nil {
+			// Test both old and new patterns
+			if h.Category() == "database_old" {
+				cfg := &MockDBConfig{}
+				if err := engine.BindConfig(h, cfg); err != nil {
+					return nil, err
+				}
+				return cfg, nil
+			}
+
+			// New recommended pattern
+			cfg, err := engine.AsConfig[MockDBConfig](h)
+			if err != nil {
 				return nil, err
 			}
 			return cfg, nil
@@ -59,7 +111,7 @@ func TestEngine_ConfigurationBindingProtocol(t *testing.T) {
 		}
 
 		// Verify by dialect name
-		db1, err := engine.Cast[*MockDBConfig](ctx, reg.In("database"), "mysql")
+		db1, err := engine.Get[*MockDBConfig](ctx, reg.In("database"), "mysql")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -92,7 +144,7 @@ func TestEngine_ConfigurationBindingProtocol(t *testing.T) {
 		}
 
 		// Verify "primary"
-		dbP, err := engine.Cast[*MockDBConfig](ctx, reg.In("database"), "primary")
+		dbP, err := engine.Get[*MockDBConfig](ctx, reg.In("database"), "primary")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -107,7 +159,7 @@ func TestEngine_ConfigurationBindingProtocol(t *testing.T) {
 		}
 
 		// Verify "secondary"
-		dbS, err := engine.Cast[*MockDBConfig](ctx, reg.In("database"), "secondary")
+		dbS, err := engine.Get[*MockDBConfig](ctx, reg.In("database"), "secondary")
 		if err != nil {
 			t.Fatal(err)
 		}

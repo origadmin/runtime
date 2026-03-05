@@ -15,64 +15,67 @@ import (
 type ServerMiddleware struct{ Name string }
 type ClientMiddleware struct{ Name string }
 
-func TestScopeIsolationAndMatching(t *testing.T) {
+func TestScopeIsolationAndPerspectiveSwitch(t *testing.T) {
 	reg := container.NewContainer()
 	ctx := context.Background()
 
-	// 1. Unified Registration (Universal)
+	// 1. Register a component in BOTH server and global scopes
+	// They use the SAME provider but will result in DIFFERENT instances
 	reg.Register("middleware",
 		func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 			if h.Scope() == "server" {
-				return &ServerMiddleware{Name: "ServerProp"}, nil
+				return &ServerMiddleware{Name: "ServerInst"}, nil
 			}
-			if h.Scope() == "client" {
-				return &ClientMiddleware{Name: "ClientProp"}, nil
-			}
-			return "GlobalProp", nil
+			return "GlobalInst", nil
 		},
 		engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 			return &component.ModuleConfig{
-				Entries: []component.ConfigEntry{{Name: "propagation", Value: nil}},
-			}, nil
-		}))
-
-	// 2. Load configuration into container
-	_ = reg.Load(ctx, "dummy_config")
-
-	// 3. Retrieval from Server Perspective
-	hServer := reg.In("middleware", engine.WithInScope("server"))
-	instServer, err := hServer.Get(ctx, "propagation")
-	assert.NoError(t, err)
-	assert.IsType(t, &ServerMiddleware{}, instServer)
-	assert.Equal(t, "ServerProp", instServer.(*ServerMiddleware).Name)
-
-	// 4. Retrieval from Client Perspective
-	hClient := reg.In("middleware", engine.WithInScope("client"))
-	instClient, err := hClient.Get(ctx, "propagation")
-	assert.NoError(t, err)
-	assert.IsType(t, &ClientMiddleware{}, instClient)
-	assert.Equal(t, "ClientProp", instClient.(*ClientMiddleware).Name)
-
-	// 5. Verification of Physical Isolation
-	assert.NotEqual(t, instServer, instClient)
-
-	// 6. Explicit Override & Fallback to _global
-	reg.Register("middleware",
-		func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-			return "GlobalOverride", nil
-		},
-		engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
-			return &component.ModuleConfig{
-				Entries: []component.ConfigEntry{{Name: "override", Value: nil}},
+				Entries: []component.ConfigEntry{{Name: "item", Value: nil}},
 			}, nil
 		}),
-		engine.WithScopes(component.GlobalScope))
+		engine.WithScopes("server", component.GlobalScope))
 
-	// Re-load to trigger binding
-	_ = reg.Load(ctx, "dummy_config")
+	// 2. Load configuration
+	_ = reg.Load(ctx, "root")
 
-	hScoped := reg.In("middleware", engine.WithInScope("server"))
-	instOverride, err := hScoped.Get(ctx, "override")
+	// 3. Current Perspective: Server
+	hServer := reg.In("middleware", engine.WithInScope("server"))
+
+	// A. Should get server instance
+	inst1, err := hServer.Get(ctx, "item")
 	assert.NoError(t, err)
-	assert.Equal(t, "GlobalOverride", instOverride)
+	assert.Equal(t, "ServerInst", inst1.(*ServerMiddleware).Name)
+
+	// B. Strict Isolation: Should NOT find global things if they aren't in this scope
+	// (In this test they are both, but they are separate instances)
+
+	// 4. Perspective Switch: Explicitly move to Global
+	// Use hServer.In to switch category/scope perspective
+	hGlobal := hServer.In("middleware") // Default is GlobalScope
+	assert.Equal(t, component.GlobalScope, hGlobal.Scope())
+
+	inst2, err := hGlobal.Get(ctx, "item")
+	assert.NoError(t, err)
+	assert.Equal(t, "GlobalInst", inst2)
+	
+	// 5. Verify they are distinct
+	assert.NotEqual(t, inst1, inst2)
+}
+
+func TestContainer_LifecycleProtection(t *testing.T) {
+	reg := container.NewContainer()
+	ctx := context.Background()
+
+	reg.Register("test", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		return "ok", nil
+	})
+
+	_ = reg.Load(ctx, "root")
+
+	// Subsequent registration must panic
+	assert.Panics(t, func() {
+		reg.Register("late", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+			return "bad", nil
+		})
+	})
 }

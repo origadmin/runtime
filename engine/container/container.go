@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"iter"
-	"reflect"
-	"strings"
 	"sync"
 
 	"github.com/origadmin/runtime/contracts/component"
@@ -16,7 +14,10 @@ type Status int
 const (
 	StatusNone Status = iota
 	StatusResolving
+	StatusResolved
+	StatusInstantiating
 	StatusReady
+	StatusError
 )
 
 type moduleKey struct {
@@ -25,191 +26,131 @@ type moduleKey struct {
 }
 
 type componentMeta struct {
-	mu       sync.Mutex
-	config   any
-	status   Status
-	instance any
+	config any
+	status Status
+	inst   any
+	err    error
 }
 
 type moduleState struct {
 	mu          sync.RWMutex
-	bound       bool
+	instances   map[string]*componentMeta
 	order       []string
 	defaultName string
-	instances   map[string]*componentMeta
+	bound       bool
 }
 
 type providerEntry struct {
-	scopes   map[component.Scope]bool
 	provider component.Provider
 	resolver component.Resolver
+	scopes   []component.Scope
 	priority component.Priority
 }
 
+// Option defines the internal option for container initialization.
+type Option func(*containerImpl)
+
+// WithCategoryResolvers injects category-specific resolvers into the container.
+func WithCategoryResolvers(res map[component.Category]component.Resolver) Option {
+	return func(c *containerImpl) {
+		if res == nil {
+			return
+		}
+		for k, v := range res {
+			c.categoryResolvers[k] = v
+		}
+	}
+}
+
 type containerImpl struct {
-	regMu    sync.RWMutex
-	registry map[component.Category][]*providerEntry
-
-	stateMu sync.RWMutex
-	states  map[moduleKey]*moduleState
-
-	mu             sync.RWMutex
-	globalResolver component.Resolver
-}
-
-func NewContainer() component.Registry {
-	return &containerImpl{
-		registry: make(map[component.Category][]*providerEntry),
-		states:   make(map[moduleKey]*moduleState),
-	}
-}
-
-func (c *containerImpl) SetResolver(res component.Resolver) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.globalResolver = res
-}
-
-func (c *containerImpl) getModuleState(mKey moduleKey) *moduleState {
-	c.stateMu.RLock()
-	s, ok := c.states[mKey]
-	c.stateMu.RUnlock()
-	if ok {
-		return s
-	}
-	c.stateMu.Lock()
-	defer c.stateMu.Unlock()
-	if s, ok = c.states[mKey]; ok {
-		return s
-	}
-	s = &moduleState{instances: make(map[string]*componentMeta)}
-	c.states[mKey] = s
-	return s
-}
-
-func (c *containerImpl) findProvider(cat component.Category, scope component.Scope) (*providerEntry, bool) {
-	c.regMu.RLock()
-	defer c.regMu.RUnlock()
-	entries, ok := c.registry[cat]
-	if !ok {
-		return nil, false
-	}
-	var fallback *providerEntry
-	for _, entry := range entries {
-		if entry.scopes[scope] {
-			return entry, true
-		}
-		if len(entry.scopes) == 0 {
-			fallback = entry
-		}
-	}
-	return fallback, fallback != nil
-}
-
-func (c *containerImpl) Config() any                  { return nil }
-func (c *containerImpl) Scope() component.Scope       { return component.GlobalScope }
-func (c *containerImpl) Category() component.Category { return "" }
-
-func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Handle {
-	o := &component.InOptions{Scope: component.GlobalScope}
-	for _, opt := range opts {
-		opt(o)
-	}
-	return &scopedHandle{
-		container: c,
-		scope:     o.Scope,
-		category:  cat,
-	}
-}
-
-func (c *containerImpl) Get(ctx context.Context, name string) (any, error) {
-	return nil, fmt.Errorf("engine: must use In(category) before Get()")
-}
-
-func (c *containerImpl) Iter(ctx context.Context) iter.Seq2[string, any] {
-	return func(yield func(string, any) bool) {}
-}
-
-func (c *containerImpl) BindConfig(target any) error {
-	return fmt.Errorf("engine: BindConfig must be called from Provider handle")
+	mu                sync.RWMutex
+	modules           map[moduleKey]*moduleState
+	providers         map[component.Category]*providerEntry
+	categoryResolvers map[component.Category]component.Resolver
+	isLoaded          bool
 }
 
 func (c *containerImpl) Register(cat component.Category, p component.Provider, opts ...component.RegisterOption) {
-	if component.IsReserved(string(cat)) {
-		panic(fmt.Sprintf("engine: category name '%s' is reserved", cat))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.isLoaded {
+		panic(fmt.Sprintf("engine: cannot register category %s after Load() has been called", cat))
 	}
 
-	o := &component.RegistrationOptions{
-		Priority: 100,
+	cfg := &component.RegistrationOptions{
+		Priority: 0,
+		Scopes:   nil,
 	}
 	for _, opt := range opts {
-		opt(o)
+		opt(cfg)
 	}
 
-	entry := &providerEntry{
-		scopes:   make(map[component.Scope]bool),
+	c.providers[cat] = &providerEntry{
 		provider: p,
-		resolver: o.Resolver,
-		priority: o.Priority,
+		resolver: cfg.Resolver,
+		scopes:   cfg.Scopes,
+		priority: cfg.Priority,
 	}
-	for _, s := range o.Scopes {
-		entry.scopes[s] = true
-	}
-
-	c.regMu.Lock()
-	defer c.regMu.Unlock()
-	c.registry[cat] = append(c.registry[cat], entry)
 }
 
 func (c *containerImpl) Has(cat component.Category, opts ...component.RegisterOption) bool {
-	o := &component.RegistrationOptions{}
-	for _, opt := range opts {
-		opt(o)
-	}
-	scope := component.GlobalScope
-	if len(o.Scopes) > 0 {
-		scope = o.Scopes[0]
-	}
-	_, found := c.findProvider(cat, scope)
-	return found
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	_, ok := c.providers[cat]
+	return ok
 }
 
 func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.LoadOption) error {
-	o := &component.LoadOptions{}
+	c.mu.Lock()
+	c.isLoaded = true
+	c.mu.Unlock()
+
+	loadOpts := &component.LoadOptions{}
 	for _, opt := range opts {
-		opt(o)
+		opt(loadOpts)
 	}
 
-	c.regMu.RLock()
-	var targets []component.Category
-	if o.Category != "" {
-		targets = append(targets, o.Category)
+	c.mu.RLock()
+	var cats []component.Category
+	if loadOpts.Category != "" {
+		if _, ok := c.providers[loadOpts.Category]; ok {
+			cats = append(cats, loadOpts.Category)
+		}
 	} else {
-		for cat := range c.registry {
-			targets = append(targets, cat)
+		for cat := range c.providers {
+			cats = append(cats, cat)
 		}
 	}
-	c.regMu.RUnlock()
+	c.mu.RUnlock()
 
-	standardScopes := []component.Scope{component.GlobalScope, "server", "client"}
-	for _, cat := range targets {
-		for _, scope := range standardScopes {
-			entry, found := c.findProvider(cat, scope)
-			if !found {
+	for _, cat := range cats {
+		entry := c.getProviderEntry(cat)
+		if entry == nil {
+			continue
+		}
+
+		registeredScopes := entry.scopes
+		if len(registeredScopes) == 0 {
+			registeredScopes = []component.Scope{component.GlobalScope}
+		}
+
+		for _, s := range registeredScopes {
+			if loadOpts.Scope != "" && s != loadOpts.Scope {
 				continue
 			}
-
-			res := o.Resolver
-			if res == nil {
-				res = c.globalResolver
-			}
-
-			if err := c.bindWithSource(cat, scope, entry, source, res, o.Name); err != nil {
-				continue
+			if err := c.bindWithSource(cat, s, entry, source, loadOpts.Resolver, loadOpts.Name); err != nil {
+				return err
 			}
 		}
 	}
 	return nil
+}
+
+func (c *containerImpl) getProviderEntry(cat component.Category) *providerEntry {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.providers[cat]
 }
 
 func (c *containerImpl) bindWithSource(cat component.Category, scope component.Scope, entry *providerEntry, source any, resolver component.Resolver, filterName string) error {
@@ -221,18 +162,27 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 	var mc *component.ModuleConfig
 	var err error
 
-	if entry.resolver != nil {
-		mc, err = entry.resolver(source, cat)
-	} else if resolver != nil {
+	if resolver != nil {
 		mc, err = resolver(source, cat)
+	} else if entry.resolver != nil {
+		mc, err = entry.resolver(source, cat)
+	} else {
+		c.mu.RLock()
+		r := c.categoryResolvers[cat]
+		c.mu.RUnlock()
+		if r != nil {
+			mc, err = r(source, cat)
+		}
 	}
 
-	// Fallback to internal default resolver if no config found yet
 	if err == nil && mc == nil {
-		mc, err = c.defaultResolver(source, cat)
+		mc = &component.ModuleConfig{
+			Entries: []component.ConfigEntry{{Name: component.DefaultName, Value: source}},
+			Active:  component.DefaultName,
+		}
 	}
 
-	if err != nil || mc == nil {
+	if err != nil {
 		return err
 	}
 
@@ -240,34 +190,31 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 		if filterName != "" && cfgEntry.Name != filterName {
 			continue
 		}
+
 		if _, exists := s.instances[cfgEntry.Name]; !exists {
-			// Check if another instance already uses the same config object
-			var existingMeta *componentMeta
+			var targetMeta *componentMeta
 			for _, meta := range s.instances {
 				if meta.config == cfgEntry.Value {
-					existingMeta = meta
+					targetMeta = meta
 					break
 				}
 			}
 
-			if existingMeta != nil {
-				s.instances[cfgEntry.Name] = existingMeta
-			} else {
-				s.instances[cfgEntry.Name] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
+			if targetMeta == nil {
+				targetMeta = &componentMeta{config: cfgEntry.Value, status: StatusNone}
 			}
+
+			s.instances[cfgEntry.Name] = targetMeta
 			s.order = append(s.order, cfgEntry.Name)
 		}
 	}
 
-	// Update defaultName mapping
 	if mc.Active != "" && (filterName == "" || mc.Active == filterName) {
 		s.defaultName = mc.Active
 	} else if len(mc.Entries) > 0 && s.defaultName == "" {
 		s.defaultName = mc.Entries[0].Name
 	}
 
-	// Logic: default -> _default
-	// Every category must have a _default instance that points to the active/default one.
 	if s.defaultName != "" {
 		if meta, ok := s.instances[s.defaultName]; ok {
 			s.instances[component.DefaultName] = meta
@@ -278,304 +225,35 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 	return nil
 }
 
-func (c *containerImpl) defaultResolver(source any, cat component.Category) (*component.ModuleConfig, error) {
-	if source == nil {
-		return nil, nil
+func (c *containerImpl) getModuleState(key moduleKey) *moduleState {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if s, ok := c.modules[key]; ok {
+		return s
 	}
-	v := reflect.ValueOf(source)
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
+	s := &moduleState{
+		instances: make(map[string]*componentMeta),
 	}
-	if v.Kind() != reflect.Struct {
-		return nil, nil
-	}
-
-	// Try standard naming conventions: Get<Category>s, Get<Category>, etc.
-	name := string(cat)
-	titleName := strings.ToUpper(name[:1]) + name[1:]
-	methodNames := []string{
-		"Get" + titleName + "s",
-		"Get" + titleName,
-	}
-
-	for _, methodName := range methodNames {
-		method := v.MethodByName(methodName)
-		if !method.IsValid() {
-			// Try on the pointer if it was a struct value
-			if v.CanAddr() {
-				method = v.Addr().MethodByName(methodName)
-			}
-		}
-
-		if method.IsValid() && method.Type().NumIn() == 0 && method.Type().NumOut() == 1 {
-			results := method.Call(nil)
-			return c.resolveFromSource(results[0].Interface())
-		}
-	}
-
-	// Fallback: Check if the source itself is a container or item for this category
-	return c.resolveFromSource(source)
+	c.modules[key] = s
+	return s
 }
 
-func (c *containerImpl) resolveFromSource(val any) (*component.ModuleConfig, error) {
-	if val == nil {
-		return nil, nil
-	}
-
-	v := reflect.ValueOf(val)
-	// originalV is used for method calls which might be on pointer receivers
-	originalV := v
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	if v.Kind() != reflect.Struct {
-		return nil, nil
-	}
-
-	res := &component.ModuleConfig{}
-	uniqueEntries := make(map[string]any)
-
-	// 1. Get Active string
-	if a, ok := val.(interface{ GetActive() string }); ok {
-		res.Active = a.GetActive()
-	} else if activeMethod := originalV.MethodByName("GetActive"); activeMethod.IsValid() {
-		results := activeMethod.Call(nil)
-		res.Active = results[0].String()
-	} else if activeField := v.FieldByName("Active"); activeField.IsValid() {
-		if activeField.Kind() == reflect.Ptr && !activeField.IsNil() {
-			res.Active = activeField.Elem().String()
-		} else if activeField.Kind() == reflect.String {
-			res.Active = activeField.String()
-		}
-	}
-
-	// 2. Get Default object
-	var defaultItem any
-	if defaultMethod := originalV.MethodByName("GetDefault"); defaultMethod.IsValid() {
-		results := defaultMethod.Call(nil)
-		if len(results) > 0 && !results[0].IsNil() {
-			defaultItem = results[0].Interface()
-			uniqueEntries["default"] = defaultItem
-			// Also add by its own name
-			name := c.extractName(defaultItem)
-			if name != "" {
-				uniqueEntries[name] = defaultItem
-			}
-		}
-	}
-
-	// 3. Get Configs slice
-	var configs []any
-	if configsMethod := originalV.MethodByName("GetConfigs"); configsMethod.IsValid() {
-		results := configsMethod.Call(nil)
-		if len(results) > 0 && results[0].Kind() == reflect.Slice {
-			resVals := results[0]
-			for i := 0; i < resVals.Len(); i++ {
-				configs = append(configs, resVals.Index(i).Interface())
-			}
-		}
-	} else if configsField := v.FieldByName("Configs"); configsField.IsValid() && configsField.Kind() == reflect.Slice {
-		for i := 0; i < configsField.Len(); i++ {
-			configs = append(configs, configsField.Index(i).Interface())
-		}
-	}
-
-	// Add all configs to unique map
-	for _, item := range configs {
-		name := c.extractName(item)
-		if name != "" {
-			uniqueEntries[name] = item
-		}
-	}
-
-	// 4. Special Case: No Default and No Configs found?
-	// Check if the source ITSELF is a config item (has a name/type).
-	if defaultItem == nil && len(configs) == 0 {
-		selfName := c.extractName(val)
-		if selfName != "" {
-			// Treat source as a single item container
-			uniqueEntries[selfName] = val
-			uniqueEntries["default"] = val
-		}
-	} else if defaultItem == nil && len(configs) == 1 {
-		// Single config in list promotion
-		uniqueEntries["default"] = configs[0]
-	}
-
-	// Convert map to entries
-	for name, item := range uniqueEntries {
-		res.Entries = append(res.Entries, component.ConfigEntry{
-			Name:  name,
-			Value: item,
-		})
-	}
-
-	// 5. Final Active check
-	if res.Active == "" && uniqueEntries["default"] != nil {
-		res.Active = "default"
-	}
-
-	return res, nil
+func (c *containerImpl) Get(ctx context.Context, name string) (any, error) {
+	return c.getInternal(ctx, "", component.GlobalScope, name)
 }
 
-func (c *containerImpl) extractName(item any) string {
-	if item == nil {
-		return ""
-	}
-
-	// 1. Try instance name (GetName)
-	if n, ok := item.(interface{ GetName() string }); ok {
-		if name := n.GetName(); name != "" {
-			return name
-		}
-	}
-
-	// 2. Try implementation identifiers (Dialect, Type, Driver)
-	if d, ok := item.(interface{ GetDialect() string }); ok {
-		if name := d.GetDialect(); name != "" {
-			return name
-		}
-	}
-	if t, ok := item.(interface{ GetType() string }); ok {
-		if name := t.GetType(); name != "" {
-			return name
-		}
-	}
-	if d, ok := item.(interface{ GetDriver() string }); ok {
-		if name := d.GetDriver(); name != "" {
-			return name
-		}
-	}
-
-	// 3. Fallback to type name
-	t := reflect.TypeOf(item)
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	return t.Name()
-}
-
-func (c *containerImpl) getInternal(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {
-	mKey := moduleKey{category: cat, scope: scope}
-	s := c.getModuleState(mKey)
-	s.mu.RLock()
-
-	// Rule: Empty string or explicit component.DefaultName maps to _default
-	actualName := name
-	if actualName == "" {
-		actualName = component.DefaultName
-	}
-
-	meta, exists := s.instances[actualName]
-	s.mu.RUnlock()
-
-	if exists {
-		return c.resolveMeta(ctx, cat, scope, actualName, meta)
-	}
-
-	if scope != component.GlobalScope {
-		return c.getInternal(ctx, cat, component.GlobalScope, name)
-	}
-	return nil, fmt.Errorf("engine: component %s/%s not found", cat, name)
-}
-
-func (c *containerImpl) resolveMeta(ctx context.Context, cat component.Category, scope component.Scope, actualName string, meta *componentMeta) (any, error) {
-	if meta.status == StatusReady {
-		return meta.instance, nil
-	}
-	meta.mu.Lock()
-	defer meta.mu.Unlock()
-	if meta.status == StatusReady {
-		return meta.instance, nil
-	}
-	if meta.status == StatusResolving {
-		return nil, fmt.Errorf("engine: circular dependency detected for %s/%s", cat, actualName)
-	}
-	meta.status = StatusResolving
-	entry, found := c.findProvider(cat, scope)
-	if !found {
-		meta.status = StatusNone
-		return nil, fmt.Errorf("engine: no provider for %s during resolution", cat)
-	}
-	h := &scopedHandle{
-		container: c,
-		scope:     scope,
-		category:  cat,
-		name:      actualName,
-		config:    meta.config,
-	}
-	meta.mu.Unlock()
-	inst, err := entry.provider(ctx, h)
-	meta.mu.Lock()
-	if err != nil {
-		meta.status = StatusNone
-		return nil, err
-	}
-	meta.instance = inst
-	meta.status = StatusReady
-	return inst, nil
-}
-
-type scopedHandle struct {
-	container *containerImpl
-	scope     component.Scope
-	category  component.Category
-	name      string
-	config    any
-}
-
-func (h *scopedHandle) Scope() component.Scope       { return h.scope }
-func (h *scopedHandle) Category() component.Category { return h.category }
-func (h *scopedHandle) Config() any                  { return h.config }
-
-func (h *scopedHandle) In(cat component.Category, opts ...component.InOption) component.Handle {
-	o := &component.InOptions{Scope: h.scope}
-	for _, opt := range opts {
-		opt(o)
-	}
-	return &scopedHandle{
-		container: h.container,
-		scope:     o.Scope,
-		category:  cat,
-	}
-}
-
-func (h *scopedHandle) Get(ctx context.Context, name string) (any, error) {
-	if h.category == "" {
-		return nil, fmt.Errorf("engine: category context is required for Get()")
-	}
-	return h.container.getInternal(ctx, h.category, h.scope, name)
-}
-
-func (h *scopedHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
+func (c *containerImpl) Iter(ctx context.Context) iter.Seq2[string, any] {
 	return func(yield func(string, any) bool) {
-		if h.category == "" {
-			return
-		}
-		uniqueNames := make(map[string]bool)
-		mKey := moduleKey{category: h.category, scope: h.scope}
-		s := h.container.getModuleState(mKey)
+		mKey := moduleKey{category: "", scope: component.GlobalScope}
+		s := c.getModuleState(mKey)
 		s.mu.RLock()
-		for _, n := range s.order {
-			uniqueNames[n] = true
-		}
+		order := make([]string, len(s.order))
+		copy(order, s.order)
 		s.mu.RUnlock()
-		if h.scope != component.GlobalScope {
-			gKey := moduleKey{category: h.category, scope: component.GlobalScope}
-			gs := h.container.getModuleState(gKey)
-			gs.mu.RLock()
-			for _, n := range gs.order {
-				uniqueNames[n] = true
-			}
-			gs.mu.RUnlock()
-		}
-		for name := range uniqueNames {
-			// Skip the reserved default alias during iteration to avoid double-counting
-			if component.IsReserved(name) {
-				continue
-			}
-			inst, err := h.Get(ctx, name)
-			if err == nil && inst != nil {
+
+		for _, name := range order {
+			inst, err := c.getInternal(ctx, "", component.GlobalScope, name)
+			if err == nil {
 				if !yield(name, inst) {
 					return
 				}
@@ -584,22 +262,138 @@ func (h *scopedHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
 	}
 }
 
-func (h *scopedHandle) BindConfig(target any) error {
-	vTarget := reflect.ValueOf(target)
-	if vTarget.Kind() != reflect.Ptr || vTarget.IsNil() {
-		return fmt.Errorf("engine: BindConfig target must be a non-nil pointer")
+func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Handle {
+	inOpts := &component.InOptions{Scope: component.GlobalScope}
+	for _, opt := range opts {
+		opt(inOpts)
 	}
-	vSrc := reflect.ValueOf(h.config)
-	if h.config == nil {
-		return fmt.Errorf("engine: config is nil")
+	return &handleAdapter{c: c, category: cat, scope: inOpts.Scope}
+}
+
+func (c *containerImpl) Config() any                  { return nil }
+func (c *containerImpl) Scope() component.Scope       { return component.GlobalScope }
+func (c *containerImpl) Category() component.Category { return "" }
+
+func (c *containerImpl) getInternal(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {
+	return c.instantiate(ctx, cat, scope, name)
+}
+
+func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string) (any, error) {
+	mKey := moduleKey{category: cat, scope: scope}
+
+	c.mu.RLock()
+	s, exists := c.modules[mKey]
+	c.mu.RUnlock()
+	if !exists {
+		return nil, fmt.Errorf("engine: scope %s not initialized for category %s", scope, cat)
 	}
-	if vSrc.Kind() == reflect.Ptr {
-		vSrc = vSrc.Elem()
+
+	if name == "" {
+		name = component.DefaultName
 	}
-	vTargetElem := vTarget.Elem()
-	if !vSrc.Type().AssignableTo(vTargetElem.Type()) {
-		return fmt.Errorf("engine: cannot assign %T to %T", h.config, target)
+
+	s.mu.RLock()
+	meta, ok := s.instances[name]
+	if !ok {
+		s.mu.RUnlock()
+		return nil, fmt.Errorf("engine: component %s/%s not found in scope %s", cat, name, scope)
 	}
-	vTargetElem.Set(vSrc)
-	return nil
+
+	if meta.status == StatusReady {
+		inst := meta.inst
+		s.mu.RUnlock()
+		return inst, nil
+	}
+	s.mu.RUnlock()
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if meta.status == StatusReady {
+		return meta.inst, nil
+	}
+	if meta.status == StatusInstantiating {
+		return nil, fmt.Errorf("engine: circular dependency %s/%s", cat, name)
+	}
+
+	meta.status = StatusInstantiating
+	c.mu.RLock()
+	entry := c.providers[cat]
+	c.mu.RUnlock()
+	if entry == nil {
+		meta.status = StatusError
+		return nil, fmt.Errorf("engine: no provider for %s", cat)
+	}
+
+	h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta}
+	inst, err := entry.provider(ctx, h)
+	if err != nil {
+		meta.status = StatusError
+		meta.err = err
+		return nil, err
+	}
+
+	meta.inst = inst
+	meta.status = StatusReady
+	return inst, nil
+}
+
+type handleAdapter struct {
+	c        *containerImpl
+	category component.Category
+	scope    component.Scope
+	name     string
+	meta     *componentMeta
+}
+
+func (h *handleAdapter) Get(ctx context.Context, name string) (any, error) {
+	return h.c.getInternal(ctx, h.category, h.scope, name)
+}
+
+func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
+	return func(yield func(string, any) bool) {
+		mKey := moduleKey{category: h.category, scope: h.scope}
+		s := h.c.getModuleState(mKey)
+		s.mu.RLock()
+		order := make([]string, len(s.order))
+		copy(order, s.order)
+		s.mu.RUnlock()
+
+		for _, name := range order {
+			inst, err := h.c.getInternal(ctx, h.category, h.scope, name)
+			if err == nil {
+				if !yield(name, inst) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func (h *handleAdapter) In(cat component.Category, opts ...component.InOption) component.Handle {
+	return h.c.In(cat, opts...)
+}
+
+func (h *handleAdapter) Config() any {
+	if h.meta == nil {
+		return nil
+	}
+	return h.meta.config
+}
+
+func (h *handleAdapter) Scope() component.Scope       { return h.scope }
+func (h *handleAdapter) Category() component.Category { return h.category }
+
+func NewContainer(opts ...Option) component.Registry {
+	c := &containerImpl{
+		modules:           make(map[moduleKey]*moduleState),
+		providers:         make(map[component.Category]*providerEntry),
+		categoryResolvers: make(map[component.Category]component.Resolver),
+	}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(c)
+		}
+	}
+	return c
 }

@@ -51,11 +51,11 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 	// 3. Register Middleware (Complex DI)
 	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 		// Deep Dependency Discovery
-		auth, err := engine.Cast[Authenticator](ctx, h.In("infrastructure"), "jwt")
+		auth, err := engine.Get[Authenticator](ctx, h.In("infrastructure"), "jwt")
 		if err != nil {
 			return nil, err
 		}
-		skip, err := engine.Cast[Skipper](ctx, h.In("skipper"), "")
+		skip, err := engine.Get[Skipper](ctx, h.In("skipper"), "")
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +71,7 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 
 	// 5. Verify
 	mwH := reg.In("middleware", engine.WithInScope("server"))
-	mw, err := engine.Cast[*mockMiddleware](ctx, mwH, "authz-mw")
+	mw, err := engine.Get[*mockMiddleware](ctx, mwH, "authz-mw")
 	if err != nil {
 		t.Fatalf("Failed to create middleware stack: %v", err)
 	}

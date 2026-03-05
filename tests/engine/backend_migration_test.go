@@ -55,7 +55,7 @@ func TestBackendMigrationSimulation(t *testing.T) {
 
 	// 4. Verify
 	mwH := reg.In("middleware", engine.WithInScope("server"))
-	m1, err := engine.Cast[*BackendMiddleware](ctx, mwH, "authn")
+	m1, err := engine.Get[*BackendMiddleware](ctx, mwH, "authn")
 	if err != nil {
 		t.Fatalf("Failed to create authn: %v", err)
 	}

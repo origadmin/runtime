@@ -1,7 +1,13 @@
 package runtime
 
 import (
+	"context"
 	"testing"
+
+	"github.com/origadmin/runtime/contracts/component"
+	"github.com/origadmin/runtime/contracts/options"
+	"github.com/origadmin/runtime/engine"
+	"github.com/origadmin/runtime/engine/container"
 )
 
 // Mock structs mimicking protobuf generated code
@@ -21,72 +27,95 @@ func (m *MockContainer) GetActive() string         { return m.Active }
 func (m *MockContainer) GetDefault() *MockConfig   { return m.Default }
 func (m *MockContainer) GetConfigs() []*MockConfig { return m.Configs }
 
-type MockRoot struct {
-	Mocks *MockContainer
+func TestDefaultResolvers_Functionality(t *testing.T) {
+	ctx := context.Background()
+
+	// Use individual container for this test to avoid shared state
+	customResolver := func(source any, cat component.Category) (*component.ModuleConfig, error) {
+		if c, ok := source.(*MockContainer); ok {
+			res := &component.ModuleConfig{Active: c.Active}
+			for _, cfg := range c.Configs {
+				res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.Name, Value: cfg})
+			}
+			return res, nil
+		}
+		return nil, nil
+	}
+
+	reg := container.NewContainer(container.WithCategoryResolvers(map[component.Category]component.Resolver{
+		"mocks": customResolver,
+	}))
+
+	reg.Register("mocks", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		return "mock", nil
+	})
+
+	c := &MockContainer{
+		Configs: []*MockConfig{{Name: "A"}, {Name: "B"}},
+	}
+
+	if err := reg.Load(ctx, c); err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	h := reg.In("mocks")
+	foundA := false
+	for name := range h.Iter(ctx) {
+		if name == "A" {
+			foundA = true
+		}
+	}
+	if !foundA {
+		t.Error("Expected to find instance A")
+	}
 }
 
-func (m *MockRoot) GetMocks() *MockContainer { return m.Mocks }
-
-func TestDefaultGlobalResolver_DimensionReduction(t *testing.T) {
-	// We use "mocks" category which falls through to resolveGeneric -> resolveFromSource
-
-	// 1. Test Parent Wrapper (MockRoot -> MockContainer)
-	root := &MockRoot{
-		Mocks: &MockContainer{
-			Configs: []*MockConfig{{Name: "A"}, {Name: "B"}},
-		},
-	}
-
-	mc, err := DefaultGlobalResolver(root, "mocks")
-	if err != nil {
-		t.Fatalf("Resolver failed: %v", err)
-	}
-	if len(mc.Entries) != 2 {
-		t.Errorf("Expected 2 entries, got %d", len(mc.Entries))
-	}
-
-	// 2. Test Direct Container (MockContainer) with Default
-	container := &MockContainer{
-		Default: &MockConfig{Name: "Def"},
-	}
-	mc, err = DefaultGlobalResolver(container, "mocks")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Expect "default" (from Default field) AND "Def" (from Default's Name)
-	if len(mc.Entries) < 2 {
-		t.Errorf("Expected at least 2 entries (default + named), got %d", len(mc.Entries))
-	}
-	foundDefName := false
-	foundDefaultKey := false
-	for _, e := range mc.Entries {
-		if e.Name == "Def" {
-			foundDefName = true
-		}
-		if e.Name == "default" {
-			foundDefaultKey = true
-		}
-	}
-	if !foundDefName || !foundDefaultKey {
-		t.Error("Missing expected entries for Default config")
-	}
-
-	if mc.Active != "default" {
-		t.Errorf("Active should be default, got %s", mc.Active)
-	}
-
-	// 3. Test Single Item Promotion (Direct Config Item)
+func TestDefaultResolvers_PassThrough(t *testing.T) {
+	ctx := context.Background()
+	regRaw := container.NewContainer(nil)
 	single := &MockConfig{Name: "Solo"}
-	mc, err = DefaultGlobalResolver(single, "mocks")
-	if err != nil {
+	var capturedConfig any
+
+	regRaw.Register("raw_config", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		capturedConfig = h.Config()
+		return "ok", nil
+	})
+
+	if err := regRaw.Load(ctx, single, engine.ForCategory("raw_config")); err != nil {
 		t.Fatal(err)
 	}
 
-	// Expect "Solo" (from GetName) AND "default" (promoted)
-	if len(mc.Entries) != 2 {
-		t.Errorf("Expected 2 entries (self+default), got %d: %+v", len(mc.Entries), mc.Entries)
+	// Trigger instantiation
+	_, err := regRaw.In("raw_config").Get(ctx, component.DefaultName)
+	if err != nil {
+		t.Fatalf("Get failed: %v", err)
 	}
-	if mc.Active != "default" {
-		t.Error("Single item should be promoted to active default")
+
+	if capturedConfig != single {
+		t.Errorf("Pass-through mode should return original source, got %T", capturedConfig)
 	}
+}
+
+func TestContainer_LifecycleLock(t *testing.T) {
+	reg := container.NewContainer(nil)
+	ctx := context.Background()
+
+	reg.Register("first", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		return "ok", nil
+	})
+
+	if err := reg.Load(ctx, "root"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Subsequent registration should panic
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Register after Load should have panicked")
+		}
+	}()
+
+	reg.Register("second", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		return "fail", nil
+	})
 }

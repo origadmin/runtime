@@ -51,16 +51,21 @@ func GlobalRegistrations() []Registration {
 // --- Container Bootstrapping ---
 
 type RegistryOptions struct {
-	Resolver      Resolver
-	Registrations []Registration
+	CategoryResolvers map[Category]Resolver
+	Registrations     []Registration
 }
 
 type RegistryOption func(*RegistryOptions)
 
-// WithResolver sets the default global resolver for the container.
-func WithResolver(res Resolver) RegistryOption {
+// WithCategoryResolvers sets the default resolvers for specific categories.
+func WithCategoryResolvers(res map[Category]Resolver) RegistryOption {
 	return func(o *RegistryOptions) {
-		o.Resolver = res
+		if o.CategoryResolvers == nil {
+			o.CategoryResolvers = make(map[Category]Resolver)
+		}
+		for k, v := range res {
+			o.CategoryResolvers[k] = v
+		}
 	}
 }
 
@@ -73,14 +78,20 @@ func WithGlobalRegistrations() RegistryOption {
 
 // NewContainer creates a new engine container based on provided options.
 func NewContainer(opts ...RegistryOption) Registry {
-	o := &RegistryOptions{}
+	o := &RegistryOptions{
+		CategoryResolvers: make(map[Category]Resolver),
+	}
 	for _, opt := range opts {
 		opt(o)
 	}
-	reg := container.NewContainer()
-	if o.Resolver != nil {
-		reg.SetResolver(o.Resolver)
+
+	// Transform public options to internal container options
+	var internalOpts []container.Option
+	if len(o.CategoryResolvers) > 0 {
+		internalOpts = append(internalOpts, container.WithCategoryResolvers(o.CategoryResolvers))
 	}
+
+	reg := container.NewContainer(internalOpts...)
 	for _, r := range o.Registrations {
 		reg.Register(r.Category, r.Provider, r.Options...)
 	}
@@ -133,6 +144,12 @@ func ForCategory(cat Category) LoadOption {
 func ForName(name string) LoadOption {
 	return func(o *LoadOptions) {
 		o.Name = name
+	}
+}
+
+func ForScope(s Scope) LoadOption {
+	return func(o *LoadOptions) {
+		o.Scope = s
 	}
 }
 

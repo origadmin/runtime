@@ -1,14 +1,19 @@
+/*
+ * Copyright (c) 2024 OrigAdmin. All rights reserved.
+ */
+
 package engine
 
 import (
 	"context"
 	"fmt"
 	"iter"
+
+	"github.com/origadmin/runtime/contracts/component"
 )
 
-// Cast gets a component from the current handle context and type-asserts it.
-// Focuses strictly on conversion.
-func Cast[T any](ctx context.Context, h Handle, name string) (T, error) {
+// Get retrieves a component by name from the handle and asserts its type.
+func Get[T any](ctx context.Context, h Handle, name string) (T, error) {
 	var zero T
 	inst, err := h.Get(ctx, name)
 	if err != nil {
@@ -21,31 +26,24 @@ func Cast[T any](ctx context.Context, h Handle, name string) (T, error) {
 	return typed, nil
 }
 
-// GetDefault retrieves the winner instance for the current handle context.
+// GetDefault retrieves the active/default instance for the current handle.
 func GetDefault[T any](ctx context.Context, h Handle) (T, error) {
-	return Cast[T](ctx, h, "")
+	return Get[T](ctx, h, "")
 }
 
-// Shortcuts for common categories - focus strictly on current context.
-func GetRegistry[T any](ctx context.Context, h Handle, name string) (T, error) {
-	return Cast[T](ctx, h, name)
+// GetOr retrieves a component by name, or falls back to the default instance if not found.
+func GetOr[T any](ctx context.Context, h Handle, name string) (T, error) {
+	if name != "" && name != component.DefaultName {
+		inst, err := Get[T](ctx, h, name)
+		if err == nil {
+			return inst, nil
+		}
+	}
+	return Get[T](ctx, h, "")
 }
 
-func GetMiddleware[T any](ctx context.Context, h Handle, name string) (T, error) {
-	return Cast[T](ctx, h, name)
-}
-
-func GetDatabase[T any](ctx context.Context, h Handle, name string) (T, error) {
-	return Cast[T](ctx, h, name)
-}
-
-// Get retrieves a component by name from the current handle context and type-asserts it.
-func Get[T any](ctx context.Context, h Handle, name string) (T, error) {
-	return Cast[T](ctx, h, name)
-}
-
-// All retrieves all instances from the current handle and converts them to the desired type.
-func All[T any](ctx context.Context, h Handle) (map[string]T, error) {
+// ToMap collects all typed instances from the current handle into a map.
+func ToMap[T any](ctx context.Context, h Handle) (map[string]T, error) {
 	res := make(map[string]T)
 	for name, inst := range h.Iter(ctx) {
 		if typed, ok := inst.(T); ok {
@@ -68,7 +66,31 @@ func Iter[T any](ctx context.Context, h Handle) iter.Seq2[string, T] {
 	}
 }
 
-// BindConfig is a generic helper to populate a target pointer using type assertion.
+// AsConfig asserts the configuration associated with the handle to *T.
+// This is the recommended way to consume configuration in providers.
+func AsConfig[T any](h Handle) (*T, error) {
+	val := h.Config()
+	if val == nil {
+		return nil, fmt.Errorf("engine: configuration is nil for %s/%s", h.Category(), h.Scope())
+	}
+	// Priority 1: Direct pointer match
+	if typed, ok := val.(*T); ok {
+		return typed, nil
+	}
+	// Priority 2: Value match (wrap in pointer)
+	if typed, ok := val.(T); ok {
+		return &typed, nil
+	}
+	return nil, fmt.Errorf("engine: cannot cast config %T to %T", val, (*T)(nil))
+}
+
+// BindConfig is a generic helper to populate a target pointer using type assertion on Config().
+// Discouraged: Use AsConfig[T](h) instead for more idiomatic Go code.
 func BindConfig[T any](h Handle, target *T) error {
-	return h.BindConfig(target)
+	cfg, err := AsConfig[T](h)
+	if err != nil {
+		return err
+	}
+	*target = *cfg
+	return nil
 }

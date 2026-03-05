@@ -51,8 +51,8 @@ func NewWithAppInfo(info *appv1.App, opts ...Option) *App {
 		info = NewAppInfoBuilder()
 	}
 
-	// Create engine registry at startup
-	reg := engine.NewContainer(engine.WithResolver(DefaultGlobalResolver))
+	// Create engine registry at startup with standard resolvers
+	reg := engine.NewContainer(engine.WithCategoryResolvers(DefaultResolvers))
 
 	app := &App{
 		appInfo: info,
@@ -139,7 +139,7 @@ func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
 func (r *App) BusinessConfig() any           { return r.result.Config() }
 func (r *App) Logger() log.Logger {
 	// Navigate via CategoryLogger
-	l, err := engine.Cast[log.Logger](r.ctx, r.engine.In(CategoryLogger), "logger")
+	l, err := engine.Get[log.Logger](r.ctx, r.engine.In(CategoryLogger), "logger")
 	if err != nil {
 		return log.DefaultLogger
 	}
@@ -193,7 +193,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 }
 
 func (r *App) DefaultRegistrar() (registry.Registrar, error) {
-	return engine.Cast[registry.Registrar](r.ctx, r.engine.In(CategoryRegistry), "")
+	return engine.Get[registry.Registrar](r.ctx, r.engine.In(CategoryRegistry), "")
 }
 
 func (r *App) AppInfo() *appv1.App { return r.appInfo }

@@ -53,12 +53,17 @@ type (
 // --- Engine Core Contracts ---
 
 type Handle interface {
+	// Get retrieves a component instance by name.
 	Get(ctx context.Context, name string) (any, error)
+	// Iter returns a sequence of all registered component instances.
 	Iter(ctx context.Context) iter.Seq2[string, any]
+	// In switches the perspective to a specific category and scope.
 	In(category Category, opts ...InOption) Handle
-	BindConfig(target any) error
+	// Config returns the configuration associated with the current handle.
 	Config() any
+	// Scope returns the scope of the current handle.
 	Scope() Scope
+	// Category returns the category of the current handle.
 	Category() Category
 }
 
@@ -92,8 +97,6 @@ type Registry interface {
 	Has(c Category, opts ...RegisterOption) bool
 	// Load injects a configuration source and triggers component binding.
 	Load(ctx context.Context, source any, opts ...LoadOption) error
-	// SetResolver updates the global resolution strategy.
-	SetResolver(res Resolver)
 }
 
 // --- Option Definitions ---
@@ -114,6 +117,7 @@ type InOption func(*InOptions)
 
 type LoadOptions struct {
 	Category Category
+	Scope    Scope
 	Name     string
 	Resolver Resolver
 }

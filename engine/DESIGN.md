@@ -1,51 +1,54 @@
-# Runtime Engine Design (v34 - 2026-03-04)
+# Runtime Engine Design (v37 - 2026-03-05)
 
-## 1. Core Philosophy: Option-Based IoC Bootstrapping
-The Runtime Engine is a business-agnostic IoC container that decouples **Capability Declaration** (init phase) from **Instance Configuration** (creation phase). The container is now "self-configuring" via a unified Options pattern.
+## 1. Core Philosophy: Zero-Reflection & Metadata-Driven
+The Runtime Engine is a business-agnostic IoC container. It strictly avoids reflection in its core logic, relying on explicit metadata registration and high-performance Go type assertions for configuration handling.
 
 ## 2. Decoupled Lifecycle (The Timeline)
 
-### 2.1 Capability Accumulation (`init` phase)
-Components register their intent to be produced during Go's `init()` phase.
-- **Global Pool**: `engine.Register(Category, Provider, ...opts)` stores registration metadata in a private global shadow pool.
-- **Zero Side-Effect**: This phase only records metadata; no instantiation or logic is executed.
+The engine follows a strict state machine to ensure configuration consistency.
 
-### 2.2 Container Bootstrapping (`NewContainer` phase)
-When a new container instance is created, its initial state is defined via `RegistryOption`.
-- **`WithResolver(res)`**: Injects the "Global Resolver" which defines how to route configuration sources to component categories.
-- **`WithGlobalRegistrations()`**: Instructs the container to fetch a snapshot of the global shadow pool and load those capabilities into its private registry.
-- **Benefits**: Ensures testability by allowing "clean" containers and provides an atomic transition from static metadata to an active registry.
+### 2.1 Configuring Phase (Mutable)
+- **Container Initialization**: Created via `engine.NewContainer(opts...)`.
+- **Knowledge Injection**: Use `WithCategoryResolvers(map)` to provide extraction rules.
+- **Registration**: Components register via `Register(Category, Provider, ...opts)`.
+- **State**: Mutable. `Register` is allowed.
 
-### 2.3 Configuration Injection (`Load` phase)
-Configuration data is injected via `Load(ctx, source, ...opts)` after the application has loaded its config files.
-- **Directional Routing**: Supports targeting specific categories or instances.
-- **Cascading Extraction**: Uses local `WithExtractor` if present, falling back to the injected Global Resolver.
+### 2.2 Running Phase (Immutable/Locked)
+- **Locking**: Triggered by `Load(ctx, source, ...opts)`.
+- **State**: Once `Load` is called, the container is **Locked**. Further `Register` calls will panic.
+- **Metadata-Driven**: `Load` iterates through registered providers only.
 
-## 3. Namespacing & Reserved Symbols
+## 3. Configuration & Data Flow
 
-Identifiers starting with an underscore (`_`) are **Reserved for System Use**.
-- **`_global`**: The system fallback scope for cascading lookups.
-- **Policy**: The engine forbids users from registering any `Category` or `Scope` starting with `_`.
+### 3.1 Resolution Priority
+1.  Local Resolver (from `Load` options).
+2.  Provider Resolver (from `Register` options).
+3.  Category Resolver (from `NewContainer` options).
+4.  **Pass-through Mode**: If no resolver matches, the `source` (Root) is passed directly to the provider.
 
-## 4. Context & Lifecycle (App Level)
+### 3.2 Configuration Consumption
+Providers should use the recommended `AsConfig[T](h)` helper to consume data.
+- **Performance**: Near-zero overhead using type assertions.
 
-The `App` instance manages the base lifecycle context following a strict chain:
-1. **Default**: `context.Background()`.
-2. **Override**: Replaced if `WithContext(ctx)` option is provided.
-3. **Encapsulation**: Automatically wrapped with `context.WithCancel()` to ensure the application can signal a graceful shutdown.
-
-## 5. Metadata Types (Contract-Driven)
-
-All core types (`Scope`, `Category`, `Priority`, `Registration`) are defined in `runtime/contracts/component` to ensure engine purity and prevent circular dependencies.
-
-## 6. Project Structure
-
+```go
+func MyProvider(ctx context.Context, h component.Handle) (any, error) {
+    cfg, err := engine.AsConfig[MyConfig](h)
+    if err != nil {
+        return nil, err
+    }
+    return NewInstance(cfg), nil
+}
 ```
-runtime/
-├── contracts/component/ # Core Types, Interfaces, and Registration struct.
-├── engine/
-│   ├── container/       # Core IoC logic, Shadow pool, and Perspective isolation.
-│   ├── helpers.go       # Casting and retrieval shortcuts.
-│   └── engine.go        # Unified NewContainer and Option definitions.
-└── types.go             # Application-level aliases and Option mapping.
-```
+
+## 4. Instance Retrieval Helpers
+
+The engine provides a set of generic helpers in the `engine` package for type-safe instance retrieval:
+
+- **`Get[T](ctx, h, name)`**: Retrieves and casts a component.
+- **`GetOr[T](ctx, h, name)`**: Retrieves by name, or falls back to `_default`.
+- **`ToMap[T](ctx, h)`**: Collects all instances of type T into a map.
+- **`Iter[T](ctx, h)`**: Returns a type-safe iterator.
+
+## 5. Implementation Purity
+- **Engine Core**: `engine/container/container.go` contains **zero reflection**.
+- **Isolation**: Business logic is kept in `runtime/provider.go`.
