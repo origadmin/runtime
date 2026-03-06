@@ -13,8 +13,6 @@ type Status int
 
 const (
 	StatusNone Status = iota
-	StatusResolving
-	StatusResolved
 	StatusInstantiating
 	StatusReady
 	StatusError
@@ -30,15 +28,28 @@ type componentMeta struct {
 	status Status
 	inst   any
 	err    error
-	tag    string // Identity: The singular tag this instance was born with
+	tag    string // Identity: The singular tag of the provider that created this instance
 }
 
 type moduleState struct {
 	mu          sync.RWMutex
-	instances   map[string]*componentMeta
-	order       []string
+	instances   map[string]*componentMeta // Key: name + "@" + tag
+	order       []string                  // Original names in order
 	defaultName string
 	bound       bool
+}
+
+// makeInstanceKey creates a unique key for an instance or config within a scope.
+func makeInstanceKey(name, tag string) string {
+	if tag == "" {
+		return name
+	}
+	return name + "@" + tag
+}
+
+// configKey creates a key specifically for storing/retrieving raw configurations.
+func configKey(name string) string {
+	return makeInstanceKey(name, "_config")
 }
 
 type providerEntry struct {
@@ -46,12 +57,12 @@ type providerEntry struct {
 	resolver component.Resolver
 	scopes   []component.Scope
 	priority component.Priority
-	tag      string // Identity: Singular tag or empty for Common
+	tag      string // Registered Identity (Singular)
 }
 
 // isProviderVisible checks if a provider's singular identity is accepted by the perspective's capability set.
 func isProviderVisible(providerTag string, requestedTags []string) bool {
-	// 1. Common providers (empty tag) are ALWAYS visible (The "Standard Library" rule)
+	// 1. Common providers (empty tag) are ALWAYS visible (Acts as standard library)
 	if providerTag == "" {
 		return true
 	}
@@ -59,7 +70,7 @@ func isProviderVisible(providerTag string, requestedTags []string) bool {
 	if len(requestedTags) == 0 {
 		return true
 	}
-	// 3. Specific Capability: Does the perspective claim to have this capability?
+	// 3. Match Identity Tag against Capability Set
 	for _, rt := range requestedTags {
 		if providerTag == rt {
 			return true
@@ -109,13 +120,13 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 		resolver: cfg.Resolver,
 		scopes:   cfg.Scopes,
 		priority: cfg.Priority,
-		tag:      cfg.Tag, // Strictly singular
+		tag:      cfg.Tag,
 	}
 
 	entries := c.providers[cat]
 	inserted := false
 	for i, e := range entries {
-		// Newer registrations with same/higher priority take precedence
+		// Newest registration with same/higher priority takes precedence
 		if entry.priority >= e.priority {
 			entries = append(entries[:i], append([]*providerEntry{entry}, entries[i:]...)...)
 			inserted = true
@@ -232,8 +243,9 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 			continue
 		}
 
-		if _, exists := s.instances[cfgEntry.Name]; !exists {
-			s.instances[cfgEntry.Name] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
+		key := configKey(cfgEntry.Name)
+		if _, exists := s.instances[key]; !exists {
+			s.instances[key] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
 			s.order = append(s.order, cfgEntry.Name)
 		}
 	}
@@ -243,8 +255,8 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 	} else if s.defaultName == "" {
 		foundDefault := false
 		for _, e := range mc.Entries {
-			if e.Name == "default" {
-				s.defaultName = "default"
+			if e.Name == "default" || e.Name == component.DefaultName {
+				s.defaultName = e.Name
 				foundDefault = true
 				break
 			}
@@ -254,9 +266,10 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 		}
 	}
 
+	// Map the logic Default to the special _default@_config key
 	if s.defaultName != "" {
-		if meta, ok := s.instances[s.defaultName]; ok {
-			s.instances[component.DefaultName] = meta
+		if meta, ok := s.instances[configKey(s.defaultName)]; ok {
+			s.instances[configKey(component.DefaultName)] = meta
 		}
 	}
 
@@ -324,7 +337,6 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	}
 
 	mKey := moduleKey{category: cat, scope: scope}
-
 	c.mu.RLock()
 	s, exists := c.modules[mKey]
 	c.mu.RUnlock()
@@ -333,37 +345,32 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 		return nil, fmt.Errorf("engine: scope %s not initialized for category %s", scope, cat)
 	}
 
+	// 1. Get raw config meta
 	s.mu.RLock()
-	meta, ok := s.instances[name]
-	if !ok {
-		s.mu.RUnlock()
-		return nil, fmt.Errorf("engine: component %s/%s not found in scope %s", cat, name, scope)
-	}
+	configMeta, ok := s.instances[configKey(name)]
 	s.mu.RUnlock()
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if meta.status == StatusInstantiating {
-		return nil, fmt.Errorf("engine: circular dependency %s/%s", cat, name)
+	if !ok {
+		// If requesting _default but it wasn't mapped, try fallback
+		if name == component.DefaultName && s.defaultName != "" {
+			return c.instantiate(ctx, cat, scope, s.defaultName, requestedTags)
+		}
+		return nil, fmt.Errorf("engine: component %s/%s not found in scope %s", cat, name, scope)
 	}
 
 	c.mu.RLock()
 	entries := c.providers[cat]
 	c.mu.RUnlock()
-	if len(entries) == 0 {
-		return nil, fmt.Errorf("engine: no provider for %s", cat)
-	}
 
 	var lastErr error
 	for _, entry := range entries {
-		// 1. Match Scope (Single Requested vs Multi Registered)
+		// A. Match Scope
 		scopeMatch := false
 		if len(entry.scopes) == 0 {
 			scopeMatch = true
 		} else {
-			for _, s := range entry.scopes {
-				if s == scope {
+			for _, es := range entry.scopes {
+				if es == scope {
 					scopeMatch = true
 					break
 				}
@@ -373,30 +380,42 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			continue
 		}
 
-		// 2. Match Perspective (Is this provider visible in requested capability set?)
+		// B. Match Capability
 		if !isProviderVisible(entry.tag, requestedTags) {
 			continue
 		}
 
-		// 3. Identity-Safe Cache Recovery
-		if meta.status == StatusReady {
-			// An instance is ONLY claimable if:
-			// a) We are in Full Perspective (requestedTags is empty)
-			// b) The instance's birth-tag matches the current provider's identity tag.
-			if len(requestedTags) == 0 || meta.tag == entry.tag {
-				return meta.inst, nil
-			}
-			continue
+		// C. Identity-Safe Instance Retrieval
+		instanceKey := makeInstanceKey(name, entry.tag)
+		s.mu.Lock()
+		meta, exists := s.instances[instanceKey]
+		if !exists {
+			meta = &componentMeta{config: configMeta.config, status: StatusNone, tag: entry.tag}
+			s.instances[instanceKey] = meta
 		}
 
-		// 4. Create New Instance
+		if meta.status == StatusReady {
+			inst := meta.inst
+			s.mu.Unlock()
+			return inst, nil
+		}
+		if meta.status == StatusInstantiating {
+			s.mu.Unlock()
+			return nil, fmt.Errorf("engine: circular dependency %s/%s", cat, instanceKey)
+		}
+
+		// D. Instantiate
 		meta.status = StatusInstantiating
+		s.mu.Unlock()
+
 		h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta, tags: requestedTags}
 		inst, err := entry.provider(ctx, h)
+
+		s.mu.Lock()
 		if err == nil && inst != nil {
 			meta.inst = inst
 			meta.status = StatusReady
-			meta.tag = entry.tag // Record the identity of creator
+			s.mu.Unlock()
 			return inst, nil
 		}
 
@@ -404,10 +423,10 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 		if err != nil {
 			lastErr = err
 		}
+		s.mu.Unlock()
 	}
 
 	if lastErr != nil {
-		meta.err = lastErr
 		return nil, lastErr
 	}
 	return nil, fmt.Errorf("engine: no compatible provider found for %s/%s in scope %s with capabilities %v", cat, name, scope, requestedTags)
