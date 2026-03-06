@@ -7,6 +7,7 @@ package engine_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync/atomic"
 	"testing"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
+	"github.com/origadmin/runtime/helpers/comp"
 )
 
 func TestContainer_TagsAndCommon(t *testing.T) {
@@ -58,25 +60,57 @@ func TestContainer_TagsAndCommon(t *testing.T) {
 
 	t.Run("GatewayPerspective", func(t *testing.T) {
 		h := reg.In("middleware", engine.WithInTags("gateway"))
-		results := make(map[string]any)
-		for name, inst := range h.Iter(ctx) {
-			results[name] = inst
-		}
+		results, _ := comp.GetMap[any](ctx, h)
 		assert.Contains(t, results, "common")
 		assert.Contains(t, results, "authn")
 		assert.NotContains(t, results, "authz")
 	})
+}
 
-	t.Run("FeaturePerspective", func(t *testing.T) {
-		h := reg.In("middleware", engine.WithInTags("feature"))
-		results := make(map[string]any)
-		for name, inst := range h.Iter(ctx) {
-			results[name] = inst
+func TestContainer_DynamicNamesAndPolymorphicClaiming(t *testing.T) {
+	reg := container.NewContainer()
+	ctx := context.Background()
+
+	// 1. Register specialized providers that CLAIM instances based on their dynamic name/config
+	// JWT Provider handles any name containing "jwt"
+	reg.Register("auth", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		if strings.Contains(h.Name(), "jwt") {
+			return "JWT-Instance-" + h.Name(), nil
 		}
-		assert.Contains(t, results, "common")
-		assert.Contains(t, results, "authz")
-		assert.NotContains(t, results, "authn")
-	})
+		return nil, nil // Not mine
+	}, engine.WithTag("authn"))
+
+	// Basic Provider handles any name containing "basic"
+	reg.Register("auth", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		if strings.Contains(h.Name(), "basic") {
+			return "Basic-Instance-" + h.Name(), nil
+		}
+		return nil, nil
+	}, engine.WithTag("authn"))
+
+	// 2. Load "Random" names from user configuration
+	err := reg.Load(ctx, nil, engine.WithLoadResolver(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{
+			Entries: []component.ConfigEntry{
+				{Name: "my-custom-jwt", Value: nil},
+				{Name: "user-basic-auth", Value: nil},
+				{Name: "another-jwt", Value: nil},
+			},
+		}, nil
+	}))
+	assert.NoError(t, err)
+
+	// 3. Get Perspective
+	h := reg.In("auth", engine.WithInTags("authn"))
+
+	// 4. Verify all dynamic names are correctly claimed and instantiated
+	results, err := comp.GetMap[string](ctx, h)
+	assert.NoError(t, err)
+	assert.Len(t, results, 3)
+
+	assert.Equal(t, "JWT-Instance-my-custom-jwt", results["my-custom-jwt"])
+	assert.Equal(t, "Basic-Instance-user-basic-auth", results["user-basic-auth"])
+	assert.Equal(t, "JWT-Instance-another-jwt", results["another-jwt"])
 }
 
 func TestContainer_LazyInitializationWithTags(t *testing.T) {
@@ -113,22 +147,21 @@ func TestContainer_LazyInitializationWithTags(t *testing.T) {
 
 	// 3. Request Gateway component
 	hGateway := reg.In("lazy", engine.WithInTags("gateway"))
-	gwInst, err := hGateway.Get(ctx, "item")
+	inst, err := hGateway.Get(ctx, "item")
 	assert.NoError(t, err)
-	assert.Equal(t, "GatewayInst", gwInst)
+	assert.Equal(t, "GatewayInst", inst)
 
 	// VERIFY: Only Gateway is created
 	assert.Equal(t, int32(1), atomic.LoadInt32(&gatewayCreated))
 	assert.Equal(t, int32(0), atomic.LoadInt32(&featureCreated))
 
-	// 4. Request Feature component - with the fix, this should now work
-	// The feature provider should be able to recreate the instance with its own tag
+	// 4. Request Feature component
 	hFeature := reg.In("lazy", engine.WithInTags("feature"))
-	featInst, err := hFeature.Get(ctx, "item")
+	inst2, err := hFeature.Get(ctx, "item")
 	assert.NoError(t, err)
-	assert.Equal(t, "FeatureInst", featInst)
+	assert.Equal(t, "FeatureInst", inst2)
 
-	// VERIFY: Both providers are now called because each can create its own instance
+	// VERIFY: Both are now created
 	assert.Equal(t, int32(1), atomic.LoadInt32(&gatewayCreated))
 	assert.Equal(t, int32(1), atomic.LoadInt32(&featureCreated))
 }

@@ -43,5 +43,5 @@ func New(cfg *ossv1.ObjectStoreConfig, opts ...options.Option) (storageiface.Obj
 	}
 
 	// Use the factory to create the new ObjectStore instance.
-	return factory.NewCache(cfg, opts...)
+	return factory.New(cfg, opts...)
 }
