@@ -279,3 +279,45 @@ func WithGroup(opts ...options.Option) options.Option {
 		return ctx
 	}
 }
+
+// =============================
+// Context Utilities (New Logic)
+// =============================
+
+type optionsKey struct{}
+
+// WithOption adds options to the standard context.
+// Optimized: Directly uses the identity storage of context.Context.
+func WithOption(ctx context.Context, opts ...options.Option) context.Context {
+	if len(opts) == 0 {
+		return ctx
+	}
+	return context.WithValue(ctx, optionsKey{}, append(FromContext(ctx), opts...))
+}
+
+// FromContext retrieves options from the standard context.
+func FromContext(ctx context.Context) []options.Option {
+	if ctx == nil {
+		return nil
+	}
+	if opts, ok := ctx.Value(optionsKey{}).([]options.Option); ok {
+		return opts
+	}
+	return nil
+}
+
+// ApplyContext applies a series of options.Option to a standard context.Context.
+// Optimized: Uses ctxValue to bridge the two context worlds without overhead.
+func ApplyContext(ctx context.Context, opts ...options.Option) context.Context {
+	if len(opts) == 0 {
+		return ctx
+	}
+	octx := Context(ctx)
+	for _, opt := range opts {
+		octx = opt(octx)
+	}
+	if cv, ok := octx.(*ctxValue); ok {
+		return cv.ctx
+	}
+	return ctx
+}
