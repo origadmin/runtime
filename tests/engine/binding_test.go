@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
 )
@@ -81,7 +80,7 @@ func TestEngine_ConfigurationBindingProtocol(t *testing.T) {
 			},
 		}
 		reg := container.NewContainer(container.WithCategoryResolvers(resolvers))
-		reg.Register("database", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		reg.Register("database", func(ctx context.Context, h component.Handle) (any, error) {
 			// Test both old and new patterns
 			if h.Category() == "database_old" {
 				cfg := &MockDBConfig{}

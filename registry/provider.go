@@ -9,7 +9,6 @@ import (
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/helpers/comp"
 )
 
@@ -60,19 +59,20 @@ func NewProvider(handle component.Handle) Provider {
 }
 
 // DefaultRegistrarProvider creates instances for service registration.
-var DefaultRegistrarProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+var DefaultRegistrarProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
 	cfg, err := comp.AsConfig[discoveryv1.Discovery](h)
 	if err != nil {
 		return nil, err
 	}
-	return NewRegistrar(cfg, opts...)
+	return NewRegistrar(cfg)
 }
 
 // DefaultDiscoveryProvider creates instances for service discovery.
-var DefaultDiscoveryProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+var DefaultDiscoveryProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
 	cfg, err := comp.AsConfig[discoveryv1.Discovery](h)
 	if err != nil {
 		return nil, err
 	}
-	return NewDiscovery(cfg, opts...)
+	return NewDiscovery(cfg)
 }
+

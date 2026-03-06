@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
 	"github.com/origadmin/runtime/helpers/comp"
@@ -25,21 +24,21 @@ func TestContainer_TagsAndCommon(t *testing.T) {
 	ctx := context.Background()
 
 	// 1. Register components with different tags
-	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("middleware", func(ctx context.Context, h component.Handle) (any, error) {
 		if h.Name() == "common" {
 			return "CommonMiddleware", nil
 		}
 		return nil, nil
 	})
 
-	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("middleware", func(ctx context.Context, h component.Handle) (any, error) {
 		if h.Name() == "authn" {
 			return "GatewayMiddleware", nil
 		}
 		return nil, nil
 	}, engine.WithTag("gateway"))
 
-	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("middleware", func(ctx context.Context, h component.Handle) (any, error) {
 		if h.Name() == "authz" {
 			return "FeatureMiddleware", nil
 		}
@@ -73,7 +72,7 @@ func TestContainer_DynamicNamesAndPolymorphicClaiming(t *testing.T) {
 
 	// 1. Register specialized providers that CLAIM instances based on their dynamic name/config
 	// JWT Provider handles any name containing "jwt"
-	reg.Register("auth", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("auth", func(ctx context.Context, h component.Handle) (any, error) {
 		if strings.Contains(h.Name(), "jwt") {
 			return "JWT-Instance-" + h.Name(), nil
 		}
@@ -81,7 +80,7 @@ func TestContainer_DynamicNamesAndPolymorphicClaiming(t *testing.T) {
 	}, engine.WithTag("authn"))
 
 	// Basic Provider handles any name containing "basic"
-	reg.Register("auth", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("auth", func(ctx context.Context, h component.Handle) (any, error) {
 		if strings.Contains(h.Name(), "basic") {
 			return "Basic-Instance-" + h.Name(), nil
 		}
@@ -121,12 +120,12 @@ func TestContainer_LazyInitializationWithTags(t *testing.T) {
 	var featureCreated int32
 
 	// 1. Register with side-effect counters
-	reg.Register("lazy", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("lazy", func(ctx context.Context, h component.Handle) (any, error) {
 		atomic.AddInt32(&gatewayCreated, 1)
 		return "GatewayInst", nil
 	}, engine.WithTag("gateway"))
 
-	reg.Register("lazy", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("lazy", func(ctx context.Context, h component.Handle) (any, error) {
 		atomic.AddInt32(&featureCreated, 1)
 		return "FeatureInst", nil
 	}, engine.WithTag("feature"))
@@ -174,13 +173,13 @@ func TestContainer_TagIsolationNoOverwrite(t *testing.T) {
 	var featureCalls []string
 
 	// 1. Register components that track their instances
-	reg.Register("service", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("service", func(ctx context.Context, h component.Handle) (any, error) {
 		instanceID := fmt.Sprintf("gateway-%d", len(gatewayCalls))
 		gatewayCalls = append(gatewayCalls, instanceID)
 		return instanceID, nil
 	}, engine.WithTag("gateway"))
 
-	reg.Register("service", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("service", func(ctx context.Context, h component.Handle) (any, error) {
 		instanceID := fmt.Sprintf("feature-%d", len(featureCalls))
 		featureCalls = append(featureCalls, instanceID)
 		return instanceID, nil

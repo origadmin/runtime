@@ -7,7 +7,6 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 )
 
@@ -23,7 +22,7 @@ func TestCustomRegistryOverriding(t *testing.T) {
 	reg := app.Container()
 
 	// 2. Register Custom Logger (Simulating init() behavior)
-	reg.Register(runtime.CategoryLogger, func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register(runtime.CategoryLogger, func(ctx context.Context, h component.Handle) (any, error) {
 		t.Log("Creating custom logger from manual registration")
 		return &customLogger{}, nil
 	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {

@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/origadmin/runtime/engine/container"
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 )
 
@@ -22,7 +21,7 @@ func TestScopeIsolationAndPerspectiveSwitch(t *testing.T) {
 	// 1. Register a component in BOTH server and global scopes
 	// They use the SAME provider but will result in DIFFERENT instances
 	reg.Register("middleware",
-		func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		func(ctx context.Context, h component.Handle) (any, error) {
 			if h.Scope() == "server" {
 				return &ServerMiddleware{Name: "ServerInst"}, nil
 			}
@@ -66,7 +65,7 @@ func TestContainer_LifecycleProtection(t *testing.T) {
 	reg := container.NewContainer()
 	ctx := context.Background()
 
-	reg.Register("test", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("test", func(ctx context.Context, h component.Handle) (any, error) {
 		return "ok", nil
 	})
 
@@ -74,7 +73,7 @@ func TestContainer_LifecycleProtection(t *testing.T) {
 
 	// Subsequent registration must panic
 	assert.Panics(t, func() {
-		reg.Register("late", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+		reg.Register("late", func(ctx context.Context, h component.Handle) (any, error) {
 			return "bad", nil
 		})
 	})

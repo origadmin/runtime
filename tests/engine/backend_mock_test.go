@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
 	"github.com/origadmin/runtime/helpers/comp"
@@ -38,21 +37,21 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 	root := "dummy_config"
 
 	// 1. Register Infrastructure (Authn)
-	reg.Register("infrastructure", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("infrastructure", func(ctx context.Context, h component.Handle) (any, error) {
 		return &mockAuthn{}, nil
 	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "jwt", Value: nil}}}, nil
 	}))
 
 	// 2. Register Skipper
-	reg.Register("skipper", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("skipper", func(ctx context.Context, h component.Handle) (any, error) {
 		return &mockSkipper{}, nil
 	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: "default", Value: nil}}}, nil
 	}))
 
 	// 3. Register Middleware (Complex DI)
-	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("middleware", func(ctx context.Context, h component.Handle) (any, error) {
 		// Deep Dependency Discovery
 		auth, err := engine.Get[Authenticator](ctx, h.In("infrastructure"), "jwt")
 		if err != nil {

@@ -46,7 +46,7 @@ func TestDefaultResolvers_Functionality(t *testing.T) {
 		"mocks": customResolver,
 	}))
 
-	reg.Register("mocks", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("mocks", func(ctx context.Context, h component.Handle) (any, error) {
 		return "mock", nil
 	})
 
@@ -76,7 +76,7 @@ func TestDefaultResolvers_PassThrough(t *testing.T) {
 	single := &MockConfig{Name: "Solo"}
 	var capturedConfig any
 
-	regRaw.Register("raw_config", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	regRaw.Register("raw_config", func(ctx context.Context, h component.Handle) (any, error) {
 		capturedConfig = h.Config()
 		return "ok", nil
 	})
@@ -100,7 +100,7 @@ func TestContainer_LifecycleLock(t *testing.T) {
 	reg := container.NewContainer(nil)
 	ctx := context.Background()
 
-	reg.Register("first", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("first", func(ctx context.Context, h component.Handle) (any, error) {
 		return "ok", nil
 	})
 
@@ -115,7 +115,7 @@ func TestContainer_LifecycleLock(t *testing.T) {
 		}
 	}()
 
-	reg.Register("second", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("second", func(ctx context.Context, h component.Handle) (any, error) {
 		return "fail", nil
 	})
 }

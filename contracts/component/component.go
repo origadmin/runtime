@@ -13,7 +13,6 @@ import (
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/contracts/options"
 )
 
 type (
@@ -23,7 +22,6 @@ type (
 )
 
 const (
-	// Category constants for standard components.
 	CategoryLogger      Category = "logger"
 	CategoryRegistrar   Category = "registrar"
 	CategoryDiscovery   Category = "discovery"
@@ -70,7 +68,7 @@ type Handle interface {
 	Category() Category
 }
 
-type Provider func(ctx context.Context, h Handle, opts ...options.Option) (any, error)
+type Provider func(ctx context.Context, h Handle) (any, error)
 
 type Registry interface {
 	Register(cat Category, p Provider, opts ...RegisterOption)

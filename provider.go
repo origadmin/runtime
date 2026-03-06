@@ -10,7 +10,6 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/objectstore"
@@ -222,10 +221,10 @@ func extractName(item any) string {
 
 // --- Default Providers ---
 
-var DefaultLoggerProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+var DefaultLoggerProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
 	return log.DefaultLogger, nil
 }
 
-var DefaultRegistryProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+var DefaultRegistryProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
 	return nil, nil
 }

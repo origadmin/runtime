@@ -9,7 +9,6 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/helpers/comp"
 )
 
@@ -60,7 +59,7 @@ func NewProvider(handle component.Handle) Provider {
 }
 
 // ServerProvider is the engine-compatible provider for server-side middleware components.
-var ServerProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+var ServerProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
 	if h.Scope() != component.ServerScope {
 		return nil, nil
 	}
@@ -68,7 +67,7 @@ var ServerProvider component.Provider = func(ctx context.Context, h component.Ha
 	if err != nil {
 		return nil, err
 	}
-	m, ok := NewServer(cfg, opts...)
+	m, ok := NewServer(cfg)
 	if !ok {
 		return nil, nil
 	}
@@ -76,7 +75,7 @@ var ServerProvider component.Provider = func(ctx context.Context, h component.Ha
 }
 
 // ClientProvider is the engine-compatible provider for client-side middleware components.
-var ClientProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+var ClientProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
 	if h.Scope() != component.ClientScope {
 		return nil, nil
 	}
@@ -84,7 +83,7 @@ var ClientProvider component.Provider = func(ctx context.Context, h component.Ha
 	if err != nil {
 		return nil, err
 	}
-	m, ok := NewClient(cfg, opts...)
+	m, ok := NewClient(cfg)
 	if !ok {
 		return nil, nil
 	}
@@ -92,22 +91,23 @@ var ClientProvider component.Provider = func(ctx context.Context, h component.Ha
 }
 
 // DefaultProvider acts as a catch-all dispatcher.
-var DefaultProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+var DefaultProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
 	cfg, err := comp.AsConfig[middlewarev1.Middleware](h)
 	if err != nil {
 		return nil, err
 	}
 
 	if h.Scope() == component.ClientScope {
-		m, ok := NewClient(cfg, opts...)
+		m, ok := NewClient(cfg)
 		if ok {
 			return m, nil
 		}
 	} else {
-		m, ok := NewServer(cfg, opts...)
+		m, ok := NewServer(cfg)
 		if ok {
 			return m, nil
 		}
 	}
 	return nil, nil
 }
+

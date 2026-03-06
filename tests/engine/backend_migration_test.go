@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
 	"github.com/origadmin/runtime/helpers/comp"
@@ -26,7 +25,7 @@ func TestBackendMigrationSimulation(t *testing.T) {
 	ctx := context.Background()
 
 	// 1. Registry (Infrastructure)
-	reg.Register("infrastructure", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("infrastructure", func(ctx context.Context, h component.Handle) (any, error) {
 		return "MockRegistry", nil
 	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
@@ -35,7 +34,7 @@ func TestBackendMigrationSimulation(t *testing.T) {
 	}), engine.WithPriority(100))
 
 	// 2. Middleware
-	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	reg.Register("middleware", func(ctx context.Context, h component.Handle) (any, error) {
 		cfg := h.Config().(*backendConfig)
 		regInst, err := h.In("infrastructure").Get(ctx, "")
 		if err != nil {
