@@ -7,16 +7,13 @@ package database
 
 import (
 	"cmp"
-	"context"
 	"database/sql"
 	"time"
 
 	databasev1 "github.com/origadmin/runtime/api/gen/go/config/data/database/v1"
 	"github.com/origadmin/runtime/contracts"
-	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
-	"github.com/origadmin/runtime/helpers/comp"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -25,15 +22,6 @@ const (
 	Module               = "storage.database"
 	ErrDatabaseConfigNil = errors.String("database: config is nil")
 )
-
-// DefaultProvider is the default provider for database components.
-var DefaultProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-	cfg, err := comp.AsConfig[databasev1.DatabaseConfig](h)
-	if err != nil {
-		return nil, err
-	}
-	return New(cfg, opts...)
-}
 
 // databaseImpl implements the storageiface.Database interface.
 type databaseImpl struct {

@@ -6,28 +6,15 @@
 package objectstore
 
 import (
-	"context"
-
 	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
-	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
-	"github.com/origadmin/runtime/engine"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
 const (
 	DefaultDriver = "local" // Define a default driver
 )
-
-// DefaultProvider is the default provider for object store components.
-var DefaultProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-	cfg, err := engine.AsConfig[ossv1.ObjectStoreConfig](h)
-	if err != nil {
-		return nil, err
-	}
-	return New(cfg, opts...)
-}
 
 // Register registers a new object store factory with the default factory registry.
 func Register(name string, factory Factory) {
@@ -39,7 +26,7 @@ func Register(name string, factory Factory) {
 // To use a specific provider (e.g., "minio"), ensure its package
 // is imported for its side effects (e.g., `import _ "path/to/minio/provider"`),
 // which will register the provider's factory.
-func New(cfg *ossv1.ObjectStoreConfig, option ...options.Option) (storageiface.ObjectStore, error) {
+func New(cfg *ossv1.ObjectStoreConfig, opts ...options.Option) (storageiface.ObjectStore, error) {
 	if cfg == nil {
 		return nil, runtimeerrors.NewStructured(Module, "object store config is nil").WithCaller()
 	}
@@ -56,5 +43,5 @@ func New(cfg *ossv1.ObjectStoreConfig, option ...options.Option) (storageiface.O
 	}
 
 	// Use the factory to create the new ObjectStore instance.
-	return factory.New(cfg)
+	return factory.NewCache(cfg, opts...)
 }

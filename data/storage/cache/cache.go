@@ -6,29 +6,16 @@
 package cache
 
 import (
-	"context"
-
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
-	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
 	"github.com/origadmin/runtime/data/storage/cache/memory"
-	"github.com/origadmin/runtime/engine"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 )
 
 const (
 	DefaultDriver = "memory" // Define a default driver
 )
-
-// DefaultProvider is the default provider for cache components.
-var DefaultProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-	cfg, err := engine.AsConfig[cachev1.CacheConfig](h)
-	if err != nil {
-		return nil, err
-	}
-	return New(cfg, opts...)
-}
 
 func init() {
 	// Register the memory cache factory.
