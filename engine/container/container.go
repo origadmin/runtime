@@ -30,6 +30,7 @@ type componentMeta struct {
 	status Status
 	inst   any
 	err    error
+	tags   []string // Identity: Tags of the provider that created this instance
 }
 
 type moduleState struct {
@@ -48,15 +49,41 @@ type providerEntry struct {
 	tags     []string
 }
 
-// matchTags checks if the entry satisfies all requested tags.
-func (e *providerEntry) matchTags(requested []string) bool {
-	if len(requested) == 0 {
-		return true // No filter, match all
+// isProviderVisible checks if a provider with the given tags is visible in the current requested perspective.
+func isProviderVisible(providerTags, requestedTags []string) bool {
+	// 1. Full perspective (no tags requested) can see everything
+	if len(requestedTags) == 0 {
+		return true
 	}
-	for _, req := range requested {
+	// 2. Common providers (no tags) are visible in any perspective
+	if len(providerTags) == 0 {
+		return true
+	}
+	// 3. Tagged providers are visible if their tags are a subset of requested tags
+	for _, pt := range providerTags {
 		found := false
-		for _, tag := range e.tags {
-			if tag == req {
+		for _, rt := range requestedTags {
+			if pt == rt {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+// tagsEqual checks if two tag sets are identical (order-independent).
+func tagsEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for _, v := range a {
+		found := false
+		for _, x := range b {
+			if v == x {
 				found = true
 				break
 			}
@@ -314,10 +341,11 @@ func (c *containerImpl) In(cat component.Category, opts ...component.InOption) c
 }
 
 func (c *containerImpl) Config() any                  { return nil }
+func (c *containerImpl) Name() string                 { return "" }
 func (c *containerImpl) Scope() component.Scope       { return component.GlobalScope }
 func (c *containerImpl) Category() component.Category { return "" }
 
-func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error) {
+func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, requestedTags []string) (any, error) {
 	if name == "" {
 		name = component.DefaultName
 	}
@@ -327,14 +355,6 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	c.mu.RLock()
 	s, exists := c.modules[mKey]
 	c.mu.RUnlock()
-
-	// FIX: Fallback to GlobalScope if requested scope is not initialized
-	if !exists && scope != component.GlobalScope {
-		mKey.scope = component.GlobalScope
-		c.mu.RLock()
-		s, exists = c.modules[mKey]
-		c.mu.RUnlock()
-	}
 
 	if !exists {
 		return nil, fmt.Errorf("engine: scope %s not initialized for category %s", scope, cat)
@@ -346,30 +366,19 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 		s.mu.RUnlock()
 		return nil, fmt.Errorf("engine: component %s/%s not found in scope %s", cat, name, scope)
 	}
-
-	if meta.status == StatusReady {
-		inst := meta.inst
-		s.mu.RUnlock()
-		return inst, nil
-	}
 	s.mu.RUnlock()
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if meta.status == StatusReady {
-		return meta.inst, nil
-	}
 	if meta.status == StatusInstantiating {
 		return nil, fmt.Errorf("engine: circular dependency %s/%s", cat, name)
 	}
 
-	meta.status = StatusInstantiating
 	c.mu.RLock()
 	entries := c.providers[cat]
 	c.mu.RUnlock()
 	if len(entries) == 0 {
-		meta.status = StatusError
 		return nil, fmt.Errorf("engine: no provider for %s", cat)
 	}
 
@@ -381,7 +390,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			scopeMatch = true
 		} else {
 			for _, s := range entry.scopes {
-				if s == scope || s == component.GlobalScope {
+				if s == scope {
 					scopeMatch = true
 					break
 				}
@@ -391,18 +400,36 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			continue
 		}
 
-		// 2. Match Tags
-		if !entry.matchTags(tags) {
+		// 2. Match Perspective Visibility
+		// Can this perspective see this provider?
+		if !isProviderVisible(entry.tags, requestedTags) {
 			continue
 		}
 
-		h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta, tags: tags}
+		// 3. Handle Ready Instance with Strict Compatibility
+		if meta.status == StatusReady {
+			// An instance is ONLY claimable if:
+			// a) We are in Full Perspective (requestedTags is empty) - we see everything
+			// b) The instance was created by a provider with exactly the same identity (tags)
+			if len(requestedTags) == 0 || tagsEqual(meta.tags, entry.tags) {
+				return meta.inst, nil
+			}
+			// Otherwise, this provider cannot "see" or "claim" this instance.
+			continue
+		}
+
+		// 4. Try Instantiate
+		meta.status = StatusInstantiating
+		h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta, tags: requestedTags}
 		inst, err := entry.provider(ctx, h)
 		if err == nil && inst != nil {
 			meta.inst = inst
 			meta.status = StatusReady
+			meta.tags = entry.tags // Record creator's identity
 			return inst, nil
 		}
+
+		meta.status = StatusNone
 		if err != nil {
 			lastErr = err
 		}
@@ -413,7 +440,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 		meta.err = lastErr
 		return nil, lastErr
 	}
-	return nil, fmt.Errorf("engine: no compatible provider found for %s/%s in scope %s with tags %v", cat, name, scope, tags)
+	return nil, fmt.Errorf("engine: no compatible provider found for %s/%s in scope %s with requested tags %v", cat, name, scope, requestedTags)
 }
 
 type handleAdapter struct {
@@ -435,8 +462,8 @@ func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
 
 func (h *handleAdapter) In(cat component.Category, opts ...component.InOption) component.Handle {
 	inOpts := &component.InOptions{
-		Scope: h.scope,
-		Tags:  h.tags, // Inherit tags by default
+		Scope: component.GlobalScope, // Perspective switch defaults to GlobalScope
+		Tags:  h.tags,                // Inherit tags by default
 	}
 	for _, opt := range opts {
 		opt(inOpts)
@@ -449,6 +476,10 @@ func (h *handleAdapter) Config() any {
 		return nil
 	}
 	return h.meta.config
+}
+
+func (h *handleAdapter) Name() string {
+	return h.name
 }
 
 func (h *handleAdapter) Scope() component.Scope       { return h.scope }

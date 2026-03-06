@@ -65,6 +65,7 @@ type Handle interface {
 	Iter(ctx context.Context) iter.Seq2[string, any]
 	In(cat Category, opts ...InOption) Handle
 	Config() any
+	Name() string
 	Scope() Scope
 	Category() Category
 }

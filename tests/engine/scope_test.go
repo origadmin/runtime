@@ -57,7 +57,7 @@ func TestScopeIsolationAndPerspectiveSwitch(t *testing.T) {
 	inst2, err := hGlobal.Get(ctx, "item")
 	assert.NoError(t, err)
 	assert.Equal(t, "GlobalInst", inst2)
-	
+
 	// 5. Verify they are distinct
 	assert.NotEqual(t, inst1, inst2)
 }
