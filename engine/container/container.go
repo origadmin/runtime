@@ -95,7 +95,6 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// FIX: Restore lifecycle protection
 	if c.isLoaded {
 		panic(fmt.Sprintf("engine: cannot register category %s after Load() has been called", cat))
 	}
@@ -116,7 +115,7 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 	entries := c.providers[cat]
 	inserted := false
 	for i, e := range entries {
-		// FIX: Use >= to allow newer registrations with the same priority to take precedence
+		// Newest registration with same priority takes precedence (descending priority)
 		if entry.priority >= e.priority {
 			entries = append(entries[:i], append([]*providerEntry{entry}, entries[i:]...)...)
 			inserted = true
@@ -328,6 +327,15 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	c.mu.RLock()
 	s, exists := c.modules[mKey]
 	c.mu.RUnlock()
+
+	// FIX: Fallback to GlobalScope if requested scope is not initialized
+	if !exists && scope != component.GlobalScope {
+		mKey.scope = component.GlobalScope
+		c.mu.RLock()
+		s, exists = c.modules[mKey]
+		c.mu.RUnlock()
+	}
+
 	if !exists {
 		return nil, fmt.Errorf("engine: scope %s not initialized for category %s", scope, cat)
 	}
@@ -426,7 +434,14 @@ func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
 }
 
 func (h *handleAdapter) In(cat component.Category, opts ...component.InOption) component.Handle {
-	return h.c.In(cat, opts...)
+	inOpts := &component.InOptions{
+		Scope: h.scope,
+		Tags:  h.tags, // Inherit tags by default
+	}
+	for _, opt := range opts {
+		opt(inOpts)
+	}
+	return &handleAdapter{c: h.c, category: cat, scope: inOpts.Scope, tags: inOpts.Tags}
 }
 
 func (h *handleAdapter) Config() any {

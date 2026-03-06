@@ -8,6 +8,7 @@ import (
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
+	"github.com/origadmin/runtime/helpers/comp"
 )
 
 // --- Mock Domain Interfaces ---
@@ -18,9 +19,11 @@ type (
 )
 
 type mockAuthn struct{}
+
 func (m *mockAuthn) Authenticate() bool { return true }
 
 type mockSkipper struct{}
+
 func (m *mockSkipper) Skip() bool { return true }
 
 type mockMiddleware struct {
@@ -71,7 +74,7 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 
 	// 5. Verify
 	mwH := reg.In("middleware", engine.WithInScope("server"))
-	mw, err := engine.Get[*mockMiddleware](ctx, mwH, "authz-mw")
+	mw, err := comp.Get[*mockMiddleware](ctx, mwH, "authz-mw")
 	if err != nil {
 		t.Fatalf("Failed to create middleware stack: %v", err)
 	}

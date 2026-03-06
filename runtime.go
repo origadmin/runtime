@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	kregistry "github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
 
@@ -85,12 +86,7 @@ func (r *App) registerDefaultFactories() {
 			engine.WithPriority(PriorityInfrastructure))
 	}
 
-	// Registry Default
-	if !r.engine.Has(CategoryRegistry) {
-		r.engine.Register(CategoryRegistry,
-			DefaultRegistryProvider,
-			engine.WithPriority(PriorityRegistry))
-	}
+	// Registry components are self-registered by the registry package init()
 }
 
 // Load loads configuration into Result.
@@ -138,7 +134,6 @@ func (r *App) WarmUp() error {
 func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
 func (r *App) BusinessConfig() any           { return r.result.Config() }
 func (r *App) Logger() log.Logger {
-	// Navigate via CategoryLogger using GetDefault to support user overrides
 	l, err := engine.GetDefault[log.Logger](r.ctx, r.engine.In(CategoryLogger))
 	if err != nil {
 		return log.DefaultLogger
@@ -192,8 +187,13 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 	return kratos.New(opts...)
 }
 
-func (r *App) DefaultRegistrar() (registry.KRegistrar, error) {
-	return engine.Get[registry.KRegistrar](r.ctx, r.engine.In(CategoryRegistry), "")
+func (r *App) DefaultRegistrar() (kregistry.Registrar, error) {
+	// Directly obtain from CategoryRegistrar with standard Kratos interface
+	return engine.GetDefault[kregistry.Registrar](r.ctx, r.engine.In(CategoryRegistrar))
+}
+
+func (r *App) Discoveries() (map[string]registry.KDiscovery, error) {
+	return registry.GetDiscoveries(r.ctx, r.engine.In(CategoryDiscovery))
 }
 
 func (r *App) AppInfo() *appv1.App { return r.appInfo }
@@ -217,6 +217,6 @@ func ProvideLogger(rt *App) log.Logger {
 }
 
 // ProvideDefaultRegistrar is a Wire provider function that extracts the registrar from the App.
-func ProvideDefaultRegistrar(rt *App) (registry.KRegistrar, error) {
+func ProvideDefaultRegistrar(rt *App) (kregistry.Registrar, error) {
 	return rt.DefaultRegistrar()
 }

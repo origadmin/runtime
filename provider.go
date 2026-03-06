@@ -15,29 +15,30 @@ import (
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	"github.com/origadmin/runtime/middleware"
+	"github.com/origadmin/runtime/registry"
 )
 
 func init() {
-	// Register Default Providers to Global Pool
+	// 1. Storage Registrations
 	Register(CategoryDatabase, database.DefaultProvider)
 	Register(CategoryCache, cache.DefaultProvider)
 	Register(CategoryObjectStore, objectstore.DefaultProvider)
 
-	// Scoped Middleware Providers
+	// 2. Registry Registrations (Strictly Split)
+	Register(CategoryRegistrar, registry.DefaultRegistrarProvider)
+	Register(CategoryDiscovery, registry.DefaultDiscoveryProvider)
+
+	// 3. Middleware Registrations (Scoped)
 	Register(CategoryMiddleware, middleware.ServerProvider, WithScopes(ServerScope))
 	Register(CategoryMiddleware, middleware.ClientProvider, WithScopes(ClientScope))
-
-	// Note: Registry DefaultProvider is registered by its own package side-effect 
-	// or manually when needed to avoid circular dependencies if required.
-	// For now, we rely on the component constants.
 }
 
 // --- Default Resolvers Map ---
 
-// DefaultResolvers provides standard configuration extraction logic for common categories.
 var DefaultResolvers = map[component.Category]component.Resolver{
 	CategoryLogger:      resolveLogger,
-	CategoryRegistry:    resolveRegistry,
+	CategoryRegistrar:   resolveRegistry,
+	CategoryDiscovery:   resolveRegistry,
 	CategoryMiddleware:  resolveMiddleware,
 	CategoryDatabase:    resolveDatabase,
 	CategoryCache:       resolveCache,
@@ -219,7 +220,7 @@ func extractName(item any) string {
 	return ""
 }
 
-// --- Default Providers (Component Factory) ---
+// --- Default Providers ---
 
 var DefaultLoggerProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
 	return log.DefaultLogger, nil

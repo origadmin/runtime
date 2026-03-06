@@ -15,6 +15,7 @@ type Category = component.Category
 type Scope = component.Scope
 type Priority = component.Priority
 type Provider = component.Provider
+type Handle = component.Handle
 
 const (
 	// GlobalScope is the default fallback scope for the system.
@@ -26,7 +27,8 @@ const (
 const (
 	CategoryInfrastructure Category = "infrastructure"
 	CategoryLogger                  = component.CategoryLogger
-	CategoryRegistry                = component.CategoryRegistry
+	CategoryRegistrar               = component.CategoryRegistrar
+	CategoryDiscovery               = component.CategoryDiscovery
 	CategoryClient                  = component.CategoryClient
 	CategoryServer                  = component.CategoryServer
 	CategoryMiddleware              = component.CategoryMiddleware
@@ -37,6 +39,8 @@ const (
 	CategoryTask                    = component.CategoryTask
 	CategoryMail                    = component.CategoryMail
 	CategoryStorage                 = component.CategoryStorage
+	CategorySecurity                = component.CategorySecurity
+	CategorySkipper                 = component.CategorySkipper
 )
 
 // --- Scope Conventions ---

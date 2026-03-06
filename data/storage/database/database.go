@@ -16,7 +16,7 @@ import (
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
-	"github.com/origadmin/runtime/engine"
+	"github.com/origadmin/runtime/helpers/comp"
 	runtimeerrors "github.com/origadmin/runtime/errors"
 	"github.com/origadmin/toolkits/errors"
 )
@@ -28,7 +28,7 @@ const (
 
 // DefaultProvider is the default provider for database components.
 var DefaultProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-	cfg, err := engine.AsConfig[databasev1.DatabaseConfig](h)
+	cfg, err := comp.AsConfig[databasev1.DatabaseConfig](h)
 	if err != nil {
 		return nil, err
 	}
@@ -42,55 +42,21 @@ type databaseImpl struct {
 	name    string
 }
 
-func (d *databaseImpl) Name() string {
-	return d.name
-}
+func (d *databaseImpl) Name() string    { return d.name }
+func (d *databaseImpl) Dialect() string { return d.dialect }
+func (d *databaseImpl) DB() *sql.DB     { return d.db }
+func (d *databaseImpl) Close() error    { return d.db.Close() }
 
-func (d *databaseImpl) Dialect() string {
-	return d.dialect
-}
-
-// DB returns the underlying *sql.DB instance.
-func (d *databaseImpl) DB() *sql.DB {
-	return d.db
-}
-
-// Close closes the database connection.
-func (d *databaseImpl) Close() error {
-	if d.db != nil {
-		return d.db.Close()
-	}
-	return nil
-}
-
-// New creates a new database instance based on the provided configuration.
-// It uses Go's native database/sql package to open a connection.
-func New(cfg *databasev1.DatabaseConfig, option ...options.Option) (storageiface.Database, error) {
+func New(cfg *databasev1.DatabaseConfig, opts ...options.Option) (storageiface.Database, error) {
 	if cfg == nil {
 		return nil, ErrDatabaseConfigNil
 	}
 
-	driver := cfg.GetDialect()
-	if driver == "" {
-		return nil, runtimeerrors.NewStructured(Module, "database driver cannot be empty").WithCaller()
-	}
-	source := cfg.GetSource()
-	if source == "" {
-		return nil, runtimeerrors.NewStructured(Module, "database source (DSN) cannot be empty").WithCaller()
-	}
-
-	db, err := sql.Open(driver, source)
+	db, err := sql.Open(cfg.GetDialect(), cfg.GetSource())
 	if err != nil {
-		return nil, runtimeerrors.NewStructured(Module, "failed to open database").Wrap(err).WithCaller()
+		return nil, runtimeerrors.WrapStructured(err, Module, "failed to open database").WithCaller()
 	}
 
-	// Optional: Ping the database to verify the connection is alive
-	if err = db.Ping(); err != nil {
-		_ = db.Close()
-		return nil, runtimeerrors.NewStructured(Module, "failed to ping database").Wrap(err).WithCaller()
-	}
-
-	// Set connection pool settings if provided in config
 	if cfg.MaxOpenConnections > 0 {
 		db.SetMaxOpenConns(int(cfg.MaxOpenConnections))
 	}

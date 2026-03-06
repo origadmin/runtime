@@ -16,11 +16,30 @@ import (
 	"github.com/origadmin/runtime/contracts/options"
 )
 
-// --- Engine Metadata Types ---
+type (
+	Category string
+	Scope    string
+	Priority int
+)
 
-type Scope string
-type Category string
-type Priority int
+const (
+	// Category constants for standard components.
+	CategoryLogger      Category = "logger"
+	CategoryRegistrar   Category = "registrar"
+	CategoryDiscovery   Category = "discovery"
+	CategoryClient      Category = "client"
+	CategoryServer      Category = "server"
+	CategoryMiddleware  Category = "middleware"
+	CategoryDatabase    Category = "database"
+	CategoryCache       Category = "cache"
+	CategoryObjectStore Category = "objectstore"
+	CategoryQueue       Category = "queue"
+	CategoryTask        Category = "task"
+	CategoryMail        Category = "mail"
+	CategoryStorage     Category = "storage"
+	CategorySecurity    Category = "security"
+	CategorySkipper     Category = "skipper"
+)
 
 const (
 	// GlobalScope is the default system fallback scope.
@@ -36,63 +55,35 @@ const (
 	ReservedPrefix = "_"
 )
 
-const (
-	// Category constants for standard components.
-	CategoryLogger      Category = "logger"
-	CategoryRegistry    Category = "registry"
-	CategoryClient      Category = "client"
-	CategoryServer      Category = "server"
-	CategoryMiddleware  Category = "middleware"
-	CategoryDatabase    Category = "database"
-	CategoryCache       Category = "cache"
-	CategoryObjectStore Category = "objectstore"
-	CategoryQueue       Category = "queue"
-	CategoryTask        Category = "task"
-	CategoryMail        Category = "mail"
-	CategoryStorage     Category = "storage"
-)
-
 // IsReserved checks if the metadata string is system-reserved.
 func IsReserved(s string) bool {
 	return len(s) > 0 && s[0] == '_'
 }
 
-// --- Configuration Sniffing Contracts ---
-
-type (
-	AppConfig        interface{ GetApp() *appv1.App }
-	LoggerConfig     interface{ GetLogger() *loggerv1.Logger }
-	MiddlewareConfig interface {
-		GetMiddlewares() *middlewarev1.Middlewares
-	}
-	DataConfig     interface{ GetData() *datav1.Data }
-	RegistryConfig interface {
-		GetDiscoveries() *discoveryv1.Discoveries
-	}
-)
-
-// --- Engine Core Contracts ---
-
 type Handle interface {
-	// Get retrieves a component instance by name.
 	Get(ctx context.Context, name string) (any, error)
-	// Iter returns a sequence of all registered component instances.
 	Iter(ctx context.Context) iter.Seq2[string, any]
-	// In switches the perspective to a specific category and scope.
-	In(category Category, opts ...InOption) Handle
-	// Config returns the configuration associated with the current handle.
+	In(cat Category, opts ...InOption) Handle
 	Config() any
-	// Scope returns the scope of the current handle.
 	Scope() Scope
-	// Category returns the category of the current handle.
 	Category() Category
 }
 
 type Provider func(ctx context.Context, h Handle, opts ...options.Option) (any, error)
 
-type ConfigEntry struct {
-	Name  string
-	Value any
+type Registry interface {
+	Register(cat Category, p Provider, opts ...RegisterOption)
+	Has(cat Category, opts ...RegisterOption) bool
+	Load(ctx context.Context, source any, opts ...LoadOption) error
+	In(cat Category, opts ...InOption) Handle
+}
+
+type Resolver func(source any, cat Category) (*ModuleConfig, error)
+
+type Registration struct {
+	Category Category
+	Provider Provider
+	Options  []RegisterOption
 }
 
 type ModuleConfig struct {
@@ -100,27 +91,10 @@ type ModuleConfig struct {
 	Active  string
 }
 
-// Resolver is the unified type for configuration resolution.
-type Resolver func(source any, cat Category) (*ModuleConfig, error)
-
-// Registration carries the metadata for a component capability.
-type Registration struct {
-	Category Category
-	Provider Provider
-	Options  []RegisterOption
+type ConfigEntry struct {
+	Name  string
+	Value any
 }
-
-type Registry interface {
-	Handle
-	// Register declares a component capability.
-	Register(c Category, p Provider, opts ...RegisterOption)
-	// Has checks if a category is registered.
-	Has(c Category, opts ...RegisterOption) bool
-	// Load injects a configuration source and triggers component binding.
-	Load(ctx context.Context, source any, opts ...LoadOption) error
-}
-
-// --- Option Definitions ---
 
 type RegistrationOptions struct {
 	Resolver Resolver
@@ -147,3 +121,24 @@ type LoadOptions struct {
 }
 
 type LoadOption func(*LoadOptions)
+
+// Standard configuration interfaces
+type AppConfig interface {
+	GetApp() *appv1.App
+}
+
+type LoggerConfig interface {
+	GetLogger() *loggerv1.Logger
+}
+
+type RegistryConfig interface {
+	GetDiscoveries() *discoveryv1.Discoveries
+}
+
+type MiddlewareConfig interface {
+	GetMiddlewares() *middlewarev1.Middlewares
+}
+
+type DataConfig interface {
+	GetData() *datav1.Data
+}

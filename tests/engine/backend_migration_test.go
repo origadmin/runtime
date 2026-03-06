@@ -8,6 +8,7 @@ import (
 	"github.com/origadmin/runtime/contracts/options"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
+	"github.com/origadmin/runtime/helpers/comp"
 )
 
 // Mock Backend Types
@@ -55,7 +56,7 @@ func TestBackendMigrationSimulation(t *testing.T) {
 
 	// 4. Verify
 	mwH := reg.In("middleware", engine.WithInScope("server"))
-	m1, err := engine.Get[*BackendMiddleware](ctx, mwH, "authn")
+	m1, err := comp.Get[*BackendMiddleware](ctx, mwH, "authn")
 	if err != nil {
 		t.Fatalf("Failed to create authn: %v", err)
 	}

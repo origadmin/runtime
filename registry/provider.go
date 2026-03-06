@@ -10,7 +10,7 @@ import (
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/contracts/options"
-	"github.com/origadmin/runtime/engine"
+	"github.com/origadmin/runtime/helpers/comp"
 )
 
 // Provider defines the interface for a registry service provider.
@@ -22,25 +22,36 @@ type Provider interface {
 	DefaultDiscovery() (KDiscovery, error)
 }
 
-// providerImpl implements the Provider interface.
+// providerImpl implements the Provider interface by delegating to specific categories.
 type providerImpl struct {
 	handle component.Handle
 }
 
 func (p *providerImpl) Registrar(name string) (KRegistrar, error) {
-	return engine.Get[KRegistrar](context.Background(), p.handle.In(component.CategoryRegistry), name)
+	return comp.Get[KRegistrar](context.Background(), p.handle.In(component.CategoryRegistrar), name)
 }
 
 func (p *providerImpl) DefaultRegistrar() (KRegistrar, error) {
-	return engine.GetDefault[KRegistrar](context.Background(), p.handle.In(component.CategoryRegistry))
+	return comp.GetDefault[KRegistrar](context.Background(), p.handle.In(component.CategoryRegistrar))
 }
 
 func (p *providerImpl) Discovery(name string) (KDiscovery, error) {
-	return engine.Get[KDiscovery](context.Background(), p.handle.In(component.CategoryRegistry), name)
+	return comp.Get[KDiscovery](context.Background(), p.handle.In(component.CategoryDiscovery), name)
 }
 
 func (p *providerImpl) DefaultDiscovery() (KDiscovery, error) {
-	return engine.GetDefault[KDiscovery](context.Background(), p.handle.In(component.CategoryRegistry))
+	return comp.GetDefault[KDiscovery](context.Background(), p.handle.In(component.CategoryDiscovery))
+}
+
+// GetDiscoveries collects all discovery instances from the given handle.
+func GetDiscoveries(ctx context.Context, h component.Handle) (map[string]KDiscovery, error) {
+	m := make(map[string]KDiscovery)
+	for name, inst := range h.Iter(ctx) {
+		if d, ok := inst.(KDiscovery); ok {
+			m[name] = d
+		}
+	}
+	return m, nil
 }
 
 // NewProvider creates a new registry provider instance.
@@ -48,34 +59,20 @@ func NewProvider(handle component.Handle) Provider {
 	return &providerImpl{handle: handle}
 }
 
-func init() {
-	engine.Register(component.CategoryRegistry, DefaultProvider)
-}
-
-// RegistrarProvider is the engine-compatible provider for registrar components.
-var RegistrarProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-	cfg, err := engine.AsConfig[discoveryv1.Discovery](h)
+// DefaultRegistrarProvider creates instances for service registration.
+var DefaultRegistrarProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	cfg, err := comp.AsConfig[discoveryv1.Discovery](h)
 	if err != nil {
 		return nil, err
 	}
 	return NewRegistrar(cfg, opts...)
 }
 
-// DiscoveryProvider is the engine-compatible provider for discovery components.
-var DiscoveryProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-	cfg, err := engine.AsConfig[discoveryv1.Discovery](h)
+// DefaultDiscoveryProvider creates instances for service discovery.
+var DefaultDiscoveryProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
+	cfg, err := comp.AsConfig[discoveryv1.Discovery](h)
 	if err != nil {
 		return nil, err
 	}
 	return NewDiscovery(cfg, opts...)
-}
-
-// DefaultProvider acts as a general provider.
-var DefaultProvider component.Provider = func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
-	cfg, err := engine.AsConfig[discoveryv1.Discovery](h)
-	if err != nil {
-		return nil, err
-	}
-	// Many registry implementations (like Consul, ETCD) implement both interfaces in one object.
-	return NewRegistrar(cfg, opts...)
 }
