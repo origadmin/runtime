@@ -91,9 +91,9 @@ func WithPriority(p Priority) RegisterOption {
 	return engine.WithPriority(p)
 }
 
-// WithTags specifies the tags for a component.
-func WithTags(tags ...string) RegisterOption {
-	return engine.WithTags(tags...)
+// WithTag specifies the tag for a component.
+func WithTag(tag string) RegisterOption {
+	return engine.WithTag(tag)
 }
 
 // WithInTags specifies the tags for perspective switching.

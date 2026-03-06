@@ -35,7 +35,7 @@ func TestContainer_TagsAndCommon(t *testing.T) {
 			return "GatewayMiddleware", nil
 		}
 		return nil, nil
-	}, engine.WithTags("gateway"))
+	}, engine.WithTag("gateway"))
 
 	// Feature specific provider - handles "authz" name
 	reg.Register("middleware", func(ctx context.Context, h component.Handle, opts ...options.Option) (any, error) {
@@ -43,7 +43,7 @@ func TestContainer_TagsAndCommon(t *testing.T) {
 			return "FeatureMiddleware", nil
 		}
 		return nil, nil
-	}, engine.WithTags("feature"))
+	}, engine.WithTag("feature"))
 
 	// 2. Load configurations
 	err := reg.Load(ctx, nil, engine.WithLoadResolver(func(source any, cat component.Category) (*component.ModuleConfig, error) {

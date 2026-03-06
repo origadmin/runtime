@@ -30,7 +30,7 @@ type componentMeta struct {
 	status Status
 	inst   any
 	err    error
-	tags   []string // Identity: Tags of the provider that created this instance
+	tag    string // Identity: The singular tag this instance was born with
 }
 
 type moduleState struct {
@@ -46,53 +46,26 @@ type providerEntry struct {
 	resolver component.Resolver
 	scopes   []component.Scope
 	priority component.Priority
-	tags     []string
+	tag      string // Identity: Singular tag or empty for Common
 }
 
-// isProviderVisible checks if a provider with the given tags is visible in the current requested perspective.
-func isProviderVisible(providerTags, requestedTags []string) bool {
-	// 1. Full perspective (no tags requested) can see everything
+// isProviderVisible checks if a provider's singular identity is accepted by the perspective's capability set.
+func isProviderVisible(providerTag string, requestedTags []string) bool {
+	// 1. Common providers (empty tag) are ALWAYS visible (The "Standard Library" rule)
+	if providerTag == "" {
+		return true
+	}
+	// 2. Full perspective (no tags requested) can see all identities
 	if len(requestedTags) == 0 {
 		return true
 	}
-	// 2. Common providers (no tags) are visible in any perspective
-	if len(providerTags) == 0 {
-		return true
-	}
-	// 3. Tagged providers are visible if their tags are a subset of requested tags
-	for _, pt := range providerTags {
-		found := false
-		for _, rt := range requestedTags {
-			if pt == rt {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
+	// 3. Specific Capability: Does the perspective claim to have this capability?
+	for _, rt := range requestedTags {
+		if providerTag == rt {
+			return true
 		}
 	}
-	return true
-}
-
-// tagsEqual checks if two tag sets are identical (order-independent).
-func tagsEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for _, v := range a {
-		found := false
-		for _, x := range b {
-			if v == x {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
+	return false
 }
 
 // Option defines the internal option for container initialization.
@@ -136,13 +109,13 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 		resolver: cfg.Resolver,
 		scopes:   cfg.Scopes,
 		priority: cfg.Priority,
-		tags:     cfg.Tags,
+		tag:      cfg.Tag, // Strictly singular
 	}
 
 	entries := c.providers[cat]
 	inserted := false
 	for i, e := range entries {
-		// Newest registration with same priority takes precedence (descending priority)
+		// Newer registrations with same/higher priority take precedence
 		if entry.priority >= e.priority {
 			entries = append(entries[:i], append([]*providerEntry{entry}, entries[i:]...)...)
 			inserted = true
@@ -384,7 +357,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 
 	var lastErr error
 	for _, entry := range entries {
-		// 1. Match Scope
+		// 1. Match Scope (Single Requested vs Multi Registered)
 		scopeMatch := false
 		if len(entry.scopes) == 0 {
 			scopeMatch = true
@@ -400,32 +373,30 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			continue
 		}
 
-		// 2. Match Perspective Visibility
-		// Can this perspective see this provider?
-		if !isProviderVisible(entry.tags, requestedTags) {
+		// 2. Match Perspective (Is this provider visible in requested capability set?)
+		if !isProviderVisible(entry.tag, requestedTags) {
 			continue
 		}
 
-		// 3. Handle Ready Instance with Strict Compatibility
+		// 3. Identity-Safe Cache Recovery
 		if meta.status == StatusReady {
 			// An instance is ONLY claimable if:
-			// a) We are in Full Perspective (requestedTags is empty) - we see everything
-			// b) The instance was created by a provider with exactly the same identity (tags)
-			if len(requestedTags) == 0 || tagsEqual(meta.tags, entry.tags) {
+			// a) We are in Full Perspective (requestedTags is empty)
+			// b) The instance's birth-tag matches the current provider's identity tag.
+			if len(requestedTags) == 0 || meta.tag == entry.tag {
 				return meta.inst, nil
 			}
-			// Otherwise, this provider cannot "see" or "claim" this instance.
 			continue
 		}
 
-		// 4. Try Instantiate
+		// 4. Create New Instance
 		meta.status = StatusInstantiating
 		h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta, tags: requestedTags}
 		inst, err := entry.provider(ctx, h)
 		if err == nil && inst != nil {
 			meta.inst = inst
 			meta.status = StatusReady
-			meta.tags = entry.tags // Record creator's identity
+			meta.tag = entry.tag // Record the identity of creator
 			return inst, nil
 		}
 
@@ -435,12 +406,11 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 		}
 	}
 
-	meta.status = StatusError
 	if lastErr != nil {
 		meta.err = lastErr
 		return nil, lastErr
 	}
-	return nil, fmt.Errorf("engine: no compatible provider found for %s/%s in scope %s with requested tags %v", cat, name, scope, requestedTags)
+	return nil, fmt.Errorf("engine: no compatible provider found for %s/%s in scope %s with capabilities %v", cat, name, scope, requestedTags)
 }
 
 type handleAdapter struct {
@@ -462,8 +432,8 @@ func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
 
 func (h *handleAdapter) In(cat component.Category, opts ...component.InOption) component.Handle {
 	inOpts := &component.InOptions{
-		Scope: component.GlobalScope, // Perspective switch defaults to GlobalScope
-		Tags:  h.tags,                // Inherit tags by default
+		Scope: component.GlobalScope,
+		Tags:  h.tags,
 	}
 	for _, opt := range opts {
 		opt(inOpts)

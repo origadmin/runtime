@@ -101,7 +101,7 @@ type RegistrationOptions struct {
 	Resolver Resolver
 	Scopes   []Scope
 	Priority Priority
-	Tags     []string
+	Tag      string
 }
 
 type RegisterOption func(*RegistrationOptions)

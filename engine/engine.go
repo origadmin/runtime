@@ -98,14 +98,16 @@ func NewContainer(opts ...RegistryOption) Registry {
 	return reg
 }
 
-// --- Registration Options ---
+// --- Registration Options (STRICT SINGLE TAG) ---
 
+// WithScope registers the component for a specific scope.
 func WithScope(s Scope) RegisterOption {
 	return func(o *RegistrationOptions) {
 		o.Scopes = append(o.Scopes, s)
 	}
 }
 
+// WithScopes registers the component for multiple scopes.
 func WithScopes(ss ...Scope) RegisterOption {
 	return func(o *RegistrationOptions) {
 		o.Scopes = append(o.Scopes, ss...)
@@ -118,9 +120,11 @@ func WithPriority(p Priority) RegisterOption {
 	}
 }
 
-func WithTags(tags ...string) RegisterOption {
+// WithTag registers the component with a SINGLE identity tag.
+// Architecture Rule: A registered component has one unique identity.
+func WithTag(tag string) RegisterOption {
 	return func(o *RegistrationOptions) {
-		o.Tags = append(o.Tags, tags...)
+		o.Tag = tag
 	}
 }
 
@@ -131,7 +135,7 @@ func WithResolverOption(res Resolver) RegisterOption {
 	}
 }
 
-// --- Perspective Options (In) ---
+// --- Perspective Options (MULTI CAPABILITY TAGS) ---
 
 func WithInScope(s Scope) InOption {
 	return func(o *InOptions) {
@@ -139,6 +143,8 @@ func WithInScope(s Scope) InOption {
 	}
 }
 
+// WithInTags defines the CAPABILITIES of current perspective.
+// A perspective can request multiple tags to aggregate components.
 func WithInTags(tags ...string) InOption {
 	return func(o *InOptions) {
 		o.Tags = append(o.Tags, tags...)
