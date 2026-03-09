@@ -12,21 +12,21 @@ import (
 	"github.com/origadmin/runtime/helpers/comp"
 )
 
-// Get retrieves a component by name from a handle and asserts its type.
+// Get retrieves a component by name from a locator and asserts its type.
 // Deprecated: Use comp.Get instead to avoid unnecessary dependencies.
-func Get[T any](ctx context.Context, h component.Handle, name string) (T, error) {
-	return comp.Get[T](ctx, h, name)
+func Get[T any](ctx context.Context, l component.Locator, name string) (T, error) {
+	return comp.Get[T](ctx, l, name)
 }
 
-// GetDefault retrieves the default component from a handle and asserts its type.
+// GetDefault retrieves the default component from a locator and asserts its type.
 // Deprecated: Use comp.GetDefault instead.
-func GetDefault[T any](ctx context.Context, h component.Handle) (T, error) {
-	return comp.GetDefault[T](ctx, h)
+func GetDefault[T any](ctx context.Context, l component.Locator) (T, error) {
+	return comp.GetDefault[T](ctx, l)
 }
 
-// Iter returns a type-safe iterator for components in a handle.
-func Iter[T any](ctx context.Context, h component.Handle) iter.Seq2[string, T] {
-	return comp.Iter[T](ctx, h)
+// Iter returns a type-safe iterator for components in a locator.
+func Iter[T any](ctx context.Context, l component.Locator) iter.Seq2[string, T] {
+	return comp.Iter[T](ctx, l)
 }
 
 // AsConfig extracts and asserts the configuration from a handle.

@@ -36,7 +36,7 @@ func TestBackendMigrationSimulation(t *testing.T) {
 	// 2. Middleware
 	reg.Register("middleware", func(ctx context.Context, h component.Handle) (any, error) {
 		cfg := h.Config().(*backendConfig)
-		regInst, err := h.In("infrastructure").Get(ctx, "")
+		regInst, err := h.Locator().In("infrastructure").Get(ctx, "")
 		if err != nil {
 			return nil, err
 		}

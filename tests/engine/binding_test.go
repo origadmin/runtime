@@ -82,7 +82,7 @@ func TestEngine_ConfigurationBindingProtocol(t *testing.T) {
 		reg := container.NewContainer(container.WithCategoryResolvers(resolvers))
 		reg.Register("database", func(ctx context.Context, h component.Handle) (any, error) {
 			// Test both old and new patterns
-			if h.Category() == "database_old" {
+			if h.Locator().Category() == "database_old" {
 				cfg := &MockDBConfig{}
 				if err := engine.BindConfig(h, cfg); err != nil {
 					return nil, err

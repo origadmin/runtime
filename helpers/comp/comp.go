@@ -24,10 +24,10 @@ func AsConfig[T any](h component.Handle) (*T, error) {
 	return nil, nil
 }
 
-// Get retrieves a component by name from a handle and asserts its type.
-func Get[T any](ctx context.Context, h component.Handle, name string) (T, error) {
+// Get retrieves a component by name from a locator and asserts its type.
+func Get[T any](ctx context.Context, l component.Locator, name string) (T, error) {
 	var zero T
-	inst, err := h.Get(ctx, name)
+	inst, err := l.Get(ctx, name)
 	if err != nil {
 		return zero, err
 	}
@@ -37,15 +37,15 @@ func Get[T any](ctx context.Context, h component.Handle, name string) (T, error)
 	return zero, nil
 }
 
-// GetDefault retrieves the default component from a handle and asserts its type.
-func GetDefault[T any](ctx context.Context, h component.Handle) (T, error) {
-	return Get[T](ctx, h, component.DefaultName)
+// GetDefault retrieves the default component from a locator and asserts its type.
+func GetDefault[T any](ctx context.Context, l component.Locator) (T, error) {
+	return Get[T](ctx, l, component.DefaultName)
 }
 
-// Iter returns a type-safe iterator for components in a handle.
-func Iter[T any](ctx context.Context, h component.Handle) iter.Seq2[string, T] {
+// Iter returns a type-safe iterator for components in a locator.
+func Iter[T any](ctx context.Context, l component.Locator) iter.Seq2[string, T] {
 	return func(yield func(string, T) bool) {
-		for name, inst := range h.Iter(ctx) {
+		for name, inst := range l.Iter(ctx) {
 			if t, ok := inst.(T); ok {
 				if !yield(name, t) {
 					return
@@ -55,10 +55,10 @@ func Iter[T any](ctx context.Context, h component.Handle) iter.Seq2[string, T] {
 	}
 }
 
-// GetMap collects all components from the given handle as a map and asserts their type.
-func GetMap[T any](ctx context.Context, h component.Handle) (map[string]T, error) {
+// GetMap collects all components from the given locator as a map and asserts their type.
+func GetMap[T any](ctx context.Context, l component.Locator) (map[string]T, error) {
 	m := make(map[string]T)
-	for name, inst := range h.Iter(ctx) {
+	for name, inst := range l.Iter(ctx) {
 		if t, ok := inst.(T); ok {
 			m[name] = t
 		}

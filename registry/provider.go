@@ -23,27 +23,27 @@ type Provider interface {
 
 // providerImpl implements the Provider interface by delegating to specific categories.
 type providerImpl struct {
-	handle component.Handle
+	locator component.Locator
 }
 
 func (p *providerImpl) Registrar(name string) (KRegistrar, error) {
-	return comp.Get[KRegistrar](context.Background(), p.handle.In(component.CategoryRegistrar), name)
+	return comp.Get[KRegistrar](context.Background(), p.locator.In(component.CategoryRegistrar), name)
 }
 
 func (p *providerImpl) DefaultRegistrar() (KRegistrar, error) {
-	return comp.GetDefault[KRegistrar](context.Background(), p.handle.In(component.CategoryRegistrar))
+	return comp.GetDefault[KRegistrar](context.Background(), p.locator.In(component.CategoryRegistrar))
 }
 
 func (p *providerImpl) Discovery(name string) (KDiscovery, error) {
-	return comp.Get[KDiscovery](context.Background(), p.handle.In(component.CategoryDiscovery), name)
+	return comp.Get[KDiscovery](context.Background(), p.locator.In(component.CategoryDiscovery), name)
 }
 
 func (p *providerImpl) DefaultDiscovery() (KDiscovery, error) {
-	return comp.GetDefault[KDiscovery](context.Background(), p.handle.In(component.CategoryDiscovery))
+	return comp.GetDefault[KDiscovery](context.Background(), p.locator.In(component.CategoryDiscovery))
 }
 
-// GetDiscoveries collects all discovery instances from the given handle.
-func GetDiscoveries(ctx context.Context, h component.Handle) (map[string]KDiscovery, error) {
+// GetDiscoveries collects all discovery instances from the given locator.
+func GetDiscoveries(ctx context.Context, h component.Locator) (map[string]KDiscovery, error) {
 	m := make(map[string]KDiscovery)
 	for name, inst := range h.Iter(ctx) {
 		if d, ok := inst.(KDiscovery); ok {
@@ -54,8 +54,8 @@ func GetDiscoveries(ctx context.Context, h component.Handle) (map[string]KDiscov
 }
 
 // NewProvider creates a new registry provider instance.
-func NewProvider(handle component.Handle) Provider {
-	return &providerImpl{handle: handle}
+func NewProvider(locator component.Locator) Provider {
+	return &providerImpl{locator: locator}
 }
 
 // DefaultRegistrarProvider creates instances for service registration.
@@ -75,4 +75,3 @@ var DefaultDiscoveryProvider component.Provider = func(ctx context.Context, h co
 	}
 	return NewDiscovery(cfg)
 }
-

@@ -20,21 +20,21 @@ type Provider interface {
 
 // providerImpl implements the Provider interface.
 type providerImpl struct {
-	handle component.Handle
+	locator component.Locator
 }
 
 func (p *providerImpl) Middleware(name string) (KMiddleware, error) {
-	return comp.Get[KMiddleware](context.Background(), p.handle.In(component.CategoryMiddleware), name)
+	return comp.Get[KMiddleware](context.Background(), p.locator.In(component.CategoryMiddleware), name)
 }
 
 func (p *providerImpl) DefaultMiddleware() (KMiddleware, error) {
-	return comp.GetDefault[KMiddleware](context.Background(), p.handle.In(component.CategoryMiddleware))
+	return comp.GetDefault[KMiddleware](context.Background(), p.locator.In(component.CategoryMiddleware))
 }
 
-// GetMiddlewares collects all middlewares from the given handle as a slice.
-func GetMiddlewares(ctx context.Context, h component.Handle) ([]KMiddleware, error) {
+// GetMiddlewares collects all middlewares from the given locator as a slice.
+func GetMiddlewares(ctx context.Context, locator component.Locator) ([]KMiddleware, error) {
 	var mws []KMiddleware
-	for _, inst := range h.Iter(ctx) {
+	for _, inst := range locator.Iter(ctx) {
 		if m, ok := inst.(KMiddleware); ok {
 			mws = append(mws, m)
 		}
@@ -42,10 +42,10 @@ func GetMiddlewares(ctx context.Context, h component.Handle) ([]KMiddleware, err
 	return mws, nil
 }
 
-// GetMiddlewareMap collects all available middlewares from the given handle as a map.
-func GetMiddlewareMap(ctx context.Context, h component.Handle) (map[string]KMiddleware, error) {
+// GetMiddlewareMap collects all available middlewares from the given locator as a map.
+func GetMiddlewareMap(ctx context.Context, locator component.Locator) (map[string]KMiddleware, error) {
 	mws := make(map[string]KMiddleware)
-	for name, inst := range h.Iter(ctx) {
+	for name, inst := range locator.Iter(ctx) {
 		if m, ok := inst.(KMiddleware); ok {
 			mws[name] = m
 		}
@@ -54,13 +54,13 @@ func GetMiddlewareMap(ctx context.Context, h component.Handle) (map[string]KMidd
 }
 
 // NewProvider creates a new middleware provider instance.
-func NewProvider(handle component.Handle) Provider {
-	return &providerImpl{handle: handle}
+func NewProvider(locator component.Locator) Provider {
+	return &providerImpl{locator: locator}
 }
 
 // ServerProvider is the engine-compatible provider for server-side middleware components.
 var ServerProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
-	if h.Scope() != component.ServerScope {
+	if h.Locator().Scope() != component.ServerScope {
 		return nil, nil
 	}
 	cfg, err := comp.AsConfig[middlewarev1.Middleware](h)
@@ -76,7 +76,7 @@ var ServerProvider component.Provider = func(ctx context.Context, h component.Ha
 
 // ClientProvider is the engine-compatible provider for client-side middleware components.
 var ClientProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
-	if h.Scope() != component.ClientScope {
+	if h.Locator().Scope() != component.ClientScope {
 		return nil, nil
 	}
 	cfg, err := comp.AsConfig[middlewarev1.Middleware](h)
@@ -97,7 +97,7 @@ var DefaultProvider component.Provider = func(ctx context.Context, h component.H
 		return nil, err
 	}
 
-	if h.Scope() == component.ClientScope {
+	if h.Locator().Scope() == component.ClientScope {
 		m, ok := NewClient(cfg)
 		if ok {
 			return m, nil
@@ -110,4 +110,3 @@ var DefaultProvider component.Provider = func(ctx context.Context, h component.H
 	}
 	return nil, nil
 }
-

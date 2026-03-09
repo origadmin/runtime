@@ -53,11 +53,11 @@ func TestBackendDeepDependencyInjection(t *testing.T) {
 	// 3. Register Middleware (Complex DI)
 	reg.Register("middleware", func(ctx context.Context, h component.Handle) (any, error) {
 		// Deep Dependency Discovery
-		auth, err := engine.Get[Authenticator](ctx, h.In("infrastructure"), "jwt")
+		auth, err := engine.Get[Authenticator](ctx, h.Locator().In("infrastructure"), "jwt")
 		if err != nil {
 			return nil, err
 		}
-		skip, err := engine.Get[Skipper](ctx, h.In("skipper"), "")
+		skip, err := engine.Get[Skipper](ctx, h.Locator().In("skipper"), "")
 		if err != nil {
 			return nil, err
 		}

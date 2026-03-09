@@ -22,7 +22,7 @@ func TestScopeIsolationAndPerspectiveSwitch(t *testing.T) {
 	// They use the SAME provider but will result in DIFFERENT instances
 	reg.Register("middleware",
 		func(ctx context.Context, h component.Handle) (any, error) {
-			if h.Scope() == "server" {
+			if h.Locator().Scope() == "server" {
 				return &ServerMiddleware{Name: "ServerInst"}, nil
 			}
 			return "GlobalInst", nil

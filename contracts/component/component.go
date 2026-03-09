@@ -58,14 +58,18 @@ func IsReserved(s string) bool {
 	return len(s) > 0 && s[0] == '_'
 }
 
-type Handle interface {
+type Locator interface {
 	Get(ctx context.Context, name string) (any, error)
 	Iter(ctx context.Context) iter.Seq2[string, any]
-	In(cat Category, opts ...InOption) Handle
+	In(cat Category, opts ...InOption) Locator
+	Category() Category
+	Scope() Scope
+}
+
+type Handle interface {
 	Config() any
 	Name() string
-	Scope() Scope
-	Category() Category
+	Locator() Locator
 }
 
 type Provider func(ctx context.Context, h Handle) (any, error)
@@ -74,7 +78,7 @@ type Registry interface {
 	Register(cat Category, p Provider, opts ...RegisterOption)
 	Has(cat Category, opts ...RegisterOption) bool
 	Load(ctx context.Context, source any, opts ...LoadOption) error
-	In(cat Category, opts ...InOption) Handle
+	In(cat Category, opts ...InOption) Locator
 }
 
 type Resolver func(source any, cat Category) (*ModuleConfig, error)

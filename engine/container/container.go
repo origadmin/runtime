@@ -318,12 +318,17 @@ func (c *containerImpl) iterInternal(ctx context.Context, cat component.Category
 	}
 }
 
-func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Handle {
+func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Locator {
 	inOpts := &component.InOptions{Scope: component.GlobalScope}
 	for _, opt := range opts {
 		opt(inOpts)
 	}
-	return &handleAdapter{c: c, category: cat, scope: inOpts.Scope, tags: inOpts.Tags}
+	return &locatorHandle{
+		c:        c,
+		category: cat,
+		scope:    inOpts.Scope,
+		tags:     inOpts.Tags,
+	}
 }
 
 func (c *containerImpl) Config() any                  { return nil }
@@ -408,7 +413,16 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 		meta.status = StatusInstantiating
 		s.mu.Unlock()
 
-		h := &handleAdapter{c: c, category: cat, scope: scope, name: name, meta: meta, tags: requestedTags}
+		h := &entryHandle{
+			name: name,
+			meta: meta,
+			l: &locatorHandle{
+				c:        c,
+				category: cat,
+				scope:    scope,
+				tags:     requestedTags,
+			},
+		}
 		inst, err := entry.provider(ctx, h)
 
 		s.mu.Lock()
@@ -432,47 +446,54 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	return nil, fmt.Errorf("engine: no compatible provider found for %s/%s in scope %s with capabilities %v", cat, name, scope, requestedTags)
 }
 
-type handleAdapter struct {
+type locatorHandle struct {
 	c        *containerImpl
 	category component.Category
 	scope    component.Scope
-	name     string
-	meta     *componentMeta
 	tags     []string
 }
 
-func (h *handleAdapter) Get(ctx context.Context, name string) (any, error) {
-	return h.c.instantiate(ctx, h.category, h.scope, name, h.tags)
+func (l *locatorHandle) Get(ctx context.Context, name string) (any, error) {
+	return l.c.instantiate(ctx, l.category, l.scope, name, l.tags)
 }
 
-func (h *handleAdapter) Iter(ctx context.Context) iter.Seq2[string, any] {
-	return h.c.iterInternal(ctx, h.category, h.scope, h.tags)
+func (l *locatorHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
+	return l.c.iterInternal(ctx, l.category, l.scope, l.tags)
 }
 
-func (h *handleAdapter) In(cat component.Category, opts ...component.InOption) component.Handle {
+func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) component.Locator {
 	inOpts := &component.InOptions{
 		Scope: component.GlobalScope,
-		Tags:  h.tags,
+		Tags:  l.tags,
 	}
 	for _, opt := range opts {
 		opt(inOpts)
 	}
-	return &handleAdapter{c: h.c, category: cat, scope: inOpts.Scope, tags: inOpts.Tags}
+	return &locatorHandle{
+		c:        l.c,
+		category: cat,
+		scope:    inOpts.Scope,
+		tags:     inOpts.Tags,
+	}
 }
 
-func (h *handleAdapter) Config() any {
-	if h.meta == nil {
+func (l *locatorHandle) Scope() component.Scope       { return l.scope }
+func (l *locatorHandle) Category() component.Category { return l.category }
+
+type entryHandle struct {
+	name string
+	meta *componentMeta
+	l    *locatorHandle
+}
+
+func (e *entryHandle) Name() string { return e.name }
+func (e *entryHandle) Config() any {
+	if e.meta == nil {
 		return nil
 	}
-	return h.meta.config
+	return e.meta.config
 }
-
-func (h *handleAdapter) Name() string {
-	return h.name
-}
-
-func (h *handleAdapter) Scope() component.Scope       { return h.scope }
-func (h *handleAdapter) Category() component.Category { return h.category }
+func (e *entryHandle) Locator() component.Locator { return e.l }
 
 func NewContainer(opts ...Option) component.Registry {
 	c := &containerImpl{
