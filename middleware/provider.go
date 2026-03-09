@@ -31,8 +31,8 @@ func (p *providerImpl) DefaultMiddleware() (KMiddleware, error) {
 	return comp.GetDefault[KMiddleware](context.Background(), p.locator.In(component.CategoryMiddleware))
 }
 
-// GetMiddlewares collects all middlewares from the given locator as a slice.
-func GetMiddlewares(ctx context.Context, locator component.Locator) ([]KMiddleware, error) {
+// GetMiddlewareList collects all middlewares from the given locator as a slice.
+func GetMiddlewareList(ctx context.Context, locator component.Locator) ([]KMiddleware, error) {
 	var mws []KMiddleware
 	for _, inst := range locator.Iter(ctx) {
 		if m, ok := inst.(KMiddleware); ok {
@@ -42,8 +42,8 @@ func GetMiddlewares(ctx context.Context, locator component.Locator) ([]KMiddlewa
 	return mws, nil
 }
 
-// GetMiddlewareMap collects all available middlewares from the given locator as a map.
-func GetMiddlewareMap(ctx context.Context, locator component.Locator) (map[string]KMiddleware, error) {
+// GetMiddlewares collects all available middlewares from the given locator as a map.
+func GetMiddlewares(ctx context.Context, locator component.Locator) (map[string]KMiddleware, error) {
 	mws := make(map[string]KMiddleware)
 	for name, inst := range locator.Iter(ctx) {
 		if m, ok := inst.(KMiddleware); ok {
