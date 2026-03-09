@@ -28,7 +28,6 @@ type (
 	LoggerConfig     = component.LoggerConfig
 	MiddlewareConfig = component.MiddlewareConfig
 	DataConfig       = component.DataConfig
-	RegistryConfig   = component.RegistryConfig
 )
 
 // App defines the application's runtime environment powered by engine.
