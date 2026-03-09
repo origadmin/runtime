@@ -10,7 +10,6 @@ import (
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 )
@@ -132,10 +131,6 @@ type AppConfig interface {
 
 type LoggerConfig interface {
 	GetLogger() *loggerv1.Logger
-}
-
-type RegistryConfig interface {
-	GetDiscoveries() *discoveryv1.Discoveries
 }
 
 type MiddlewareConfig interface {

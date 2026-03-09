@@ -7,12 +7,15 @@ package runtime
 import (
 	"context"
 
-	"github.com/go-kratos/kratos/v2/log"
-
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
+	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/data/storage/database"
 	"github.com/origadmin/runtime/data/storage/objectstore"
+	"github.com/origadmin/runtime/helpers/comp"
+	"github.com/origadmin/runtime/helpers/configutil"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/middleware"
 	"github.com/origadmin/runtime/registry"
 )
@@ -52,35 +55,39 @@ func resolveLogger(source any, _ component.Category) (*component.ModuleConfig, e
 		if logger == nil {
 			return nil, nil
 		}
+		// Loggers are usually single instances in current PB, 
+		// but we still follow the name-based discovery pattern.
+		name := extractName(logger)
+		if name == "" {
+			name = "logger"
+		}
 		return &component.ModuleConfig{
-			Entries: []component.ConfigEntry{{Name: "default", Value: logger}},
-			Active:  "default",
+			Entries: []component.ConfigEntry{{Name: name, Value: logger}},
+			Active:  name,
 		}, nil
 	}
 	return nil, nil
 }
 
 func resolveRegistry(source any, _ component.Category) (*component.ModuleConfig, error) {
-	if c, ok := source.(component.RegistryConfig); ok {
+	// According to design, Registrar and Discovery configurations are located in GetDiscoveries()
+	if c, ok := source.(interface {
+		GetDiscoveries() *discoveryv1.Discoveries
+	}); ok {
 		discoveries := c.GetDiscoveries()
 		if discoveries == nil {
 			return nil, nil
 		}
-		res := &component.ModuleConfig{Active: discoveries.GetActive()}
-		if d := discoveries.GetDefault(); d != nil {
-			name := extractName(d)
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
-			if name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: d})
-			}
-			if res.Active == "" {
-				res.Active = "default"
-			}
+
+		// Use the authoritative normalization logic: Default -> Active -> First
+		def, configs, err := configutil.Normalize(discoveries.GetActive(), discoveries.GetDefault(), discoveries.GetConfigs())
+		if err != nil {
+			return nil, err
 		}
-		for _, entry := range discoveries.GetConfigs() {
-			if name := extractName(entry); name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
-			}
+
+		res := &component.ModuleConfig{Active: def.GetName()}
+		for _, cfg := range configs {
+			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
 		}
 		return res, nil
 	}
@@ -95,13 +102,18 @@ func resolveMiddleware(source any, _ component.Category) (*component.ModuleConfi
 		}
 		res := &component.ModuleConfig{}
 		for _, entry := range mws.GetConfigs() {
-			if name := extractName(entry); name != "" {
+			name := entry.GetName()
+			if name == "" {
+				name = entry.GetType()
+			}
+			if name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
 			}
 		}
+		// For middlewares, we don't necessarily have a single "Active" one, 
+		// but we set Active to the first one if only one exists to support default retrieval.
 		if len(res.Entries) == 1 {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: res.Entries[0].Value})
-			res.Active = "default"
+			res.Active = res.Entries[0].Name
 		}
 		return res, nil
 	}
@@ -115,21 +127,15 @@ func resolveDatabase(source any, _ component.Category) (*component.ModuleConfig,
 			return nil, nil
 		}
 		dbs := data.GetDatabases()
-		res := &component.ModuleConfig{Active: dbs.GetActive()}
-		if d := dbs.GetDefault(); d != nil {
-			name := extractName(d)
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
-			if name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: d})
-			}
-			if res.Active == "" {
-				res.Active = "default"
-			}
+
+		def, configs, err := configutil.Normalize(dbs.GetActive(), dbs.GetDefault(), dbs.GetConfigs())
+		if err != nil {
+			return nil, err
 		}
-		for _, entry := range dbs.GetConfigs() {
-			if name := extractName(entry); name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
-			}
+
+		res := &component.ModuleConfig{Active: def.GetName()}
+		for _, cfg := range configs {
+			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
 		}
 		return res, nil
 	}
@@ -143,21 +149,15 @@ func resolveCache(source any, _ component.Category) (*component.ModuleConfig, er
 			return nil, nil
 		}
 		caches := data.GetCaches()
-		res := &component.ModuleConfig{Active: caches.GetActive()}
-		if d := caches.GetDefault(); d != nil {
-			name := extractName(d)
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
-			if name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: d})
-			}
-			if res.Active == "" {
-				res.Active = "default"
-			}
+
+		def, configs, err := configutil.Normalize(caches.GetActive(), caches.GetDefault(), caches.GetConfigs())
+		if err != nil {
+			return nil, err
 		}
-		for _, entry := range caches.GetConfigs() {
-			if name := extractName(entry); name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
-			}
+
+		res := &component.ModuleConfig{Active: def.GetName()}
+		for _, cfg := range configs {
+			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
 		}
 		return res, nil
 	}
@@ -171,21 +171,15 @@ func resolveObjectStore(source any, _ component.Category) (*component.ModuleConf
 			return nil, nil
 		}
 		oss := data.GetObjectStores()
-		res := &component.ModuleConfig{Active: oss.GetActive()}
-		if d := oss.GetDefault(); d != nil {
-			name := extractName(d)
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: "default", Value: d})
-			if name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: d})
-			}
-			if res.Active == "" {
-				res.Active = "default"
-			}
+
+		def, configs, err := configutil.Normalize(oss.GetActive(), oss.GetDefault(), oss.GetConfigs())
+		if err != nil {
+			return nil, err
 		}
-		for _, entry := range oss.GetConfigs() {
-			if name := extractName(entry); name != "" {
-				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
-			}
+
+		res := &component.ModuleConfig{Active: def.GetName()}
+		for _, cfg := range configs {
+			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
 		}
 		return res, nil
 	}
@@ -222,7 +216,12 @@ func extractName(item any) string {
 // --- Default Providers ---
 
 var DefaultLoggerProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
-	return log.DefaultLogger, nil
+	cfg, err := comp.AsConfig[loggerv1.Logger](h)
+	if err != nil || cfg == nil {
+		return log.DefaultLogger, nil
+	}
+	// log.NewLogger is the authoritative way to initialize singletons in runtime/log.
+	return log.NewLogger(cfg), nil
 }
 
 var DefaultRegistryProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {

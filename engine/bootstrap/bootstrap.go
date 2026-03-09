@@ -5,6 +5,8 @@ import (
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
+	_ "github.com/origadmin/runtime/config/envsource"
+	_ "github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/log"
 )
 

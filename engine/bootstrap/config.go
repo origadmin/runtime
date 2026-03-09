@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 
 	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file"
 
 	bootstrapv1 "github.com/origadmin/runtime/api/gen/go/config/bootstrap/v1"
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
 	"github.com/origadmin/runtime/config/envsource"
+	"github.com/origadmin/runtime/config/file"
 	"github.com/origadmin/runtime/log"
 )
 
