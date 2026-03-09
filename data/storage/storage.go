@@ -31,45 +31,44 @@ type Provider interface {
 	DefaultObjectStore() (storageiface.ObjectStore, error)
 }
 
-// providerImpl implements the Provider interface by delegating to the engine handle.
+// providerImpl implements the Provider interface by delegating to the engine locator.
 type providerImpl struct {
-	handle component.Handle
+	l component.Locator
 }
 
 // Cache retrieves a cache instance by name from the engine.
 func (p *providerImpl) Cache(name string) (storageiface.Cache, error) {
-	return comp.Get[storageiface.Cache](context.Background(), p.handle.In(component.CategoryCache), name)
+	return comp.Get[storageiface.Cache](context.Background(), p.l.In(component.CategoryCache), name)
 }
 
 // DefaultCache retrieves the default cache instance from the engine.
 func (p *providerImpl) DefaultCache() (storageiface.Cache, error) {
-	return comp.GetDefault[storageiface.Cache](context.Background(), p.handle.In(component.CategoryCache))
+	return comp.GetDefault[storageiface.Cache](context.Background(), p.l.In(component.CategoryCache))
 }
 
 // Database retrieves a database instance by name from the engine.
 func (p *providerImpl) Database(name string) (storageiface.Database, error) {
-	return comp.Get[storageiface.Database](context.Background(), p.handle.In(component.CategoryDatabase), name)
+	return comp.Get[storageiface.Database](context.Background(), p.l.In(component.CategoryDatabase), name)
 }
 
 // DefaultDatabase retrieves the default database instance from the engine.
 func (p *providerImpl) DefaultDatabase() (storageiface.Database, error) {
-	return comp.GetDefault[storageiface.Database](context.Background(), p.handle.In(component.CategoryDatabase))
+	return comp.GetDefault[storageiface.Database](context.Background(), p.l.In(component.CategoryDatabase))
 }
 
 // ObjectStore retrieves an object store instance by name from the engine.
 func (p *providerImpl) ObjectStore(name string) (storageiface.ObjectStore, error) {
-	return comp.Get[storageiface.ObjectStore](context.Background(), p.handle.In(component.CategoryObjectStore), name)
+	return comp.Get[storageiface.ObjectStore](context.Background(), p.l.In(component.CategoryObjectStore), name)
 }
 
 // DefaultObjectStore retrieves the default object store instance from the engine.
 func (p *providerImpl) DefaultObjectStore() (storageiface.ObjectStore, error) {
-	return comp.GetDefault[storageiface.ObjectStore](context.Background(), p.handle.In(component.CategoryObjectStore))
+	return comp.GetDefault[storageiface.ObjectStore](context.Background(), p.l.In(component.CategoryObjectStore))
 }
 
 // NewProvider creates a new storage provider instance.
-// In the engine-driven architecture, it simply wraps the root component handle.
-func NewProvider(handle component.Handle) Provider {
+func NewProvider(l component.Locator) Provider {
 	return &providerImpl{
-		handle: handle,
+		l: l,
 	}
 }
