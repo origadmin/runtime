@@ -12,6 +12,7 @@ import (
 	"strings" // Added import
 
 	ossv1 "github.com/origadmin/runtime/api/gen/go/config/data/oss/v1"
+	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
 	"github.com/origadmin/runtime/data/storage/objectstore"
 	runtimeerrors "github.com/origadmin/runtime/errors"
@@ -30,7 +31,7 @@ func init() {
 }
 
 // New creates a new local object store.
-func (f *localFactory) New(cfg *ossv1.ObjectStoreConfig) (storageiface.ObjectStore, error) {
+func (f *localFactory) New(cfg *ossv1.ObjectStoreConfig, _ ...options.Option) (storageiface.ObjectStore, error) {
 	if cfg == nil || cfg.GetLocal() == nil {
 		return nil, runtimeerrors.NewStructured(objectstore.Module, "object store config is nil").WithCaller()
 	}
