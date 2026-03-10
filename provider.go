@@ -7,7 +7,6 @@ package runtime
 import (
 	"context"
 
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/data/storage/cache"
@@ -55,8 +54,7 @@ func resolveLogger(source any, _ component.Category) (*component.ModuleConfig, e
 		if logger == nil {
 			return nil, nil
 		}
-		// Loggers are usually single instances in current PB, 
-		// but we still follow the name-based discovery pattern.
+		// Priority: Name -> Type
 		name := extractName(logger)
 		if name == "" {
 			name = "logger"
@@ -70,24 +68,23 @@ func resolveLogger(source any, _ component.Category) (*component.ModuleConfig, e
 }
 
 func resolveRegistry(source any, _ component.Category) (*component.ModuleConfig, error) {
-	// According to design, Registrar and Discovery configurations are located in GetDiscoveries()
-	if c, ok := source.(interface {
-		GetDiscoveries() *discoveryv1.Discoveries
-	}); ok {
+	if c, ok := source.(component.DiscoveryConfig); ok {
 		discoveries := c.GetDiscoveries()
 		if discoveries == nil {
 			return nil, nil
 		}
 
-		// Use the authoritative normalization logic: Default -> Active -> First
+		// Authorization flow: Default -> Active -> First
 		def, configs, err := configutil.Normalize(discoveries.GetActive(), discoveries.GetDefault(), discoveries.GetConfigs())
 		if err != nil {
 			return nil, err
 		}
 
-		res := &component.ModuleConfig{Active: def.GetName()}
+		res := &component.ModuleConfig{Active: extractName(def)}
 		for _, cfg := range configs {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
+			if name := extractName(cfg); name != "" {
+				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: cfg})
+			}
 		}
 		return res, nil
 	}
@@ -102,16 +99,13 @@ func resolveMiddleware(source any, _ component.Category) (*component.ModuleConfi
 		}
 		res := &component.ModuleConfig{}
 		for _, entry := range mws.GetConfigs() {
-			name := entry.GetName()
-			if name == "" {
-				name = entry.GetType()
-			}
+			// Priority: Name -> Type
+			name := extractName(entry)
 			if name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: entry})
 			}
 		}
-		// For middlewares, we don't necessarily have a single "Active" one, 
-		// but we set Active to the first one if only one exists to support default retrieval.
+		// Fallback to first if only one exists
 		if len(res.Entries) == 1 {
 			res.Active = res.Entries[0].Name
 		}
@@ -133,9 +127,11 @@ func resolveDatabase(source any, _ component.Category) (*component.ModuleConfig,
 			return nil, err
 		}
 
-		res := &component.ModuleConfig{Active: def.GetName()}
+		res := &component.ModuleConfig{Active: extractName(def)}
 		for _, cfg := range configs {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
+			if name := extractName(cfg); name != "" {
+				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: cfg})
+			}
 		}
 		return res, nil
 	}
@@ -155,9 +151,11 @@ func resolveCache(source any, _ component.Category) (*component.ModuleConfig, er
 			return nil, err
 		}
 
-		res := &component.ModuleConfig{Active: def.GetName()}
+		res := &component.ModuleConfig{Active: extractName(def)}
 		for _, cfg := range configs {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
+			if name := extractName(cfg); name != "" {
+				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: cfg})
+			}
 		}
 		return res, nil
 	}
@@ -177,9 +175,11 @@ func resolveObjectStore(source any, _ component.Category) (*component.ModuleConf
 			return nil, err
 		}
 
-		res := &component.ModuleConfig{Active: def.GetName()}
+		res := &component.ModuleConfig{Active: extractName(def)}
 		for _, cfg := range configs {
-			res.Entries = append(res.Entries, component.ConfigEntry{Name: cfg.GetName(), Value: cfg})
+			if name := extractName(cfg); name != "" {
+				res.Entries = append(res.Entries, component.ConfigEntry{Name: name, Value: cfg})
+			}
 		}
 		return res, nil
 	}
@@ -190,22 +190,23 @@ func extractName(item any) string {
 	if item == nil {
 		return ""
 	}
-	if n, ok := item.(interface{ GetName() string }); ok {
+	// Use formalized interfaces for identification
+	if n, ok := item.(component.Named); ok {
 		if name := n.GetName(); name != "" {
 			return name
 		}
 	}
-	if d, ok := item.(interface{ GetDialect() string }); ok {
-		if name := d.GetDialect(); name != "" {
-			return name
-		}
-	}
-	if t, ok := item.(interface{ GetType() string }); ok {
+	if t, ok := item.(component.Typed); ok {
 		if name := t.GetType(); name != "" {
 			return name
 		}
 	}
-	if d, ok := item.(interface{ GetDriver() string }); ok {
+	if d, ok := item.(component.Dialectal); ok {
+		if name := d.GetDialect(); name != "" {
+			return name
+		}
+	}
+	if d, ok := item.(component.Driver); ok {
 		if name := d.GetDriver(); name != "" {
 			return name
 		}
@@ -220,7 +221,6 @@ var DefaultLoggerProvider component.Provider = func(ctx context.Context, h compo
 	if err != nil || cfg == nil {
 		return log.DefaultLogger, nil
 	}
-	// log.NewLogger is the authoritative way to initialize singletons in runtime/log.
 	return log.NewLogger(cfg), nil
 }
 

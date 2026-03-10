@@ -128,6 +128,14 @@ func WithTag(tag string) RegisterOption {
 	}
 }
 
+// WithDefaultEntry ensures that a specific component name is always present in the container
+// for this provider, even if it's missing from the external configuration source.
+func WithDefaultEntry(name string) RegisterOption {
+	return func(o *RegistrationOptions) {
+		o.DefaultEntries = append(o.DefaultEntries, name)
+	}
+}
+
 // WithResolverOption specifies a local configuration resolver for a component.
 func WithResolverOption(res Resolver) RegisterOption {
 	return func(o *RegistrationOptions) {
@@ -143,8 +151,7 @@ func WithInScope(s Scope) InOption {
 	}
 }
 
-// WithInTags defines the CAPABILITIES of current perspective.
-// A perspective can request multiple tags to aggregate components.
+// WithInTags specifies the tags for perspective switching (carrying a package of identities).
 func WithInTags(tags ...string) InOption {
 	return func(o *InOptions) {
 		o.Tags = append(o.Tags, tags...)

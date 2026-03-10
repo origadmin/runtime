@@ -10,6 +10,7 @@ import (
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
+	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 )
@@ -63,18 +64,21 @@ type Locator interface {
 	In(cat Category, opts ...InOption) Locator
 	Category() Category
 	Scope() Scope
+	Tags() []string // Returns the "Package" of identities carried by this locator
 }
 
 type Handle interface {
 	Config() any
 	Name() string
 	Locator() Locator
+	Tag() string // Returns the SINGLE IDENTITY currently being processed by the provider
 }
 
 type Provider func(ctx context.Context, h Handle) (any, error)
 
 type Registry interface {
 	Register(cat Category, p Provider, opts ...RegisterOption)
+	Inject(cat Category, name string, inst any, opts ...RegisterOption)
 	Has(cat Category, opts ...RegisterOption) bool
 	Load(ctx context.Context, source any, opts ...LoadOption) error
 	In(cat Category, opts ...InOption) Locator
@@ -99,17 +103,18 @@ type ConfigEntry struct {
 }
 
 type RegistrationOptions struct {
-	Resolver Resolver
-	Scopes   []Scope
-	Priority Priority
-	Tag      string
+	Resolver       Resolver
+	Scopes         []Scope
+	Priority       Priority
+	Tag            string
+	DefaultEntries []string
 }
 
 type RegisterOption func(*RegistrationOptions)
 
 type InOptions struct {
 	Scope Scope
-	Tags  []string
+	Tags  []string // The "Package" of identities to carry
 }
 
 type InOption func(*InOptions)
@@ -140,3 +145,30 @@ type MiddlewareConfig interface {
 type DataConfig interface {
 	GetData() *datav1.Data
 }
+
+type DiscoveryConfig interface {
+	GetDiscoveries() *discoveryv1.Discoveries
+}
+
+// Helper interfaces for identifying configuration entries
+type (
+	// Named represents an object that has a unique name.
+	Named interface {
+		GetName() string
+	}
+
+	// Typed represents an object that has a specific type or category.
+	Typed interface {
+		GetType() string
+	}
+
+	// Dialectal represents an object that specifies a database dialect.
+	Dialectal interface {
+		GetDialect() string
+	}
+
+	// Driver represents an object that specifies a underlying driver.
+	Driver interface {
+		GetDriver() string
+	}
+)
