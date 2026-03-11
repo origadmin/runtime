@@ -12,6 +12,8 @@ import (
 	"github.com/origadmin/runtime/contracts/component"
 )
 
+// --- Extraction Helpers ---
+
 // AsConfig extracts and asserts the configuration from a handle.
 func AsConfig[T any](h component.Handle) (*T, error) {
 	cfg := h.Config()
@@ -23,6 +25,8 @@ func AsConfig[T any](h component.Handle) (*T, error) {
 	}
 	return nil, nil
 }
+
+// --- Retrieval Helpers ---
 
 // Get retrieves a component by name from a locator and asserts its type.
 func Get[T any](ctx context.Context, l component.Locator, name string) (T, error) {
@@ -37,10 +41,27 @@ func Get[T any](ctx context.Context, l component.Locator, name string) (T, error
 	return zero, nil
 }
 
+// GetWithTag retrieves a component by tag from a locator and asserts its type.
+func GetWithTag[T any](ctx context.Context, l component.Locator, tag string) (T, error) {
+	// Fluent API: directly use the new interface method
+	return Get[T](ctx, l.WithInTags(tag), component.DefaultName)
+}
+
+// GetWithNameFallback retrieves a component by name, falling back to the default name if not found.
+func GetWithNameFallback[T any](ctx context.Context, l component.Locator, name string) (T, error) {
+	inst, err := Get[T](ctx, l, name)
+	if err == nil {
+		return inst, nil
+	}
+	return GetDefault[T](ctx, l)
+}
+
 // GetDefault retrieves the default component from a locator and asserts its type.
 func GetDefault[T any](ctx context.Context, l component.Locator) (T, error) {
 	return Get[T](ctx, l, component.DefaultName)
 }
+
+// --- Iteration Helpers ---
 
 // Iter returns a type-safe iterator for components in a locator.
 func Iter[T any](ctx context.Context, l component.Locator) iter.Seq2[string, T] {

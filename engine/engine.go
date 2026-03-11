@@ -19,7 +19,6 @@ type (
 	ConfigEntry         = component.ConfigEntry
 	RegistrationOptions = component.RegistrationOptions
 	RegisterOption      = component.RegisterOption
-	InOptions           = component.InOptions
 	InOption            = component.InOption
 	LoadOptions         = component.LoadOptions
 	LoadOption          = component.LoadOption
@@ -143,18 +142,19 @@ func WithResolverOption(res Resolver) RegisterOption {
 	}
 }
 
-// --- Perspective Options (MULTI CAPABILITY TAGS) ---
+// --- Perspective Options (USING INTERFACE METHODS) ---
 
+// WithInScope specifies the perspective scope.
 func WithInScope(s Scope) InOption {
-	return func(o *InOptions) {
-		o.Scope = s
+	return func(l component.Locator) component.Locator {
+		return l.WithInScope(s)
 	}
 }
 
-// WithInTags specifies the tags for perspective switching (carrying a package of identities).
+// WithInTags specifies the perspective tags.
 func WithInTags(tags ...string) InOption {
-	return func(o *InOptions) {
-		o.Tags = append(o.Tags, tags...)
+	return func(l component.Locator) component.Locator {
+		return l.WithInTags(tags...)
 	}
 }
 

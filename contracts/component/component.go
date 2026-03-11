@@ -62,6 +62,8 @@ type Locator interface {
 	Get(ctx context.Context, name string) (any, error)
 	Iter(ctx context.Context) iter.Seq2[string, any]
 	In(cat Category, opts ...InOption) Locator
+	WithInScope(s Scope) Locator
+	WithInTags(tags ...string) Locator
 	Category() Category
 	Scope() Scope
 	Tags() []string // Returns the "Package" of identities carried by this locator
@@ -112,12 +114,9 @@ type RegistrationOptions struct {
 
 type RegisterOption func(*RegistrationOptions)
 
-type InOptions struct {
-	Scope Scope
-	Tags  []string // The "Package" of identities to carry
-}
-
-type InOption func(*InOptions)
+// InOption is a functional option that modifies a Locator.
+// It directly uses the Locator interface to support fluent perspective switching.
+type InOption func(Locator) Locator
 
 type LoadOptions struct {
 	Category Category

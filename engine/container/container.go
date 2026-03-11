@@ -322,11 +322,13 @@ func (c *containerImpl) getModuleState(key moduleKey) *moduleState {
 }
 
 func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Locator {
-	inOpts := &component.InOptions{Scope: component.GlobalScope}
+	var res component.Locator = &locatorHandle{c: c, category: cat, scope: component.GlobalScope}
 	for _, opt := range opts {
-		opt(inOpts)
+		if opt != nil {
+			res = opt(res)
+		}
 	}
-	return &locatorHandle{c: c, category: cat, scope: inOpts.Scope, tags: inOpts.Tags}
+	return res
 }
 
 func (c *containerImpl) Config() any                  { return nil }
@@ -465,7 +467,7 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
-func (c *containerImpl) iterInternal(ctx context.Context, cat component.Category, scope component.Scope, tags []string) iter.Seq2[string, any] {
+func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string) iter.Seq2[string, any] {
 	return func(yield func(string, any) bool) {
 		mKey := moduleKey{category: cat, scope: scope}
 		s := c.getModuleState(mKey)
@@ -484,8 +486,16 @@ func (c *containerImpl) iterInternal(ctx context.Context, cat component.Category
 	}
 }
 
+// containerReader defines the internal read-only operations of the container.
+// It ensures that locators can only trigger instantiation and iteration, 
+// without having access to registration or loading methods.
+type containerReader interface {
+	instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error)
+	iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string) iter.Seq2[string, any]
+}
+
 type locatorHandle struct {
-	c        *containerImpl
+	c        containerReader
 	category component.Category
 	scope    component.Scope
 	tags     []string
@@ -495,14 +505,22 @@ func (l *locatorHandle) Get(ctx context.Context, name string) (any, error) {
 	return l.c.instantiate(ctx, l.category, l.scope, name, l.tags)
 }
 func (l *locatorHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
-	return l.c.iterInternal(ctx, l.category, l.scope, l.tags)
+	return l.c.iter(ctx, l.category, l.scope, l.tags)
 }
 func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) component.Locator {
-	inOpts := &component.InOptions{Scope: component.GlobalScope, Tags: l.tags}
+	var res component.Locator = &locatorHandle{c: l.c, category: cat, scope: l.scope, tags: l.tags}
 	for _, opt := range opts {
-		opt(inOpts)
+		if opt != nil {
+			res = opt(res)
+		}
 	}
-	return &locatorHandle{c: l.c, category: cat, scope: inOpts.Scope, tags: inOpts.Tags}
+	return res
+}
+func (l *locatorHandle) WithInScope(s component.Scope) component.Locator {
+	return &locatorHandle{c: l.c, category: l.category, scope: s, tags: l.tags}
+}
+func (l *locatorHandle) WithInTags(tags ...string) component.Locator {
+	return &locatorHandle{c: l.c, category: l.category, scope: l.scope, tags: tags}
 }
 func (l *locatorHandle) Scope() component.Scope       { return l.scope }
 func (l *locatorHandle) Category() component.Category { return l.category }
@@ -518,7 +536,7 @@ type entryHandle struct {
 	name      string
 	meta      *componentMeta
 	activeTag string
-	l         *locatorHandle
+	l         component.Locator
 }
 
 func (e *entryHandle) Name() string { return e.name }
