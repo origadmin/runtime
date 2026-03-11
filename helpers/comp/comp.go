@@ -7,6 +7,7 @@ package comp
 
 import (
 	"context"
+	"fmt"
 	"iter"
 
 	"github.com/origadmin/runtime/contracts/component"
@@ -38,7 +39,7 @@ func Get[T any](ctx context.Context, l component.Locator, name string) (T, error
 	if t, ok := inst.(T); ok {
 		return t, nil
 	}
-	return zero, nil
+	return zero, fmt.Errorf("engine: component '%s' in category '%s' is not of type %T", name, l.Category(), zero)
 }
 
 // GetWithTag retrieves a component by tag from a locator and asserts its type.
@@ -47,8 +48,8 @@ func GetWithTag[T any](ctx context.Context, l component.Locator, tag string) (T,
 	return Get[T](ctx, l.WithInTags(tag), component.DefaultName)
 }
 
-// GetWithNameFallback retrieves a component by name, falling back to the default name if not found.
-func GetWithNameFallback[T any](ctx context.Context, l component.Locator, name string) (T, error) {
+// GetWithFallback retrieves a component by name, falling back to the default name if not found.
+func GetWithFallback[T any](ctx context.Context, l component.Locator, name string) (T, error) {
 	inst, err := Get[T](ctx, l, name)
 	if err == nil {
 		return inst, nil
@@ -79,10 +80,8 @@ func Iter[T any](ctx context.Context, l component.Locator) iter.Seq2[string, T] 
 // GetMap collects all components from the given locator as a map and asserts their type.
 func GetMap[T any](ctx context.Context, l component.Locator) (map[string]T, error) {
 	m := make(map[string]T)
-	for name, inst := range l.Iter(ctx) {
-		if t, ok := inst.(T); ok {
-			m[name] = t
-		}
+	for name, t := range Iter[T](ctx, l) {
+		m[name] = t
 	}
 	return m, nil
 }
