@@ -98,10 +98,14 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 	for _, opt := range opts {
 		opt(cfg)
 	}
+	scopes := cfg.Scopes
+	if len(scopes) == 0 {
+		scopes = []component.Scope{component.GlobalScope}
+	}
 	entry := &providerEntry{
 		provider:       p,
 		resolver:       cfg.Resolver,
-		scopes:         cfg.Scopes,
+		scopes:         scopes,
 		priority:       cfg.Priority,
 		tag:            cfg.Tag,
 		defaultEntries: cfg.DefaultEntries,

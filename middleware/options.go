@@ -98,3 +98,8 @@ func FromOptions(opts ...Option) *Options {
 	mwOpts.Options = opts
 	return mwOpts
 }
+
+// GetLogger returns a log.Helper with the specified module name.
+func (o *Options) GetLogger(module string) *log.Helper {
+	return log.NewHelper(log.With(o.Logger, "module", module))
+}

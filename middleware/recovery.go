@@ -9,25 +9,24 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/log"
 )
 
 type recoveryFactory struct {
 }
 
 func (r recoveryFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	logger := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.recovery"))
-	logger.Debug("enabling recovery client middleware")
+	mwOpts.GetLogger("middleware.recovery").Debug("enabling recovery client middleware")
 
 	// The default Kratos recovery middleware is sufficient and includes logging.
 	return recovery.Recovery(), true
 }
 
 func (r recoveryFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
+	// Resolve common options once at the factory level.
 	mwOpts := FromOptions(opts...)
-	logger := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.recovery"))
-	logger.Debug("enabling recovery server middleware")
+	mwOpts.GetLogger("middleware.recovery").Debug("enabling recovery server middleware")
 
 	// The default Kratos recovery middleware is sufficient and includes logging.
 	return recovery.Recovery(), true

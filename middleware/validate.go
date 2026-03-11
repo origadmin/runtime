@@ -25,12 +25,9 @@ func (f validatorFactory) NewMiddlewareClient(middleware *middlewarev1.Middlewar
 
 func (f validatorFactory) NewMiddlewareServer(middleware *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	mwOpts := FromOptions(opts...)
-	logger := log.NewHelper(log.With(mwOpts.Logger, "module", "middleware.validator"))
+	logger := mwOpts.GetLogger("middleware.validator")
 	logger.Debug("enabling validator server middleware")
 
-	if !middleware.GetEnabled() {
-		return nil, false
-	}
 	cfg := middleware.GetValidator()
 	if middleware.GetType() == string(Validator) {
 		switch validate.Version(cfg.GetVersion()) {

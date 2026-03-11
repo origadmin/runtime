@@ -10,17 +10,12 @@ import (
 	middlewareMetadata "github.com/go-kratos/kratos/v2/middleware/metadata"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
-	"github.com/origadmin/runtime/log"
 )
 
 type metadataFactory struct {
 }
 
 func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
-	// Resolve common options once at the factory level.
-	mwOpts := FromOptions(opts...)
-	logger := log.NewHelper(mwOpts.Logger)
-
 	metadataConfig := cfg.GetMetadata()
 	if metadataConfig == nil {
 		return nil, false
@@ -37,15 +32,10 @@ func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 		}
 		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
 	}
-	logger.Debugf("metadata client enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
 	return middlewareMetadata.Client(metadataOpts...), true
 }
 
 func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
-	// Resolve common options once at the factory level.
-	mwOpts := FromOptions(opts...)
-	logger := log.NewHelper(mwOpts.Logger)
-
 	metadataConfig := cfg.GetMetadata()
 	if metadataConfig == nil {
 		return nil, false
@@ -62,6 +52,5 @@ func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts 
 		}
 		metadataOpts = append(metadataOpts, middlewareMetadata.WithConstants(data))
 	}
-	logger.Debugf("metadata server enabled, prefixes: %v, data: %v", metadataConfig.GetPrefixes(), metadataConfig.GetData())
 	return middlewareMetadata.Server(metadataOpts...), true
 }

@@ -121,6 +121,11 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 		return errors.New("runtime: application metadata missing after load")
 	}
 
+	// Auto warm-up the engine after loading
+	if err := r.WarmUp(); err != nil {
+		return fmt.Errorf("warm-up failed during load: %w", err)
+	}
+
 	return nil
 }
 
