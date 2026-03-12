@@ -24,10 +24,11 @@ type moduleKey struct {
 }
 
 type componentMeta struct {
-	config any
-	status Status
-	inst   any
-	err    error
+	config              any
+	requirementResolver component.RequirementResolver
+	status              Status
+	inst                any
+	err                 error
 }
 
 type moduleState struct {
@@ -52,12 +53,13 @@ func configKey(name string) string {
 }
 
 type providerEntry struct {
-	provider       component.Provider
-	resolver       component.Resolver
-	scopes         []component.Scope
-	priority       component.Priority
-	tag            string // Producer's identity tag
-	defaultEntries []string
+	provider            component.Provider
+	resolver            component.Resolver
+	requirementResolver component.RequirementResolver
+	scopes              []component.Scope
+	priority            component.Priority
+	tag                 string // Producer's identity tag
+	defaultEntries      []string
 }
 
 // isProviderCompatible checks if a provider can perform work for the requested tag.
@@ -103,12 +105,13 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 		scopes = []component.Scope{component.GlobalScope}
 	}
 	entry := &providerEntry{
-		provider:       p,
-		resolver:       cfg.Resolver,
-		scopes:         scopes,
-		priority:       cfg.Priority,
-		tag:            cfg.Tag,
-		defaultEntries: cfg.DefaultEntries,
+		provider:            p,
+		resolver:            cfg.Resolver,
+		requirementResolver: cfg.RequirementResolver,
+		scopes:              scopes,
+		priority:            cfg.Priority,
+		tag:                 cfg.Tag,
+		defaultEntries:      cfg.DefaultEntries,
 	}
 	entries := c.providers[cat]
 	inserted := false
@@ -283,7 +286,19 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 		}
 		key := configKey(cfgEntry.Name)
 		if _, exists := s.instances[key]; !exists {
-			s.instances[key] = &componentMeta{config: cfgEntry.Value, status: StatusNone}
+			// Resolve the best available RequirementResolver
+			var res component.RequirementResolver
+			if cfgEntry.RequirementResolver != nil {
+				res = cfgEntry.RequirementResolver
+			} else if mc.RequirementResolver != nil {
+				res = mc.RequirementResolver
+			}
+
+			s.instances[key] = &componentMeta{
+				config:              cfgEntry.Value,
+				requirementResolver: res,
+				status:              StatusNone,
+			}
 			if !contains(s.order, cfgEntry.Name) {
 				s.order = append(s.order, cfgEntry.Name)
 			}
@@ -413,13 +428,32 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			if !isProviderCompatible(entry.tag, curTag) {
 				continue
 			}
+			if entry.provider == nil {
+				continue
+			}
 
 			// 3. WORK (Creation): Create the instance for this specific identity
 			iKey := makeInstanceKey(realName, curTag)
 			s.mu.Lock()
 			meta, exists := s.instances[iKey]
 			if !exists {
-				meta = &componentMeta{config: cfgMeta.config, status: StatusNone}
+				if cfgMeta != nil {
+					// Use resolver from config if present, fallback to registration level
+					res := cfgMeta.requirementResolver
+					if res == nil {
+						res = entry.requirementResolver
+					}
+					meta = &componentMeta{
+						config:              cfgMeta.config,
+						requirementResolver: res,
+						status:              StatusNone,
+					}
+				} else {
+					meta = &componentMeta{
+						requirementResolver: entry.requirementResolver,
+						status:              StatusNone,
+					}
+				}
 				s.instances[iKey] = meta
 			}
 			if meta.status == StatusReady {
@@ -441,7 +475,8 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 				name:      realName,
 				meta:      meta,
 				activeTag: curTag,
-				l:         &locatorHandle{c: c, category: cat, scope: scope, tags: demandTags},
+				l:         (&locatorHandle{c: c, category: cat, scope: scope, tags: demandTags}).Skip(realName),
+				c:         c,
 			}
 			inst, err := entry.provider(ctx, h)
 			s.mu.Lock()
@@ -485,7 +520,7 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
-func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string) iter.Seq2[string, any] {
+func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any] {
 	return func(yield func(string, any) bool) {
 		mKey := moduleKey{category: cat, scope: scope}
 		s := c.getModuleState(mKey)
@@ -494,6 +529,9 @@ func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope 
 		copy(order, s.order)
 		s.mu.RUnlock()
 		for _, name := range order {
+			if contains(skips, name) {
+				continue
+			}
 			inst, err := c.instantiate(ctx, cat, scope, name, tags)
 			if err == nil {
 				if !yield(name, inst) {
@@ -509,7 +547,7 @@ func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope 
 // without having access to registration or loading methods.
 type containerReader interface {
 	instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error)
-	iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string) iter.Seq2[string, any]
+	iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any]
 	scopes(cat component.Category) []component.Scope
 }
 
@@ -518,13 +556,14 @@ type locatorHandle struct {
 	category component.Category
 	scope    component.Scope
 	tags     []string
+	skips    []string
 }
 
 func (l *locatorHandle) Get(ctx context.Context, name string) (any, error) {
 	return l.c.instantiate(ctx, l.category, l.scope, name, l.tags)
 }
 func (l *locatorHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
-	return l.c.iter(ctx, l.category, l.scope, l.tags)
+	return l.c.iter(ctx, l.category, l.scope, l.tags, l.skips)
 }
 func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) component.Locator {
 	var res component.Locator = &locatorHandle{c: l.c, category: cat, scope: l.scope, tags: l.tags}
@@ -549,6 +588,14 @@ func (l *locatorHandle) WithInTags(tags ...string) component.Locator {
 	}
 	newHandle := *l
 	newHandle.tags = tags
+	return &newHandle
+}
+func (l *locatorHandle) Skip(names ...string) component.Locator {
+	if len(names) == 0 {
+		return l
+	}
+	newHandle := *l
+	newHandle.skips = append(l.skips, names...)
 	return &newHandle
 }
 func (l *locatorHandle) Scope() component.Scope       { return l.scope }
@@ -581,6 +628,7 @@ type entryHandle struct {
 	meta      *componentMeta
 	activeTag string
 	l         component.Locator
+	c         containerReader
 }
 
 func (e *entryHandle) Name() string                 { return e.name }
@@ -594,6 +642,14 @@ func (e *entryHandle) Config() any {
 }
 func (e *entryHandle) Locator() component.Locator { return e.l }
 func (e *entryHandle) Tag() string                { return e.activeTag }
+func (e *entryHandle) Require(purpose string) (any, error) {
+	// 1. Component-level resolver (populated from ModuleConfig/ConfigEntry or Registration)
+	if e.meta != nil && e.meta.requirementResolver != nil {
+		return e.meta.requirementResolver(context.Background(), e, purpose)
+	}
+
+	return nil, fmt.Errorf("engine: requirement %s not found (no resolver provided)", purpose)
+}
 
 func NewContainer(opts ...Option) component.Registry {
 	c := &containerImpl{

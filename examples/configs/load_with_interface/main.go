@@ -14,6 +14,15 @@ import (
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 )
 
+// ConfigLoader defines the contract for a configuration loader.
+type ConfigLoader interface {
+	Load() error
+	Config() any
+	Raw() any
+	Close() error
+	Decode(key string, target any) error
+}
+
 // ProtoDecoder remains the same as it's a generic wrapper.
 type ProtoDecoder struct {
 	c kratosconfig.Config
@@ -31,7 +40,7 @@ func (d *ProtoDecoder) Close() error {
 	return d.c.Close()
 }
 
-func NewProtoDecoder(c kratosconfig.Config) contracts.ConfigLoader {
+func NewProtoDecoder(c kratosconfig.Config) ConfigLoader {
 	return &ProtoDecoder{c: c}
 }
 

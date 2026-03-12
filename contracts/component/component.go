@@ -53,6 +53,7 @@ type Locator interface {
 	In(cat Category, opts ...InOption) Locator
 	WithInScope(s Scope) Locator
 	WithInTags(tags ...string) Locator
+	Skip(names ...string) Locator
 	Category() Category
 	Scope() Scope
 	Scopes() []Scope
@@ -66,6 +67,7 @@ type Handle interface {
 	Scope() Scope
 	Locator() Locator
 	Tag() string // Returns the SINGLE IDENTITY currently being processed by the provider
+	Require(purpose string) (any, error)
 }
 
 type Provider func(ctx context.Context, h Handle) (any, error)
@@ -100,21 +102,26 @@ type Registration struct {
 }
 
 type ModuleConfig struct {
-	Entries []ConfigEntry
-	Active  string
+	Entries             []ConfigEntry
+	Active              string
+	RequirementResolver RequirementResolver
 }
 
 type ConfigEntry struct {
-	Name  string
-	Value any
+	Name                string
+	Value               any
+	RequirementResolver RequirementResolver
 }
 
+type RequirementResolver func(ctx context.Context, h Handle, purpose string) (any, error)
+
 type RegistrationOptions struct {
-	Resolver       Resolver
-	Scopes         []Scope
-	Priority       Priority
-	Tag            string
-	DefaultEntries []string
+	Resolver            Resolver
+	Scopes              []Scope
+	Priority            Priority
+	Tag                 string
+	DefaultEntries      []string
+	RequirementResolver RequirementResolver
 }
 
 type RegisterOption func(*RegistrationOptions)

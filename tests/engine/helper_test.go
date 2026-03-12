@@ -10,6 +10,7 @@ type mockComponent struct {
 	Name string
 	Tag  string
 	Type string
+	Dep  any // Dependency injected
 }
 
 func (m *mockComponent) String() string {

@@ -82,6 +82,7 @@ func (r *App) registerDefaultFactories() {
 
 	// Registry components are self-registered by the registry package init()
 }
+
 // Load loads configuration into Result.
 func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	res, err := bootstrap.New(path, bootOpts...)
@@ -125,6 +126,7 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 
 	return nil
 }
+
 // WarmUp activates the engine with the loaded configuration.
 func (r *App) WarmUp() error {
 	if r.result == nil || r.result.Config() == nil {

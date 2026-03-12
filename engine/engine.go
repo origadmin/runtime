@@ -13,6 +13,7 @@ type (
 	Provider = component.Provider
 	Registry = component.Registry
 
+	RequirementResolver = component.RequirementResolver
 	Resolver            = component.Resolver
 	Registration        = component.Registration
 	ModuleConfig        = component.ModuleConfig
