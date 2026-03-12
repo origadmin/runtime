@@ -8,6 +8,7 @@ import (
 	"context"
 
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
+	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/data/storage/cache"
 	"github.com/origadmin/runtime/data/storage/database"
@@ -49,7 +50,7 @@ var DefaultResolvers = map[component.Category]component.Resolver{
 // --- Specific Category Resolvers ---
 
 func resolveLogger(source any, _ component.Category) (*component.ModuleConfig, error) {
-	if c, ok := source.(component.LoggerConfig); ok {
+	if c, ok := source.(contracts.LoggerConfig); ok {
 		logger := c.GetLogger()
 		if logger == nil {
 			return nil, nil
@@ -68,7 +69,7 @@ func resolveLogger(source any, _ component.Category) (*component.ModuleConfig, e
 }
 
 func resolveRegistry(source any, _ component.Category) (*component.ModuleConfig, error) {
-	if c, ok := source.(component.DiscoveryConfig); ok {
+	if c, ok := source.(contracts.DiscoveryConfig); ok {
 		discoveries := c.GetDiscoveries()
 		if discoveries == nil {
 			return nil, nil
@@ -92,7 +93,7 @@ func resolveRegistry(source any, _ component.Category) (*component.ModuleConfig,
 }
 
 func resolveMiddleware(source any, _ component.Category) (*component.ModuleConfig, error) {
-	if c, ok := source.(component.MiddlewareConfig); ok {
+	if c, ok := source.(contracts.MiddlewareConfig); ok {
 		mws := c.GetMiddlewares()
 		if mws == nil {
 			return nil, nil
@@ -115,7 +116,7 @@ func resolveMiddleware(source any, _ component.Category) (*component.ModuleConfi
 }
 
 func resolveDatabase(source any, _ component.Category) (*component.ModuleConfig, error) {
-	if c, ok := source.(component.DataConfig); ok {
+	if c, ok := source.(contracts.DataConfig); ok {
 		data := c.GetData()
 		if data == nil || data.GetDatabases() == nil {
 			return nil, nil
@@ -139,7 +140,7 @@ func resolveDatabase(source any, _ component.Category) (*component.ModuleConfig,
 }
 
 func resolveCache(source any, _ component.Category) (*component.ModuleConfig, error) {
-	if c, ok := source.(component.DataConfig); ok {
+	if c, ok := source.(contracts.DataConfig); ok {
 		data := c.GetData()
 		if data == nil || data.GetCaches() == nil {
 			return nil, nil
@@ -163,7 +164,7 @@ func resolveCache(source any, _ component.Category) (*component.ModuleConfig, er
 }
 
 func resolveObjectStore(source any, _ component.Category) (*component.ModuleConfig, error) {
-	if c, ok := source.(component.DataConfig); ok {
+	if c, ok := source.(contracts.DataConfig); ok {
 		data := c.GetData()
 		if data == nil || data.GetObjectStores() == nil {
 			return nil, nil

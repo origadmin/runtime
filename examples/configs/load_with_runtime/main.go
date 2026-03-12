@@ -15,11 +15,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
 	var appCfg appv1.App
 	// Use KConfig native Value().Scan() instead of Decode
-	if err := rtInstance.Config().Value("app").Scan(&appCfg); err != nil {
+	if err := rtInstance.Decoder().Value("app").Scan(&appCfg); err != nil {
 		log.Fatalf("Failed to scan app config: %v", err)
 	}
 

@@ -27,11 +27,11 @@ func (s *MiddlewareTestSuite) TestLoadAndBuild() {
 	rtInstance := rt.New("MiddlewareTest", "1.0.0")
 	err := rtInstance.Load("configs/config.yaml", bootstrap.WithDirectly(true))
 	require.NoError(t, err)
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
 	// 2. Decode and verify using native KConfig Scan
 	var middlewareConfig middlewarev1.Middlewares
-	err = rtInstance.Config().Value("middlewares").Scan(&middlewareConfig)
+	err = rtInstance.Decoder().Value("middlewares").Scan(&middlewareConfig)
 	require.NoError(t, err)
 	require.NotEmpty(t, middlewareConfig.Configs)
 

@@ -27,7 +27,7 @@ func (s *MultipleSourcesConfigTestSuite) TestMultipleSourcesLoading() {
 		t.Logf("Skipping test: could not load %s: %v", bootstrapPath, err)
 		return
 	}
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
 	require.Equal(t, "OverriddenApp", rtInstance.AppInfo().Name)
 }

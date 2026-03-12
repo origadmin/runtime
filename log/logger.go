@@ -30,11 +30,12 @@ type loggerAppliance struct {
 }
 
 var (
-	DefaultSlogLogger = slogx.New()
+	DefaultSlogLogger = slogx.New(slogx.WithFormat(slogx.FormatDev), slogx.WithConsole(true))
 )
 
 func init() {
 	global.SetLogger(DefaultSlogLogger)
+	kratoslog.SetLogger(kslog.NewLogger(kslog.WithLogger(DefaultSlogLogger)))
 }
 
 func (a *loggerAppliance) SetLogger(in *slogx.Logger) {

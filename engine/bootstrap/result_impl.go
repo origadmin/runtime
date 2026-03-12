@@ -23,8 +23,8 @@ func (b *resultImpl) Config() any {
 	return b.businessConfig
 }
 
-// Loader returns the enhanced Kratos configuration hub.
-func (b *resultImpl) Loader() config.KConfig {
+// Decoder returns the enhanced Kratos configuration hub.
+func (b *resultImpl) Decoder() config.KConfig {
 	return b.config
 }
 

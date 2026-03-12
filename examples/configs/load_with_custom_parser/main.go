@@ -35,9 +35,9 @@ func main() {
 	fmt.Printf("App Name: %s, Version: %s\n", cfg.App.Name, cfg.App.Version)
 
 	// Use custom loader operations
-	loader := res.Loader()
+	loader := res.Decoder()
 	val, _ := loader.Value("app.name").String()
-	fmt.Printf("Raw App Name from Loader: %s\n", val)
+	fmt.Printf("Raw App Name from Decoder: %s\n", val)
 
 	ctx := context.Background()
 	<-ctx.Done()

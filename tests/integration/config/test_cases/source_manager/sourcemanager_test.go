@@ -31,9 +31,9 @@ func (s *SourceManagerSuite) TestConfigSourceMergingAndPriority() {
 		t.Logf("Warning: Skipping SourceManager test as config could not be loaded: %v", err)
 		return
 	}
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
-	configDecoder := rtInstance.Config()
+	configDecoder := rtInstance.Decoder()
 	s.NotNil(configDecoder)
 
 	var loggerConfig struct {

@@ -325,6 +325,18 @@ func (c *containerImpl) getModuleState(key moduleKey) *moduleState {
 	return s
 }
 
+func (c *containerImpl) scopes(cat component.Category) []component.Scope {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	var res []component.Scope
+	for k := range c.modules {
+		if k.category == cat {
+			res = append(res, k.scope)
+		}
+	}
+	return res
+}
+
 func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Locator {
 	var res component.Locator = &locatorHandle{c: c, category: cat, scope: component.GlobalScope}
 	for _, opt := range opts {
@@ -424,6 +436,8 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 
 			// CALLBACK: Single Work Tag
 			h := &entryHandle{
+				category:  cat,
+				scope:     scope,
 				name:      realName,
 				meta:      meta,
 				activeTag: curTag,
@@ -496,6 +510,7 @@ func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope 
 type containerReader interface {
 	instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error)
 	iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string) iter.Seq2[string, any]
+	scopes(cat component.Category) []component.Scope
 }
 
 type locatorHandle struct {
@@ -521,13 +536,24 @@ func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) c
 	return res
 }
 func (l *locatorHandle) WithInScope(s component.Scope) component.Locator {
-	return &locatorHandle{c: l.c, category: l.category, scope: s, tags: l.tags}
+	if l.scope == s {
+		return l
+	}
+	newHandle := *l
+	newHandle.scope = s
+	return &newHandle
 }
 func (l *locatorHandle) WithInTags(tags ...string) component.Locator {
-	return &locatorHandle{c: l.c, category: l.category, scope: l.scope, tags: tags}
+	if equalTags(l.tags, tags) {
+		return l
+	}
+	newHandle := *l
+	newHandle.tags = tags
+	return &newHandle
 }
 func (l *locatorHandle) Scope() component.Scope       { return l.scope }
 func (l *locatorHandle) Category() component.Category { return l.category }
+func (l *locatorHandle) Scopes() []component.Scope    { return l.c.scopes(l.category) }
 func (l *locatorHandle) Tags() []string               { return l.tags }
 func (l *locatorHandle) Tag() string {
 	if len(l.tags) > 0 {
@@ -536,14 +562,30 @@ func (l *locatorHandle) Tag() string {
 	return ""
 }
 
+func equalTags(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 type entryHandle struct {
+	category  component.Category
+	scope     component.Scope
 	name      string
 	meta      *componentMeta
 	activeTag string
 	l         component.Locator
 }
 
-func (e *entryHandle) Name() string { return e.name }
+func (e *entryHandle) Name() string                 { return e.name }
+func (e *entryHandle) Category() component.Category { return e.category }
+func (e *entryHandle) Scope() component.Scope       { return e.scope }
 func (e *entryHandle) Config() any {
 	if e.meta == nil {
 		return nil

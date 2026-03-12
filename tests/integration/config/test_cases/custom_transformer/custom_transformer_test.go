@@ -43,9 +43,9 @@ func (s *CustomTransformerTestSuite) TestCustomTransformerApplication() {
 	rtInstance := rt.New("TransformerTest", "1.0.0")
 	err := rtInstance.Load("bootstrap_transformer.yaml", bootstrap.WithConfigTransformer(transformer))
 	require.NoError(t, err)
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
-	res := rtInstance.Result().Config()
+	res := rtInstance.Config()
 	transformed, ok := res.(*TransformedConfig)
 	require.True(t, ok)
 	require.Contains(t, transformed.AppName, "-transformed")

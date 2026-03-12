@@ -41,7 +41,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer rt.Config().Close()
+	defer rt.Decoder().Close()
 	// 3. Get components from App and use them
 	logger := log.NewHelper(rt.Logger())
 	appInfo := rt.AppInfo()
@@ -50,7 +50,7 @@ func main() {
 
 	// Use Kratos native Scan instead of Decode
 	var bc conf.Bootstrap
-	if err := rt.Config().Scan(&bc); err != nil {
+	if err := rt.Decoder().Scan(&bc); err != nil {
 		log.Fatalf("Failed to scan bootstrap config: %v", err)
 	}
 

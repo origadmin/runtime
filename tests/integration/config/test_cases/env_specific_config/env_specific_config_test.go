@@ -45,7 +45,7 @@ func (s *EnvSpecificConfigTestSuite) TestEnvSpecificLoading() {
 			rtInstance := rt.New("EnvTest", "1.0.0")
 			err := rtInstance.Load(bootstrapPath, bootstrap.WithConfigTarget(&meta))
 			require.NoError(t, err)
-			defer rtInstance.Config().Close()
+			defer rtInstance.Decoder().Close()
 
 			require.Equal(t, tc.expectedName, rtInstance.AppInfo().Name)
 		})

@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// Get config decoder (KConfig)
-	decoder := rtInstance.Config()
+	decoder := rtInstance.Decoder()
 	defer decoder.Close()
 
 	// --- 2. Directly scan into the CustomAuthConfig proto ---

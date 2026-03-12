@@ -35,6 +35,14 @@ func New(bootstrapPath string, opts ...Option) (res Result, err error) {
 	// 3. Determine business config
 	var businessConfig any
 
+	// Priority 3: Default fallback to map[string]any if nothing else provided
+	if providerOpts.configTarget == nil && providerOpts.configTransformer == nil {
+		m := make(map[string]any)
+		if err := cfg.Scan(&m); err == nil {
+			businessConfig = m
+		}
+	}
+
 	// Priority 2: Automatic decoding into target struct
 	if providerOpts.configTarget != nil {
 		if err := cfg.Scan(providerOpts.configTarget); err != nil {

@@ -31,10 +31,10 @@ func (s *ConfigTargetTestSuite) TestConfigTargetBinding() {
 	// Since I'm using WithConfigTarget, the runtime will auto-bind the result to 'target'
 	err := rtInstance.Load("bootstrap.yaml")
 	require.NoError(t, err)
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
 	// Direct scan to verify
-	err = rtInstance.Config().Scan(&target)
+	err = rtInstance.Decoder().Scan(&target)
 	require.NoError(t, err)
 	require.NotEmpty(t, target.App.Name)
 }

@@ -7,12 +7,6 @@ package component
 import (
 	"context"
 	"iter"
-
-	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
-	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
-	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
-	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
-	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 )
 
 type (
@@ -53,11 +47,6 @@ const (
 	ReservedPrefix = "_"
 )
 
-// IsReserved checks if the metadata string is system-reserved.
-func IsReserved(s string) bool {
-	return len(s) > 0 && s[0] == '_'
-}
-
 type Locator interface {
 	Get(ctx context.Context, name string) (any, error)
 	Iter(ctx context.Context) iter.Seq2[string, any]
@@ -66,17 +55,33 @@ type Locator interface {
 	WithInTags(tags ...string) Locator
 	Category() Category
 	Scope() Scope
+	Scopes() []Scope
 	Tags() []string // Returns the "Package" of identities carried by this locator
 }
 
 type Handle interface {
 	Config() any
 	Name() string
+	Category() Category
+	Scope() Scope
 	Locator() Locator
 	Tag() string // Returns the SINGLE IDENTITY currently being processed by the provider
 }
 
 type Provider func(ctx context.Context, h Handle) (any, error)
+
+const (
+	// PriorityFramework is the lowest priority, used for framework-level defaults.
+	PriorityFramework Priority = 0
+	// PriorityInfrastructure is used for common infrastructure (DB, Cache, etc).
+	PriorityInfrastructure Priority = 100
+	// PriorityDefault is the standard priority for business components.
+	PriorityDefault Priority = 200
+	// PriorityImportant is used for components that should override defaults.
+	PriorityImportant Priority = 300
+	// PriorityCritical is the highest priority, for emergency overrides.
+	PriorityCritical Priority = 400
+)
 
 type Registry interface {
 	Register(cat Category, p Provider, opts ...RegisterOption)
@@ -127,27 +132,6 @@ type LoadOptions struct {
 }
 
 type LoadOption func(*LoadOptions)
-
-// Standard configuration interfaces
-type AppConfig interface {
-	GetApp() *appv1.App
-}
-
-type LoggerConfig interface {
-	GetLogger() *loggerv1.Logger
-}
-
-type MiddlewareConfig interface {
-	GetMiddlewares() *middlewarev1.Middlewares
-}
-
-type DataConfig interface {
-	GetData() *datav1.Data
-}
-
-type DiscoveryConfig interface {
-	GetDiscoveries() *discoveryv1.Discoveries
-}
 
 // Helper interfaces for identifying configuration entries
 type (

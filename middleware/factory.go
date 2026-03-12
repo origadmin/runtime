@@ -47,7 +47,7 @@ func (b *Builder) BuildClientMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 
 	// Create a middleware carrier for context propagation
 	clients := make(map[string]KMiddleware)
-	logger := log.NewHelper(log.With(opt.Logger, "module", "middleware"))
+	logger := log.NewHelper(opt.Logger)
 
 	// First pass: separate regular middlewares and selector configs
 	for _, ms := range cfg.GetConfigs() {
@@ -119,7 +119,7 @@ func (b *Builder) BuildServerMiddlewares(cfg *middlewarev1.Middlewares, opts ...
 	}
 
 	servers := make(map[string]KMiddleware)
-	logger := log.NewHelper(log.With(opt.Logger, "module", "middleware"))
+	logger := log.NewHelper(opt.Logger)
 
 	// First pass
 	for _, mwCfg := range cfg.GetConfigs() {

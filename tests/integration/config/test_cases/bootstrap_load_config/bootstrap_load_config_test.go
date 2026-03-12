@@ -31,7 +31,7 @@ func (s *RuntimeIntegrationTestSuite) TestConfigProtoIntegration() {
 	var actualConfig testconfigs.TestConfig
 	err := rtInstance.Load(bootstrapPath, bootstrap.WithConfigTarget(&actualConfig))
 	require.NoError(t, err)
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
 	// Verification: Metadata should be overridden by the business configuration
 	require.Equal(t, "ProtoConfigApp", rtInstance.AppInfo().Name)
@@ -45,7 +45,7 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeDecoder() {
 	err := rtInstance.Load(bootstrapPath)
 	require.NoError(t, err)
 
-	cfg := rtInstance.Config()
+	cfg := rtInstance.Decoder()
 	require.NotNil(t, cfg)
 	defer cfg.Close()
 
@@ -65,19 +65,19 @@ func (s *RuntimeIntegrationTestSuite) TestRuntimeLoadCompleteConfig() {
 	bootstrapPath := "testdata/complete_config/bootstrap.yaml"
 	rtInstance := rt.New("TestCompleteConfig", "1.0.0")
 
-	// Note: Without WithConfigTarget, content in config.yaml is treated as "unbound config" and ignored.
-	// With WithConfigTarget, metadata will be merged according to the priority.
+	// Note: With the new fallback, content in config.yaml is scanned into map[string]any even without WithConfigTarget.
+	// However, metadata merging still requires a structure that implements AppConfig.
 	var actualConfig testconfigs.TestConfig
 	err := rtInstance.Load(bootstrapPath, bootstrap.WithConfigTarget(&actualConfig))
 	require.NoError(t, err)
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
 	// Final verification: In a complete loading flow, the app name is overridden by CompleteApp
 	require.Equal(t, "CompleteApp", rtInstance.AppInfo().Name)
 
 	var actualConfig2 testconfigs.TestConfig
 	// Scan into the actual configuration structure
-	err = rtInstance.Config().Scan(&actualConfig2)
+	err = rtInstance.Decoder().Scan(&actualConfig2)
 	require.NoError(t, err)
 	require.NotNil(t, actualConfig2.App)
 	require.Equal(t, "CompleteApp", actualConfig2.App.Name)

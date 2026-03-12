@@ -16,7 +16,7 @@ func TestEngine_PerspectiveDuality(t *testing.T) {
 	// Provider that behaves differently based on Work Tag (h.Tag())
 	reg.Register(component.CategoryMiddleware, func(ctx context.Context, h engine.Handle) (any, error) {
 		tag := h.Tag()
-		scope := h.Locator().Scope()
+		scope := h.Scope()
 
 		if scope == component.ServerScope {
 			if tag == "gateway" {

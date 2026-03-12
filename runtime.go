@@ -15,19 +15,13 @@ import (
 
 	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	runtimeconfig "github.com/origadmin/runtime/config"
+	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/bootstrap"
 	enginecontext "github.com/origadmin/runtime/engine/context"
+	"github.com/origadmin/runtime/helpers/comp"
 	"github.com/origadmin/runtime/registry"
-)
-
-// Standard configuration interfaces (Contract Re-export)
-type (
-	AppConfig        = component.AppConfig
-	LoggerConfig     = component.LoggerConfig
-	MiddlewareConfig = component.MiddlewareConfig
-	DataConfig       = component.DataConfig
 )
 
 // App defines the application's runtime environment powered by engine.
@@ -82,15 +76,12 @@ func WithRegistry(fn func(component.Registry)) Option {
 
 func (r *App) registerDefaultFactories() {
 	// Logger Default
-	if !r.engine.Has(CategoryLogger) {
-		r.engine.Register(CategoryLogger,
-			DefaultLoggerProvider,
-			engine.WithPriority(PriorityInfrastructure))
-	}
+	r.engine.Register(CategoryLogger,
+		DefaultLoggerProvider,
+		engine.WithPriority(component.PriorityFramework))
 
 	// Registry components are self-registered by the registry package init()
 }
-
 // Load loads configuration into Result.
 func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	res, err := bootstrap.New(path, bootOpts...)
@@ -99,21 +90,25 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 	}
 	r.result = res
 
-	// Refresh app info
+	// 1. Foundation: Bootstrap Metadata (Base layer)
 	if boot := res.Bootstrap(); boot != nil && boot.GetApp() != nil {
 		UpdateAppInfo(r.appInfo, boot.GetApp())
 	}
-	if loader := res.Loader(); loader != nil {
-		var meta struct {
-			App *appv1.App `json:"app" yaml:"app"`
-		}
-		if err := loader.Scan(&meta); err == nil && meta.App != nil {
-			UpdateAppInfo(r.appInfo, meta.App)
-		}
-	}
+
+	// 2. Override: Business Object (High priority)
 	if biz := res.Config(); biz != nil {
-		if p, ok := biz.(component.AppConfig); ok && p.GetApp() != nil {
+		if p, ok := biz.(contracts.AppConfig); ok && p.GetApp() != nil {
 			UpdateAppInfo(r.appInfo, p.GetApp())
+		} else {
+			// 3. Fallback: Scan from Decoder (if not strong-typed)
+			if loader := res.Decoder(); loader != nil {
+				var meta struct {
+					App *appv1.App `json:"app" yaml:"app"`
+				}
+				if err := loader.Scan(&meta); err == nil && meta.App != nil {
+					UpdateAppInfo(r.appInfo, meta.App)
+				}
+			}
 		}
 	}
 
@@ -121,14 +116,15 @@ func (r *App) Load(path string, bootOpts ...bootstrap.Option) error {
 		return errors.New("runtime: application metadata missing after load")
 	}
 
-	// Auto warm-up the engine after loading
-	if err := r.WarmUp(); err != nil {
-		return fmt.Errorf("warm-up failed during load: %w", err)
+	// Auto warm-up the engine if business configuration is available
+	if r.Config() != nil {
+		if err := r.WarmUp(); err != nil {
+			return fmt.Errorf("warm-up failed during load: %w", err)
+		}
 	}
 
 	return nil
 }
-
 // WarmUp activates the engine with the loaded configuration.
 func (r *App) WarmUp() error {
 	if r.result == nil || r.result.Config() == nil {
@@ -138,10 +134,10 @@ func (r *App) WarmUp() error {
 }
 
 // Getters
-func (r *App) Config() runtimeconfig.KConfig { return r.result.Loader() }
-func (r *App) BusinessConfig() any           { return r.result.Config() }
+func (r *App) Decoder() runtimeconfig.KConfig { return r.result.Decoder() }
+func (r *App) Config() any                    { return r.result.Config() }
 func (r *App) Logger() log.Logger {
-	l, err := engine.GetDefault[log.Logger](r.ctx, r.engine.In(CategoryLogger))
+	l, err := comp.GetDefault[log.Logger](r.ctx, r.engine.In(CategoryLogger))
 	if err != nil {
 		return log.DefaultLogger
 	}
@@ -154,12 +150,12 @@ func (r *App) Container() component.Registry { return r.engine }
 func (r *App) Context() context.Context { return r.ctx }
 
 // NewContext creates a new context from the app context.
-func (r *App) NewContext(ctx context.Context) context.Context {
+func NewContext(ctx context.Context) context.Context {
 	return enginecontext.NewContext(ctx)
 }
 
 // NewTrace creates a new context with the given trace ID.
-func (r *App) NewTrace(ctx context.Context, traceID string) context.Context {
+func NewTrace(ctx context.Context, traceID string) context.Context {
 	return enginecontext.NewTrace(ctx, traceID)
 }
 
@@ -196,7 +192,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 
 func (r *App) DefaultRegistrar() (kregistry.Registrar, error) {
 	// Directly obtain from CategoryRegistrar with standard Kratos interface
-	return engine.GetDefault[kregistry.Registrar](r.ctx, r.engine.In(CategoryRegistrar))
+	return comp.GetDefault[kregistry.Registrar](r.ctx, r.engine.In(CategoryRegistrar))
 }
 
 func (r *App) Discoveries() (map[string]registry.KDiscovery, error) {

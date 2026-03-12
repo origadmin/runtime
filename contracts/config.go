@@ -1,104 +1,56 @@
 package contracts
 
 import (
+	appv1 "github.com/origadmin/runtime/api/gen/go/config/app/v1"
 	datav1 "github.com/origadmin/runtime/api/gen/go/config/data/v1"
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	loggerv1 "github.com/origadmin/runtime/api/gen/go/config/logger/v1"
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	"github.com/origadmin/toolkits/errors"
 )
 
-// ErrNotImplemented is returned when a specific decoder method is not implemented
-// by a custom decoder. This signals the runtime to fall back to generic decoding.
-var ErrNotImplemented = errors.New("method not implemented")
-
-// ConfigLoader is the minimal contract for providing a custom configuration source.
-// Developers wishing to extend the framework with a new config system should implement this interface.
-type ConfigLoader interface {
-	// Load loads the configuration from its source.
-	Load() error
-
-	// Decode provides generic decoding of a configuration key into a target struct.
-	// This is the fundamental method that MUST be implemented by any ConfigLoader instance.
-	Decode(key string, value any) error
-
-	// Raw provides an "escape hatch" to the underlying Kratos config.ConfigLoader instance.
-	// Custom implementations can return nil if not applicable.
-	Raw() any
-
-	// Close releases any resources held by the configuration.
-	// MUST be implemented; can be a no-op if no resources are held.
-	Close() error
+// AppConfig defines the contract for a configuration that provides app information.
+type AppConfig interface {
+	GetApp() *appv1.App
 }
 
-// StructuredConfig defines a set of type-safe, recommended methods for decoding configuration.
-// It embeds the generic ConfigLoader interface to allow for decoding arbitrary values.
-type StructuredConfig interface {
-	DataConfigDecoder
-	CacheConfigDecoder
-	DatabaseConfigDecoder
-	ObjectStoreConfigDecoder
-	DiscoveriesConfigDecoder
-	LoggerConfigDecoder
-	MiddlewareConfigDecoder
-	ServiceConfigDecoder
-
-	// DecodedConfig returns the config original decoded value.
-	DecodedConfig() any
-}
-
-type ConfigObject interface {
+// LoggerConfig defines the contract for a configuration that provides logger information.
+type LoggerConfig interface {
 	GetLogger() *loggerv1.Logger
-	GetDiscoveries() *discoveryv1.Discoveries
+}
+
+// MiddlewareConfig defines the contract for a configuration that provides middleware information.
+type MiddlewareConfig interface {
 	GetMiddlewares() *middlewarev1.Middlewares
-	GetServers() *transportv1.Servers
-	GetClients() *transportv1.Clients
+}
+
+// DataConfig defines the contract for a configuration that provides data information.
+type DataConfig interface {
 	GetData() *datav1.Data
 }
 
-// LoggerConfigDecoder defines an OPTIONAL interface for providing a "fast path"
-// to decode logger configuration. Custom ConfigLoader implementations can implement this
-// interface to provide an optimized decoding path.
-type LoggerConfigDecoder interface {
-	DecodeLogger() (*loggerv1.Logger, error)
+// DiscoveryConfig defines the contract for a configuration that provides discovery information.
+type DiscoveryConfig interface {
+	GetDiscoveries() *discoveryv1.Discoveries
 }
 
-// DiscoveriesConfigDecoder defines an OPTIONAL interface for providing a "fast path"
-// to decode service discovery configurations. Custom ConfigLoader implementations can implement this
-// interface to provide an optimized decoding path.
-type DiscoveriesConfigDecoder interface {
-	DecodeDefaultDiscovery() (string, error)
-	DecodeDiscoveries() (*discoveryv1.Discoveries, error)
+// ServerConfig defines the contract for a configuration that provides server information.
+type ServerConfig interface {
+	GetServers() *transportv1.Servers
 }
 
-// MiddlewareConfigDecoder defines an OPTIONAL interface for providing a "fast path"
-// to decode middleware configurations. Custom ConfigLoader implementations can implement this
-// interface to provide an optimized decoding path.
-type MiddlewareConfigDecoder interface {
-	DecodeMiddlewares() (*middlewarev1.Middlewares, error)
+// ClientConfig defines the contract for a configuration that provides client information.
+type ClientConfig interface {
+	GetClients() *transportv1.Clients
 }
 
-// ServiceConfigDecoder defines an OPTIONAL interface for providing a "fast path"
-// to decode service configurations. Custom ConfigLoader implementations can implement this
-// interface to provide an optimized decoding path.
-type ServiceConfigDecoder interface {
-	DecodeServers() (*transportv1.Servers, error)
-	DecodeClients() (*transportv1.Clients, error)
-}
-
-type DataConfigDecoder interface {
-	DecodeData() (*datav1.Data, error)
-}
-
-type CacheConfigDecoder interface {
-	DecodeCaches() (*datav1.Caches, error)
-}
-
-type DatabaseConfigDecoder interface {
-	DecodeDatabases() (*datav1.Databases, error)
-}
-
-type ObjectStoreConfigDecoder interface {
-	DecodeObjectStores() (*datav1.ObjectStores, error)
+// ConfigObject aggregates common configuration accessors.
+type ConfigObject interface {
+	AppConfig
+	LoggerConfig
+	DiscoveryConfig
+	MiddlewareConfig
+	DataConfig
+	ServerConfig
+	ClientConfig
 }

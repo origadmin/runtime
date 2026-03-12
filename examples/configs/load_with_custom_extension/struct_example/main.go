@@ -16,7 +16,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	decoder := rtInstance.Config()
+	decoder := rtInstance.Decoder()
 	defer decoder.Close()
 
 	var mw conf.MiddlewareStruct

@@ -13,9 +13,9 @@ type Result interface {
 	// Config [Binding Phase] Returns the final decoded business configuration (any type).
 	Config() any
 
-	// Loader [Operations] Returns the enhanced configuration loader (follows Kratos design).
+	// Decoder [Operations] Returns the enhanced configuration loader (follows Kratos design).
 	// It provides rich operations like Value(), Watch(), and Scan().
-	Loader() config.KConfig
+	Decoder() config.KConfig
 
 	// ConfigPath returns the physical path of the loaded configuration file.
 	ConfigPath() string

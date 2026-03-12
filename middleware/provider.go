@@ -60,7 +60,7 @@ func NewProvider(locator component.Locator) Provider {
 
 // ServerProvider is the engine-compatible provider for server-side middleware components.
 var ServerProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
-	if h.Locator().Scope() != component.ServerScope {
+	if h.Scope() != component.ServerScope {
 		return nil, nil
 	}
 	cfg, err := comp.AsConfig[middlewarev1.Middleware](h)
@@ -76,7 +76,7 @@ var ServerProvider component.Provider = func(ctx context.Context, h component.Ha
 
 // ClientProvider is the engine-compatible provider for client-side middleware components.
 var ClientProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
-	if h.Locator().Scope() != component.ClientScope {
+	if h.Scope() != component.ClientScope {
 		return nil, nil
 	}
 	cfg, err := comp.AsConfig[middlewarev1.Middleware](h)
@@ -97,7 +97,7 @@ var DefaultProvider component.Provider = func(ctx context.Context, h component.H
 		return nil, err
 	}
 
-	if h.Locator().Scope() == component.ClientScope {
+	if h.Scope() == component.ClientScope {
 		m, ok := NewClient(cfg)
 		if ok {
 			return m, nil

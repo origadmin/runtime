@@ -26,9 +26,9 @@ func (s *ConsulSourceTestSuite) TestConsulSourceLoading() {
 		t.Logf("Expected error (no Consul server): %v", err)
 		return
 	}
-	defer rtInstance.Config().Close()
+	defer rtInstance.Decoder().Close()
 
-	configDecoder := rtInstance.Config()
+	configDecoder := rtInstance.Decoder()
 	s.NotNil(configDecoder)
 	var appConfig struct {
 		Name string `json:"name"`
