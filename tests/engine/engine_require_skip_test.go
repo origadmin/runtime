@@ -142,6 +142,78 @@ func TestEngine_MiddlewareSelectorScenario(t *testing.T) {
 	}
 }
 
+// TestEngine_MiddlewareSelectorSequence specifically tests the sequence issue where the Selector 
+// is the first entry and its Requirement triggers the instantiation of all subsequent components.
+func TestEngine_MiddlewareSelectorSequence(t *testing.T) {
+	ctx := context.Background()
+	reg := engine.NewContainer()
+
+	// Track instantiation order
+	var instantiated []string
+
+	middlewareProvider := func(ctx context.Context, h component.Handle) (any, error) {
+		instantiated = append(instantiated, h.Name())
+		req, _ := h.Require("carrier")
+		return &mockComponent{Name: h.Name(), Dep: req}, nil
+	}
+	reg.Register(component.CategoryMiddleware, middlewareProvider)
+
+	carrierResolver := func(ctx context.Context, h component.Handle, purpose string) (any, error) {
+		if purpose == "carrier" {
+			carrier := make(map[string]any)
+			for name, inst := range h.Locator().Iter(ctx) {
+				carrier[name] = inst
+			}
+			return carrier, nil
+		}
+		return nil, fmt.Errorf("unknown requirement: %s", purpose)
+	}
+
+	reg.Register(component.CategoryMiddleware, nil, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{
+			Entries: []component.ConfigEntry{
+				// Selector is FIRST
+				{Name: "selector", Value: "selector-cfg", RequirementResolver: carrierResolver},
+				{Name: "auth", Value: "auth-cfg"},
+				{Name: "log", Value: "log-cfg"},
+			},
+		}, nil
+	}))
+
+	// Load everything
+	if err := reg.Load(ctx, "source-data"); err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	// 3. Directly get the selector FIRST.
+	// This should trigger: selector provider -> Require("carrier") -> Iter -> instantiate(auth), instantiate(log)
+	inst, err := reg.In(component.CategoryMiddleware).Get(ctx, "selector")
+	if err != nil {
+		t.Fatalf("Failed to get selector: %v", err)
+	}
+
+	mockComp := inst.(*mockComponent)
+	carrier := mockComp.Dep.(map[string]any)
+
+	// Verify instantiation occurred for others
+	if _, ok := carrier["auth"]; !ok {
+		t.Error("Carrier missing 'auth', instantiation might not have been triggered")
+	}
+	if _, ok := carrier["log"]; !ok {
+		t.Error("Carrier missing 'log', instantiation might not have been triggered")
+	}
+
+	// Verify sequence: selector must be the first one to start instantiating
+	if len(instantiated) < 1 || instantiated[0] != "selector" {
+		t.Errorf("Expected 'selector' to be the first in instantiation sequence, got %v", instantiated)
+	}
+
+	// The full sequence should be [selector, auth, log] or [selector, log, auth]
+	if len(instantiated) != 3 {
+		t.Errorf("Expected 3 components to be instantiated, got %d: %v", len(instantiated), instantiated)
+	}
+}
+
 // TestEngine_Skip verifies the Skip functionality on Locator.
 func TestEngine_Skip(t *testing.T) {
 	ctx := context.Background()

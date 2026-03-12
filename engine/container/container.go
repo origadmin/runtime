@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"strings"
 	"sync"
 
 	"github.com/origadmin/runtime/contracts/component"
@@ -533,10 +534,17 @@ func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope 
 				continue
 			}
 			inst, err := c.instantiate(ctx, cat, scope, name, tags)
-			if err == nil {
-				if !yield(name, inst) {
-					return
+			if err != nil {
+				// If we encounter a circular dependency, it just means this component
+				// is currently being built (likely the requester itself).
+				// We skip it in the iteration collection.
+				if isCircularDependencyError(err) {
+					continue
 				}
+				continue // Skip other errors too during iteration collection
+			}
+			if !yield(name, inst) {
+				return
 			}
 		}
 	}
@@ -595,7 +603,9 @@ func (l *locatorHandle) Skip(names ...string) component.Locator {
 		return l
 	}
 	newHandle := *l
-	newHandle.skips = append(l.skips, names...)
+	newHandle.skips = make([]string, len(l.skips)+len(names))
+	copy(newHandle.skips, l.skips)
+	copy(newHandle.skips[len(l.skips):], names)
 	return &newHandle
 }
 func (l *locatorHandle) Scope() component.Scope       { return l.scope }
@@ -649,6 +659,13 @@ func (e *entryHandle) Require(purpose string) (any, error) {
 	}
 
 	return nil, fmt.Errorf("engine: requirement %s not found (no resolver provided)", purpose)
+}
+
+func isCircularDependencyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), "circular dependency")
 }
 
 func NewContainer(opts ...Option) component.Registry {

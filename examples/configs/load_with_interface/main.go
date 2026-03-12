@@ -3,132 +3,83 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
-	kratosconfig "github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file"
 	"google.golang.org/protobuf/encoding/protojson"
-	// Import the transportv1 package which contains the Server message definition.
+
+	"github.com/origadmin/runtime"
 	transportv1 "github.com/origadmin/runtime/api/gen/go/config/transport/v1"
-	// Import the generated Go code from the api_gateway proto for the ClientConfig message.
-	"github.com/origadmin/runtime/contracts"
 	conf "github.com/origadmin/runtime/examples/protos/api_gateway"
 )
 
-// ConfigLoader defines the contract for a configuration loader.
-type ConfigLoader interface {
-	Load() error
-	Config() any
-	Raw() any
-	Close() error
-	Decode(key string, target any) error
-}
-
-// ProtoDecoder remains the same as it's a generic wrapper.
-type ProtoDecoder struct {
-	c kratosconfig.Config
-}
-
-func (d *ProtoDecoder) Load() error {
-	return d.c.Load()
-}
-
-func (d *ProtoDecoder) Raw() any {
-	return d.c
-}
-
-func (d *ProtoDecoder) Close() error {
-	return d.c.Close()
-}
-
-func NewProtoDecoder(c kratosconfig.Config) ConfigLoader {
-	return &ProtoDecoder{c: c}
-}
-
-func (d *ProtoDecoder) Config() any {
-	return d.c
-}
-
-func (d *ProtoDecoder) Decode(key string, target interface{}) error {
-	return d.c.Value(key).Scan(target)
-}
-
 func main() {
-	// Create a Kratos config instance from the YAML file.
-	// Path is now relative to the CWD (runtime directory).
-	c := kratosconfig.New(
-		kratosconfig.WithSource(
-			file.NewSource("examples/configs/load_with_interface/config/config.yaml"),
-		),
-	)
-	if err := c.Load(); err != nil {
-		panic(err)
+	// Create a new runtime App instance.
+	app := runtime.New("api-gateway", "1.0.0")
+
+	// Load configuration using the new Bootstrap engine.
+	// Path is relative to the runtime directory.
+	err := app.Load("examples/configs/load_with_interface/config/config.yaml")
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
 	}
 	defer func() {
-		_ = c.Close()
+		if app.Decoder() != nil {
+			_ = app.Decoder().Close()
+		}
 	}()
 
-	// Create a new decoder.
-	decoder := NewProtoDecoder(c)
+	// Access the KConfig decoder directly from the App.
+	decoder := app.Decoder()
 
-	// Decode the 'servers' key into a slice of Server structs using JSON marshal/unmarshal
+	// 1. Decode 'servers' into proto messages.
+	// KConfig native scanning returns raw map/slice for complex objects if not typed.
 	var rawServers []interface{}
-	if err := decoder.Decode("servers", &rawServers); err != nil {
-		panic(fmt.Errorf("failed to decode raw servers config: %w", err))
+	if err := decoder.Value("servers").Scan(&rawServers); err != nil {
+		log.Fatalf("Failed to decode raw servers config: %v", err)
 	}
 
 	var servers []*transportv1.Server
 	for i, rawServer := range rawServers {
 		jsonServer, err := json.Marshal(rawServer)
 		if err != nil {
-			panic(fmt.Errorf("failed to marshal server config %d to JSON: %w", i, err))
+			log.Fatalf("Failed to marshal server config %d to JSON: %v", i, err)
 		}
 		var server transportv1.Server
 		if err := protojson.Unmarshal(jsonServer, &server); err != nil {
-			panic(fmt.Errorf("failed to protojson unmarshal JSON to server %d: %w", i, err))
+			log.Fatalf("Failed to protojson unmarshal JSON to server %d: %v", i, err)
 		}
 		servers = append(servers, &server)
 	}
 
-	// Decode the 'clients' key into a map of ClientConfig structs.
+	// 2. Decode 'clients' into a map of proto messages.
 	var rawClients map[string]interface{}
-	if err := decoder.Decode("clients", &rawClients); err != nil {
-		panic(fmt.Errorf("failed to decode raw clients config: %w", err))
+	if err := decoder.Value("clients").Scan(&rawClients); err != nil {
+		log.Fatalf("Failed to decode raw clients config: %v", err)
 	}
 
 	clients := make(map[string]*conf.ClientConfig)
 	for name, rawClient := range rawClients {
-		fmt.Printf("DEBUG: rawClient for '%s': %+v\n", name, rawClient) // Added debug print for rawClient
 		jsonClient, err := json.Marshal(rawClient)
 		if err != nil {
-			panic(fmt.Errorf("failed to marshal client config '%s' to JSON: %w", name, err))
+			log.Fatalf("Failed to marshal client config '%s' to JSON: %v", name, err)
 		}
-		fmt.Printf("DEBUG: JSON for client '%s': %s\n", name, jsonClient) // Debug print for jsonClient
 		var client conf.ClientConfig
 		if err := protojson.Unmarshal(jsonClient, &client); err != nil {
-			panic(fmt.Errorf("failed to protojson unmarshal JSON to client '%s': %w", name, err))
+			log.Fatalf("Failed to protojson unmarshal JSON to client '%s': %v", name, err)
 		}
 		clients[name] = &client
 	}
 
 	// Print the loaded configuration to verify.
-	fmt.Printf("--- Loaded API Gateway config via interface implementation ---\n")
+	fmt.Printf("--- Loaded API Gateway config using latest runtime App ---\n")
 
-	// Verify server config
 	if len(servers) > 0 && servers[0].GetHttp() != nil {
 		fmt.Printf("Server HTTP Addr: %s\n", servers[0].GetHttp().GetAddr())
-	} else {
-		fmt.Println("No HTTP server configuration found.")
 	}
 
-	// Verify client config
 	if userService, ok := clients["user-service"]; ok {
-		// Access the nested client field
 		if userService.GetClient() != nil {
 			fmt.Printf("Client 'user-service' Endpoint: %s\n", userService.GetClient())
-		} else {
-			fmt.Println("Client 'user-service' has no nested client configuration.")
 		}
-	} else {
-		fmt.Println("No 'user-service' client configuration found.")
 	}
 }
