@@ -7,6 +7,7 @@ package middleware
 
 import (
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
+	"github.com/origadmin/runtime/contracts/component"
 )
 
 // Name is the name of a middleware.
@@ -26,6 +27,27 @@ const (
 	Selector            Name = "selector"
 	DeclarativeSecurity Name = "declarative_security"
 	Cors                Name = "cors"
+)
+
+const (
+	// CategoryMiddleware is the category for middleware components.
+	CategoryMiddleware component.Category = "middleware"
+	// CategoryLogger is the category for logger components.
+	CategoryLogger component.Category = "logger"
+
+	// ServerScope is the standard scope for server-side components.
+	ServerScope component.Scope = "server"
+	// ClientScope is the standard scope for client-side components.
+	ClientScope component.Scope = "client"
+)
+
+const (
+	// RequirementOption is the purpose for gathering creation options.
+	RequirementOption = "option"
+	// RequirementConfig is the purpose for gathering configuration.
+	RequirementConfig = "config"
+	// RequirementCarrier is the purpose for gathering other components in the same scope.
+	RequirementCarrier = "carrier"
 )
 
 // Carrier is a struct that holds the middlewares for client and server.

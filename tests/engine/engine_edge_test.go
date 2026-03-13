@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/origadmin/runtime/contracts/component"
+	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/engine"
 )
 
@@ -15,19 +15,19 @@ func TestEngine_CircularDependency(t *testing.T) {
 	reg := engine.NewContainer()
 
 	// A -> B -> A
-	reg.Register(component.CategoryClient, func(ctx context.Context, h engine.Handle) (any, error) {
-		_, err := h.Locator().In(component.CategoryServer).Get(ctx, "B")
+	reg.Register(runtime.CategoryClient, func(ctx context.Context, h engine.Handle) (any, error) {
+		_, err := h.Locator().In(runtime.CategoryServer).Get(ctx, "B")
 		return nil, err
 	}, engine.WithDefaultEntry("A"))
 
-	reg.Register(component.CategoryServer, func(ctx context.Context, h engine.Handle) (any, error) {
-		_, err := h.Locator().In(component.CategoryClient).Get(ctx, "A")
+	reg.Register(runtime.CategoryServer, func(ctx context.Context, h engine.Handle) (any, error) {
+		_, err := h.Locator().In(runtime.CategoryClient).Get(ctx, "A")
 		return nil, err
 	}, engine.WithDefaultEntry("B"))
 
 	_ = reg.Load(ctx, "src")
 
-	_, err := reg.In(component.CategoryClient).Get(ctx, "A")
+	_, err := reg.In(runtime.CategoryClient).Get(ctx, "A")
 	if err == nil {
 		t.Errorf("Should have detected circular dependency")
 	}
@@ -41,18 +41,18 @@ func TestEngine_PriorityCompetition(t *testing.T) {
 	reg := engine.NewContainer()
 
 	// First registration
-	reg.Register(component.CategoryLogger, func(ctx context.Context, h engine.Handle) (any, error) {
+	reg.Register(runtime.CategoryLogger, func(ctx context.Context, h engine.Handle) (any, error) {
 		return &mockComponent{Name: "old-logger"}, nil
 	})
 
 	// Second registration (same priority)
-	reg.Register(component.CategoryLogger, func(ctx context.Context, h engine.Handle) (any, error) {
+	reg.Register(runtime.CategoryLogger, func(ctx context.Context, h engine.Handle) (any, error) {
 		return &mockComponent{Name: "new-logger"}, nil
 	})
 
 	_ = reg.Load(ctx, "src")
 
-	inst, _ := reg.In(component.CategoryLogger).Get(ctx, "")
+	inst, _ := reg.In(runtime.CategoryLogger).Get(ctx, "")
 	if inst.(*mockComponent).Name != "new-logger" {
 		t.Errorf("Expected newer registration to take precedence, got %v", inst.(*mockComponent).Name)
 	}
@@ -71,5 +71,5 @@ func TestEngine_LifecycleProtection(t *testing.T) {
 		}
 	}()
 
-	reg.Register(component.CategoryLogger, simpleProvider)
+	reg.Register(runtime.CategoryLogger, simpleProvider)
 }

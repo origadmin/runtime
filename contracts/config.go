@@ -54,3 +54,26 @@ type ConfigObject interface {
 	ServerConfig
 	ClientConfig
 }
+
+// Helper interfaces for identifying configuration entries
+type (
+	// Named represents an object that has a unique name.
+	Named interface {
+		GetName() string
+	}
+
+	// Typed represents an object that has a specific type or category.
+	Typed interface {
+		GetType() string
+	}
+
+	// Dialectal represents an object that specifies a database dialect.
+	Dialectal interface {
+		GetDialect() string
+	}
+
+	// Driver represents an object that specifies a underlying driver.
+	Driver interface {
+		GetDriver() string
+	}
+)

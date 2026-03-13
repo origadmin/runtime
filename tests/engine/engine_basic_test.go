@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
 )
@@ -14,7 +15,7 @@ func TestEngine_BasicBinding(t *testing.T) {
 	reg := engine.NewContainer()
 
 	// Register a simple logger
-	reg.Register(component.CategoryLogger, simpleProvider)
+	reg.Register(runtime.CategoryLogger, simpleProvider)
 
 	// Load with a direct source string
 	err := reg.Load(ctx, "my-logger-config")
@@ -23,7 +24,7 @@ func TestEngine_BasicBinding(t *testing.T) {
 	}
 
 	// Get default instance
-	inst, err := reg.In(component.CategoryLogger).Get(ctx, "")
+	inst, err := reg.In(runtime.CategoryLogger).Get(ctx, "")
 	if err != nil {
 		t.Fatalf("Failed to get logger: %v", err)
 	}
@@ -39,7 +40,7 @@ func TestEngine_NamingPriority(t *testing.T) {
 
 	t.Run("Explicit_Named_Default", func(t *testing.T) {
 		reg := engine.NewContainer()
-		reg.Register(component.CategoryCache, simpleProvider, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+		reg.Register(runtime.CategoryCache, simpleProvider, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 			return &component.ModuleConfig{
 				Entries: []component.ConfigEntry{
 					{Name: "redis", Value: "cfg1"},
@@ -48,7 +49,7 @@ func TestEngine_NamingPriority(t *testing.T) {
 			}, nil
 		}))
 		_ = reg.Load(ctx, "src")
-		val, _ := reg.In(component.CategoryCache).Get(ctx, "")
+		val, _ := reg.In(runtime.CategoryCache).Get(ctx, "")
 		if val.(*mockComponent).Name != "default" {
 			t.Errorf("Should pick explicitly named 'default', got %v", val.(*mockComponent).Name)
 		}
@@ -56,7 +57,7 @@ func TestEngine_NamingPriority(t *testing.T) {
 
 	t.Run("Active_Override", func(t *testing.T) {
 		reg := engine.NewContainer()
-		reg.Register(component.CategoryCache, simpleProvider, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+		reg.Register(runtime.CategoryCache, simpleProvider, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 			return &component.ModuleConfig{
 				Entries: []component.ConfigEntry{
 					{Name: "redis", Value: "cfg1"},
@@ -66,7 +67,7 @@ func TestEngine_NamingPriority(t *testing.T) {
 			}, nil
 		}))
 		_ = reg.Load(ctx, "src")
-		val, _ := reg.In(component.CategoryCache).Get(ctx, "")
+		val, _ := reg.In(runtime.CategoryCache).Get(ctx, "")
 		if val.(*mockComponent).Name != "memcached" {
 			t.Errorf("Should pick explicit Active entry, got %v", val.(*mockComponent).Name)
 		}
@@ -74,13 +75,13 @@ func TestEngine_NamingPriority(t *testing.T) {
 
 	t.Run("Single_Entry_Fallback", func(t *testing.T) {
 		reg := engine.NewContainer()
-		reg.Register(component.CategoryCache, simpleProvider, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+		reg.Register(runtime.CategoryCache, simpleProvider, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 			return &component.ModuleConfig{
 				Entries: []component.ConfigEntry{{Name: "only_one", Value: "cfg1"}},
 			}, nil
 		}))
 		_ = reg.Load(ctx, "src")
-		val, _ := reg.In(component.CategoryCache).Get(ctx, "")
+		val, _ := reg.In(runtime.CategoryCache).Get(ctx, "")
 		if val.(*mockComponent).Name != "only_one" {
 			t.Errorf("Should pick the only available entry, got %v", val.(*mockComponent).Name)
 		}
@@ -88,7 +89,7 @@ func TestEngine_NamingPriority(t *testing.T) {
 
 	t.Run("Multiple_Should_Fail_Default", func(t *testing.T) {
 		reg := engine.NewContainer()
-		reg.Register(component.CategoryCache, simpleProvider, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+		reg.Register(runtime.CategoryCache, simpleProvider, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 			return &component.ModuleConfig{
 				Entries: []component.ConfigEntry{
 					{Name: "redis", Value: "cfg1"},
@@ -97,7 +98,7 @@ func TestEngine_NamingPriority(t *testing.T) {
 			}, nil
 		}))
 		_ = reg.Load(ctx, "src")
-		_, err := reg.In(component.CategoryCache).Get(ctx, "")
+		_, err := reg.In(runtime.CategoryCache).Get(ctx, "")
 		if err == nil {
 			t.Errorf("Should return error for default request when multiple entries exist without explicit default")
 		}

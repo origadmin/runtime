@@ -17,91 +17,79 @@ type Priority = component.Priority
 type Provider = component.Provider
 type Handle = component.Handle
 
-const (
-	// GlobalScope is the default fallback scope for the system.
-	GlobalScope = component.GlobalScope
-)
+type Registry = component.Registry
+type Container = component.Container
 
 // --- Category Conventions ---
 
 const (
 	CategoryInfrastructure Category = "infrastructure"
-	CategoryLogger                  = component.CategoryLogger
-	CategoryRegistrar               = component.CategoryRegistrar
-	CategoryDiscovery               = component.CategoryDiscovery
-	CategoryClient                  = component.CategoryClient
-	CategoryServer                  = component.CategoryServer
-	CategoryMiddleware              = component.CategoryMiddleware
-	CategoryDatabase                = component.CategoryDatabase
-	CategoryCache                   = component.CategoryCache
-	CategoryObjectStore             = component.CategoryObjectStore
-	CategoryQueue                   = component.CategoryQueue
-	CategoryTask                    = component.CategoryTask
-	CategoryMail                    = component.CategoryMail
-	CategoryStorage                 = component.CategoryStorage
-	CategorySecurity                = component.CategorySecurity
-	CategorySkipper                 = component.CategorySkipper
+	CategoryLogger         Category = "logger"
+	CategoryRegistrar      Category = "registrar"
+	CategoryDiscovery      Category = "discovery"
+	CategoryClient         Category = "client"
+	CategoryServer         Category = "server"
+	CategoryMiddleware     Category = "middleware"
+	CategoryDatabase       Category = "database"
+	CategoryCache          Category = "cache"
+	CategoryObjectStore    Category = "objectstore"
+	CategoryQueue          Category = "queue"
+	CategoryTask           Category = "task"
+	CategoryMail           Category = "mail"
+	CategoryStorage        Category = "storage"
+	CategorySecurity       Category = "security"
+	CategorySkipper        Category = "skipper"
 )
 
 // --- Scope Conventions ---
 
 const (
-	ServerScope = component.ServerScope
-	ClientScope = component.ClientScope
+	// GlobalScope is the default fallback scope for the system.
+	GlobalScope Scope = ""
+	// ServerScope is the standard scope for server-side components.
+	ServerScope Scope = "server"
+	// ClientScope is the standard scope for client-side components.
+	ClientScope Scope = "client"
 )
 
-// --- Priority Conventions ---
+// --- Engine Component Aliases ---
 
-const (
-	PriorityInfrastructure Priority = 100
-	PriorityRegistry       Priority = 200
-	PriorityStorage        Priority = 300
-	PriorityClientStack    Priority = 400
-	PriorityServerStack    Priority = 500
+type (
+	ConfigResolver      = component.ConfigResolver
+	RequirementResolver = component.RequirementResolver
+	Registration        = component.Registration
+	ModuleConfig        = component.ModuleConfig
+	ConfigEntry         = component.ConfigEntry
+	RegistrationOptions = component.RegistrationOptions
+
+	InOption   = component.InOption
+	Locator    = component.Locator
+	LoadOption = component.LoadOption
 )
 
-// --- Global Registration (init phase) ---
+type (
+	AppOption      = Option
+	RegisterOption = component.RegisterOption
+)
 
-// Register registers a component capability to the global pool.
-// Typically used in init() functions of component packages.
-func Register(cat Category, p Provider, opts ...RegisterOption) {
-	engine.Register(cat, p, opts...)
-}
+// --- Engine Options (Perspective & Load) ---
 
-// --- Functional Option Type Aliases ---
-
-type RegisterOption = component.RegisterOption
-type InOption = component.InOption
-type LoadOption = component.LoadOption
-
-// --- Functional Option Helpers ---
-
-// WithScope specifies the perspective during handle creation (In).
-func WithScope(s Scope) InOption {
+// WithInScope specifies the perspective scope.
+func WithInScope(s Scope) InOption {
 	return engine.WithInScope(s)
 }
 
-// WithScopes specifies the visibilities during registration (Register).
-func WithScopes(ss ...Scope) RegisterOption {
-	return engine.WithScopes(ss...)
-}
-
-// WithPriority specifies the initialization priority.
-func WithPriority(p Priority) RegisterOption {
-	return engine.WithPriority(p)
-}
-
-// WithTag specifies the tag for a component.
-func WithTag(tag string) RegisterOption {
-	return engine.WithTag(tag)
-}
-
-// WithInTags specifies the tags for perspective switching.
+// WithInTags specifies the perspective tags.
 func WithInTags(tags ...string) InOption {
 	return engine.WithInTags(tags...)
 }
 
 // WithResolver specifies a local config resolver for a component.
-func WithResolver(res component.Resolver) RegisterOption {
-	return engine.WithResolverOption(res)
+func WithResolver(res component.ConfigResolver) RegisterOption {
+	return engine.WithConfigResolverOption(res)
+}
+
+// WithScopes specifies the scopes for a component.
+func WithScopes(ss ...Scope) RegisterOption {
+	return engine.WithScopes(ss...)
 }

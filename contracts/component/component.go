@@ -22,33 +22,6 @@ type (
 )
 
 const (
-	CategoryLogger      Category = "logger"
-	CategoryRegistrar   Category = "registrar"
-	CategoryDiscovery   Category = "discovery"
-	CategoryClient      Category = "client"
-	CategoryServer      Category = "server"
-	CategoryMiddleware  Category = "middleware"
-	CategoryDatabase    Category = "database"
-	CategoryCache       Category = "cache"
-	CategoryObjectStore Category = "objectstore"
-	CategoryQueue       Category = "queue"
-	CategoryTask        Category = "task"
-	CategoryMail        Category = "mail"
-	CategoryStorage     Category = "storage"
-	CategorySecurity    Category = "security"
-	CategorySkipper     Category = "skipper"
-)
-
-const (
-	// GlobalScope is the default system fallback scope.
-	GlobalScope Scope = "_global"
-	// ServerScope is the standard scope for server-side components.
-	ServerScope Scope = "server"
-	// ClientScope is the standard scope for client-side components.
-	ClientScope Scope = "client"
-
-	// DefaultName is the system key for the active/default instance.
-	DefaultName = "_default"
 	// ReservedPrefix defines identifiers owned by the system.
 	ReservedPrefix = "_"
 )
@@ -56,7 +29,7 @@ const (
 type Locator interface {
 	Get(ctx context.Context, name string) (any, error)
 	Iter(ctx context.Context) iter.Seq2[string, any]
-	In(cat Category, opts ...InOption) Locator
+	In(cat Category, opts ...InOption) Registry
 	WithInScope(s Scope) Locator
 	WithInTags(tags ...string) Locator
 	Skip(names ...string) Locator
@@ -92,14 +65,24 @@ const (
 )
 
 type Registry interface {
-	Register(cat Category, p Provider, opts ...RegisterOption)
-	Inject(cat Category, name string, inst any, opts ...RegisterOption)
-	Has(cat Category, opts ...RegisterOption) bool
-	Load(ctx context.Context, source any, opts ...LoadOption) error
-	In(cat Category, opts ...InOption) Locator
+	Locator
+	Register(p Provider, opts ...RegisterOption)
+	Inject(name string, inst any, opts ...RegisterOption)
+	IsRegistered(opts ...RegisterOption) bool
+	Requirement(purpose string, resolver RequirementResolver)
 }
 
-type Resolver func(source any, cat Category) (*ModuleConfig, error)
+type Container interface {
+	Register(cat Category, p Provider, opts ...RegisterOption)
+	Inject(cat Category, name string, inst any, opts ...RegisterOption)
+	IsRegistered(cat Category, opts ...RegisterOption) bool
+	Requirement(cat Category, purpose string, res RequirementResolver)
+	Load(ctx context.Context, source any, opts ...LoadOption) error
+	In(cat Category, opts ...InOption) Registry
+}
+
+// ConfigResolver resolves raw configuration source into ModuleConfig.
+type ConfigResolver func(ctx context.Context, source any, opts *LoadOptions) (*ModuleConfig, error)
 
 type Registration struct {
 	Category Category
@@ -107,12 +90,16 @@ type Registration struct {
 	Options  []RegisterOption
 }
 
+// ModuleConfig represents the configuration for an entire category.
+// RequirementResolver at this level acts as a default for all entries in the category.
 type ModuleConfig struct {
 	Entries             []ConfigEntry
 	Active              string
 	RequirementResolver RequirementResolver
 }
 
+// ConfigEntry represents the configuration for a single component instance.
+// RequirementResolver at this level takes precedence over the ModuleConfig level.
 type ConfigEntry struct {
 	Name                string
 	Value               any
@@ -120,17 +107,8 @@ type ConfigEntry struct {
 }
 type RequirementResolver func(ctx context.Context, h Handle, purpose string) (any, error)
 
-const (
-	// RequirementOption is the purpose for gathering creation options.
-	RequirementOption = "option"
-	// RequirementConfig is the purpose for gathering configuration.
-	RequirementConfig = "config"
-	// RequirementCarrier is the purpose for gathering other components in the same scope.
-	RequirementCarrier = "carrier"
-)
-
 type RegistrationOptions struct {
-	Resolver            Resolver
+	ConfigResolver      ConfigResolver
 	Scopes              []Scope
 	Priority            Priority
 	Tag                 string
@@ -140,39 +118,15 @@ type RegistrationOptions struct {
 
 type RegisterOption func(*RegistrationOptions)
 
-// InOption is a functional option that modifies a Locator.
-// It directly uses the Locator interface to support fluent perspective switching.
-type InOption func(Locator) Locator
+// InOption is a functional option that modifies a Registry.
+type InOption func(Registry) Registry
 
 type LoadOptions struct {
 	Category Category
 	Scope    Scope
 	Name     string
-	Resolver Resolver
+	Resolver ConfigResolver
 	Tags     []string
 }
 
 type LoadOption func(*LoadOptions)
-
-// Helper interfaces for identifying configuration entries
-type (
-	// Named represents an object that has a unique name.
-	Named interface {
-		GetName() string
-	}
-
-	// Typed represents an object that has a specific type or category.
-	Typed interface {
-		GetType() string
-	}
-
-	// Dialectal represents an object that specifies a database dialect.
-	Dialectal interface {
-		GetDialect() string
-	}
-
-	// Driver represents an object that specifies a underlying driver.
-	Driver interface {
-		GetDriver() string
-	}
-)

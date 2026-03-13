@@ -31,7 +31,7 @@ func init() {
 
 // --- Default Resolvers Map ---
 
-var DefaultResolvers = map[component.Category]component.Resolver{
+var DefaultResolvers = map[component.Category]component.ConfigResolver{
 	CategoryLogger:      log.Resolve,
 	CategoryRegistrar:   registry.Resolve,
 	CategoryDiscovery:   registry.Resolve,

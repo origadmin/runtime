@@ -17,6 +17,9 @@ const (
 	StatusInstantiating
 	StatusReady
 	StatusError
+
+	defaultInstanceName = "_default"
+	globalScopeName     = "_global"
 )
 
 type moduleKey struct {
@@ -40,8 +43,20 @@ type moduleState struct {
 	bound       bool
 }
 
+// containerBackend defines the internal operations of the container.
+// It decouples the implementation from handles and locators.
+type containerBackend interface {
+	register(cat component.Category, p component.Provider, opts ...component.RegisterOption)
+	inject(cat component.Category, name string, inst any, opts ...component.RegisterOption)
+	isRegistered(cat component.Category, opts ...component.RegisterOption) bool
+	requirement(cat component.Category, purpose string, res component.RequirementResolver)
+	getCategoryRequirementResolver(cat component.Category, purpose string) component.RequirementResolver
+	instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error)
+	iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any]
+	scopes(cat component.Category) []component.Scope
+}
+
 // makeInstanceKey defines the PHYSICAL COORDINATE of an instance.
-// name + tag = Identity.
 func makeInstanceKey(name, tag string) string {
 	if tag == "" {
 		return name
@@ -55,25 +70,24 @@ func configKey(name string) string {
 
 type providerEntry struct {
 	provider            component.Provider
-	resolver            component.Resolver
+	resolver            component.ConfigResolver
 	requirementResolver component.RequirementResolver
 	scopes              []component.Scope
 	priority            component.Priority
-	tag                 string // Producer's identity tag
+	tag                 string
 	defaultEntries      []string
 }
 
-// isProviderCompatible checks if a provider can perform work for the requested tag.
 func isProviderCompatible(providerTag, requestedTag string) bool {
 	if providerTag == "" {
-		return true // Common provider serves all tags
+		return true
 	}
-	return providerTag == requestedTag // Specific provider serves only its tag
+	return providerTag == requestedTag
 }
 
 type Option func(*containerImpl)
 
-func WithCategoryResolvers(res map[component.Category]component.Resolver) Option {
+func WithCategoryResolvers(res map[component.Category]component.ConfigResolver) Option {
 	return func(c *containerImpl) {
 		if res != nil {
 			for k, v := range res {
@@ -84,14 +98,19 @@ func WithCategoryResolvers(res map[component.Category]component.Resolver) Option
 }
 
 type containerImpl struct {
-	mu                sync.RWMutex
-	modules           map[moduleKey]*moduleState
-	providers         map[component.Category][]*providerEntry
-	categoryResolvers map[component.Category]component.Resolver
-	isLoaded          bool
+	mu                           sync.RWMutex
+	modules                      map[moduleKey]*moduleState
+	providers                    map[component.Category][]*providerEntry
+	categoryResolvers            map[component.Category]component.ConfigResolver
+	categoryRequirementResolvers map[component.Category]map[string]component.RequirementResolver
+	isLoaded                     bool
 }
 
 func (c *containerImpl) Register(cat component.Category, p component.Provider, opts ...component.RegisterOption) {
+	c.register(cat, p, opts...)
+}
+
+func (c *containerImpl) register(cat component.Category, p component.Provider, opts ...component.RegisterOption) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.isLoaded {
@@ -103,11 +122,18 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 	}
 	scopes := cfg.Scopes
 	if len(scopes) == 0 {
-		scopes = []component.Scope{component.GlobalScope}
+		scopes = []component.Scope{globalScopeName}
+	} else {
+		// Map empty scope to globalScopeName internal alias
+		for i, s := range scopes {
+			if s == "" {
+				scopes[i] = globalScopeName
+			}
+		}
 	}
 	entry := &providerEntry{
 		provider:            p,
-		resolver:            cfg.Resolver,
+		resolver:            cfg.ConfigResolver,
 		requirementResolver: cfg.RequirementResolver,
 		scopes:              scopes,
 		priority:            cfg.Priority,
@@ -130,51 +156,116 @@ func (c *containerImpl) Register(cat component.Category, p component.Provider, o
 }
 
 func (c *containerImpl) Inject(cat component.Category, name string, inst any, opts ...component.RegisterOption) {
+	c.inject(cat, name, inst, opts...)
+}
+
+func (c *containerImpl) inject(cat component.Category, name string, inst any, opts ...component.RegisterOption) {
 	cfg := &component.RegistrationOptions{}
 	for _, opt := range opts {
 		opt(cfg)
 	}
 	scopes := cfg.Scopes
 	if len(scopes) == 0 {
-		scopes = []component.Scope{component.GlobalScope}
+		scopes = []component.Scope{globalScopeName}
 	}
 	for _, s := range scopes {
-		mKey := moduleKey{category: cat, scope: s}
+		internalScope := s
+		if s == "" {
+			internalScope = globalScopeName
+		}
+		mKey := moduleKey{category: cat, scope: internalScope}
 		state := c.getModuleState(mKey)
 		state.mu.Lock()
 		finalName := name
-		isExplicitDefault := false
-		if finalName == "" || finalName == component.DefaultName {
+		if finalName == "" {
 			finalName = "_injected_" + string(cat)
-			isExplicitDefault = true
 		}
-
-		// Injected instance identity is determined by its name and its own tag
 		key := makeInstanceKey(finalName, cfg.Tag)
 		state.instances[key] = &componentMeta{inst: inst, status: StatusReady}
-
 		if !contains(state.order, finalName) {
 			state.order = append(state.order, finalName)
 		}
-		if isExplicitDefault || state.defaultName == "" {
+		if state.defaultName == "" || name == "" {
 			state.defaultName = finalName
 		}
-
-		// Update _default marker
 		if state.defaultName != "" {
 			if dMeta, ok := state.instances[makeInstanceKey(state.defaultName, cfg.Tag)]; ok {
-				state.instances[makeInstanceKey(component.DefaultName, "")] = dMeta
+				state.instances[makeInstanceKey(defaultInstanceName, "")] = dMeta
 			}
 		}
 		state.mu.Unlock()
 	}
 }
 
-func (c *containerImpl) Has(cat component.Category, opts ...component.RegisterOption) bool {
+func (c *containerImpl) IsRegistered(cat component.Category, opts ...component.RegisterOption) bool {
+	return c.isRegistered(cat, opts...)
+}
+
+func (c *containerImpl) isRegistered(cat component.Category, opts ...component.RegisterOption) bool {
+	cfg := &component.RegistrationOptions{}
+	for _, opt := range opts {
+		opt(cfg)
+	}
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	_, ok := c.providers[cat]
-	return ok
+	entries, ok := c.providers[cat]
+	if !ok {
+		return false
+	}
+	if cfg.Tag == "" && len(cfg.Scopes) == 0 {
+		return true
+	}
+	for _, e := range entries {
+		if cfg.Tag != "" && e.tag != cfg.Tag {
+			continue
+		}
+		if len(cfg.Scopes) > 0 {
+			match := false
+			for _, s := range cfg.Scopes {
+				target := s
+				if s == "" {
+					target = globalScopeName
+				}
+				if matchScope(e.scopes, target) {
+					match = true
+					break
+				}
+			}
+			if !match {
+				continue
+			}
+		}
+		return true
+	}
+	return false
+}
+
+func (c *containerImpl) Requirement(cat component.Category, purpose string, res component.RequirementResolver) {
+	c.requirement(cat, purpose, res)
+}
+
+func (c *containerImpl) requirement(cat component.Category, purpose string, res component.RequirementResolver) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.categoryRequirementResolvers == nil {
+		c.categoryRequirementResolvers = make(map[component.Category]map[string]component.RequirementResolver)
+	}
+	if c.categoryRequirementResolvers[cat] == nil {
+		c.categoryRequirementResolvers[cat] = make(map[string]component.RequirementResolver)
+	}
+	c.categoryRequirementResolvers[cat][purpose] = res
+}
+
+func (c *containerImpl) getCategoryRequirementResolver(cat component.Category, purpose string) component.RequirementResolver {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	if c.categoryRequirementResolvers == nil {
+		return nil
+	}
+	if resMap, ok := c.categoryRequirementResolvers[cat]; ok {
+		return resMap[purpose]
+	}
+	return nil
 }
 
 func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.LoadOption) error {
@@ -206,7 +297,7 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 		registeredScopes := make(map[component.Scope]bool)
 		for _, entry := range entries {
 			if len(entry.scopes) == 0 {
-				registeredScopes[component.GlobalScope] = true
+				registeredScopes[globalScopeName] = true
 			} else {
 				for _, s := range entry.scopes {
 					registeredScopes[s] = true
@@ -214,20 +305,38 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 			}
 		}
 		for s := range registeredScopes {
-			if loadOpts.Scope != "" && s != loadOpts.Scope {
-				continue
+			// Filter by Scope if requested
+			if loadOpts.Scope != "" {
+				target := loadOpts.Scope
+				if target == "" {
+					target = globalScopeName
+				}
+				if s != target {
+					continue
+				}
 			}
-			if err := c.bindWithSource(cat, s, primaryEntry, source, loadOpts.Resolver, loadOpts.Name); err != nil {
+			// CLONE opts for this specific category and scope
+			currentOpts := *loadOpts
+			currentOpts.Category = cat
+			currentOpts.Scope = s
+
+			if err := c.bindWithSource(ctx, primaryEntry, source, &currentOpts); err != nil {
 				return err
 			}
 		}
-		// SEEDING
 		for _, entry := range entries {
 			if len(entry.defaultEntries) > 0 {
 				for _, name := range entry.defaultEntries {
 					for s := range registeredScopes {
-						if loadOpts.Scope != "" && s != loadOpts.Scope {
-							continue
+						// Apply scope filtering for seeding too
+						if loadOpts.Scope != "" {
+							target := loadOpts.Scope
+							if target == "" {
+								target = globalScopeName
+							}
+							if s != target {
+								continue
+							}
 						}
 						mKey := moduleKey{category: cat, scope: s}
 						state := c.getModuleState(mKey)
@@ -238,7 +347,7 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 						}
 						if state.defaultName == "" {
 							state.defaultName = name
-							state.instances[configKey(component.DefaultName)] = state.instances[configKey(name)]
+							state.instances[configKey(defaultInstanceName)] = state.instances[configKey(name)]
 						}
 						state.mu.Unlock()
 					}
@@ -255,46 +364,51 @@ func (c *containerImpl) getProviderEntries(cat component.Category) []*providerEn
 	return c.providers[cat]
 }
 
-func (c *containerImpl) bindWithSource(cat component.Category, scope component.Scope, entry *providerEntry, source any, resolver component.Resolver, filterName string) error {
-	mKey := moduleKey{category: cat, scope: scope}
+func (c *containerImpl) bindWithSource(ctx context.Context, entry *providerEntry, source any, opts *component.LoadOptions) error {
+	internalScope := opts.Scope
+	if internalScope == "" {
+		internalScope = globalScopeName
+	}
+	mKey := moduleKey{category: opts.Category, scope: internalScope}
 	s := c.getModuleState(mKey)
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	var mc *component.ModuleConfig
 	var err error
-	if resolver != nil {
-		mc, err = resolver(source, cat)
-	} else if entry.resolver != nil {
-		mc, err = entry.resolver(source, cat)
-	} else {
-		c.mu.RLock()
-		r := c.categoryResolvers[cat]
-		c.mu.RUnlock()
-		if r != nil {
-			mc, err = r(source, cat)
-		}
+	// Priority: Load side > Registration side > Global default
+	effectiveResolver := opts.Resolver
+	if effectiveResolver == nil {
+		effectiveResolver = entry.resolver
 	}
+	if effectiveResolver == nil {
+		c.mu.RLock()
+		effectiveResolver = c.categoryResolvers[opts.Category]
+		c.mu.RUnlock()
+	}
+
+	if effectiveResolver != nil {
+		mc, err = effectiveResolver(ctx, source, opts)
+	}
+
 	if err == nil && mc == nil {
-		name := string(cat)
+		name := string(opts.Category)
 		mc = &component.ModuleConfig{Entries: []component.ConfigEntry{{Name: name, Value: source}}, Active: name}
 	}
 	if err != nil {
 		return err
 	}
 	for _, cfgEntry := range mc.Entries {
-		if filterName != "" && cfgEntry.Name != filterName {
+		if opts.Name != "" && cfgEntry.Name != opts.Name {
 			continue
 		}
 		key := configKey(cfgEntry.Name)
 		if _, exists := s.instances[key]; !exists {
-			// Resolve the best available RequirementResolver
-			var res component.RequirementResolver
-			if cfgEntry.RequirementResolver != nil {
-				res = cfgEntry.RequirementResolver
-			} else if mc.RequirementResolver != nil {
+			// Resolve RequirementResolver: Entry > Module
+			res := cfgEntry.RequirementResolver
+			if res == nil {
 				res = mc.RequirementResolver
 			}
-
 			s.instances[key] = &componentMeta{
 				config:              cfgEntry.Value,
 				requirementResolver: res,
@@ -318,12 +432,12 @@ func (c *containerImpl) bindWithSource(cat component.Category, scope component.S
 	if newDefault == "" && len(mc.Entries) == 1 {
 		newDefault = mc.Entries[0].Name
 	}
-	if newDefault != "" && (filterName == "" || newDefault == filterName) {
+	if newDefault != "" && (opts.Name == "" || newDefault == opts.Name) {
 		s.defaultName = newDefault
 	}
 	if s.defaultName != "" {
 		if meta, ok := s.instances[configKey(s.defaultName)]; ok {
-			s.instances[configKey(component.DefaultName)] = meta
+			s.instances[configKey(defaultInstanceName)] = meta
 		}
 	}
 	s.bound = true
@@ -347,14 +461,57 @@ func (c *containerImpl) scopes(cat component.Category) []component.Scope {
 	var res []component.Scope
 	for k := range c.modules {
 		if k.category == cat {
-			res = append(res, k.scope)
+			// Map internal alias back to empty string for public API
+			s := k.scope
+			if s == globalScopeName {
+				s = ""
+			}
+			res = append(res, s)
 		}
 	}
 	return res
 }
 
-func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Locator {
-	var res component.Locator = &locatorHandle{c: c, category: cat, scope: component.GlobalScope}
+func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any] {
+	return func(yield func(string, any) bool) {
+		internalScope := scope
+		if scope == "" {
+			internalScope = globalScopeName
+		}
+		mKey := moduleKey{category: cat, scope: internalScope}
+		s := c.getModuleState(mKey)
+		s.mu.RLock()
+		order := make([]string, len(s.order))
+		copy(order, s.order)
+		s.mu.RUnlock()
+		for _, name := range order {
+			if contains(skips, name) {
+				continue
+			}
+			inst, err := c.instantiate(ctx, cat, internalScope, name, tags)
+			if err != nil {
+				if isCircularDependencyError(err) {
+					continue
+				}
+				continue
+			}
+			if !yield(name, inst) {
+				return
+			}
+		}
+	}
+}
+
+func parseInstanceName(name string) (string, []string) {
+	parts := strings.Split(name, ":")
+	if len(parts) <= 1 {
+		return name, nil
+	}
+	return parts[0], parts[1:]
+}
+
+func (c *containerImpl) In(cat component.Category, opts ...component.InOption) component.Registry {
+	var res component.Registry = &locatorHandle{c: c, category: cat, scope: ""}
 	for _, opt := range opts {
 		if opt != nil {
 			res = opt(res)
@@ -363,98 +520,72 @@ func (c *containerImpl) In(cat component.Category, opts ...component.InOption) c
 	return res
 }
 
-func (c *containerImpl) Config() any                  { return nil }
-func (c *containerImpl) Name() string                 { return "" }
-func (c *containerImpl) Scope() component.Scope       { return component.GlobalScope }
-func (c *containerImpl) Category() component.Category { return "" }
-func (c *containerImpl) Tags() []string               { return nil }
-func (c *containerImpl) Tag() string                  { return "" }
-
-func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, demandTags []string) (any, error) {
+func (c *containerImpl) instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error) {
 	reqName := name
 	if reqName == "" {
-		reqName = component.DefaultName
+		reqName = defaultInstanceName
 	}
-	mKey := moduleKey{category: cat, scope: scope}
+	internalScope := scope
+	if scope == "" {
+		internalScope = globalScopeName
+	}
+	mKey := moduleKey{category: cat, scope: internalScope}
 	c.mu.RLock()
 	s, exists := c.modules[mKey]
 	c.mu.RUnlock()
 	if !exists {
 		return nil, fmt.Errorf("engine: scope %s not initialized for %s", scope, cat)
 	}
-
 	realName := reqName
-	if reqName == component.DefaultName {
+	if reqName == defaultInstanceName {
 		realName = s.defaultName
 	}
-
-	// 1. Check for directly ready instance (Inject or agnostic cached)
 	s.mu.RLock()
 	if meta, ok := s.instances[makeInstanceKey(realName, "")]; ok && meta.status == StatusReady {
 		s.mu.RUnlock()
 		return meta.inst, nil
 	}
-	if reqName == component.DefaultName {
-		if meta, ok := s.instances[makeInstanceKey(component.DefaultName, "")]; ok && meta.status == StatusReady {
+	if reqName == defaultInstanceName {
+		if meta, ok := s.instances[makeInstanceKey(defaultInstanceName, "")]; ok && meta.status == StatusReady {
 			s.mu.RUnlock()
 			return meta.inst, nil
 		}
 	}
 	cfgMeta, ok := s.instances[configKey(reqName)]
 	s.mu.RUnlock()
-
 	if !ok {
 		return nil, fmt.Errorf("engine: component %s/%s not found", cat, reqName)
 	}
 	if cfgMeta.status == StatusReady {
 		return cfgMeta.inst, nil
 	}
-
-	// 2. RETRIEVAL (Package): Find results for any tag in the package
-	tagsToTry := demandTags
+	tagsToTry := tags
 	if len(tagsToTry) == 0 {
 		tagsToTry = []string{""}
 	}
-
+	realReqName, demandTags := parseInstanceName(realName)
+	if len(demandTags) > 0 {
+		tagsToTry = demandTags
+		realName = realReqName
+	}
 	c.mu.RLock()
 	entries := c.providers[cat]
 	c.mu.RUnlock()
-
 	var lastErr error
 	for _, curTag := range tagsToTry {
 		for _, entry := range entries {
-			if !matchScope(entry.scopes, scope) {
+			if !matchScope(entry.scopes, internalScope) || !isProviderCompatible(entry.tag, curTag) || entry.provider == nil {
 				continue
 			}
-			if !isProviderCompatible(entry.tag, curTag) {
-				continue
-			}
-			if entry.provider == nil {
-				continue
-			}
-
-			// 3. WORK (Creation): Create the instance for this specific identity
 			iKey := makeInstanceKey(realName, curTag)
 			s.mu.Lock()
 			meta, exists := s.instances[iKey]
 			if !exists {
-				if cfgMeta != nil {
-					// Use resolver from config if present, fallback to registration level
-					res := cfgMeta.requirementResolver
-					if res == nil {
-						res = entry.requirementResolver
-					}
-					meta = &componentMeta{
-						config:              cfgMeta.config,
-						requirementResolver: res,
-						status:              StatusNone,
-					}
-				} else {
-					meta = &componentMeta{
-						requirementResolver: entry.requirementResolver,
-						status:              StatusNone,
-					}
+				res := cfgMeta.requirementResolver
+				if res == nil {
+					res = entry.requirementResolver
 				}
+				meta = &componentMeta{config: cfgMeta.config, requirementResolver: res, status: StatusNone}
 				s.instances[iKey] = meta
 			}
 			if meta.status == StatusReady {
@@ -468,8 +599,6 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			}
 			meta.status = StatusInstantiating
 			s.mu.Unlock()
-
-			// CALLBACK: Single Work Tag
 			h := &entryHandle{
 				category:  cat,
 				scope:     scope,
@@ -521,46 +650,8 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
-func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any] {
-	return func(yield func(string, any) bool) {
-		mKey := moduleKey{category: cat, scope: scope}
-		s := c.getModuleState(mKey)
-		s.mu.RLock()
-		order := make([]string, len(s.order))
-		copy(order, s.order)
-		s.mu.RUnlock()
-		for _, name := range order {
-			if contains(skips, name) {
-				continue
-			}
-			inst, err := c.instantiate(ctx, cat, scope, name, tags)
-			if err != nil {
-				// If we encounter a circular dependency, it just means this component
-				// is currently being built (likely the requester itself).
-				// We skip it in the iteration collection.
-				if isCircularDependencyError(err) {
-					continue
-				}
-				continue // Skip other errors too during iteration collection
-			}
-			if !yield(name, inst) {
-				return
-			}
-		}
-	}
-}
-
-// containerReader defines the internal read-only operations of the container.
-// It ensures that locators can only trigger instantiation and iteration, 
-// without having access to registration or loading methods.
-type containerReader interface {
-	instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error)
-	iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any]
-	scopes(cat component.Category) []component.Scope
-}
-
 type locatorHandle struct {
-	c        containerReader
+	c        containerBackend
 	category component.Category
 	scope    component.Scope
 	tags     []string
@@ -573,8 +664,8 @@ func (l *locatorHandle) Get(ctx context.Context, name string) (any, error) {
 func (l *locatorHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
 	return l.c.iter(ctx, l.category, l.scope, l.tags, l.skips)
 }
-func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) component.Locator {
-	var res component.Locator = &locatorHandle{c: l.c, category: cat, scope: l.scope, tags: l.tags}
+func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) component.Registry {
+	var res component.Registry = &locatorHandle{c: l.c, category: cat, scope: l.scope, tags: l.tags}
 	for _, opt := range opts {
 		if opt != nil {
 			res = opt(res)
@@ -591,11 +682,17 @@ func (l *locatorHandle) WithInScope(s component.Scope) component.Locator {
 	return &newHandle
 }
 func (l *locatorHandle) WithInTags(tags ...string) component.Locator {
-	if equalTags(l.tags, tags) {
+	var validTags []string
+	for _, t := range tags {
+		if t != "" {
+			validTags = append(validTags, t)
+		}
+	}
+	if equalTags(l.tags, validTags) {
 		return l
 	}
 	newHandle := *l
-	newHandle.tags = tags
+	newHandle.tags = validTags
 	return &newHandle
 }
 func (l *locatorHandle) Skip(names ...string) component.Locator {
@@ -608,15 +705,22 @@ func (l *locatorHandle) Skip(names ...string) component.Locator {
 	copy(newHandle.skips[len(l.skips):], names)
 	return &newHandle
 }
-func (l *locatorHandle) Scope() component.Scope       { return l.scope }
 func (l *locatorHandle) Category() component.Category { return l.category }
+func (l *locatorHandle) Scope() component.Scope       { return l.scope }
 func (l *locatorHandle) Scopes() []component.Scope    { return l.c.scopes(l.category) }
 func (l *locatorHandle) Tags() []string               { return l.tags }
-func (l *locatorHandle) Tag() string {
-	if len(l.tags) > 0 {
-		return l.tags[0]
-	}
-	return ""
+
+func (l *locatorHandle) Register(p component.Provider, opts ...component.RegisterOption) {
+	l.c.register(l.category, p, opts...)
+}
+func (l *locatorHandle) Inject(name string, inst any, opts ...component.RegisterOption) {
+	l.c.inject(l.category, name, inst, opts...)
+}
+func (l *locatorHandle) IsRegistered(opts ...component.RegisterOption) bool {
+	return l.c.isRegistered(l.category, opts...)
+}
+func (l *locatorHandle) Requirement(purpose string, resolver component.RequirementResolver) {
+	l.c.requirement(l.category, purpose, resolver)
 }
 
 func equalTags(a, b []string) bool {
@@ -638,7 +742,7 @@ type entryHandle struct {
 	meta      *componentMeta
 	activeTag string
 	l         component.Locator
-	c         containerReader
+	c         containerBackend
 }
 
 func (e *entryHandle) Name() string                 { return e.name }
@@ -653,11 +757,12 @@ func (e *entryHandle) Config() any {
 func (e *entryHandle) Locator() component.Locator { return e.l }
 func (e *entryHandle) Tag() string                { return e.activeTag }
 func (e *entryHandle) Require(purpose string) (any, error) {
-	// 1. Component-level resolver (populated from ModuleConfig/ConfigEntry or Registration)
 	if e.meta != nil && e.meta.requirementResolver != nil {
 		return e.meta.requirementResolver(context.Background(), e, purpose)
 	}
-
+	if res := e.c.getCategoryRequirementResolver(e.category, purpose); res != nil {
+		return res(context.Background(), e, purpose)
+	}
 	return nil, fmt.Errorf("%w: %s (no resolver provided)", component.ErrRequirementNotFound, purpose)
 }
 
@@ -668,11 +773,11 @@ func isCircularDependencyError(err error) bool {
 	return strings.Contains(err.Error(), "circular dependency")
 }
 
-func NewContainer(opts ...Option) component.Registry {
+func NewContainer(opts ...Option) component.Container {
 	c := &containerImpl{
 		modules:           make(map[moduleKey]*moduleState),
 		providers:         make(map[component.Category][]*providerEntry),
-		categoryResolvers: make(map[component.Category]component.Resolver),
+		categoryResolvers: make(map[component.Category]component.ConfigResolver),
 	}
 	for _, opt := range opts {
 		if opt != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
 )
@@ -15,14 +16,14 @@ func TestEngine_InjectFeature(t *testing.T) {
 
 	// 1. Inject a named instance
 	myInst := &mockComponent{Name: "manual"}
-	reg.Inject(component.CategoryLogger, "manual_logger", myInst)
+	reg.Inject(runtime.CategoryLogger, "manual_logger", myInst)
 
 	// 2. Inject a default instance (with higher priority)
 	defaultInst := &mockComponent{Name: "default_injected"}
-	reg.Inject(component.CategoryLogger, component.DefaultName, defaultInst)
+	reg.Inject(runtime.CategoryLogger, "", defaultInst)
 
 	// Verify manual logger
-	inst, err := reg.In(component.CategoryLogger).Get(ctx, "manual_logger")
+	inst, err := reg.In(runtime.CategoryLogger).Get(ctx, "manual_logger")
 	if err != nil {
 		t.Fatalf("Failed to get injected logger: %v", err)
 	}
@@ -31,7 +32,7 @@ func TestEngine_InjectFeature(t *testing.T) {
 	}
 
 	// Verify default injected logger
-	inst, err = reg.In(component.CategoryLogger).Get(ctx, "")
+	inst, err = reg.In(runtime.CategoryLogger).Get(ctx, "")
 	if err != nil {
 		t.Fatalf("Failed to get default injected logger: %v", err)
 	}
@@ -45,7 +46,7 @@ func TestEngine_SeedingFeature(t *testing.T) {
 	ctx := context.Background()
 	reg := engine.NewContainer()
 
-	reg.Register(component.CategoryDatabase, simpleProvider, engine.WithDefaultEntry("predefined_db"))
+	reg.Register(runtime.CategoryDatabase, simpleProvider, engine.WithDefaultEntry("predefined_db"))
 
 	// Load with EMPTY source
 	err := reg.Load(ctx, nil)
@@ -54,7 +55,7 @@ func TestEngine_SeedingFeature(t *testing.T) {
 	}
 
 	// Should still find predefined_db
-	inst, err := reg.In(component.CategoryDatabase).Get(ctx, "predefined_db")
+	inst, err := reg.In(runtime.CategoryDatabase).Get(ctx, "predefined_db")
 	if err != nil {
 		t.Fatalf("Seeding failed: %v", err)
 	}
@@ -68,7 +69,7 @@ func TestEngine_Iteration(t *testing.T) {
 	ctx := context.Background()
 	reg := engine.NewContainer()
 
-	reg.Register(component.CategoryCache, simpleProvider, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	reg.Register(runtime.CategoryCache, simpleProvider, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{
 				{Name: "c1", Value: "v1"},
@@ -81,7 +82,7 @@ func TestEngine_Iteration(t *testing.T) {
 
 	count := 0
 	names := make(map[string]bool)
-	for name, _ := range reg.In(component.CategoryCache).Iter(ctx) {
+	for name, _ := range reg.In(runtime.CategoryCache).Iter(ctx) {
 		count++
 		names[name] = true
 	}

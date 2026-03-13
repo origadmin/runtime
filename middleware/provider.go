@@ -22,14 +22,15 @@ type Provider interface {
 // providerImpl implements the Provider interface.
 type providerImpl struct {
 	locator component.Locator
+	scope   component.Scope
 }
 
 func (p *providerImpl) Middleware(name string) (KMiddleware, error) {
-	return comp.Get[KMiddleware](context.Background(), p.locator.In(component.CategoryMiddleware), name)
+	return comp.Get[KMiddleware](context.Background(), p.locator.In(CategoryMiddleware).WithInScope(p.scope), name)
 }
 
 func (p *providerImpl) DefaultMiddleware() (KMiddleware, error) {
-	return comp.GetDefault[KMiddleware](context.Background(), p.locator.In(component.CategoryMiddleware))
+	return comp.GetDefault[KMiddleware](context.Background(), p.locator.In(CategoryMiddleware).WithInScope(p.scope))
 }
 
 // GetMiddlewareList collects all middlewares from the given locator as a slice.
@@ -54,9 +55,9 @@ func GetMiddlewares(ctx context.Context, locator component.Locator) (map[string]
 	return mws, nil
 }
 
-// NewProvider creates a new middleware provider instance.
-func NewProvider(locator component.Locator) Provider {
-	return &providerImpl{locator: locator}
+// NewProvider creates a new middleware provider instance for a specific scope.
+func NewProvider(locator component.Locator, scope component.Scope) Provider {
+	return &providerImpl{locator: locator, scope: scope}
 }
 
 // collectOptions gathers all required options for middleware creation via Require calls.
@@ -69,7 +70,7 @@ func collectOptions(h component.Handle) (*middlewarev1.Middleware, []Option, err
 
 	// 2. Resolve dynamic creation options (Carrier, Logger, etc.) via Require
 	// This is where silent logic like WithCarrier for Selectors is injected.
-	opts, err := comp.RequireTyped[[]Option](h, component.RequirementOption)
+	opts, err := comp.RequireTyped[[]Option](h, RequirementOption)
 	if err != nil && !errors.Is(err, component.ErrRequirementNotFound) {
 		return nil, nil, err
 	}
@@ -79,7 +80,7 @@ func collectOptions(h component.Handle) (*middlewarev1.Middleware, []Option, err
 
 // ServerProvider is the engine-compatible provider for server-side middleware components.
 var ServerProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
-	if h.Scope() != component.ServerScope {
+	if h.Scope() != ServerScope {
 		return nil, nil
 	}
 	cfg, opts, err := collectOptions(h)
@@ -95,7 +96,7 @@ var ServerProvider component.Provider = func(ctx context.Context, h component.Ha
 
 // ClientProvider is the engine-compatible provider for client-side middleware components.
 var ClientProvider component.Provider = func(ctx context.Context, h component.Handle) (any, error) {
-	if h.Scope() != component.ClientScope {
+	if h.Scope() != ClientScope {
 		return nil, nil
 	}
 	cfg, opts, err := collectOptions(h)
@@ -115,7 +116,7 @@ var DefaultProvider component.Provider = func(ctx context.Context, h component.H
 	if err != nil {
 		return nil, err
 	}
-	if h.Scope() == component.ClientScope {
+	if h.Scope() == ClientScope {
 		m, ok := NewClient(cfg, opts...)
 		if ok {
 			return m, nil

@@ -28,7 +28,7 @@ import (
 type App struct {
 	appInfo *appv1.App
 	result  bootstrap.Result
-	engine  component.Registry
+	engine  component.Container
 	ctx     context.Context
 	cancel  context.CancelFunc
 }
@@ -67,11 +67,16 @@ func NewWithAppInfo(info *appv1.App, opts ...Option) *App {
 	return app
 }
 
-// WithRegistry sets a callback to configure the internal engine registry.
-func WithRegistry(fn func(component.Registry)) Option {
+// WithContainer sets a callback to configure the internal engine container.
+func WithContainer(fn func(component.Container)) Option {
 	return func(a *App) {
 		fn(a.engine)
 	}
+}
+
+// Register adds a component registration to the engine.
+func Register(cat Category, p Provider, opts ...RegisterOption) {
+	engine.Register(cat, p, opts...)
 }
 
 func (r *App) registerDefaultFactories() {
@@ -145,8 +150,12 @@ func (r *App) Logger() log.Logger {
 	}
 	return l
 }
-func (r *App) Result() bootstrap.Result      { return r.result }
-func (r *App) Container() component.Registry { return r.engine }
+func (r *App) Result() bootstrap.Result       { return r.result }
+func (r *App) Container() component.Container { return r.engine }
+
+func (r *App) In(cat Category, opts ...InOption) component.Registry {
+	return r.engine.In(cat, opts...)
+}
 
 // Context returns the app context.
 func (r *App) Context() context.Context { return r.ctx }

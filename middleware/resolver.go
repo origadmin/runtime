@@ -11,11 +11,12 @@ import (
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/helpers/comp"
+	"github.com/origadmin/runtime/helpers/configutil"
 	"github.com/origadmin/runtime/log"
 )
 
 // Resolve resolves the middleware configuration.
-func Resolve(source any, _ component.Category) (*component.ModuleConfig, error) {
+func Resolve(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 	if c, ok := source.(contracts.MiddlewareConfig); ok {
 		mws := c.GetMiddlewares()
 		if mws == nil {
@@ -26,7 +27,7 @@ func Resolve(source any, _ component.Category) (*component.ModuleConfig, error) 
 			if !entry.GetEnabled() {
 				continue
 			}
-			name := comp.ExtractName(entry)
+			name := configutil.ExtractName(entry)
 			if name != "" {
 				res.Entries = append(res.Entries, component.ConfigEntry{
 					Name:  name,
@@ -47,7 +48,7 @@ func Resolve(source any, _ component.Category) (*component.ModuleConfig, error) 
 
 // resolveRequirement provides silent resolution for middleware dependencies.
 func resolveRequirement(ctx context.Context, h component.Handle, purpose string) (any, error) {
-	if purpose == component.RequirementOption {
+	if purpose == RequirementOption {
 		// Logic: collect all other components in the current perspective to build options
 
 		// If it's a selector, it needs the carrier of all OTHER middlewares in its scope
@@ -57,7 +58,7 @@ func resolveRequirement(ctx context.Context, h component.Handle, purpose string)
 
 		for name, inst := range h.Locator().Iter(ctx) {
 			if m, ok := inst.(KMiddleware); ok {
-				if h.Scope() == component.ClientScope {
+				if h.Scope() == ClientScope {
 					clients[name] = m
 				} else {
 					servers[name] = m
@@ -66,17 +67,16 @@ func resolveRequirement(ctx context.Context, h component.Handle, purpose string)
 		}
 
 		var resOpts []Option
-		if h.Scope() == component.ClientScope && len(clients) > 0 {
+		if h.Scope() == ClientScope && len(clients) > 0 {
 			resOpts = append(resOpts, WithClientCarrier(clients))
-		} else if h.Scope() == component.ServerScope && len(servers) > 0 {
+		} else if h.Scope() == ServerScope && len(servers) > 0 {
 			resOpts = append(resOpts, WithServerCarrier(servers))
 		}
 
 		// Also attach global options like Logger
-		if l, err := comp.GetDefault[log.Logger](ctx, h.Locator().In(component.CategoryLogger)); err == nil {
+		if l, err := comp.GetDefault[log.Logger](ctx, h.Locator().In(CategoryLogger)); err == nil {
 			resOpts = append(resOpts, log.WithLogger(l))
 		}
-
 		return resOpts, nil
 	}
 	return nil, fmt.Errorf("middleware: unknown requirement %s", purpose)

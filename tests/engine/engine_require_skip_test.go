@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/origadmin/runtime"
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
+	"github.com/origadmin/runtime/middleware"
 )
 
 // TestEngine_Require verifies that category-based resolution can be easily 
@@ -16,23 +18,23 @@ func TestEngine_Require(t *testing.T) {
 	reg := engine.NewContainer()
 
 	// 1. Register a dependency (e.g., Logger)
-	reg.Register(component.CategoryLogger, func(ctx context.Context, h component.Handle) (any, error) {
+	reg.Register(runtime.CategoryLogger, func(ctx context.Context, h component.Handle) (any, error) {
 		return &mockComponent{Name: "logger-impl"}, nil
-	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	}, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{{Name: "default", Value: "log-cfg"}},
 		}, nil
 	}))
 
 	// 2. Register a dependent component (e.g., Server) that requires Logger
-	reg.Register(component.CategoryServer, func(ctx context.Context, h component.Handle) (any, error) {
+	reg.Register(runtime.CategoryServer, func(ctx context.Context, h component.Handle) (any, error) {
 		// Use Require to get the logger
 		logger, err := h.Require("log")
 		if err != nil {
 			return nil, err
 		}
 		return &mockComponent{Name: "server-impl", Dep: logger}, nil
-	}, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	}, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{{
 				Name:  "default",
@@ -41,7 +43,7 @@ func TestEngine_Require(t *testing.T) {
 			// The resolver provides the mapping logic
 			RequirementResolver: func(ctx context.Context, h component.Handle, purpose string) (any, error) {
 				if purpose == "log" {
-					return h.Locator().In(component.CategoryLogger).Get(ctx, component.DefaultName)
+					return h.Locator().In(runtime.CategoryLogger).Get(ctx, "")
 				}
 				return nil, fmt.Errorf("unknown requirement: %s", purpose)
 			},
@@ -54,7 +56,7 @@ func TestEngine_Require(t *testing.T) {
 	}
 
 	// 4. Get the server and verify dependency
-	srv, err := reg.In(component.CategoryServer).Get(ctx, "default")
+	srv, err := reg.In(runtime.CategoryServer).Get(ctx, "default")
 	if err != nil {
 		t.Fatalf("Failed to get server: %v", err)
 	}
@@ -75,16 +77,16 @@ func TestEngine_MiddlewareSelectorScenario(t *testing.T) {
 	ctx := context.Background()
 	reg := engine.NewContainer()
 
-	// 1. Agnostic Provider: It just tries to Require("carrier").
+	// 1. Agnostic Provider: It just tries to Require(RequirementCarrier).
 	middlewareProvider := func(ctx context.Context, h component.Handle) (any, error) {
-		req, _ := h.Require("carrier")
+		req, _ := h.Require(middleware.RequirementCarrier)
 		return &mockComponent{Name: h.Name(), Dep: req}, nil
 	}
-	reg.Register(component.CategoryMiddleware, middlewareProvider)
+	reg.Register(runtime.CategoryMiddleware, middlewareProvider)
 
 	// 2. Resolver: Defines which entries get the carrier resolution logic.
 	carrierResolver := func(ctx context.Context, h component.Handle, purpose string) (any, error) {
-		if purpose == "carrier" {
+		if purpose == middleware.RequirementCarrier {
 			carrier := make(map[string]any)
 			// h.Locator() is already scoped and automatically skips the requester instance.
 			for name, inst := range h.Locator().Iter(ctx) {
@@ -95,7 +97,7 @@ func TestEngine_MiddlewareSelectorScenario(t *testing.T) {
 		return nil, fmt.Errorf("unknown requirement: %s", purpose)
 	}
 
-	reg.Register(component.CategoryMiddleware, nil, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	reg.Register(runtime.CategoryMiddleware, nil, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{
 				{Name: "auth", Value: "auth-cfg"},
@@ -111,7 +113,7 @@ func TestEngine_MiddlewareSelectorScenario(t *testing.T) {
 	}
 
 	// 3. Trigger instantiation. Getting selector will trigger its RequirementResolver and Iter.
-	inst, err := reg.In(component.CategoryMiddleware).Get(ctx, "selector")
+	inst, err := reg.In(runtime.CategoryMiddleware).Get(ctx, "selector")
 	if err != nil {
 		t.Fatalf("Failed to get selector: %v", err)
 	}
@@ -153,13 +155,13 @@ func TestEngine_MiddlewareSelectorSequence(t *testing.T) {
 
 	middlewareProvider := func(ctx context.Context, h component.Handle) (any, error) {
 		instantiated = append(instantiated, h.Name())
-		req, _ := h.Require("carrier")
+		req, _ := h.Require(middleware.RequirementCarrier)
 		return &mockComponent{Name: h.Name(), Dep: req}, nil
 	}
-	reg.Register(component.CategoryMiddleware, middlewareProvider)
+	reg.Register(runtime.CategoryMiddleware, middlewareProvider)
 
 	carrierResolver := func(ctx context.Context, h component.Handle, purpose string) (any, error) {
-		if purpose == "carrier" {
+		if purpose == middleware.RequirementCarrier {
 			carrier := make(map[string]any)
 			for name, inst := range h.Locator().Iter(ctx) {
 				carrier[name] = inst
@@ -169,7 +171,7 @@ func TestEngine_MiddlewareSelectorSequence(t *testing.T) {
 		return nil, fmt.Errorf("unknown requirement: %s", purpose)
 	}
 
-	reg.Register(component.CategoryMiddleware, nil, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	reg.Register(runtime.CategoryMiddleware, nil, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{
 				// Selector is FIRST
@@ -187,7 +189,7 @@ func TestEngine_MiddlewareSelectorSequence(t *testing.T) {
 
 	// 3. Directly get the selector FIRST.
 	// This should trigger: selector provider -> Require("carrier") -> Iter -> instantiate(auth), instantiate(log)
-	inst, err := reg.In(component.CategoryMiddleware).Get(ctx, "selector")
+	inst, err := reg.In(runtime.CategoryMiddleware).Get(ctx, "selector")
 	if err != nil {
 		t.Fatalf("Failed to get selector: %v", err)
 	}
@@ -220,7 +222,7 @@ func TestEngine_Skip(t *testing.T) {
 	reg := engine.NewContainer()
 
 	// Register multiple loggers
-	reg.Register(component.CategoryLogger, simpleProvider, engine.WithResolverOption(func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	reg.Register(runtime.CategoryLogger, simpleProvider, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{
 				{Name: "logger1", Value: "cfg1"},
@@ -236,7 +238,7 @@ func TestEngine_Skip(t *testing.T) {
 
 	// Verify iteration without skip
 	count := 0
-	for range reg.In(component.CategoryLogger).Iter(ctx) {
+	for range reg.In(runtime.CategoryLogger).Iter(ctx) {
 		count++
 	}
 	if count != 3 {
@@ -246,7 +248,7 @@ func TestEngine_Skip(t *testing.T) {
 	// Verify iteration WITH Skip
 	count = 0
 	// Skip "logger2"
-	iter := reg.In(component.CategoryLogger).Skip("logger2").Iter(ctx)
+	iter := reg.In(runtime.CategoryLogger).Skip("logger2").Iter(ctx)
 	for name := range iter {
 		if name == "logger2" {
 			t.Error("Skip failed: logger2 was returned in iteration")

@@ -9,105 +9,69 @@ type (
 	Category = component.Category
 	Scope    = component.Scope
 	Priority = component.Priority
-	Handle   = component.Handle
-	Provider = component.Provider
-	Registry = component.Registry
+
+	Handle    = component.Handle
+	Provider  = component.Provider
+	Registry  = component.Registry
+	Container = component.Container
 
 	RequirementResolver = component.RequirementResolver
-	Resolver            = component.Resolver
+	ConfigResolver      = component.ConfigResolver
 	Registration        = component.Registration
 	ModuleConfig        = component.ModuleConfig
 	ConfigEntry         = component.ConfigEntry
 	RegistrationOptions = component.RegistrationOptions
-	RegisterOption      = component.RegisterOption
-	InOption            = component.InOption
-	LoadOptions         = component.LoadOptions
-	LoadOption          = component.LoadOption
+
+	Option = container.Option
+
+	InOption    = component.InOption
+	Locator     = component.Locator
+	LoadOption  = component.LoadOption
+	LoadOptions = component.LoadOptions
+
+	RegisterOption = component.RegisterOption
 )
 
 const (
-	GlobalScope = component.GlobalScope
+	ReservedPrefix = component.ReservedPrefix
+
+	PriorityFramework      = component.PriorityFramework
+	PriorityInfrastructure = component.PriorityInfrastructure
+	PriorityDefault        = component.PriorityDefault
+	PriorityImportant      = component.PriorityImportant
+	PriorityCritical       = component.PriorityCritical
 )
 
-// Global Pool for init-phase registrations
-var globalPool []Registration
+var globalRegistrations []Registration
 
-// Register stores a component registration in the global pool (typically used in init()).
+// Register adds a component registration to the global pool.
 func Register(cat Category, p Provider, opts ...RegisterOption) {
-	globalPool = append(globalPool, Registration{
+	globalRegistrations = append(globalRegistrations, Registration{
 		Category: cat,
 		Provider: p,
 		Options:  opts,
 	})
 }
 
-// GlobalRegistrations returns a snapshot of the current global pool.
+// GlobalRegistrations returns a copy of all registrations in the global pool.
 func GlobalRegistrations() []Registration {
-	res := make([]Registration, len(globalPool))
-	copy(res, globalPool)
+	res := make([]Registration, len(globalRegistrations))
+	copy(res, globalRegistrations)
 	return res
 }
 
-// --- Container Bootstrapping ---
+// --- Registration Options ---
 
-type RegistryOptions struct {
-	CategoryResolvers map[Category]Resolver
-	Registrations     []Registration
-}
-
-type RegistryOption func(*RegistryOptions)
-
-// WithCategoryResolvers sets the default resolvers for specific categories.
-func WithCategoryResolvers(res map[Category]Resolver) RegistryOption {
-	return func(o *RegistryOptions) {
-		if o.CategoryResolvers == nil {
-			o.CategoryResolvers = make(map[Category]Resolver)
-		}
-		for k, v := range res {
-			o.CategoryResolvers[k] = v
-		}
-	}
-}
-
-// WithGlobalRegistrations instructs the container to load all registrations from the global pool.
-func WithGlobalRegistrations() RegistryOption {
-	return func(o *RegistryOptions) {
-		o.Registrations = append(o.Registrations, GlobalRegistrations()...)
-	}
-}
-
-// NewContainer creates a new engine container based on provided options.
-func NewContainer(opts ...RegistryOption) Registry {
-	o := &RegistryOptions{
-		CategoryResolvers: make(map[Category]Resolver),
-	}
-	for _, opt := range opts {
-		opt(o)
-	}
-
-	// Transform public options to internal container options
-	var internalOpts []container.Option
-	if len(o.CategoryResolvers) > 0 {
-		internalOpts = append(internalOpts, container.WithCategoryResolvers(o.CategoryResolvers))
-	}
-
-	reg := container.NewContainer(internalOpts...)
-	for _, r := range o.Registrations {
-		reg.Register(r.Category, r.Provider, r.Options...)
-	}
-	return reg
-}
-
-// --- Registration Options (STRICT SINGLE TAG) ---
-
-// WithScope registers the component for a specific scope.
-func WithScope(s Scope) RegisterOption {
+// WithConfigResolverOption specifies a local configuration resolver for a component.
+func WithConfigResolverOption(res ConfigResolver) RegisterOption {
 	return func(o *RegistrationOptions) {
-		o.Scopes = append(o.Scopes, s)
+		o.ConfigResolver = res
 	}
 }
 
-// WithScopes registers the component for multiple scopes.
+// Deprecated: Use WithConfigResolverOption instead.
+var WithResolverOption = WithConfigResolverOption
+
 func WithScopes(ss ...Scope) RegisterOption {
 	return func(o *RegistrationOptions) {
 		o.Scopes = append(o.Scopes, ss...)
@@ -120,42 +84,34 @@ func WithPriority(p Priority) RegisterOption {
 	}
 }
 
-// WithTag registers the component with a SINGLE identity tag.
-// Architecture Rule: A registered component has one unique identity.
 func WithTag(tag string) RegisterOption {
 	return func(o *RegistrationOptions) {
 		o.Tag = tag
 	}
 }
 
-// WithDefaultEntry ensures that a specific component name is always present in the container
-// for this provider, even if it's missing from the external configuration source.
-func WithDefaultEntry(name string) RegisterOption {
+func WithDefaultEntries(names ...string) RegisterOption {
 	return func(o *RegistrationOptions) {
-		o.DefaultEntries = append(o.DefaultEntries, name)
+		o.DefaultEntries = append(o.DefaultEntries, names...)
 	}
 }
 
-// WithResolverOption specifies a local configuration resolver for a component.
-func WithResolverOption(res Resolver) RegisterOption {
-	return func(o *RegistrationOptions) {
-		o.Resolver = res
-	}
-}
+// Deprecated: Use WithDefaultEntries instead.
+var WithDefaultEntry = WithDefaultEntries
 
 // --- Perspective Options (USING INTERFACE METHODS) ---
 
 // WithInScope specifies the perspective scope.
 func WithInScope(s Scope) InOption {
-	return func(l component.Locator) component.Locator {
-		return l.WithInScope(s)
+	return func(l Registry) Registry {
+		return l.WithInScope(s).(Registry)
 	}
 }
 
 // WithInTags specifies the perspective tags.
 func WithInTags(tags ...string) InOption {
-	return func(l component.Locator) component.Locator {
-		return l.WithInTags(tags...)
+	return func(l Registry) Registry {
+		return l.WithInTags(tags...).(Registry)
 	}
 }
 
@@ -179,8 +135,58 @@ func ForScope(s Scope) LoadOption {
 	}
 }
 
-func WithLoadResolver(res Resolver) LoadOption {
+func WithLoadResolver(res ConfigResolver) LoadOption {
 	return func(o *LoadOptions) {
 		o.Resolver = res
 	}
+}
+
+// --- Container Bootstrapping ---
+
+type RegistryOptions struct {
+	CategoryResolvers map[Category]ConfigResolver
+	Registrations     []Registration
+}
+
+type RegistryOption func(*RegistryOptions)
+
+// WithCategoryResolvers sets the default resolvers for specific categories.
+func WithCategoryResolvers(res map[Category]ConfigResolver) RegistryOption {
+	return func(o *RegistryOptions) {
+		if o.CategoryResolvers == nil {
+			o.CategoryResolvers = make(map[Category]ConfigResolver)
+		}
+		for k, v := range res {
+			o.CategoryResolvers[k] = v
+		}
+	}
+}
+
+// WithGlobalRegistrations instructs the container to load all registrations from the global pool.
+func WithGlobalRegistrations() RegistryOption {
+	return func(o *RegistryOptions) {
+		o.Registrations = append(o.Registrations, GlobalRegistrations()...)
+	}
+}
+
+// NewContainer creates a new engine container based on provided options.
+func NewContainer(opts ...RegistryOption) Container {
+	o := &RegistryOptions{
+		CategoryResolvers: make(map[Category]ConfigResolver),
+	}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	// Transform public options to internal container options
+	var internalOpts []container.Option
+	if len(o.CategoryResolvers) > 0 {
+		internalOpts = append(internalOpts, container.WithCategoryResolvers(o.CategoryResolvers))
+	}
+
+	reg := container.NewContainer(internalOpts...)
+	for _, r := range o.Registrations {
+		reg.Register(r.Category, r.Provider, r.Options...)
+	}
+	return reg
 }

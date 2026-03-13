@@ -27,19 +27,19 @@ type providerImpl struct {
 }
 
 func (p *providerImpl) Registrar(name string) (KRegistrar, error) {
-	return comp.Get[KRegistrar](context.Background(), p.locator.In(component.CategoryRegistrar), name)
+	return comp.Get[KRegistrar](context.Background(), p.locator.In(CategoryRegistrar), name)
 }
 
 func (p *providerImpl) DefaultRegistrar() (KRegistrar, error) {
-	return comp.GetDefault[KRegistrar](context.Background(), p.locator.In(component.CategoryRegistrar))
+	return comp.GetDefault[KRegistrar](context.Background(), p.locator.In(CategoryRegistrar))
 }
 
 func (p *providerImpl) Discovery(name string) (KDiscovery, error) {
-	return comp.Get[KDiscovery](context.Background(), p.locator.In(component.CategoryDiscovery), name)
+	return comp.Get[KDiscovery](context.Background(), p.locator.In(CategoryDiscovery), name)
 }
 
 func (p *providerImpl) DefaultDiscovery() (KDiscovery, error) {
-	return comp.GetDefault[KDiscovery](context.Background(), p.locator.In(component.CategoryDiscovery))
+	return comp.GetDefault[KDiscovery](context.Background(), p.locator.In(CategoryDiscovery))
 }
 
 // GetDiscoveries collects all discovery instances from the given locator.
