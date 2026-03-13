@@ -10,7 +10,6 @@ import (
 
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/iterator"
 	"github.com/origadmin/runtime/helpers/comp"
 	"github.com/origadmin/runtime/helpers/configutil"
 	"github.com/origadmin/runtime/log"
@@ -69,7 +68,7 @@ func getCarrierOptions(ctx context.Context, h component.Handle) []Option {
 	servers := make(map[string]KMiddleware)
 
 	// h.Locator() is already scoped and automatically skips the requester (self).
-	var it iterator.Iterator = h.Locator().Iter(ctx)
+	var it = h.Locator().Iter(ctx)
 	for it.Next() {
 		name, inst := it.Value()
 		if m, ok := inst.(KMiddleware); ok {

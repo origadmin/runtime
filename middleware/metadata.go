@@ -18,7 +18,7 @@ type metadataFactory struct {
 func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	metadataConfig := cfg.GetMetadata()
 	if metadataConfig == nil {
-		return nil, false
+		return middlewareMetadata.Client(), true
 	}
 
 	var metadataOpts []middlewareMetadata.Option
@@ -38,7 +38,7 @@ func (m metadataFactory) NewMiddlewareClient(cfg *middlewarev1.Middleware, opts 
 func (m metadataFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts ...Option) (KMiddleware, bool) {
 	metadataConfig := cfg.GetMetadata()
 	if metadataConfig == nil {
-		return nil, false
+		return middlewareMetadata.Server(), true
 	}
 
 	var metadataOpts []middlewareMetadata.Option

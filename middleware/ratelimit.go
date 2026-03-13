@@ -28,7 +28,8 @@ func (r rateLimitFactory) NewMiddlewareServer(cfg *middlewarev1.Middleware, opts
 
 	ratelimitConfig := cfg.GetRateLimiter()
 	if ratelimitConfig == nil {
-		return nil, false
+		logger.Debugf("using default BBR rate limiter")
+		return ratelimit.Server(), true
 	}
 
 	var rlOpts []ratelimit.Option
