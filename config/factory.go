@@ -9,7 +9,7 @@ import (
 	sourcev1 "github.com/origadmin/runtime/api/gen/go/config/source/v1"
 	"github.com/origadmin/runtime/contracts/builder"
 	"github.com/origadmin/runtime/contracts/options"
-	internalfactory "github.com/origadmin/runtime/helpers/builderutil"
+	internalfactory "github.com/origadmin/runtime/helpers/builder"
 	"github.com/origadmin/runtime/log"
 )
 

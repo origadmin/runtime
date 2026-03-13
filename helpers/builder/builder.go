@@ -1,4 +1,4 @@
-package builderutil
+package builder
 
 import (
 	"context"

@@ -15,6 +15,58 @@ import (
 
 // --- Extraction Helpers ---
 
+// ExtractName attempts to get a name from an item using common interfaces.
+func ExtractName(item any) string {
+	if item == nil {
+		return ""
+	}
+	if n, ok := item.(component.Named); ok {
+		if name := n.GetName(); name != "" {
+			return name
+		}
+	}
+	if t, ok := item.(component.Typed); ok {
+		if name := t.GetType(); name != "" {
+			return name
+		}
+	}
+	if d, ok := item.(component.Dialectal); ok {
+		if name := d.GetDialect(); name != "" {
+			return name
+		}
+	}
+	if d, ok := item.(component.Driver); ok {
+		if name := d.GetDriver(); name != "" {
+			return name
+		}
+	}
+	return ""
+}
+
+// ExtractType attempts to get a type from an item using common interfaces.
+func ExtractType(item any) string {
+	if item == nil {
+		return ""
+	}
+	if t, ok := item.(component.Typed); ok {
+		return t.GetType()
+	}
+	return ""
+}
+
+// RequireTyped retrieves a requirement by purpose from a handle and asserts its type.
+func RequireTyped[T any](h component.Handle, purpose string) (T, error) {
+	var zero T
+	res, err := h.Require(purpose)
+	if err != nil {
+		return zero, err
+	}
+	if t, ok := res.(T); ok {
+		return t, nil
+	}
+	return zero, fmt.Errorf("engine: requirement '%s' is not of type %T", purpose, zero)
+}
+
 // AsConfig extracts and asserts the configuration from a handle.
 func AsConfig[T any](h component.Handle) (*T, error) {
 	cfg := h.Config()
@@ -24,7 +76,8 @@ func AsConfig[T any](h component.Handle) (*T, error) {
 	if t, ok := cfg.(*T); ok {
 		return t, nil
 	}
-	return nil, nil
+	var zero T
+	return nil, fmt.Errorf("engine: config for component '%s' in category '%s' is not of type %T", h.Name(), h.Category(), &zero)
 }
 
 // --- Retrieval Helpers ---

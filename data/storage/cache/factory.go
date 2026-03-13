@@ -8,7 +8,7 @@ import (
 	cachev1 "github.com/origadmin/runtime/api/gen/go/config/data/cache/v1"
 	"github.com/origadmin/runtime/contracts/options"
 	storageiface "github.com/origadmin/runtime/contracts/storage"
-	internalfactory "github.com/origadmin/runtime/helpers/builderutil"
+	internalfactory "github.com/origadmin/runtime/helpers/builder"
 )
 
 const Module = "storage.cache"

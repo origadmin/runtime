@@ -7,7 +7,7 @@ import (
 	"github.com/origadmin/runtime/contracts"
 	"github.com/origadmin/runtime/contracts/options"
 	runtimeerrors "github.com/origadmin/runtime/errors"
-	internalfactory "github.com/origadmin/runtime/helpers/builderutil"
+	internalfactory "github.com/origadmin/runtime/helpers/builder"
 )
 
 // Protocol is the name of the gRPC, HTTP, or other protocol.

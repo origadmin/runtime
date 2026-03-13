@@ -6,7 +6,13 @@ package component
 
 import (
 	"context"
+	"errors"
 	"iter"
+)
+
+var (
+	// ErrRequirementNotFound is returned when a requested requirement is not found.
+	ErrRequirementNotFound = errors.New("engine: requirement not found")
 )
 
 type (
@@ -112,8 +118,16 @@ type ConfigEntry struct {
 	Value               any
 	RequirementResolver RequirementResolver
 }
-
 type RequirementResolver func(ctx context.Context, h Handle, purpose string) (any, error)
+
+const (
+	// RequirementOption is the purpose for gathering creation options.
+	RequirementOption = "option"
+	// RequirementConfig is the purpose for gathering configuration.
+	RequirementConfig = "config"
+	// RequirementCarrier is the purpose for gathering other components in the same scope.
+	RequirementCarrier = "carrier"
+)
 
 type RegistrationOptions struct {
 	Resolver            Resolver

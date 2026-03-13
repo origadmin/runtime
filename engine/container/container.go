@@ -658,7 +658,7 @@ func (e *entryHandle) Require(purpose string) (any, error) {
 		return e.meta.requirementResolver(context.Background(), e, purpose)
 	}
 
-	return nil, fmt.Errorf("engine: requirement %s not found (no resolver provided)", purpose)
+	return nil, fmt.Errorf("%w: %s (no resolver provided)", component.ErrRequirementNotFound, purpose)
 }
 
 func isCircularDependencyError(err error) bool {

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
 	kregistry "github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
@@ -21,6 +20,7 @@ import (
 	"github.com/origadmin/runtime/engine/bootstrap"
 	enginecontext "github.com/origadmin/runtime/engine/context"
 	"github.com/origadmin/runtime/helpers/comp"
+	"github.com/origadmin/runtime/log"
 	"github.com/origadmin/runtime/registry"
 )
 
@@ -77,7 +77,7 @@ func WithRegistry(fn func(component.Registry)) Option {
 func (r *App) registerDefaultFactories() {
 	// Logger Default
 	r.engine.Register(CategoryLogger,
-		DefaultLoggerProvider,
+		log.DefaultProvider,
 		engine.WithPriority(component.PriorityFramework))
 
 	// Registry components are self-registered by the registry package init()
