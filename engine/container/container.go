@@ -3,11 +3,11 @@ package container
 import (
 	"context"
 	"fmt"
-	"iter"
 	"strings"
 	"sync"
 
 	"github.com/origadmin/runtime/contracts/component"
+	"github.com/origadmin/runtime/contracts/iterator"
 )
 
 type Status int
@@ -52,9 +52,53 @@ type containerBackend interface {
 	requirement(cat component.Category, purpose string, res component.RequirementResolver)
 	getCategoryRequirementResolver(cat component.Category, purpose string) component.RequirementResolver
 	instantiate(ctx context.Context, cat component.Category, scope component.Scope, name string, tags []string) (any, error)
-	iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any]
+	iter(ctx context.Context, l *locatorHandle) iterator.Iterator
 	scopes(cat component.Category) []component.Scope
 }
+
+type containerIterator struct {
+	ctx      context.Context
+	l        *locatorHandle
+	order    []string
+	cursor   int
+	lastErr  error
+	lastName string
+	lastInst any
+}
+
+func (i *containerIterator) Next() bool {
+	if i.lastErr != nil || i.cursor >= len(i.order) {
+		return false
+	}
+	for i.cursor < len(i.order) {
+		name := i.order[i.cursor]
+		i.cursor++
+		if contains(i.l.skips, name) {
+			continue
+		}
+		inst, err := i.l.c.instantiate(i.ctx, i.l.category, i.l.scope, name, i.l.tags)
+		if err != nil {
+			i.lastErr = err
+			return false
+		}
+		i.lastName = name
+		i.lastInst = inst
+		return true
+	}
+	return false
+}
+
+func (i *containerIterator) Value() (string, any) {
+	return i.lastName, i.lastInst
+}
+
+func (i *containerIterator) Err() error {
+	return i.lastErr
+}
+
+// makeInstanceKey defines the PHYSICAL COORDINATE of an instance.
+// ... (rest of methods unchanged, I will use precise replacement below)
+
 
 // makeInstanceKey defines the PHYSICAL COORDINATE of an instance.
 func makeInstanceKey(name, tag string) string {
@@ -472,33 +516,23 @@ func (c *containerImpl) scopes(cat component.Category) []component.Scope {
 	return res
 }
 
-func (c *containerImpl) iter(ctx context.Context, cat component.Category, scope component.Scope, tags []string, skips []string) iter.Seq2[string, any] {
-	return func(yield func(string, any) bool) {
-		internalScope := scope
-		if scope == "" {
-			internalScope = globalScopeName
-		}
-		mKey := moduleKey{category: cat, scope: internalScope}
-		s := c.getModuleState(mKey)
-		s.mu.RLock()
-		order := make([]string, len(s.order))
-		copy(order, s.order)
-		s.mu.RUnlock()
-		for _, name := range order {
-			if contains(skips, name) {
-				continue
-			}
-			inst, err := c.instantiate(ctx, cat, internalScope, name, tags)
-			if err != nil {
-				if isCircularDependencyError(err) {
-					continue
-				}
-				continue
-			}
-			if !yield(name, inst) {
-				return
-			}
-		}
+func (c *containerImpl) iter(ctx context.Context, l *locatorHandle) iterator.Iterator {
+	internalScope := l.scope
+	if l.scope == "" {
+		internalScope = globalScopeName
+	}
+	mKey := moduleKey{category: l.category, scope: internalScope}
+	s := c.getModuleState(mKey)
+	s.mu.RLock()
+	order := make([]string, len(s.order))
+	copy(order, s.order)
+	s.mu.RUnlock()
+
+	return &containerIterator{
+		ctx:    ctx,
+		l:      l,
+		order:  order,
+		cursor: 0,
 	}
 }
 
@@ -661,8 +695,8 @@ type locatorHandle struct {
 func (l *locatorHandle) Get(ctx context.Context, name string) (any, error) {
 	return l.c.instantiate(ctx, l.category, l.scope, name, l.tags)
 }
-func (l *locatorHandle) Iter(ctx context.Context) iter.Seq2[string, any] {
-	return l.c.iter(ctx, l.category, l.scope, l.tags, l.skips)
+func (l *locatorHandle) Iter(ctx context.Context) iterator.Iterator {
+	return l.c.iter(ctx, l)
 }
 func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) component.Registry {
 	var res component.Registry = &locatorHandle{c: l.c, category: cat, scope: l.scope, tags: l.tags}
@@ -764,13 +798,6 @@ func (e *entryHandle) Require(purpose string) (any, error) {
 		return res(context.Background(), e, purpose)
 	}
 	return nil, fmt.Errorf("%w: %s (no resolver provided)", component.ErrRequirementNotFound, purpose)
-}
-
-func isCircularDependencyError(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(err.Error(), "circular dependency")
 }
 
 func NewContainer(opts ...Option) component.Container {

@@ -88,11 +88,12 @@ func TestEngine_MiddlewareSelectorScenario(t *testing.T) {
 	carrierResolver := func(ctx context.Context, h component.Handle, purpose string) (any, error) {
 		if purpose == middleware.RequirementCarrier {
 			carrier := make(map[string]any)
-			// h.Locator() is already scoped and automatically skips the requester instance.
-			for name, inst := range h.Locator().Iter(ctx) {
+			it := h.Locator().Iter(ctx)
+			for it.Next() {
+				name, inst := it.Value()
 				carrier[name] = inst
 			}
-			return carrier, nil
+			return carrier, it.Err()
 		}
 		return nil, fmt.Errorf("unknown requirement: %s", purpose)
 	}
@@ -163,10 +164,12 @@ func TestEngine_MiddlewareSelectorSequence(t *testing.T) {
 	carrierResolver := func(ctx context.Context, h component.Handle, purpose string) (any, error) {
 		if purpose == middleware.RequirementCarrier {
 			carrier := make(map[string]any)
-			for name, inst := range h.Locator().Iter(ctx) {
+			it := h.Locator().Iter(ctx)
+			for it.Next() {
+				name, inst := it.Value()
 				carrier[name] = inst
 			}
-			return carrier, nil
+			return carrier, it.Err()
 		}
 		return nil, fmt.Errorf("unknown requirement: %s", purpose)
 	}
@@ -238,7 +241,8 @@ func TestEngine_Skip(t *testing.T) {
 
 	// Verify iteration without skip
 	count := 0
-	for range reg.In(runtime.CategoryLogger).Iter(ctx) {
+	it := reg.In(runtime.CategoryLogger).Iter(ctx)
+	for it.Next() {
 		count++
 	}
 	if count != 3 {
@@ -248,8 +252,9 @@ func TestEngine_Skip(t *testing.T) {
 	// Verify iteration WITH Skip
 	count = 0
 	// Skip "logger2"
-	iter := reg.In(runtime.CategoryLogger).Skip("logger2").Iter(ctx)
-	for name := range iter {
+	itSkip := reg.In(runtime.CategoryLogger).Skip("logger2").Iter(ctx)
+	for itSkip.Next() {
+		name, _ := itSkip.Value()
 		if name == "logger2" {
 			t.Error("Skip failed: logger2 was returned in iteration")
 		}

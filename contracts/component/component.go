@@ -7,7 +7,8 @@ package component
 import (
 	"context"
 	"errors"
-	"iter"
+
+	"github.com/origadmin/runtime/contracts/iterator"
 )
 
 var (
@@ -24,11 +25,13 @@ type (
 const (
 	// ReservedPrefix defines identifiers owned by the system.
 	ReservedPrefix = "_"
+	// DefaultName defines the name of the default component instance.
+	DefaultName = "_default"
 )
 
 type Locator interface {
 	Get(ctx context.Context, name string) (any, error)
-	Iter(ctx context.Context) iter.Seq2[string, any]
+	Iter(ctx context.Context) iterator.Iterator
 	In(cat Category, opts ...InOption) Registry
 	WithInScope(s Scope) Locator
 	WithInTags(tags ...string) Locator

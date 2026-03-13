@@ -9,6 +9,7 @@ import (
 
 	discoveryv1 "github.com/origadmin/runtime/api/gen/go/config/discovery/v1"
 	"github.com/origadmin/runtime/contracts/component"
+	"github.com/origadmin/runtime/contracts/iterator"
 	"github.com/origadmin/runtime/helpers/comp"
 )
 
@@ -45,12 +46,14 @@ func (p *providerImpl) DefaultDiscovery() (KDiscovery, error) {
 // GetDiscoveries collects all discovery instances from the given locator.
 func GetDiscoveries(ctx context.Context, h component.Locator) (map[string]KDiscovery, error) {
 	m := make(map[string]KDiscovery)
-	for name, inst := range h.Iter(ctx) {
+	var it iterator.Iterator = h.Iter(ctx)
+	for it.Next() {
+		name, inst := it.Value()
 		if d, ok := inst.(KDiscovery); ok {
 			m[name] = d
 		}
 	}
-	return m, nil
+	return m, it.Err()
 }
 
 // NewProvider creates a new registry provider instance.

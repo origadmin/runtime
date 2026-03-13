@@ -82,9 +82,14 @@ func TestEngine_Iteration(t *testing.T) {
 
 	count := 0
 	names := make(map[string]bool)
-	for name, _ := range reg.In(runtime.CategoryCache).Iter(ctx) {
+	it := reg.In(runtime.CategoryCache).Iter(ctx)
+	for it.Next() {
+		name, _ := it.Value()
 		count++
 		names[name] = true
+	}
+	if err := it.Err(); err != nil {
+		t.Fatalf("Iteration failed: %v", err)
 	}
 
 	if count != 2 {

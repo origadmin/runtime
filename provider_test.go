@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/origadmin/runtime/contracts/component"
+	"github.com/origadmin/runtime/contracts/iterator"
 	"github.com/origadmin/runtime/engine"
 	"github.com/origadmin/runtime/engine/container"
 )
@@ -30,7 +31,7 @@ func TestDefaultResolvers_Functionality(t *testing.T) {
 	ctx := context.Background()
 
 	// Use individual container for this test to avoid shared state
-	customResolver := func(source any, cat component.Category) (*component.ModuleConfig, error) {
+	customResolver := func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		if c, ok := source.(*MockContainer); ok {
 			res := &component.ModuleConfig{Active: c.Active}
 			for _, cfg := range c.Configs {
@@ -41,7 +42,7 @@ func TestDefaultResolvers_Functionality(t *testing.T) {
 		return nil, nil
 	}
 
-	reg := container.NewContainer(container.WithCategoryResolvers(map[component.Category]component.Resolver{
+	reg := container.NewContainer(container.WithCategoryResolvers(map[component.Category]component.ConfigResolver{
 		"mocks": customResolver,
 	}))
 
@@ -59,7 +60,9 @@ func TestDefaultResolvers_Functionality(t *testing.T) {
 
 	h := reg.In("mocks")
 	foundA := false
-	for name := range h.Iter(ctx) {
+	var it iterator.Iterator = h.Iter(ctx)
+	for it.Next() {
+		name, _ := it.Value()
 		if name == "A" {
 			foundA = true
 		}

@@ -10,13 +10,13 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/contracts/component"
+	"github.com/origadmin/runtime/contracts/iterator"
 	"github.com/origadmin/runtime/helpers/comp"
 )
 
 // Provider defines the interface for a middleware service provider.
 type Provider interface {
 	Middleware(name string) (KMiddleware, error)
-	DefaultMiddleware() (KMiddleware, error)
 }
 
 // providerImpl implements the Provider interface.
@@ -29,30 +29,30 @@ func (p *providerImpl) Middleware(name string) (KMiddleware, error) {
 	return comp.Get[KMiddleware](context.Background(), p.locator.In(CategoryMiddleware).WithInScope(p.scope), name)
 }
 
-func (p *providerImpl) DefaultMiddleware() (KMiddleware, error) {
-	return comp.GetDefault[KMiddleware](context.Background(), p.locator.In(CategoryMiddleware).WithInScope(p.scope))
-}
-
 // GetMiddlewareList collects all middlewares from the given locator as a slice.
 func GetMiddlewareList(ctx context.Context, locator component.Locator) ([]KMiddleware, error) {
 	var mws []KMiddleware
-	for _, inst := range locator.Iter(ctx) {
+	var it iterator.Iterator = locator.Iter(ctx)
+	for it.Next() {
+		_, inst := it.Value()
 		if m, ok := inst.(KMiddleware); ok {
 			mws = append(mws, m)
 		}
 	}
-	return mws, nil
+	return mws, it.Err()
 }
 
 // GetMiddlewares collects all available middlewares from the given locator as a map.
 func GetMiddlewares(ctx context.Context, locator component.Locator) (map[string]KMiddleware, error) {
 	mws := make(map[string]KMiddleware)
-	for name, inst := range locator.Iter(ctx) {
+	var it iterator.Iterator = locator.Iter(ctx)
+	for it.Next() {
+		name, inst := it.Value()
 		if m, ok := inst.(KMiddleware); ok {
 			mws[name] = m
 		}
 	}
-	return mws, nil
+	return mws, it.Err()
 }
 
 // NewProvider creates a new middleware provider instance for a specific scope.

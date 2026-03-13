@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/origadmin/runtime"
+	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
 )
 
@@ -72,4 +73,60 @@ func TestEngine_LifecycleProtection(t *testing.T) {
 	}()
 
 	reg.Register(runtime.CategoryLogger, simpleProvider)
+}
+
+// TestEngine_IterErrorHandling verifies that Iter does not silently hide real logical errors.
+// If a component in the iteration has a circular dependency (not with the caller), 
+// it should be skipped but we should be able to verify it's not a "clean" skip.
+func TestEngine_IterErrorHandling(t *testing.T) {
+	ctx := context.Background()
+	reg := engine.NewContainer()
+
+	// Setup a broken cycle: X -> Y -> X
+	reg.Register(runtime.CategoryCache, func(ctx context.Context, h engine.Handle) (any, error) {
+		if h.Name() == "X" {
+			return h.Locator().Get(ctx, "Y")
+		}
+		if h.Name() == "Y" {
+			return h.Locator().Get(ctx, "X")
+		}
+		return &mockComponent{Name: h.Name()}, nil
+	})
+
+	reg.Register(runtime.CategoryCache, nil, engine.WithResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
+		return &component.ModuleConfig{
+			Entries: []component.ConfigEntry{
+				{Name: "Normal", Value: "cfg1"},
+				{Name: "X", Value: "cfg2"},
+				{Name: "Y", Value: "cfg3"},
+			},
+		}, nil
+	}))
+
+	_ = reg.Load(ctx, "src")
+
+	// Iterate. Normal should succeed, X and Y should fail and thus be absent from result.
+	count := 0
+	foundNormal := false
+	it := reg.In(runtime.CategoryCache).Iter(ctx)
+	for it.Next() {
+		name, _ := it.Value()
+		count++
+		if name == "Normal" {
+			foundNormal = true
+		}
+		if name == "X" || name == "Y" {
+			t.Errorf("Iter should have excluded broken component %s, but it was yielded", name)
+		}
+	}
+
+	// In the new Iterator design, it should stop on first error
+	if err := it.Err(); err == nil {
+		t.Error("Expected error from broken component X, but got nil")
+	}
+
+	// Normal component is first in order, so it should still be processed before X
+	if count != 1 || !foundNormal {
+		t.Errorf("Expected only 1 healthy component (Normal) before error, got %d", count)
+	}
 }
