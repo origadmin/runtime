@@ -46,7 +46,7 @@ func TestEngine_SeedingFeature(t *testing.T) {
 	ctx := context.Background()
 	reg := engine.NewContainer()
 
-	reg.Register(runtime.CategoryDatabase, simpleProvider, engine.WithDefaultEntry("predefined_db"))
+	reg.Register(runtime.CategoryDatabase, simpleProvider, engine.WithDefaultEntries("predefined_db"))
 
 	// Load with EMPTY source
 	err := reg.Load(ctx, nil)

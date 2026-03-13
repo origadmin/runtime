@@ -76,9 +76,6 @@ func WithRequirementResolverOption(res RequirementResolver) RegisterOption {
 	}
 }
 
-// Deprecated: Use WithConfigResolverOption instead.
-var WithResolverOption = WithConfigResolverOption
-
 func WithScopes(ss ...Scope) RegisterOption {
 	return func(o *RegistrationOptions) {
 		o.Scopes = append(o.Scopes, ss...)
@@ -102,9 +99,6 @@ func WithDefaultEntries(names ...string) RegisterOption {
 		o.DefaultEntries = append(o.DefaultEntries, names...)
 	}
 }
-
-// Deprecated: Use WithDefaultEntries instead.
-var WithDefaultEntry = WithDefaultEntries
 
 // --- Perspective Options (USING INTERFACE METHODS) ---
 

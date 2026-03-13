@@ -30,7 +30,7 @@ func TestEngine_PerspectiveDuality(t *testing.T) {
 			return &mockComponent{Type: "any-injecter"}, nil
 		}
 		return nil, nil
-	}, engine.WithDefaultEntry("propagation"), engine.WithScopes(runtime.ServerScope, runtime.ClientScope))
+	}, engine.WithDefaultEntries("propagation"), engine.WithScopes(runtime.ServerScope, runtime.ClientScope))
 
 	_ = reg.Load(ctx, "source")
 

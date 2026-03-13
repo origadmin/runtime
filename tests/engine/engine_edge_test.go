@@ -19,12 +19,12 @@ func TestEngine_CircularDependency(t *testing.T) {
 	reg.Register(runtime.CategoryClient, func(ctx context.Context, h engine.Handle) (any, error) {
 		_, err := h.Locator().In(runtime.CategoryServer).Get(ctx, "B")
 		return nil, err
-	}, engine.WithDefaultEntry("A"))
+	}, engine.WithDefaultEntries("A"))
 
 	reg.Register(runtime.CategoryServer, func(ctx context.Context, h engine.Handle) (any, error) {
 		_, err := h.Locator().In(runtime.CategoryClient).Get(ctx, "A")
 		return nil, err
-	}, engine.WithDefaultEntry("B"))
+	}, engine.WithDefaultEntries("B"))
 
 	_ = reg.Load(ctx, "src")
 
@@ -93,7 +93,7 @@ func TestEngine_IterErrorHandling(t *testing.T) {
 		return &mockComponent{Name: h.Name()}, nil
 	})
 
-	reg.Register(runtime.CategoryCache, nil, engine.WithResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
+	reg.Register(runtime.CategoryCache, nil, engine.WithConfigResolverOption(func(ctx context.Context, source any, opts *component.LoadOptions) (*component.ModuleConfig, error) {
 		return &component.ModuleConfig{
 			Entries: []component.ConfigEntry{
 				{Name: "Normal", Value: "cfg1"},
