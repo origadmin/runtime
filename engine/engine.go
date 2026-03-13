@@ -69,6 +69,13 @@ func WithConfigResolverOption(res ConfigResolver) RegisterOption {
 	}
 }
 
+// WithRequirementResolverOption specifies a local requirement resolver for a component.
+func WithRequirementResolverOption(res RequirementResolver) RegisterOption {
+	return func(o *RegistrationOptions) {
+		o.RequirementResolver = res
+	}
+}
+
 // Deprecated: Use WithConfigResolverOption instead.
 var WithResolverOption = WithConfigResolverOption
 

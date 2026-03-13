@@ -693,6 +693,9 @@ type locatorHandle struct {
 }
 
 func (l *locatorHandle) Get(ctx context.Context, name string) (any, error) {
+	if contains(l.skips, name) {
+		return nil, fmt.Errorf("engine: component %s/%s is skipped", l.category, name)
+	}
 	return l.c.instantiate(ctx, l.category, l.scope, name, l.tags)
 }
 func (l *locatorHandle) Iter(ctx context.Context) iterator.Iterator {
