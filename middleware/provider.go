@@ -10,7 +10,6 @@ import (
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/iterator"
 	"github.com/origadmin/runtime/helpers/comp"
 )
 
@@ -32,7 +31,7 @@ func (p *providerImpl) Middleware(name string) (KMiddleware, error) {
 // GetMiddlewareList collects all middlewares from the given locator as a slice.
 func GetMiddlewareList(ctx context.Context, locator component.Locator) ([]KMiddleware, error) {
 	var mws []KMiddleware
-	var it iterator.Iterator = locator.Iter(ctx)
+	var it = locator.Iter(ctx)
 	for it.Next() {
 		_, inst := it.Value()
 		if m, ok := inst.(KMiddleware); ok {
@@ -45,7 +44,7 @@ func GetMiddlewareList(ctx context.Context, locator component.Locator) ([]KMiddl
 // GetMiddlewares collects all available middlewares from the given locator as a map.
 func GetMiddlewares(ctx context.Context, locator component.Locator) (map[string]KMiddleware, error) {
 	mws := make(map[string]KMiddleware)
-	var it iterator.Iterator = locator.Iter(ctx)
+	var it = locator.Iter(ctx)
 	for it.Next() {
 		name, inst := it.Value()
 		if m, ok := inst.(KMiddleware); ok {

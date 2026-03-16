@@ -5,6 +5,8 @@
 package runtime
 
 import (
+	"context"
+
 	"github.com/origadmin/runtime/contracts/component"
 	"github.com/origadmin/runtime/engine"
 )
@@ -84,6 +86,11 @@ func WithInTags(tags ...string) InOption {
 	return engine.WithInTags(tags...)
 }
 
+// WithTag specifies the tag for a component.
+func WithTag(tag string) RegisterOption {
+	return engine.WithTag(tag)
+}
+
 // WithResolver specifies a local config resolver for a component.
 func WithResolver(res component.ConfigResolver) RegisterOption {
 	return engine.WithConfigResolverOption(res)
@@ -92,4 +99,14 @@ func WithResolver(res component.ConfigResolver) RegisterOption {
 // WithScopes specifies the scopes for a component.
 func WithScopes(ss ...Scope) RegisterOption {
 	return engine.WithScopes(ss...)
+}
+
+// WithEntries specifies the default entries for a component.
+func WithEntries(names ...string) RegisterOption {
+	return engine.WithDefaultEntries(names...)
+}
+
+// WithRequirement specifies a local requirement resolver for a component.
+func WithRequirement(f func(ctx context.Context, h component.Handle, purpose string) (any, error)) RegisterOption {
+	return engine.WithRequirementResolverOption(f)
 }

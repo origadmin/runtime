@@ -81,6 +81,11 @@ func (i *containerIterator) Next() bool {
 			i.lastErr = err
 			return false
 		}
+		if inst == nil {
+			// A nil instance with a nil error is an "abstain" signal from instantiate,
+			// meaning this component was not applicable in the current context. Skip it.
+			continue
+		}
 		i.lastName = name
 		i.lastInst = inst
 		return true
@@ -98,7 +103,6 @@ func (i *containerIterator) Err() error {
 
 // makeInstanceKey defines the PHYSICAL COORDINATE of an instance.
 // ... (rest of methods unchanged, I will use precise replacement below)
-
 
 // makeInstanceKey defines the PHYSICAL COORDINATE of an instance.
 func makeInstanceKey(name, tag string) string {
@@ -371,18 +375,25 @@ func (c *containerImpl) Load(ctx context.Context, source any, opts ...component.
 		for _, entry := range entries {
 			if len(entry.defaultEntries) > 0 {
 				for _, name := range entry.defaultEntries {
-					for s := range registeredScopes {
-						// Apply scope filtering for seeding too
+					// Apply scope filtering for seeding too
+					for _, scopeOfEntry := range entry.scopes { // Iterate over scopes specific to THIS provider entry
 						if loadOpts.Scope != "" {
 							target := loadOpts.Scope
 							if target == "" {
 								target = globalScopeName
 							}
-							if s != target {
-								continue
+							if scopeOfEntry != target {
+								continue // Only add if it matches the Load option's scope
 							}
 						}
-						mKey := moduleKey{category: cat, scope: s}
+
+						// Map internal alias if needed
+						internalScope := scopeOfEntry
+						if internalScope == "" {
+							internalScope = globalScopeName
+						}
+
+						mKey := moduleKey{category: cat, scope: internalScope}
 						state := c.getModuleState(mKey)
 						state.mu.Lock()
 						if _, exists := state.instances[configKey(name)]; !exists {
@@ -588,7 +599,31 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	cfgMeta, ok := s.instances[configKey(reqName)]
 	s.mu.RUnlock()
 	if !ok {
-		return nil, fmt.Errorf("engine: component %s/%s not found", cat, reqName)
+		// Config not found. Check if this component is marked for on-demand creation via WithDefaultEntries.
+		isCreatableOnDemand := false
+		c.mu.RLock()
+		if providersForCategory, providerExists := c.providers[cat]; providerExists {
+			for _, p := range providersForCategory {
+				for _, defaultEntryName := range p.defaultEntries {
+					if defaultEntryName == reqName {
+						isCreatableOnDemand = true
+						break
+					}
+				}
+				if isCreatableOnDemand {
+					break
+				}
+			}
+		}
+		c.mu.RUnlock()
+
+		if isCreatableOnDemand {
+			// Yes, it's allowed. Create a transient, empty configMeta to proceed.
+			cfgMeta = &componentMeta{config: nil, status: StatusNone}
+		} else {
+			// No, it's a real error. Fail as before.
+			return nil, fmt.Errorf("engine: component %s/%s not found", cat, reqName)
+		}
 	}
 	if cfgMeta.status == StatusReady {
 		return cfgMeta.inst, nil
@@ -639,7 +674,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 				name:      realName,
 				meta:      meta,
 				activeTag: curTag,
-				l:         (&locatorHandle{c: c, category: cat, scope: scope, tags: demandTags}).Skip(realName),
+				l:         (&locatorHandle{c: c, category: cat, scope: scope, tags: tags}).Skip(realName),
 				c:         c,
 			}
 			inst, err := entry.provider(ctx, h)
@@ -660,7 +695,10 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	if lastErr != nil {
 		return nil, lastErr
 	}
-	return nil, fmt.Errorf("engine: no provider found for %s/%s with tags %v", cat, realName, demandTags)
+
+	// If we are here, it means no provider returned a non-nil instance or a hard error.
+	// This is not a fatal error; it's an abstention. Component is "none" in this context.
+	return nil, nil
 }
 
 func matchScope(ss []component.Scope, t component.Scope) bool {
