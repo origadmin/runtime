@@ -596,7 +596,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			return meta.inst, nil
 		}
 	}
-	cfgMeta, ok := s.instances[configKey(reqName)]
+	cfgMeta, ok := s.instances[configKey(realName)]
 	s.mu.RUnlock()
 	if !ok {
 		// Config not found. Check if this component is marked for on-demand creation via WithDefaultEntries.
@@ -740,7 +740,7 @@ func (l *locatorHandle) Iter(ctx context.Context) iterator.Iterator {
 	return l.c.iter(ctx, l)
 }
 func (l *locatorHandle) In(cat component.Category, opts ...component.InOption) component.Registry {
-	var res component.Registry = &locatorHandle{c: l.c, category: cat, scope: l.scope, tags: l.tags}
+	var res component.Registry = &locatorHandle{c: l.c, category: cat, scope: "", tags: l.tags}
 	for _, opt := range opts {
 		if opt != nil {
 			res = opt(res)
