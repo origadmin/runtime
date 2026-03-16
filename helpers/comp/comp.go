@@ -11,7 +11,6 @@ import (
 	"iter"
 
 	"github.com/origadmin/runtime/contracts/component"
-	"github.com/origadmin/runtime/contracts/iterator"
 )
 
 // --- Extraction Helpers ---
@@ -82,7 +81,7 @@ func GetDefault[T any](ctx context.Context, l component.Locator) (T, error) {
 // Iter returns a type-safe iterator for components in a locator.
 func Iter[T any](ctx context.Context, l component.Locator) iter.Seq2[string, T] {
 	return func(yield func(string, T) bool) {
-		var it iterator.Iterator = l.Iter(ctx)
+		var it = l.Iter(ctx)
 		for it.Next() {
 			name, inst := it.Value()
 			if t, ok := inst.(T); ok {
@@ -97,8 +96,15 @@ func Iter[T any](ctx context.Context, l component.Locator) iter.Seq2[string, T] 
 // GetMap collects all components from the given locator as a map and asserts their type.
 func GetMap[T any](ctx context.Context, l component.Locator) (map[string]T, error) {
 	m := make(map[string]T)
-	for name, t := range Iter[T](ctx, l) {
-		m[name] = t
+	it := l.Iter(ctx)
+	for it.Next() {
+		name, inst := it.Value()
+		if t, ok := inst.(T); ok {
+			m[name] = t
+		}
+	}
+	if err := it.Err(); err != nil {
+		return nil, err
 	}
 	return m, nil
 }
