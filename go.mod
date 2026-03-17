@@ -24,6 +24,7 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/joho/godotenv v1.5.1
 	github.com/origadmin/slog-kratos v1.0.5
+	github.com/origadmin/toolkits v1.4.0
 	github.com/origadmin/toolkits/errors v1.4.0
 	github.com/origadmin/toolkits/slogx v1.4.0
 	github.com/rs/cors v1.11.1
@@ -66,6 +67,7 @@ require (
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/bufbuild/protocompile v0.14.2-0.20260114160500-16922e24f2b6 // indirect
 	github.com/bufbuild/protoplugin v0.0.0-20250218205857-750e09ce93e1 // indirect
+	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7 // indirect
