@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.2.19](https://github.com/origadmin/runtime/compare/v0.2.18...v0.2.19) (2026-03-17)
+
+
+### Features
+
+* **app:** extend App protobuf with project metadata and instance info ([ab74f5e](https://github.com/origadmin/runtime/commit/ab74f5e782bc6925b9fa2f06505ecf3648bb2af5))
+* **bootstrap:** add automatic config decoding into target struct ([3357a50](https://github.com/origadmin/runtime/commit/3357a5001c8f6c980f353cc6faf16b6da0b7fb24))
+* **component:** add fluent interface methods for scope and tags in Locator ([9d7eee6](https://github.com/origadmin/runtime/commit/9d7eee6116ba39aee2edbb5caf2edd0a64be6149))
+* **component:** add RequirementResolver and Skip method to enhance component configuration ([48acb1d](https://github.com/origadmin/runtime/commit/48acb1d400eb1a35c2810072684849f6255b5b96))
+* **component:** implement default instance mapping and global resolver dispatch ([530a04e](https://github.com/origadmin/runtime/commit/530a04e181721447c974804b162d735dc2e0ae52))
+* **config:** add file filtering capability to file source configuration ([df13040](https://github.com/origadmin/runtime/commit/df13040ce83a99a278e6602b038f4ccc0deabf0f))
+* **config:** migrate to Kratos native config loader with enhanced operations ([593e6b3](https://github.com/origadmin/runtime/commit/593e6b3431b215157097c9f0cd06d0580b99e29a))
+* **configutil:** add ExtractName and ExtractType functions for item name and type extraction ([5bfbb11](https://github.com/origadmin/runtime/commit/5bfbb113c70b55d6a80bde34c33f7124212204df))
+* **container:** add component skip check and requirement resolver option ([89750a4](https://github.com/origadmin/runtime/commit/89750a4fc9556a27eafc1c57f9d1ef14bd511030))
+* **container:** add support for default entries in registration options ([84c3438](https://github.com/origadmin/runtime/commit/84c34389bba0ff376a99e8c3bc91f64993f71dcb))
+* **container:** enhance component instantiation with nil instance handling and on-demand creation ([cdeeb54](https://github.com/origadmin/runtime/commit/cdeeb543893c17c1f9cc0c629d5867d4163fb084))
+* **container:** implement generic config resolution with default resolvers ([a67eaef](https://github.com/origadmin/runtime/commit/a67eaef21f8794fb148114068dc2a4ae2c768462))
+* **engine:** add component tagging system with perspective-based visibility ([e909e73](https://github.com/origadmin/runtime/commit/e909e73ef4a2ba6f562fae1667634655383e62be))
+* **engine:** refactor component registration with scope support and iterator ([309d341](https://github.com/origadmin/runtime/commit/309d341ae46dd7f94674d9b736cdbd387cb6017b))
+* **log:** add global logger with thread-safe access ([28959e3](https://github.com/origadmin/runtime/commit/28959e3247a228bdd9a9ab725d1920de2ac1746d))
+* **nats:** add StreamConfig and auto_provision to NATS config ([d593bc3](https://github.com/origadmin/runtime/commit/d593bc3d9afc1c67aa6b4033a6e3ed4e4b6aa4ba))
+* **nats:** add StreamConfig and auto_provision to NATS config ([2fe5f06](https://github.com/origadmin/runtime/commit/2fe5f0613560e1fa18dd395d69c04630542a1ce1))
+* **runtime:** add context utilities for option management ([876da1e](https://github.com/origadmin/runtime/commit/876da1e8565efe25cdc57e57393112f33d3c1619))
+* **runtime:** enhance configuration binding with dimension reduction support ([f0ee64d](https://github.com/origadmin/runtime/commit/f0ee64dc02c445dda3ac768106b038765d99fd3e))
+* **runtime:** introduce component contract system with registry refactoring ([a420f7d](https://github.com/origadmin/runtime/commit/a420f7dd5dd1bcd5724f5c695219001e4b9d1755))
+
+
+### Bug Fixes
+
+* **container:** correct instance lookup and locator scope handling ([0257361](https://github.com/origadmin/runtime/commit/02573617cc5138a684b399942b7f60a8edad4c12))
+* **examples:** remove unnecessary ID parameter and fix logger reference ([566b8e8](https://github.com/origadmin/runtime/commit/566b8e8e15881a8bf49bccc5a0223180b693da5d))
+* **middleware:** return default clients for nil metadata configuration ([fa18f31](https://github.com/origadmin/runtime/commit/fa18f31d9cb4add104168cf94905facbcbb326fa))
+* **protoutil:** replace proto.Marshal/Unmarshal with protojson in protoutil ([28ab6fa](https://github.com/origadmin/runtime/commit/28ab6fa341dcb39e394a4e54611b610df9ef5d1d))
+
 ## [0.2.18](https://github.com/origadmin/runtime/compare/v0.2.17...v0.2.18) (2026-01-27)
 
 
