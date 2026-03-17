@@ -32,10 +32,7 @@ func main() {
 	// NewFromBootstrap encapsulates all bootstrap processes
 	ai := runtime.NewAppInfo(Name, Version)
 	ai.Env = "development"
-	rt := runtime.NewWithAppInfo(
-		ai,
-		runtime.WithID(ID),
-	)
+	rt := runtime.NewWithAppInfo(ai)
 	if err := rt.Load("examples/configs/bootstrap_sample/bootstrap.yaml"); err != nil {
 		fmt.Println("Failed to create App:", err)
 		os.Exit(1)
@@ -51,7 +48,7 @@ func main() {
 	// Use Kratos native Scan instead of Decode
 	var bc conf.Bootstrap
 	if err := rt.Decoder().Scan(&bc); err != nil {
-		log.Fatalf("Failed to scan bootstrap config: %v", err)
+		logger.Fatalf("Failed to scan bootstrap config: %v", err)
 	}
 
 	// Print some information from the configuration to demonstrate successful loading
