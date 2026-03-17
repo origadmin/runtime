@@ -111,11 +111,11 @@ type ConfigEntry struct {
 type RequirementResolver func(ctx context.Context, h Handle, purpose string) (any, error)
 
 type RegistrationOptions struct {
-	ConfigResolver      ConfigResolver
 	Scopes              []Scope
-	Priority            Priority
 	Tag                 string
+	Priority            Priority
 	DefaultEntries      []string
+	ConfigResolver      ConfigResolver
 	RequirementResolver RequirementResolver
 }
 
@@ -128,8 +128,8 @@ type LoadOptions struct {
 	Category Category
 	Scope    Scope
 	Name     string
-	Resolver ConfigResolver
 	Tags     []string
+	Resolver ConfigResolver
 }
 
 type LoadOption func(*LoadOptions)
