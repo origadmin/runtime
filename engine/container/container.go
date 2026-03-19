@@ -579,7 +579,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 	s, exists := c.modules[mKey]
 	c.mu.RUnlock()
 	if !exists {
-		return nil, fmt.Errorf("engine: scope %s not initialized for %s", scope, cat)
+		return nil, newErrorf("instantiate", cat, internalScope, reqName, tags, "category with scope is not initialized. Please ensure the category is correctly registered and the scope exists in the configuration")
 	}
 	realName := reqName
 	if reqName == defaultInstanceName {
@@ -622,7 +622,7 @@ func (c *containerImpl) instantiate(ctx context.Context, cat component.Category,
 			cfgMeta = &componentMeta{config: nil, status: StatusNone}
 		} else {
 			// No, it's a real error. Fail as before.
-			return nil, fmt.Errorf("engine: component %s/%s not found", cat, reqName)
+			return nil, newErrorf("instantiate", cat, internalScope, reqName, tags, "component config not found in scope")
 		}
 	}
 	if cfgMeta.status == StatusReady {
@@ -730,11 +730,15 @@ type locatorHandle struct {
 	skips    []string
 }
 
-func (l *locatorHandle) Get(ctx context.Context, name string) (any, error) {
-	if contains(l.skips, name) {
-		return nil, fmt.Errorf("engine: component %s/%s is skipped", l.category, name)
+func (l *locatorHandle) Get(ctx context.Context, name ...string) (any, error) {
+	reqName := ""
+	if len(name) > 0 {
+		reqName = name[0]
 	}
-	return l.c.instantiate(ctx, l.category, l.scope, name, l.tags)
+	if contains(l.skips, reqName) {
+		return nil, fmt.Errorf("engine: component %s/%s is skipped", l.category, reqName)
+	}
+	return l.c.instantiate(ctx, l.category, l.scope, reqName, l.tags)
 }
 func (l *locatorHandle) Iter(ctx context.Context) iterator.Iterator {
 	return l.c.iter(ctx, l)

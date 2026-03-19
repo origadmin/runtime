@@ -87,7 +87,7 @@ func AdjustAppInfo(ai *appv1.App) {
 
 // NewInstanceID generates an instance ID.
 func NewInstanceID(project, appID, version, host string) string {
-	return fmt.Sprintf("%s-%s-%s@%s@%s", project, appID, version, host, must.Do(identifier.GenerateString()))
+	return fmt.Sprintf("%s.%s.%s@%s#%s", project, appID, version, host, must.Do(identifier.GenerateString()))
 }
 
 // ResolveHost returns the host identifier.

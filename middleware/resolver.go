@@ -55,7 +55,7 @@ func Resolve(ctx context.Context, source any, opts *component.LoadOptions) (*com
 func getBaseOptions(ctx context.Context, h component.Handle) []Option {
 	var resOpts []Option
 	// Attach global Logger
-	if l, err := comp.GetDefault[log.Logger](ctx, h.Locator().In(CategoryLogger)); err == nil {
+	if l, err := comp.Get[log.Logger](ctx, h.Locator().In(CategoryLogger)); err == nil {
 		resOpts = append(resOpts, log.WithLogger(l))
 	}
 	return resOpts

@@ -30,7 +30,7 @@ const (
 )
 
 type Locator interface {
-	Get(ctx context.Context, name string) (any, error)
+	Get(ctx context.Context, name ...string) (any, error)
 	Iter(ctx context.Context) iterator.Iterator
 	In(cat Category, opts ...InOption) Registry
 	WithInScope(s Scope) Locator

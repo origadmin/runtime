@@ -44,22 +44,27 @@ func AsConfig[T any](h component.Handle) (*T, error) {
 // --- Retrieval Helpers ---
 
 // Get retrieves a component by name from a locator and asserts its type.
-func Get[T any](ctx context.Context, l component.Locator, name string) (T, error) {
+// If no name is provided, the default component is retrieved.
+func Get[T any](ctx context.Context, l component.Locator, name ...string) (T, error) {
 	var zero T
-	inst, err := l.Get(ctx, name)
+	inst, err := l.Get(ctx, name...)
 	if err != nil {
 		return zero, err
 	}
 	if t, ok := inst.(T); ok {
 		return t, nil
 	}
-	return zero, fmt.Errorf("engine: component '%s' in category '%s' is not of type %T", name, l.Category(), zero)
+	reqName := ""
+	if len(name) > 0 {
+		reqName = name[0]
+	}
+	return zero, fmt.Errorf("engine: component '%s' in category '%s' is not of type %T", reqName, l.Category(), zero)
 }
 
 // GetWithTag retrieves a component by tag from a locator and asserts its type.
 func GetWithTag[T any](ctx context.Context, l component.Locator, tag string) (T, error) {
 	// Fluent API: directly use the new interface method
-	return Get[T](ctx, l.WithInTags(tag), "")
+	return Get[T](ctx, l.WithInTags(tag))
 }
 
 // GetWithFallback retrieves a component by name, falling back to the default name if not found.
@@ -68,12 +73,7 @@ func GetWithFallback[T any](ctx context.Context, l component.Locator, name strin
 	if err == nil {
 		return inst, nil
 	}
-	return GetDefault[T](ctx, l)
-}
-
-// GetDefault retrieves the default component from a locator and asserts its type.
-func GetDefault[T any](ctx context.Context, l component.Locator) (T, error) {
-	return Get[T](ctx, l, "")
+	return Get[T](ctx, l)
 }
 
 // --- Iteration Helpers ---

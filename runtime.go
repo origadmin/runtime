@@ -144,7 +144,7 @@ func (r *App) WarmUp() error {
 func (r *App) Decoder() runtimeconfig.KConfig { return r.result.Decoder() }
 func (r *App) Config() any                    { return r.result.Config() }
 func (r *App) Logger() log.Logger {
-	l, err := comp.GetDefault[log.Logger](r.ctx, r.engine.In(CategoryLogger))
+	l, err := comp.Get[log.Logger](r.ctx, r.engine.In(CategoryLogger))
 	if err != nil {
 		return log.DefaultLogger
 	}
@@ -203,7 +203,7 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 
 func (r *App) DefaultRegistrar() (kregistry.Registrar, error) {
 	// Directly obtain from CategoryRegistrar with standard Kratos interface
-	return comp.GetDefault[kregistry.Registrar](r.ctx, r.engine.In(CategoryRegistrar))
+	return comp.Get[kregistry.Registrar](r.ctx, r.engine.In(CategoryRegistrar))
 }
 
 func (r *App) Discoveries() (map[string]registry.KDiscovery, error) {
@@ -220,7 +220,11 @@ func (r *App) ShowAppInfo() {
 	ts := time.Now().Format(time.RFC3339)
 	host, _ := os.Hostname()
 	pid := os.Getpid()
-	fmt.Printf("[%s] %s (pid:%d@%s)\n  Version: %s\n  AppId: %s\n  InstanceId: %s\n", ts, ai.Name, pid, host, ai.Version, ai.Id, ai.InstanceId)
+	fmt.Printf("[%s] %s\n", ts, ai.Name)
+	fmt.Printf("  PID:        %d@%s\n", pid, host)
+	fmt.Printf("  Version:    %s\n", ai.Version)
+	fmt.Printf("  AppId:      %s\n", ai.Id)
+	fmt.Printf("  InstanceId: %s\n", ai.InstanceId)
 }
 
 // --- Wire Providers ---

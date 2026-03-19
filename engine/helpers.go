@@ -14,14 +14,8 @@ import (
 
 // Get retrieves a component by name from a locator and asserts its type.
 // Deprecated: Use comp.Get instead to avoid unnecessary dependencies.
-func Get[T any](ctx context.Context, l component.Locator, name string) (T, error) {
-	return comp.Get[T](ctx, l, name)
-}
-
-// GetDefault retrieves the default component from a locator and asserts its type.
-// Deprecated: Use comp.GetDefault instead.
-func GetDefault[T any](ctx context.Context, l component.Locator) (T, error) {
-	return comp.GetDefault[T](ctx, l)
+func Get[T any](ctx context.Context, l component.Locator, name ...string) (T, error) {
+	return comp.Get[T](ctx, l, name...)
 }
 
 // Iter returns a type-safe iterator for components in a locator.
