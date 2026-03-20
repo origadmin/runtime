@@ -6,7 +6,6 @@ package middleware
 
 import (
 	"context"
-	"errors"
 
 	middlewarev1 "github.com/origadmin/runtime/api/gen/go/config/middleware/v1"
 	"github.com/origadmin/runtime/contracts/component"
@@ -69,10 +68,8 @@ func collectOptions(h component.Handle) (*middlewarev1.Middleware, []Option, err
 
 	// 2. Resolve dynamic creation options (Carrier, Logger, etc.) via Require
 	// This is where silent logic like WithCarrier for Selectors is injected.
-	opts, err := comp.RequireTyped[[]Option](h, RequirementOption)
-	if err != nil && !errors.Is(err, component.ErrRequirementNotFound) {
-		return nil, nil, err
-	}
+	// Option is optional, so we ignore any errors and just use nil if not available.
+	opts, _ := comp.RequireTyped[[]Option](h, RequirementOption)
 
 	return cfg, opts, nil
 }
