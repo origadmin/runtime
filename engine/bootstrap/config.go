@@ -47,6 +47,7 @@ func LoadConfig(bootstrapPath string, providerOpts *ProviderOptions) (*bootstrap
 	} else if providerOpts.directly {
 		logger.Infof("Loading config directly from: %s", bootstrapPath)
 		sources := []*sourcev1.SourceConfig{SourceWithFile(bootstrapPath)}
+		sources = append(sources, providerOpts.extraSources...)
 		baseConfig, err = runtimeconfig.New(&sourcev1.Sources{Configs: sources}, providerOpts.frameworkOptions...)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to create base config for direct loading: %w", err)

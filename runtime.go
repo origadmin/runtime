@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2"
-	kregistry "github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goexts/generic/configure"
 
@@ -201,9 +200,9 @@ func (r *App) NewApp(servers []transport.Server, options ...kratos.Option) *krat
 	return kratos.New(opts...)
 }
 
-func (r *App) DefaultRegistrar() (kregistry.Registrar, error) {
+func (r *App) DefaultRegistrar() (registry.KRegistrar, error) {
 	// Directly obtain from CategoryRegistrar with standard Kratos interface
-	return comp.Get[kregistry.Registrar](r.ctx, r.engine.In(CategoryRegistrar))
+	return comp.Get[registry.KRegistrar](r.ctx, r.engine.In(CategoryRegistrar))
 }
 
 func (r *App) Discoveries() (map[string]registry.KDiscovery, error) {
@@ -235,6 +234,6 @@ func ProvideLogger(rt *App) log.Logger {
 }
 
 // ProvideDefaultRegistrar is a Wire provider function that extracts the registrar from the App.
-func ProvideDefaultRegistrar(rt *App) (kregistry.Registrar, error) {
+func ProvideDefaultRegistrar(rt *App) (registry.KRegistrar, error) {
 	return rt.DefaultRegistrar()
 }
