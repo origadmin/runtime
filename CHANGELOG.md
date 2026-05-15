@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.20](https://github.com/origadmin/runtime/compare/v0.2.19...v0.2.20) (2026-05-15)
+
+
+### Features
+
+* **container:** update component locator interface and error handling ([7e5b032](https://github.com/origadmin/runtime/commit/7e5b03236a29e833b1057e18bc19979755fb49c7))
+
 ## [0.2.19](https://github.com/origadmin/runtime/compare/v0.2.18...v0.2.19) (2026-03-17)
 
 
